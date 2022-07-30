@@ -5,8 +5,8 @@
 	"repository": "https://github.com/CSSUoB/TeX-Bot-JS.git",
 	"license": "Apache-2.0",
 	"private": false,
-	"type": "module",
 	"dependencies": {
+		"@discordjs/rest": "^1.0.1",
 		"discord.js": "^14.1.2",
 		"dotenv": "^16.0.1"
 	},
