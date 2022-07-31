@@ -7,8 +7,11 @@
 	"private": false,
 	"dependencies": {
 		"@discordjs/rest": "^1.0.1",
+		"axios": "^0.27.2",
+		"cheerio": "^1.0.0-rc.12",
 		"discord.js": "^14.1.2",
-		"dotenv": "^16.0.1"
+		"dotenv": "^16.0.1",
+		"tough-cookie": "^4.0.0"
 	},
 	"devDependencies": {
 		"eslint": "^8.20.0",
