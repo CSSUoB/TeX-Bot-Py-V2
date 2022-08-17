@@ -31,19 +31,23 @@ module.exports = {
     await interaction.deferReply({ ephemeral: true });
     await wait(1000);
 
-    this.usedIDs = this.readMemberFile().ids;
+    this.usedIDs = this.readMemberFile().ids ? this.readMemberFile().ids : [];
 
     let hash = crypto.createHash("sha256");
-    const memberArray = this.getMembers();
+    const memberArray = await this.getMembers();
 
     hash.update(interaction.options.getString("studentid"));
     const enc = hash.digest("hex");
 
     if (interaction.member.roles.cache.find((r) => r.name === "Member")) {
+      console.log(`Warning: ${interaction.user.tag} is already a member`);
       return await interaction.editReply({
         content: "You're already a member - why are you trying this again?",
       });
     } else if (this.usedIDs.includes(enc)) {
+      console.log(
+        `Warning: ${interaction.user.tag} tried using an ID that has already been used.`
+      );
       return await interaction.editReply({
         content:
           "This id has already been used. Please contact a Committee member if this is an error.",
@@ -61,11 +65,14 @@ module.exports = {
       );
       await interaction.member.roles.add(role).catch(console.error);
 
+      console.log(`Warning: ${interaction.user.tag} has been made a member.`);
+
       await interaction.editReply({
         content: "Made you a Member!",
         ephemeral: true,
       });
     } else {
+      console.log(`Warning: ${interaction.user.tag} used an invalid ID.`);
       await interaction.editReply({
         content:
           "Invalid Student ID supplied. Please contact a Committee member.",
@@ -78,6 +85,9 @@ module.exports = {
       method: "get",
       url: process.env.UNION_URL,
       headers: {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+        Expires: "0",
         Cookie: cookie,
       },
       withCredentials: true,
@@ -91,11 +101,11 @@ module.exports = {
     const memberArray = [];
 
     const $ = cheerio.load(result.data);
-    $(
-      "#ctl00_Main_rptGroups_ctl05_gvMemberships > tbody > tr > td:nth-child(2)"
-    ).each((index, element) => {
-      memberArray[index] = $(element).text();
-    });
+    $("#ctl00_Main_gvMembers > tbody > tr > td:nth-child(2)").each(
+      (index, element) => {
+        memberArray[index] = $(element).text();
+      }
+    );
 
     return memberArray;
   },
