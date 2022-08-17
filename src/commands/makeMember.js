@@ -2,6 +2,8 @@ const { SlashCommandBuilder } = require("@discordjs/builders");
 const axios = require("axios");
 const cheerio = require("cheerio");
 const tough = require("tough-cookie");
+const fs = require("fs");
+const crypto = require("crypto");
 require("../../config/config.js");
 
 const cookie = new tough.Cookie({
@@ -24,15 +26,36 @@ module.exports = {
         .setDescription("Your UoB Student ID")
         .setRequired(true)
     ),
+  usedIDs: [],
   async execute(interaction) {
     await interaction.deferReply({ ephemeral: true });
     await wait(1000);
 
+    this.usedIDs = this.readMemberFile().ids;
+
+    let hash = crypto.createHash("sha256");
     const memberArray = this.getMembers();
+
+    hash.update(interaction.options.getString("studentid"));
+    const enc = hash.digest("hex");
+
+    if (interaction.member.roles.cache.find((r) => r.name === "Member")) {
+      return await interaction.editReply({
+        content: "You're already a member - why are you trying this again?",
+      });
+    } else if (this.usedIDs.includes(enc)) {
+      return await interaction.editReply({
+        content:
+          "This id has already been used. Please contact a Committee member if this is an error.",
+      });
+    }
 
     if (
       (await memberArray).includes(interaction.options.getString("studentid"))
     ) {
+      this.usedIDs.push(enc);
+      this.updateJSON();
+
       const role = interaction.guild.roles.cache.find(
         (r) => r.name === "Member"
       );
@@ -75,5 +98,20 @@ module.exports = {
     });
 
     return memberArray;
+  },
+  updateJSON() {
+    let obj = {
+      ids: this.usedIDs,
+    };
+    let json = JSON.stringify(obj);
+    fs.writeFile("../local/member.json", json, function (err) {
+      if (err) {
+        console.error(err);
+      }
+    });
+  },
+  readMemberFile() {
+    let rawData = fs.readFileSync("../local/member.json");
+    return JSON.parse(rawData);
   },
 };
