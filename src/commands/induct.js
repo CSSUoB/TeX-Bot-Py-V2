@@ -57,6 +57,16 @@ module.exports = {
       console.log(`${dt} - Error: @Guest does not exist on this guild.`);
     }
 
+    if (guildUser.roles.cache.find((r) => r.name === "Guest")) {
+      console.log(
+        `${dt} - Warning: ${interaction.user.tag} tried to induct ${guildUser.user.tag} but they were already inducted.`
+      );
+      return await interaction.editReply({
+        content: "User is already inducted.",
+        ephemeral: true,
+      });
+    }
+
     await guildUser.roles.add(role);
     await interaction.guild.members.fetch();
 
