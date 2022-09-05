@@ -20,6 +20,7 @@ module.exports = {
     .setDescription(
       "Gives you the Member role when supplied with an appropriate Student ID."
     )
+    .setDMPermission(false)
     .addStringOption((option) =>
       option
         .setName("studentid")
