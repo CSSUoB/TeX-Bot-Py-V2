@@ -106,5 +106,8 @@ dist
 # VSCode settings
 .vscode
 
+# JetBrains IDE settings
+.idea
+
 # Local files
 local/
