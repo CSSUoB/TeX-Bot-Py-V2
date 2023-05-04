@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "TeX-Bot"
+version = "0.4.0"
+license = "Apache-2.0"
+description = "TeX-Bot, but back in Python!"
+authors = ["CarrotManMatt <matt@carrotmanmatt.com>"]
+readme = "README.md"
+repository = "https://github.com/CarrotManMatt/TeX-Bot-Py.git"
+keywords = ["discord", "uob", "uob-css"]
+classifiers = [
+    "Private :: Do Not Upload",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.11",
+    "Typing :: Typed",
+    "Topic :: Internet"
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+"discord.py" = "^2.2.3"
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.2.0"
