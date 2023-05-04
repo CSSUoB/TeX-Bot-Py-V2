@@ -19,7 +19,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.11"
-"discord.py" = "^2.2.3"
+py-cord = "^2.4"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.2.0"
