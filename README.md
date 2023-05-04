@@ -17,7 +17,7 @@ You'll need to create a Discord bot of your own in the [Discord Developer Portal
 You'll need to set a number of environment variables:
 
 - `DISCORD_BOT_TOKEN` -> The Discord token for the bot you created (available on your bot page in the [Developer Portal](https://discord.com/developers/applications)).
-- `DISCORD_BOT_CLIENT_ID` -> The Discord application ID of the bot (also available on the main page of your application in the [Developer Portal](https://discord.com/developers/applications)).
+- `DISCORD_BOT_APPLICATION_ID` -> The Discord application ID of the bot (also available on the main page of your application in the [Developer Portal](https://discord.com/developers/applications)).
 - `DISCORD_GUILD_ID` -> The ID of the Discord server, the bot will be operating in.
 - `MEMBERS_PAGE_URL` -> The URL of the CSS members page (currently found on the Guild of Students website, make sure it's sorted by group).
 - `MEMBERS_PAGE_COOKIE` -> The CSS members page session cookie (probably listed as `.ASPXAUTH`, gives the bot permission to view your members page as if it were logged in to the website as a Committee member, you can extract this from your web browser after logging into the CSS members page).
