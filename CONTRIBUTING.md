@@ -2,7 +2,7 @@
 
 A big welcome and thank you for considering contributing to CSS' open source projects! We welcome anybody who wants to contribute, and we actively encourage everyone to do so, especially if you have never contributed before.
 
-## Quick links
+## Quick Links
 
 * [Getting started](#getting-started)
 * [Using the issue tracker](#using-the-issue-tracker)
@@ -10,7 +10,7 @@ A big welcome and thank you for considering contributing to CSS' open source pro
 * [Making your first contribution](#making-your-first-contribution)
 * [Guidance](#guidance)
 
-## Getting started
+## Getting Started
 
 If you have never used git before, we would recommend that you read the [GitHub's Getting Started guide](https://guides.github.com/introduction/getting-started-with-git/). Additionally, linked below are some helpful resources:
 
@@ -30,43 +30,49 @@ We recommend also reading the following if you're unsure or not confident:
 * https://makeapullrequest.com/
 * https://www.firsttimersonly.com/
 
-## Using the issue tracker
+## Using the Issue Tracker
 
-We use GitHub issues to track bugs and feature requests. If you find an issue with the bot, the best place to report it is through the issue tracker. If you are looking for issues to contribute code to, it's a good idea to look at the [issues labelled "good-first-issue"](https://github.com/CSSUoB/TeX-Bot-JS/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Agood-first-issue)!
+We use GitHub issues to track bugs and feature requests. If you find an issue with the bot, the best place to report it is through the issue tracker. If you are looking for issues to contribute code to, it's a good idea to look at the [issues labelled "good-first-issue"](https://github.com/CSSUoB/TeX-Bot-Py/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Agood-first-issue)!
 
 When submitting an issue, please be as descriptive as possible. If you are submitting a bug report, please include the steps to reproduce the bug, and the environment it is in. If you are submitting a feature request, please include the steps to implement the feature.
 
-## Project structure
+## Project Structure
 
-This bot is written in JavaScript using discord.js and uses [Discord's slash commands](https://support.discord.com/hc/en-us/articles/1500000368501-Slash-Commands-FAQ). We would recommend being somewhat familiar with the library and language terminology before contributing.
+This bot is written in Python using [discord.py](https://discordpy.readthedocs.io) and uses [Discord's slash commands](https://support.discord.com/hc/en-us/articles/1500000368501-Slash-Commands-FAQ). We would recommend being somewhat familiar with the library and language terminology before contributing.
 
-* `commands`: contains slash commands
-  * Each module must export an object with a `data` parameter with a [SlashCommandBuilder](https://discord.js.org/#/docs/builders/main/class/SlashCommandBuilder). 
-  * Additionally, there must also be a method `execute` with an [interaction](https://discord.js.org/#/docs/discord.js/main/class/BaseInteraction) object as its only argument.
-* `events`: contains event listeners
+[//]: # (* `commands`: contains slash commands)
 
-## Making your first contribution
+[//]: # (  * Each module must export an object with a `data` parameter with a [SlashCommandBuilder]&#40;https://discord.js.org/#/docs/builders/main/class/SlashCommandBuilder&#41;. )
+
+[//]: # (  * Additionally, there must also be a method `execute` with an [interaction]&#40;https://discord.js.org/#/docs/discord.js/main/class/BaseInteraction&#41; object as its only argument.)
+
+[//]: # (* `events`: contains event listeners)
+
+## Making Your First Contribution
 
 After you have found an issue which needs solving, it's time to start working on a fix! However, there are a few guidelines we would like you to follow first.
 
-### Code style
+### Code Style
 
-In general, follow the formatting in the file you are editing. We also have ESLint and Prettier files which you can configure your editor to use.
+In general, follow the formatting in the file you are editing. We also have a [Pycharm `codeStyleConfig.xml`](https://www.jetbrains.com/help/pycharm/configuring-code-style.html) file and [mypy](https://www.mypy-lang.org/) type checking which you can configure your IDE to use.
 
-### Git commit messages
+### Git Commit Messages
 
 Commit messages should be written in the imperative, present tense. For example, "Fix bug #1".
 
-Additionally, we request that you keep the commit subject under 80 characters for a comfortable viewing experience on GitHub and other git tools. If you need more, please use the body of the commit.
+Commit subjects should start with a capital letter and **not** end in a full-stop
+
+Additionally, we request that you keep the commit subject under 80 characters for a comfortable viewing experience on GitHub and other git tools. If you need more, please use the body of the commit. (See [Robert Painsi's Commit Message Guidelines](https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53) for how to write good commit messages.)
 
 For example:
+
 ```
 Fix TeX becoming sentient
 
 <more detailed description here>
 ```
 
-### What happens next?
+### What Happens Next?
 
 Once you have made your changes, please describe them in your pull request in full. We will then review them and communicate with you on GitHub. We may ask you to change a few things so please do check GitHub or your emails frequently.
 
@@ -74,10 +80,10 @@ After that, that's it! You've made your first contribution. 🎉
 
 ## License
 
-Please note that any contributions you make will be made under the terms of the [Apache Licence 2.0](https://github.com/CSSUoB/TeX-Bot-JS/blob/main/LICENSE).
+Please note that any contributions you make will be made under the terms of the [Apache Licence 2.0](https://github.com/CSSUoB/TeX-Bot-Py/blob/main/LICENSE).
 
 ## Guidance
 
-We aim to get more people involved with our projects, and help build members' confidence in using git and contributing to open-source. If you see an error, we encourage you to *be bold* and fix it yourself, rather than just raising an issue. If you are stuck, need help, or have a question, the best place to ask is on our Discord.
+We aim to get more people involved with our projects, and help build members' confidence in using git and contributing to open-source. If you see an error, we encourage you to **be bold** and fix it yourself, rather than just raising an issue. If you are stuck, need help, or have a question, the best place to ask is on our Discord.
 
-Happy editing!
+Happy contributing!
