@@ -5,7 +5,7 @@ license = "Apache-2.0"
 description = "TeX-Bot, but back in Python!"
 authors = ["CarrotManMatt <matt@carrotmanmatt.com>"]
 readme = "README.md"
-repository = "https://github.com/CarrotManMatt/TeX-Bot-Py.git"
+repository = "https://github.com/CSSUoB/TeX-Bot-Py.git"
 keywords = ["discord", "uob", "uob-css"]
 classifiers = [
     "Private :: Do Not Upload",
