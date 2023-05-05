@@ -14,10 +14,17 @@ class Ping(commands.Cog):
     @commands.slash_command(description="Replies with Pong!")
     async def ping(self, ctx: ApplicationContext):
         logging.warning(f"{ctx.interaction.user} made me pong!!")
-        await ctx.respond(random.choices([
-            "Pong!",
-            "64 bytes from TeX: icmp_seq=1 ttl=63 time=0.01 ms"
-        ], weights=settings["PING_COMMAND_EASTER_EGG_WEIGHTS"])[0])
+
+        try:
+            pong_text: str = random.choices([
+                "Pong!",
+                "64 bytes from TeX: icmp_seq=1 ttl=63 time=0.01 ms"
+            ], weights=settings["PING_COMMAND_EASTER_EGG_WEIGHTS"])[0]
+        except Exception:
+            await ctx.respond("⚠️There was an error when trying to reply with Pong!!.⚠️", ephemeral=True)
+            raise
+        else:
+            await ctx.respond(pong_text)
 
 
 def setup(bot: Bot):
