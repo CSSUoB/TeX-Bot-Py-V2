@@ -3,7 +3,7 @@ import discord
 from src.utils import settings
 
 
-bot = discord.Bot(debug_guilds=[settings["DISCORD_GUILD_ID"]])
+bot = discord.Bot()
 
 
 cogs_list = {
