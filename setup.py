@@ -1,7 +1,6 @@
 import logging
 import os
 import re
-from pathlib import Path
 from typing import Any
 
 import discord
@@ -10,7 +9,7 @@ from discord import Object, Permissions
 
 from exceptions import ImproperlyConfigured
 
-dotenv.load_dotenv(Path(f"{__file__}/../../.env").resolve())
+dotenv.load_dotenv()
 
 settings: dict[str, Any] = {
     "DISCORD_BOT_TOKEN": str(os.getenv("DISCORD_BOT_TOKEN"))
