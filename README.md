@@ -14,7 +14,11 @@ poetry install
 
 You'll need to create a Discord bot of your own in the [Discord Developer Portal](https://discord.com/developers/applications). It's also handy if you have an empty server (or "guild") for you to test in.
 
-You'll need to set a number of environment variables:
+You can retrieve the correct invite URL to use by navigating to the root folder, then running the following command:
+
+```shell
+python -c "from src import utils; print(utils.get_oauth_url())"
+```
 
 You'll also need to set a number of environment variables:
 
