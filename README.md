@@ -6,7 +6,7 @@ TeX-Bot, but back in Python! This is a [Discord bot](https://discord.com/build/a
 
 Ensure you have [Poetry]([mypy](https://www.mypy-lang.org/)) & [mypy](https://www.mypy-lang.org/) installed, then navigate to the root folder and run the following command:
 
-```
+```shell
 poetry install
 ```
 
@@ -16,11 +16,13 @@ You'll need to create a Discord bot of your own in the [Discord Developer Portal
 
 You'll need to set a number of environment variables:
 
-- `DISCORD_BOT_TOKEN` -> The Discord token for the bot you created (available on your bot page in the [Developer Portal](https://discord.com/developers/applications)).
-- `DISCORD_BOT_APPLICATION_ID` -> The Discord application ID of the bot (also available on the main page of your application in the [Developer Portal](https://discord.com/developers/applications)).
-- `DISCORD_GUILD_ID` -> The ID of the Discord server, the bot will be operating in.
-- `MEMBERS_PAGE_URL` -> The URL of the CSS members page (currently found on the Guild of Students website, make sure it's sorted by group).
-- `MEMBERS_PAGE_COOKIE` -> The CSS members page session cookie (probably listed as `.ASPXAUTH`, gives the bot permission to view your members page as if it were logged in to the website as a Committee member, you can extract this from your web browser after logging into the CSS members page).
+You'll also need to set a number of environment variables:
+
+* `DISCORD_BOT_TOKEN`: The Discord token for the bot you created (available on your bot page in the [Developer Portal](https://discord.com/developers/applications)).
+* `DISCORD_BOT_APPLICATION_ID`: The Discord application ID of the bot (also available on the main page of your application in the [Developer Portal](https://discord.com/developers/applications)).
+* `DISCORD_GUILD_ID`: The ID of the CSS Discord server.
+* `MEMBERS_PAGE_URL`: The URL of the CSS members page (currently found on the Guild of Students website, make sure it's sorted by group).
+* `MEMBERS_PAGE_COOKIE`: The CSS members page session cookie (probably listed as `.ASPXAUTH`, gives the bot permission to view your members page as if it were logged in to the website as a Committee member, you can extract this from your web browser after logging into the CSS members page).
 
 You can put these in a `.env` file in the root folder as it uses [python-dotenv](https://saurabh-kumar.com/python-dotenv/), so you don't have to keep them in your environment. There is an `example.env` file in the repo that you can rename and populate.
 
