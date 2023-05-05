@@ -57,7 +57,8 @@ def get_oauth_url():
             embed_links=True,
             read_message_history=True,
             mention_everyone=True,
-            add_reactions=True
+            add_reactions=True,
+            use_slash_commands=True
         ),
         guild=Object(id=settings["DISCORD_GUILD_ID"]),
         scopes={"bot", "applications.commands"},
