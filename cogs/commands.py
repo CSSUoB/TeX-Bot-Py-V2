@@ -1,12 +1,12 @@
 import logging
+import random
 
-from discord import ApplicationContext, Bot, ChannelType, Guild, Member, Role, TextChannel, utils
+from discord import ApplicationContext, Bot, Guild, Member, Role, TextChannel, utils
 from discord.ext import commands
+from setup import settings
 
-from utils import settings
 
-
-class Write_Roles(commands.Cog):
+class Commands(commands.Cog):
     ROLES_MESSAGES: tuple[str, str, str, str] = (
         "\nReact to this message to get pronoun roles\n🇭 - He/Him\n🇸 - She/Her\n🇹 - They/Them",
         "_ _\nReact to this message to get year group roles\n0️⃣ - Foundation Year\n1️⃣ - First Year\n2️⃣ - Second Year\n🇫 - Final Year (incl. 3rd Year MSci/MEng)\n🇮 - Year in Industry\n🇦 - Year Abroad\n🇹 - Post-Graduate Taught (Masters/MSc) \n🇷 - Post-Graduate Research (PhD) \n🅰️ - Alumnus\n🇩 - Postdoc",
@@ -16,6 +16,27 @@ class Write_Roles(commands.Cog):
 
     def __init__(self, bot: Bot):
         self.bot: Bot = bot
+
+    @commands.slash_command(description="Replies with Pong!")
+    async def ping(self, ctx: ApplicationContext):
+        ctx.defer()
+
+        logging.warning(f"{ctx.interaction.user} made me pong!!")
+
+        try:
+            pong_text: str = random.choices([
+                "Pong!",
+                "64 bytes from TeX: icmp_seq=1 ttl=63 time=0.01 ms"
+            ], weights=settings["PING_COMMAND_EASTER_EGG_WEIGHTS"])[0]
+        except Exception:
+            await ctx.respond("⚠️There was an error when trying to reply with Pong!!.⚠️", ephemeral=True)
+            raise
+        else:
+            await ctx.respond(pong_text)
+
+    @commands.slash_command(description="Displays information about the source code of this bot.")
+    async def source(self, ctx: ApplicationContext):
+        await ctx.respond("TeX is an open-source project made specifically for the CSS Discord! You can see and contribute to the source code at https://github.com/CSSUoB/TeX-Bot-Py")
 
     # noinspection SpellCheckingInspection
     @commands.slash_command(
@@ -59,13 +80,6 @@ class Write_Roles(commands.Cog):
         else:
             await ctx.respond("All messages sent successfully.", ephemeral=True)
 
-    @commands.slash_command(
-        name="newping",
-        description="test"
-    )
-    async def newping(self, ctx: ApplicationContext):
-        await ctx.respond("a tessssst")
-
 
 def setup(bot: Bot):
-    bot.add_cog(Write_Roles(bot))
+    bot.add_cog(Commands(bot))

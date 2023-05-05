@@ -8,7 +8,7 @@ import discord
 import dotenv
 from discord import Object, Permissions
 
-from src.exceptions import ImproperlyConfigured
+from exceptions import ImproperlyConfigured
 
 dotenv.load_dotenv(Path(f"{__file__}/../../.env").resolve())
 

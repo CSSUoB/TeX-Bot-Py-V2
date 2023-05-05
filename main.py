@@ -1,6 +1,6 @@
 import discord
 
-from src.utils import settings
+from setup import settings
 
 
 bot = discord.Bot()

@@ -4,7 +4,7 @@ from discord import Bot
 from discord.ext import commands
 
 
-class Ready(commands.Cog):
+class Events(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot: Bot = bot
 
@@ -14,4 +14,4 @@ class Ready(commands.Cog):
 
 
 def setup(bot: Bot):
-    bot.add_cog(Ready(bot))
+    bot.add_cog(Events(bot))
