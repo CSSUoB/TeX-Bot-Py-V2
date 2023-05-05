@@ -13,6 +13,8 @@ class Ping(commands.Cog):
 
     @commands.slash_command(description="Replies with Pong!")
     async def ping(self, ctx: ApplicationContext):
+        ctx.defer()
+
         logging.warning(f"{ctx.interaction.user} made me pong!!")
 
         try:

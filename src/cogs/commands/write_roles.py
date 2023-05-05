@@ -23,6 +23,8 @@ class Write_Roles(commands.Cog):
         description="Populates #roles with the correct messages."
     )
     async def write_roles(self, ctx: ApplicationContext):
+        ctx.defer()
+
         guild: Guild | None = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
         if guild is None:
             await ctx.respond(f"""⚠️There was an error when trying to send messages:⚠️️\n`Server with id \"{settings["DISCORD_GUILD_ID"]}\" does not exist.`""", ephemeral=True)
