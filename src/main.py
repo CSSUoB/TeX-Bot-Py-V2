@@ -7,12 +7,13 @@ bot = discord.Bot(debug_guilds=[settings["DISCORD_GUILD_ID"]])
 
 
 cogs_list = {
-    "events"
+    "events",
+    "commands"
 }
 cog: str
 for cog in cogs_list:
     bot.load_extension(f"cogs.{cog}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     bot.run(settings["DISCORD_BOT_TOKEN"])
