@@ -1,8 +1,10 @@
 import logging
 import random
 
-from discord import ApplicationContext, Bot, Guild, Member, Role, TextChannel, utils
+import discord
+from discord import ApplicationContext, Bot, Guild, Member, Role, TextChannel
 from discord.ext import commands
+
 from setup import settings
 
 
@@ -17,29 +19,33 @@ class Commands(commands.Cog):
     def __init__(self, bot: Bot):
         self.bot: Bot = bot
 
-    @commands.slash_command(description="Replies with Pong!")
+    @discord.slash_command(description="Replies with Pong!")
     async def ping(self, ctx: ApplicationContext):
         ctx.defer()
 
         logging.warning(f"{ctx.interaction.user} made me pong!!")
 
         try:
-            pong_text: str = random.choices([
-                "Pong!",
-                "64 bytes from TeX: icmp_seq=1 ttl=63 time=0.01 ms"
-            ], weights=settings["PING_COMMAND_EASTER_EGG_WEIGHTS"])[0]
+            pong_text: str = random.choices(
+                [
+                    "Pong!",
+                    "64 bytes from TeX: icmp_seq=1 ttl=63 time=0.01 ms"
+                ], weights=settings["PING_COMMAND_EASTER_EGG_WEIGHTS"]
+            )[0]
         except Exception:
             await ctx.respond("⚠️There was an error when trying to reply with Pong!!.⚠️", ephemeral=True)
             raise
         else:
             await ctx.respond(pong_text)
 
-    @commands.slash_command(description="Displays information about the source code of this bot.")
+    @discord.slash_command(description="Displays information about the source code of this bot.")
     async def source(self, ctx: ApplicationContext):
-        await ctx.respond("TeX is an open-source project made specifically for the CSS Discord! You can see and contribute to the source code at https://github.com/CSSUoB/TeX-Bot-Py")
+        await ctx.respond(
+            "TeX is an open-source project made specifically for the CSS Discord! You can see and contribute to the source code at https://github.com/CSSUoB/TeX-Bot-Py"
+        )
 
     # noinspection SpellCheckingInspection
-    @commands.slash_command(
+    @discord.slash_command(
         name="writeroles",
         description="Populates #roles with the correct messages."
     )
@@ -48,26 +54,41 @@ class Commands(commands.Cog):
 
         guild: Guild | None = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
         if guild is None:
-            await ctx.respond(f"""⚠️There was an error when trying to send messages:⚠️️\n`Server with id \"{settings["DISCORD_GUILD_ID"]}\" does not exist.`""", ephemeral=True)
+            await ctx.respond(
+                f"""⚠️There was an error when trying to send messages:⚠️️\n`Server with id \"{settings["DISCORD_GUILD_ID"]}\" does not exist.`""",
+                ephemeral=True
+            )
             return
 
-        roles_channel: TextChannel | None = utils.get(guild.text_channels, name="roles")
+        roles_channel: TextChannel | None = discord.utils.get(guild.text_channels, name="roles")
         if roles_channel is None:
-            await ctx.respond("⚠️There was an error when trying to send messages:⚠️️\n`Text channel with name \"roles\" does not exist.`", ephemeral=True)
+            await ctx.respond(
+                "⚠️There was an error when trying to send messages:⚠️️\n`Text channel with name \"roles\" does not exist.`",
+                ephemeral=True
+            )
             return
 
         guild_member: Member | None = await guild.fetch_member(ctx.user.id)
         if guild_member is None:
-            await ctx.respond("⚠️There was an error when trying to send messages:⚠️️\n`You must be a member of the CSS Discord server to run this command.`", ephemeral=True)
+            await ctx.respond(
+                "⚠️There was an error when trying to send messages:⚠️️\n`You must be a member of the CSS Discord server to run this command.`",
+                ephemeral=True
+            )
             return
 
-        committee_role: Role | None = utils.get(guild.roles, name="Committee")
+        committee_role: Role | None = discord.utils.get(guild.roles, name="Committee")
         if committee_role is None:
-            await ctx.respond("⚠️There was an error when trying to send messages:⚠️️\n`Role with name \"Committee\" does not exist.`", ephemeral=True)
+            await ctx.respond(
+                "⚠️There was an error when trying to send messages:⚠️️\n`Role with name \"Committee\" does not exist.`",
+                ephemeral=True
+            )
             return
 
         if committee_role not in guild_member.roles:
-            await ctx.respond("⚠️There was an error when trying to send messages:⚠️️\n`You must have the \"Committee\" role to run this command.`", ephemeral=True)
+            await ctx.respond(
+                "⚠️There was an error when trying to send messages:⚠️️\n`You must have the \"Committee\" role to run this command.`",
+                ephemeral=True
+            )
             return
 
         try:
