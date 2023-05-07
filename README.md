@@ -2,7 +2,7 @@
 
 TeX-Bot, but back in Python! This is a [Discord bot](https://discord.com/build/app-developers) used for managing the [CSS Discord server](https://cssbham.com/discord).
 
-# Error Codes
+## Error Codes
 
 Users of the bot may encounter error codes when attempting to execute slash-commands, the list of error code descriptions is given here:
 
@@ -12,7 +12,7 @@ Users of the bot may encounter error codes when attempting to execute slash-comm
 
 ## Dependencies
 
-Ensure you have [Poetry]([mypy](https://www.mypy-lang.org/)) & [mypy](https://www.mypy-lang.org/) installed, then navigate to the root folder and run the following command:
+Ensure that you have [Poetry](https://www.mypy-lang.org/) & [mypy](https://www.mypy-lang.org/) installed, then navigate to the root folder and run the following command:
 
 ```shell
 poetry install
