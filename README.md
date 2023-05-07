@@ -2,6 +2,14 @@
 
 TeX-Bot, but back in Python! This is a [Discord bot](https://discord.com/build/app-developers) used for managing the [CSS Discord server](https://cssbham.com/discord).
 
+# Error Codes
+
+Users of the bot may encounter error codes when attempting to execute slash-commands, the list of error code descriptions is given here:
+
+* `E1001` - The value for the environment variable `DISCORD_GUILD_ID` is an ID that references a Discord server that does not exist
+* `E1002` - The CSS Discord server does not contain a role with the name "Committee"
+* `E1003` - The CSS Discord server does not contain a text channel with the name "#roles" (required for the `\writeroles` command)
+
 ## Dependencies
 
 Ensure you have [Poetry]([mypy](https://www.mypy-lang.org/)) & [mypy](https://www.mypy-lang.org/) installed, then navigate to the root folder and run the following command:
