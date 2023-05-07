@@ -16,8 +16,8 @@ class Commands(commands.Cog):
         "_ _\nReact to this message to opt in to News notifications\n🔈- Get notifications when we `@News`\n🔇- Don't get notifications when we `@News`\n_ _\n> We will still use `@everyone` messages if there is something urgent",
     )
 
-    def __init__(self, bot: Bot):
-        self.bot: Bot = bot
+    def __init__(self, bot: TeXBot):
+        self.bot: TeXBot = bot
 
     @discord.slash_command(description="Replies with Pong!")
     async def ping(self, ctx: ApplicationContext):
@@ -102,5 +102,5 @@ class Commands(commands.Cog):
             await ctx.respond("All messages sent successfully.", ephemeral=True)
 
 
-def setup(bot: Bot):
+def setup(bot: TeXBot):
     bot.add_cog(Commands(bot))
