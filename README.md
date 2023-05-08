@@ -7,8 +7,10 @@ TeX-Bot, but back in Python! This is a [Discord bot](https://discord.com/build/a
 Users of the bot may encounter error codes when attempting to execute slash-commands, the list of error code descriptions is given here:
 
 * `E1001` - The value for the environment variable `DISCORD_GUILD_ID` is an ID that references a Discord server that does not exist
-* `E1002` - The CSS Discord server does not contain a role with the name "Committee"
-* `E1003` - The CSS Discord server does not contain a text channel with the name "#roles" (required for the `\writeroles` command)
+* `E2001` - The CSS Discord server does not contain a role with the name "Committee"
+* `E2002` - The CSS Discord server does not contain a role with the name "Guest"
+* `E3001` - The CSS Discord server does not contain a text channel with the name "#roles" (required for the `\writeroles` & `/induct` commands)
+* `E3002` - The CSS Discord server does not contain a text channel with the name "#general" (required for the `\induct` command)
 
 ## Dependencies
 
