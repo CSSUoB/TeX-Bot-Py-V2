@@ -71,12 +71,12 @@ async def autocomplete_get_members(ctx: discord.AutocompleteContext):
     return {OptionChoice(name=f"@{member.name}", value=str(member.id)) for member in members}
 
 
-async def induct(ctx: discord.ApplicationContext, member: Member, guild: Guild, silent: bool):
+async def induct(ctx: discord.ApplicationContext, induction_member: Member, guild: Guild, silent: bool):
     interaction_member: Member | None = await guild.fetch_member(ctx.user.id)
     if interaction_member is None:
         await send_error(
             ctx,
-            command_name="edit_message",
+            command_name="induct",
             message="You must be a member of the CSS Discord server to run this command."
         )
         return
@@ -84,7 +84,7 @@ async def induct(ctx: discord.ApplicationContext, member: Member, guild: Guild, 
     try:
         committee_role: Role = ctx.bot.committee_role  # type: ignore
     except RoleDoesNotExist as committee_role_error:
-        await send_error(ctx, error_code="E2001", command_name="edit_message")
+        await send_error(ctx, error_code="E2001", command_name="induct")
         traceback.print_exception(committee_role_error)
         await ctx.bot.close()
         raise
@@ -92,7 +92,7 @@ async def induct(ctx: discord.ApplicationContext, member: Member, guild: Guild, 
     if committee_role not in interaction_member.roles:
         await send_error(
             ctx,
-            command_name="edit_message",
+            command_name="induct",
             message="You must have the \"Committee\" role to run this command."
         )
         return
@@ -105,14 +105,14 @@ async def induct(ctx: discord.ApplicationContext, member: Member, guild: Guild, 
         await ctx.bot.close()
         raise
 
-    if guest_role in member.roles:
+    if guest_role in induction_member.roles:
         await ctx.respond(
             "ℹ️No changes made. User has already been inducted.ℹ️",
             ephemeral=True
         )
         return
 
-    if member.bot:
+    if induction_member.bot:
         await send_error(
             ctx,
             command_name="induct",
@@ -120,7 +120,7 @@ async def induct(ctx: discord.ApplicationContext, member: Member, guild: Guild, 
         )
         return
 
-    await member.add_roles(
+    await induction_member.add_roles(
         guest_role,  # type: ignore
         reason=f"{ctx.user} used TeX Bot slash-command: /induct"
     )
@@ -143,7 +143,7 @@ async def induct(ctx: discord.ApplicationContext, member: Member, guild: Guild, 
             raise
 
         await general_channel.send(
-            f"Hey {member.mention}, welcome to CSS! :tada: Remember to grab your roles in {roles_channel.mention} and say hello to everyone here! :wave:"
+            f"Hey {induction_member.mention}, welcome to CSS! :tada: Remember to grab your roles in {roles_channel.mention} and say hello to everyone here! :wave:"
         )
 
     await ctx.respond("User inducted successfully.", ephemeral=True)
