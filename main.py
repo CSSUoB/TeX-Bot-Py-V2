@@ -1,5 +1,5 @@
 import discord
-from discord import Guild, Role, TextChannel
+from discord import Guild, Intents, Role, TextChannel
 
 from exceptions import CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, RolesChannelDoesNotExist
 from setup import settings
@@ -50,8 +50,12 @@ class TeXBot(discord.Bot):
 
         return self._general_channel
 
-bot = TeXBot()
 
+intents: Intents = Intents.default()
+# noinspection PyDunderSlots,PyUnresolvedReferences
+intents.members = True
+
+bot = TeXBot(intents=intents)
 
 cogs_list = {
     "events",

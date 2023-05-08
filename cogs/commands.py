@@ -1,9 +1,9 @@
-import logging
 import random
 import re
+import traceback
 
 import discord
-from discord import ApplicationContext, Forbidden, Member, Message, NotFound, OptionChoice, Permissions, Role, TextChannel
+from discord import ApplicationContext, Forbidden, Guild, Member, Message, NotFound, OptionChoice, Permissions, Role, TextChannel
 from discord.ext import commands
 
 from exceptions import ChannelDoesNotExist, GuildDoesNotExist, RoleDoesNotExist
@@ -38,7 +38,7 @@ async def autocomplete_get_channels(ctx: discord.AutocompleteContext):
         return set()
 
     try:
-        guild = ctx.bot.css_guild  # type: ignore
+        guild: Guild = ctx.bot.css_guild  # type: ignore
     except GuildDoesNotExist:
         return set()
 
@@ -46,11 +46,119 @@ async def autocomplete_get_channels(ctx: discord.AutocompleteContext):
     if channel_permissions_limiter is None:
         return set()
 
-    guild_member: Member | None = await guild.fetch_member(ctx.interaction.user.id)
-    if guild_member:
-        channel_permissions_limiter = guild_member
+    interaction_member: Member | None = await guild.fetch_member(ctx.interaction.user.id)
+    if interaction_member:
+        channel_permissions_limiter = interaction_member
 
     return {OptionChoice(name=f"#{channel.name}", value=str(channel.id)) for channel in guild.text_channels if channel.permissions_for(channel_permissions_limiter).is_superset(Permissions(send_messages=True, view_channel=True))}
+
+
+async def autocomplete_get_members(ctx: discord.AutocompleteContext):
+    try:
+        guild: Guild = ctx.bot.css_guild  # type: ignore
+    except GuildDoesNotExist:
+        return set()
+
+    members: set[Member] = {member for member in guild.members if not member.bot}
+
+    try:
+        guest_role: Role = ctx.bot.guest_role  # type: ignore
+    except RoleDoesNotExist:
+        pass
+    else:
+        members = {member for member in members if guest_role not in member.roles}
+
+    return {OptionChoice(name=f"@{member.name}", value=str(member.id)) for member in members}
+
+
+async def induct(ctx: discord.ApplicationContext, member: Member, guild: Guild, silent: bool):
+    interaction_member: Member | None = await guild.fetch_member(ctx.user.id)
+    if interaction_member is None:
+        await send_error(
+            ctx,
+            command_name="edit_message",
+            message="You must be a member of the CSS Discord server to run this command."
+        )
+        return
+
+    try:
+        committee_role: Role = ctx.bot.committee_role  # type: ignore
+    except RoleDoesNotExist as committee_role_error:
+        await send_error(ctx, error_code="E2001", command_name="edit_message")
+        traceback.print_exception(committee_role_error)
+        await ctx.bot.close()
+        raise
+
+    if committee_role not in interaction_member.roles:
+        await send_error(
+            ctx,
+            command_name="edit_message",
+            message="You must have the \"Committee\" role to run this command."
+        )
+        return
+
+    try:
+        guest_role: Role = ctx.bot.guest_role  # type: ignore
+    except RoleDoesNotExist as guest_role_error:
+        await send_error(ctx, error_code="E2002", command_name="induct")
+        traceback.print_exception(guest_role_error)
+        await ctx.bot.close()
+        raise
+
+    if guest_role in member.roles:
+        await ctx.respond(
+            "ℹ️No changes made. User has already been inducted.ℹ️",
+            ephemeral=True
+        )
+        return
+
+    if member.bot:
+        await send_error(
+            ctx,
+            command_name="induct",
+            message=f"Member cannot be inducted because they are a bot."
+        )
+        return
+
+    await member.add_roles(
+        guest_role,  # type: ignore
+        reason=f"{ctx.user} used TeX Bot slash-command: /induct"
+    )
+
+    if not silent:
+        try:
+            roles_channel: TextChannel = ctx.bot.roles_channel  # type: ignore
+        except ChannelDoesNotExist as roles_channel_error:
+            await send_error(ctx, error_code="E3001", command_name="induct")
+            traceback.print_exception(roles_channel_error)
+            await ctx.bot.close()
+            raise
+
+        try:
+            general_channel: TextChannel = ctx.bot.general_channel  # type: ignore
+        except ChannelDoesNotExist as general_channel_error:
+            await send_error(ctx, error_code="E3002", command_name="induct")
+            traceback.print_exception(general_channel_error)
+            await ctx.bot.close()
+            raise
+
+        await general_channel.send(
+            f"Hey {member.mention}, welcome to CSS! :tada: Remember to grab your roles in {roles_channel.mention} and say hello to everyone here! :wave:"
+        )
+
+    await ctx.respond("User inducted successfully.", ephemeral=True)
+
+
+async def user_command_induct(ctx: ApplicationContext, member: Member, silent: bool):
+    try:
+        guild: Guild = ctx.bot.css_guild  # type: ignore
+    except GuildDoesNotExist as guild_error:
+        await send_error(ctx, error_code="E1001", command_name="induct")
+        traceback.print_exception(guild_error)
+        await ctx.bot.close()
+        raise
+
+    await induct(ctx, member, guild, silent)
 
 
 class Commands(commands.Cog):
@@ -60,10 +168,11 @@ class Commands(commands.Cog):
         "_ _\nReact to this message to join the **opt in channels**\n💬 - Serious Talk\n🏡 - Housing\n🎮 - Gaming\n📺 - Anime\n⚽ - Sport\n💼 - Industry\n⛏️ - Minecraft\n🌐 - CSS Website\n🔖 - Archivist",
         "_ _\nReact to this message to opt in to News notifications\n🔈- Get notifications when we `@News`\n🔇- Don't get notifications when we `@News`\n_ _\n> We will still use `@everyone` messages if there is something urgent",
     )
-    ERROR_ACTIVITIES = {
+    ERROR_ACTIVITIES: dict[str, str] = {
         "ping": "reply with Pong!!",
         "write_roles": "send messages",
-        "edit_message": "edit the message"
+        "edit_message": "edit the message",
+        "induct": "induct user"
     }
 
     def __init__(self, bot: TeXBot):
@@ -71,8 +180,6 @@ class Commands(commands.Cog):
 
     @discord.slash_command(description="Replies with Pong!")
     async def ping(self, ctx: ApplicationContext):
-        logging.warning(f"{ctx.interaction.user} made me pong!!")
-
         await ctx.respond(
             random.choices(
                 [
@@ -96,13 +203,15 @@ class Commands(commands.Cog):
     )
     async def write_roles(self, ctx: ApplicationContext):
         try:
-            guild = self.bot.css_guild
-        except GuildDoesNotExist:
+            guild: Guild = self.bot.css_guild
+        except GuildDoesNotExist as guild_error:
             await send_error(ctx, error_code="E1001", command_name="write_roles")
+            traceback.print_exception(guild_error)
+            await ctx.bot.close()
             raise
 
-        guild_member: Member | None = await guild.fetch_member(ctx.user.id)
-        if guild_member is None:
+        interaction_member: Member | None = await guild.fetch_member(ctx.user.id)
+        if interaction_member is None:
             await send_error(
                 ctx,
                 command_name="write_roles",
@@ -111,12 +220,14 @@ class Commands(commands.Cog):
             return
 
         try:
-            committee_role = self.bot.committee_role
-        except RoleDoesNotExist:
-            await send_error(ctx, error_code="E1002", command_name="write_roles")
+            committee_role: Role = self.bot.committee_role
+        except RoleDoesNotExist as committee_role_error:
+            await send_error(ctx, error_code="E2001", command_name="write_roles")
+            traceback.print_exception(committee_role_error)
+            await ctx.bot.close()
             raise
 
-        if committee_role not in guild_member.roles:
+        if committee_role not in interaction_member.roles:
             await send_error(
                 ctx,
                 command_name="write_roles",
@@ -125,9 +236,11 @@ class Commands(commands.Cog):
             return
 
         try:
-            roles_channel = self.bot.roles_channel
-        except ChannelDoesNotExist:
-            await send_error(ctx, error_code="E1003", command_name="write_roles")
+            roles_channel: TextChannel = self.bot.roles_channel
+        except ChannelDoesNotExist as roles_channel_error:
+            await send_error(ctx, error_code="E3001", command_name="write_roles")
+            traceback.print_exception(roles_channel_error)
+            await ctx.bot.close()
             raise
 
         roles_message: str
@@ -189,9 +302,11 @@ class Commands(commands.Cog):
         message_id: int = int(str_message_id)
 
         try:
-            guild = self.bot.css_guild
-        except GuildDoesNotExist:
+            guild: Guild = self.bot.css_guild
+        except GuildDoesNotExist as guild_error:
             await send_error(ctx, error_code="E1001", command_name="edit_message")
+            traceback.print_exception(guild_error)
+            await ctx.bot.close()
             raise
 
         channel: TextChannel | None = discord.utils.get(guild.text_channels, id=channel_id)
@@ -203,8 +318,8 @@ class Commands(commands.Cog):
             )
             return
 
-        guild_member: Member | None = await guild.fetch_member(ctx.user.id)
-        if guild_member is None:
+        interaction_member: Member | None = await guild.fetch_member(ctx.user.id)
+        if interaction_member is None:
             await send_error(
                 ctx,
                 command_name="edit_message",
@@ -213,12 +328,14 @@ class Commands(commands.Cog):
             return
 
         try:
-            committee_role = self.bot.committee_role
-        except RoleDoesNotExist:
-            await send_error(ctx, error_code="E1002", command_name="edit_message")
+            committee_role: Role = self.bot.committee_role
+        except RoleDoesNotExist as committee_role_error:
+            await send_error(ctx, error_code="E2001", command_name="edit_message")
+            traceback.print_exception(committee_role_error)
+            await ctx.bot.close()
             raise
 
-        if committee_role not in guild_member.roles:
+        if committee_role not in interaction_member.roles:
             await send_error(
                 ctx,
                 command_name="edit_message",
@@ -247,6 +364,63 @@ class Commands(commands.Cog):
             return
         else:
             await ctx.respond("Message edited successfully.", ephemeral=True)
+
+    @discord.slash_command(
+        name="induct",
+        description="Gives a user the @Guest role, then sends a message in #general saying hello."
+    )
+    @discord.option(
+        name="user",
+        description="The user to induct.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),
+        required=True,
+        parameter_name="str_induct_member_id"
+    )
+    @discord.option(
+        name="silent",
+        description="Triggers whether a message is sent or not.",
+        input_type=bool,
+        default=False,
+        required=False
+    )
+    async def slash_command_induct(self, ctx: ApplicationContext, str_induct_member_id: str, silent: bool):
+        if not re.match(r"\A\d{17,20}\Z", str_induct_member_id):
+            await send_error(
+                ctx,
+                command_name="induct",
+                message=f"\"{str_induct_member_id}\" is not a valid user ID."
+            )
+            return
+
+        induct_member_id: int = int(str_induct_member_id)
+
+        try:
+            guild: Guild = self.bot.css_guild
+        except GuildDoesNotExist as guild_error:
+            await send_error(ctx, error_code="E1001", command_name="induct")
+            traceback.print_exception(guild_error)
+            await ctx.bot.close()
+            raise
+
+        induct_member: Member | None = await guild.fetch_member(induct_member_id)
+        if induct_member is None:
+            await send_error(
+                ctx,
+                command_name="induct",
+                message=f"Member with ID \"{induct_member_id}\" does not exist."
+            )
+            return
+
+        await induct(ctx, induct_member, guild, silent)
+
+    @discord.user_command(name="Induct User")
+    async def non_silent_user_command_induct(self, ctx: ApplicationContext, member: Member):
+        await user_command_induct(ctx, member, silent=False)
+
+    @discord.user_command(name="Silently Induct User")
+    async def silent_user_command_induct(self, ctx: ApplicationContext, member: Member):
+        await user_command_induct(ctx, member, silent=True)
 
 
 def setup(bot: TeXBot):
