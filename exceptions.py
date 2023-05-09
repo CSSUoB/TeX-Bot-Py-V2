@@ -1,4 +1,5 @@
-from typing import Collection, Iterable
+import abc
+from typing import Any, Collection, Iterable
 
 
 def format_does_not_exist_with_dependant_commands(value: str, does_not_exist_type: str, dependant_commands: Collection[str]) -> str:
@@ -39,7 +40,65 @@ class ImproperlyConfigured(Exception):
     pass
 
 
-class GuildDoesNotExist(ValueError):
+class ErrorCodeMixin(Exception, abc.ABC):
+    # noinspection PyPropertyDefinition
+    @classmethod  # type: ignore
+    @property
+    @abc.abstractmethod
+    def DEFAULT_MESSAGE(cls) -> str:
+        raise NotImplementedError
+
+    @property
+    def message(self) -> str:
+        raise NotImplementedError
+
+    @message.setter
+    @abc.abstractmethod
+    def message(self, value: str) -> None:
+        raise NotImplementedError
+
+    def __init__(self, message: str | None = None) -> None:
+        self.message: str = message or self.DEFAULT_MESSAGE
+
+        super().__init__(message or self.DEFAULT_MESSAGE)
+
+    def __repr__(self) -> str:
+        formatted: str = self.message
+
+        attributes: set[str] = set(self.__dict__)
+        attributes.discard("message")
+        if attributes:
+            formatted += f""" ({", ".join({f"{attribute=}" for attribute in attributes})})"""
+
+        return formatted
+
+
+class InvalidMessagesJSONFile(KeyError, ErrorCodeMixin):
+    DEFAULT_MESSAGE: str = "The messages JSON file has an invalid structure at the given key."
+
+    def __init__(self, message: str | None = None, dict_key: str | None = None) -> None:
+        self.dict_key: str | None = dict_key
+
+        super().__init__(message)
+
+
+class MessagesJSONFileMissingKey(InvalidMessagesJSONFile):
+    DEFAULT_MESSAGE: str = "The messages JSON file is missing a required key."
+
+    def __init__(self, message: str | None = None, missing_key: str | None = None) -> None:
+        super().__init__(message, dict_key=missing_key)
+
+
+class MessagesJSONFileValueError(InvalidMessagesJSONFile):
+    DEFAULT_MESSAGE: str = "The messages JSON file has an invalid value."
+
+    def __init__(self, message: str | None = None, dict_key: str | None = None, invalid_value: Any | None = None) -> None:
+        self.invalid_value: Any | None = invalid_value
+
+        super().__init__(message, dict_key)
+
+
+class GuildDoesNotExist(ValueError, ErrorCodeMixin):
     DEFAULT_MESSAGE: str = "Server with given ID does not exist"
 
     def __init__(self, message: str | None = None, guild_id: int | None = None) -> None:
@@ -48,19 +107,10 @@ class GuildDoesNotExist(ValueError):
         if guild_id and not message:
             message = f"Server with ID \"{guild_id}\" does not exist."
 
-        self.message: str = message or self.DEFAULT_MESSAGE
-
-        super().__init__(message or self.DEFAULT_MESSAGE)
-
-    def __str__(self) -> str:
-        if self.guild_id and str(self.guild_id) not in self.message:
-            return f"{self.message} (guild_id={repr(self.guild_id)})"
-
-        else:
-            return self.message
+        super().__init__(message)
 
 
-class RoleDoesNotExist(ValueError):
+class RoleDoesNotExist(ValueError, ErrorCodeMixin):
     DEFAULT_MESSAGE: str = "Role with given name does not exist"
 
     def __init__(self, message: str | None = None, role_name: str | None = None, dependant_commands: Collection[str] | None = None) -> None:
@@ -73,16 +123,7 @@ class RoleDoesNotExist(ValueError):
             else:
                 message = f"Role with name \"{role_name}\" does not exist."
 
-        self.message: str = message or self.DEFAULT_MESSAGE
-
-        super().__init__(message or self.DEFAULT_MESSAGE)
-
-    def __str__(self) -> str:
-        if self.role_name is None or self.role_name not in self.message:
-            return f"{self.message} (role_name={repr(self.role_name)}, dependant_commands={repr(self.dependant_commands)})"
-
-        else:
-            return self.message
+        super().__init__(message)
 
 
 class CommitteeRoleDoesNotExist(RoleDoesNotExist):
@@ -97,7 +138,13 @@ class GuestRoleDoesNotExist(RoleDoesNotExist):
         super().__init__(message, role_name="Guest", dependant_commands={"induct"})
 
 
-class ChannelDoesNotExist(ValueError):
+class MemberRoleDoesNotExist(RoleDoesNotExist):
+    def __init__(self, message: str | None = None) -> None:
+        # noinspection SpellCheckingInspection
+        super().__init__(message, role_name="Member", dependant_commands={"makemember"})
+
+
+class ChannelDoesNotExist(ValueError, ErrorCodeMixin):
     DEFAULT_MESSAGE: str = "Channel with given name does not exist"
 
     def __init__(self, message: str | None = None, channel_name: str | None = None, dependant_commands: Collection[str] | None = None) -> None:
@@ -110,22 +157,13 @@ class ChannelDoesNotExist(ValueError):
             else:
                 message = f"Channel with name \"{channel_name}\" does not exist."
 
-        self.message: str = message or self.DEFAULT_MESSAGE
-
-        super().__init__(message or self.DEFAULT_MESSAGE)
-
-    def __str__(self) -> str:
-        if self.channel_name is None or self.channel_name not in self.message:
-            return f"{self.message} (channel_name={repr(self.channel_name)}, dependant_commands={repr(self.dependant_commands)})"
-
-        else:
-            return self.message
+        super().__init__(message)
 
 
 class RolesChannelDoesNotExist(ChannelDoesNotExist):
     def __init__(self, message: str | None = None) -> None:
         # noinspection SpellCheckingInspection
-        super().__init__(message, channel_name="roles", dependant_commands={"writeroles", "induct"})
+        super().__init__(message, channel_name="roles", dependant_commands={"writeroles"})
 
 
 class GeneralChannelDoesNotExist(ChannelDoesNotExist):

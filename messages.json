@@ -1,0 +1,42 @@
+{
+    "welcome_messages": [
+        "<User> just joined the CSS server!",
+        "<User> just joined. Everyone, look busy!",
+        "<User> joined the CSS party.",
+        "Ermagherd. <User> is here.",
+        "Welcome, <User>. Stay awhile and hang with us CSS folk.",
+        "Welcome, <User>. We were expecting you ( ͡° ͜ʖ ͡°)",
+        "Welcome, <User>. We hope you brought pizza to CSS.",
+        "Welcome <User>. Leave your weapons by the CSS door.",
+        "A wild <User> appeared.",
+        "Swoooosh. <User> just landed in CSS.",
+        "Brace yourselves. <User> just joined the CSS server.",
+        "<User> just joined. Hide your bananas.",
+        "<User> just arrived. Seems OP - please nerf.",
+        "<User> just slid into the CSS server.",
+        "A <User> has spawned in the CCS server.",
+        "Where’s <User>? In the CSS server!",
+        "<User> hopped into the CSS server. Kangaroo!!",
+        "<User> just showed up. Hold my beer.",
+        "Challenger approaching - <User> has appeared!",
+        "It's a bird! It's a plane! Nevermind, it's just <User>.",
+        "It's <User>! Praise the sun!",
+        "Never gonna give <User> up. Never gonna let <User> down.",
+        "Ha! <User> has joined CSS! You activated my trap card!",
+        "Cheers, love! <User>'s here!",
+        "Hey! Listen! <User> has joined the CSS server!",
+        "It's dangerous to go alone in CSS, take <User>!",
+        "<User> has joined the CSS server! It's super effective!",
+        "<User> is here, as the CSS prophecy foretold.",
+        "<User> is here to kick CSS butt and chew bubblegum. And <User> is all out of gum.",
+        "Hello. Is it <User> you're looking for?",
+        "Roses are red, violets are blue, <User> joined the CCS server for you",
+        "Hey <User>, welcome to CSS!"
+    ],
+    "roles_messages": [
+        "_ _\nReact to this message to get pronoun roles\n:regional_indicator_h: - He/Him\n:regional_indicator_s: - She/Her\n:regional_indicator_t: - They/Them",
+        "_ _\nReact to this message to get year group roles\n:zero: - Foundation Year\n:one: - First Year\n:two: - Second Year\n:regional_indicator_f: - Final Year (incl. 3rd Year MSci/MEng)\n:regional_indicator_i: - Year in Industry\n:regional_indicator_a: - Year Abroad\n:regional_indicator_t: - Post-Graduate Taught (Masters/MSc)\n:regional_indicator_r: - Post-Graduate Research (PhD)\n:a: - Alumnus\n:regional_indicator_d: - Postdoc",
+        "_ _\nReact to this message to join the **opt in channels**\n:speech_balloon: - Serious Talk\n:house_with_garden: - Housing\n:video_game: - Gaming\n:tv: - Anime\n:soccer: - Sport\n:briefcase: - Industry\n:pick: - Minecraft\n:globe_with_meridians: - CSS Website\n:bookmark: - Archivist",
+        "_ _\nReact to this message to opt in to News notifications\n:speaker: - Get notifications when we `@News`\n:mute:- Don't get notifications when we `@News`\n\n> We will still use `@everyone` messages if there is something urgent"
+    ]
+}

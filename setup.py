@@ -1,11 +1,11 @@
 import logging
 import os
 import re
+from pathlib import Path
 from typing import Any
 
-import discord
 import dotenv
-from discord import Object, Permissions
+import validators  # type: ignore
 
 from exceptions import ImproperlyConfigured
 
@@ -35,6 +35,22 @@ if not 100 >= ping_command_easter_egg_probability >= 0:
     raise ImproperlyConfigured("PING_COMMAND_EASTER_EGG_PROBABILITY must be a value between & including 1 & 0.")
 settings["PING_COMMAND_EASTER_EGG_WEIGHTS"] = (100 - ping_command_easter_egg_probability, ping_command_easter_egg_probability)
 
+settings["MESSAGES_FILE_PATH"] = Path(str(os.getenv("WELCOME_MESSAGES_FILE_PATH", "messages.json")))
+if not settings["MESSAGES_FILE_PATH"].is_file():
+    raise ImproperlyConfigured("MESSAGES_FILE_PATH must be a path to a file that exists.")
+if not settings["MESSAGES_FILE_PATH"].suffix == ".json":
+    raise ImproperlyConfigured("MESSAGES_FILE_PATH must be a path to a JSON file.")
+
+settings["MADE_MEMBERS_FILE_PATH"] = Path(str(os.getenv("MADE_MEMBERS_FILE_PATH", "made_members.json")))
+if not settings["MADE_MEMBERS_FILE_PATH"].suffix == ".json":
+    raise ImproperlyConfigured("MADE_MEMBERS_FILE_PATH must be a path to a JSON file.")
+
+settings["MEMBERS_PAGE_URL"] = str(os.getenv("MEMBERS_PAGE_URL"))
+if not validators.url(settings["MEMBERS_PAGE_URL"]):
+    raise ImproperlyConfigured("MEMBERS_PAGE_URL must be a valid URL.")
+
+settings["MEMBERS_PAGE_COOKIE"] = str(os.getenv("MEMBERS_PAGE_COOKIE"))
+
 LOG_LEVEL: str = str(os.getenv("LOG_LEVEL", "INFO")).upper()
 if LOG_LEVEL not in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}:
     raise ImproperlyConfigured("LOG_LEVEL must be one of: \"DEBUG\", \"INFO\", \"WARNING\", \"ERROR\" or \"CRITICAL\"")
@@ -43,23 +59,3 @@ logging.basicConfig(
     level=getattr(logging, LOG_LEVEL),
     format="%(levelname)s | %(module)s: %(message)s"
 )
-
-
-def get_oauth_url():
-    return discord.utils.oauth_url(
-        client_id=settings["DISCORD_BOT_APPLICATION_ID"],
-        permissions=Permissions(
-            manage_roles=True,
-            read_messages=True,
-            send_messages=True,
-            manage_messages=True,
-            embed_links=True,
-            read_message_history=True,
-            mention_everyone=True,
-            add_reactions=True,
-            use_slash_commands=True
-        ),
-        guild=Object(id=settings["DISCORD_GUILD_ID"]),
-        scopes={"bot", "applications.commands"},
-        disable_guild_select=True
-    )
