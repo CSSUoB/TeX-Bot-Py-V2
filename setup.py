@@ -31,7 +31,7 @@ settings["DISCORD_GUILD_ID"] = int(_str_DISCORD_GUILD_ID)
 try:
     ping_command_easter_egg_probability = 100 * float(os.getenv("PING_COMMAND_EASTER_EGG_PROBABILITY", "0.01"))
 except ValueError as e:
-    raise ImproperlyConfigured("PING_COMMAND_EASTER_EGG_PROBABILITY must be of type float.") from e
+    raise ImproperlyConfigured("PING_COMMAND_EASTER_EGG_PROBABILITY must be a float.") from e
 if not 100 >= ping_command_easter_egg_probability >= 0:
     raise ImproperlyConfigured("PING_COMMAND_EASTER_EGG_PROBABILITY must be a value between & including 1 & 0.")
 settings["PING_COMMAND_EASTER_EGG_WEIGHTS"] = (100 - ping_command_easter_egg_probability, ping_command_easter_egg_probability)
