@@ -120,33 +120,68 @@ async def induct(ctx: discord.ApplicationContext, induction_member: Member, guil
         )
         return
 
-    await induction_member.add_roles(
-        guest_role,  # type: ignore
-        reason=f"{ctx.user} used TeX Bot slash-command: /induct"
-    )
+        if not silent:
+            general_channel: TextChannel | None = self.bot.general_channel
+            if general_channel is None:
+                await self.send_error(
+                    ctx,
+                    error_code="E1032",
+                    command_name="induct",
+                    logging_message=str(GeneralChannelDoesNotExist())
+                )
+                return
 
-    if not silent:
-        try:
-            roles_channel: TextChannel = ctx.bot.roles_channel  # type: ignore
-        except ChannelDoesNotExist as roles_channel_error:
-            await send_error(ctx, error_code="E3001", command_name="induct")
-            traceback.print_exception(roles_channel_error)
-            await ctx.bot.close()
-            raise
+            async with aiofiles.open(settings["MESSAGES_FILE_PATH"], "r", encoding="utf8") as messages_file:
+                try:
+                    messages_dict: dict = json.loads(
+                        await messages_file.read()
+                    )
+                except json.JSONDecodeError as messages_file_error:
+                    await self.send_error(
+                        ctx,
+                        error_code="E1051",
+                        command_name="induct"
+                    )
+                    logging.critical(messages_file_error)
+                    await self.bot.close()
+                    return
 
-        try:
-            general_channel: TextChannel = ctx.bot.general_channel  # type: ignore
-        except ChannelDoesNotExist as general_channel_error:
-            await send_error(ctx, error_code="E3002", command_name="induct")
-            traceback.print_exception(general_channel_error)
-            await ctx.bot.close()
-            raise
+            if "welcome_messages" not in messages_dict:
+                await self.send_error(
+                    ctx,
+                    error_code="E1053",
+                    command_name="induct"
+                )
+                logging.critical(MessagesJSONFileMissingKey(missing_key="welcome_messages"))
+                await self.bot.close()
+                return
 
-        await general_channel.send(
-            f"Hey {induction_member.mention}, welcome to CSS! :tada: Remember to grab your roles in {roles_channel.mention} and say hello to everyone here! :wave:"
+            if not isinstance(messages_dict["welcome_messages"], list) or not messages_dict["welcome_messages"]:
+                await self.send_error(
+                    ctx,
+                    error_code="E1053",
+                    command_name="induct"
+                )
+                logging.critical(MessagesJSONFileValueError(dict_key="welcome_messages", invalid_value=messages_dict["welcome_messages"]))
+                await self.bot.close()
+                return
+
+            roles_channel_mention: str = "`#roles`"
+
+            roles_channel: TextChannel | None = self.bot.roles_channel
+            if roles_channel:
+                roles_channel_mention = roles_channel.mention
+
+            await general_channel.send(
+                f"""{random.choice(messages_dict["welcome_messages"]).replace("<User>", induction_member.mention).strip()} :tada:\nRemember to grab your roles in {roles_channel_mention} and say hello to everyone here! :wave:"""
+            )
+
+        await induction_member.add_roles(
+            guest_role,  # type: ignore
+            reason=f"{ctx.user} used TeX Bot slash-command: /induct"
         )
 
-    await ctx.respond("User inducted successfully.", ephemeral=True)
+        await ctx.respond("User inducted successfully.", ephemeral=True)
 
 
 async def user_command_induct(ctx: ApplicationContext, member: Member, silent: bool):
