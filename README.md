@@ -8,14 +8,11 @@ Users of the bot may encounter error codes when attempting to execute slash-comm
 
 * `E1011` - The value for the environment variable `DISCORD_GUILD_ID` is an ID that references a Discord server that does not exist
 * `E1021` - The CSS Discord server does not contain a role with the name "Committee" (required for the `/writeroles`, `/editmessage` & `/induct` commands)
-* `E1022` - The CSS Discord server does not contain a role with the name "Guest" (required for the `/induct` command)
+* `E1022` - The CSS Discord server does not contain a role with the name "Guest" (required for the `/induct` & `/makemember` commands)
 * `E1023` - The CSS Discord server does not contain a role with the name "Member" (required for the `/makemember` command)
 * `E1031` - The CSS Discord server does not contain a text channel with the name "#roles" (required for the `/writeroles` command)
 * `E1032` - The CSS Discord server does not contain a text channel with the name "#general" (required for the `/induct` command)
 * `E1041` - The guild member IDs could not be retrieved from the MEMBERS_PAGE_URL
-* `E1051` - The messages JSON file could not be correctly decoded (required for the `/writeroles` & `/induct` commands)
-* `E1052` - The messages JSON file does not contain a list of roles messages at the key `"roles_messages"` (required for the `/writeroles` command)
-* `E1053` - The messages JSON file does not contain a list of welcome messages at the key `"welcome_messages"` (required for the `/induct` command)
 
 ## Dependencies
 

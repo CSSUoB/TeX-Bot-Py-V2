@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import re
@@ -7,7 +8,7 @@ from typing import Any
 import dotenv
 import validators  # type: ignore
 
-from exceptions import ImproperlyConfigured
+from exceptions import ImproperlyConfigured, MessagesJSONFileMissingKey, MessagesJSONFileValueError
 
 dotenv.load_dotenv()
 
@@ -35,11 +36,29 @@ if not 100 >= ping_command_easter_egg_probability >= 0:
     raise ImproperlyConfigured("PING_COMMAND_EASTER_EGG_PROBABILITY must be a value between & including 1 & 0.")
 settings["PING_COMMAND_EASTER_EGG_WEIGHTS"] = (100 - ping_command_easter_egg_probability, ping_command_easter_egg_probability)
 
-settings["MESSAGES_FILE_PATH"] = Path(str(os.getenv("WELCOME_MESSAGES_FILE_PATH", "messages.json")))
-if not settings["MESSAGES_FILE_PATH"].is_file():
+_path_MESSAGES_FILE_PATH = Path(str(os.getenv("MESSAGES_FILE_PATH", "messages.json")))
+if not _path_MESSAGES_FILE_PATH.is_file():
     raise ImproperlyConfigured("MESSAGES_FILE_PATH must be a path to a file that exists.")
-if not settings["MESSAGES_FILE_PATH"].suffix == ".json":
+if not _path_MESSAGES_FILE_PATH.suffix == ".json":
     raise ImproperlyConfigured("MESSAGES_FILE_PATH must be a path to a JSON file.")
+
+with open(_path_MESSAGES_FILE_PATH, "r", encoding="utf8") as messages_file:
+    try:
+        messages_dict: dict = json.load(messages_file)
+    except json.JSONDecodeError as messages_file_error:
+        raise ImproperlyConfigured("Messages JSON file must contain a JSON string that can be decoded into a Python dict object.") from messages_file_error
+
+if "welcome_messages" not in messages_dict:
+    raise MessagesJSONFileMissingKey(missing_key="welcome_messages")
+if not isinstance(messages_dict["welcome_messages"], list) or not messages_dict["welcome_messages"]:
+    raise MessagesJSONFileValueError(dict_key="welcome_messages", invalid_value=messages_dict["welcome_messages"])
+settings["WELCOME_MESSAGES"] = messages_dict["welcome_messages"]
+
+if "roles_messages" not in messages_dict:
+    raise MessagesJSONFileMissingKey(missing_key="roles_messages")
+if not isinstance(messages_dict["roles_messages"], list) or not messages_dict["roles_messages"]:
+    raise MessagesJSONFileValueError(dict_key="roles_messages", invalid_value=messages_dict["roles_messages"])
+settings["ROLES_MESSAGES"] = messages_dict["roles_messages"]
 
 settings["MADE_MEMBERS_FILE_PATH"] = Path(str(os.getenv("MADE_MEMBERS_FILE_PATH", "made_members.json")))
 if not settings["MADE_MEMBERS_FILE_PATH"].suffix == ".json":

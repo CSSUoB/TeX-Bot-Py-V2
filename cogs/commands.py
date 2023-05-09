@@ -131,41 +131,6 @@ async def induct(ctx: discord.ApplicationContext, induction_member: Member, guil
                 )
                 return
 
-            async with aiofiles.open(settings["MESSAGES_FILE_PATH"], "r", encoding="utf8") as messages_file:
-                try:
-                    messages_dict: dict = json.loads(
-                        await messages_file.read()
-                    )
-                except json.JSONDecodeError as messages_file_error:
-                    await self.send_error(
-                        ctx,
-                        error_code="E1051",
-                        command_name="induct"
-                    )
-                    logging.critical(messages_file_error)
-                    await self.bot.close()
-                    return
-
-            if "welcome_messages" not in messages_dict:
-                await self.send_error(
-                    ctx,
-                    error_code="E1053",
-                    command_name="induct"
-                )
-                logging.critical(MessagesJSONFileMissingKey(missing_key="welcome_messages"))
-                await self.bot.close()
-                return
-
-            if not isinstance(messages_dict["welcome_messages"], list) or not messages_dict["welcome_messages"]:
-                await self.send_error(
-                    ctx,
-                    error_code="E1053",
-                    command_name="induct"
-                )
-                logging.critical(MessagesJSONFileValueError(dict_key="welcome_messages", invalid_value=messages_dict["welcome_messages"]))
-                await self.bot.close()
-                return
-
             roles_channel_mention: str = "`#roles`"
 
             roles_channel: TextChannel | None = self.bot.roles_channel
@@ -173,7 +138,7 @@ async def induct(ctx: discord.ApplicationContext, induction_member: Member, guil
                 roles_channel_mention = roles_channel.mention
 
             await general_channel.send(
-                f"""{random.choice(messages_dict["welcome_messages"]).replace("<User>", induction_member.mention).strip()} :tada:\nRemember to grab your roles in {roles_channel_mention} and say hello to everyone here! :wave:"""
+                f"""{random.choice(settings["WELCOME_MESSAGES"]).replace("<User>", induction_member.mention).strip()} :tada:\nRemember to grab your roles in {roles_channel_mention} and say hello to everyone here! :wave:"""
             )
 
         await induction_member.add_roles(
@@ -196,22 +161,7 @@ async def user_command_induct(ctx: ApplicationContext, member: Member, silent: b
     await induct(ctx, member, guild, silent)
 
 
-class Commands(commands.Cog):
-    ROLES_MESSAGES: tuple[str, str, str, str] = (
-        "\nReact to this message to get pronoun roles\n🇭 - He/Him\n🇸 - She/Her\n🇹 - They/Them",
-        "_ _\nReact to this message to get year group roles\n0️⃣ - Foundation Year\n1️⃣ - First Year\n2️⃣ - Second Year\n🇫 - Final Year (incl. 3rd Year MSci/MEng)\n🇮 - Year in Industry\n🇦 - Year Abroad\n🇹 - Post-Graduate Taught (Masters/MSc) \n🇷 - Post-Graduate Research (PhD) \n🅰️ - Alumnus\n🇩 - Postdoc",
-        "_ _\nReact to this message to join the **opt in channels**\n💬 - Serious Talk\n🏡 - Housing\n🎮 - Gaming\n📺 - Anime\n⚽ - Sport\n💼 - Industry\n⛏️ - Minecraft\n🌐 - CSS Website\n🔖 - Archivist",
-        "_ _\nReact to this message to opt in to News notifications\n🔈- Get notifications when we `@News`\n🔇- Don't get notifications when we `@News`\n_ _\n> We will still use `@everyone` messages if there is something urgent",
-    )
-    ERROR_ACTIVITIES: dict[str, str] = {
-        "ping": "reply with Pong!!",
-        "write_roles": "send messages",
-        "edit_message": "edit the message",
-        "induct": "induct user"
-    }
-
-    def __init__(self, bot: TeXBot):
-        self.bot: TeXBot = bot
+        return {OptionChoice(name=f"@{member.name}", value=str(member.id)) for member in members}
 
     @discord.slash_command(description="Replies with Pong!")
     async def ping(self, ctx: ApplicationContext):
@@ -279,7 +229,7 @@ class Commands(commands.Cog):
             raise
 
         roles_message: str
-        for roles_message in self.ROLES_MESSAGES:
+        for roles_message in settings["ROLES_MESSAGES"]:
             await roles_channel.send(roles_message)
 
         await ctx.respond("All messages sent successfully.", ephemeral=True)
