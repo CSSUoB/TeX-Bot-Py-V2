@@ -12,10 +12,10 @@ import discord
 from bs4 import BeautifulSoup
 from discord import ApplicationContext, Forbidden, Guild, Member, Message, NotFound, OptionChoice, Permissions, Role, TextChannel
 
-from .cog_utils import Bot_Cog
 from exceptions import CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
 from setup import settings
 from utils import TeXBot
+from .cog_utils import Bot_Cog
 
 
 class Application_Commands_Cog(Bot_Cog):

@@ -19,6 +19,7 @@ If you have never used git before, we would recommend that you read the [GitHub'
 * [Getting Git Right (Atlassian)](https://www.atlassian.com/git/)
 
 If you are new to contributing to open-source projects on GitHub, the general workflow is as follows:
+
 1. Fork this repository and clone it
 2. Create a branch off master
 3. Make your changes and commit them
