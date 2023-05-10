@@ -10,6 +10,9 @@ import validators  # type: ignore
 
 from exceptions import ImproperlyConfigured, MessagesJSONFileMissingKey, MessagesJSONFileValueError
 
+TRUE_VALUES: set[str] = {"true", "1", "t", "y", "yes", "on"}
+FALSE_VALUES: set[str] = {"false", "0", "f", "n", "no", "off"}
+
 dotenv.load_dotenv()
 
 settings: dict[str, Any] = {
@@ -71,16 +74,28 @@ if not validators.url(settings["MEMBERS_PAGE_URL"]):
 settings["MEMBERS_PAGE_COOKIE"] = str(os.getenv("MEMBERS_PAGE_COOKIE"))
 
 _str_SEND_INTRODUCTION_REMINDERS = str(os.getenv("SEND_INTRODUCTION_REMINDERS", "True")).lower()
-if _str_SEND_INTRODUCTION_REMINDERS not in {"true", "1", "t", "y", "yes", "on"} | {"false", "0", "f", "n", "no", "off"}:
+if _str_SEND_INTRODUCTION_REMINDERS not in TRUE_VALUES | FALSE_VALUES:
     raise ImproperlyConfigured("SEND_INTRODUCTION_REMINDERS must be a boolean value.")
-settings["SEND_INTRODUCTION_REMINDERS"] = _str_SEND_INTRODUCTION_REMINDERS in {"true", "1", "t", "y", "yes", "on"}
+settings["SEND_INTRODUCTION_REMINDERS"] = _str_SEND_INTRODUCTION_REMINDERS in TRUE_VALUES
 
 _match_INTRODUCTION_REMINDER_INTERVAL: Match | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z", str(os.getenv("INTRODUCTION_REMINDER_INTERVAL", "6h")))
 settings["INTRODUCTION_REMINDER_INTERVAL"] = {"hours": 100}
 if settings["SEND_INTRODUCTION_REMINDERS"]:
     if not _match_INTRODUCTION_REMINDER_INTERVAL:
-        raise ImproperlyConfigured("INTRODUCTION_REMINDER_INTERVAL must be contain the interval in any combination of seconds, minutes or hours.")
+        raise ImproperlyConfigured("INTRODUCTION_REMINDER_INTERVAL must contain the interval in any combination of seconds, minutes or hours.")
     settings["INTRODUCTION_REMINDER_INTERVAL"] = {key: float(value) for key, value in _match_INTRODUCTION_REMINDER_INTERVAL.groupdict().items() if value}
+
+_str_KICK_NO_INTRODUCTION_MEMBERS = str(os.getenv("KICK_NO_INTRODUCTION_MEMBERS", "True")).lower()
+if _str_KICK_NO_INTRODUCTION_MEMBERS not in TRUE_VALUES | FALSE_VALUES:
+    raise ImproperlyConfigured("KICK_NO_INTRODUCTION_MEMBERS must be a boolean value.")
+settings["KICK_NO_INTRODUCTION_MEMBERS"] = _str_KICK_NO_INTRODUCTION_MEMBERS in TRUE_VALUES
+
+_match_KICK_NO_INTRODUCTION_MEMBERS_DELAY: Match | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z", str(os.getenv("KICK_NO_INTRODUCTION_MEMBERS_DELAY", "120h")))
+settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] = {"hours": 100}
+if settings["KICK_NO_INTRODUCTION_MEMBERS"]:
+    if not _match_KICK_NO_INTRODUCTION_MEMBERS_DELAY:
+        raise ImproperlyConfigured("KICK_NO_INTRODUCTION_MEMBERS_DELAY must contain the delay in any combination of seconds, minutes or hours.")
+    settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] = {key: float(value) for key, value in _match_KICK_NO_INTRODUCTION_MEMBERS_DELAY.groupdict().items() if value}
 
 LOG_LEVEL: str = str(os.getenv("LOG_LEVEL", "INFO")).upper()
 if LOG_LEVEL not in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}:

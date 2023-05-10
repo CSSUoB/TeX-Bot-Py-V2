@@ -138,12 +138,40 @@ class Application_Commands_Cog(Bot_Cog):
                 f"""{random.choice(settings["WELCOME_MESSAGES"]).replace("<User>", induction_member.mention).strip()} :tada:\nRemember to grab your roles in {roles_channel_mention} and say hello to everyone here! :wave:"""
             )
 
+        if await aiofiles.os.path.isfile(settings["MEMBERS_LISTS_FILE_PATH"]):
+            opted_out_members: set[str] = set()
+            async with aiofiles.open(settings["MEMBERS_LISTS_FILE_PATH"], "r", encoding="utf8") as members_lists_read_file:
+                members_lists_dict: dict[str, Any] = json.loads(
+                    await members_lists_read_file.read()
+                )
+
+            if "opted_out_members" in members_lists_dict:
+                opted_out_members_list: Any = members_lists_dict["opted_out_members"]
+
+                if opted_out_members_list and isinstance(opted_out_members_list, list):
+                    opted_out_members = set(opted_out_members_list)
+
+            opted_out_members.discard(str(interaction_member.id))
+
+            members_lists_dict["opted_out_members"] = list(opted_out_members)
+
+            async with aiofiles.open(settings["MEMBERS_LISTS_FILE_PATH"], "w", encoding="utf8") as members_lists_write_file:
+                await members_lists_write_file.write(
+                    json.dumps(members_lists_dict)
+                )
+
         await induction_member.add_roles(
             guest_role,  # type: ignore
             reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\""
         )
 
         await ctx.respond("User inducted successfully.", ephemeral=True)
+
+        async for message in induction_member.history():
+            if "joined the CSS Discord server but have not yet introduced" in message.content:
+                await message.delete(
+                    reason="Delete interaction reminders after user is inducted."
+                )
 
 
 class Slash_Commands_Cog(Application_Commands_Cog):
@@ -184,6 +212,8 @@ class Slash_Commands_Cog(Application_Commands_Cog):
 
     @discord.slash_command(description="Replies with Pong!")
     async def ping(self, ctx: ApplicationContext):
+        async for message in ctx.user.history():
+            await message.delete()
         await ctx.respond(
             random.choices(
                 [
@@ -191,14 +221,15 @@ class Slash_Commands_Cog(Application_Commands_Cog):
                     "64 bytes from TeX: icmp_seq=1 ttl=63 time=0.01 ms"
                 ],
                 weights=settings["PING_COMMAND_EASTER_EGG_WEIGHTS"]
-            )[0]
+            )[0],
+            ephemeral=True
         )
-        logging.info(f"{ctx.user} made me pong!!")
 
     @discord.slash_command(description="Displays information about the source code of this bot.")
     async def source(self, ctx: ApplicationContext):
         await ctx.respond(
-            "TeX is an open-source project made specifically for the CSS Discord! You can see and contribute to the source code at https://github.com/CSSUoB/TeX-Bot-Py"
+            "TeX is an open-source project made specifically for the CSS Discord! You can see and contribute to the source code at https://github.com/CSSUoB/TeX-Bot-Py",
+            ephemeral=True
         )
 
     # noinspection SpellCheckingInspection
@@ -517,7 +548,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return
 
         made_members: set[str] = set()
-        members_lists_dict: dict = {}
+        members_lists_dict: dict[str, Any] = {}
 
         if await aiofiles.os.path.isfile(settings["MEMBERS_LISTS_FILE_PATH"]):
             async with aiofiles.open(settings["MEMBERS_LISTS_FILE_PATH"], "r", encoding="utf8") as members_lists_read_file:

@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import json
 import logging
 from typing import Any
@@ -5,7 +6,7 @@ from typing import Any
 import aiofiles
 import aiofiles.os
 import emoji
-from discord import Button, Guild, Member, PartialEmoji, Role
+from discord import ActionRow, Button, Guild, Member, PartialEmoji, Role
 from discord import ButtonStyle, Interaction, ui
 from discord.ext import tasks
 from discord.ui import View
@@ -46,7 +47,7 @@ class Tasks_Cog(Bot_Cog):
 
         if await aiofiles.os.path.isfile(settings["MEMBERS_LISTS_FILE_PATH"]):
             async with aiofiles.open(settings["MEMBERS_LISTS_FILE_PATH"], "r", encoding="utf8") as members_lists_read_file:
-                members_lists_dict: dict = json.loads(
+                members_lists_dict: dict[str, Any] = json.loads(
                     await members_lists_read_file.read()
                 )
 
@@ -58,7 +59,21 @@ class Tasks_Cog(Bot_Cog):
 
         member: Member
         for member in non_guest_members:
-            if member.id not in opted_out_members:
+            kick_no_introduction_members_delay: timedelta = timedelta(**settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"])
+            if settings["KICK_NO_INTRODUCTION_MEMBERS"]:
+                if member.joined_at is None:
+                    logging.error(f"Member with ID: {member.id} could not be checked whether to kick, because their \"joined_at\" attribute was None.")
+
+                elif (datetime.now() - member.joined_at) > kick_no_introduction_members_delay:
+                    await member.kick(reason=f"Member was in server without introduction sent for longer than {kick_no_introduction_members_delay}")
+
+                continue
+
+            if str(member.id) not in opted_out_members:
+                async for message in member.history():
+                    if message.components and isinstance(message.components[0], ActionRow) and isinstance(message.components[0].children[0], Button) and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button":
+                        await message.edit(view=None)
+
                 await member.send(
                     "Hey! It seems like you joined the CSS Discord server but have not yet introduced yourself.\nYou will only get access to the rest of the server after sending an introduction message.",
                     view=self.Opt_Out_Introduction_Reminders_View(self.bot)
@@ -91,7 +106,7 @@ class Tasks_Cog(Bot_Cog):
                 return
 
             opted_out_members: set[str] = set()
-            members_lists_dict: dict = {}
+            members_lists_dict: dict[str, Any] = {}
 
             if await aiofiles.os.path.isfile(settings["MEMBERS_LISTS_FILE_PATH"]):
                 async with aiofiles.open(settings["MEMBERS_LISTS_FILE_PATH"], "r", encoding="utf8") as members_lists_read_file:
@@ -135,6 +150,10 @@ class Tasks_Cog(Bot_Cog):
                 await interaction.response.edit_message(view=self)
 
             elif button.style == ButtonStyle.green or str(button.emoji) == emoji.emojize(":raised_hand:", language="alias"):
+                button.style = ButtonStyle.red
+                button.label = "Opt-out of introduction reminders"
+                button.emoji = PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias"))
+
                 if interaction_member is None:
                     await interaction.response.send_message(
                         ":warning:There was an error when trying to opt back in to interaction reminders.:warning:\n`You must be a member of the CSS Discord server to opt back in to interaction reminders.`",
@@ -142,23 +161,15 @@ class Tasks_Cog(Bot_Cog):
                     )
                     return
 
-                button.style = ButtonStyle.red
-                button.label = "Opt-out of introduction reminders"
-                button.emoji = PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias"))
+                if await aiofiles.os.path.isfile(settings["MEMBERS_LISTS_FILE_PATH"]) and str(interaction_member.id) in opted_out_members:
+                    opted_out_members.discard(str(interaction_member.id))
 
-                opted_out_members.discard(str(interaction_member.id))
+                    members_lists_dict["opted_out_members"] = list(opted_out_members)
 
-                members_lists_dict["opted_out_members"] = list(opted_out_members)
-
-                await aiofiles.os.makedirs(
-                    settings["MEMBERS_LISTS_FILE_PATH"].parent,
-                    exist_ok=True
-                )
-
-                async with aiofiles.open(settings["MEMBERS_LISTS_FILE_PATH"], "w", encoding="utf8") as members_lists_write_file:
-                    await members_lists_write_file.write(
-                        json.dumps(members_lists_dict)
-                    )
+                    async with aiofiles.open(settings["MEMBERS_LISTS_FILE_PATH"], "w", encoding="utf8") as members_lists_write_file:
+                        await members_lists_write_file.write(
+                            json.dumps(members_lists_dict)
+                        )
 
                 await interaction.response.edit_message(view=self)
 
