@@ -41,13 +41,14 @@ When submitting an issue, please be as descriptive as possible. If you are submi
 
 This bot is written in Python using [Pycord](https://pycord.dev) and uses [Discord's slash commands](https://support.discord.com/hc/en-us/articles/1500000368501-Slash-Commands-FAQ). We would recommend being somewhat familiar with the library and language terminology before contributing.
 
-[//]: # (* `commands`: contains slash commands)
-
-[//]: # (  * Each module must export an object with a `data` parameter with a [SlashCommandBuilder]&#40;https://discord.js.org/#/docs/builders/main/class/SlashCommandBuilder&#41;. )
-
-[//]: # (  * Additionally, there must also be a method `execute` with an [interaction]&#40;https://discord.js.org/#/docs/discord.js/main/class/BaseInteraction&#41; object as its only argument.)
-
-[//]: # (* `events`: contains event listeners)
+* `main.py`: is the main entrypoint to instantiate the bot object & run it
+* `exceptions.py`: contains common exception super-classes that may be raised when certain errors occur
+* `setup.py`: retrieves the environment variables & populates the correct values into the `settings` attribute
+* `utils.py`: contains common utility classes & functions used by the top-level modules
+* `cogs/commands.py`: contains slash commands & user context-menu commands
+* `cogs/events.py`: contains event listeners
+* `cogs/tasks.py`: contains repeating tasks
+* `cogs/cog_utils.py`: contains common utility classes & functions used by the other cog modules
 
 ## Making Your First Contribution
 
