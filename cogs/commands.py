@@ -64,7 +64,7 @@ class Application_Commands_Cog(Bot_Cog):
             logging.error(f"{construct_logging_error_message} {logging_message}")
 
     async def _induct(self, ctx: discord.ApplicationContext, induction_member: Member, guild: Guild, silent: bool):
-        interaction_member: Member | None = await guild.fetch_member(ctx.user.id)
+        interaction_member: Member | None = guild.get_member(ctx.user.id)
         if interaction_member is None:
             # noinspection SpellCheckingInspection
             await self.send_error(
@@ -161,7 +161,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         if channel_permissions_limiter is None:
             return set()
 
-        interaction_member: Member | None = await guild.fetch_member(ctx.interaction.user.id)
+        interaction_member: Member | None = guild.get_member(ctx.interaction.user.id)
         if interaction_member:
             channel_permissions_limiter = interaction_member
 
@@ -219,7 +219,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             await self.bot.close()
             return
 
-        interaction_member: Member | None = await guild.fetch_member(ctx.user.id)
+        interaction_member: Member | None = guild.get_member(ctx.user.id)
         if interaction_member is None:
             await self.send_error(
                 ctx,
@@ -335,7 +335,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             )
             return
 
-        interaction_member: Member | None = await guild.fetch_member(ctx.user.id)
+        interaction_member: Member | None = guild.get_member(ctx.user.id)
         if interaction_member is None:
             await self.send_error(
                 ctx,
@@ -426,7 +426,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             await self.bot.close()
             return
 
-        induct_member: Member | None = await guild.fetch_member(induct_member_id)
+        induct_member: Member | None = guild.get_member(induct_member_id)
         if induct_member is None:
             await self.send_error(
                 ctx,
@@ -472,7 +472,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             await self.bot.close()
             return
 
-        interaction_member: Member | None = await guild.fetch_member(ctx.user.id)
+        interaction_member: Member | None = guild.get_member(ctx.user.id)
         if interaction_member is None:
             await self.send_error(
                 ctx,
@@ -517,15 +517,16 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return
 
         made_members: set[str] = set()
+        members_lists_dict: dict = {}
 
-        if await aiofiles.os.path.isfile(settings["MADE_MEMBERS_FILE_PATH"]):
-            async with aiofiles.open(settings["MADE_MEMBERS_FILE_PATH"], "r", encoding="utf8") as made_members_read_file:
-                made_members_dict: dict = json.loads(
-                    await made_members_read_file.read()
+        if await aiofiles.os.path.isfile(settings["MEMBERS_LISTS_FILE_PATH"]):
+            async with aiofiles.open(settings["MEMBERS_LISTS_FILE_PATH"], "r", encoding="utf8") as members_lists_read_file:
+                members_lists_dict = json.loads(
+                    await members_lists_read_file.read()
                 )
 
-            if "made_members" in made_members_dict:
-                made_members_list: Any = made_members_dict["made_members"]
+            if "made_members" in members_lists_dict:
+                made_members_list: Any = members_lists_dict["made_members"]
 
                 if made_members_list and isinstance(made_members_list, list):
                     made_members = set(made_members_list)
@@ -576,14 +577,16 @@ class Slash_Commands_Cog(Application_Commands_Cog):
 
             made_members.add(hashed_student_id)
 
+            members_lists_dict["made_members"] = list(made_members)
+
             await aiofiles.os.makedirs(
-                settings["MADE_MEMBERS_FILE_PATH"].parent,
+                settings["MEMBERS_LISTS_FILE_PATH"].parent,
                 exist_ok=True
             )
 
-            async with aiofiles.open(settings["MADE_MEMBERS_FILE_PATH"], "w", encoding="utf8") as made_members_write_file:
-                await made_members_write_file.write(
-                    json.dumps({"made_members": list(made_members)})
+            async with aiofiles.open(settings["MEMBERS_LISTS_FILE_PATH"], "w", encoding="utf8") as members_lists_write_file:
+                await members_lists_write_file.write(
+                    json.dumps(members_lists_dict)
                 )
 
         else:

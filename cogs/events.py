@@ -8,9 +8,10 @@ from exceptions import CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, Gu
 from .cog_utils import Bot_Cog
 from setup import settings
 from utils import TeXBot
+from .tasks import Tasks_Cog
 
 
-class Events(Bot_Cog):
+class Events_Cog(Bot_Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         guild: Guild | None = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
@@ -41,8 +42,12 @@ class Events(Bot_Cog):
         if general_channel is None:
             logging.warning(GeneralChannelDoesNotExist())
 
+        self.bot.add_view(
+            Tasks_Cog.Opt_Out_Introduction_Reminders_View(self.bot)
+        )
+
         logging.info(f"Ready! Logged in as {self.bot.user}")
 
 
 def setup(bot: TeXBot):
-    bot.add_cog(Events(bot))
+    bot.add_cog(Events_Cog(bot))

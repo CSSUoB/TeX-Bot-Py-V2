@@ -3,7 +3,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Match
 
 import dotenv
 import validators  # type: ignore
@@ -60,15 +60,27 @@ if not isinstance(messages_dict["roles_messages"], list) or not messages_dict["r
     raise MessagesJSONFileValueError(dict_key="roles_messages", invalid_value=messages_dict["roles_messages"])
 settings["ROLES_MESSAGES"] = messages_dict["roles_messages"]
 
-settings["MADE_MEMBERS_FILE_PATH"] = Path(str(os.getenv("MADE_MEMBERS_FILE_PATH", "made_members.json")))
-if not settings["MADE_MEMBERS_FILE_PATH"].suffix == ".json":
-    raise ImproperlyConfigured("MADE_MEMBERS_FILE_PATH must be a path to a JSON file.")
+settings["MEMBERS_LISTS_FILE_PATH"] = Path(str(os.getenv("MEMBERS_LISTS_FILE_PATH", "members_lists.json")))
+if not settings["MEMBERS_LISTS_FILE_PATH"].suffix == ".json":
+    raise ImproperlyConfigured("MEMBERS_LISTS_FILE_PATH must be a path to a JSON file.")
 
 settings["MEMBERS_PAGE_URL"] = str(os.getenv("MEMBERS_PAGE_URL"))
 if not validators.url(settings["MEMBERS_PAGE_URL"]):
     raise ImproperlyConfigured("MEMBERS_PAGE_URL must be a valid URL.")
 
 settings["MEMBERS_PAGE_COOKIE"] = str(os.getenv("MEMBERS_PAGE_COOKIE"))
+
+_str_SEND_INTRODUCTION_REMINDERS = str(os.getenv("SEND_INTRODUCTION_REMINDERS", "True")).lower()
+if _str_SEND_INTRODUCTION_REMINDERS not in {"true", "1", "t", "y", "yes", "on"} | {"false", "0", "f", "n", "no", "off"}:
+    raise ImproperlyConfigured("SEND_INTRODUCTION_REMINDERS must be a boolean value.")
+settings["SEND_INTRODUCTION_REMINDERS"] = _str_SEND_INTRODUCTION_REMINDERS in {"true", "1", "t", "y", "yes", "on"}
+
+_match_INTRODUCTION_REMINDER_INTERVAL: Match | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z", str(os.getenv("INTRODUCTION_REMINDER_INTERVAL", "6h")))
+settings["INTRODUCTION_REMINDER_INTERVAL"] = {"hours": 100}
+if settings["SEND_INTRODUCTION_REMINDERS"]:
+    if not _match_INTRODUCTION_REMINDER_INTERVAL:
+        raise ImproperlyConfigured("INTRODUCTION_REMINDER_INTERVAL must be contain the interval in any combination of seconds, minutes or hours.")
+    settings["INTRODUCTION_REMINDER_INTERVAL"] = {key: float(value) for key, value in _match_INTRODUCTION_REMINDER_INTERVAL.groupdict().items() if value}
 
 LOG_LEVEL: str = str(os.getenv("LOG_LEVEL", "INFO")).upper()
 if LOG_LEVEL not in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}:
