@@ -3,12 +3,15 @@ import json
 import logging
 import random
 import re
+import time
+from datetime import datetime
 from typing import Any
 
 import aiofiles
 import aiofiles.os
 import aiohttp
 import discord
+import parsedatetime  # type: ignore
 from bs4 import BeautifulSoup
 from discord import ApplicationContext, Forbidden, Guild, Member, Message, NotFound, OptionChoice, Permissions, Role, TextChannel
 
@@ -24,7 +27,8 @@ class Application_Commands_Cog(Bot_Cog):
         "write_roles": "send messages",
         "edit_message": "edit the message",
         "induct": "induct user",
-        "make_member": "make you a member"
+        "make_member": "make you a member",
+        "remind_me": "remind you"
     }
 
     async def send_error(self, ctx: ApplicationContext, error_code: str | None = None, command_name: str | None = None, message: str | None = None, logging_message: str | None = None):
@@ -231,6 +235,44 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             "TeX is an open-source project made specifically for the CSS Discord! You can see and contribute to the source code at https://github.com/CSSUoB/TeX-Bot-Py",
             ephemeral=True
         )
+
+    @discord.slash_command(
+        name="remindme",
+        description="Responds with the given message after the specified time."
+    )
+    @discord.option(
+        name="delay",
+        input_type=str,
+        description="The amount of time to wait before reminding you",
+        required=True
+    )
+    @discord.option(
+        name="message",
+        input_type=str,
+        description="The message you want to be reminded with.",
+        required=False
+    )
+    async def remind_me(self, ctx: ApplicationContext, delay: str, message: str):
+        parsed_time: tuple[time.struct_time, int] = parsedatetime.Calendar().parse(delay)
+
+        if parsed_time[1] == 0:
+            await self.send_error(
+                ctx,
+                command_name="remind_me",
+                message=f"The value provided in the \"delay\" argument was not a time/date."
+            )
+            return
+
+        await ctx.respond("Reminder set!", ephemeral=True)
+
+        await discord.utils.sleep_until(datetime(*parsed_time[0][:6]))
+
+        constructed_message: str = "This is your reminder!"
+
+        if message:
+            constructed_message = f"""**{constructed_message}**\n{message[:1500]}"""
+
+        await ctx.send_followup(constructed_message)
 
     # noinspection SpellCheckingInspection
     @discord.slash_command(

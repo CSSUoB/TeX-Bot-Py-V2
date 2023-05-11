@@ -25,6 +25,7 @@ validators = "^0.20.0"
 aiofiles = "^23.1.0"
 beautifulsoup4 = "^4.12.2"
 emoji = "^2.2.0"
+parsedatetime = "^2.6"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.2.0"
