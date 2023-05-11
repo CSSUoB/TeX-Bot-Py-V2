@@ -1,12 +1,13 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 import json
 import logging
 from typing import Any
 
 import aiofiles
 import aiofiles.os
+import discord
 import emoji
-from discord import ActionRow, Button, Guild, Member, PartialEmoji, Role
+from discord import ActionRow, Button, Forbidden, Guild, Member, PartialEmoji, Role
 from discord import ButtonStyle, Interaction, ui
 from discord.ext import tasks
 from discord.ui import View
@@ -64,8 +65,11 @@ class Tasks_Cog(Bot_Cog):
                 if member.joined_at is None:
                     logging.error(f"Member with ID: {member.id} could not be checked whether to kick, because their \"joined_at\" attribute was None.")
 
-                elif (datetime.now() - member.joined_at) > kick_no_introduction_members_delay:
-                    await member.kick(reason=f"Member was in server without introduction sent for longer than {kick_no_introduction_members_delay}")
+                elif (discord.utils.utcnow() - member.joined_at) > kick_no_introduction_members_delay:
+                    try:
+                        await member.kick(reason=f"Member was in server without introduction sent for longer than {kick_no_introduction_members_delay}")
+                    except Forbidden as kick_error:
+                        logging.warning(f"Member with ID: {member.id} could not be kicked due to {kick_error.text}")
 
                 continue
 
