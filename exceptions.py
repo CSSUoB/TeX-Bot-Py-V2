@@ -2,33 +2,57 @@ import abc
 from typing import Any, Collection, Iterable
 
 
-def format_does_not_exist_with_dependant_commands(value: str, does_not_exist_type: str, dependant_commands: Collection[str]) -> str:
-    if len(dependant_commands) == 0:
-        raise ValueError("Argument \"dependant_commands\" cannot be empty collection.")
+def format_does_not_exist_with_dependencies(value: str, does_not_exist_type: str, dependant_commands: Collection[str], dependant_tasks: Collection[str]) -> str:
+    if not dependant_commands or not dependant_tasks:
+        raise ValueError("The arguments \"dependant_commands\" & \"dependant_tasks\" cannot both be empty.")
 
     formatted_dependant_commands: str = ""
 
-    if len(dependant_commands) == 1:
-        formatted_dependant_commands += f"\"/{next(iter(dependant_commands))}\" command"
-    else:
-        index: int
-        dependant_command: str
-        for index, dependant_command in enumerate(dependant_commands):
-            formatted_dependant_commands += f"\"/{dependant_command}\""
+    if dependant_commands:
+        if len(dependant_commands) == 1:
+            formatted_dependant_commands += f"\"/{next(iter(dependant_commands))}\" command"
+        else:
+            index: int
+            dependant_command: str
+            for index, dependant_command in enumerate(dependant_commands):
+                formatted_dependant_commands += f"\"/{dependant_command}\""
 
-            if index < len(dependant_commands) - 2:
-                formatted_dependant_commands += ", "
-            elif index == len(dependant_commands) - 2:
-                formatted_dependant_commands += " & "
+                if index < len(dependant_commands) - 2:
+                    formatted_dependant_commands += ", "
+                elif index == len(dependant_commands) - 2:
+                    formatted_dependant_commands += " & "
 
-        formatted_dependant_commands += " commands"
-
-    formatted_dependant_commands += "."
+            formatted_dependant_commands += " commands"
 
     if does_not_exist_type == "channel":
         value = f"#{value}"
 
-    return f"""\"{value}\" {does_not_exist_type} must exist in order to use the {formatted_dependant_commands}"""
+    partial_message: str = f"""\"{value}\" {does_not_exist_type} must exist in order to use the {formatted_dependant_commands}"""
+
+    if dependant_tasks:
+        formatted_dependant_tasks: str = ""
+
+        if dependant_tasks:
+            partial_message += " and the "
+
+        if len(dependant_tasks) == 1:
+            formatted_dependant_tasks += f"\"{next(iter(dependant_tasks))}\" task"
+        else:
+            index: int
+            dependant_task: str
+            for index, dependant_task in enumerate(dependant_tasks):
+                formatted_dependant_tasks += f"\"{dependant_task}\""
+
+                if index < len(dependant_tasks) - 2:
+                    formatted_dependant_tasks += ", "
+                elif index == len(dependant_tasks) - 2:
+                    formatted_dependant_tasks += " & "
+
+            formatted_dependant_commands += " commands"
+
+        partial_message += formatted_dependant_tasks
+
+    return f"{partial_message}."
 
 
 class ImproperlyConfigured(Exception):
@@ -60,7 +84,7 @@ class ErrorCodeMixin(Exception, abc.ABC):
     def __init__(self, message: str | None = None) -> None:
         self.message: str = message or self.DEFAULT_MESSAGE
 
-        super().__init__(message or self.DEFAULT_MESSAGE)
+        super().__init__(self.message)
 
     def __repr__(self) -> str:
         formatted: str = self.message
@@ -105,7 +129,7 @@ class GuildDoesNotExist(ValueError, ErrorCodeMixin):
         self.guild_id: int | None = guild_id
 
         if guild_id and not message:
-            message = f"Server with ID \"{guild_id}\" does not exist."
+            message = f"Server with ID \"{self.guild_id}\" does not exist."
 
         super().__init__(message)
 
@@ -113,15 +137,27 @@ class GuildDoesNotExist(ValueError, ErrorCodeMixin):
 class RoleDoesNotExist(ValueError, ErrorCodeMixin):
     DEFAULT_MESSAGE: str = "Role with given name does not exist"
 
-    def __init__(self, message: str | None = None, role_name: str | None = None, dependant_commands: Collection[str] | None = None) -> None:
+    def __init__(self, message: str | None = None, role_name: str | None = None, dependant_commands: Collection[str] | None = None, dependant_tasks: Collection[str] | None = None) -> None:
         self.role_name: str | None = role_name
-        self.dependant_commands: Iterable[str] | None = dependant_commands
 
-        if role_name and not message:
-            if dependant_commands:
-                message = format_does_not_exist_with_dependant_commands(role_name, "role", dependant_commands)
+        self.dependant_commands: set[str] = set()
+        if dependant_commands:
+            self.dependant_commands: set[str] = set(dependant_commands)
+
+        self.dependant_tasks: set[str] = set()
+        if dependant_tasks:
+            self.dependant_tasks: set[str] = set(dependant_tasks)
+
+        if self.role_name and not message:
+            if self.dependant_commands or self.dependant_tasks:
+                message = format_does_not_exist_with_dependencies(
+                    self.role_name,
+                    "role",
+                    self.dependant_commands,
+                    self.dependant_tasks
+                )
             else:
-                message = f"Role with name \"{role_name}\" does not exist."
+                message = f"Role with name \"{self.role_name}\" does not exist."
 
         super().__init__(message)
 
@@ -135,7 +171,7 @@ class CommitteeRoleDoesNotExist(RoleDoesNotExist):
 class GuestRoleDoesNotExist(RoleDoesNotExist):
     def __init__(self, message: str | None = None) -> None:
         # noinspection SpellCheckingInspection
-        super().__init__(message, role_name="Guest", dependant_commands={"induct"})
+        super().__init__(message, role_name="Guest", dependant_commands={"induct", "makemember"}, dependant_tasks={"kick_no_introduction_members", "introduction_reminder"})
 
 
 class MemberRoleDoesNotExist(RoleDoesNotExist):
@@ -147,15 +183,27 @@ class MemberRoleDoesNotExist(RoleDoesNotExist):
 class ChannelDoesNotExist(ValueError, ErrorCodeMixin):
     DEFAULT_MESSAGE: str = "Channel with given name does not exist"
 
-    def __init__(self, message: str | None = None, channel_name: str | None = None, dependant_commands: Collection[str] | None = None) -> None:
+    def __init__(self, message: str | None = None, channel_name: str | None = None, dependant_commands: Collection[str] | None = None, dependant_tasks: Collection[str] | None = None) -> None:
         self.channel_name: str | None = channel_name
-        self.dependant_commands: Iterable[str] | None = dependant_commands
 
-        if channel_name and not message:
-            if dependant_commands:
-                message = format_does_not_exist_with_dependant_commands(channel_name, "channel", dependant_commands)
+        self.dependant_commands: set[str] = set()
+        if dependant_commands:
+            self.dependant_commands = set(dependant_commands)
+
+        self.dependant_tasks: set[str] = set()
+        if dependant_tasks:
+            self.dependant_tasks = set(dependant_tasks)
+
+        if self.channel_name and not message:
+            if self.dependant_commands or self.dependant_tasks:
+                message = format_does_not_exist_with_dependencies(
+                    self.channel_name,
+                    "channel",
+                    self.dependant_commands,
+                    self.dependant_tasks
+                )
             else:
-                message = f"Channel with name \"{channel_name}\" does not exist."
+                message = f"Channel with name \"{self.channel_name}\" does not exist."
 
         super().__init__(message)
 
