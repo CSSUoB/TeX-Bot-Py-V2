@@ -45,7 +45,7 @@ class UpdateFieldNamesError(ValueError, BaseError):
 
     DEFAULT_MESSAGE = "Model's fields does not contain any of the requested update field names."  # TODO: Better default message
 
-    def __init__(self, message: str = None, model_fields: Collection[Field] = None, update_field_names: Collection[str] = None) -> None:
+    def __init__(self, message: str | None = None, model_fields: Collection[Field] | None = None, update_field_names: Collection[str] | None = None) -> None:
         self.model_fields: set[Field] = set()
         if model_fields:
             self.model_fields = set(model_fields)

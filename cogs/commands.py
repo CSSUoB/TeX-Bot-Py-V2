@@ -3,6 +3,7 @@ import random
 import re
 import time
 from datetime import datetime
+from django.utils import timezone
 
 import aiohttp
 import discord
@@ -11,7 +12,7 @@ from bs4 import BeautifulSoup
 from discord import ApplicationContext, Forbidden, Guild, Member, Message, NotFound, OptionChoice, Permissions, Role, TextChannel
 from django.core.exceptions import ValidationError  # type: ignore
 
-from db.core.models import Interaction_Reminder_Opt_Out_Member, UoB_Made_Member
+from db.core.models import Discord_Reminder, Interaction_Reminder_Opt_Out_Member, UoB_Made_Member
 from exceptions import CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
 from setup import settings
 from utils import TeXBot
@@ -56,7 +57,7 @@ class Application_Commands_Cog(Bot_Cog):
         construct_error_message += ":warning:"
 
         if message:
-            message = re.sub(r"<@[&#]*\d{17,20}>", lambda match: f"`{match.group(0)}`", message.strip())
+            message = re.sub(r"<@[&#]?\d+>", lambda match: f"`{match.group(0)}`", message.strip())
             construct_error_message += f"\n`{message}`"
 
         await ctx.respond(construct_error_message, ephemeral=True)
@@ -239,7 +240,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         required=False
     )
     async def remind_me(self, ctx: ApplicationContext, delay: str, message: str):
-        parsed_time: tuple[time.struct_time, int] = parsedatetime.Calendar().parse(delay)
+        parsed_time: tuple[time.struct_time, int] = parsedatetime.Calendar().parseDT(delay, tzinfo=timezone.get_current_timezone())
 
         if parsed_time[1] == 0:
             await self.send_error(
@@ -249,16 +250,45 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             )
             return
 
+        if message:
+            message = re.sub(r"<@[&#]?\d+>", "@...", message.strip())
+
+        try:
+            reminder: Discord_Reminder = await Discord_Reminder.objects.acreate(
+                member_id=ctx.user.id,
+                message=message or "",
+                channel_id=ctx.channel_id,
+                send_datetime=parsed_time[0]
+            )
+        except ValidationError as create_interaction_reminder_opt_out_member_error:
+            if "__all__" not in create_interaction_reminder_opt_out_member_error.message_dict or all("already exists" not in error for error in create_interaction_reminder_opt_out_member_error.message_dict["__all__"]):
+                await self.send_error(
+                    ctx,
+                    command_name="remind_me",
+                    message="An unrecoverable error occurred."
+                )
+                logging.critical(create_interaction_reminder_opt_out_member_error)
+                await self.bot.close()
+                return
+            else:
+                await self.send_error(
+                    ctx,
+                    command_name="remind_me",
+                    message="You already have a reminder with that message in this channel!"
+                )
+                return
+
         await ctx.respond("Reminder set!", ephemeral=True)
 
-        await discord.utils.sleep_until(datetime(*parsed_time[0][:6]))
+        await discord.utils.sleep_until(reminder.send_datetime)
 
-        constructed_message: str = "This is your reminder!"
+        user_mention: str | None = None
+        if ctx.guild:
+            user_mention = ctx.user.mention
 
-        if message:
-            constructed_message = f"""**{constructed_message}**\n{message[:1500]}"""
+        await ctx.send_followup(reminder.format_message(user_mention))
 
-        await ctx.send_followup(constructed_message)
+        await reminder.adelete()
 
     # noinspection SpellCheckingInspection
     @discord.slash_command(

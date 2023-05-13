@@ -1,16 +1,17 @@
+import datetime
 import logging
 from datetime import timedelta
 
 import discord
 import emoji
-from discord import ActionRow, Button, Forbidden, Guild, Member, PartialEmoji, Role
+from discord import ActionRow, Button, ChannelType, Forbidden, Guild, Member, PartialEmoji, PartialMessageable, Role
 from discord import ButtonStyle, Interaction, ui
 from discord.ext import tasks
 from discord.ui import View
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError  # type: ignore
 
 from cogs.utils import Bot_Cog
-from db.core.models import Interaction_Reminder_Opt_Out_Member
+from db.core.models import Discord_Reminder, Interaction_Reminder_Opt_Out_Member
 from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
 from setup import settings
 from utils import TeXBot
@@ -24,11 +25,47 @@ class Tasks_Cog(Bot_Cog):
         if settings["KICK_NO_INTRODUCTION_MEMBERS"]:
             self.kick_no_introduction_members.start()
 
+        self.clear_reminder_backlog.start()
+
         super().__init__(bot)
 
     def cog_unload(self):
         self.introduction_reminder.cancel()
         self.kick_no_introduction_members.cancel()
+        self.clear_reminder_backlog.cancel()
+
+    @tasks.loop(minutes=15)
+    async def clear_reminder_backlog(self):
+        reminder: Discord_Reminder
+        async for reminder in Discord_Reminder.objects.all():
+            if (discord.utils.utcnow() - reminder.send_datetime) > datetime.timedelta(minutes=15):
+                for user in self.bot.users:
+                    if not user.bot and Discord_Reminder.hash_member_id(user.id) == reminder.hashed_member_id:
+                        channel: PartialMessageable = self.bot.get_partial_messageable(
+                            reminder.channel_id,
+                            type=ChannelType(reminder.channel_type)
+                        )
+
+                        user_mention: str | None = None
+                        if channel.type in {ChannelType.text, ChannelType.group, ChannelType.public_thread, ChannelType.private_thread}:
+                            user_mention = user.mention
+
+                        elif channel.type != ChannelType.private:
+                            logging.critical(
+                                ValueError("Reminder's channel_id must refer to a valid text channel/DM.")
+                            )
+                            await self.bot.close()
+                            return
+
+                        await channel.send(
+                            f"**Sorry it's a bit late! (I'm just catching up with some reminders I missed!)**\n\n{reminder.format_message(user_mention)}"
+                        )
+
+                        await reminder.adelete()
+
+    @clear_reminder_backlog.before_loop
+    async def before_clear_reminder_backlog(self):
+        await self.bot.wait_until_ready()
 
     @tasks.loop(hours=24)
     async def kick_no_introduction_members(self):
