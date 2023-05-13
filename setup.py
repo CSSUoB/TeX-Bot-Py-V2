@@ -5,15 +5,27 @@ import re
 from pathlib import Path
 from typing import Any, Match
 
+import django  # type: ignore
 import dotenv
 import validators  # type: ignore
+from django.core import management  # type: ignore
 
 from exceptions import ImproperlyConfigured, MessagesJSONFileMissingKey, MessagesJSONFileValueError
+
 
 TRUE_VALUES: set[str] = {"true", "1", "t", "y", "yes", "on"}
 FALSE_VALUES: set[str] = {"false", "0", "f", "n", "no", "off"}
 
+
 dotenv.load_dotenv()
+
+
+os.environ["DJANGO_SETTINGS_MODULE"] = "db.settings"
+django.setup()
+management.call_command("makemigrations")
+management.call_command("makemigrations", "core")
+management.call_command("migrate")
+
 
 settings: dict[str, Any] = {
     "DISCORD_BOT_TOKEN": str(os.getenv("DISCORD_BOT_TOKEN"))
@@ -63,15 +75,13 @@ if not isinstance(messages_dict["roles_messages"], list) or not messages_dict["r
     raise MessagesJSONFileValueError(dict_key="roles_messages", invalid_value=messages_dict["roles_messages"])
 settings["ROLES_MESSAGES"] = messages_dict["roles_messages"]
 
-settings["MEMBERS_LISTS_FILE_PATH"] = Path(str(os.getenv("MEMBERS_LISTS_FILE_PATH", "members_lists.json")))
-if not settings["MEMBERS_LISTS_FILE_PATH"].suffix == ".json":
-    raise ImproperlyConfigured("MEMBERS_LISTS_FILE_PATH must be a path to a JSON file.")
-
 settings["MEMBERS_PAGE_URL"] = str(os.getenv("MEMBERS_PAGE_URL"))
 if not validators.url(settings["MEMBERS_PAGE_URL"]):
     raise ImproperlyConfigured("MEMBERS_PAGE_URL must be a valid URL.")
 
 settings["MEMBERS_PAGE_COOKIE"] = str(os.getenv("MEMBERS_PAGE_COOKIE"))
+if not re.match(r"\A[A-Fa-f\d]{200}\Z", settings["MEMBERS_PAGE_COOKIE"]):
+    raise ImproperlyConfigured("MEMBERS_PAGE_COOKIE must be a valid .ASPXAUTH cookie.")
 
 _str_SEND_INTRODUCTION_REMINDERS = str(os.getenv("SEND_INTRODUCTION_REMINDERS", "True")).lower()
 if _str_SEND_INTRODUCTION_REMINDERS not in TRUE_VALUES | FALSE_VALUES:

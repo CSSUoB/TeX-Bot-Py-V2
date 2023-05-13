@@ -4,11 +4,11 @@ A big welcome and thank you for considering contributing to CSS' open source pro
 
 ## Quick Links
 
-* [Getting started](#getting-started)
-* [Using the issue tracker](#using-the-issue-tracker)
-* [Project structure](#project-structure)
-* [Making your first contribution](#making-your-first-contribution)
-* [Guidance](#guidance)
+* [Getting started](#Getting-Started)
+* [Using the issue tracker](#Using-the-Issue-Tracker)
+* [Project structure](#Project-Structure)
+* [Making your first contribution](#Making-Your-First-Contribution)
+* [Guidance](#Guidance)
 
 ## Getting Started
 
@@ -48,7 +48,7 @@ This bot is written in Python using [Pycord](https://pycord.dev) and uses [Disco
 * `cogs/commands.py`: contains slash commands & user context-menu commands
 * `cogs/events.py`: contains event listeners
 * `cogs/tasks.py`: contains repeating tasks
-* `cogs/cog_utils.py`: contains common utility classes & functions used by the other cog modules
+* `cogs/utils.py`: contains common utility classes & functions used by the other cog modules
 
 ## Making Your First Contribution
 

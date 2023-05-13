@@ -33,4 +33,4 @@ __pycache__
 
 # Local files
 local/
-members_lists.json
+*.sqlite3

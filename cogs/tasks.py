@@ -1,21 +1,19 @@
-import json
 import logging
 from datetime import timedelta
-from typing import Any
 
-import aiofiles
-import aiofiles.os
 import discord
 import emoji
 from discord import ActionRow, Button, Forbidden, Guild, Member, PartialEmoji, Role
 from discord import ButtonStyle, Interaction, ui
 from discord.ext import tasks
 from discord.ui import View
+from django.core.exceptions import ValidationError
 
+from cogs.utils import Bot_Cog
+from db.core.models import Interaction_Reminder_Opt_Out_Member
 from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
 from setup import settings
 from utils import TeXBot
-from .cog_utils import Bot_Cog
 
 
 class Tasks_Cog(Bot_Cog):
@@ -87,26 +85,12 @@ class Tasks_Cog(Bot_Cog):
             await self.bot.close()
             return
 
-        opted_out_member_ids: set[str] = set()
-
-        if await aiofiles.os.path.isfile(settings["MEMBERS_LISTS_FILE_PATH"]):
-            async with aiofiles.open(settings["MEMBERS_LISTS_FILE_PATH"], "r", encoding="utf8") as members_lists_read_file:
-                members_lists_dict: dict[str, Any] = json.loads(
-                    await members_lists_read_file.read()
-                )
-
-            if "opted_out_members" in members_lists_dict:
-                opted_out_members_list: Any = members_lists_dict["opted_out_members"]
-
-                if opted_out_members_list and isinstance(opted_out_members_list, list):
-                    opted_out_member_ids = set(opted_out_members_list)
-
         member: Member
         for member in guild.members:
             if guest_role in member.roles or member.bot:
                 continue
 
-            if str(member.id) not in opted_out_member_ids:
+            if not await Interaction_Reminder_Opt_Out_Member.objects.filter(hashed_member_id=Interaction_Reminder_Opt_Out_Member.hash_member_id(member.id)).aexists():
                 async for message in member.history():
                     if message.components and isinstance(message.components[0], ActionRow) and isinstance(message.components[0].children[0], Button) and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button":
                         await message.edit(view=None)
@@ -126,10 +110,7 @@ class Tasks_Cog(Bot_Cog):
 
             super().__init__(timeout=None)
 
-        @ui.button(
-            label="Opt-out of introduction reminders", custom_id="opt_out_introduction_reminders_button",
-            style=ButtonStyle.red, emoji=PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias"))
-        )
+        @ui.button(label="Opt-out of introduction reminders", custom_id="opt_out_introduction_reminders_button", style=ButtonStyle.red, emoji=PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias")))
         async def opt_out_introduction_reminders_button_callback(self, button: Button, interaction: Interaction):
             try:
                 guild: Guild = self.bot.css_guild
@@ -145,26 +126,9 @@ class Tasks_Cog(Bot_Cog):
                 )
                 return
 
-            opted_out_members: set[str] = set()
-            members_lists_dict: dict[str, Any] = {}
-
-            if await aiofiles.os.path.isfile(settings["MEMBERS_LISTS_FILE_PATH"]):
-                async with aiofiles.open(
-                        settings["MEMBERS_LISTS_FILE_PATH"], "r",
-                        encoding="utf8"
-                ) as members_lists_read_file:
-                    members_lists_dict = json.loads(
-                        await members_lists_read_file.read()
-                    )
-
-                if "opted_out_members" in members_lists_dict:
-                    opted_out_members_list: Any = members_lists_dict["opted_out_members"]
-
-                    if opted_out_members_list and isinstance(opted_out_members_list, list):
-                        opted_out_members = set(opted_out_members_list)
-
             interaction_member: Member | None = guild.get_member(interaction.user.id)
-            if button.style == ButtonStyle.red or str(button.emoji) == emoji.emojize(":no_good:", language="alias"):
+
+            if button.style == ButtonStyle.red or str(button.emoji) == emoji.emojize(":no_good:", language="alias") or (button.label and "Opt-out" in button.label):
                 if interaction_member is None:
                     await interaction.response.send_message(
                         ":warning:There was an error when trying to opt-out of interaction reminders.:warning:\n`You must be a member of the CSS Discord server to opt-out of interaction reminders.`",
@@ -172,37 +136,21 @@ class Tasks_Cog(Bot_Cog):
                     )
                     return
 
+                try:
+                    await Interaction_Reminder_Opt_Out_Member.objects.acreate(
+                        member_id=interaction_member.id
+                    )
+                except ValidationError as create_interaction_reminder_opt_out_member_error:
+                    if "hashed_member_id" not in create_interaction_reminder_opt_out_member_error.message_dict or all("already exists" not in error for error in create_interaction_reminder_opt_out_member_error.message_dict["hashed_member_id"]):
+                        raise
+
                 button.style = ButtonStyle.green
                 button.label = "Opt back in to introduction reminders"
                 button.emoji = PartialEmoji.from_str(emoji.emojize(":raised_hand:", language="alias"))
 
-                opted_out_members.add(str(interaction_member.id))
-
-                members_lists_dict["opted_out_members"] = list(opted_out_members)
-
-                await aiofiles.os.makedirs(
-                    settings["MEMBERS_LISTS_FILE_PATH"].parent,
-                    exist_ok=True
-                )
-
-                async with aiofiles.open(
-                        settings["MEMBERS_LISTS_FILE_PATH"], "w",
-                        encoding="utf8"
-                ) as members_lists_write_file:
-                    await members_lists_write_file.write(
-                        json.dumps(members_lists_dict)
-                    )
-
                 await interaction.response.edit_message(view=self)
 
-            elif button.style == ButtonStyle.green or str(button.emoji) == emoji.emojize(
-                    ":raised_hand:",
-                    language="alias"
-            ):
-                button.style = ButtonStyle.red
-                button.label = "Opt-out of introduction reminders"
-                button.emoji = PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias"))
-
+            elif button.style == ButtonStyle.green or str(button.emoji) == emoji.emojize(":raised_hand:", language="alias") or (button.label and "Opt back in" in button.label):
                 if interaction_member is None:
                     await interaction.response.send_message(
                         ":warning:There was an error when trying to opt back in to interaction reminders.:warning:\n`You must be a member of the CSS Discord server to opt back in to interaction reminders.`",
@@ -210,20 +158,20 @@ class Tasks_Cog(Bot_Cog):
                     )
                     return
 
-                if await aiofiles.os.path.isfile(settings["MEMBERS_LISTS_FILE_PATH"]) and str(
-                        interaction_member.id
-                ) in opted_out_members:
-                    opted_out_members.discard(str(interaction_member.id))
-
-                    members_lists_dict["opted_out_members"] = list(opted_out_members)
-
-                    async with aiofiles.open(
-                            settings["MEMBERS_LISTS_FILE_PATH"], "w",
-                            encoding="utf8"
-                    ) as members_lists_write_file:
-                        await members_lists_write_file.write(
-                            json.dumps(members_lists_dict)
+                try:
+                    interaction_reminder_opt_out_member: Interaction_Reminder_Opt_Out_Member = await Interaction_Reminder_Opt_Out_Member.objects.aget(
+                        hashed_member_id=Interaction_Reminder_Opt_Out_Member.hash_member_id(
+                            interaction_member.id
                         )
+                    )
+                except Interaction_Reminder_Opt_Out_Member.DoesNotExist:
+                    pass
+                else:
+                    await interaction_reminder_opt_out_member.adelete()
+
+                button.style = ButtonStyle.red
+                button.label = "Opt-out of introduction reminders"
+                button.emoji = PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias"))
 
                 await interaction.response.edit_message(view=self)
 

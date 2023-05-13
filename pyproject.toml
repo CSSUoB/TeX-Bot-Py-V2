@@ -22,10 +22,10 @@ python = "^3.11.1"
 py-cord = "^2.4"
 python-dotenv = "^1.0.0"
 validators = "^0.20.0"
-aiofiles = "^23.1.0"
 beautifulsoup4 = "^4.12.2"
 emoji = "^2.2.0"
 parsedatetime = "^2.6"
+django = "^4.2"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.2.0"

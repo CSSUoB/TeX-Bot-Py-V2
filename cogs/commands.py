@@ -1,24 +1,21 @@
-import hashlib
-import json
 import logging
 import random
 import re
 import time
 from datetime import datetime
-from typing import Any
 
-import aiofiles
-import aiofiles.os
 import aiohttp
 import discord
 import parsedatetime  # type: ignore
 from bs4 import BeautifulSoup
 from discord import ApplicationContext, Forbidden, Guild, Member, Message, NotFound, OptionChoice, Permissions, Role, TextChannel
+from django.core.exceptions import ValidationError  # type: ignore
 
+from db.core.models import Interaction_Reminder_Opt_Out_Member, UoB_Made_Member
 from exceptions import CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
 from setup import settings
 from utils import TeXBot
-from .cog_utils import Bot_Cog
+from cogs.utils import Bot_Cog
 
 
 class Application_Commands_Cog(Bot_Cog):
@@ -142,27 +139,16 @@ class Application_Commands_Cog(Bot_Cog):
                 f"""{random.choice(settings["WELCOME_MESSAGES"]).replace("<User>", induction_member.mention).strip()} :tada:\nRemember to grab your roles in {roles_channel_mention} and say hello to everyone here! :wave:"""
             )
 
-        if await aiofiles.os.path.isfile(settings["MEMBERS_LISTS_FILE_PATH"]):
-            opted_out_members: set[str] = set()
-            async with aiofiles.open(settings["MEMBERS_LISTS_FILE_PATH"], "r", encoding="utf8") as members_lists_read_file:
-                members_lists_dict: dict[str, Any] = json.loads(
-                    await members_lists_read_file.read()
+        try:
+            interaction_reminder_opt_out_member: Interaction_Reminder_Opt_Out_Member = await Interaction_Reminder_Opt_Out_Member.objects.aget(
+                hashed_member_id=Interaction_Reminder_Opt_Out_Member.hash_member_id(
+                    interaction_member.id
                 )
-
-            if "opted_out_members" in members_lists_dict:
-                opted_out_members_list: Any = members_lists_dict["opted_out_members"]
-
-                if opted_out_members_list and isinstance(opted_out_members_list, list):
-                    opted_out_members = set(opted_out_members_list)
-
-            opted_out_members.discard(str(interaction_member.id))
-
-            members_lists_dict["opted_out_members"] = list(opted_out_members)
-
-            async with aiofiles.open(settings["MEMBERS_LISTS_FILE_PATH"], "w", encoding="utf8") as members_lists_write_file:
-                await members_lists_write_file.write(
-                    json.dumps(members_lists_dict)
-                )
+            )
+        except Interaction_Reminder_Opt_Out_Member.DoesNotExist:
+            pass
+        else:
+            await interaction_reminder_opt_out_member.adelete()
 
         await induction_member.add_roles(
             guest_role,  # type: ignore
@@ -522,14 +508,14 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         required=True,
         max_length=7,
         min_length=7,
-        parameter_name="student_id"
+        parameter_name="uob_id"
     )
-    async def make_member(self, ctx: ApplicationContext, student_id: str):
-        if not re.match(r"\A\d{7}\Z", student_id):
+    async def make_member(self, ctx: ApplicationContext, uob_id: str):
+        if not re.match(r"\A\d{7}\Z", uob_id):
             await self.send_error(
                 ctx,
                 command_name="make_member",
-                message=f"\"{student_id}\" is not a valid UoB Student ID."
+                message=f"\"{uob_id}\" is not a valid UoB Student ID."
             )
             return
 
@@ -589,24 +575,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             )
             return
 
-        made_members: set[str] = set()
-        members_lists_dict: dict[str, Any] = {}
-
-        if await aiofiles.os.path.isfile(settings["MEMBERS_LISTS_FILE_PATH"]):
-            async with aiofiles.open(settings["MEMBERS_LISTS_FILE_PATH"], "r", encoding="utf8") as members_lists_read_file:
-                members_lists_dict = json.loads(
-                    await members_lists_read_file.read()
-                )
-
-            if "made_members" in members_lists_dict:
-                made_members_list: Any = members_lists_dict["made_members"]
-
-                if made_members_list and isinstance(made_members_list, list):
-                    made_members = set(made_members_list)
-
-        hashed_student_id: str = hashlib.sha256(student_id.encode()).hexdigest()
-
-        if hashed_student_id in made_members:
+        if await UoB_Made_Member.objects.filter(hashed_uob_id=UoB_Made_Member.hash_uob_id(uob_id)).aexists():
             await ctx.respond(
                 ":information_source: No changes made. This student ID has already been used. Please contact a Committee member if this is an error. :information_source:",
                 ephemeral=True
@@ -637,7 +606,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
                 await self.bot.close()
                 return
 
-        if student_id in guild_member_ids:
+        if uob_id in guild_member_ids:
             await ctx.respond(
                 "Successfully made you a member!",
                 ephemeral=True
@@ -648,19 +617,11 @@ class Slash_Commands_Cog(Application_Commands_Cog):
                 reason=f"TeX Bot slash-command: \"/makemember\""
             )
 
-            made_members.add(hashed_student_id)
-
-            members_lists_dict["made_members"] = list(made_members)
-
-            await aiofiles.os.makedirs(
-                settings["MEMBERS_LISTS_FILE_PATH"].parent,
-                exist_ok=True
-            )
-
-            async with aiofiles.open(settings["MEMBERS_LISTS_FILE_PATH"], "w", encoding="utf8") as members_lists_write_file:
-                await members_lists_write_file.write(
-                    json.dumps(members_lists_dict)
-                )
+            try:
+                await UoB_Made_Member.objects.acreate(uob_id=uob_id)
+            except ValidationError as create_uob_made_member_error:
+                if "hashed_uob_id" not in create_uob_made_member_error.message_dict or all("already exists" not in error for error in create_uob_made_member_error.message_dict["hashed_uob_id"]):
+                    raise
 
         else:
             await self.send_error(

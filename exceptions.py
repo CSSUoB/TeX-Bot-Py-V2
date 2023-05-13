@@ -1,5 +1,5 @@
 import abc
-from typing import Any, Collection, Iterable
+from typing import Any, Collection
 
 
 def format_does_not_exist_with_dependencies(value: str, does_not_exist_type: str, dependant_commands: Collection[str], dependant_tasks: Collection[str]) -> str:
@@ -38,7 +38,6 @@ def format_does_not_exist_with_dependencies(value: str, does_not_exist_type: str
         if len(dependant_tasks) == 1:
             formatted_dependant_tasks += f"\"{next(iter(dependant_tasks))}\" task"
         else:
-            index: int
             dependant_task: str
             for index, dependant_task in enumerate(dependant_tasks):
                 formatted_dependant_tasks += f"\"{dependant_task}\""
@@ -64,7 +63,7 @@ class ImproperlyConfigured(Exception):
     pass
 
 
-class ErrorCodeMixin(Exception, abc.ABC):
+class BaseError(Exception, abc.ABC):
     # noinspection PyPropertyDefinition
     @classmethod  # type: ignore
     @property
@@ -97,7 +96,7 @@ class ErrorCodeMixin(Exception, abc.ABC):
         return formatted
 
 
-class InvalidMessagesJSONFile(KeyError, ErrorCodeMixin):
+class InvalidMessagesJSONFile(KeyError, BaseError):
     DEFAULT_MESSAGE: str = "The messages JSON file has an invalid structure at the given key."
 
     def __init__(self, message: str | None = None, dict_key: str | None = None) -> None:
@@ -122,7 +121,7 @@ class MessagesJSONFileValueError(InvalidMessagesJSONFile):
         super().__init__(message, dict_key)
 
 
-class GuildDoesNotExist(ValueError, ErrorCodeMixin):
+class GuildDoesNotExist(ValueError, BaseError):
     DEFAULT_MESSAGE: str = "Server with given ID does not exist"
 
     def __init__(self, message: str | None = None, guild_id: int | None = None) -> None:
@@ -134,7 +133,7 @@ class GuildDoesNotExist(ValueError, ErrorCodeMixin):
         super().__init__(message)
 
 
-class RoleDoesNotExist(ValueError, ErrorCodeMixin):
+class RoleDoesNotExist(ValueError, BaseError):
     DEFAULT_MESSAGE: str = "Role with given name does not exist"
 
     def __init__(self, message: str | None = None, role_name: str | None = None, dependant_commands: Collection[str] | None = None, dependant_tasks: Collection[str] | None = None) -> None:
@@ -142,11 +141,11 @@ class RoleDoesNotExist(ValueError, ErrorCodeMixin):
 
         self.dependant_commands: set[str] = set()
         if dependant_commands:
-            self.dependant_commands: set[str] = set(dependant_commands)
+            self.dependant_commands = set(dependant_commands)
 
         self.dependant_tasks: set[str] = set()
         if dependant_tasks:
-            self.dependant_tasks: set[str] = set(dependant_tasks)
+            self.dependant_tasks = set(dependant_tasks)
 
         if self.role_name and not message:
             if self.dependant_commands or self.dependant_tasks:
@@ -180,7 +179,7 @@ class MemberRoleDoesNotExist(RoleDoesNotExist):
         super().__init__(message, role_name="Member", dependant_commands={"makemember"})
 
 
-class ChannelDoesNotExist(ValueError, ErrorCodeMixin):
+class ChannelDoesNotExist(ValueError, BaseError):
     DEFAULT_MESSAGE: str = "Channel with given name does not exist"
 
     def __init__(self, message: str | None = None, channel_name: str | None = None, dependant_commands: Collection[str] | None = None, dependant_tasks: Collection[str] | None = None) -> None:

@@ -4,10 +4,10 @@ import discord
 from discord import Guild, Role, TextChannel
 from discord.ext import commands
 
+from cogs.utils import Bot_Cog
 from exceptions import CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
 from setup import settings
 from utils import TeXBot
-from .cog_utils import Bot_Cog
 from .tasks import Tasks_Cog
 
 
