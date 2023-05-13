@@ -203,8 +203,6 @@ class Slash_Commands_Cog(Application_Commands_Cog):
 
     @discord.slash_command(description="Replies with Pong!")
     async def ping(self, ctx: ApplicationContext):
-        async for message in ctx.user.history():
-            await message.delete()
         await ctx.respond(
             random.choices(
                 [
