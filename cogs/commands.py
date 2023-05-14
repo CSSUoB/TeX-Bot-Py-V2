@@ -2,8 +2,7 @@ import logging
 import random
 import re
 import time
-from datetime import datetime
-from django.utils import timezone
+from django.utils import timezone  # type: ignore
 
 import aiohttp
 import discord
@@ -167,7 +166,90 @@ class Application_Commands_Cog(Bot_Cog):
 
 class Slash_Commands_Cog(Application_Commands_Cog):
     @staticmethod
-    async def write_roles_autocomplete_get_channels(ctx: discord.AutocompleteContext):
+    async def remind_me_autocomplete_get_delays(ctx: discord.AutocompleteContext) -> set[str]:
+        if not ctx.value:
+            return {"in 5 minutes", "1 hours time", "1min", "30 secs", "2 days time", "22/9/2040", "5h"}
+
+        seconds_choices: set[str] = {"s", "sec", "seconds"}
+        minutes_choices: set[str] = {"m", "min", "mins"}
+        hours_choices: set[str] = {"h", "hr", "hour"}
+        days_choices: set[str] = {"d", "day"}
+        weeks_choices: set[str] = {"w", "wk", "week"}
+        years_choices: set[str] = {"y", "yr", "year"}
+        time_choices: set[str] = seconds_choices | minutes_choices | hours_choices | days_choices | weeks_choices | years_choices
+
+        delay_choices: set[str] = set()
+
+        if re.match(r"\Ain? ?\Z", ctx.value):
+            time_num: int
+            for time_num in range(1, 150):
+                joiner: str
+                for joiner in {"", " "}:
+                    has_s: str
+                    for has_s in {"", "s"}:
+                        delay_choices.update(f"{time_num}{joiner}{time_choice}{has_s}" for time_choice in time_choices)
+                        delay_choices.update(f"{time_num}{joiner}{time_choice.title()}{has_s}" for time_choice in time_choices)
+                        delay_choices.update(f"{time_num}{joiner}{time_choice.upper()}{has_s}" for time_choice in time_choices)
+
+            return {f"in {delay_choice}" for delay_choice in delay_choices}
+
+        if match := re.match(r"\Ain (?P<partial_date>\d{0,3})\Z", ctx.value):
+            for joiner in {"", " "}:
+                for has_s in {"", "s"}:
+                    delay_choices.update(f"""{match.group("partial_date")}{joiner}{time_choice}{has_s}""" for time_choice in time_choices)
+                    delay_choices.update(f"""{match.group("partial_date")}{joiner}{time_choice.title()}{has_s}""" for time_choice in time_choices)
+                    delay_choices.update(f"""{match.group("partial_date")}{joiner}{time_choice.upper()}{has_s}""" for time_choice in time_choices)
+
+            return {f"in {delay_choice}" for delay_choice in delay_choices}
+
+        current_year: int = discord.utils.utcnow().year
+
+        if re.match(r"\A\d{1,3}\Z", ctx.value):
+            for joiner in {"", " "}:
+                for has_s in {"", "s"}:
+                    delay_choices.update(f"{joiner}{time_choice}{has_s}" for time_choice in time_choices)
+                    delay_choices.update(f"{joiner}{time_choice.title()}{has_s}" for time_choice in time_choices)
+                    delay_choices.update(f"{joiner}{time_choice.upper()}{has_s}" for time_choice in time_choices)
+
+            if 1 <= int(ctx.value) <= 31:
+                month: int
+                for month in range(1, 12):
+                    year: int
+                    for year in range(current_year, current_year + 40):
+                        for joiner in {"/", " / ", "-", " - ", ".", " . "}:
+                            delay_choices.add(f"{joiner}{month}{joiner}{year}")
+                            if month < 10:
+                                delay_choices.add(f"{joiner}0{month}{joiner}{year}")
+
+        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?\Z", ctx.value):
+            if 1 <= int(match.group("date")) <= 31:
+                for month in range(1, 12):
+                    for year in range(current_year, current_year + 40):
+                        for joiner in {"/", " / ", "-", " - ", ".", " . "}:
+                            delay_choices.add(f"{month}{joiner}{year}")
+                            if month < 10:
+                                delay_choices.add(f"0{month}{joiner}{year}")
+
+        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2})\Z", ctx.value):
+            if 1 <= int(match.group("date")) <= 31 and 1 <= int(match.group("month")) <= 12:
+                for year in range(current_year, current_year + 40):
+                    for joiner in {"/", " / ", "-", " - ", ".", " . "}:
+                        delay_choices.add(f"{joiner}{year}")
+
+        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?\Z", ctx.value):
+            if 1 <= int(match.group("date")) <= 31 and 1 <= int(match.group("month")) <= 12:
+                for year in range(current_year, current_year + 40):
+                    delay_choices.add(f"{year}")
+
+        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?(?P<partial_year>\d{1,3})\Z", ctx.value):
+            if 1 <= int(match.group("date")) <= 31 and 1 <= int(match.group("month")) <= 12:
+                for year in range(current_year, current_year + 40):
+                    delay_choices.add(f"{year}"[len(match.group("partial_year")):])
+
+        return {f"{ctx.value}{delay_choice}" for delay_choice in delay_choices}
+
+    @staticmethod
+    async def write_roles_autocomplete_get_channels(ctx: discord.AutocompleteContext) -> set[OptionChoice]:
         if ctx.interaction.user is None:
             return set()
 
@@ -187,7 +269,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         return {OptionChoice(name=f"#{channel.name}", value=str(channel.id)) for channel in guild.text_channels if channel.permissions_for(channel_permissions_limiter).is_superset(Permissions(send_messages=True, view_channel=True))}
 
     @staticmethod
-    async def induct_autocomplete_get_members(ctx: discord.AutocompleteContext):
+    async def induct_autocomplete_get_members(ctx: discord.AutocompleteContext) -> set[OptionChoice]:
         try:
             guild: Guild = ctx.bot.css_guild  # type: ignore
         except GuildDoesNotExist:
@@ -229,7 +311,8 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         name="delay",
         input_type=str,
         description="The amount of time to wait before reminding you",
-        required=True
+        required=True,
+        autocomplete=discord.utils.basic_autocomplete(remind_me_autocomplete_get_delays),  # type: ignore
     )
     @discord.option(
         name="message",
