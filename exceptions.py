@@ -2,7 +2,7 @@ import abc
 from typing import Any, Collection
 
 
-def format_does_not_exist_with_dependencies(value: str, does_not_exist_type: str, dependant_commands: Collection[str], dependant_tasks: Collection[str]) -> str:
+def format_does_not_exist_with_dependencies(value: str, does_not_exist_type: str, dependant_commands: Collection[str], dependant_tasks: Collection[str], dependant_events: Collection[str]) -> str:
     if not dependant_commands or not dependant_tasks:
         raise ValueError("The arguments \"dependant_commands\" & \"dependant_tasks\" cannot both be empty.")
 
@@ -32,8 +32,11 @@ def format_does_not_exist_with_dependencies(value: str, does_not_exist_type: str
     if dependant_tasks:
         formatted_dependant_tasks: str = ""
 
-        if dependant_tasks:
-            partial_message += " and the "
+        if dependant_commands:
+            if not dependant_events:
+                partial_message += " and the "
+            else:
+                partial_message += ", the "
 
         if len(dependant_tasks) == 1:
             formatted_dependant_tasks += f"\"{next(iter(dependant_tasks))}\" task"
@@ -47,9 +50,31 @@ def format_does_not_exist_with_dependencies(value: str, does_not_exist_type: str
                 elif index == len(dependant_tasks) - 2:
                     formatted_dependant_tasks += " & "
 
-            formatted_dependant_commands += " commands"
+            formatted_dependant_tasks += " tasks"
 
         partial_message += formatted_dependant_tasks
+
+    if dependant_events:
+        formatted_dependant_events: str = ""
+
+        if dependant_commands or dependant_tasks:
+            partial_message += " and the "
+
+        if len(dependant_events) == 1:
+            formatted_dependant_events += f"\"{next(iter(dependant_events))}\" event"
+        else:
+            dependant_event: str
+            for index, dependant_event in enumerate(dependant_events):
+                formatted_dependant_events += f"\"{dependant_event}\""
+
+                if index < len(dependant_events) - 2:
+                    formatted_dependant_events += ", "
+                elif index == len(dependant_events) - 2:
+                    formatted_dependant_events += " & "
+
+            formatted_dependant_events += " events"
+
+        partial_message += formatted_dependant_events
 
     return f"{partial_message}."
 
@@ -136,7 +161,7 @@ class GuildDoesNotExist(ValueError, BaseError):
 class RoleDoesNotExist(ValueError, BaseError):
     DEFAULT_MESSAGE: str = "Role with given name does not exist"
 
-    def __init__(self, message: str | None = None, role_name: str | None = None, dependant_commands: Collection[str] | None = None, dependant_tasks: Collection[str] | None = None) -> None:
+    def __init__(self, message: str | None = None, role_name: str | None = None, dependant_commands: Collection[str] | None = None, dependant_tasks: Collection[str] | None = None, dependant_events: Collection[str] | None = None) -> None:
         self.role_name: str | None = role_name
 
         self.dependant_commands: set[str] = set()
@@ -147,13 +172,18 @@ class RoleDoesNotExist(ValueError, BaseError):
         if dependant_tasks:
             self.dependant_tasks = set(dependant_tasks)
 
+        self.dependant_events: set[str] = set()
+        if dependant_events:
+            self.dependant_events = set(dependant_events)
+
         if self.role_name and not message:
-            if self.dependant_commands or self.dependant_tasks:
+            if self.dependant_commands or self.dependant_tasks or self.dependant_events:
                 message = format_does_not_exist_with_dependencies(
                     self.role_name,
                     "role",
                     self.dependant_commands,
-                    self.dependant_tasks
+                    self.dependant_tasks,
+                    self.dependant_events
                 )
             else:
                 message = f"Role with name \"{self.role_name}\" does not exist."
@@ -182,7 +212,7 @@ class MemberRoleDoesNotExist(RoleDoesNotExist):
 class ChannelDoesNotExist(ValueError, BaseError):
     DEFAULT_MESSAGE: str = "Channel with given name does not exist"
 
-    def __init__(self, message: str | None = None, channel_name: str | None = None, dependant_commands: Collection[str] | None = None, dependant_tasks: Collection[str] | None = None) -> None:
+    def __init__(self, message: str | None = None, channel_name: str | None = None, dependant_commands: Collection[str] | None = None, dependant_tasks: Collection[str] | None = None, dependant_events: Collection[str] | None = None) -> None:
         self.channel_name: str | None = channel_name
 
         self.dependant_commands: set[str] = set()
@@ -193,13 +223,18 @@ class ChannelDoesNotExist(ValueError, BaseError):
         if dependant_tasks:
             self.dependant_tasks = set(dependant_tasks)
 
+        self.dependant_events: set[str] = set()
+        if dependant_events:
+            self.dependant_events = set(dependant_events)
+
         if self.channel_name and not message:
-            if self.dependant_commands or self.dependant_tasks:
+            if self.dependant_commands or self.dependant_tasks or self.dependant_events:
                 message = format_does_not_exist_with_dependencies(
                     self.channel_name,
                     "channel",
                     self.dependant_commands,
-                    self.dependant_tasks
+                    self.dependant_tasks,
+                    self.dependant_events
                 )
             else:
                 message = f"Channel with name \"{self.channel_name}\" does not exist."

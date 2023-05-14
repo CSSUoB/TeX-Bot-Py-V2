@@ -34,6 +34,7 @@ class TeXBot(discord.Bot):
         self._member_role: Role | None = None
         self._roles_channel: TextChannel | None = None
         self._general_channel: TextChannel | None = None
+        self._welcome_channel: TextChannel | None = None
 
         super().__init__(*args, **kwargs)
 
@@ -78,3 +79,10 @@ class TeXBot(discord.Bot):
             self._general_channel = discord.utils.get(self.css_guild.text_channels, name="general")
 
         return self._general_channel
+
+    @property
+    def welcome_channel(self) -> TextChannel | None:
+        if self._welcome_channel is None or discord.utils.get(self.css_guild.text_channels, id=self._welcome_channel.id) is None:
+            self._welcome_channel = self.css_guild.rules_channel or discord.utils.get(self.css_guild.text_channels, name="welcome")
+
+        return self._welcome_channel

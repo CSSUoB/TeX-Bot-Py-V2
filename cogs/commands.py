@@ -139,29 +139,12 @@ class Application_Commands_Cog(Bot_Cog):
                 f"""{random.choice(settings["WELCOME_MESSAGES"]).replace("<User>", induction_member.mention).strip()} :tada:\nRemember to grab your roles in {roles_channel_mention} and say hello to everyone here! :wave:"""
             )
 
-        try:
-            interaction_reminder_opt_out_member: Interaction_Reminder_Opt_Out_Member = await Interaction_Reminder_Opt_Out_Member.objects.aget(
-                hashed_member_id=Interaction_Reminder_Opt_Out_Member.hash_member_id(
-                    interaction_member.id
-                )
-            )
-        except Interaction_Reminder_Opt_Out_Member.DoesNotExist:
-            pass
-        else:
-            await interaction_reminder_opt_out_member.adelete()
-
         await induction_member.add_roles(
             guest_role,  # type: ignore
             reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\""
         )
 
         await ctx.respond("User inducted successfully.", ephemeral=True)
-
-        async for message in induction_member.history():
-            if "joined the CSS Discord server but have not yet introduced" in message.content:
-                await message.delete(
-                    reason="Delete interaction reminders after user is inducted."
-                )
 
 
 class Slash_Commands_Cog(Application_Commands_Cog):
