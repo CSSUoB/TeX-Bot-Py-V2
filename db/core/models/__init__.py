@@ -278,3 +278,28 @@ class Sent_Get_Roles_Reminder_Member(Async_Base_Model):
         """
 
         return super().get_proxy_field_names() | {"member_id"}
+
+
+class Left_Member(Async_Base_Model):
+    _roles: list[str] = models.JSONField()
+
+    @property
+    def roles(self) -> set:
+        return set(self._roles)
+
+    @roles.setter
+    def roles(self, roles: set[str]) -> None:
+        self._roles = list(roles)
+
+    class Meta:
+        verbose_name = "A List of Roles that a Member had when they left the CSS Discord server."
+
+    @classmethod
+    def get_proxy_field_names(cls) -> set[str]:
+        """
+            Returns a set of names of extra properties of this model that can
+            be saved to the database, even though those fields don't actually
+            exist. They are just proxy fields.
+        """
+
+        return super().get_proxy_field_names() | {"roles"}

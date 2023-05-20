@@ -1,17 +1,20 @@
 import logging
+import math
 import random
 import re
 import time
+
 from django.utils import timezone  # type: ignore
 
 import aiohttp
 import discord
 import parsedatetime  # type: ignore
 from bs4 import BeautifulSoup
-from discord import ApplicationContext, Forbidden, Guild, Member, Message, NotFound, OptionChoice, Permissions, Role, TextChannel
+from discord import ApplicationContext, Forbidden, Guild, Member, Message, NotFound, OptionChoice, Permissions, Role, SlashCommandGroup, TextChannel, User
 from django.core.exceptions import ValidationError  # type: ignore
 
-from db.core.models import Discord_Reminder, Interaction_Reminder_Opt_Out_Member, UoB_Made_Member
+import utils
+from db.core.models import Discord_Reminder, Left_Member, UoB_Made_Member
 from exceptions import CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
 from setup import settings
 from utils import TeXBot
@@ -25,7 +28,11 @@ class Application_Commands_Cog(Bot_Cog):
         "edit_message": "edit the message",
         "induct": "induct user",
         "make_member": "make you a member",
-        "remind_me": "remind you"
+        "remind_me": "remind you",
+        "channel_stats": "display channel statistics",
+        "server_stats": "display whole server statistics",
+        "user_stats": "display your statistics",
+        "left_member_stats": "display statistics about the members that have left the server"
     }
 
     async def send_error(self, ctx: ApplicationContext, error_code: str | None = None, command_name: str | None = None, message: str | None = None, logging_message: str | None = None):
@@ -66,8 +73,7 @@ class Application_Commands_Cog(Bot_Cog):
 
     async def _induct(self, ctx: discord.ApplicationContext, induction_member: Member, guild: Guild, silent: bool):
         interaction_member: Member | None = guild.get_member(ctx.user.id)
-        if interaction_member is None:
-            # noinspection SpellCheckingInspection
+        if not interaction_member:
             await self.send_error(
                 ctx,
                 command_name="induct",
@@ -76,7 +82,7 @@ class Application_Commands_Cog(Bot_Cog):
             return
 
         committee_role: Role | None = self.bot.committee_role
-        if committee_role is None:
+        if not committee_role:
             await self.send_error(
                 ctx,
                 error_code="E1021",
@@ -94,7 +100,7 @@ class Application_Commands_Cog(Bot_Cog):
             return
 
         guest_role: Role | None = self.bot.guest_role
-        if guest_role is None:
+        if not guest_role:
             await self.send_error(
                 ctx,
                 error_code="E1022",
@@ -120,7 +126,7 @@ class Application_Commands_Cog(Bot_Cog):
 
         if not silent:
             general_channel: TextChannel | None = self.bot.general_channel
-            if general_channel is None:
+            if not general_channel:
                 await self.send_error(
                     ctx,
                     error_code="E1032",
@@ -148,6 +154,8 @@ class Application_Commands_Cog(Bot_Cog):
 
 
 class Slash_Commands_Cog(Application_Commands_Cog):
+    stats: SlashCommandGroup = SlashCommandGroup("stats", "Various statistics about the CSS Discord server")
+
     @staticmethod
     async def remind_me_autocomplete_get_delays(ctx: discord.AutocompleteContext) -> set[str]:
         if not ctx.value:
@@ -232,8 +240,8 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         return {f"{ctx.value}{delay_choice}" for delay_choice in delay_choices}
 
     @staticmethod
-    async def write_roles_autocomplete_get_channels(ctx: discord.AutocompleteContext) -> set[OptionChoice]:
-        if ctx.interaction.user is None:
+    async def autocomplete_get_text_channels(ctx: discord.AutocompleteContext) -> set[OptionChoice]:
+        if not ctx.interaction.user:
             return set()
 
         try:
@@ -241,15 +249,19 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         except GuildDoesNotExist:
             return set()
 
-        channel_permissions_limiter: Member | Role | None = discord.utils.get(guild.roles, name="@everyone")
-        if channel_permissions_limiter is None:
+        channel_permissions_limiter: Member | Role | None = ctx.bot.guest_role  # type: ignore
+        if not channel_permissions_limiter:
             return set()
 
         interaction_member: Member | None = guild.get_member(ctx.interaction.user.id)
         if interaction_member:
             channel_permissions_limiter = interaction_member
 
-        return {OptionChoice(name=f"#{channel.name}", value=str(channel.id)) for channel in guild.text_channels if channel.permissions_for(channel_permissions_limiter).is_superset(Permissions(send_messages=True, view_channel=True))}
+        if not ctx.value or re.match(r"\A#.*\Z", ctx.value):
+            return {OptionChoice(name=f"#{channel.name}", value=str(channel.id)) for channel in guild.text_channels if channel.permissions_for(channel_permissions_limiter).is_superset(Permissions(send_messages=True, view_channel=True))}
+
+        else:
+            return {OptionChoice(name=channel.name, value=str(channel.id)) for channel in guild.text_channels if channel.permissions_for(channel_permissions_limiter).is_superset(Permissions(send_messages=True, view_channel=True))}
 
     @staticmethod
     async def induct_autocomplete_get_members(ctx: discord.AutocompleteContext) -> set[OptionChoice]:
@@ -264,7 +276,11 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         if guest_role:
             members = {member for member in members if guest_role not in member.roles}
 
-        return {OptionChoice(name=f"@{member.name}", value=str(member.id)) for member in members}
+        if not ctx.value or re.match(r"\A@.*\Z", ctx.value):
+            return {OptionChoice(name=f"@{member.name}", value=str(member.id)) for member in members}
+
+        else:
+            return {OptionChoice(name=member.name, value=str(member.id)) for member in members}
 
     @discord.slash_command(description="Replies with Pong!")
     async def ping(self, ctx: ApplicationContext):
@@ -373,7 +389,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return
 
         interaction_member: Member | None = guild.get_member(ctx.user.id)
-        if interaction_member is None:
+        if not interaction_member:
             await self.send_error(
                 ctx,
                 command_name="write_roles",
@@ -382,7 +398,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return
 
         committee_role: Role | None = self.bot.committee_role
-        if committee_role is None:
+        if not committee_role:
             await self.send_error(
                 ctx,
                 error_code="E1021",
@@ -400,7 +416,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return
 
         roles_channel: TextChannel | None = self.bot.roles_channel
-        if roles_channel is None:
+        if not roles_channel:
             await self.send_error(
                 ctx,
                 error_code="E1031",
@@ -424,7 +440,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         name="channel",
         description="The channel that the message, you wish to edit, is in.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(write_roles_autocomplete_get_channels),  # type: ignore
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore
         required=True,
         parameter_name="str_channel_id"
     )
@@ -480,7 +496,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return
 
         channel: TextChannel | None = discord.utils.get(guild.text_channels, id=channel_id)
-        if channel is None:
+        if not channel:
             await self.send_error(
                 ctx,
                 command_name="edit_message",
@@ -489,7 +505,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return
 
         interaction_member: Member | None = guild.get_member(ctx.user.id)
-        if interaction_member is None:
+        if not interaction_member:
             await self.send_error(
                 ctx,
                 command_name="edit_message",
@@ -498,7 +514,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return
 
         committee_role: Role | None = self.bot.committee_role
-        if committee_role is None:
+        if not committee_role:
             await self.send_error(
                 ctx,
                 error_code="E1021",
@@ -580,7 +596,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return
 
         induct_member: Member | None = guild.get_member(induct_member_id)
-        if induct_member is None:
+        if not induct_member:
             await self.send_error(
                 ctx,
                 command_name="induct",
@@ -626,7 +642,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return
 
         interaction_member: Member | None = guild.get_member(ctx.user.id)
-        if interaction_member is None:
+        if not interaction_member:
             await self.send_error(
                 ctx,
                 command_name="make_member",
@@ -635,7 +651,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return
 
         guest_role: Role | None = self.bot.guest_role
-        if guest_role is None:
+        if not guest_role:
             await self.send_error(
                 ctx,
                 error_code="E1022",
@@ -653,7 +669,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return
 
         member_role: Role | None = self.bot.member_role
-        if member_role is None:
+        if not member_role:
             await self.send_error(
                 ctx,
                 error_code="E1023",
@@ -724,6 +740,341 @@ class Slash_Commands_Cog(Application_Commands_Cog):
                 message="You must be a member of The Computer Science Society to use this command.\nThe provided student ID must match the UoB student ID that you purchased your CSS membership with."
             )
             return
+
+    # noinspection SpellCheckingInspection
+    @stats.command(
+        name="channel",
+        description="Displays the stats for the current/a given channel."
+    )
+    @discord.option(
+        name="channel",
+        description="The channel to display the stats for.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore
+        required=False,
+        parameter_name="str_channel_id"
+    )
+    async def channel_stats(self, ctx: ApplicationContext, str_channel_id: str):
+        channel_id: int = ctx.channel_id
+
+        if str_channel_id:
+            if not re.match(r"\A\d{17,20}\Z", str_channel_id):
+                await self.send_error(
+                    ctx,
+                    command_name="channel_stats",
+                    message=f"\"{str_channel_id}\" is not a valid channel ID."
+                )
+                return
+
+            channel_id = int(str_channel_id)
+
+        try:
+            guild: Guild = self.bot.css_guild
+        except GuildDoesNotExist as guild_error:
+            await self.send_error(
+                ctx,
+                error_code="E1011",
+                command_name="channel_stats"
+            )
+            logging.critical(guild_error)
+            await self.bot.close()
+            return
+
+        channel: TextChannel | None = discord.utils.get(guild.text_channels, id=channel_id)
+        if not channel:
+            await self.send_error(
+                ctx,
+                command_name="channel_stats",
+                message=f"Text channel with ID \"{channel_id}\" does not exist."
+            )
+            return
+
+        message_counts: dict[str, int] = {"Total": 0}
+
+        role_name: str
+        for role_name in settings["STATISTICS_ROLES"]:
+            if discord.utils.get(guild.roles, name=role_name):
+                message_counts[f"@{role_name}"] = 0
+
+        message: Message
+        async for message in channel.history(after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]):
+            if message.author.bot:
+                continue
+
+            message_counts["Total"] += 1
+
+            if isinstance(message.author, User):
+                continue
+
+            author_role_names: set[str] = {author_role.name for author_role in message.author.roles}
+
+            author_role_name: str
+            for author_role_name in author_role_names:
+                if f"@{author_role_name}" in message_counts.keys():
+                    if author_role_name == "Committee" and "Committee-Elect" in author_role_names:
+                        continue
+
+                    if author_role_name == "Guest" and "Member" in author_role_names:
+                        continue
+
+                    message_counts[f"@{author_role_name}"] += 1
+
+        if math.ceil(max(message_counts.values()) / 15) < 1:
+            await self.send_error(
+                ctx,
+                command_name="channel_stats",
+                message=f"There are not enough messages sent in this channel."
+            )
+            return
+
+        await ctx.respond(
+            file=utils.plot_bar_chart(
+                message_counts,
+                xlabel="Role Name",
+                ylabel=f"""Number of Messages Sent (in the past {utils.time_formatter(settings["STATISTICS_DAYS"].days, "day")})""",
+                title=f"Most Active Roles in #{channel.name}",
+                filename=f"{channel.name}_channel_stats.png",
+                description=f"Bar chart of the number of messages sent by different roles in {channel.mention}.",
+                extra_text="Messages sent by members with multiple roles are counted once for each role (except for @Member vs @Guest & @Committee vs @Committee-Elect)"
+            )
+        )
+
+    @stats.command(
+        name="server",
+        description="Displays the stats for the whole of the CSS Discord server."
+    )
+    async def server_stats(self, ctx: ApplicationContext):
+        try:
+            guild: Guild = self.bot.css_guild
+        except GuildDoesNotExist as guild_error:
+            await self.send_error(
+                ctx,
+                error_code="E1011",
+                command_name="server_stats"
+            )
+            logging.critical(guild_error)
+            await self.bot.close()
+            return
+
+        guest_role: Role | None = self.bot.guest_role
+        if not guest_role:
+            await self.send_error(
+                ctx,
+                error_code="E1022",
+                command_name="server_stats",
+                logging_message=str(GuestRoleDoesNotExist())
+            )
+            return
+
+        message_counts: dict[str, dict[str, int]] = {
+            "roles": {"Total": 0},
+            "channels": {}
+        }
+
+        role_name: str
+        for role_name in settings["STATISTICS_ROLES"]:
+            if discord.utils.get(guild.roles, name=role_name):
+                message_counts["roles"][f"@{role_name}"] = 0
+
+        channel: TextChannel
+        for channel in guild.text_channels:
+            if not channel.permissions_for(guest_role).is_superset(Permissions(send_messages=True)):
+                continue
+
+            message_counts["channels"][f"#{channel.name}"] = 0
+
+            message: Message
+            async for message in channel.history(after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]):
+                if message.author.bot:
+                    continue
+
+                message_counts["channels"][f"#{channel.name}"] += 1
+                message_counts["roles"]["Total"] += 1
+
+                if isinstance(message.author, User):
+                    continue
+
+                author_role_names: set[str] = {author_role.name for author_role in message.author.roles}
+
+                author_role_name: str
+                for author_role_name in author_role_names:
+                    if f"@{author_role_name}" in message_counts["roles"].keys():
+                        if author_role_name == "Committee" and "Committee-Elect" in author_role_names:
+                            continue
+
+                        if author_role_name == "Guest" and "Member" in author_role_names:
+                            continue
+
+                        message_counts["roles"][f"@{author_role_name}"] += 1
+
+        if math.ceil(max(message_counts["roles"].values()) / 15) < 1 or math.ceil(max(message_counts["channels"].values()) / 15) < 1:
+            await self.send_error(
+                ctx,
+                command_name="server_stats",
+                message="There are not enough messages sent."
+            )
+            return
+
+        await ctx.respond(
+            files=[
+                utils.plot_bar_chart(
+                    message_counts["roles"],
+                    xlabel="Role Name",
+                    ylabel=f"""Number of Messages Sent (in the past {utils.time_formatter(settings["STATISTICS_DAYS"].days, "day")})""",
+                    title="Most Active Roles in the CSS Discord Server",
+                    filename="roles_server_stats.png",
+                    description="Bar chart of the number of messages sent by different roles in the CSS Discord server.",
+                    extra_text="Messages sent by members with multiple roles are counted once for each role (except for @Member vs @Guest & @Committee vs @Committee-Elect)"
+                ),
+                utils.plot_bar_chart(
+                    message_counts["channels"],
+                    xlabel="Channel Name",
+                    ylabel=f"""Number of Messages Sent (in the past {utils.time_formatter(settings["STATISTICS_DAYS"].days, "day")})""",
+                    title="Most Active Channels in the CSS Discord Server",
+                    filename="channels_server_stats.png",
+                    description="Bar chart of the number of messages sent in different text channels in the CSS Discord server."
+                ),
+            ]
+        )
+
+    @stats.command(
+        name="self",
+        description="Displays stats about the number of messages you have sent."
+    )
+    async def user_stats(self, ctx: ApplicationContext):
+        try:
+            guild: Guild = self.bot.css_guild
+        except GuildDoesNotExist as guild_error:
+            await self.send_error(
+                ctx,
+                error_code="E1011",
+                command_name="user_stats"
+            )
+            logging.critical(guild_error)
+            await self.bot.close()
+            return
+
+        interaction_member: Member | None = guild.get_member(ctx.user.id)
+        if not interaction_member:
+            await self.send_error(
+                ctx,
+                command_name="user_stats",
+                message="You must be a member of the CSS Discord server to use this command."
+            )
+            return
+
+        guest_role: Role | None = self.bot.guest_role
+        if not guest_role:
+            await self.send_error(
+                ctx,
+                error_code="E1022",
+                command_name="user_stats",
+                logging_message=str(GuestRoleDoesNotExist())
+            )
+            return
+
+        if guest_role not in interaction_member.roles:
+            await self.send_error(
+                ctx,
+                command_name="user_stats",
+                message="You must be a inducted as guest member of the CSS Discord server to use this command."
+            )
+            return
+
+        message_counts: dict[str, int] = {"Total": 0}
+
+        channel: TextChannel
+        for channel in guild.text_channels:
+            if not channel.permissions_for(guest_role).is_superset(Permissions(send_messages=True)):
+                continue
+
+            message_counts[f"#{channel.name}"] = 0
+
+            message: Message
+            async for message in channel.history(after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]):
+                if message.author == ctx.user and not message.author.bot:
+                    message_counts[f"#{channel.name}"] += 1
+                    message_counts["Total"] += 1
+
+        if math.ceil(max(message_counts.values()) / 15) < 1:
+            await self.send_error(
+                ctx,
+                command_name="user_stats",
+                message=f"You have not sent enough messages."
+            )
+            return
+
+        await ctx.respond(
+            file=utils.plot_bar_chart(
+                message_counts,
+                xlabel="Channel Name",
+                ylabel=f"""Number of Messages Sent (in the past {utils.time_formatter(settings["STATISTICS_DAYS"].days, "day")})""",
+                title="Your Most Active Channels in the CSS Discord Server",
+                filename=f"{ctx.user}_stats.png",
+                description=f"Bar chart of the number of messages sent by {ctx.user} in different channels in the CSS Discord server."
+            )
+        )
+
+    # noinspection SpellCheckingInspection
+    @stats.command(
+        name="leftmembers",
+        description="Displays the stats about members that have left the CSS Discord server."
+    )
+    async def left_member_stats(self, ctx: ApplicationContext):
+        try:
+            guild: Guild = self.bot.css_guild
+        except GuildDoesNotExist as guild_error:
+            await self.send_error(
+                ctx,
+                error_code="E1011",
+                command_name="left_member_stats"
+            )
+            logging.critical(guild_error)
+            await self.bot.close()
+            return
+
+        left_member_counts: dict[str, int] = {
+            "Total": await Left_Member.objects.acount()
+        }
+
+        role_name: str
+        for role_name in settings["STATISTICS_ROLES"]:
+            if discord.utils.get(guild.roles, name=role_name):
+                left_member_counts[f"@{role_name}"] = 0
+
+        left_member: Left_Member
+        async for left_member in Left_Member.objects.all():
+            for left_member_role in left_member.roles:
+                if left_member_role not in left_member_counts:
+                    continue
+
+                if left_member_role == "@Committee" and "@Committee-Elect" in left_member.roles:
+                    continue
+
+                if left_member_role == "@Guest" and "@Member" in left_member.roles:
+                    continue
+
+                left_member_counts[left_member_role] += 1
+
+        if math.ceil(max(left_member_counts.values()) / 15) < 1:
+            await self.send_error(
+                ctx,
+                command_name="left_member_stats",
+                message=f"Not enough data about members that have left the server."
+            )
+            return
+
+        await ctx.respond(
+            file=utils.plot_bar_chart(
+                left_member_counts,
+                xlabel="Role Name",
+                ylabel="Number of Members that have left the CSS Discord Server",
+                title="Most Common Roles that Members had when they left the CSS Discord Server",
+                filename="left_members_stats.png",
+                description="Bar chart of the number of members with different roles that have left the CSS Discord server.",
+                extra_text="Members that left with multiple roles are counted once for each role (except for @Member vs @Guest & @Committee vs @Committee-Elect)"
+            )
+        )
 
 
 class User_Commands_Cog(Application_Commands_Cog):

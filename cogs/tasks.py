@@ -4,8 +4,7 @@ from datetime import timedelta
 
 import discord
 import emoji
-from discord import ActionRow, Button, ChannelType, Forbidden, Guild, Member, PartialEmoji, PartialMessageable, Role, \
-    TextChannel, User
+from discord import ActionRow, Button, ChannelType, Forbidden, Guild, Member, PartialEmoji, PartialMessageable, Role, TextChannel, User
 from discord import ButtonStyle, Interaction, ui
 from discord.ext import tasks
 from discord.ui import View
@@ -86,7 +85,7 @@ class Tasks_Cog(Bot_Cog):
             return
 
         guest_role: Role | None = self.bot.guest_role
-        if guest_role is None:
+        if not guest_role:
             logging.critical(GuestRoleDoesNotExist())
             await self.bot.close()
             return
@@ -96,13 +95,13 @@ class Tasks_Cog(Bot_Cog):
             if guest_role in member.roles or member.bot:
                 continue
 
-            if member.joined_at is None:
+            if not member.joined_at:
                 logging.error(
                     f"Member with ID: {member.id} could not be checked whether to kick, because their \"joined_at\" attribute was None."
                 )
                 continue
 
-            kick_no_introduction_members_delay: timedelta = timedelta(**settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"])
+            kick_no_introduction_members_delay: timedelta = settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"]
 
             if (discord.utils.utcnow() - member.joined_at) > kick_no_introduction_members_delay:
                 try:
@@ -126,7 +125,7 @@ class Tasks_Cog(Bot_Cog):
             return
 
         guest_role: Role | None = self.bot.guest_role
-        if guest_role is None:
+        if not guest_role:
             logging.critical(GuestRoleDoesNotExist())
             await self.bot.close()
             return
@@ -165,7 +164,7 @@ class Tasks_Cog(Bot_Cog):
                 await self.bot.close()
                 return
 
-            if interaction.user is None:
+            if not interaction.user:
                 await interaction.response.send_message(
                     ":warning:There was an error when trying to opt-in/out of interaction reminders.:warning:",
                     ephemeral=True
@@ -175,7 +174,7 @@ class Tasks_Cog(Bot_Cog):
             interaction_member: Member | None = guild.get_member(interaction.user.id)
 
             if button.style == ButtonStyle.red or str(button.emoji) == emoji.emojize(":no_good:", language="alias") or (button.label and "Opt-out" in button.label):
-                if interaction_member is None:
+                if not interaction_member:
                     await interaction.response.send_message(
                         ":warning:There was an error when trying to opt-out of interaction reminders.:warning:\n`You must be a member of the CSS Discord server to opt-out of interaction reminders.`",
                         ephemeral=True
@@ -197,7 +196,7 @@ class Tasks_Cog(Bot_Cog):
                 await interaction.response.edit_message(view=self)
 
             elif button.style == ButtonStyle.green or str(button.emoji) == emoji.emojize(":raised_hand:", language="alias") or (button.label and "Opt back in" in button.label):
-                if interaction_member is None:
+                if not interaction_member:
                     await interaction.response.send_message(
                         ":warning:There was an error when trying to opt back in to interaction reminders.:warning:\n`You must be a member of the CSS Discord server to opt back in to interaction reminders.`",
                         ephemeral=True
@@ -231,7 +230,7 @@ class Tasks_Cog(Bot_Cog):
             return
 
         guest_role: Role | None = self.bot.guest_role
-        if guest_role is None:
+        if not guest_role:
             logging.critical(GuestRoleDoesNotExist())
             await self.bot.close()
             return
@@ -243,7 +242,7 @@ class Tasks_Cog(Bot_Cog):
 
         member: Member
         for member in guild.members:
-            if member.joined_at is None:
+            if not member.joined_at:
                 logging.error(
                     f"Member with ID: {member.id} could not be checked whether to send role_reminder, because their \"joined_at\" attribute was None."
                 )

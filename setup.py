@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import re
+from datetime import timedelta
 from pathlib import Path
 from typing import Any, Match
 
@@ -43,13 +44,15 @@ if not re.match(r"\A\d{17,20}\Z", _str_DISCORD_GUILD_ID):
     raise ImproperlyConfigured("DISCORD_GUILD_ID must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id).")
 settings["DISCORD_GUILD_ID"] = int(_str_DISCORD_GUILD_ID)
 
+
 try:
     ping_command_easter_egg_probability = 100 * float(os.getenv("PING_COMMAND_EASTER_EGG_PROBABILITY", "0.01"))
-except ValueError as e:
+except (ValueError, TypeError) as e:
     raise ImproperlyConfigured("PING_COMMAND_EASTER_EGG_PROBABILITY must be a float.") from e
 if not 100 >= ping_command_easter_egg_probability >= 0:
     raise ImproperlyConfigured("PING_COMMAND_EASTER_EGG_PROBABILITY must be a value between & including 1 & 0.")
 settings["PING_COMMAND_EASTER_EGG_WEIGHTS"] = (100 - ping_command_easter_egg_probability, ping_command_easter_egg_probability)
+
 
 _path_MESSAGES_FILE_PATH = Path(str(os.getenv("MESSAGES_FILE_PATH", "messages.json")))
 if not _path_MESSAGES_FILE_PATH.is_file():
@@ -75,6 +78,7 @@ if not isinstance(messages_dict["roles_messages"], list) or not messages_dict["r
     raise MessagesJSONFileValueError(dict_key="roles_messages", invalid_value=messages_dict["roles_messages"])
 settings["ROLES_MESSAGES"] = messages_dict["roles_messages"]
 
+
 settings["MEMBERS_PAGE_URL"] = str(os.getenv("MEMBERS_PAGE_URL"))
 if not validators.url(settings["MEMBERS_PAGE_URL"]):
     raise ImproperlyConfigured("MEMBERS_PAGE_URL must be a valid URL.")
@@ -82,6 +86,7 @@ if not validators.url(settings["MEMBERS_PAGE_URL"]):
 settings["MEMBERS_PAGE_COOKIE"] = str(os.getenv("MEMBERS_PAGE_COOKIE"))
 if not re.match(r"\A[A-Fa-f\d]{200}\Z", settings["MEMBERS_PAGE_COOKIE"]):
     raise ImproperlyConfigured("MEMBERS_PAGE_COOKIE must be a valid .ASPXAUTH cookie.")
+
 
 _str_SEND_INTRODUCTION_REMINDERS = str(os.getenv("SEND_INTRODUCTION_REMINDERS", "True")).lower()
 if _str_SEND_INTRODUCTION_REMINDERS not in TRUE_VALUES | FALSE_VALUES:
@@ -101,16 +106,34 @@ if _str_KICK_NO_INTRODUCTION_MEMBERS not in TRUE_VALUES | FALSE_VALUES:
 settings["KICK_NO_INTRODUCTION_MEMBERS"] = _str_KICK_NO_INTRODUCTION_MEMBERS in TRUE_VALUES
 
 _match_KICK_NO_INTRODUCTION_MEMBERS_DELAY: Match | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z", str(os.getenv("KICK_NO_INTRODUCTION_MEMBERS_DELAY", "120h")))
-settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] = {"hours": 999}
+settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] = timedelta()
 if settings["KICK_NO_INTRODUCTION_MEMBERS"]:
     if not _match_KICK_NO_INTRODUCTION_MEMBERS_DELAY:
         raise ImproperlyConfigured("KICK_NO_INTRODUCTION_MEMBERS_DELAY must contain the delay in any combination of seconds, minutes or hours.")
-    settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] = {key: float(value) for key, value in _match_KICK_NO_INTRODUCTION_MEMBERS_DELAY.groupdict().items() if value}
+    settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] = timedelta(**{key: float(value) for key, value in _match_KICK_NO_INTRODUCTION_MEMBERS_DELAY.groupdict().items() if value})
 
 _match_GET_ROLES_REMINDER_INTERVAL: Match | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z", str(os.getenv("GET_ROLES_REMINDER_INTERVAL", "24h")))
 if not _match_GET_ROLES_REMINDER_INTERVAL:
     raise ImproperlyConfigured("GET_ROLES_REMINDER_INTERVAL must contain the interval in any combination of seconds, minutes or hours.")
 settings["GET_ROLES_REMINDER_INTERVAL"] = {key: float(value) for key, value in _match_GET_ROLES_REMINDER_INTERVAL.groupdict().items() if value}
+
+
+try:
+    _float_STATISTICS_DAYS: float = float(os.getenv("STATISTICS_DAYS", 30))
+except (ValueError, TypeError) as statistics_days_error:
+    raise ImproperlyConfigured("STATISTICS_DAYS must contain the statistics period in days.") from statistics_days_error
+settings["STATISTICS_DAYS"] = timedelta(days=_float_STATISTICS_DAYS)
+
+
+try:
+    _STATISTICS_ROLES: set[str] = set(filter(None, os.getenv("STATISTICS_ROLES", "").split(",")))
+except (ValueError, TypeError) as statistics_roles_error:
+    try:
+        _STATISTICS_ROLES = {str(role_name) for role_name in filter(None, os.getenv("STATISTICS_ROLES", "").split(","))}
+    except (ValueError, TypeError):
+        raise ImproperlyConfigured("STATISTICS_ROLES must be a list of the names of roles to check the statistics of.") from statistics_roles_error
+settings["STATISTICS_ROLES"] = _STATISTICS_ROLES or {"Committee", "Committee-Elect", "Student Rep", "Member", "Guest", "Server Booster", "Foundation Year", "First Year", "Second Year", "Final Year", "Year In Industry", "Year Abroad", "PGT", "PGR", "Alumnus/Alumna", "Postdoc", "Quiz Victor"}
+
 
 LOG_LEVEL: str = str(os.getenv("LOG_LEVEL", "INFO")).upper()
 if LOG_LEVEL not in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}:

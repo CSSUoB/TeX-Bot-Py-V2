@@ -26,6 +26,8 @@ beautifulsoup4 = "^4.12.2"
 emoji = "^2.2.0"
 parsedatetime = "^2.6"
 django = "^4.2"
+matplotlib = "^3.7.1"
+mplcyberpunk = "^0.7.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.2.0"

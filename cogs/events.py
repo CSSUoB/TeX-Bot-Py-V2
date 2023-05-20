@@ -5,7 +5,7 @@ from discord import Guild, Role, TextChannel, Member
 from discord.ext import commands
 
 from cogs.utils import Bot_Cog
-from db.core.models import Interaction_Reminder_Opt_Out_Member
+from db.core.models import Interaction_Reminder_Opt_Out_Member, Left_Member
 from exceptions import CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
 from setup import settings
 from utils import TeXBot
@@ -16,31 +16,26 @@ class Events_Cog(Bot_Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         guild: Guild | None = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
-        if guild is None:
+        if not guild:
             logging.critical(GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"]))
             await self.bot.close()
             return
         else:
             self.bot._css_guild = guild
 
-        committee_role: Role | None = discord.utils.get(guild.roles, name="Committee")
-        if committee_role is None:
+        if not discord.utils.get(guild.roles, name="Committee"):
             logging.warning(CommitteeRoleDoesNotExist())
 
-        guest_role: Role | None = discord.utils.get(guild.roles, name="Guest")
-        if guest_role is None:
+        if not discord.utils.get(guild.roles, name="Guest"):
             logging.warning(GuestRoleDoesNotExist())
 
-        member_role: Role | None = discord.utils.get(guild.roles, name="Member")
-        if member_role is None:
+        if not discord.utils.get(guild.roles, name="Member"):
             logging.warning(MemberRoleDoesNotExist())
 
-        roles_channel: TextChannel | None = discord.utils.get(guild.text_channels, name="roles")
-        if roles_channel is None:
+        if not discord.utils.get(guild.text_channels, name="roles"):
             logging.warning(RolesChannelDoesNotExist())
 
-        general_channel: TextChannel | None = discord.utils.get(guild.text_channels, name="general")
-        if general_channel is None:
+        if not discord.utils.get(guild.text_channels, name="general"):
             logging.warning(GeneralChannelDoesNotExist())
 
         self.bot.add_view(
@@ -58,11 +53,11 @@ class Events_Cog(Bot_Cog):
             await self.bot.close()
             return
 
-        if before.guild != guild or after.guild != guild:
+        if before.guild != guild or after.guild != guild or before.bot or after.bot:
             return
 
         guest_role: Role | None = self.bot.guest_role
-        if guest_role is None:
+        if not guest_role:
             logging.critical(GuestRoleDoesNotExist())
             await self.bot.close()
             return
@@ -98,6 +93,20 @@ class Events_Cog(Bot_Cog):
             await after.send(
                 f"**Congrats on joining the CSS Discord server as a guest!** You now have access to contribute to all the public channels.\n\nSome things to do to get started:\n1. Check out our rules in {welcome_channel_mention}\n2. Head to {roles_channel_mention} and click on the icons to get optional roles like pronouns and year groups\n3. Change your nickname to whatever you wish others to refer to you as (You can do this by right-clicking your name in the members list to the right & selecting \"Edit Server Profile\")"
             )
+
+    @commands.Cog.listener()
+    async def on_member_leave(self, member: Member):
+        try:
+            guild: Guild = self.bot.css_guild
+        except GuildDoesNotExist as guild_error:
+            logging.critical(guild_error)
+            await self.bot.close()
+            return
+
+        if member.guild != guild or member.bot:
+            return
+
+        await Left_Member.objects.acreate(roles={f"@{role.name}" for role in member.roles if role.name != "@everyone"})
 
 
 def setup(bot: TeXBot):
