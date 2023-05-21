@@ -5,8 +5,7 @@ from typing import Collection
 import discord
 import matplotlib.pyplot as plt  # type: ignore
 import mplcyberpunk  # type: ignore
-from discord import File, Guild, Object, Permissions, Role, TextChannel
-from matplotlib.text import Text  # type: ignore
+from matplotlib.text import Text as Plot_Text  # type: ignore
 
 from exceptions import GuildDoesNotExist
 from setup import settings
@@ -15,7 +14,7 @@ from setup import settings
 def get_oauth_url() -> str:
     return discord.utils.oauth_url(
         client_id=settings["DISCORD_BOT_APPLICATION_ID"],
-        permissions=Permissions(
+        permissions=discord.Permissions(
             manage_roles=True,
             read_messages=True,
             send_messages=True,
@@ -25,16 +24,17 @@ def get_oauth_url() -> str:
             mention_everyone=True,
             add_reactions=True,
             use_slash_commands=True,
-            kick_members=True
+            kick_members=True,
+            manage_channels=True
         ),
-        guild=Object(id=settings["DISCORD_GUILD_ID"]),
+        guild=discord.Object(id=settings["DISCORD_GUILD_ID"]),
         scopes={"bot", "applications.commands"},
         disable_guild_select=True
     )
 
 
 # noinspection SpellCheckingInspection
-def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, filename: str, description: str, extra_text: str = "") -> File:
+def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, filename: str, description: str, extra_text: str = "") -> discord.File:
     plt.style.use("cyberpunk")
 
     max_data_value: int = max(data.values()) + 1
@@ -51,11 +51,11 @@ def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, f
 
     mplcyberpunk.add_bar_gradient(bars)
 
-    xticklabels: Collection[Text] = plt.gca().get_xticklabels()
+    xticklabels: Collection[Plot_Text] = plt.gca().get_xticklabels()
     count_xticklabels: int = len(xticklabels)
 
     index: int
-    tick_label: Text
+    tick_label: Plot_Text
     for index, tick_label in enumerate(xticklabels):
         if tick_label.get_text() == "Total":
             tick_label.set_fontweight("bold")
@@ -65,17 +65,17 @@ def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, f
 
     plt.yticks(range(0, max_data_value, math.ceil(max_data_value / 15)))
 
-    xlabel_obj: Text = plt.xlabel(xlabel, fontweight="bold", fontsize="large", wrap=True)
+    xlabel_obj: Plot_Text = plt.xlabel(xlabel, fontweight="bold", fontsize="large", wrap=True)
     xlabel_obj._get_wrap_line_width = lambda: 475
 
-    ylabel_obj: Text = plt.ylabel(ylabel, fontweight="bold", fontsize="large", wrap=True)
+    ylabel_obj: Plot_Text = plt.ylabel(ylabel, fontweight="bold", fontsize="large", wrap=True)
     ylabel_obj._get_wrap_line_width = lambda: 375
 
-    title_obj: Text = plt.title(title, fontsize="x-large", wrap=True)
+    title_obj: Plot_Text = plt.title(title, fontsize="x-large", wrap=True)
     title_obj._get_wrap_line_width = lambda: 500
 
     if extra_text:
-        extra_text_obj: Text = plt.text(
+        extra_text_obj: Plot_Text = plt.text(
             0.5,
             -0.27,
             extra_text,
@@ -93,7 +93,7 @@ def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, f
     plt.close()
     plot_file.seek(0)
 
-    discord_plot_file: File = discord.File(
+    discord_plot_file: discord.File = discord.File(
         plot_file,
         filename,
         description=description
@@ -117,60 +117,68 @@ def time_formatter(value: float, scale: str) -> str:
 
 class TeXBot(discord.Bot):
     def __init__(self, *args, **kwargs) -> None:
-        self._css_guild: Guild | None = None
-        self._committee_role: Role | None = None
-        self._guest_role: Role | None = None
-        self._member_role: Role | None = None
-        self._roles_channel: TextChannel | None = None
-        self._general_channel: TextChannel | None = None
-        self._welcome_channel: TextChannel | None = None
+        self._css_guild: discord.Guild | None = None
+        self._committee_role: discord.Role | None = None
+        self._guest_role: discord.Role | None = None
+        self._member_role: discord.Role | None = None
+        self._archivist_role: discord.Role | None = None
+        self._roles_channel: discord.TextChannel | None = None
+        self._general_channel: discord.TextChannel | None = None
+        self._welcome_channel: discord.TextChannel | None = None
 
         super().__init__(*args, **kwargs)
 
     @property
-    def css_guild(self) -> Guild:
+    def css_guild(self) -> discord.Guild:
         if not self._css_guild or not discord.utils.get(self.guilds, id=settings["DISCORD_GUILD_ID"]):
             raise GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"])
 
         return self._css_guild
 
     @property
-    def committee_role(self) -> Role | None:
+    def committee_role(self) -> discord.Role | None:
         if not self._committee_role or not discord.utils.get(self.css_guild.roles, id=self._committee_role.id):
             self._committee_role = discord.utils.get(self.css_guild.roles, name="Committee")
 
         return self._committee_role
 
     @property
-    def guest_role(self) -> Role | None:
+    def guest_role(self) -> discord.Role | None:
         if not self._guest_role or not discord.utils.get(self.css_guild.roles, id=self._guest_role.id):
             self._guest_role = discord.utils.get(self.css_guild.roles, name="Guest")
 
         return self._guest_role
 
     @property
-    def member_role(self) -> Role | None:
+    def member_role(self) -> discord.Role | None:
         if not self._member_role or not discord.utils.get(self.css_guild.roles, id=self._member_role.id):
             self._member_role = discord.utils.get(self.css_guild.roles, name="Member")
 
         return self._member_role
 
     @property
-    def roles_channel(self) -> TextChannel | None:
+    def archivist_role(self) -> discord.Role | None:
+        if not self._archivist_role or not discord.utils.get(self.css_guild.roles, id=self._archivist_role.id):
+            self._archivist_role = discord.utils.get(self.css_guild.roles, name="Archivist")
+
+        return self._archivist_role
+
+    @property
+    def roles_channel(self) -> discord.TextChannel | None:
         if not self._roles_channel or not discord.utils.get(self.css_guild.text_channels, id=self._roles_channel.id):
             self._roles_channel = discord.utils.get(self.css_guild.text_channels, name="roles")
 
         return self._roles_channel
 
     @property
-    def general_channel(self) -> TextChannel | None:
+    def general_channel(self) -> discord.TextChannel | None:
         if not self._general_channel or not discord.utils.get(self.css_guild.text_channels, id=self._general_channel.id):
             self._general_channel = discord.utils.get(self.css_guild.text_channels, name="general")
 
         return self._general_channel
 
     @property
-    def welcome_channel(self) -> TextChannel | None:
+    def welcome_channel(self) -> discord.TextChannel | None:
         if not self._welcome_channel or not discord.utils.get(self.css_guild.text_channels, id=self._welcome_channel.id):
             self._welcome_channel = self.css_guild.rules_channel or discord.utils.get(self.css_guild.text_channels, name="welcome")
 

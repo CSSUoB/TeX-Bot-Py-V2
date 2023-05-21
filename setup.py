@@ -9,7 +9,6 @@ from typing import Any, Match
 import django  # type: ignore
 import dotenv
 import validators  # type: ignore
-from django.core import management  # type: ignore
 
 from exceptions import ImproperlyConfigured, MessagesJSONFileMissingKey, MessagesJSONFileValueError
 
@@ -23,9 +22,6 @@ dotenv.load_dotenv()
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "db.settings"
 django.setup()
-management.call_command("makemigrations")
-management.call_command("makemigrations", "core")
-management.call_command("migrate")
 
 
 settings: dict[str, Any] = {

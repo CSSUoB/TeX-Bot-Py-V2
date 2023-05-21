@@ -1,12 +1,11 @@
 import logging
 
 import discord
-from discord import Guild, Role, TextChannel, Member
 from discord.ext import commands
 
 from cogs.utils import Bot_Cog
 from db.core.models import Interaction_Reminder_Opt_Out_Member, Left_Member
-from exceptions import CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
+from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
 from setup import settings
 from utils import TeXBot
 from .tasks import Tasks_Cog
@@ -15,7 +14,7 @@ from .tasks import Tasks_Cog
 class Events_Cog(Bot_Cog):
     @commands.Cog.listener()
     async def on_ready(self):
-        guild: Guild | None = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
+        guild: discord.Guild | None = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
         if not guild:
             logging.critical(GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"]))
             await self.bot.close()
@@ -32,6 +31,9 @@ class Events_Cog(Bot_Cog):
         if not discord.utils.get(guild.roles, name="Member"):
             logging.warning(MemberRoleDoesNotExist())
 
+        if not discord.utils.get(guild.roles, name="Archivist"):
+            logging.warning(ArchivistRoleDoesNotExist())
+
         if not discord.utils.get(guild.text_channels, name="roles"):
             logging.warning(RolesChannelDoesNotExist())
 
@@ -45,9 +47,9 @@ class Events_Cog(Bot_Cog):
         logging.info(f"Ready! Logged in as {self.bot.user}")
 
     @commands.Cog.listener()
-    async def on_member_update(self, before: Member, after: Member):
+    async def on_member_update(self, before: discord.Member, after: discord.Member):
         try:
-            guild: Guild = self.bot.css_guild
+            guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
             logging.critical(guild_error)
             await self.bot.close()
@@ -56,7 +58,7 @@ class Events_Cog(Bot_Cog):
         if before.guild != guild or after.guild != guild or before.bot or after.bot:
             return
 
-        guest_role: Role | None = self.bot.guest_role
+        guest_role: discord.Role | None = self.bot.guest_role
         if not guest_role:
             logging.critical(GuestRoleDoesNotExist())
             await self.bot.close()
@@ -81,12 +83,12 @@ class Events_Cog(Bot_Cog):
                     )
 
             welcome_channel_mention: str = "`#welcome`"
-            welcome_channel: TextChannel | None = self.bot.welcome_channel
+            welcome_channel: discord.TextChannel | None = self.bot.welcome_channel
             if welcome_channel:
                 welcome_channel_mention = welcome_channel.mention
 
             roles_channel_mention: str = "`#roles`"
-            roles_channel: TextChannel | None = self.bot.roles_channel
+            roles_channel: discord.TextChannel | None = self.bot.roles_channel
             if roles_channel:
                 roles_channel_mention = roles_channel.mention
 
@@ -95,9 +97,9 @@ class Events_Cog(Bot_Cog):
             )
 
     @commands.Cog.listener()
-    async def on_member_leave(self, member: Member):
+    async def on_member_leave(self, member: discord.Member):
         try:
-            guild: Guild = self.bot.css_guild
+            guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
             logging.critical(guild_error)
             await self.bot.close()

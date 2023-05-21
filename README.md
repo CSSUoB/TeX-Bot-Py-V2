@@ -10,6 +10,7 @@ Users of the bot may encounter error codes when attempting to execute slash-comm
 * `E1021` - The CSS Discord server does not contain a role with the name "Committee" (required for the `/writeroles`, `/editmessage` & `/induct` commands)
 * `E1022` - The CSS Discord server does not contain a role with the name "Guest" (required for the `/induct` & `/makemember` commands and the `kick_no_introduction_members` & `introduction_reminder` tasks)
 * `E1023` - The CSS Discord server does not contain a role with the name "Member" (required for the `/makemember` command)
+* `E1024` - The CSS Discord server does not contain a role with the name "Archivist" (required for the `/archive` command)
 * `E1031` - The CSS Discord server does not contain a text channel with the name "#roles" (required for the `/writeroles` command)
 * `E1032` - The CSS Discord server does not contain a text channel with the name "#general" (required for the `/induct` command)
 * `E1041` - The guild member IDs could not be retrieved from the MEMBERS_PAGE_URL

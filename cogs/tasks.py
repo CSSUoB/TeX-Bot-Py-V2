@@ -4,8 +4,7 @@ from datetime import timedelta
 
 import discord
 import emoji
-from discord import ActionRow, Button, ChannelType, Forbidden, Guild, Member, PartialEmoji, PartialMessageable, Role, TextChannel, User
-from discord import ButtonStyle, Interaction, ui
+from discord import ui
 from discord.ext import tasks
 from discord.ui import View
 from django.core.exceptions import ValidationError  # type: ignore
@@ -42,23 +41,23 @@ class Tasks_Cog(Bot_Cog):
         reminder: Discord_Reminder
         async for reminder in Discord_Reminder.objects.all():
             if (discord.utils.utcnow() - reminder.send_datetime) > datetime.timedelta(minutes=15):
-                user: User | None = discord.utils.find(lambda u: not u.bot and Discord_Reminder.hash_member_id(u.id) == reminder.hashed_member_id, self.bot.users)
+                user: discord.User | None = discord.utils.find(lambda u: not u.bot and Discord_Reminder.hash_member_id(u.id) == reminder.hashed_member_id, self.bot.users)
 
                 if not user:
                     logging.warning(f"User with hashed user ID: {reminder.hashed_member_id} no longer exists.")
                     await reminder.adelete()
                     continue
 
-                channel: PartialMessageable = self.bot.get_partial_messageable(
+                channel: discord.PartialMessageable = self.bot.get_partial_messageable(
                     reminder.channel_id,
-                    type=ChannelType(reminder.channel_type)
+                    type=discord.ChannelType(reminder.channel_type)
                 )
 
                 user_mention: str | None = None
-                if channel.type in {ChannelType.text, ChannelType.group, ChannelType.public_thread, ChannelType.private_thread}:
+                if channel.type in {discord.ChannelType.text, discord.ChannelType.group, discord.ChannelType.public_thread, discord.ChannelType.private_thread}:
                     user_mention = user.mention
 
-                elif channel.type != ChannelType.private:
+                elif channel.type != discord.ChannelType.private:
                     logging.critical(
                         ValueError("Reminder's channel_id must refer to a valid text channel/DM.")
                     )
@@ -78,19 +77,19 @@ class Tasks_Cog(Bot_Cog):
     @tasks.loop(hours=24)
     async def kick_no_introduction_members(self):
         try:
-            guild: Guild = self.bot.css_guild
+            guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
             logging.critical(guild_error)
             await self.bot.close()
             return
 
-        guest_role: Role | None = self.bot.guest_role
+        guest_role: discord.Role | None = self.bot.guest_role
         if not guest_role:
             logging.critical(GuestRoleDoesNotExist())
             await self.bot.close()
             return
 
-        member: Member
+        member: discord.Member
         for member in guild.members:
             if guest_role in member.roles or member.bot:
                 continue
@@ -108,7 +107,7 @@ class Tasks_Cog(Bot_Cog):
                     await member.kick(
                         reason=f"Member was in server without introduction sent for longer than {kick_no_introduction_members_delay}"
                     )
-                except Forbidden as kick_error:
+                except discord.Forbidden as kick_error:
                     logging.warning(f"Member with ID: {member.id} could not be kicked due to {kick_error.text}")
 
     @kick_no_introduction_members.before_loop
@@ -118,26 +117,26 @@ class Tasks_Cog(Bot_Cog):
     @tasks.loop(**settings["INTRODUCTION_REMINDER_INTERVAL"])
     async def introduction_reminder(self):
         try:
-            guild: Guild = self.bot.css_guild
+            guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
             logging.critical(guild_error)
             await self.bot.close()
             return
 
-        guest_role: Role | None = self.bot.guest_role
+        guest_role: discord.Role | None = self.bot.guest_role
         if not guest_role:
             logging.critical(GuestRoleDoesNotExist())
             await self.bot.close()
             return
 
-        member: Member
+        member: discord.Member
         for member in guild.members:
             if guest_role in member.roles or member.bot:
                 continue
 
             if not await Interaction_Reminder_Opt_Out_Member.objects.filter(hashed_member_id=Interaction_Reminder_Opt_Out_Member.hash_member_id(member.id)).aexists():
                 async for message in member.history():
-                    if message.components and isinstance(message.components[0], ActionRow) and isinstance(message.components[0].children[0], Button) and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button":
+                    if message.components and isinstance(message.components[0], discord.ActionRow) and isinstance(message.components[0].children[0], discord.Button) and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button":
                         await message.edit(view=None)
 
                 await member.send(
@@ -155,10 +154,10 @@ class Tasks_Cog(Bot_Cog):
 
             super().__init__(timeout=None)
 
-        @ui.button(label="Opt-out of introduction reminders", custom_id="opt_out_introduction_reminders_button", style=ButtonStyle.red, emoji=PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias")))
-        async def opt_out_introduction_reminders_button_callback(self, button: Button, interaction: Interaction):
+        @ui.button(label="Opt-out of introduction reminders", custom_id="opt_out_introduction_reminders_button", style=discord.ButtonStyle.red, emoji=discord.PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias")))
+        async def opt_out_introduction_reminders_button_callback(self, button: discord.Button, interaction: discord.Interaction):
             try:
-                guild: Guild = self.bot.css_guild
+                guild: discord.Guild = self.bot.css_guild
             except GuildDoesNotExist as guild_error:
                 logging.critical(guild_error)
                 await self.bot.close()
@@ -171,9 +170,9 @@ class Tasks_Cog(Bot_Cog):
                 )
                 return
 
-            interaction_member: Member | None = guild.get_member(interaction.user.id)
+            interaction_member: discord.Member | None = guild.get_member(interaction.user.id)
 
-            if button.style == ButtonStyle.red or str(button.emoji) == emoji.emojize(":no_good:", language="alias") or (button.label and "Opt-out" in button.label):
+            if button.style == discord.ButtonStyle.red or str(button.emoji) == emoji.emojize(":no_good:", language="alias") or (button.label and "Opt-out" in button.label):
                 if not interaction_member:
                     await interaction.response.send_message(
                         ":warning:There was an error when trying to opt-out of interaction reminders.:warning:\n`You must be a member of the CSS Discord server to opt-out of interaction reminders.`",
@@ -189,13 +188,13 @@ class Tasks_Cog(Bot_Cog):
                     if "hashed_member_id" not in create_interaction_reminder_opt_out_member_error.message_dict or all("already exists" not in error for error in create_interaction_reminder_opt_out_member_error.message_dict["hashed_member_id"]):
                         raise
 
-                button.style = ButtonStyle.green
+                button.style = discord.ButtonStyle.green
                 button.label = "Opt back in to introduction reminders"
-                button.emoji = PartialEmoji.from_str(emoji.emojize(":raised_hand:", language="alias"))
+                button.emoji = discord.PartialEmoji.from_str(emoji.emojize(":raised_hand:", language="alias"))
 
                 await interaction.response.edit_message(view=self)
 
-            elif button.style == ButtonStyle.green or str(button.emoji) == emoji.emojize(":raised_hand:", language="alias") or (button.label and "Opt back in" in button.label):
+            elif button.style == discord.ButtonStyle.green or str(button.emoji) == emoji.emojize(":raised_hand:", language="alias") or (button.label and "Opt back in" in button.label):
                 if not interaction_member:
                     await interaction.response.send_message(
                         ":warning:There was an error when trying to opt back in to interaction reminders.:warning:\n`You must be a member of the CSS Discord server to opt back in to interaction reminders.`",
@@ -214,33 +213,33 @@ class Tasks_Cog(Bot_Cog):
                 else:
                     await interaction_reminder_opt_out_member.adelete()
 
-                button.style = ButtonStyle.red
+                button.style = discord.ButtonStyle.red
                 button.label = "Opt-out of introduction reminders"
-                button.emoji = PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias"))
+                button.emoji = discord.PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias"))
 
                 await interaction.response.edit_message(view=self)
 
     @tasks.loop(**settings["GET_ROLES_REMINDER_INTERVAL"])
     async def get_roles_reminder(self):
         try:
-            guild: Guild = self.bot.css_guild
+            guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
             logging.critical(guild_error)
             await self.bot.close()
             return
 
-        guest_role: Role | None = self.bot.guest_role
+        guest_role: discord.Role | None = self.bot.guest_role
         if not guest_role:
             logging.critical(GuestRoleDoesNotExist())
             await self.bot.close()
             return
 
         roles_channel_mention: str = "`#roles`"
-        roles_channel: TextChannel | None = self.bot.roles_channel
+        roles_channel: discord.TextChannel | None = self.bot.roles_channel
         if roles_channel:
             roles_channel_mention = roles_channel.mention
 
-        member: Member
+        member: discord.Member
         for member in guild.members:
             if not member.joined_at:
                 logging.error(

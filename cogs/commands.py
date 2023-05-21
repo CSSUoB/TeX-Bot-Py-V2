@@ -4,21 +4,19 @@ import random
 import re
 import time
 
-from django.utils import timezone  # type: ignore
-
 import aiohttp
 import discord
 import parsedatetime  # type: ignore
 from bs4 import BeautifulSoup
-from discord import ApplicationContext, Forbidden, Guild, Member, Message, NotFound, OptionChoice, Permissions, Role, SlashCommandGroup, TextChannel, User
 from django.core.exceptions import ValidationError  # type: ignore
+from django.utils import timezone  # type: ignore
 
 import utils
+from cogs.utils import Bot_Cog
 from db.core.models import Discord_Reminder, Left_Member, UoB_Made_Member
-from exceptions import CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
+from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
 from setup import settings
 from utils import TeXBot
-from cogs.utils import Bot_Cog
 
 
 class Application_Commands_Cog(Bot_Cog):
@@ -32,17 +30,18 @@ class Application_Commands_Cog(Bot_Cog):
         "channel_stats": "display channel statistics",
         "server_stats": "display whole server statistics",
         "user_stats": "display your statistics",
-        "left_member_stats": "display statistics about the members that have left the server"
+        "left_member_stats": "display statistics about the members that have left the server",
+        "archive": "archive the selected category"
     }
 
-    async def send_error(self, ctx: ApplicationContext, error_code: str | None = None, command_name: str | None = None, message: str | None = None, logging_message: str | None = None):
+    async def send_error(self, ctx: discord.ApplicationContext, error_code: str | None = None, command_name: str | None = None, message: str | None = None, logging_message: str | None = None):
         construct_error_message: str = ":warning:There was an error"
         construct_logging_error_message: str = ""
 
         if error_code:
             committee_mention: str = "committee"
 
-            committee_role: Role | None = self.bot.committee_role
+            committee_role: discord.Role | None = self.bot.committee_role
             if committee_role:
                 committee_mention = committee_role.mention
 
@@ -63,7 +62,7 @@ class Application_Commands_Cog(Bot_Cog):
         construct_error_message += ":warning:"
 
         if message:
-            message = re.sub(r"<@[&#]?\d+>", lambda match: f"`{match.group(0)}`", message.strip())
+            message = re.sub(r"<[@&#]?\d+>", lambda match: f"`{match.group(0)}`", message.strip())
             construct_error_message += f"\n`{message}`"
 
         await ctx.respond(construct_error_message, ephemeral=True)
@@ -71,17 +70,18 @@ class Application_Commands_Cog(Bot_Cog):
         if logging_message:
             logging.error(f"{construct_logging_error_message} {logging_message}")
 
-    async def _induct(self, ctx: discord.ApplicationContext, induction_member: Member, guild: Guild, silent: bool):
-        interaction_member: Member | None = guild.get_member(ctx.user.id)
-        if not interaction_member:
+    async def _induct(self, ctx: discord.ApplicationContext, induction_member: discord.Member, guild: discord.Guild, silent: bool):
+        guest_role: discord.Role | None = self.bot.guest_role
+        if not guest_role:
             await self.send_error(
                 ctx,
+                error_code="E1022",
                 command_name="induct",
-                message="You must be a member of the CSS Discord server to use this command."
+                logging_message=str(GuestRoleDoesNotExist())
             )
             return
 
-        committee_role: Role | None = self.bot.committee_role
+        committee_role: discord.Role | None = self.bot.committee_role
         if not committee_role:
             await self.send_error(
                 ctx,
@@ -91,21 +91,24 @@ class Application_Commands_Cog(Bot_Cog):
             )
             return
 
-        if committee_role not in interaction_member.roles:
+        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
+        if not interaction_member:
             await self.send_error(
                 ctx,
                 command_name="induct",
-                message=f"Only {committee_role.mention} members can run this command."
+                message="You must be a member of the CSS Discord server to use this command."
             )
             return
 
-        guest_role: Role | None = self.bot.guest_role
-        if not guest_role:
+        if committee_role not in interaction_member.roles:
+            committee_role_mention: str = "@Committee"
+            if ctx.guild:
+                committee_role_mention = committee_role.mention
+
             await self.send_error(
                 ctx,
-                error_code="E1022",
                 command_name="induct",
-                logging_message=str(GuestRoleDoesNotExist())
+                message=f"Only {committee_role_mention} members can run this command."
             )
             return
 
@@ -125,7 +128,7 @@ class Application_Commands_Cog(Bot_Cog):
             return
 
         if not silent:
-            general_channel: TextChannel | None = self.bot.general_channel
+            general_channel: discord.TextChannel | None = self.bot.general_channel
             if not general_channel:
                 await self.send_error(
                     ctx,
@@ -137,7 +140,7 @@ class Application_Commands_Cog(Bot_Cog):
 
             roles_channel_mention: str = "`#roles`"
 
-            roles_channel: TextChannel | None = self.bot.roles_channel
+            roles_channel: discord.TextChannel | None = self.bot.roles_channel
             if roles_channel:
                 roles_channel_mention = roles_channel.mention
 
@@ -154,7 +157,7 @@ class Application_Commands_Cog(Bot_Cog):
 
 
 class Slash_Commands_Cog(Application_Commands_Cog):
-    stats: SlashCommandGroup = SlashCommandGroup("stats", "Various statistics about the CSS Discord server")
+    stats: discord.SlashCommandGroup = discord.SlashCommandGroup("stats", "Various statistics about the CSS Discord server")
 
     @staticmethod
     async def remind_me_autocomplete_get_delays(ctx: discord.AutocompleteContext) -> set[str]:
@@ -240,50 +243,73 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         return {f"{ctx.value}{delay_choice}" for delay_choice in delay_choices}
 
     @staticmethod
-    async def autocomplete_get_text_channels(ctx: discord.AutocompleteContext) -> set[OptionChoice]:
+    async def autocomplete_get_text_channels(ctx: discord.AutocompleteContext) -> set[discord.OptionChoice]:
         if not ctx.interaction.user:
             return set()
 
         try:
-            guild: Guild = ctx.bot.css_guild  # type: ignore
+            guild: discord.Guild = ctx.bot.css_guild  # type: ignore
         except GuildDoesNotExist:
             return set()
 
-        channel_permissions_limiter: Member | Role | None = ctx.bot.guest_role  # type: ignore
+        channel_permissions_limiter: discord.Member | discord.Role | None = ctx.bot.guest_role  # type: ignore
         if not channel_permissions_limiter:
             return set()
 
-        interaction_member: Member | None = guild.get_member(ctx.interaction.user.id)
+        interaction_member: discord.Member | None = guild.get_member(ctx.interaction.user.id)
         if interaction_member:
             channel_permissions_limiter = interaction_member
 
         if not ctx.value or re.match(r"\A#.*\Z", ctx.value):
-            return {OptionChoice(name=f"#{channel.name}", value=str(channel.id)) for channel in guild.text_channels if channel.permissions_for(channel_permissions_limiter).is_superset(Permissions(send_messages=True, view_channel=True))}
+            return {discord.OptionChoice(name=f"#{channel.name}", value=str(channel.id)) for channel in guild.text_channels if channel.permissions_for(channel_permissions_limiter).is_superset(discord.Permissions(send_messages=True, view_channel=True))}
 
         else:
-            return {OptionChoice(name=channel.name, value=str(channel.id)) for channel in guild.text_channels if channel.permissions_for(channel_permissions_limiter).is_superset(Permissions(send_messages=True, view_channel=True))}
+            return {discord.OptionChoice(name=channel.name, value=str(channel.id)) for channel in guild.text_channels if channel.permissions_for(channel_permissions_limiter).is_superset(discord.Permissions(send_messages=True, view_channel=True))}
 
     @staticmethod
-    async def induct_autocomplete_get_members(ctx: discord.AutocompleteContext) -> set[OptionChoice]:
+    async def archive_autocomplete_get_categories(ctx: discord.AutocompleteContext) -> set[discord.OptionChoice]:
+        if not ctx.interaction.user:
+            return set()
+
         try:
-            guild: Guild = ctx.bot.css_guild  # type: ignore
+            guild: discord.Guild = ctx.bot.css_guild  # type: ignore
         except GuildDoesNotExist:
             return set()
 
-        members: set[Member] = {member for member in guild.members if not member.bot}
+        committee_role: discord.Role | None = ctx.bot.committee_role  # type: ignore
+        if not committee_role:
+            return set()
+
+        interaction_member: discord.Member | None = guild.get_member(ctx.interaction.user.id)
+        if not interaction_member:
+            return set()
+
+        if committee_role not in interaction_member.roles:
+            return set()
+
+        return {discord.OptionChoice(name=category.name, value=str(category.id)) for category in guild.categories if category.permissions_for(interaction_member).is_superset(discord.Permissions(send_messages=True, view_channel=True))}
+
+    @staticmethod
+    async def induct_autocomplete_get_members(ctx: discord.AutocompleteContext) -> set[discord.OptionChoice]:
+        try:
+            guild: discord.Guild = ctx.bot.css_guild  # type: ignore
+        except GuildDoesNotExist:
+            return set()
+
+        members: set[discord.Member] = {member for member in guild.members if not member.bot}
 
         guest_role: Role | None = ctx.bot.guest_role  # type: ignore
         if guest_role:
             members = {member for member in members if guest_role not in member.roles}
 
         if not ctx.value or re.match(r"\A@.*\Z", ctx.value):
-            return {OptionChoice(name=f"@{member.name}", value=str(member.id)) for member in members}
+            return {discord.OptionChoice(name=f"@{member.name}", value=str(member.id)) for member in members}
 
         else:
-            return {OptionChoice(name=member.name, value=str(member.id)) for member in members}
+            return {discord.OptionChoice(name=member.name, value=str(member.id)) for member in members}
 
     @discord.slash_command(description="Replies with Pong!")
-    async def ping(self, ctx: ApplicationContext):
+    async def ping(self, ctx: discord.ApplicationContext):
         await ctx.respond(
             random.choices(
                 [
@@ -296,7 +322,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         )
 
     @discord.slash_command(description="Displays information about the source code of this bot.")
-    async def source(self, ctx: ApplicationContext):
+    async def source(self, ctx: discord.ApplicationContext):
         await ctx.respond(
             "TeX is an open-source project made specifically for the CSS Discord! You can see and contribute to the source code at https://github.com/CSSUoB/TeX-Bot-Py",
             ephemeral=True
@@ -319,7 +345,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         description="The message you want to be reminded with.",
         required=False
     )
-    async def remind_me(self, ctx: ApplicationContext, delay: str, message: str):
+    async def remind_me(self, ctx: discord.ApplicationContext, delay: str, message: str):
         parsed_time: tuple[time.struct_time, int] = parsedatetime.Calendar().parseDT(delay, tzinfo=timezone.get_current_timezone())
 
         if parsed_time[1] == 0:
@@ -375,9 +401,9 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         name="writeroles",
         description="Populates #roles with the correct messages."
     )
-    async def write_roles(self, ctx: ApplicationContext):
+    async def write_roles(self, ctx: discord.ApplicationContext):
         try:
-            guild: Guild = self.bot.css_guild
+            guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
             await self.send_error(
                 ctx,
@@ -388,16 +414,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             await self.bot.close()
             return
 
-        interaction_member: Member | None = guild.get_member(ctx.user.id)
-        if not interaction_member:
-            await self.send_error(
-                ctx,
-                command_name="write_roles",
-                message="You must be a member of the CSS Discord server to use this command."
-            )
-            return
-
-        committee_role: Role | None = self.bot.committee_role
+        committee_role: discord.Role | None = self.bot.committee_role
         if not committee_role:
             await self.send_error(
                 ctx,
@@ -407,21 +424,34 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             )
             return
 
-        if committee_role not in interaction_member.roles:
-            await self.send_error(
-                ctx,
-                command_name="write_roles",
-                message=f"Only {committee_role.mention} members can run this command."
-            )
-            return
-
-        roles_channel: TextChannel | None = self.bot.roles_channel
+        roles_channel: discord.TextChannel | None = self.bot.roles_channel
         if not roles_channel:
             await self.send_error(
                 ctx,
                 error_code="E1031",
                 command_name="write_roles",
                 logging_message=str(RolesChannelDoesNotExist())
+            )
+            return
+
+        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
+        if not interaction_member:
+            await self.send_error(
+                ctx,
+                command_name="write_roles",
+                message="You must be a member of the CSS Discord server to use this command."
+            )
+            return
+
+        if committee_role not in interaction_member.roles:
+            committee_role_mention: str = "@Committee"
+            if ctx.guild:
+                committee_role_mention = committee_role.mention
+
+            await self.send_error(
+                ctx,
+                command_name="write_roles",
+                message=f"Only {committee_role_mention} members can run this command."
             )
             return
 
@@ -462,7 +492,50 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         min_length=1,
         parameter_name="new_message_content"
     )
-    async def edit_message(self, ctx: ApplicationContext, str_channel_id: str, str_message_id: str, new_message_content: str):
+    async def edit_message(self, ctx: discord.ApplicationContext, str_channel_id: str, str_message_id: str, new_message_content: str):
+        try:
+            guild: discord.Guild = self.bot.css_guild
+        except GuildDoesNotExist as guild_error:
+            await self.send_error(
+                ctx,
+                error_code="E1011",
+                command_name="edit_message"
+            )
+            logging.critical(guild_error)
+            await self.bot.close()
+            return
+
+        committee_role: discord.Role | None = self.bot.committee_role
+        if not committee_role:
+            await self.send_error(
+                ctx,
+                error_code="E1021",
+                command_name="edit_message",
+                logging_message=str(CommitteeRoleDoesNotExist())
+            )
+            return
+
+        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
+        if not interaction_member:
+            await self.send_error(
+                ctx,
+                command_name="edit_message",
+                message="You must be a member of the CSS Discord server to use this command."
+            )
+            return
+
+        if committee_role not in interaction_member.roles:
+            committee_role_mention: str = "@Committee"
+            if ctx.guild:
+                committee_role_mention = committee_role.mention
+
+            await self.send_error(
+                ctx,
+                command_name="edit_message",
+                message=f"Only {committee_role_mention} members can run this command."
+            )
+            return
+
         if not re.match(r"\A\d{17,20}\Z", str_channel_id):
             await self.send_error(
                 ctx,
@@ -483,19 +556,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
 
         message_id: int = int(str_message_id)
 
-        try:
-            guild: Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.send_error(
-                ctx,
-                error_code="E1011",
-                command_name="edit_message"
-            )
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
-        channel: TextChannel | None = discord.utils.get(guild.text_channels, id=channel_id)
+        channel: discord.TextChannel | None = discord.utils.get(guild.text_channels, id=channel_id)
         if not channel:
             await self.send_error(
                 ctx,
@@ -504,36 +565,9 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             )
             return
 
-        interaction_member: Member | None = guild.get_member(ctx.user.id)
-        if not interaction_member:
-            await self.send_error(
-                ctx,
-                command_name="edit_message",
-                message="You must be a member of the CSS Discord server to use this command."
-            )
-            return
-
-        committee_role: Role | None = self.bot.committee_role
-        if not committee_role:
-            await self.send_error(
-                ctx,
-                error_code="E1021",
-                command_name="edit_message",
-                logging_message=str(CommitteeRoleDoesNotExist())
-            )
-            return
-
-        if committee_role not in interaction_member.roles:
-            await self.send_error(
-                ctx,
-                command_name="edit_message",
-                message=f"Only {committee_role.mention} members can run this command."
-            )
-            return
-
         try:
-            message: Message = await channel.fetch_message(message_id)
-        except NotFound:
+            message: discord.Message = await channel.fetch_message(message_id)
+        except discord.NotFound:
             await self.send_error(
                 ctx,
                 command_name="edit_message",
@@ -543,7 +577,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
 
         try:
             await message.edit(content=new_message_content)
-        except Forbidden:
+        except discord.Forbidden:
             await self.send_error(
                 ctx,
                 command_name="edit_message",
@@ -572,19 +606,9 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         default=False,
         required=False
     )
-    async def induct(self, ctx: ApplicationContext, str_induct_member_id: str, silent: bool):
-        if not re.match(r"\A\d{17,20}\Z", str_induct_member_id):
-            await self.send_error(
-                ctx,
-                command_name="induct",
-                message=f"\"{str_induct_member_id}\" is not a valid user ID."
-            )
-            return
-
-        induct_member_id: int = int(str_induct_member_id)
-
+    async def induct(self, ctx: discord.ApplicationContext, str_induct_member_id: str, silent: bool):
         try:
-            guild: Guild = self.bot.css_guild
+            guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
             await self.send_error(
                 ctx,
@@ -595,7 +619,17 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             await self.bot.close()
             return
 
-        induct_member: Member | None = guild.get_member(induct_member_id)
+        if not re.match(r"\A\d{17,20}\Z", str_induct_member_id):
+            await self.send_error(
+                ctx,
+                command_name="induct",
+                message=f"\"{str_induct_member_id}\" is not a valid user ID."
+            )
+            return
+
+        induct_member_id: int = int(str_induct_member_id)
+
+        induct_member: discord.Member | None = guild.get_member(induct_member_id)
         if not induct_member:
             await self.send_error(
                 ctx,
@@ -620,17 +654,9 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         min_length=7,
         parameter_name="uob_id"
     )
-    async def make_member(self, ctx: ApplicationContext, uob_id: str):
-        if not re.match(r"\A\d{7}\Z", uob_id):
-            await self.send_error(
-                ctx,
-                command_name="make_member",
-                message=f"\"{uob_id}\" is not a valid UoB Student ID."
-            )
-            return
-
+    async def make_member(self, ctx: discord.ApplicationContext, uob_id: str):
         try:
-            guild: Guild = self.bot.css_guild
+            guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
             await self.send_error(
                 ctx,
@@ -641,7 +667,27 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             await self.bot.close()
             return
 
-        interaction_member: Member | None = guild.get_member(ctx.user.id)
+        member_role: discord.Role | None = self.bot.member_role
+        if not member_role:
+            await self.send_error(
+                ctx,
+                error_code="E1023",
+                command_name="make_member",
+                logging_message=str(MemberRoleDoesNotExist())
+            )
+            return
+
+        guest_role: discord.Role | None = self.bot.guest_role
+        if not guest_role:
+            await self.send_error(
+                ctx,
+                error_code="E1022",
+                command_name="make_member",
+                logging_message=str(GuestRoleDoesNotExist())
+            )
+            return
+
+        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
         if not interaction_member:
             await self.send_error(
                 ctx,
@@ -650,13 +696,10 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             )
             return
 
-        guest_role: Role | None = self.bot.guest_role
-        if not guest_role:
-            await self.send_error(
-                ctx,
-                error_code="E1022",
-                command_name="make_member",
-                logging_message=str(GuestRoleDoesNotExist())
+        if member_role in interaction_member.roles:
+            await ctx.respond(
+                ":information_source: No changes made. You're already a member - why are you trying this again? :information_source:",
+                ephemeral=True
             )
             return
 
@@ -668,20 +711,11 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             )
             return
 
-        member_role: Role | None = self.bot.member_role
-        if not member_role:
+        if not re.match(r"\A\d{7}\Z", uob_id):
             await self.send_error(
                 ctx,
-                error_code="E1023",
                 command_name="make_member",
-                logging_message=str(MemberRoleDoesNotExist())
-            )
-            return
-
-        if member_role in interaction_member.roles:
-            await ctx.respond(
-                ":information_source: No changes made. You're already a member - why are you trying this again? :information_source:",
-                ephemeral=True
+                message=f"\"{uob_id}\" is not a valid UoB Student ID."
             )
             return
 
@@ -754,7 +788,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         required=False,
         parameter_name="str_channel_id"
     )
-    async def channel_stats(self, ctx: ApplicationContext, str_channel_id: str):
+    async def channel_stats(self, ctx: discord.ApplicationContext, str_channel_id: str):
         channel_id: int = ctx.channel_id
 
         if str_channel_id:
@@ -769,7 +803,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             channel_id = int(str_channel_id)
 
         try:
-            guild: Guild = self.bot.css_guild
+            guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
             await self.send_error(
                 ctx,
@@ -780,7 +814,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             await self.bot.close()
             return
 
-        channel: TextChannel | None = discord.utils.get(guild.text_channels, id=channel_id)
+        channel: discord.TextChannel | None = discord.utils.get(guild.text_channels, id=channel_id)
         if not channel:
             await self.send_error(
                 ctx,
@@ -796,14 +830,14 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             if discord.utils.get(guild.roles, name=role_name):
                 message_counts[f"@{role_name}"] = 0
 
-        message: Message
+        message: discord.Message
         async for message in channel.history(after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]):
             if message.author.bot:
                 continue
 
             message_counts["Total"] += 1
 
-            if isinstance(message.author, User):
+            if isinstance(message.author, discord.User):
                 continue
 
             author_role_names: set[str] = {author_role.name for author_role in message.author.roles}
@@ -843,9 +877,9 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         name="server",
         description="Displays the stats for the whole of the CSS Discord server."
     )
-    async def server_stats(self, ctx: ApplicationContext):
+    async def server_stats(self, ctx: discord.ApplicationContext):
         try:
-            guild: Guild = self.bot.css_guild
+            guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
             await self.send_error(
                 ctx,
@@ -856,7 +890,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             await self.bot.close()
             return
 
-        guest_role: Role | None = self.bot.guest_role
+        guest_role: discord.Role | None = self.bot.guest_role
         if not guest_role:
             await self.send_error(
                 ctx,
@@ -876,14 +910,14 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             if discord.utils.get(guild.roles, name=role_name):
                 message_counts["roles"][f"@{role_name}"] = 0
 
-        channel: TextChannel
+        channel: discord.TextChannel
         for channel in guild.text_channels:
-            if not channel.permissions_for(guest_role).is_superset(Permissions(send_messages=True)):
+            if not channel.permissions_for(guest_role).is_superset(discord.Permissions(send_messages=True)):
                 continue
 
             message_counts["channels"][f"#{channel.name}"] = 0
 
-            message: Message
+            message: discord.Message
             async for message in channel.history(after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]):
                 if message.author.bot:
                     continue
@@ -891,7 +925,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
                 message_counts["channels"][f"#{channel.name}"] += 1
                 message_counts["roles"]["Total"] += 1
 
-                if isinstance(message.author, User):
+                if isinstance(message.author, discord.User):
                     continue
 
                 author_role_names: set[str] = {author_role.name for author_role in message.author.roles}
@@ -941,9 +975,9 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         name="self",
         description="Displays stats about the number of messages you have sent."
     )
-    async def user_stats(self, ctx: ApplicationContext):
+    async def user_stats(self, ctx: discord.ApplicationContext):
         try:
-            guild: Guild = self.bot.css_guild
+            guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
             await self.send_error(
                 ctx,
@@ -954,7 +988,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             await self.bot.close()
             return
 
-        interaction_member: Member | None = guild.get_member(ctx.user.id)
+        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
         if not interaction_member:
             await self.send_error(
                 ctx,
@@ -963,7 +997,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             )
             return
 
-        guest_role: Role | None = self.bot.guest_role
+        guest_role: discord.Role | None = self.bot.guest_role
         if not guest_role:
             await self.send_error(
                 ctx,
@@ -983,14 +1017,14 @@ class Slash_Commands_Cog(Application_Commands_Cog):
 
         message_counts: dict[str, int] = {"Total": 0}
 
-        channel: TextChannel
+        channel: discord.TextChannel
         for channel in guild.text_channels:
-            if not channel.permissions_for(guest_role).is_superset(Permissions(send_messages=True)):
+            if not channel.permissions_for(guest_role).is_superset(discord.Permissions(send_messages=True)):
                 continue
 
             message_counts[f"#{channel.name}"] = 0
 
-            message: Message
+            message: discord.Message
             async for message in channel.history(after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]):
                 if message.author == ctx.user and not message.author.bot:
                     message_counts[f"#{channel.name}"] += 1
@@ -1020,9 +1054,9 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         name="leftmembers",
         description="Displays the stats about members that have left the CSS Discord server."
     )
-    async def left_member_stats(self, ctx: ApplicationContext):
+    async def left_member_stats(self, ctx: discord.ApplicationContext):
         try:
-            guild: Guild = self.bot.css_guild
+            guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
             await self.send_error(
                 ctx,
@@ -1076,11 +1110,152 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             )
         )
 
+    @discord.slash_command(
+        name="archive",
+        description="Archives the selected category."
+    )
+    @discord.option(
+        name="category",
+        description="The category to archive.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(archive_autocomplete_get_categories),  # type: ignore
+        required=True,
+        parameter_name="str_category_id"
+    )
+    async def archive(self, ctx: discord.ApplicationContext, str_category_id: str):
+        try:
+            guild: discord.Guild = self.bot.css_guild
+        except GuildDoesNotExist as guild_error:
+            await self.send_error(
+                ctx,
+                error_code="E1011",
+                command_name="archive"
+            )
+            logging.critical(guild_error)
+            await self.bot.close()
+            return
+
+        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
+        if not interaction_member:
+            await self.send_error(
+                ctx,
+                command_name="archive",
+                message="You must be a member of the CSS Discord server to use this command."
+            )
+            return
+
+        committee_role: discord.Role | None = self.bot.committee_role
+        if not committee_role:
+            await self.send_error(
+                ctx,
+                error_code="E1021",
+                command_name="archive",
+                logging_message=str(CommitteeRoleDoesNotExist())
+            )
+            return
+
+        guest_role: discord.Role | None = self.bot.guest_role
+        if not guest_role:
+            await self.send_error(
+                ctx,
+                error_code="E1022",
+                command_name="archive",
+                logging_message=str(GuestRoleDoesNotExist())
+            )
+            return
+
+        archivist_role: discord.Role | None = self.bot.archivist_role
+        if not archivist_role:
+            await self.send_error(
+                ctx,
+                error_code="E1024",
+                command_name="archive",
+                logging_message=str(ArchivistRoleDoesNotExist())
+            )
+            return
+
+        if committee_role not in interaction_member.roles:
+            committee_role_mention: str = "@Committee"
+            if ctx.guild:
+                committee_role_mention = committee_role.mention
+
+            await self.send_error(
+                ctx,
+                command_name="archive",
+                message=f"Only {committee_role_mention} members can run this command."
+            )
+            return
+
+        if not re.match(r"\A\d{17,20}\Z", str_category_id):
+            await self.send_error(
+                ctx,
+                command_name="archive",
+                message=f"\"{str_category_id}\" is not a valid category ID."
+            )
+            return
+
+        category_id: int = int(str_category_id)
+
+        category: discord.CategoryChannel | None = discord.utils.get(guild.categories, id=category_id)
+        if not category:
+            await self.send_error(
+                ctx,
+                command_name="archive",
+                message=f"Category with ID \"{category_id}\" does not exist."
+            )
+            return
+
+        if "archive" in category.name:
+            await ctx.respond(
+                ":information_source: No changes made. Category has already been archived. :information_source:",
+                ephemeral=True
+            )
+            return
+
+        channel: discord.VoiceChannel | discord.StageChannel | discord.TextChannel | discord.ForumChannel | discord.CategoryChannel
+        for channel in category.channels:
+            try:
+                if channel.permissions_for(committee_role).is_superset(discord.Permissions(view_channel=True)) and not channel.permissions_for(guest_role).is_superset(discord.Permissions(view_channel=True)):
+                    await self.send_error(
+                        ctx,
+                        command_name="archive",
+                        message=f"THIS COMMAND IS IN BETA (does not currently change permissions)"
+                    )
+                    return  # TODO: Confirm how to correctly change permissions to archive committee-only channel
+
+                elif channel.permissions_for(guest_role).is_superset(discord.Permissions(view_channel=True)):
+                    await self.send_error(
+                        ctx,
+                        command_name="archive",
+                        message=f"THIS COMMAND IS IN BETA (does not currently change permissions)"
+                    )
+                    return  # TODO: Confirm how to correctly change permissions to archive public channel
+
+                else:
+                    await self.send_error(
+                        ctx,
+                        command_name="archive",
+                        message=f"Channel {channel.mention} had invalid permissions"
+                    )
+                    return
+
+                await category.edit(name=f"Archived - {category.name}")
+
+            except discord.Forbidden:
+                await self.send_error(
+                    ctx,
+                    command_name="archive",
+                    message=f"Bot does not have access to the channels in the selected category."
+                )
+                return
+
+        await ctx.respond("Category successfully archived", ephemeral=True)
+
 
 class User_Commands_Cog(Application_Commands_Cog):
-    async def _user_command_induct(self, ctx: ApplicationContext, member: Member, silent: bool):
+    async def _user_command_induct(self, ctx: discord.ApplicationContext, member: discord.Member, silent: bool):
         try:
-            guild: Guild = self.bot.css_guild
+            guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
             await self.send_error(
                 ctx,
@@ -1094,11 +1269,11 @@ class User_Commands_Cog(Application_Commands_Cog):
         await self._induct(ctx, member, guild, silent)
 
     @discord.user_command(name="Induct User")
-    async def non_silent_induct(self, ctx: ApplicationContext, member: Member):
+    async def non_silent_induct(self, ctx: discord.ApplicationContext, member: discord.Member):
         await self._user_command_induct(ctx, member, silent=False)
 
     @discord.user_command(name="Silently Induct User")
-    async def silent_induct(self, ctx: ApplicationContext, member: Member):
+    async def silent_induct(self, ctx: discord.ApplicationContext, member: discord.Member):
         await self._user_command_induct(ctx, member, silent=True)
 
 

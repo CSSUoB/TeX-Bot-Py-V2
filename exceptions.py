@@ -3,8 +3,8 @@ from typing import Any, Collection
 
 
 def format_does_not_exist_with_dependencies(value: str, does_not_exist_type: str, dependant_commands: Collection[str], dependant_tasks: Collection[str], dependant_events: Collection[str]) -> str:
-    if not dependant_commands or not dependant_tasks:
-        raise ValueError("The arguments \"dependant_commands\" & \"dependant_tasks\" cannot both be empty.")
+    if not dependant_commands and not dependant_tasks and not dependant_events:
+        raise ValueError("The arguments \"dependant_commands\" & \"dependant_tasks\" cannot all be empty.")
 
     formatted_dependant_commands: str = ""
 
@@ -207,6 +207,11 @@ class MemberRoleDoesNotExist(RoleDoesNotExist):
     def __init__(self, message: str | None = None) -> None:
         # noinspection SpellCheckingInspection
         super().__init__(message, role_name="Member", dependant_commands={"makemember"})
+
+
+class ArchivistRoleDoesNotExist(RoleDoesNotExist):
+    def __init__(self, message: str | None = None) -> None:
+        super().__init__(message, role_name="Archivist", dependant_commands={"archive"})
 
 
 class ChannelDoesNotExist(ValueError, BaseError):
