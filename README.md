@@ -17,7 +17,7 @@ Users of the bot may encounter error codes when attempting to execute slash-comm
 
 ## Dependencies
 
-Ensure that you have [Poetry](https://www.mypy-lang.org/) & [mypy](https://www.mypy-lang.org/) installed, then navigate to the root folder and run the following command:
+Ensure that you have [Poetry](https://python-poetry.org/) & [mypy](https://www.mypy-lang.org/) installed, then navigate to the root folder and run the following command:
 
 ```shell
 poetry install
