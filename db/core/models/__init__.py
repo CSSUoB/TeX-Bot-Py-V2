@@ -1,16 +1,15 @@
-import datetime
 import hashlib
 import re
 from typing import Any
 
-from django.core.validators import RegexValidator  # type: ignore
-from django.db import models  # type: ignore
+from django.core.validators import RegexValidator
+from django.db import models
 
-from .utils import Async_Base_Model
+from .utils import AsyncBaseModel
 
 
-class Interaction_Reminder_Opt_Out_Member(Async_Base_Model):
-    hashed_member_id: str = models.CharField(
+class Interaction_Reminder_Opt_Out_Member(AsyncBaseModel):
+    hashed_member_id = models.CharField(
         "Hashed Discord Member ID",
         unique=True,
         null=False,
@@ -57,8 +56,8 @@ class Interaction_Reminder_Opt_Out_Member(Async_Base_Model):
         return super().get_proxy_field_names() | {"member_id"}
 
 
-class UoB_Made_Member(Async_Base_Model):
-    hashed_uob_id: str = models.CharField(
+class UoB_Made_Member(AsyncBaseModel):
+    hashed_uob_id = models.CharField(
         "Hashed UoB ID",
         unique=True,
         null=False,
@@ -105,7 +104,7 @@ class UoB_Made_Member(Async_Base_Model):
         return super().get_proxy_field_names() | {"uob_id"}
 
 
-class Discord_Reminder(Async_Base_Model):
+class Discord_Reminder(AsyncBaseModel):
     class ChannelType(models.IntegerChoices):
         TEXT = 0, "text"
         PRIVATE = 1, "private"
@@ -123,7 +122,7 @@ class Discord_Reminder(Async_Base_Model):
         def __str__(self) -> str:
             return self.label
 
-    hashed_member_id: str = models.CharField(
+    hashed_member_id = models.CharField(
         "Hashed Discord Member ID",
         null=False,
         blank=False,
@@ -135,13 +134,13 @@ class Discord_Reminder(Async_Base_Model):
             )
         ]
     )
-    message: str | None = models.TextField(
+    message = models.TextField(
         "Message to remind User",
         max_length=1500,
         null=False,
         blank=True
     )
-    _channel_id: str = models.CharField(
+    _channel_id = models.CharField(
         "Discord Channel ID Reminder needs to be sent in",
         unique=False,
         null=False,
@@ -160,7 +159,7 @@ class Discord_Reminder(Async_Base_Model):
         null=True,
         blank=True
     )
-    send_datetime: datetime.datetime = models.DateTimeField(
+    send_datetime = models.DateTimeField(
         "Date & time to send Reminder at",
         unique=False,
         null=False,
@@ -232,7 +231,7 @@ class Discord_Reminder(Async_Base_Model):
         return super().get_proxy_field_names() | {"member_id", "channel_id"}
 
 
-class Sent_Get_Roles_Reminder_Member(Async_Base_Model):
+class Sent_Get_Roles_Reminder_Member(AsyncBaseModel):
     hashed_member_id: str = models.CharField(
         "Hashed Discord Member ID",
         unique=True,
@@ -280,11 +279,11 @@ class Sent_Get_Roles_Reminder_Member(Async_Base_Model):
         return super().get_proxy_field_names() | {"member_id"}
 
 
-class Left_Member(Async_Base_Model):
+class Left_Member(AsyncBaseModel):
     _roles: list[str] = models.JSONField()
 
     @property
-    def roles(self) -> set:
+    def roles(self) -> set[str]:
         return set(self._roles)
 
     @roles.setter
