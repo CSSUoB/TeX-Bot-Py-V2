@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 
 from cogs.utils import Bot_Cog
-from db.core.models import Interaction_Reminder_Opt_Out_Member, Left_Member
+from db.core.models import InteractionReminderOptOutMember, LeftMember
 from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
 from setup import settings
 from utils import TeXBot
@@ -66,12 +66,12 @@ class Events_Cog(Bot_Cog):
 
         if guest_role not in before.roles and guest_role in after.roles:
             try:
-                interaction_reminder_opt_out_member: Interaction_Reminder_Opt_Out_Member = await Interaction_Reminder_Opt_Out_Member.objects.aget(
-                    hashed_member_id=Interaction_Reminder_Opt_Out_Member.hash_member_id(
+                interaction_reminder_opt_out_member: InteractionReminderOptOutMember = await InteractionReminderOptOutMember.objects.aget(
+                    hashed_member_id=InteractionReminderOptOutMember.hash_member_id(
                         before.id
                     )
                 )
-            except Interaction_Reminder_Opt_Out_Member.DoesNotExist:
+            except InteractionReminderOptOutMember.DoesNotExist:
                 pass
             else:
                 await interaction_reminder_opt_out_member.adelete()
@@ -108,7 +108,7 @@ class Events_Cog(Bot_Cog):
         if member.guild != guild or member.bot:
             return
 
-        await Left_Member.objects.acreate(roles={f"@{role.name}" for role in member.roles if role.name != "@everyone"})
+        await LeftMember.objects.acreate(roles={f"@{role.name}" for role in member.roles if role.name != "@everyone"})
 
 
 def setup(bot: TeXBot):

@@ -1,40 +1,8 @@
-import abc
 from typing import Collection
 
-from django.db.models import Field  # type: ignore
+from django.db.models import Field
 
-
-class BaseError(Exception, abc.ABC):
-    # noinspection PyPropertyDefinition
-    @classmethod  # type: ignore
-    @property
-    @abc.abstractmethod
-    def DEFAULT_MESSAGE(cls) -> str:
-        raise NotImplementedError
-
-    @property
-    def message(self) -> str:
-        raise NotImplementedError
-
-    @message.setter
-    @abc.abstractmethod
-    def message(self, value: str) -> None:
-        raise NotImplementedError
-
-    def __init__(self, message: str | None = None) -> None:
-        self.message: str = message or self.DEFAULT_MESSAGE
-
-        super().__init__(self.message)
-
-    def __repr__(self) -> str:
-        formatted: str = self.message
-
-        attributes: set[str] = set(self.__dict__)
-        attributes.discard("message")
-        if attributes:
-            formatted += f""" ({", ".join({f"{attribute=}" for attribute in attributes})})"""
-
-        return formatted
+from exceptions import BaseError
 
 
 class UpdateFieldNamesError(ValueError, BaseError):

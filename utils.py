@@ -7,11 +7,14 @@ import matplotlib.pyplot as plt  # type: ignore
 import mplcyberpunk  # type: ignore
 from matplotlib.text import Text as Plot_Text  # type: ignore
 
-from exceptions import GuildDoesNotExist
+from exceptions import GuildDoesNotExist, ImproperlyConfigured
 from setup import settings
 
 
 def get_oauth_url() -> str:
+    if not settings["DISCORD_BOT_APPLICATION_ID"]:
+        raise ImproperlyConfigured("DISCORD_BOT_APPLICATION_ID must be provided in order to use the get_oauth_url() utility function")
+
     return discord.utils.oauth_url(
         client_id=settings["DISCORD_BOT_APPLICATION_ID"],
         permissions=discord.Permissions(

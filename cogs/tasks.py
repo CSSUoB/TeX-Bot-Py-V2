@@ -7,10 +7,10 @@ import emoji
 from discord import ui
 from discord.ext import tasks
 from discord.ui import View
-from django.core.exceptions import ValidationError  # type: ignore
+from django.core.exceptions import ValidationError
 
 from cogs.utils import Bot_Cog
-from db.core.models import Discord_Reminder, Interaction_Reminder_Opt_Out_Member, Sent_Get_Roles_Reminder_Member
+from db.core.models import DiscordReminder, InteractionReminderOptOutMember, SentGetRolesReminderMember
 from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
 from setup import settings
 from utils import TeXBot
@@ -38,10 +38,10 @@ class Tasks_Cog(Bot_Cog):
 
     @tasks.loop(minutes=15)
     async def clear_reminder_backlog(self):
-        reminder: Discord_Reminder
-        async for reminder in Discord_Reminder.objects.all():
+        reminder: DiscordReminder
+        async for reminder in DiscordReminder.objects.all():
             if (discord.utils.utcnow() - reminder.send_datetime) > datetime.timedelta(minutes=15):
-                user: discord.User | None = discord.utils.find(lambda u: not u.bot and Discord_Reminder.hash_member_id(u.id) == reminder.hashed_member_id, self.bot.users)
+                user: discord.User | None = discord.utils.find(lambda u: not u.bot and DiscordReminder.hash_member_id(u.id) == reminder.hashed_member_id, self.bot.users)
 
                 if not user:
                     logging.warning(f"User with hashed user ID: {reminder.hashed_member_id} no longer exists.")
@@ -134,7 +134,7 @@ class Tasks_Cog(Bot_Cog):
             if guest_role in member.roles or member.bot:
                 continue
 
-            if not await Interaction_Reminder_Opt_Out_Member.objects.filter(hashed_member_id=Interaction_Reminder_Opt_Out_Member.hash_member_id(member.id)).aexists():
+            if not await InteractionReminderOptOutMember.objects.filter(hashed_member_id=InteractionReminderOptOutMember.hash_member_id(member.id)).aexists():
                 async for message in member.history():
                     if message.components and isinstance(message.components[0], discord.ActionRow) and isinstance(message.components[0].children[0], discord.Button) and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button":
                         await message.edit(view=None)
@@ -181,7 +181,7 @@ class Tasks_Cog(Bot_Cog):
                     return
 
                 try:
-                    await Interaction_Reminder_Opt_Out_Member.objects.acreate(
+                    await InteractionReminderOptOutMember.objects.acreate(
                         member_id=interaction_member.id
                     )
                 except ValidationError as create_interaction_reminder_opt_out_member_error:
@@ -203,12 +203,12 @@ class Tasks_Cog(Bot_Cog):
                     return
 
                 try:
-                    interaction_reminder_opt_out_member: Interaction_Reminder_Opt_Out_Member = await Interaction_Reminder_Opt_Out_Member.objects.aget(
-                        hashed_member_id=Interaction_Reminder_Opt_Out_Member.hash_member_id(
+                    interaction_reminder_opt_out_member: InteractionReminderOptOutMember = await InteractionReminderOptOutMember.objects.aget(
+                        hashed_member_id=InteractionReminderOptOutMember.hash_member_id(
                             interaction_member.id
                         )
                     )
-                except Interaction_Reminder_Opt_Out_Member.DoesNotExist:
+                except InteractionReminderOptOutMember.DoesNotExist:
                     pass
                 else:
                     await interaction_reminder_opt_out_member.adelete()
@@ -247,14 +247,14 @@ class Tasks_Cog(Bot_Cog):
                 )
                 continue
 
-            hashed_member_id: str = Sent_Get_Roles_Reminder_Member.hash_member_id(member.id)
+            hashed_member_id: str = SentGetRolesReminderMember.hash_member_id(member.id)
 
-            if guest_role in member.roles and not member.bot and not any(optional_role_name in {role_of_member.name for role_of_member in member.roles} for optional_role_name in {"He / Him", "She / Her", "They / Them", "Neopronouns", "Foundation Year", "First Year", "Second Year", "Final Year", "Year In Industry", "Year Abroad", "PGT", "PGR", "Alumnus/Alumna", "Postdoc", "Serious Talk", "Housing", "Gaming", "Anime", "Sport", "Food", "Industry", "Minecraft", "Github", "Archivist", "News"}) and (discord.utils.utcnow() - member.joined_at) > timedelta(days=7) and not await Sent_Get_Roles_Reminder_Member.objects.filter(hashed_member_id=hashed_member_id).aexists():
+            if guest_role in member.roles and not member.bot and not any(optional_role_name in {role_of_member.name for role_of_member in member.roles} for optional_role_name in {"He / Him", "She / Her", "They / Them", "Neopronouns", "Foundation Year", "First Year", "Second Year", "Final Year", "Year In Industry", "Year Abroad", "PGT", "PGR", "Alumnus/Alumna", "Postdoc", "Serious Talk", "Housing", "Gaming", "Anime", "Sport", "Food", "Industry", "Minecraft", "Github", "Archivist", "News"}) and (discord.utils.utcnow() - member.joined_at) > timedelta(days=7) and not await SentGetRolesReminderMember.objects.filter(hashed_member_id=hashed_member_id).aexists():
                 await member.send(
                     f"Hey! It seems like you joined the CSS Discord server and been given the `@Guest` role but have not yet nabbed yourself any opt-in roles.\nYou can head to {roles_channel_mention} and click on the icons to get optional roles like pronouns and year groups",
                 )
 
-                await Sent_Get_Roles_Reminder_Member.objects.acreate(hashed_member_id=hashed_member_id)
+                await SentGetRolesReminderMember.objects.acreate(hashed_member_id=hashed_member_id)
 
     @get_roles_reminder.before_loop
     async def before_get_roles_reminder(self):

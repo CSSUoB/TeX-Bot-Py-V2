@@ -8,12 +8,12 @@ import aiohttp
 import discord
 import parsedatetime  # type: ignore
 from bs4 import BeautifulSoup
-from django.core.exceptions import ValidationError  # type: ignore
-from django.utils import timezone  # type: ignore
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 import utils
 from cogs.utils import Bot_Cog
-from db.core.models import Discord_Reminder, Left_Member, UoB_Made_Member
+from db.core.models import DiscordReminder, LeftMember, UoBMadeMember
 from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
 from setup import settings
 from utils import TeXBot
@@ -360,7 +360,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             message = re.sub(r"<@[&#]?\d+>", "@...", message.strip())
 
         try:
-            reminder: Discord_Reminder = await Discord_Reminder.objects.acreate(
+            reminder: DiscordReminder = await DiscordReminder.objects.acreate(
                 member_id=ctx.user.id,
                 message=message or "",
                 channel_id=ctx.channel_id,
@@ -719,7 +719,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             )
             return
 
-        if await UoB_Made_Member.objects.filter(hashed_uob_id=UoB_Made_Member.hash_uob_id(uob_id)).aexists():
+        if await UoBMadeMember.objects.filter(hashed_uob_id=UoBMadeMember.hash_uob_id(uob_id)).aexists():
             await ctx.respond(
                 ":information_source: No changes made. This student ID has already been used. Please contact a Committee member if this is an error. :information_source:",
                 ephemeral=True
@@ -762,7 +762,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             )
 
             try:
-                await UoB_Made_Member.objects.acreate(uob_id=uob_id)
+                await UoBMadeMember.objects.acreate(uob_id=uob_id)
             except ValidationError as create_uob_made_member_error:
                 if "hashed_uob_id" not in create_uob_made_member_error.message_dict or all("already exists" not in error for error in create_uob_made_member_error.message_dict["hashed_uob_id"]):
                     raise
@@ -1068,7 +1068,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return
 
         left_member_counts: dict[str, int] = {
-            "Total": await Left_Member.objects.acount()
+            "Total": await LeftMember.objects.acount()
         }
 
         role_name: str
@@ -1076,8 +1076,8 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             if discord.utils.get(guild.roles, name=role_name):
                 left_member_counts[f"@{role_name}"] = 0
 
-        left_member: Left_Member
-        async for left_member in Left_Member.objects.all():
+        left_member: LeftMember
+        async for left_member in LeftMember.objects.all():
             for left_member_role in left_member.roles:
                 if left_member_role not in left_member_counts:
                     continue
@@ -1239,7 +1239,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
                     )
                     return
 
-                await category.edit(name=f"Archived - {category.name}")
+                # await category.edit(name=f"Archived - {category.name}")
 
             except discord.Forbidden:
                 await self.send_error(

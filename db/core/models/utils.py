@@ -1,3 +1,7 @@
+"""
+    Utility classes & functions provided for all models to use.
+"""
+
 from typing import Any
 
 from asgiref.sync import sync_to_async

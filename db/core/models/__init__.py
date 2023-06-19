@@ -1,14 +1,26 @@
+"""
+    Model classes that store extra information longer-term between individual
+    Discord command events.
+"""
+
 import hashlib
 import re
 from typing import Any
 
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 
 from .utils import AsyncBaseModel
 
 
-class Interaction_Reminder_Opt_Out_Member(AsyncBaseModel):
+class InteractionReminderOptOutMember(AsyncBaseModel):
+    """
+        Model to represent a Discord server member (identified by their hashed
+        Discord member ID) that has requested to be opted-out of reminders to
+        interact in the CSS Discord server.
+    """
+
     hashed_member_id = models.CharField(
         "Hashed Discord Member ID",
         unique=True,
@@ -39,8 +51,14 @@ class Interaction_Reminder_Opt_Out_Member(AsyncBaseModel):
         return f"{self.hashed_member_id}"
 
     @staticmethod
-    def hash_member_id(member_id: str | int) -> str:
-        if not re.match(r"\A\d{17,20}\Z", str(member_id)):
+    def hash_member_id(member_id: Any) -> str:
+        """
+            Hashes the provided member_id into the format that hashed_member_ids
+            are stored in the database when new InteractionReminderOptOutMember
+            objects are created.
+        """
+
+        if not isinstance(member_id, (str, int)) or not re.match(r"\A\d{17,20}\Z", str(member_id)):
             raise ValueError(f"\"{member_id}\" is not a valid Discord member ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)")
 
         return hashlib.sha256(str(member_id).encode()).hexdigest()
@@ -56,7 +74,14 @@ class Interaction_Reminder_Opt_Out_Member(AsyncBaseModel):
         return super().get_proxy_field_names() | {"member_id"}
 
 
-class UoB_Made_Member(AsyncBaseModel):
+class UoBMadeMember(AsyncBaseModel):
+    """
+        Model to represent a CSS member (identified by their hashed Uob ID) that
+        has successfully been given the Member role on the CSS Discord server.
+        Storing the successfully made members prevents multiple people from
+        getting the Member role using the same purchased society membership.
+    """
+
     hashed_uob_id = models.CharField(
         "Hashed UoB ID",
         unique=True,
@@ -87,8 +112,14 @@ class UoB_Made_Member(AsyncBaseModel):
         return f"{self.hashed_uob_id}"
 
     @staticmethod
-    def hash_uob_id(uob_id: str) -> str:
-        if not re.match(r"\A\d{7}\Z", str(uob_id)):
+    def hash_uob_id(uob_id: Any) -> str:
+        """
+            Hashes the provided uob_id into the format that hashed_uob_ids
+            are stored in the database when new UoBMadeMember objects are
+            created.
+        """
+
+        if not isinstance(uob_id, (str, int)) or not re.match(r"\A\d{7}\Z", str(uob_id)):
             raise ValueError(f"\"{uob_id}\" is not a valid UoB Student ID.")
 
         return hashlib.sha256(str(uob_id).encode()).hexdigest()
@@ -104,8 +135,18 @@ class UoB_Made_Member(AsyncBaseModel):
         return super().get_proxy_field_names() | {"uob_id"}
 
 
-class Discord_Reminder(AsyncBaseModel):
+class DiscordReminder(AsyncBaseModel):
+    """
+        Model to represent a reminder that a Discord server member has requested
+        to be sent in the future.
+    """
+
     class ChannelType(models.IntegerChoices):
+        """
+            Enum to represent the allowed choices of the channel_type field of a
+            DiscordReminder.
+        """
+
         TEXT = 0, "text"
         PRIVATE = 1, "private"
         VOICE = 2, "voice"
@@ -141,7 +182,7 @@ class Discord_Reminder(AsyncBaseModel):
         blank=True
     )
     _channel_id = models.CharField(
-        "Discord Channel ID Reminder needs to be sent in",
+        "Discord Channel ID of the channel that the reminder needs to be sent in",
         unique=False,
         null=False,
         blank=False,
@@ -153,14 +194,14 @@ class Discord_Reminder(AsyncBaseModel):
             )
         ]
     )
-    channel_type: ChannelType = models.IntegerField(
-        "Discord Channel Type Reminder needs to be sent in",
+    channel_type = models.IntegerField(
+        "Discord Channel Type of the channel that the reminder needs to be sent in",
         choices=ChannelType.choices,
         null=True,
         blank=True
     )
     send_datetime = models.DateTimeField(
-        "Date & time to send Reminder at",
+        "Date & time to send reminder",
         unique=False,
         null=False,
         blank=False
@@ -175,7 +216,7 @@ class Discord_Reminder(AsyncBaseModel):
         self._channel_id = str(channel_id)
 
     class Meta:
-        verbose_name = "A Reminder for a Discord User."
+        verbose_name = "A Reminder for a Discord Member."
         constraints = [
             models.UniqueConstraint(
                 fields=["hashed_member_id", "message", "_channel_id"],
@@ -201,6 +242,12 @@ class Discord_Reminder(AsyncBaseModel):
         return construct_str
 
     def format_message(self, user_mention: str | None) -> str:
+        """
+            Returns the formatted message stored by this reminder, adds a
+            mention to the user that requested the reminder if passed in from
+            the calling context.
+        """
+
         constructed_message: str = "This is your reminder"
 
         if user_mention:
@@ -214,8 +261,14 @@ class Discord_Reminder(AsyncBaseModel):
         return constructed_message
 
     @staticmethod
-    def hash_member_id(member_id: str | int) -> str:
-        if not re.match(r"\A\d{17,20}\Z", str(member_id)):
+    def hash_member_id(member_id: Any) -> str:
+        """
+            Hashes the provided member_id into the format that hashed_member_ids
+            are stored in the database when new DiscordReminder objects are
+            created.
+        """
+
+        if not isinstance(member_id, (str, int)) or not re.match(r"\A\d{17,20}\Z", str(member_id)):
             raise ValueError(f"\"{member_id}\" is not a valid Discord member ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)")
 
         return hashlib.sha256(str(member_id).encode()).hexdigest()
@@ -231,7 +284,16 @@ class Discord_Reminder(AsyncBaseModel):
         return super().get_proxy_field_names() | {"member_id", "channel_id"}
 
 
-class Sent_Get_Roles_Reminder_Member(AsyncBaseModel):
+class SentGetRolesReminderMember(AsyncBaseModel):
+    """
+        Model to represent a Discord server member (identified by their hashed
+        Discord member ID) that has already been sent a reminder to get their
+        opt-in roles within the CSS Discord server. Storing this prevents
+        Discord members from being sent the same reminder to get their opt-in
+        roles multiple times, even if they have still not yet got their opt-in
+        roles.
+    """
+
     hashed_member_id: str = models.CharField(
         "Hashed Discord Member ID",
         unique=True,
@@ -262,8 +324,14 @@ class Sent_Get_Roles_Reminder_Member(AsyncBaseModel):
         return f"{self.hashed_member_id}"
 
     @staticmethod
-    def hash_member_id(member_id: str | int) -> str:
-        if not re.match(r"\A\d{17,20}\Z", str(member_id)):
+    def hash_member_id(member_id: Any) -> str:
+        """
+            Hashes the provided member_id into the format that hashed_member_ids
+            are stored in the database when new SentGetRolesReminderMember
+            objects are created.
+        """
+
+        if not isinstance(member_id, (str, int)) or not re.match(r"\A\d{17,20}\Z", str(member_id)):
             raise ValueError(f"\"{member_id}\" is not a valid Discord member ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)")
 
         return hashlib.sha256(str(member_id).encode()).hexdigest()
@@ -279,8 +347,15 @@ class Sent_Get_Roles_Reminder_Member(AsyncBaseModel):
         return super().get_proxy_field_names() | {"member_id"}
 
 
-class Left_Member(AsyncBaseModel):
-    _roles: list[str] = models.JSONField()
+class LeftMember(AsyncBaseModel):
+    """
+        Model to represent a list of roles that a Discord server member had when
+        they left the CSS Discord server. Storing this allows the stats commands
+        to calculate which roles were most often held by Discord members when
+        they left the CSS Discord server.
+    """
+
+    _roles = models.JSONField("List of roles a Member had")
 
     @property
     def roles(self) -> set[str]:
@@ -292,6 +367,15 @@ class Left_Member(AsyncBaseModel):
 
     class Meta:
         verbose_name = "A List of Roles that a Member had when they left the CSS Discord server."
+
+    def clean(self) -> None:
+        """
+            Performs extra model-wide validation after clean() has been called
+            on every field by self.clean_fields.
+        """
+
+        if any(not isinstance(role, str) for role in self.roles):
+            raise ValidationError({"_roles": "Roles must be a set of strings representing the role names."}, code="invalid")
 
     @classmethod
     def get_proxy_field_names(cls) -> set[str]:
