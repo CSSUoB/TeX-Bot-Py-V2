@@ -108,7 +108,7 @@ class Tasks_Cog(Bot_Cog):
                         reason=f"Member was in server without introduction sent for longer than {kick_no_introduction_members_delay}"
                     )
                 except discord.Forbidden as kick_error:
-                    logging.warning(f"Member with ID: {member.id} could not be kicked due to {kick_error.text}")
+                    logging.error(f"Member with ID: {member.id} could not be kicked due to {kick_error.text}")
 
     @kick_no_introduction_members.before_loop
     async def before_kick_no_introduction_members(self):

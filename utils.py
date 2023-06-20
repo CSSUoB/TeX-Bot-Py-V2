@@ -1,10 +1,13 @@
 import io
+import logging
+from logging import LogRecord
 import math
 from typing import Collection
 
 import discord
 import matplotlib.pyplot as plt  # type: ignore
 import mplcyberpunk  # type: ignore
+from discord import TextChannel
 from matplotlib.text import Text as Plot_Text  # type: ignore
 
 from exceptions import GuildDoesNotExist, ImproperlyConfigured
@@ -186,3 +189,13 @@ class TeXBot(discord.Bot):
             self._welcome_channel = self.css_guild.rules_channel or discord.utils.get(self.css_guild.text_channels, name="welcome")
 
         return self._welcome_channel
+
+
+class DiscordLoggingHandler(logging.Handler):
+    def __init__(self, log_channel: TextChannel) -> None:
+        self.log_channel: TextChannel = log_channel
+
+        super().__init__()
+
+    def emit(self, record: LogRecord) -> None:
+        self.log_channel.send(self.format(record))

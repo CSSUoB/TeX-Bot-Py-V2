@@ -350,9 +350,10 @@ class SentGetRolesReminderMember(AsyncBaseModel):
 class LeftMember(AsyncBaseModel):
     """
         Model to represent a list of roles that a Discord server member had when
-        they left the CSS Discord server. Storing this allows the stats commands
-        to calculate which roles were most often held by Discord members when
         they left the CSS Discord server.
+
+        Storing this allows the stats commands to calculate which roles were
+        most often held by Discord members when they left the CSS Discord server.
     """
 
     _roles = models.JSONField("List of roles a Member had")

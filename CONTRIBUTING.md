@@ -49,6 +49,7 @@ This bot is written in Python using [Pycord](https://pycord.dev) and uses [Disco
 * `cogs/events.py`: contains event listeners
 * `cogs/tasks.py`: contains repeating tasks
 * `cogs/utils.py`: contains common utility classes & functions used by the other cog modules
+* `db.core.models`: contains all the database ORM models to interact with storing information longer-term (between individual command events)
 
 ## Making Your First Contribution
 

@@ -1,13 +1,15 @@
 import logging
+from logging import Logger
 
 import discord
+from discord import TextChannel
 from discord.ext import commands
 
 from cogs.utils import Bot_Cog
 from db.core.models import InteractionReminderOptOutMember, LeftMember
 from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
 from setup import settings
-from utils import TeXBot
+from utils import DiscordLoggingHandler, TeXBot
 from .tasks import Tasks_Cog
 
 
@@ -21,6 +23,20 @@ class Events_Cog(Bot_Cog):
             return
         else:
             self.bot._css_guild = guild
+
+        log_channel: TextChannel | None
+        if settings["DISCORD_LOG_CHANNEL_ID"] and (log_channel := discord.utils.get(guild.text_channels, id=settings["DISCORD_LOG_CHANNEL_ID"])):
+            discord_logging_handler: DiscordLoggingHandler = DiscordLoggingHandler(log_channel)
+            discord_logging_handler.setLevel(logging.WARNING)
+            root_logger: Logger = logging.getLogger("")
+            root_logger_handler: logging.Handler
+            for root_logger_handler in root_logger.handlers:
+                if hasattr(root_logger_handler, "formatter"):
+                    discord_logging_handler.setFormatter(root_logger_handler.formatter)
+                    break
+            root_logger.addHandler(discord_logging_handler)
+        else:
+            logging.warning("DISCORD_LOG_CHANNEL_ID was not set, so error logs will not be sent to the Discord log channel.")
 
         if not discord.utils.get(guild.roles, name="Committee"):
             logging.warning(CommitteeRoleDoesNotExist())

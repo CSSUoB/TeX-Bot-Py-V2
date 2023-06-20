@@ -6,7 +6,7 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Any, Match
 
-import django  # type: ignore
+import django
 import dotenv
 import validators  # type: ignore
 
@@ -35,14 +35,21 @@ settings["DISCORD_BOT_APPLICATION_ID"] = str(os.getenv("DISCORD_BOT_APPLICATION_
 if settings["DISCORD_BOT_APPLICATION_ID"] and not re.match(r"\A\d{17,20}\Z", settings["DISCORD_BOT_APPLICATION_ID"]):
     raise ImproperlyConfigured("DISCORD_BOT_APPLICATION_ID must be a valid Discord application ID (see https://support-dev.discord.com/hc/en-us/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-).")
 
-_str_DISCORD_GUILD_ID = str(os.getenv("DISCORD_GUILD_ID"))
-if not re.match(r"\A\d{17,20}\Z", _str_DISCORD_GUILD_ID):
+str_discord_guild_id: str = str(os.getenv("DISCORD_GUILD_ID"))
+if not re.match(r"\A\d{17,20}\Z", str_discord_guild_id):
     raise ImproperlyConfigured("DISCORD_GUILD_ID must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id).")
-settings["DISCORD_GUILD_ID"] = int(_str_DISCORD_GUILD_ID)
+settings["DISCORD_GUILD_ID"] = int(str_discord_guild_id)
+
+settings["DISCORD_LOG_CHANNEL_ID"] = None
+str_discord_log_channel_id: str = str(os.getenv("DISCORD_LOG_CHANNEL_ID", ""))
+if str_discord_log_channel_id:
+    if not re.match(r"\A\d{17,20}\Z", str_discord_log_channel_id):
+        raise ImproperlyConfigured("DISCORD_LOG_CHANNEL_ID must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id).")
+    settings["DISCORD_LOG_CHANNEL_ID"] = int(str_discord_log_channel_id)
 
 
 try:
-    ping_command_easter_egg_probability = 100 * float(os.getenv("PING_COMMAND_EASTER_EGG_PROBABILITY", "0.01"))
+    ping_command_easter_egg_probability: float = 100 * float(os.getenv("PING_COMMAND_EASTER_EGG_PROBABILITY", "0.01"))
 except (ValueError, TypeError) as e:
     raise ImproperlyConfigured("PING_COMMAND_EASTER_EGG_PROBABILITY must be a float.") from e
 if not 100 >= ping_command_easter_egg_probability >= 0:
@@ -50,13 +57,13 @@ if not 100 >= ping_command_easter_egg_probability >= 0:
 settings["PING_COMMAND_EASTER_EGG_WEIGHTS"] = (100 - ping_command_easter_egg_probability, ping_command_easter_egg_probability)
 
 
-_path_MESSAGES_FILE_PATH = Path(str(os.getenv("MESSAGES_FILE_PATH", "messages.json")))
-if not _path_MESSAGES_FILE_PATH.is_file():
+path_messages_file_path: Path = Path(str(os.getenv("MESSAGES_FILE_PATH", "messages.json")))
+if not path_messages_file_path.is_file():
     raise ImproperlyConfigured("MESSAGES_FILE_PATH must be a path to a file that exists.")
-if not _path_MESSAGES_FILE_PATH.suffix == ".json":
+if not path_messages_file_path.suffix == ".json":
     raise ImproperlyConfigured("MESSAGES_FILE_PATH must be a path to a JSON file.")
 
-with open(_path_MESSAGES_FILE_PATH, "r", encoding="utf8") as messages_file:
+with open(path_messages_file_path, "r", encoding="utf8") as messages_file:
     try:
         messages_dict: dict = json.load(messages_file)
     except json.JSONDecodeError as messages_file_error:
@@ -115,27 +122,27 @@ settings["GET_ROLES_REMINDER_INTERVAL"] = {key: float(value) for key, value in _
 
 
 try:
-    _float_STATISTICS_DAYS: float = float(os.getenv("STATISTICS_DAYS", 30))
+    float_statistics_days: float = float(os.getenv("STATISTICS_DAYS", 30))
 except (ValueError, TypeError) as statistics_days_error:
     raise ImproperlyConfigured("STATISTICS_DAYS must contain the statistics period in days.") from statistics_days_error
-settings["STATISTICS_DAYS"] = timedelta(days=_float_STATISTICS_DAYS)
+settings["STATISTICS_DAYS"] = timedelta(days=float_statistics_days)
 
 
 try:
-    _STATISTICS_ROLES: set[str] = set(filter(None, os.getenv("STATISTICS_ROLES", "").split(",")))
+    statistics_roles: set[str] = set(filter(None, os.getenv("STATISTICS_ROLES", "").split(",")))
 except (ValueError, TypeError) as statistics_roles_error:
     try:
-        _STATISTICS_ROLES = {str(role_name) for role_name in filter(None, os.getenv("STATISTICS_ROLES", "").split(","))}
+        statistics_roles = {str(role_name) for role_name in filter(None, os.getenv("STATISTICS_ROLES", "").split(","))}
     except (ValueError, TypeError):
         raise ImproperlyConfigured("STATISTICS_ROLES must be a list of the names of roles to check the statistics of.") from statistics_roles_error
-settings["STATISTICS_ROLES"] = _STATISTICS_ROLES or {"Committee", "Committee-Elect", "Student Rep", "Member", "Guest", "Server Booster", "Foundation Year", "First Year", "Second Year", "Final Year", "Year In Industry", "Year Abroad", "PGT", "PGR", "Alumnus/Alumna", "Postdoc", "Quiz Victor"}
+settings["STATISTICS_ROLES"] = statistics_roles or {"Committee", "Committee-Elect", "Student Rep", "Member", "Guest", "Server Booster", "Foundation Year", "First Year", "Second Year", "Final Year", "Year In Industry", "Year Abroad", "PGT", "PGR", "Alumnus/Alumna", "Postdoc", "Quiz Victor"}
 
 
-LOG_LEVEL: str = str(os.getenv("LOG_LEVEL", "INFO")).upper()
-if LOG_LEVEL not in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}:
+console_log_level: str = str(os.getenv("CONSOLE_LOG_LEVEL", "INFO")).upper()
+if console_log_level not in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}:
     raise ImproperlyConfigured("LOG_LEVEL must be one of: \"DEBUG\", \"INFO\", \"WARNING\", \"ERROR\" or \"CRITICAL\"")
 # noinspection SpellCheckingInspection
 logging.basicConfig(
-    level=getattr(logging, LOG_LEVEL),
+    level=getattr(logging, console_log_level),
     format="%(levelname)s | %(module)s: %(message)s"
 )

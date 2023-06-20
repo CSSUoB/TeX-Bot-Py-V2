@@ -38,12 +38,15 @@ python -c "import utils; print(utils.get_oauth_url())"
 You'll also need to set a number of environment variables:
 
 * `DISCORD_BOT_TOKEN`: The Discord token for the bot you created (available on your bot page in the [Developer Portal](https://discord.com/developers/applications)).
-* `DISCORD_BOT_APPLICATION_ID`: The Discord application ID of the bot (also available on the main page of your application in the [Developer Portal](https://discord.com/developers/applications)).
+* `DISCORD_BOT_APPLICATION_ID`: The Discord application ID of the bot (also available on the main page of your application in the [Developer Portal](https://discord.com/developers/applications)) **(This is only required for using the `get_oauth_url()` util function shown above)**.
 * `DISCORD_GUILD_ID`: The ID of the CSS Discord server.
+* `DISCORD_LOG_CHANNEL_ID`: The ID of the text channel in the CSS Discord server where error logs should be sent. (This is optional and if it is not provided, error logs will be sent to the console only)
 * `MEMBERS_PAGE_URL`: The URL of the CSS members page (currently found on the Guild of Students website, make sure it's sorted by group).
 * `MEMBERS_PAGE_COOKIE`: The CSS members page session cookie (probably listed as `.ASPXAUTH`, gives the bot permission to view your members page as if it were logged in to the website as a Committee member, you can extract this from your web browser after logging into the CSS members page).
 
 You can put these in a `.env` file in the root folder as it uses [python-dotenv](https://saurabh-kumar.com/python-dotenv/), so you don't have to keep them in your environment. There is an `example.env` file in the repo that you can rename and populate.
+
+There are also many other configurations that can be changed, in order to alter the behaviour of the bot. These are all listed in the `example.env` file, along with the behaviours that will change.
 
 ## Contributions
 
