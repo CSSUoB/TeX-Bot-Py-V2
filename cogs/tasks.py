@@ -1,6 +1,7 @@
 import datetime
 import logging
 from datetime import timedelta
+from typing import Any
 
 import discord
 import emoji
@@ -10,7 +11,7 @@ from discord.ui import View
 from django.core.exceptions import ValidationError
 
 from cogs.utils import Bot_Cog
-from db.core.models import DiscordReminder, InteractionReminderOptOutMember, SentGetRolesReminderMember
+from db.core.models import DiscordReminder, InteractionReminderOptOutMember, SentGetRolesReminderMember, SentOneOffInteractionReminderMember
 from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
 from setup import settings
 from utils import TeXBot
@@ -19,6 +20,9 @@ from utils import TeXBot
 class Tasks_Cog(Bot_Cog):
     def __init__(self, bot: TeXBot) -> None:
         if settings["SEND_INTRODUCTION_REMINDERS"]:
+            if settings["SEND_INTRODUCTION_REMINDERS"] == "interval":
+                SentOneOffInteractionReminderMember.objects.all().delete()
+
             self.introduction_reminder.start()
 
         if settings["KICK_NO_INTRODUCTION_MEMBERS"]:
@@ -26,7 +30,8 @@ class Tasks_Cog(Bot_Cog):
 
         self.clear_reminder_backlog.start()
 
-        self.get_roles_reminder.start()
+        if settings["SEND_GET_ROLES_REMINDERS"]:
+            self.get_roles_reminder.start()
 
         super().__init__(bot)
 
@@ -134,15 +139,18 @@ class Tasks_Cog(Bot_Cog):
             if guest_role in member.roles or member.bot:
                 continue
 
-            if not await InteractionReminderOptOutMember.objects.filter(hashed_member_id=InteractionReminderOptOutMember.hash_member_id(member.id)).aexists():
+            if ((settings["SEND_INTRODUCTION_REMINDERS"] == "once" and not await SentOneOffInteractionReminderMember.objects.filter(hashed_member_id=SentOneOffInteractionReminderMember.hash_member_id(member.id)).aexists()) or settings["SEND_INTRODUCTION_REMINDERS"] == "interval") and not await InteractionReminderOptOutMember.objects.filter(hashed_member_id=InteractionReminderOptOutMember.hash_member_id(member.id)).aexists():
                 async for message in member.history():
                     if message.components and isinstance(message.components[0], discord.ActionRow) and isinstance(message.components[0].children[0], discord.Button) and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button":
                         await message.edit(view=None)
 
-                await member.send(
-                    "Hey! It seems like you joined the CSS Discord server but have not yet introduced yourself.\nYou will only get access to the rest of the server after sending an introduction message.",
-                    view=self.Opt_Out_Introduction_Reminders_View(self.bot)
-                )
+                message_kwargs: dict[str, Any] = {"content": "Hey! It seems like you joined the CSS Discord server but have not yet introduced yourself.\nYou will only get access to the rest of the server after sending an introduction message."}
+                if settings["SEND_INTRODUCTION_REMINDERS"] == "interval":
+                    message_kwargs["view"] = self.Opt_Out_Introduction_Reminders_View(self.bot)
+
+                await member.send(**message_kwargs)
+
+                await SentOneOffInteractionReminderMember.objects.acreate(member_id=member.id)
 
     @introduction_reminder.before_loop
     async def before_introduction_reminder(self):

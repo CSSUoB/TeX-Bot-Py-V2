@@ -91,34 +91,46 @@ if not re.match(r"\A[A-Fa-f\d]{128,256}\Z", settings["MEMBERS_PAGE_COOKIE"]):
     raise ImproperlyConfigured("MEMBERS_PAGE_COOKIE must be a valid .ASPXAUTH cookie.")
 
 
-_str_SEND_INTRODUCTION_REMINDERS = str(os.getenv("SEND_INTRODUCTION_REMINDERS", "True")).lower()
-if _str_SEND_INTRODUCTION_REMINDERS not in TRUE_VALUES | FALSE_VALUES:
-    raise ImproperlyConfigured("SEND_INTRODUCTION_REMINDERS must be a boolean value.")
-settings["SEND_INTRODUCTION_REMINDERS"] = _str_SEND_INTRODUCTION_REMINDERS in TRUE_VALUES
+str_send_introduction_reminders: str = str(os.getenv("SEND_INTRODUCTION_REMINDERS", "Once")).lower()
+if str_send_introduction_reminders not in {"once", "interval"} | TRUE_VALUES | FALSE_VALUES:
+    raise ImproperlyConfigured("SEND_INTRODUCTION_REMINDERS must be one of: \"Once\", \"Interval\" or \"False\".")
+if str_send_introduction_reminders in ("once", "interval"):
+    settings["SEND_INTRODUCTION_REMINDERS"] = str_send_introduction_reminders
+elif str_send_introduction_reminders in TRUE_VALUES:
+    settings["SEND_INTRODUCTION_REMINDERS"] = "once"
+else:
+    settings["SEND_INTRODUCTION_REMINDERS"] = False
 
-_match_INTRODUCTION_REMINDER_INTERVAL: Match | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z", str(os.getenv("INTRODUCTION_REMINDER_INTERVAL", "6h")))
-settings["INTRODUCTION_REMINDER_INTERVAL"] = {"hours": 100}
+match_introduction_reminder_interval: Match | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z", str(os.getenv("INTRODUCTION_REMINDER_INTERVAL", "6h")))
+settings["INTRODUCTION_REMINDER_INTERVAL"] = {"hours": 6}
 if settings["SEND_INTRODUCTION_REMINDERS"]:
-    if not _match_INTRODUCTION_REMINDER_INTERVAL:
+    if not match_introduction_reminder_interval:
         raise ImproperlyConfigured("INTRODUCTION_REMINDER_INTERVAL must contain the interval in any combination of seconds, minutes or hours.")
-    settings["INTRODUCTION_REMINDER_INTERVAL"] = {key: float(value) for key, value in _match_INTRODUCTION_REMINDER_INTERVAL.groupdict().items() if value}
+    settings["INTRODUCTION_REMINDER_INTERVAL"] = {key: float(value) for key, value in match_introduction_reminder_interval.groupdict().items() if value}
 
-_str_KICK_NO_INTRODUCTION_MEMBERS = str(os.getenv("KICK_NO_INTRODUCTION_MEMBERS", "True")).lower()
-if _str_KICK_NO_INTRODUCTION_MEMBERS not in TRUE_VALUES | FALSE_VALUES:
+str_kick_no_introduction_members: str = str(os.getenv("KICK_NO_INTRODUCTION_MEMBERS", "False")).lower()
+if str_kick_no_introduction_members not in TRUE_VALUES | FALSE_VALUES:
     raise ImproperlyConfigured("KICK_NO_INTRODUCTION_MEMBERS must be a boolean value.")
-settings["KICK_NO_INTRODUCTION_MEMBERS"] = _str_KICK_NO_INTRODUCTION_MEMBERS in TRUE_VALUES
+settings["KICK_NO_INTRODUCTION_MEMBERS"] = str_kick_no_introduction_members in TRUE_VALUES
 
-_match_KICK_NO_INTRODUCTION_MEMBERS_DELAY: Match | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z", str(os.getenv("KICK_NO_INTRODUCTION_MEMBERS_DELAY", "120h")))
+match_kick_no_introduction_members_delay: Match | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z", str(os.getenv("KICK_NO_INTRODUCTION_MEMBERS_DELAY", "120h")))
 settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] = timedelta()
 if settings["KICK_NO_INTRODUCTION_MEMBERS"]:
-    if not _match_KICK_NO_INTRODUCTION_MEMBERS_DELAY:
+    if not match_kick_no_introduction_members_delay:
         raise ImproperlyConfigured("KICK_NO_INTRODUCTION_MEMBERS_DELAY must contain the delay in any combination of seconds, minutes or hours.")
-    settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] = timedelta(**{key: float(value) for key, value in _match_KICK_NO_INTRODUCTION_MEMBERS_DELAY.groupdict().items() if value})
+    settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] = timedelta(**{key: float(value) for key, value in match_kick_no_introduction_members_delay.groupdict().items() if value})
 
-_match_GET_ROLES_REMINDER_INTERVAL: Match | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z", str(os.getenv("GET_ROLES_REMINDER_INTERVAL", "24h")))
-if not _match_GET_ROLES_REMINDER_INTERVAL:
-    raise ImproperlyConfigured("GET_ROLES_REMINDER_INTERVAL must contain the interval in any combination of seconds, minutes or hours.")
-settings["GET_ROLES_REMINDER_INTERVAL"] = {key: float(value) for key, value in _match_GET_ROLES_REMINDER_INTERVAL.groupdict().items() if value}
+str_send_get_roles_reminders: str = str(os.getenv("SEND_GET_ROLES_REMINDERS", "True")).lower()
+if str_send_get_roles_reminders not in TRUE_VALUES | FALSE_VALUES:
+    raise ImproperlyConfigured("SEND_GET_ROLES_REMINDERS must be a boolean value.")
+settings["SEND_GET_ROLES_REMINDERS"] = str_send_get_roles_reminders in TRUE_VALUES
+
+match_get_roles_reminder_interval: Match | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z", str(os.getenv("GET_ROLES_REMINDER_INTERVAL", "24h")))
+settings["GET_ROLES_REMINDER_INTERVAL"] = {"hours": 24}
+if settings["SEND_GET_ROLES_REMINDERS"]:
+    if not match_get_roles_reminder_interval:
+        raise ImproperlyConfigured("GET_ROLES_REMINDER_INTERVAL must contain the interval in any combination of seconds, minutes or hours.")
+    settings["GET_ROLES_REMINDER_INTERVAL"] = {key: float(value) for key, value in match_get_roles_reminder_interval.groupdict().items() if value}
 
 
 try:

@@ -2,10 +2,13 @@
     Utility classes & functions provided for all models to use.
 """
 
+import hashlib
+import re
 from typing import Any
 
 from asgiref.sync import sync_to_async
 from django.core.exceptions import FieldDoesNotExist
+from django.core.validators import RegexValidator
 from django.db import models
 
 
@@ -93,3 +96,68 @@ class AsyncBaseModel(models.Model):
         """
 
         return set()
+
+
+class HashedDiscordMember(AsyncBaseModel):
+    """
+        Abstract base model to represent a Discord server member (identified by
+        their hashed Discord member ID). This base model is inherited by any
+        other model that wishes to represent a Discord member having a state
+        happened to them.
+
+        This class is abstract so should not be instantiated or have a table
+        made for it in the database (see
+        https://docs.djangoproject.com/en/stable/topics/db/models/#abstract-base-classes).
+    """
+
+    hashed_member_id = models.CharField(
+        "Hashed Discord Member ID",
+        unique=True,
+        null=False,
+        blank=False,
+        max_length=64,
+        validators=[
+            RegexValidator(
+                r"\A[A-Fa-f0-9]{64}\Z",
+                "hashed_member_id must be a valid sha256 hex-digest."
+            )
+        ]
+    )
+
+    class Meta:
+        abstract = True
+
+    def __repr__(self) -> str:
+        return f"<{self._meta.verbose_name}: \"{self.hashed_member_id}\">"
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        if name == "member_id":
+            self.hashed_member_id = self.hash_member_id(value)
+        else:
+            super().__setattr__(name, value)
+
+    def __str__(self) -> str:
+        return f"{self.hashed_member_id}"
+
+    @staticmethod
+    def hash_member_id(member_id: Any) -> str:
+        """
+            Hashes the provided member_id into the format that hashed_member_ids
+            are stored in the database when new objects of this class are
+            created.
+        """
+
+        if not isinstance(member_id, (str, int)) or not re.match(r"\A\d{17,20}\Z", str(member_id)):
+            raise ValueError(f"\"{member_id}\" is not a valid Discord member ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)")
+
+        return hashlib.sha256(str(member_id).encode()).hexdigest()
+
+    @classmethod
+    def get_proxy_field_names(cls) -> set[str]:
+        """
+            Returns a set of names of extra properties of this model that can
+            be saved to the database, even though those fields don't actually
+            exist. They are just proxy fields.
+        """
+
+        return super().get_proxy_field_names() | {"member_id"}

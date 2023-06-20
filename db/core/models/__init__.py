@@ -11,73 +11,52 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 
-from .utils import AsyncBaseModel
+from .utils import AsyncBaseModel, HashedDiscordMember
 
 
-class InteractionReminderOptOutMember(AsyncBaseModel):
+class InteractionReminderOptOutMember(HashedDiscordMember):
     """
         Model to represent a Discord server member (identified by their hashed
         Discord member ID) that has requested to be opted-out of reminders to
         interact in the CSS Discord server.
     """
 
-    hashed_member_id = models.CharField(
-        "Hashed Discord Member ID",
-        unique=True,
-        null=False,
-        blank=False,
-        max_length=64,
-        validators=[
-            RegexValidator(
-                r"\A[A-Fa-f0-9]{64}\Z",
-                "hashed_member_id must be a valid sha256 hex-digest."
-            )
-        ]
-    )
-
     class Meta:
         verbose_name = "Hashed Discord ID of Member that has Opted-Out of Interaction Reminders"
 
-    def __repr__(self) -> str:
-        return f"<{self._meta.verbose_name}: \"{self.hashed_member_id}\">"
 
-    def __setattr__(self, name: str, value: Any) -> None:
-        if name == "member_id":
-            self.hashed_member_id = self.hash_member_id(value)
-        else:
-            super().__setattr__(name, value)
+class SentOneOffInteractionReminderMember(HashedDiscordMember):
+    """
+        Model to represent a Discord server member (identified by their hashed
+        Discord member ID) that has already been sent their single reminder to
+        interact in the CSS Discord server, when SEND_INTRODUCTION_REMINDERS is
+        set to "Once".
+    """
 
-    def __str__(self) -> str:
-        return f"{self.hashed_member_id}"
+    class Meta:
+        verbose_name = "Hashed Discord ID of Member that has had a one-off interaction reminder sent to their DMs"
 
-    @staticmethod
-    def hash_member_id(member_id: Any) -> str:
-        """
-            Hashes the provided member_id into the format that hashed_member_ids
-            are stored in the database when new InteractionReminderOptOutMember
-            objects are created.
-        """
 
-        if not isinstance(member_id, (str, int)) or not re.match(r"\A\d{17,20}\Z", str(member_id)):
-            raise ValueError(f"\"{member_id}\" is not a valid Discord member ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)")
+class SentGetRolesReminderMember(HashedDiscordMember):
+    """
+        Model to represent a Discord server member (identified by their hashed
+        Discord member ID) that has already been sent a reminder to get their
+        opt-in roles within the CSS Discord server.
 
-        return hashlib.sha256(str(member_id).encode()).hexdigest()
+        Storing this prevents Discord members from being sent the same reminder
+        to get their opt-in roles multiple times, even if they have still not
+        yet got their opt-in roles.
+    """
 
-    @classmethod
-    def get_proxy_field_names(cls) -> set[str]:
-        """
-            Returns a set of names of extra properties of this model that can
-            be saved to the database, even though those fields don't actually
-            exist. They are just proxy fields.
-        """
-
-        return super().get_proxy_field_names() | {"member_id"}
+    class Meta:
+        verbose_name = "Hashed Discord ID of Member that has had a \"Get Roles\" reminder sent to their DMs"
 
 
 class UoBMadeMember(AsyncBaseModel):
     """
         Model to represent a CSS member (identified by their hashed Uob ID) that
         has successfully been given the Member role on the CSS Discord server.
+
         Storing the successfully made members prevents multiple people from
         getting the Member role using the same purchased society membership.
     """
@@ -282,69 +261,6 @@ class DiscordReminder(AsyncBaseModel):
         """
 
         return super().get_proxy_field_names() | {"member_id", "channel_id"}
-
-
-class SentGetRolesReminderMember(AsyncBaseModel):
-    """
-        Model to represent a Discord server member (identified by their hashed
-        Discord member ID) that has already been sent a reminder to get their
-        opt-in roles within the CSS Discord server. Storing this prevents
-        Discord members from being sent the same reminder to get their opt-in
-        roles multiple times, even if they have still not yet got their opt-in
-        roles.
-    """
-
-    hashed_member_id: str = models.CharField(
-        "Hashed Discord Member ID",
-        unique=True,
-        null=False,
-        blank=False,
-        max_length=64,
-        validators=[
-            RegexValidator(
-                r"\A[A-Fa-f0-9]{64}\Z",
-                "hashed_member_id must be a valid sha256 hex-digest."
-            )
-        ]
-    )
-
-    class Meta:
-        verbose_name = "Hashed Discord ID of Member that has had a \"Get Roles\" Reminder sent to their DMs"
-
-    def __repr__(self) -> str:
-        return f"<{self._meta.verbose_name}: \"{self.hashed_member_id}\">"
-
-    def __setattr__(self, name: str, value: Any) -> None:
-        if name == "member_id":
-            self.hashed_member_id = self.hash_member_id(value)
-        else:
-            super().__setattr__(name, value)
-
-    def __str__(self) -> str:
-        return f"{self.hashed_member_id}"
-
-    @staticmethod
-    def hash_member_id(member_id: Any) -> str:
-        """
-            Hashes the provided member_id into the format that hashed_member_ids
-            are stored in the database when new SentGetRolesReminderMember
-            objects are created.
-        """
-
-        if not isinstance(member_id, (str, int)) or not re.match(r"\A\d{17,20}\Z", str(member_id)):
-            raise ValueError(f"\"{member_id}\" is not a valid Discord member ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)")
-
-        return hashlib.sha256(str(member_id).encode()).hexdigest()
-
-    @classmethod
-    def get_proxy_field_names(cls) -> set[str]:
-        """
-            Returns a set of names of extra properties of this model that can
-            be saved to the database, even though those fields don't actually
-            exist. They are just proxy fields.
-        """
-
-        return super().get_proxy_field_names() | {"member_id"}
 
 
 class LeftMember(AsyncBaseModel):
