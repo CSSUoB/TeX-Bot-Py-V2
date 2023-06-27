@@ -32,9 +32,6 @@ if not re.match(r"\A([A-Za-z0-9]{24,26})\.([A-Za-z0-9]{6})\.([A-Za-z0-9_-]{27,38
     raise ImproperlyConfigured("DISCORD_BOT_TOKEN must be a valid Discord bot token (see https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts).")
 settings["DISCORD_BOT_TOKEN"] = discord_bot_token
 
-settings["DISCORD_BOT_APPLICATION_ID"] = str(os.getenv("DISCORD_BOT_APPLICATION_ID", "")) or None
-if settings["DISCORD_BOT_APPLICATION_ID"] and not re.match(r"\A\d{17,20}\Z", settings["DISCORD_BOT_APPLICATION_ID"]):
-    raise ImproperlyConfigured("DISCORD_BOT_APPLICATION_ID must be a valid Discord application ID (see https://support-dev.discord.com/hc/en-us/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-).")
 
 discord_guild_id: str = os.getenv("DISCORD_GUILD_ID", "")
 if not re.match(r"\A\d{17,20}\Z", discord_guild_id):

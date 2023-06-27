@@ -31,14 +31,14 @@ You can retrieve the correct invite URL to use by navigating to the root folder,
 
 ```shell
 poetry shell
-
-python -c "import utils; print(utils.get_oauth_url())"
+```
+```shell
+python utils.py generate_invite_url --discord_bot_application_id=[Replace with your Discord application ID] --discord_guild_id=[Replace with the ID of the CSS Discord server]
 ```
 
 You'll also need to set a number of environment variables:
 
 * `DISCORD_BOT_TOKEN`: The Discord token for the bot you created (available on your bot page in the [Developer Portal](https://discord.com/developers/applications)).
-* `DISCORD_BOT_APPLICATION_ID`: The Discord application ID of the bot (also available on the main page of your application in the [Developer Portal](https://discord.com/developers/applications)) **(This is only required for using the `get_oauth_url()` util function shown above)**.
 * `DISCORD_GUILD_ID`: The ID of the CSS Discord server.
 * `DISCORD_LOG_CHANNEL_ID`: The ID of the text channel in the CSS Discord server where error logs should be sent. (This is optional and if it is not provided, error logs will be sent to the console only)
 * `MEMBERS_PAGE_URL`: The URL of the CSS members page (currently found on the Guild of Students website, make sure it's sorted by group).

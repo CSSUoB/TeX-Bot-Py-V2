@@ -1,25 +1,14 @@
-import io
-import logging
-from logging import LogRecord
-import math
-from typing import Collection
+import os
+import re
+import sys
 
 import discord
-import matplotlib.pyplot as plt  # type: ignore
-import mplcyberpunk  # type: ignore
-from discord import TextChannel
-from matplotlib.text import Text as Plot_Text  # type: ignore
-
-from exceptions import GuildDoesNotExist, ImproperlyConfigured
-from setup import settings
 
 
-def get_oauth_url() -> str:
-    if not settings["DISCORD_BOT_APPLICATION_ID"]:
-        raise ImproperlyConfigured("DISCORD_BOT_APPLICATION_ID must be provided in order to use the get_oauth_url() utility function")
-
+# noinspection PyShadowingNames
+def generate_invite_url(discord_bot_application_id: str, discord_guild_id: int) -> str:
     return discord.utils.oauth_url(
-        client_id=settings["DISCORD_BOT_APPLICATION_ID"],
+        client_id=discord_bot_application_id,
         permissions=discord.Permissions(
             manage_roles=True,
             read_messages=True,
@@ -33,10 +22,63 @@ def get_oauth_url() -> str:
             kick_members=True,
             manage_channels=True
         ),
-        guild=discord.Object(id=settings["DISCORD_GUILD_ID"]),
+        guild=discord.Object(id=discord_guild_id),
         scopes={"bot", "applications.commands"},
         disable_guild_select=True
     )
+
+
+if __name__ == "__main__" and "generate_invite_url" in sys.argv:
+    argument: str
+    for argument in sys.argv:
+        if argument.startswith("--discord_bot_application_id="):
+            discord_bot_application_id: str = argument.removeprefix("--discord_bot_application_id=")
+            break
+    else:
+        try:
+            # noinspection PyShadowingNames
+            discord_bot_application_id = list(filter(lambda argument: not argument.startswith("--"), sys.argv))[sys.argv.index("generate_invite_url") + 1]
+        except IndexError as discord_bot_application_id_index_error:
+            raise ValueError("\"discord_bot_application_id\" must be provided as an argument to the generate_invite_url utility function.") from discord_bot_application_id_index_error
+
+    if not re.match(r"\A\d{17,20}\Z", discord_bot_application_id):
+        raise ValueError("\"discord_bot_application_id\" must be a valid Discord application ID (see https://support-dev.discord.com/hc/en-gb/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-).")
+
+    for argument in sys.argv:
+        if argument.startswith("--discord_guild_id="):
+            discord_guild_id: str = argument.removeprefix("--discord_guild_id=")
+            break
+    else:
+        try:
+            discord_guild_id = list(filter(lambda argument: not argument.startswith("--"), sys.argv))[sys.argv.index("generate_invite_url") + 2]
+        except IndexError:
+            import dotenv
+            dotenv.load_dotenv()
+            discord_guild_id = os.getenv("DISCORD_GUILD_ID", "")
+
+            if not discord_guild_id:
+                raise ValueError("\"discord_guild_id\" must be provided as an argument to the generate_invite_url utility function or otherwise set the DISCORD_GUILD_ID environment variable.")
+
+    if not re.match(r"\A\d{17,20}\Z", discord_guild_id):
+        raise ValueError("DISCORD_GUILD_ID must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id).")
+
+    print(generate_invite_url(discord_bot_application_id, int(discord_guild_id)))
+    sys.exit()
+
+
+import io
+import logging
+from logging import LogRecord
+import math
+from typing import Collection
+
+import matplotlib.pyplot as plt  # type: ignore
+import mplcyberpunk  # type: ignore
+from discord import TextChannel
+from matplotlib.text import Text as Plot_Text  # type: ignore
+
+from exceptions import GuildDoesNotExist
+from config import settings
 
 
 # noinspection SpellCheckingInspection
