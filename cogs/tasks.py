@@ -13,7 +13,7 @@ from django.core.exceptions import ValidationError
 from cogs.utils import Bot_Cog
 from db.core.models import DiscordReminder, InteractionReminderOptOutMember, SentGetRolesReminderMember, SentOneOffInteractionReminderMember
 from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
-from setup import settings
+from config import settings
 from utils import TeXBot
 
 

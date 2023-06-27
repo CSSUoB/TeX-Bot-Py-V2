@@ -128,7 +128,7 @@ class BaseDoesNotExistError(ValueError, BaseError, abc.ABC):
         return f"{partial_message}."
 
 
-class InvalidMessagesJSONFile(KeyError, BaseError):
+class InvalidMessagesJSONFile(ImproperlyConfigured, BaseError):
     """
         Exception class to raise when the provided messages.json file has an
         invalid structure, at the given key, in some way.

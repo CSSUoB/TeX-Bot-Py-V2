@@ -1,7 +1,7 @@
 import discord
 from django.core import management
 
-from setup import settings
+from config import settings
 from utils import TeXBot
 
 intents: discord.Intents = discord.Intents.default()

@@ -39,7 +39,7 @@ When submitting an issue, please be as descriptive as possible. If you are submi
 
 ## Project Structure
 
-This bot is written in Python using [Pycord](https://pycord.dev) and uses [Discord's slash commands](https://support.discord.com/hc/en-us/articles/1500000368501-Slash-Commands-FAQ). We would recommend being somewhat familiar with the library and language terminology before contributing.
+This bot is written in Python using [Pycord](https://pycord.dev) and uses [Discord's slash commands](https://support.discord.com/hc/en-gb/articles/1500000368501-Slash-Commands-FAQ). We would recommend being somewhat familiar with the library and language terminology before contributing.
 
 * `main.py`: is the main entrypoint to instantiate the bot object & run it
 * `exceptions.py`: contains common exception super-classes that may be raised when certain errors occur

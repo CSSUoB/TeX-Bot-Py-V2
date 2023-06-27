@@ -8,7 +8,7 @@ from discord.ext import commands
 from cogs.utils import Bot_Cog
 from db.core.models import InteractionReminderOptOutMember, LeftMember
 from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
-from setup import settings
+from config import settings
 from utils import DiscordLoggingHandler, TeXBot
 from .tasks import Tasks_Cog
 

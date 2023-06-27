@@ -110,15 +110,23 @@ def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, f
     return discord_plot_file
 
 
-def time_formatter(value: float, scale: str) -> str:
+def amount_of_time_formatter(value: float, time_scale: str) -> str:
+    """
+        Returns the formatted amount of time value according to the provided
+        time_scale.
+
+        E.g. past "1 days" => past "day", past "2.00 weeks" => past "2 weeks",
+        past "3.14159 months" => past "3.14 months"
+    """
+
     if value == 1:
-        return f"{scale}"
+        return f"{time_scale}"
 
     elif value % 1 == 0:
-        return f"{value} {scale}s"
+        return f"{value} {time_scale}s"
 
     else:
-        return f"{value:.3} {scale}s"
+        return f"{value:.3} {time_scale}s"
 
 
 class TeXBot(discord.Bot):

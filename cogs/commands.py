@@ -15,7 +15,7 @@ import utils
 from cogs.utils import Bot_Cog
 from db.core.models import DiscordReminder, LeftMember, UoBMadeMember
 from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
-from setup import settings
+from config import settings
 from utils import TeXBot
 
 
