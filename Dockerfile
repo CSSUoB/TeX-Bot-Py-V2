@@ -1,33 +1,27 @@
-FROM python:3.11.1-alpine as base
+FROM python:3.11.3 as builder
 
-ENV PYTHONFAULTHANDLER=1 \
-    PYTHONUNBUFFERED=1 \
-    PYTHONHASHSEED=random
+RUN pip install poetry
 
-WORKDIR /code
-
-FROM base as builder
-
-ENV PIP_NO_CACHE_DIR=on \
-    PIP_DISABLE_PIP_VERSION_CHECK=on \
+ENV PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100
+    POETRY_NO_INTERACTION=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=1 \
+    POETRY_VIRTUALENVS_CREATE=1 \
+    POETRY_CACHE_DIR=/tmp/poetry_cache
 
-RUN pip install "poetry"
+WORKDIR /app
 
 COPY poetry.lock pyproject.toml README.md ./
 
-COPY . .
+RUN --mount=type=cache,target=$POETRY_CACHE_DIR poetry install --without dev --no-root
 
-RUN . /venv/bin/activate && \
-    poetry config virtualenvs.in-project true && \
-    poetry install --only=main --no-root && \
-    poetry build
+FROM python:3.11.3-slim as runtime
 
-FROM base as final
+ENV VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH"
 
-COPY --from=builder /code/.venv ./.venv
-COPY --from=builder /code/dist .
-COPY docker-entrypoint.sh .
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
-RUN ./.venv/bin/pip install *.whl
-CMD ["./main.py"]
+COPY . ./
+
+ENTRYPOINT ["python", "main.py"]
