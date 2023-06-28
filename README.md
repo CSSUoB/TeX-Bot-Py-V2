@@ -32,6 +32,7 @@ You can retrieve the correct invite URL to use by navigating to the root folder,
 ```shell
 poetry shell
 ```
+
 ```shell
 python utils.py generate_invite_url --discord_bot_application_id="[Replace with your Discord application ID]" --discord_guild_id="[Replace with the ID of the CSS Discord server]"
 ```

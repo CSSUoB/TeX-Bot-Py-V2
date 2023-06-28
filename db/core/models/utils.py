@@ -26,7 +26,7 @@ class AsyncBaseModel(models.Model):
         abstract = True
 
     def __init__(self, *args, **kwargs) -> None:
-        proxy_fields: dict[str, Any] = {field_name: kwargs.pop(field_name) for field_name in set(kwargs.keys()) - self.get_proxy_field_names()}
+        proxy_fields: dict[str, Any] = {field_name: kwargs.pop(field_name) for field_name in set(kwargs.keys()) & self.get_proxy_field_names()}
 
         super().__init__(*args, **kwargs)
 

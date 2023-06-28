@@ -5,7 +5,7 @@ from discord.ext import commands
 from discord_logging.handler import DiscordHandler
 
 from cogs.utils import Bot_Cog
-from db.core.models import InteractionReminderOptOutMember, LeftMember
+from db.core.models import IntroductionReminderOptOutMember, LeftMember
 from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
 from config import Settings
 from utils import TeXBot
@@ -81,12 +81,12 @@ class Events_Cog(Bot_Cog):
 
         if guest_role not in before.roles and guest_role in after.roles:
             try:
-                interaction_reminder_opt_out_member: InteractionReminderOptOutMember = await InteractionReminderOptOutMember.objects.aget(
-                    hashed_member_id=InteractionReminderOptOutMember.hash_member_id(
+                interaction_reminder_opt_out_member: IntroductionReminderOptOutMember = await IntroductionReminderOptOutMember.objects.aget(
+                    hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(
                         before.id
                     )
                 )
-            except InteractionReminderOptOutMember.DoesNotExist:
+            except IntroductionReminderOptOutMember.DoesNotExist:
                 pass
             else:
                 await interaction_reminder_opt_out_member.adelete()

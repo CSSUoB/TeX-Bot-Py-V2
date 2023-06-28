@@ -14,27 +14,27 @@ from django.db import models
 from .utils import AsyncBaseModel, HashedDiscordMember
 
 
-class InteractionReminderOptOutMember(HashedDiscordMember):
+class IntroductionReminderOptOutMember(HashedDiscordMember):
     """
         Model to represent a Discord server member (identified by their hashed
         Discord member ID) that has requested to be opted-out of reminders to
-        interact in the CSS Discord server.
+        introduce themselves in the CSS Discord server.
     """
 
     class Meta:
-        verbose_name = "Hashed Discord ID of Member that has Opted-Out of Interaction Reminders"
+        verbose_name = "Hashed Discord ID of Member that has Opted-Out of Introduction Reminders"
 
 
-class SentOneOffInteractionReminderMember(HashedDiscordMember):
+class SentOneOffIntroductionReminderMember(HashedDiscordMember):
     """
         Model to represent a Discord server member (identified by their hashed
         Discord member ID) that has already been sent their single reminder to
-        interact in the CSS Discord server, when SEND_INTRODUCTION_REMINDERS is
-        set to "Once".
+        introduce themselves in the CSS Discord server, when
+        SEND_INTRODUCTION_REMINDERS is set to "Once".
     """
 
     class Meta:
-        verbose_name = "Hashed Discord ID of Member that has had a one-off interaction reminder sent to their DMs"
+        verbose_name = "Hashed Discord ID of Member that has had a one-off Introduction reminder sent to their DMs"
 
 
 class SentGetRolesReminderMember(HashedDiscordMember):

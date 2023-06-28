@@ -11,7 +11,7 @@ from discord.ui import View
 from django.core.exceptions import ValidationError
 
 from cogs.utils import Bot_Cog
-from db.core.models import DiscordReminder, InteractionReminderOptOutMember, SentGetRolesReminderMember, SentOneOffInteractionReminderMember
+from db.core.models import DiscordReminder, IntroductionReminderOptOutMember, SentGetRolesReminderMember, SentOneOffIntroductionReminderMember
 from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
 from config import Settings
 from utils import TeXBot
@@ -21,7 +21,7 @@ class Tasks_Cog(Bot_Cog):
     def __init__(self, bot: TeXBot) -> None:
         if Settings["SEND_INTRODUCTION_REMINDERS"]:
             if Settings["SEND_INTRODUCTION_REMINDERS"] == "interval":
-                SentOneOffInteractionReminderMember.objects.all().delete()
+                SentOneOffIntroductionReminderMember.objects.all().delete()
 
             self.introduction_reminder.start()
 
@@ -139,7 +139,13 @@ class Tasks_Cog(Bot_Cog):
             if guest_role in member.roles or member.bot:
                 continue
 
-            if ((Settings["SEND_INTRODUCTION_REMINDERS"] == "once" and not await SentOneOffInteractionReminderMember.objects.filter(hashed_member_id=SentOneOffInteractionReminderMember.hash_member_id(member.id)).aexists()) or Settings["SEND_INTRODUCTION_REMINDERS"] == "interval") and not await InteractionReminderOptOutMember.objects.filter(hashed_member_id=InteractionReminderOptOutMember.hash_member_id(member.id)).aexists():
+            if not member.joined_at:
+                logging.error(
+                    f"Member with ID: {member.id} could not be checked whether to send introduction_reminder, because their \"joined_at\" attribute was None."
+                )
+                continue
+
+            if ((Settings["SEND_INTRODUCTION_REMINDERS"] == "once" and not await SentOneOffIntroductionReminderMember.objects.filter(hashed_member_id=SentOneOffIntroductionReminderMember.hash_member_id(member.id)).aexists()) or Settings["SEND_INTRODUCTION_REMINDERS"] == "interval") and (discord.utils.utcnow() - member.joined_at) > max(Settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] / 3, timedelta(days=1)) and not await IntroductionReminderOptOutMember.objects.filter(hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(member.id)).aexists():
                 async for message in member.history():
                     if message.components and isinstance(message.components[0], discord.ActionRow) and isinstance(message.components[0].children[0], discord.Button) and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button":
                         await message.edit(view=None)
@@ -150,7 +156,7 @@ class Tasks_Cog(Bot_Cog):
 
                 await member.send(**message_kwargs)
 
-                await SentOneOffInteractionReminderMember.objects.acreate(member_id=member.id)
+                await SentOneOffIntroductionReminderMember.objects.acreate(member_id=member.id)
 
     @introduction_reminder.before_loop
     async def before_introduction_reminder(self):
@@ -173,7 +179,7 @@ class Tasks_Cog(Bot_Cog):
 
             if not interaction.user:
                 await interaction.response.send_message(
-                    ":warning:There was an error when trying to opt-in/out of interaction reminders.:warning:",
+                    ":warning:There was an error when trying to opt-in/out of introduction reminders.:warning:",
                     ephemeral=True
                 )
                 return
@@ -183,17 +189,17 @@ class Tasks_Cog(Bot_Cog):
             if button.style == discord.ButtonStyle.red or str(button.emoji) == emoji.emojize(":no_good:", language="alias") or (button.label and "Opt-out" in button.label):
                 if not interaction_member:
                     await interaction.response.send_message(
-                        ":warning:There was an error when trying to opt-out of interaction reminders.:warning:\n`You must be a member of the CSS Discord server to opt-out of interaction reminders.`",
+                        ":warning:There was an error when trying to opt-out of introduction reminders.:warning:\n`You must be a member of the CSS Discord server to opt-out of introduction reminders.`",
                         ephemeral=True
                     )
                     return
 
                 try:
-                    await InteractionReminderOptOutMember.objects.acreate(
+                    await IntroductionReminderOptOutMember.objects.acreate(
                         member_id=interaction_member.id
                     )
-                except ValidationError as create_interaction_reminder_opt_out_member_error:
-                    if "hashed_member_id" not in create_interaction_reminder_opt_out_member_error.message_dict or all("already exists" not in error for error in create_interaction_reminder_opt_out_member_error.message_dict["hashed_member_id"]):
+                except ValidationError as create_introduction_reminder_opt_out_member_error:
+                    if "hashed_member_id" not in create_introduction_reminder_opt_out_member_error.message_dict or all("already exists" not in error for error in create_introduction_reminder_opt_out_member_error.message_dict["hashed_member_id"]):
                         raise
 
                 button.style = discord.ButtonStyle.green
@@ -205,21 +211,21 @@ class Tasks_Cog(Bot_Cog):
             elif button.style == discord.ButtonStyle.green or str(button.emoji) == emoji.emojize(":raised_hand:", language="alias") or (button.label and "Opt back in" in button.label):
                 if not interaction_member:
                     await interaction.response.send_message(
-                        ":warning:There was an error when trying to opt back in to interaction reminders.:warning:\n`You must be a member of the CSS Discord server to opt back in to interaction reminders.`",
+                        ":warning:There was an error when trying to opt back in to introduction reminders.:warning:\n`You must be a member of the CSS Discord server to opt back in to introduction reminders.`",
                         ephemeral=True
                     )
                     return
 
                 try:
-                    interaction_reminder_opt_out_member: InteractionReminderOptOutMember = await InteractionReminderOptOutMember.objects.aget(
-                        hashed_member_id=InteractionReminderOptOutMember.hash_member_id(
+                    introduction_reminder_opt_out_member: IntroductionReminderOptOutMember = await IntroductionReminderOptOutMember.objects.aget(
+                        hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(
                             interaction_member.id
                         )
                     )
-                except InteractionReminderOptOutMember.DoesNotExist:
+                except IntroductionReminderOptOutMember.DoesNotExist:
                     pass
                 else:
-                    await interaction_reminder_opt_out_member.adelete()
+                    await introduction_reminder_opt_out_member.adelete()
 
                 button.style = discord.ButtonStyle.red
                 button.label = "Opt-out of introduction reminders"
