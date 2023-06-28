@@ -7,6 +7,7 @@ import time
 import aiohttp
 import discord
 import parsedatetime  # type: ignore
+import bs4
 from bs4 import BeautifulSoup
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -464,7 +465,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
     # noinspection SpellCheckingInspection
     @discord.slash_command(
         name="editmessage",
-        description="Edits a message sent by TeX to the message supplied."
+        description="Edits a message sent by TeX-Bot to the value supplied."
     )
     @discord.option(
         name="channel",
@@ -720,8 +721,14 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return
 
         if await UoBMadeMember.objects.filter(hashed_uob_id=UoBMadeMember.hash_uob_id(uob_id)).aexists():
+            committee_mention: str = "committee"
+
+            committee_role: discord.Role | None = self.bot.committee_role
+            if committee_role:
+                committee_mention = committee_role.mention
+
             await ctx.respond(
-                ":information_source: No changes made. This student ID has already been used. Please contact a Committee member if this is an error. :information_source:",
+                f":information_source: No changes made. This student ID has already been used. Please contact a {committee_mention} member if this is an error. :information_source:",
                 ephemeral=True
             )
             return
@@ -730,12 +737,15 @@ class Slash_Commands_Cog(Application_Commands_Cog):
 
         async with aiohttp.ClientSession(headers={"Cache-Control": "no-cache", "Pragma": "no-cache", "Expires": "0"}, cookies={".ASPXAUTH": Settings["MEMBERS_PAGE_COOKIE"]}) as http_session:
             async with http_session.get(url=Settings["MEMBERS_PAGE_URL"]) as http_response:
-                http_response_html: str = await http_response.text()
+                response_html: str = await http_response.text()
 
-        guild_member_ids.update(row.contents[2].text for row in BeautifulSoup(http_response_html, "html.parser").find("table", {"id": "ctl00_Main_rptGroups_ctl05_gvMemberships"}).find_all("tr", {"class": ["msl_row", "msl_altrow"]}))  # type: ignore
-        guild_member_ids.discard("")
-        guild_member_ids.discard("\n")
-        guild_member_ids.discard(" ")
+        filtered_response_html: bs4.Tag | None = BeautifulSoup(response_html, "html.parser").find("table", {"id": "ctl00_Main_rptGroups_ctl05_gvMemberships"})
+
+        if filtered_response_html:
+            guild_member_ids.update(row.contents[2].text for row in filtered_response_html.find_all("tr", {"class": ["msl_row", "msl_altrow"]}))
+            guild_member_ids.discard("")
+            guild_member_ids.discard("\n")
+            guild_member_ids.discard(" ")
 
         if not guild_member_ids:
             try:
@@ -1212,24 +1222,22 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             )
             return
 
+        await self.send_error(  # FIXME: Remove this warning after the way to correctly change permissions has been implemented
+            ctx,
+            command_name="archive",
+            message=f"THIS COMMAND IS IN BETA (does not currently change permissions)"
+        )
+        return
+
+        # noinspection PyUnreachableCode
         channel: discord.VoiceChannel | discord.StageChannel | discord.TextChannel | discord.ForumChannel | discord.CategoryChannel
         for channel in category.channels:
             try:
                 if channel.permissions_for(committee_role).is_superset(discord.Permissions(view_channel=True)) and not channel.permissions_for(guest_role).is_superset(discord.Permissions(view_channel=True)):
-                    await self.send_error(
-                        ctx,
-                        command_name="archive",
-                        message=f"THIS COMMAND IS IN BETA (does not currently change permissions)"
-                    )
-                    return  # TODO: Confirm how to correctly change permissions to archive committee-only channel
+                    pass  # TODO: Confirm how to correctly change permissions to archive committee-only channel
 
                 elif channel.permissions_for(guest_role).is_superset(discord.Permissions(view_channel=True)):
-                    await self.send_error(
-                        ctx,
-                        command_name="archive",
-                        message=f"THIS COMMAND IS IN BETA (does not currently change permissions)"
-                    )
-                    return  # TODO: Confirm how to correctly change permissions to archive public channel
+                    pass  # TODO: Confirm how to correctly change permissions to archive public channel
 
                 else:
                     await self.send_error(
