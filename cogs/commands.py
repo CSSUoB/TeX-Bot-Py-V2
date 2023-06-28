@@ -15,7 +15,7 @@ import utils
 from cogs.utils import Bot_Cog
 from db.core.models import DiscordReminder, LeftMember, UoBMadeMember
 from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
-from config import settings
+from config import Settings
 from utils import TeXBot
 
 
@@ -145,7 +145,7 @@ class Application_Commands_Cog(Bot_Cog):
                 roles_channel_mention = roles_channel.mention
 
             await general_channel.send(
-                f"""{random.choice(settings["WELCOME_MESSAGES"]).replace("<User>", induction_member.mention).strip()} :tada:\nRemember to grab your roles in {roles_channel_mention} and say hello to everyone here! :wave:"""
+                f"""{random.choice(Settings["WELCOME_MESSAGES"]).replace("<User>", induction_member.mention).strip()} :tada:\nRemember to grab your roles in {roles_channel_mention} and say hello to everyone here! :wave:"""
             )
 
         await induction_member.add_roles(
@@ -316,7 +316,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
                     "Pong!",
                     "64 bytes from TeX: icmp_seq=1 ttl=63 time=0.01 ms"
                 ],
-                weights=settings["PING_COMMAND_EASTER_EGG_WEIGHTS"]
+                weights=Settings["PING_COMMAND_EASTER_EGG_WEIGHTS"]
             )[0],
             ephemeral=True
         )
@@ -456,7 +456,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return
 
         roles_message: str
-        for roles_message in settings["ROLES_MESSAGES"]:
+        for roles_message in Settings["ROLES_MESSAGES"]:
             await roles_channel.send(roles_message)
 
         await ctx.respond("All messages sent successfully.", ephemeral=True)
@@ -728,8 +728,8 @@ class Slash_Commands_Cog(Application_Commands_Cog):
 
         guild_member_ids: set[str] = set()
 
-        async with aiohttp.ClientSession(headers={"Cache-Control": "no-cache", "Pragma": "no-cache", "Expires": "0"}, cookies={".ASPXAUTH": settings["MEMBERS_PAGE_COOKIE"]}) as http_session:
-            async with http_session.get(url=settings["MEMBERS_PAGE_URL"]) as http_response:
+        async with aiohttp.ClientSession(headers={"Cache-Control": "no-cache", "Pragma": "no-cache", "Expires": "0"}, cookies={".ASPXAUTH": Settings["MEMBERS_PAGE_COOKIE"]}) as http_session:
+            async with http_session.get(url=Settings["MEMBERS_PAGE_URL"]) as http_response:
                 http_response_html: str = await http_response.text()
 
         guild_member_ids.update(row.contents[2].text for row in BeautifulSoup(http_response_html, "html.parser").find("table", {"id": "ctl00_Main_rptGroups_ctl05_gvMemberships"}).find_all("tr", {"class": ["msl_row", "msl_altrow"]}))  # type: ignore
@@ -826,12 +826,12 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         message_counts: dict[str, int] = {"Total": 0}
 
         role_name: str
-        for role_name in settings["STATISTICS_ROLES"]:
+        for role_name in Settings["STATISTICS_ROLES"]:
             if discord.utils.get(guild.roles, name=role_name):
                 message_counts[f"@{role_name}"] = 0
 
         message: discord.Message
-        async for message in channel.history(after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]):
+        async for message in channel.history(after=discord.utils.utcnow() - Settings["STATISTICS_DAYS"]):
             if message.author.bot:
                 continue
 
@@ -865,7 +865,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             file=utils.plot_bar_chart(
                 message_counts,
                 xlabel="Role Name",
-                ylabel=f"""Number of Messages Sent (in the past {utils.time_formatter(settings["STATISTICS_DAYS"].days, "day")})""",
+                ylabel=f"""Number of Messages Sent (in the past {utils.amount_of_time_formatter(Settings["STATISTICS_DAYS"].days, "day")})""",
                 title=f"Most Active Roles in #{channel.name}",
                 filename=f"{channel.name}_channel_stats.png",
                 description=f"Bar chart of the number of messages sent by different roles in {channel.mention}.",
@@ -906,7 +906,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         }
 
         role_name: str
-        for role_name in settings["STATISTICS_ROLES"]:
+        for role_name in Settings["STATISTICS_ROLES"]:
             if discord.utils.get(guild.roles, name=role_name):
                 message_counts["roles"][f"@{role_name}"] = 0
 
@@ -918,7 +918,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             message_counts["channels"][f"#{channel.name}"] = 0
 
             message: discord.Message
-            async for message in channel.history(after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]):
+            async for message in channel.history(after=discord.utils.utcnow() - Settings["STATISTICS_DAYS"]):
                 if message.author.bot:
                     continue
 
@@ -954,7 +954,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
                 utils.plot_bar_chart(
                     message_counts["roles"],
                     xlabel="Role Name",
-                    ylabel=f"""Number of Messages Sent (in the past {utils.time_formatter(settings["STATISTICS_DAYS"].days, "day")})""",
+                    ylabel=f"""Number of Messages Sent (in the past {utils.amount_of_time_formatter(Settings["STATISTICS_DAYS"].days, "day")})""",
                     title="Most Active Roles in the CSS Discord Server",
                     filename="roles_server_stats.png",
                     description="Bar chart of the number of messages sent by different roles in the CSS Discord server.",
@@ -963,7 +963,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
                 utils.plot_bar_chart(
                     message_counts["channels"],
                     xlabel="Channel Name",
-                    ylabel=f"""Number of Messages Sent (in the past {utils.time_formatter(settings["STATISTICS_DAYS"].days, "day")})""",
+                    ylabel=f"""Number of Messages Sent (in the past {utils.amount_of_time_formatter(Settings["STATISTICS_DAYS"].days, "day")})""",
                     title="Most Active Channels in the CSS Discord Server",
                     filename="channels_server_stats.png",
                     description="Bar chart of the number of messages sent in different text channels in the CSS Discord server."
@@ -1025,7 +1025,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             message_counts[f"#{channel.name}"] = 0
 
             message: discord.Message
-            async for message in channel.history(after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]):
+            async for message in channel.history(after=discord.utils.utcnow() - Settings["STATISTICS_DAYS"]):
                 if message.author == ctx.user and not message.author.bot:
                     message_counts[f"#{channel.name}"] += 1
                     message_counts["Total"] += 1
@@ -1042,7 +1042,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             file=utils.plot_bar_chart(
                 message_counts,
                 xlabel="Channel Name",
-                ylabel=f"""Number of Messages Sent (in the past {utils.time_formatter(settings["STATISTICS_DAYS"].days, "day")})""",
+                ylabel=f"""Number of Messages Sent (in the past {utils.amount_of_time_formatter(Settings["STATISTICS_DAYS"].days, "day")})""",
                 title="Your Most Active Channels in the CSS Discord Server",
                 filename=f"{ctx.user}_stats.png",
                 description=f"Bar chart of the number of messages sent by {ctx.user} in different channels in the CSS Discord server."
@@ -1072,7 +1072,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         }
 
         role_name: str
-        for role_name in settings["STATISTICS_ROLES"]:
+        for role_name in Settings["STATISTICS_ROLES"]:
             if discord.utils.get(guild.roles, name=role_name):
                 left_member_counts[f"@{role_name}"] = 0
 

@@ -174,13 +174,13 @@ class GuildDoesNotExist(BaseDoesNotExistError):
         ID does not exist.
     """
 
-    DEFAULT_MESSAGE: str = "Server with given ID does not exist."
+    DEFAULT_MESSAGE: str = "Server with given ID does not exist or is not accessible to the bot."
 
     def __init__(self, message: str | None = None, guild_id: int | None = None) -> None:
         self.guild_id: int | None = guild_id
 
         if guild_id and not message:
-            message = f"Server with ID \"{self.guild_id}\" does not exist."
+            message = f"Server with ID \"{self.guild_id}\" does not exist or is not accessible to the bot."
 
         super().__init__(message)
 

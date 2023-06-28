@@ -8,8 +8,8 @@ from discord.ext import commands
 from cogs.utils import Bot_Cog
 from db.core.models import InteractionReminderOptOutMember, LeftMember
 from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
-from config import settings
-from utils import DiscordLoggingHandler, TeXBot
+from config import Settings
+from utils import TeXBot
 from .tasks import Tasks_Cog
 
 
@@ -18,7 +18,7 @@ class Events_Cog(Bot_Cog):
     async def on_ready(self):
         guild: discord.Guild | None = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
         if not guild:
-            logging.critical(GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"]))
+            logging.critical(GuildDoesNotExist(guild_id=Settings["DISCORD_GUILD_ID"]))
             await self.bot.close()
             return
         else:

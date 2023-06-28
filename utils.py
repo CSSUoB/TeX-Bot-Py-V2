@@ -50,6 +50,7 @@ if __name__ == "__main__" and "generate_invite_url" in sys.argv:
             break
     else:
         try:
+            # noinspection PyShadowingNames
             discord_guild_id = list(filter(lambda argument: not argument.startswith("--"), sys.argv))[sys.argv.index("generate_invite_url") + 2]
         except IndexError:
             import dotenv
@@ -66,9 +67,7 @@ if __name__ == "__main__" and "generate_invite_url" in sys.argv:
     sys.exit()
 
 
-import io
-import logging
-from logging import LogRecord
+import io  # NOTE: These imports are below the command-line function to run generate_invite_url, which terminates prematurely in order to not import Settings (which will encounter errors when no environment variables are found)
 import math
 from typing import Collection
 
@@ -78,7 +77,7 @@ from discord import TextChannel
 from matplotlib.text import Text as Plot_Text  # type: ignore
 
 from exceptions import GuildDoesNotExist
-from config import settings
+from config import Settings
 
 
 # noinspection SpellCheckingInspection
@@ -186,8 +185,8 @@ class TeXBot(discord.Bot):
 
     @property
     def css_guild(self) -> discord.Guild:
-        if not self._css_guild or not discord.utils.get(self.guilds, id=settings["DISCORD_GUILD_ID"]):
-            raise GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"])
+        if not self._css_guild or not discord.utils.get(self.guilds, id=Settings["DISCORD_GUILD_ID"]):
+            raise GuildDoesNotExist(guild_id=Settings["DISCORD_GUILD_ID"])
 
         return self._css_guild
 
