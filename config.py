@@ -125,12 +125,14 @@ class Settings(metaclass=SettingsMeta):
             raise ImproperlyConfigured("KICK_NO_INTRODUCTION_MEMBERS must be a boolean value.")
         cls._settings["KICK_NO_INTRODUCTION_MEMBERS"] = kick_no_introduction_members in TRUE_VALUES
 
-        kick_no_introduction_members_delay: Match | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z", str(os.getenv("KICK_NO_INTRODUCTION_MEMBERS_DELAY", "120h")))
+        kick_no_introduction_members_delay: Match | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z", str(os.getenv("KICK_NO_INTRODUCTION_MEMBERS_DELAY", "5d")))
         cls._settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] = timedelta()
         if cls._settings["KICK_NO_INTRODUCTION_MEMBERS"]:
             if not kick_no_introduction_members_delay:
-                raise ImproperlyConfigured("KICK_NO_INTRODUCTION_MEMBERS_DELAY must contain the delay in any combination of seconds, minutes or hours.")
+                raise ImproperlyConfigured("KICK_NO_INTRODUCTION_MEMBERS_DELAY must contain the delay in any combination of seconds, minutes, hours, days or weeks.")
             cls._settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] = timedelta(**{key: float(value) for key, value in kick_no_introduction_members_delay.groupdict().items() if value})
+            if cls._settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] <= timedelta(days=1):
+                raise ImproperlyConfigured("KICK_NO_INTRODUCTION_MEMBERS_DELAY must be greater than 1 day.")
 
         send_get_roles_reminders: str = str(os.getenv("SEND_GET_ROLES_REMINDERS", "True")).lower()
         if send_get_roles_reminders not in TRUE_VALUES | FALSE_VALUES:

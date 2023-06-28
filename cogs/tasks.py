@@ -5,7 +5,7 @@ from typing import Any
 
 import discord
 import emoji
-from discord import ui
+from discord import AuditLogAction, ui
 from discord.ext import tasks
 from discord.ui import View
 from django.core.exceptions import ValidationError
@@ -255,15 +255,22 @@ class Tasks_Cog(Bot_Cog):
 
         member: discord.Member
         for member in guild.members:
-            if not member.joined_at:
+            if member.bot or guest_role not in member.roles or any(optional_role_name in {role.name for role in member.roles} for optional_role_name in {"He / Him", "She / Her", "They / Them", "Neopronouns", "Foundation Year", "First Year", "Second Year", "Final Year", "Year In Industry", "Year Abroad", "PGT", "PGR", "Alumnus/Alumna", "Postdoc", "Serious Talk", "Housing", "Gaming", "Anime", "Sport", "Food", "Industry", "Minecraft", "Github", "Archivist", "News"}):
+                continue
+
+            async for log in guild.audit_logs(action=AuditLogAction.member_role_update):
+                if log.target == member and guest_role not in log.before.roles and guest_role in log.after.roles:
+                    guest_role_received_time = log.created_at
+                    break
+            else:
                 logging.error(
-                    f"Member with ID: {member.id} could not be checked whether to send role_reminder, because their \"joined_at\" attribute was None."
+                    f"Member with ID: {member.id} could not be checked whether to send role_reminder, because their \"guest_role_received_time\" could not be found."
                 )
                 continue
 
             hashed_member_id: str = SentGetRolesReminderMember.hash_member_id(member.id)
 
-            if guest_role in member.roles and not member.bot and not any(optional_role_name in {role_of_member.name for role_of_member in member.roles} for optional_role_name in {"He / Him", "She / Her", "They / Them", "Neopronouns", "Foundation Year", "First Year", "Second Year", "Final Year", "Year In Industry", "Year Abroad", "PGT", "PGR", "Alumnus/Alumna", "Postdoc", "Serious Talk", "Housing", "Gaming", "Anime", "Sport", "Food", "Industry", "Minecraft", "Github", "Archivist", "News"}) and (discord.utils.utcnow() - member.joined_at) > timedelta(days=7) and not await SentGetRolesReminderMember.objects.filter(hashed_member_id=hashed_member_id).aexists():
+            if (discord.utils.utcnow() - guest_role_received_time) > timedelta(days=1) and not await SentGetRolesReminderMember.objects.filter(hashed_member_id=hashed_member_id).aexists():
                 await member.send(
                     f"Hey! It seems like you joined the CSS Discord server and been given the `@Guest` role but have not yet nabbed yourself any opt-in roles.\nYou can head to {roles_channel_mention} and click on the icons to get optional roles like pronouns and year groups",
                 )

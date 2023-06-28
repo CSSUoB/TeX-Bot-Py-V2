@@ -20,7 +20,8 @@ def generate_invite_url(discord_bot_application_id: str, discord_guild_id: int) 
             add_reactions=True,
             use_slash_commands=True,
             kick_members=True,
-            manage_channels=True
+            manage_channels=True,
+            view_audit_log=True
         ),
         guild=discord.Object(id=discord_guild_id),
         scopes={"bot", "applications.commands"},

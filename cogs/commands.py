@@ -1187,7 +1187,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         if committee_role not in interaction_member.roles:
             committee_role_mention: str = "@Committee"
             if ctx.guild:
-                committee_role_mention = committee_role.mention
+                committee_role_mention = f"`{committee_role.mention}`"
 
             await self.send_error(
                 ctx,
