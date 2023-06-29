@@ -55,7 +55,7 @@ class Tasks_Cog(Bot_Cog):
 
                 channel: discord.PartialMessageable = self.bot.get_partial_messageable(
                     reminder.channel_id,
-                    type=discord.ChannelType(reminder.channel_type)
+                    type=discord.ChannelType(reminder.channel_type) if reminder.channel_type else None
                 )
 
                 user_mention: str | None = None

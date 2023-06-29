@@ -365,7 +365,8 @@ class Slash_Commands_Cog(Application_Commands_Cog):
                 member_id=ctx.user.id,
                 message=message or "",
                 channel_id=ctx.channel_id,
-                send_datetime=parsed_time[0]
+                send_datetime=parsed_time[0],
+                channel_type=ctx.channel.type
             )
         except ValidationError as create_interaction_reminder_opt_out_member_error:
             if "__all__" not in create_interaction_reminder_opt_out_member_error.message_dict or all("already exists" not in error for error in create_interaction_reminder_opt_out_member_error.message_dict["__all__"]):
