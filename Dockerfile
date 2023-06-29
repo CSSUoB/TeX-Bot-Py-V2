@@ -1,13 +1,13 @@
 FROM python:3.11.3 as builder
 
-RUN pip install poetry
-
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100 \
     POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=1 \
     POETRY_VIRTUALENVS_CREATE=1 \
     POETRY_CACHE_DIR=/tmp/poetry_cache
+
+RUN pip install poetry
 
 WORKDIR /app
 
