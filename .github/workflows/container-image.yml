@@ -22,15 +22,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
     -
-      id: meta
-      uses: docker/metadata-action@v4
-      with:
-        images: ghcr.io/TeX-Bot-Py
-    -
       uses: docker/build-push-action@v4
       with:
         push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
+        tags: CSSUoB/TeX-Bot-Py:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
