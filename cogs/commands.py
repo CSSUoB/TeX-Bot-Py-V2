@@ -325,7 +325,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
     @discord.slash_command(description="Displays information about the source code of this bot.")
     async def source(self, ctx: discord.ApplicationContext):
         await ctx.respond(
-            "TeX is an open-source project made specifically for the CSS Discord! You can see and contribute to the source code at https://github.com/CSSUoB/TeX-Bot-Py",
+            "TeX is an open-source project made specifically for the CSS Discord! You can see and contribute to the source code at https://github.com/CSSUoB/TeX-Bot-Py-V2",
             ephemeral=True
         )
 
