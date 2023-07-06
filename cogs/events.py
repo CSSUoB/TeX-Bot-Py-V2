@@ -7,19 +7,19 @@ from discord_logging.handler import DiscordHandler
 from cogs.utils import Bot_Cog
 from db.core.models import IntroductionReminderOptOutMember, LeftMember
 from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
-from config import Settings
+from config import settings
 from utils import TeXBot
 from .tasks import Tasks_Cog
 
 
 class Events_Cog(Bot_Cog):
     @commands.Cog.listener()
-    async def on_ready(self):
-        if Settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
+    async def on_ready(self) -> None:
+        if settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
             discord_logging_handler: DiscordHandler = DiscordHandler(
-                self.bot.user.name,
-                Settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
-                avatar_url=self.bot.user.avatar.url)
+                self.bot.user.name if self.bot.user else "TeXBot",
+                settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
+                avatar_url=self.bot.user.avatar.url if self.bot.user and self.bot.user.avatar else None)
             discord_logging_handler.setLevel(logging.WARNING)
             # noinspection SpellCheckingInspection
             discord_logging_handler.setFormatter(logging.Formatter("%(levelname)s | %(message)s"))
@@ -29,9 +29,9 @@ class Events_Cog(Bot_Cog):
         else:
             logging.warning("DISCORD_LOG_CHANNEL_WEBHOOK_URL was not set, so error logs will not be sent to the Discord log channel.")
 
-        guild: discord.Guild | None = self.bot.get_guild(Settings["DISCORD_GUILD_ID"])
+        guild: discord.Guild | None = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
         if not guild:
-            logging.critical(GuildDoesNotExist(guild_id=Settings["DISCORD_GUILD_ID"]))
+            logging.critical(GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"]))
             await self.bot.close()
             return
         else:
@@ -62,7 +62,7 @@ class Events_Cog(Bot_Cog):
         logging.info(f"Ready! Logged in as {self.bot.user}")
 
     @commands.Cog.listener()
-    async def on_member_update(self, before: discord.Member, after: discord.Member):
+    async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -112,7 +112,7 @@ class Events_Cog(Bot_Cog):
             )
 
     @commands.Cog.listener()
-    async def on_member_leave(self, member: discord.Member):
+    async def on_member_leave(self, member: discord.Member) -> None:
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -126,5 +126,5 @@ class Events_Cog(Bot_Cog):
         await LeftMember.objects.acreate(roles={f"@{role.name}" for role in member.roles if role.name != "@everyone"})
 
 
-def setup(bot: TeXBot):
+def setup(bot: TeXBot) -> None:
     bot.add_cog(Events_Cog(bot))

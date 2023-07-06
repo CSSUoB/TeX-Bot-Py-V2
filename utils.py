@@ -70,14 +70,14 @@ if __name__ == "__main__" and "generate_invite_url" in sys.argv:
 
 import io  # NOTE: These imports are below the command-line function to run generate_invite_url, which terminates prematurely in order to not import Settings (which will encounter errors when no environment variables are found)
 import math
-from typing import Collection
+from typing import Collection, Any
 
-import matplotlib.pyplot as plt  # type: ignore
-import mplcyberpunk  # type: ignore
-from matplotlib.text import Text as Plot_Text  # type: ignore
+import matplotlib.pyplot as plt
+import mplcyberpunk
+from matplotlib.text import Text as Plot_Text
 
 from exceptions import GuildDoesNotExist
-from config import Settings
+from config import settings
 
 
 # noinspection SpellCheckingInspection
@@ -171,7 +171,7 @@ def amount_of_time_formatter(value: float, time_scale: str) -> str:
 
 
 class TeXBot(discord.Bot):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **options: Any) -> None:
         self._css_guild: discord.Guild | None = None
         self._committee_role: discord.Role | None = None
         self._guest_role: discord.Role | None = None
@@ -181,12 +181,12 @@ class TeXBot(discord.Bot):
         self._general_channel: discord.TextChannel | None = None
         self._welcome_channel: discord.TextChannel | None = None
 
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, **options)  # type: ignore
 
     @property
     def css_guild(self) -> discord.Guild:
-        if not self._css_guild or not discord.utils.get(self.guilds, id=Settings["DISCORD_GUILD_ID"]):
-            raise GuildDoesNotExist(guild_id=Settings["DISCORD_GUILD_ID"])
+        if not self._css_guild or not discord.utils.get(self.guilds, id=settings["DISCORD_GUILD_ID"]):
+            raise GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"])
 
         return self._css_guild
 

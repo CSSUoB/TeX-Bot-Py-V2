@@ -25,7 +25,7 @@ class AsyncBaseModel(models.Model):
     class Meta:
         abstract = True
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         proxy_fields: dict[str, Any] = {field_name: kwargs.pop(field_name) for field_name in set(kwargs.keys()) & self.get_proxy_field_names()}
 
         super().__init__(*args, **kwargs)
@@ -35,7 +35,7 @@ class AsyncBaseModel(models.Model):
         for field_name, value in proxy_fields.items():
             setattr(self, field_name, value)
 
-    def save(self, *args, **kwargs) -> None:
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """
             Saves the current instance to the database, only after the model
             has been cleaned. This ensures any data in the database is valid,
@@ -47,7 +47,7 @@ class AsyncBaseModel(models.Model):
 
         super().save(*args, **kwargs)
 
-    def update(self, commit: bool = True, using: str | None = None, **kwargs) -> None:
+    def update(self, commit: bool = True, using: str | None = None, **kwargs: Any) -> None:
         """
             Changes an in-memory object's values & save that object to the
             database all in one operation (based on Django's
@@ -65,7 +65,7 @@ class AsyncBaseModel(models.Model):
                 unexpected_kwargs.add(field_name)
 
         if unexpected_kwargs:
-            raise TypeError(f"{self._meta.model.name} got unexpected keyword arguments: {tuple(unexpected_kwargs)}")
+            raise TypeError(f"{self._meta.model.__name__} got unexpected keyword arguments: {tuple(unexpected_kwargs)}")
 
         value: Any
         for field_name, value in kwargs.items():
@@ -74,18 +74,19 @@ class AsyncBaseModel(models.Model):
         if commit:
             self.save(using)
 
-    update.alters_data = True
+    update.alters_data = True  # type: ignore
 
     # noinspection SpellCheckingInspection
-    async def aupdate(self, commit: bool = True, using: str | None = None, **kwargs) -> None:
+    async def aupdate(self, commit: bool = True, using: str | None = None, **kwargs: Any) -> None:
         """
             Asyncronously changes an in-memory object's values & save that
             object to the database all in one operation (based on Django's
             Queryset.bulk_update method).
         """
+
         await sync_to_async(self.update)(commit=commit, using=using, **kwargs)
 
-    aupdate.alters_data = True
+    aupdate.alters_data = True  # type: ignore
 
     @classmethod
     def get_proxy_field_names(cls) -> set[str]:
@@ -140,7 +141,7 @@ class HashedDiscordMember(AsyncBaseModel):
         return f"{self.hashed_member_id}"
 
     @staticmethod
-    def hash_member_id(member_id: Any) -> str:
+    def hash_member_id(member_id: str | int) -> str:
         """
             Hashes the provided member_id into the format that hashed_member_ids
             are stored in the database when new objects of this class are

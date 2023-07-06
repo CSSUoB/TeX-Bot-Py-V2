@@ -6,7 +6,7 @@ import time
 
 import aiohttp
 import discord
-import parsedatetime  # type: ignore
+import parsedatetime
 import bs4
 from bs4 import BeautifulSoup
 from django.core.exceptions import ValidationError
@@ -16,7 +16,7 @@ import utils
 from cogs.utils import Bot_Cog
 from db.core.models import DiscordReminder, LeftMember, UoBMadeMember
 from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
-from config import Settings
+from config import settings
 from utils import TeXBot
 
 
@@ -35,7 +35,7 @@ class Application_Commands_Cog(Bot_Cog):
         "archive": "archive the selected category"
     }
 
-    async def send_error(self, ctx: discord.ApplicationContext, error_code: str | None = None, command_name: str | None = None, message: str | None = None, logging_message: str | None = None):
+    async def send_error(self, ctx: discord.ApplicationContext, error_code: str | None = None, command_name: str | None = None, message: str | None = None, logging_message: str | None = None) -> None:
         construct_error_message: str = ":warning:There was an error"
         construct_logging_error_message: str = ""
 
@@ -71,7 +71,7 @@ class Application_Commands_Cog(Bot_Cog):
         if logging_message:
             logging.error(f"{construct_logging_error_message} {logging_message}")
 
-    async def _induct(self, ctx: discord.ApplicationContext, induction_member: discord.Member, guild: discord.Guild, silent: bool):
+    async def _induct(self, ctx: discord.ApplicationContext, induction_member: discord.Member, guild: discord.Guild, silent: bool) -> None:
         guest_role: discord.Role | None = self.bot.guest_role
         if not guest_role:
             await self.send_error(
@@ -146,11 +146,11 @@ class Application_Commands_Cog(Bot_Cog):
                 roles_channel_mention = roles_channel.mention
 
             await general_channel.send(
-                f"""{random.choice(Settings["WELCOME_MESSAGES"]).replace("<User>", induction_member.mention).strip()} :tada:\nRemember to grab your roles in {roles_channel_mention} and say hello to everyone here! :wave:"""
+                f"""{random.choice(settings["WELCOME_MESSAGES"]).replace("<User>", induction_member.mention).strip()} :tada:\nRemember to grab your roles in {roles_channel_mention} and say hello to everyone here! :wave:"""
             )
 
         await induction_member.add_roles(
-            guest_role,  # type: ignore
+            guest_role,  # TODO: Fix Snowflake error
             reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\""
         )
 
@@ -249,11 +249,11 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return set()
 
         try:
-            guild: discord.Guild = ctx.bot.css_guild  # type: ignore
+            guild: discord.Guild = ctx.bot.css_guild  # TODO: Fix bot attributes error with custom AutocompleteContext class
         except GuildDoesNotExist:
             return set()
 
-        channel_permissions_limiter: discord.Member | discord.Role | None = ctx.bot.guest_role  # type: ignore
+        channel_permissions_limiter: discord.Member | discord.Role | None = ctx.bot.guest_role  # TODO: Fix bot attributes error with custom AutocompleteContext class
         if not channel_permissions_limiter:
             return set()
 
@@ -273,11 +273,11 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return set()
 
         try:
-            guild: discord.Guild = ctx.bot.css_guild  # type: ignore
+            guild: discord.Guild = ctx.bot.css_guild  # TODO: Fix bot attributes error with custom AutocompleteContext class
         except GuildDoesNotExist:
             return set()
 
-        committee_role: discord.Role | None = ctx.bot.committee_role  # type: ignore
+        committee_role: discord.Role | None = ctx.bot.committee_role  # TODO: Fix bot attributes error with custom AutocompleteContext class
         if not committee_role:
             return set()
 
@@ -293,13 +293,13 @@ class Slash_Commands_Cog(Application_Commands_Cog):
     @staticmethod
     async def induct_autocomplete_get_members(ctx: discord.AutocompleteContext) -> set[discord.OptionChoice]:
         try:
-            guild: discord.Guild = ctx.bot.css_guild  # type: ignore
+            guild: discord.Guild = ctx.bot.css_guild  # TODO: Fix bot attributes error with custom AutocompleteContext class
         except GuildDoesNotExist:
             return set()
 
         members: set[discord.Member] = {member for member in guild.members if not member.bot}
 
-        guest_role: Role | None = ctx.bot.guest_role  # type: ignore
+        guest_role: discord.Role | None = ctx.bot.guest_role  # TODO: Fix bot attributes error with custom AutocompleteContext class
         if guest_role:
             members = {member for member in members if guest_role not in member.roles}
 
@@ -309,44 +309,44 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         else:
             return {discord.OptionChoice(name=member.name, value=str(member.id)) for member in members}
 
-    @discord.slash_command(description="Replies with Pong!")
-    async def ping(self, ctx: discord.ApplicationContext):
+    @discord.slash_command(description="Replies with Pong!")  # type: ignore
+    async def ping(self, ctx: discord.ApplicationContext) -> None:
         await ctx.respond(
             random.choices(
                 [
                     "Pong!",
                     "64 bytes from TeX: icmp_seq=1 ttl=63 time=0.01 ms"
                 ],
-                weights=Settings["PING_COMMAND_EASTER_EGG_WEIGHTS"]
+                weights=settings["PING_COMMAND_EASTER_EGG_WEIGHTS"]
             )[0],
             ephemeral=True
         )
 
-    @discord.slash_command(description="Displays information about the source code of this bot.")
-    async def source(self, ctx: discord.ApplicationContext):
+    @discord.slash_command(description="Displays information about the source code of this bot.")  # type: ignore
+    async def source(self, ctx: discord.ApplicationContext) -> None:
         await ctx.respond(
             "TeX is an open-source project made specifically for the CSS Discord! You can see and contribute to the source code at https://github.com/CSSUoB/TeX-Bot-Py-V2",
             ephemeral=True
         )
 
-    @discord.slash_command(
+    @discord.slash_command(  # type: ignore
         name="remindme",
         description="Responds with the given message after the specified time."
     )
-    @discord.option(
+    @discord.option(  # type: ignore
         name="delay",
         input_type=str,
         description="The amount of time to wait before reminding you",
         required=True,
-        autocomplete=discord.utils.basic_autocomplete(remind_me_autocomplete_get_delays),  # type: ignore
+        autocomplete=discord.utils.basic_autocomplete(remind_me_autocomplete_get_delays),
     )
-    @discord.option(
+    @discord.option(  # type: ignore
         name="message",
         input_type=str,
         description="The message you want to be reminded with.",
         required=False
     )
-    async def remind_me(self, ctx: discord.ApplicationContext, delay: str, message: str):
+    async def remind_me(self, ctx: discord.ApplicationContext, delay: str, message: str) -> None:
         parsed_time: tuple[time.struct_time, int] = parsedatetime.Calendar().parseDT(delay, tzinfo=timezone.get_current_timezone())
 
         if parsed_time[1] == 0:
@@ -399,11 +399,11 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         await reminder.adelete()
 
     # noinspection SpellCheckingInspection
-    @discord.slash_command(
+    @discord.slash_command(  # type: ignore
         name="writeroles",
         description="Populates #roles with the correct messages."
     )
-    async def write_roles(self, ctx: discord.ApplicationContext):
+    async def write_roles(self, ctx: discord.ApplicationContext) -> None:
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -458,25 +458,25 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return
 
         roles_message: str
-        for roles_message in Settings["ROLES_MESSAGES"]:
+        for roles_message in settings["ROLES_MESSAGES"]:
             await roles_channel.send(roles_message)
 
         await ctx.respond("All messages sent successfully.", ephemeral=True)
 
     # noinspection SpellCheckingInspection
-    @discord.slash_command(
+    @discord.slash_command(  # type: ignore
         name="editmessage",
         description="Edits a message sent by TeX-Bot to the value supplied."
     )
-    @discord.option(
+    @discord.option(  # type: ignore
         name="channel",
         description="The channel that the message, you wish to edit, is in.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),
         required=True,
         parameter_name="str_channel_id"
     )
-    @discord.option(
+    @discord.option(  # type: ignore
         name="message_id",
         input_type=str,
         description="The ID of the message you wish to edit.",
@@ -485,7 +485,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         min_length=17,
         parameter_name="str_message_id"
     )
-    @discord.option(
+    @discord.option(  # type: ignore
         name="text",
         input_type=str,
         description="The new text you want the message to say.",
@@ -494,7 +494,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         min_length=1,
         parameter_name="new_message_content"
     )
-    async def edit_message(self, ctx: discord.ApplicationContext, str_channel_id: str, str_message_id: str, new_message_content: str):
+    async def edit_message(self, ctx: discord.ApplicationContext, str_channel_id: str, str_message_id: str, new_message_content: str) -> None:
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -589,26 +589,26 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         else:
             await ctx.respond("Message edited successfully.", ephemeral=True)
 
-    @discord.slash_command(
+    @discord.slash_command(  # type: ignore
         name="induct",
         description="Gives a user the @Guest role, then sends a message in #general saying hello."
     )
-    @discord.option(
+    @discord.option(  # type: ignore
         name="user",
         description="The user to induct.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(induct_autocomplete_get_members),  # type: ignore
+        autocomplete=discord.utils.basic_autocomplete(induct_autocomplete_get_members),
         required=True,
         parameter_name="str_induct_member_id"
     )
-    @discord.option(
+    @discord.option(  # type: ignore
         name="silent",
         description="Triggers whether a message is sent or not.",
         input_type=bool,
         default=False,
         required=False
     )
-    async def induct(self, ctx: discord.ApplicationContext, str_induct_member_id: str, silent: bool):
+    async def induct(self, ctx: discord.ApplicationContext, str_induct_member_id: str, silent: bool) -> None:
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -643,11 +643,11 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         await self._induct(ctx, induct_member, guild, silent)
 
     # noinspection SpellCheckingInspection
-    @discord.slash_command(
+    @discord.slash_command(  # type: ignore
         name="makemember",
         description="Gives you the Member role when supplied with an appropriate Student ID."
     )
-    @discord.option(
+    @discord.option(  # type: ignore
         name="studentid",
         description="Your UoB Student ID",
         input_type=str,
@@ -656,7 +656,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         min_length=7,
         parameter_name="uob_id"
     )
-    async def make_member(self, ctx: discord.ApplicationContext, uob_id: str):
+    async def make_member(self, ctx: discord.ApplicationContext, uob_id: str) -> None:
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -736,8 +736,8 @@ class Slash_Commands_Cog(Application_Commands_Cog):
 
         guild_member_ids: set[str] = set()
 
-        async with aiohttp.ClientSession(headers={"Cache-Control": "no-cache", "Pragma": "no-cache", "Expires": "0"}, cookies={".ASPXAUTH": Settings["MEMBERS_PAGE_COOKIE"]}) as http_session:
-            async with http_session.get(url=Settings["MEMBERS_PAGE_URL"]) as http_response:
+        async with aiohttp.ClientSession(headers={"Cache-Control": "no-cache", "Pragma": "no-cache", "Expires": "0"}, cookies={".ASPXAUTH": settings["MEMBERS_PAGE_COOKIE"]}) as http_session:
+            async with http_session.get(url=settings["MEMBERS_PAGE_URL"]) as http_response:
                 response_html: str = await http_response.text()
 
         filtered_response_html: bs4.Tag | None = BeautifulSoup(response_html, "html.parser").find("table", {"id": "ctl00_Main_rptGroups_ctl05_gvMemberships"})
@@ -768,7 +768,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             )
 
             await interaction_member.add_roles(
-                member_role,  # type: ignore
+                member_role,  # TODO: Fix snowflake error
                 reason=f"TeX Bot slash-command: \"/makemember\""
             )
 
@@ -795,11 +795,11 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         name="channel",
         description="The channel to display the stats for.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),
         required=False,
         parameter_name="str_channel_id"
     )
-    async def channel_stats(self, ctx: discord.ApplicationContext, str_channel_id: str):
+    async def channel_stats(self, ctx: discord.ApplicationContext, str_channel_id: str) -> None:
         channel_id: int = ctx.channel_id
 
         if str_channel_id:
@@ -837,12 +837,12 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         message_counts: dict[str, int] = {"Total": 0}
 
         role_name: str
-        for role_name in Settings["STATISTICS_ROLES"]:
+        for role_name in settings["STATISTICS_ROLES"]:
             if discord.utils.get(guild.roles, name=role_name):
                 message_counts[f"@{role_name}"] = 0
 
         message: discord.Message
-        async for message in channel.history(after=discord.utils.utcnow() - Settings["STATISTICS_DAYS"]):
+        async for message in channel.history(after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]):
             if message.author.bot:
                 continue
 
@@ -876,7 +876,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             file=utils.plot_bar_chart(
                 message_counts,
                 xlabel="Role Name",
-                ylabel=f"""Number of Messages Sent (in the past {utils.amount_of_time_formatter(Settings["STATISTICS_DAYS"].days, "day")})""",
+                ylabel=f"""Number of Messages Sent (in the past {utils.amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")})""",
                 title=f"Most Active Roles in #{channel.name}",
                 filename=f"{channel.name}_channel_stats.png",
                 description=f"Bar chart of the number of messages sent by different roles in {channel.mention}.",
@@ -888,7 +888,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         name="server",
         description="Displays the stats for the whole of the CSS Discord server."
     )
-    async def server_stats(self, ctx: discord.ApplicationContext):
+    async def server_stats(self, ctx: discord.ApplicationContext) -> None:
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -917,7 +917,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         }
 
         role_name: str
-        for role_name in Settings["STATISTICS_ROLES"]:
+        for role_name in settings["STATISTICS_ROLES"]:
             if discord.utils.get(guild.roles, name=role_name):
                 message_counts["roles"][f"@{role_name}"] = 0
 
@@ -929,7 +929,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             message_counts["channels"][f"#{channel.name}"] = 0
 
             message: discord.Message
-            async for message in channel.history(after=discord.utils.utcnow() - Settings["STATISTICS_DAYS"]):
+            async for message in channel.history(after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]):
                 if message.author.bot:
                     continue
 
@@ -965,7 +965,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
                 utils.plot_bar_chart(
                     message_counts["roles"],
                     xlabel="Role Name",
-                    ylabel=f"""Number of Messages Sent (in the past {utils.amount_of_time_formatter(Settings["STATISTICS_DAYS"].days, "day")})""",
+                    ylabel=f"""Number of Messages Sent (in the past {utils.amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")})""",
                     title="Most Active Roles in the CSS Discord Server",
                     filename="roles_server_stats.png",
                     description="Bar chart of the number of messages sent by different roles in the CSS Discord server.",
@@ -974,7 +974,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
                 utils.plot_bar_chart(
                     message_counts["channels"],
                     xlabel="Channel Name",
-                    ylabel=f"""Number of Messages Sent (in the past {utils.amount_of_time_formatter(Settings["STATISTICS_DAYS"].days, "day")})""",
+                    ylabel=f"""Number of Messages Sent (in the past {utils.amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")})""",
                     title="Most Active Channels in the CSS Discord Server",
                     filename="channels_server_stats.png",
                     description="Bar chart of the number of messages sent in different text channels in the CSS Discord server."
@@ -986,7 +986,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         name="self",
         description="Displays stats about the number of messages you have sent."
     )
-    async def user_stats(self, ctx: discord.ApplicationContext):
+    async def user_stats(self, ctx: discord.ApplicationContext) -> None:
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -1036,7 +1036,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             message_counts[f"#{channel.name}"] = 0
 
             message: discord.Message
-            async for message in channel.history(after=discord.utils.utcnow() - Settings["STATISTICS_DAYS"]):
+            async for message in channel.history(after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]):
                 if message.author == ctx.user and not message.author.bot:
                     message_counts[f"#{channel.name}"] += 1
                     message_counts["Total"] += 1
@@ -1053,7 +1053,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             file=utils.plot_bar_chart(
                 message_counts,
                 xlabel="Channel Name",
-                ylabel=f"""Number of Messages Sent (in the past {utils.amount_of_time_formatter(Settings["STATISTICS_DAYS"].days, "day")})""",
+                ylabel=f"""Number of Messages Sent (in the past {utils.amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")})""",
                 title="Your Most Active Channels in the CSS Discord Server",
                 filename=f"{ctx.user}_stats.png",
                 description=f"Bar chart of the number of messages sent by {ctx.user} in different channels in the CSS Discord server."
@@ -1065,7 +1065,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         name="leftmembers",
         description="Displays the stats about members that have left the CSS Discord server."
     )
-    async def left_member_stats(self, ctx: discord.ApplicationContext):
+    async def left_member_stats(self, ctx: discord.ApplicationContext) -> None:
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -1083,7 +1083,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         }
 
         role_name: str
-        for role_name in Settings["STATISTICS_ROLES"]:
+        for role_name in settings["STATISTICS_ROLES"]:
             if discord.utils.get(guild.roles, name=role_name):
                 left_member_counts[f"@{role_name}"] = 0
 
@@ -1121,19 +1121,19 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             )
         )
 
-    @discord.slash_command(
+    @discord.slash_command(  # type: ignore
         name="archive",
         description="Archives the selected category."
     )
-    @discord.option(
+    @discord.option(  # type: ignore
         name="category",
         description="The category to archive.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(archive_autocomplete_get_categories),  # type: ignore
+        autocomplete=discord.utils.basic_autocomplete(archive_autocomplete_get_categories),
         required=True,
         parameter_name="str_category_id"
     )
-    async def archive(self, ctx: discord.ApplicationContext, str_category_id: str):
+    async def archive(self, ctx: discord.ApplicationContext, str_category_id: str) -> None:
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -1262,7 +1262,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
 
 
 class User_Commands_Cog(Application_Commands_Cog):
-    async def _user_command_induct(self, ctx: discord.ApplicationContext, member: discord.Member, silent: bool):
+    async def _user_command_induct(self, ctx: discord.ApplicationContext, member: discord.Member, silent: bool) -> None:
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -1277,15 +1277,15 @@ class User_Commands_Cog(Application_Commands_Cog):
 
         await self._induct(ctx, member, guild, silent)
 
-    @discord.user_command(name="Induct User")
-    async def non_silent_induct(self, ctx: discord.ApplicationContext, member: discord.Member):
+    @discord.user_command(name="Induct User")  # type: ignore
+    async def non_silent_induct(self, ctx: discord.ApplicationContext, member: discord.Member) -> None:
         await self._user_command_induct(ctx, member, silent=False)
 
-    @discord.user_command(name="Silently Induct User")
-    async def silent_induct(self, ctx: discord.ApplicationContext, member: discord.Member):
+    @discord.user_command(name="Silently Induct User")  # type: ignore
+    async def silent_induct(self, ctx: discord.ApplicationContext, member: discord.Member) -> None:
         await self._user_command_induct(ctx, member, silent=True)
 
 
-def setup(bot: TeXBot):
+def setup(bot: TeXBot) -> None:
     bot.add_cog(Slash_Commands_Cog(bot))
     bot.add_cog(User_Commands_Cog(bot))

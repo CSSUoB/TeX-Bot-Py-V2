@@ -25,14 +25,14 @@ validators = "^0.20.0"
 beautifulsoup4 = "^4.12.2"
 emoji = "^2.6.0"
 parsedatetime = "^2.6"
-django = "4.2.2"
+django = "4.2.3"
 matplotlib = "^3.7.1"
 mplcyberpunk = "^0.7.0"
 python-logging-discord-handler = "^0.1.4"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.4"
-django-stubs = {extras = ["compatible-mypy"], version = "4.2.2"}
+django-stubs = {extras = ["compatible-mypy"], version = "4.2.3"}
 
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]
@@ -50,4 +50,4 @@ strict_concatenate = true
 ignore_missing_imports = true
 
 [tool.django-stubs]
-django_settings_module = "db.core.settings"
+django_settings_module = "db.settings"

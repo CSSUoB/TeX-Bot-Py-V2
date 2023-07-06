@@ -5,12 +5,13 @@
 """
 
 from pathlib import Path
+from config import settings
 
 # Build paths inside the project like this: BASE_DIR / "subdir".
 BASE_DIR = Path(__file__).resolve().parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-y3o@_hi^@yoppp37c$-sj=u^kech2c_rwp*x3=xa7yocu8^!dr"
+SECRET_KEY = settings.DISCORD_BOT_TOKEN
 
 
 # Application definition

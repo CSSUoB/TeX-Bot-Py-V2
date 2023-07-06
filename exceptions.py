@@ -15,7 +15,7 @@ class ImproperlyConfigured(Exception):
     pass
 
 
-class BaseError(abc.ABC):
+class BaseError(BaseException, abc.ABC):
     """
         Base exception mixin that provides the functionality for custom
         exceptions to inherit from, along with an existing concrete type.

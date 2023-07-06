@@ -1,7 +1,6 @@
 import datetime
 import logging
 from datetime import timedelta
-from typing import Any
 
 import discord
 import emoji
@@ -13,36 +12,36 @@ from django.core.exceptions import ValidationError
 from cogs.utils import Bot_Cog
 from db.core.models import DiscordReminder, IntroductionReminderOptOutMember, SentGetRolesReminderMember, SentOneOffIntroductionReminderMember
 from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
-from config import Settings
+from config import settings
 from utils import TeXBot
 
 
 class Tasks_Cog(Bot_Cog):
     def __init__(self, bot: TeXBot) -> None:
-        if Settings["SEND_INTRODUCTION_REMINDERS"]:
-            if Settings["SEND_INTRODUCTION_REMINDERS"] == "interval":
+        if settings["SEND_INTRODUCTION_REMINDERS"]:
+            if settings["SEND_INTRODUCTION_REMINDERS"] == "interval":
                 SentOneOffIntroductionReminderMember.objects.all().delete()
 
             self.introduction_reminder.start()
 
-        if Settings["KICK_NO_INTRODUCTION_MEMBERS"]:
+        if settings["KICK_NO_INTRODUCTION_MEMBERS"]:
             self.kick_no_introduction_members.start()
 
         self.clear_reminder_backlog.start()
 
-        if Settings["SEND_GET_ROLES_REMINDERS"]:
+        if settings["SEND_GET_ROLES_REMINDERS"]:
             self.get_roles_reminder.start()
 
         super().__init__(bot)
 
-    def cog_unload(self):
+    def cog_unload(self) -> None:
         self.introduction_reminder.cancel()
         self.kick_no_introduction_members.cancel()
         self.clear_reminder_backlog.cancel()
         self.get_roles_reminder.cancel()
 
     @tasks.loop(minutes=15)
-    async def clear_reminder_backlog(self):
+    async def clear_reminder_backlog(self) -> None:
         reminder: DiscordReminder
         async for reminder in DiscordReminder.objects.all():
             if (discord.utils.utcnow() - reminder.send_datetime) > datetime.timedelta(minutes=15):
@@ -76,11 +75,11 @@ class Tasks_Cog(Bot_Cog):
                 await reminder.adelete()
 
     @clear_reminder_backlog.before_loop
-    async def before_clear_reminder_backlog(self):
+    async def before_clear_reminder_backlog(self) -> None:
         await self.bot.wait_until_ready()
 
     @tasks.loop(hours=24)
-    async def kick_no_introduction_members(self):
+    async def kick_no_introduction_members(self) -> None:
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -105,7 +104,7 @@ class Tasks_Cog(Bot_Cog):
                 )
                 continue
 
-            kick_no_introduction_members_delay: timedelta = Settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"]
+            kick_no_introduction_members_delay: timedelta = settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"]
 
             if (discord.utils.utcnow() - member.joined_at) > kick_no_introduction_members_delay:
                 try:
@@ -116,11 +115,11 @@ class Tasks_Cog(Bot_Cog):
                     logging.error(f"Member with ID: {member.id} could not be kicked due to {kick_error.text}")
 
     @kick_no_introduction_members.before_loop
-    async def before_kick_no_introduction_members(self):
+    async def before_kick_no_introduction_members(self) -> None:
         await self.bot.wait_until_ready()
 
-    @tasks.loop(**Settings["INTRODUCTION_REMINDER_INTERVAL"])
-    async def introduction_reminder(self):
+    @tasks.loop(**settings["INTRODUCTION_REMINDER_INTERVAL"])
+    async def introduction_reminder(self) -> None:
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -145,21 +144,20 @@ class Tasks_Cog(Bot_Cog):
                 )
                 continue
 
-            if ((Settings["SEND_INTRODUCTION_REMINDERS"] == "once" and not await SentOneOffIntroductionReminderMember.objects.filter(hashed_member_id=SentOneOffIntroductionReminderMember.hash_member_id(member.id)).aexists()) or Settings["SEND_INTRODUCTION_REMINDERS"] == "interval") and (discord.utils.utcnow() - member.joined_at) > max(Settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] / 3, timedelta(days=1)) and not await IntroductionReminderOptOutMember.objects.filter(hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(member.id)).aexists():
+            if ((settings["SEND_INTRODUCTION_REMINDERS"] == "once" and not await SentOneOffIntroductionReminderMember.objects.filter(hashed_member_id=SentOneOffIntroductionReminderMember.hash_member_id(member.id)).aexists()) or settings["SEND_INTRODUCTION_REMINDERS"] == "interval") and (discord.utils.utcnow() - member.joined_at) > max(settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] / 3, timedelta(days=1)) and not await IntroductionReminderOptOutMember.objects.filter(hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(member.id)).aexists():
                 async for message in member.history():
                     if message.components and isinstance(message.components[0], discord.ActionRow) and isinstance(message.components[0].children[0], discord.Button) and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button":
                         await message.edit(view=None)
 
-                message_kwargs: dict[str, Any] = {"content": "Hey! It seems like you joined the CSS Discord server but have not yet introduced yourself.\nYou will only get access to the rest of the server after sending an introduction message."}
-                if Settings["SEND_INTRODUCTION_REMINDERS"] == "interval":
-                    message_kwargs["view"] = self.Opt_Out_Introduction_Reminders_View(self.bot)
-
-                await member.send(**message_kwargs)
+                await member.send(
+                    content="Hey! It seems like you joined the CSS Discord server but have not yet introduced yourself.\nYou will only get access to the rest of the server after sending an introduction message.",
+                    view=self.Opt_Out_Introduction_Reminders_View(self.bot) if settings["SEND_INTRODUCTION_REMINDERS"] == "interval" else None  # type: ignore
+                )
 
                 await SentOneOffIntroductionReminderMember.objects.acreate(member_id=member.id)
 
     @introduction_reminder.before_loop
-    async def before_introduction_reminder(self):
+    async def before_introduction_reminder(self) -> None:
         await self.bot.wait_until_ready()
 
     class Opt_Out_Introduction_Reminders_View(View):
@@ -169,7 +167,7 @@ class Tasks_Cog(Bot_Cog):
             super().__init__(timeout=None)
 
         @ui.button(label="Opt-out of introduction reminders", custom_id="opt_out_introduction_reminders_button", style=discord.ButtonStyle.red, emoji=discord.PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias")))
-        async def opt_out_introduction_reminders_button_callback(self, button: discord.Button, interaction: discord.Interaction):
+        async def opt_out_introduction_reminders_button_callback(self, button: discord.Button, interaction: discord.Interaction) -> None:
             try:
                 guild: discord.Guild = self.bot.css_guild
             except GuildDoesNotExist as guild_error:
@@ -233,8 +231,8 @@ class Tasks_Cog(Bot_Cog):
 
                 await interaction.response.edit_message(view=self)
 
-    @tasks.loop(**Settings["GET_ROLES_REMINDER_INTERVAL"])
-    async def get_roles_reminder(self):
+    @tasks.loop(**settings["GET_ROLES_REMINDER_INTERVAL"])
+    async def get_roles_reminder(self) -> None:
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -278,9 +276,9 @@ class Tasks_Cog(Bot_Cog):
                 await SentGetRolesReminderMember.objects.acreate(hashed_member_id=hashed_member_id)
 
     @get_roles_reminder.before_loop
-    async def before_get_roles_reminder(self):
+    async def before_get_roles_reminder(self) -> None:
         await self.bot.wait_until_ready()
 
 
-def setup(bot: TeXBot):
+def setup(bot: TeXBot) -> None:
     bot.add_cog(Tasks_Cog(bot))

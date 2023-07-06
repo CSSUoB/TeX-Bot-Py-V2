@@ -81,7 +81,7 @@ class UoBMadeMember(AsyncBaseModel):
     def __repr__(self) -> str:
         return f"<{self._meta.verbose_name}: \"{self.hashed_uob_id}\">"
 
-    def __setattr__(self, name: str, value: Any):
+    def __setattr__(self, name: str, value: Any) -> None:
         if name == "uob_id":
             self.hashed_uob_id = self.hash_uob_id(value)
         else:

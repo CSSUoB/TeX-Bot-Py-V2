@@ -4,13 +4,14 @@ import discord
 from django.core import management
 
 import config
-from config import Settings
+from config import settings
 from utils import TeXBot
 
 # noinspection SpellCheckingInspection
 sys.tracebacklimit = 0
 
-Settings.setup()
+config.setup_env_variables()
+config.setup_django()
 
 intents: discord.Intents = discord.Intents.default()
 # noinspection PyDunderSlots,PyUnresolvedReferences
@@ -23,9 +24,8 @@ for cog in {"events", "commands", "tasks"}:
     bot.load_extension(f"cogs.{cog}")
 
 if __name__ == "__main__":
-    config.setup_django()
     management.call_command("migrate")
 
     del sys.tracebacklimit
 
-    bot.run(Settings["DISCORD_BOT_TOKEN"])
+    bot.run(settings["DISCORD_BOT_TOKEN"])
