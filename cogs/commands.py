@@ -5,19 +5,24 @@ import re
 import time
 
 import aiohttp
+import bs4
 import discord
 import parsedatetime
-import bs4
 from bs4 import BeautifulSoup
 from django.core.exceptions import ValidationError
+from django.db.models import Model
 from django.utils import timezone
 
 import utils
 from cogs.utils import Bot_Cog
+from config import settings
 from db.core.models import DiscordReminder, LeftMember, UoBMadeMember
 from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
-from config import settings
 from utils import TeXBot
+
+
+class TeXBotAutocompleteContext(discord.AutocompleteContext):
+    bot: TeXBot
 
 
 class Application_Commands_Cog(Bot_Cog):
@@ -150,7 +155,7 @@ class Application_Commands_Cog(Bot_Cog):
             )
 
         await induction_member.add_roles(
-            guest_role,  # TODO: Fix Snowflake error
+            guest_role,  # type: ignore
             reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\""
         )
 
@@ -158,10 +163,17 @@ class Application_Commands_Cog(Bot_Cog):
 
 
 class Slash_Commands_Cog(Application_Commands_Cog):
-    stats: discord.SlashCommandGroup = discord.SlashCommandGroup("stats", "Various statistics about the CSS Discord server")
+    stats: discord.SlashCommandGroup = discord.SlashCommandGroup(
+        "stats",
+        "Various statistics about the CSS Discord server"
+    )
+    delete_all: discord.SlashCommandGroup = discord.SlashCommandGroup(
+        "delete-all",
+        "Delete all instances of the selected object type from the backend database"
+    )
 
     @staticmethod
-    async def remind_me_autocomplete_get_delays(ctx: discord.AutocompleteContext) -> set[str]:
+    async def remind_me_autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> set[str]:
         if not ctx.value:
             return {"in 5 minutes", "1 hours time", "1min", "30 secs", "2 days time", "22/9/2040", "5h"}
 
@@ -244,16 +256,16 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         return {f"{ctx.value}{delay_choice}" for delay_choice in delay_choices}
 
     @staticmethod
-    async def autocomplete_get_text_channels(ctx: discord.AutocompleteContext) -> set[discord.OptionChoice]:
+    async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:
         if not ctx.interaction.user:
             return set()
 
         try:
-            guild: discord.Guild = ctx.bot.css_guild  # TODO: Fix bot attributes error with custom AutocompleteContext class
+            guild: discord.Guild = ctx.bot.css_guild
         except GuildDoesNotExist:
             return set()
 
-        channel_permissions_limiter: discord.Member | discord.Role | None = ctx.bot.guest_role  # TODO: Fix bot attributes error with custom AutocompleteContext class
+        channel_permissions_limiter: discord.Member | discord.Role | None = ctx.bot.guest_role
         if not channel_permissions_limiter:
             return set()
 
@@ -268,16 +280,16 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             return {discord.OptionChoice(name=channel.name, value=str(channel.id)) for channel in guild.text_channels if channel.permissions_for(channel_permissions_limiter).is_superset(discord.Permissions(send_messages=True, view_channel=True))}
 
     @staticmethod
-    async def archive_autocomplete_get_categories(ctx: discord.AutocompleteContext) -> set[discord.OptionChoice]:
+    async def archive_autocomplete_get_categories(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:
         if not ctx.interaction.user:
             return set()
 
         try:
-            guild: discord.Guild = ctx.bot.css_guild  # TODO: Fix bot attributes error with custom AutocompleteContext class
+            guild: discord.Guild = ctx.bot.css_guild
         except GuildDoesNotExist:
             return set()
 
-        committee_role: discord.Role | None = ctx.bot.committee_role  # TODO: Fix bot attributes error with custom AutocompleteContext class
+        committee_role: discord.Role | None = ctx.bot.committee_role
         if not committee_role:
             return set()
 
@@ -291,15 +303,15 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         return {discord.OptionChoice(name=category.name, value=str(category.id)) for category in guild.categories if category.permissions_for(interaction_member).is_superset(discord.Permissions(send_messages=True, view_channel=True))}
 
     @staticmethod
-    async def induct_autocomplete_get_members(ctx: discord.AutocompleteContext) -> set[discord.OptionChoice]:
+    async def induct_autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:
         try:
-            guild: discord.Guild = ctx.bot.css_guild  # TODO: Fix bot attributes error with custom AutocompleteContext class
+            guild: discord.Guild = ctx.bot.css_guild
         except GuildDoesNotExist:
             return set()
 
         members: set[discord.Member] = {member for member in guild.members if not member.bot}
 
-        guest_role: discord.Role | None = ctx.bot.guest_role  # TODO: Fix bot attributes error with custom AutocompleteContext class
+        guest_role: discord.Role | None = ctx.bot.guest_role
         if guest_role:
             members = {member for member in members if guest_role not in member.roles}
 
@@ -308,6 +320,45 @@ class Slash_Commands_Cog(Application_Commands_Cog):
 
         else:
             return {discord.OptionChoice(name=member.name, value=str(member.id)) for member in members}
+
+    async def _delete_all(self, ctx: discord.ApplicationContext, command_name: str, delete_model: type[Model]) -> None:
+        try:
+            guild: discord.Guild = self.bot.css_guild
+        except GuildDoesNotExist as guild_error:
+            await self.send_error(
+                ctx, error_code="E1011", command_name=command_name
+            )
+            logging.critical(guild_error)
+            await self.bot.close()
+            return
+
+        committee_role: discord.Role | None = self.bot.committee_role
+        if not committee_role:
+            await self.send_error(
+                ctx, error_code="E1021", command_name=command_name, logging_message=str(CommitteeRoleDoesNotExist())
+            )
+            return
+
+        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
+        if not interaction_member:
+            await self.send_error(
+                ctx, command_name=command_name, message="You must be a member of the CSS Discord server to use this command."
+            )
+            return
+
+        if committee_role not in interaction_member.roles:
+            committee_role_mention: str = "@Committee"
+            if ctx.guild:
+                committee_role_mention = committee_role.mention
+
+            await self.send_error(
+                ctx, command_name=command_name, message=f"Only {committee_role_mention} members can run this command."
+            )
+            return
+
+        await delete_model.objects.all().adelete()
+
+        await ctx.respond(f"""All {"Reminders" if delete_model == DiscordReminder else "UoB Made Members" if delete_model == UoBMadeMember else "objects"} deleted successfully.""", ephemeral=True)
 
     @discord.slash_command(description="Replies with Pong!")  # type: ignore
     async def ping(self, ctx: discord.ApplicationContext) -> None:
@@ -768,7 +819,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
             )
 
             await interaction_member.add_roles(
-                member_role,  # TODO: Fix snowflake error
+                member_role,  # type: ignore
                 reason=f"TeX Bot slash-command: \"/makemember\""
             )
 
@@ -791,7 +842,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         name="channel",
         description="Displays the stats for the current/a given channel."
     )
-    @discord.option(
+    @discord.option(  # type: ignore
         name="channel",
         description="The channel to display the stats for.",
         input_type=str,
@@ -1120,6 +1171,18 @@ class Slash_Commands_Cog(Application_Commands_Cog):
                 extra_text="Members that left with multiple roles are counted once for each role (except for @Member vs @Guest & @Committee vs @Committee-Elect)"
             )
         )
+
+    @delete_all.command(
+        name="reminders", description="Deletes all Reminders from the backend database."
+    )
+    async def delete_all_reminders(self, ctx: discord.ApplicationContext) -> None:
+        await self._delete_all(ctx, command_name="delete_all_reminders", delete_model=DiscordReminder)
+
+    @delete_all.command(
+        name="uob-made-members", description="Deletes all UoB Made Members from the backend database."
+    )
+    async def delete_all_uob_made_members(self, ctx: discord.ApplicationContext) -> None:
+        await self._delete_all(ctx, command_name="delete_all_uob_made_members", delete_model=UoBMadeMember)
 
     @discord.slash_command(  # type: ignore
         name="archive",

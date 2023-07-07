@@ -24,6 +24,7 @@ for cog in {"events", "commands", "tasks"}:
     bot.load_extension(f"cogs.{cog}")
 
 if __name__ == "__main__":
+    management.call_command("makemigrations")
     management.call_command("migrate")
 
     del sys.tracebacklimit

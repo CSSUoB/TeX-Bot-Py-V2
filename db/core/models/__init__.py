@@ -23,6 +23,7 @@ class IntroductionReminderOptOutMember(HashedDiscordMember):
 
     class Meta:
         verbose_name = "Hashed Discord ID of Member that has Opted-Out of Introduction Reminders"
+        verbose_name_plural = "Hashed Discord IDs of Members that have Opted-Out of Introduction Reminders"
 
 
 class SentOneOffIntroductionReminderMember(HashedDiscordMember):
@@ -35,6 +36,7 @@ class SentOneOffIntroductionReminderMember(HashedDiscordMember):
 
     class Meta:
         verbose_name = "Hashed Discord ID of Member that has had a one-off Introduction reminder sent to their DMs"
+        verbose_name_plural = "Hashed Discord IDs of Members that have had a one-off Introduction reminder sent to their DMs"
 
 
 class SentGetRolesReminderMember(HashedDiscordMember):
@@ -50,6 +52,7 @@ class SentGetRolesReminderMember(HashedDiscordMember):
 
     class Meta:
         verbose_name = "Hashed Discord ID of Member that has had a \"Get Roles\" reminder sent to their DMs"
+        verbose_name_plural = "Hashed Discord IDs of Members that have had a \"Get Roles\" reminder sent to their DMs"
 
 
 class UoBMadeMember(AsyncBaseModel):
@@ -77,6 +80,7 @@ class UoBMadeMember(AsyncBaseModel):
 
     class Meta:
         verbose_name = "Hashed UoB ID of User that has been made Member"
+        verbose_name_plural = "Hashed UoB IDs of Users that have been made Member"
 
     def __repr__(self) -> str:
         return f"<{self._meta.verbose_name}: \"{self.hashed_uob_id}\">"
@@ -195,7 +199,8 @@ class DiscordReminder(AsyncBaseModel):
         self._channel_id = str(channel_id)
 
     class Meta:
-        verbose_name = "A Reminder for a Discord Member."
+        verbose_name = "A Reminder for a Discord Member"
+        verbose_name_plural = "Reminders for Discord Members"
         constraints = [
             models.UniqueConstraint(
                 fields=["hashed_member_id", "message", "_channel_id"],
@@ -283,7 +288,8 @@ class LeftMember(AsyncBaseModel):
         self._roles = list(roles)
 
     class Meta:
-        verbose_name = "A List of Roles that a Member had when they left the CSS Discord server."
+        verbose_name = "A List of Roles that a Member had when they left the CSS Discord server"
+        verbose_name_plural = "Lists of Roles that Members had when they left the CSS Discord server"
 
     def clean(self) -> None:
         """

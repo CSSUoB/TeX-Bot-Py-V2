@@ -231,7 +231,7 @@ class CommitteeRoleDoesNotExist(RoleDoesNotExist):
 
     def __init__(self, message: str | None = None) -> None:
         # noinspection SpellCheckingInspection
-        super().__init__(message, role_name="Committee", dependant_commands={"writeroles", "editmessage", "induct"})
+        super().__init__(message, role_name="Committee", dependant_commands={"writeroles", "editmessage", "induct", "archive", "delete-all"})
 
 
 class GuestRoleDoesNotExist(RoleDoesNotExist):
@@ -242,7 +242,7 @@ class GuestRoleDoesNotExist(RoleDoesNotExist):
 
     def __init__(self, message: str | None = None) -> None:
         # noinspection SpellCheckingInspection
-        super().__init__(message, role_name="Guest", dependant_commands={"induct", "makemember"}, dependant_tasks={"kick_no_introduction_members", "introduction_reminder"})
+        super().__init__(message, role_name="Guest", dependant_commands={"induct", "makemember", "stats", "archive"}, dependant_tasks={"kick_no_introduction_members", "introduction_reminder"})
 
 
 class MemberRoleDoesNotExist(RoleDoesNotExist):
