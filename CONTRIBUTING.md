@@ -21,7 +21,7 @@ If you have never used git before, we would recommend that you read the [GitHub'
 If you are new to contributing to open-source projects on GitHub, the general workflow is as follows:
 
 1. Fork this repository and clone it
-2. Create a branch off master
+2. Create a branch off main
 3. Make your changes and commit them
 4. Push your local branch to your remote fork
 5. Open a new pull request on GitHub
@@ -61,7 +61,7 @@ In general, follow the formatting in the file you are editing. We also have a [P
 
 ### Git Commit Messages
 
-Commit messages should be written in the imperative, present tense. For example, "Fix bug #1".
+Commit messages should be written in the imperative present tense. For example, "Fix bug #1".
 
 Commit subjects should start with a capital letter and **not** end in a full-stop
 
@@ -77,7 +77,7 @@ Fix TeX becoming sentient
 
 ### What Happens Next?
 
-Once you have made your changes, please describe them in your pull request in full. We will then review them and communicate with you on GitHub. We may ask you to change a few things so please do check GitHub or your emails frequently.
+Once you have made your changes, please describe them in your pull request in full. We will then review them and communicate with you on GitHub. We may ask you to change a few things, so please do check GitHub or your emails frequently.
 
 After that, that's it! You've made your first contribution. 🎉
 

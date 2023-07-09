@@ -1294,10 +1294,10 @@ class SlashCommandsCog(ApplicationCommandsCog):
         for channel in category.channels:
             try:
                 if channel.permissions_for(committee_role).is_superset(discord.Permissions(view_channel=True)) and not channel.permissions_for(guest_role).is_superset(discord.Permissions(view_channel=True)):
-                    pass  # TODO: Confirm how to correctly change permissions to archive committee-only channel
+                    pass  # TODO: Confirm how to correctly change permissions to archive a committee-only channel
 
                 elif channel.permissions_for(guest_role).is_superset(discord.Permissions(view_channel=True)):
-                    pass  # TODO: Confirm how to correctly change permissions to archive public channel
+                    pass  # TODO: Confirm how to correctly change permissions to archive a public channel
 
                 else:
                     await self.send_error(

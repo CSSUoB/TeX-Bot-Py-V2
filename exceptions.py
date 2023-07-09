@@ -49,7 +49,7 @@ class BaseDoesNotExistError(ValueError, BaseError, abc.ABC):
     def format_does_not_exist_with_dependencies(value: str, does_not_exist_type: str, dependant_commands: Collection[str], dependant_tasks: Collection[str], dependant_events: Collection[str]) -> str:
         """
             Returns a formatted string of an error that the given Discord
-            entity, of given type, does not exist.
+            entity does not exist.
         """
 
         if not dependant_commands and not dependant_tasks and not dependant_events:

@@ -9,7 +9,7 @@ class CoreConfig(AppConfig):
     """
         Class acting as a container of all the configuration required for the
         core app. Extends the AppConfig class which contains the methods to
-        initialise the app, apply migrations etc.
+        initialise the app, apply migrations, etc.
     """
 
     default_auto_field = "django.db.models.BigAutoField"
