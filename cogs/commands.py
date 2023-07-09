@@ -14,18 +14,14 @@ from django.db.models import Model
 from django.utils import timezone
 
 import utils
-from cogs.utils import Bot_Cog
+from cogs.utils import TeXBotAutocompleteContext, TeXBotCog
 from config import settings
 from db.core.models import DiscordReminder, LeftMember, UoBMadeMember
 from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
 from utils import TeXBot
 
 
-class TeXBotAutocompleteContext(discord.AutocompleteContext):
-    bot: TeXBot
-
-
-class Application_Commands_Cog(Bot_Cog):
+class ApplicationCommandsCog(TeXBotCog):
     ERROR_ACTIVITIES: dict[str, str] = {
         "ping": "reply with Pong!!",
         "write_roles": "send messages",
@@ -162,7 +158,7 @@ class Application_Commands_Cog(Bot_Cog):
         await ctx.respond("User inducted successfully.", ephemeral=True)
 
 
-class Slash_Commands_Cog(Application_Commands_Cog):
+class SlashCommandsCog(ApplicationCommandsCog):
     stats: discord.SlashCommandGroup = discord.SlashCommandGroup(
         "stats",
         "Various statistics about the CSS Discord server"
@@ -368,7 +364,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
                     "Pong!",
                     "64 bytes from TeX: icmp_seq=1 ttl=63 time=0.01 ms"
                 ],
-                weights=settings["PING_COMMAND_EASTER_EGG_WEIGHTS"]
+                weights=(100 - settings["PING_COMMAND_EASTER_EGG_PROBABILITY"], settings["PING_COMMAND_EASTER_EGG_PROBABILITY"])
             )[0],
             ephemeral=True
         )
@@ -1324,7 +1320,7 @@ class Slash_Commands_Cog(Application_Commands_Cog):
         await ctx.respond("Category successfully archived", ephemeral=True)
 
 
-class User_Commands_Cog(Application_Commands_Cog):
+class UserCommandsCog(ApplicationCommandsCog):
     async def _user_command_induct(self, ctx: discord.ApplicationContext, member: discord.Member, silent: bool) -> None:
         try:
             guild: discord.Guild = self.bot.css_guild
@@ -1350,5 +1346,5 @@ class User_Commands_Cog(Application_Commands_Cog):
 
 
 def setup(bot: TeXBot) -> None:
-    bot.add_cog(Slash_Commands_Cog(bot))
-    bot.add_cog(User_Commands_Cog(bot))
+    bot.add_cog(SlashCommandsCog(bot))
+    bot.add_cog(UserCommandsCog(bot))

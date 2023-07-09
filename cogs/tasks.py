@@ -9,14 +9,14 @@ from discord.ext import tasks
 from discord.ui import View
 from django.core.exceptions import ValidationError
 
-from cogs.utils import Bot_Cog
+from cogs.utils import TeXBotCog
 from db.core.models import DiscordReminder, IntroductionReminderOptOutMember, SentGetRolesReminderMember, SentOneOffIntroductionReminderMember
 from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
 from config import settings
 from utils import TeXBot
 
 
-class Tasks_Cog(Bot_Cog):
+class TasksCog(TeXBotCog):
     def __init__(self, bot: TeXBot) -> None:
         if settings["SEND_INTRODUCTION_REMINDERS"]:
             if settings["SEND_INTRODUCTION_REMINDERS"] == "interval":
@@ -281,4 +281,4 @@ class Tasks_Cog(Bot_Cog):
 
 
 def setup(bot: TeXBot) -> None:
-    bot.add_cog(Tasks_Cog(bot))
+    bot.add_cog(TasksCog(bot))

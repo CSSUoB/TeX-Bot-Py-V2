@@ -1,19 +1,18 @@
 import logging
 
 import discord
-from discord.ext import commands
 from discord_logging.handler import DiscordHandler
 
-from cogs.utils import Bot_Cog
+from cogs.utils import TeXBotCog
 from db.core.models import IntroductionReminderOptOutMember, LeftMember
 from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
 from config import settings
 from utils import TeXBot
-from .tasks import Tasks_Cog
+from .tasks import TasksCog
 
 
-class Events_Cog(Bot_Cog):
-    @commands.Cog.listener()
+class Events_Cog(TeXBotCog):
+    @TeXBotCog.listener()
     async def on_ready(self) -> None:
         if settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
             discord_logging_handler: DiscordHandler = DiscordHandler(
@@ -56,12 +55,12 @@ class Events_Cog(Bot_Cog):
             logging.warning(GeneralChannelDoesNotExist())
 
         self.bot.add_view(
-            Tasks_Cog.Opt_Out_Introduction_Reminders_View(self.bot)
+            TasksCog.Opt_Out_Introduction_Reminders_View(self.bot)
         )
 
         logging.info(f"Ready! Logged in as {self.bot.user}")
 
-    @commands.Cog.listener()
+    @TeXBotCog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
         try:
             guild: discord.Guild = self.bot.css_guild
@@ -111,7 +110,7 @@ class Events_Cog(Bot_Cog):
                 f"**Congrats on joining the CSS Discord server as a guest!** You now have access to contribute to all the public channels.\n\nSome things to do to get started:\n1. Check out our rules in {welcome_channel_mention}\n2. Head to {roles_channel_mention} and click on the icons to get optional roles like pronouns and year groups\n3. Change your nickname to whatever you wish others to refer to you as (You can do this by right-clicking your name in the members list to the right & selecting \"Edit Server Profile\")"
             )
 
-    @commands.Cog.listener()
+    @TeXBotCog.listener()
     async def on_member_leave(self, member: discord.Member) -> None:
         try:
             guild: discord.Guild = self.bot.css_guild

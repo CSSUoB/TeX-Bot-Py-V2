@@ -1,3 +1,8 @@
+"""
+    Utility classes & functions provided for use across the whole of the
+    project.
+"""
+
 import os
 import re
 import sys
@@ -7,6 +12,11 @@ import discord
 
 # noinspection PyShadowingNames
 def generate_invite_url(discord_bot_application_id: str, discord_guild_id: int) -> str:
+    """
+        Returns the OAuth invite URL for the bot to the given Discord server,
+        using the permissions required for the bot to run.
+    """
+
     return discord.utils.oauth_url(
         client_id=discord_bot_application_id,
         permissions=discord.Permissions(
@@ -29,7 +39,7 @@ def generate_invite_url(discord_bot_application_id: str, discord_guild_id: int) 
     )
 
 
-if __name__ == "__main__" and "generate_invite_url" in sys.argv:
+if __name__ == "__main__" and "generate_invite_url" in sys.argv:  # NOTE: Execute the "generate_invite_url" function if this script is called from the command-line (passing along any provided arguments)
     argument: str
     for argument in sys.argv:
         if argument.startswith("--discord_bot_application_id="):
@@ -65,10 +75,10 @@ if __name__ == "__main__" and "generate_invite_url" in sys.argv:
         raise ValueError("DISCORD_GUILD_ID must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id).")
 
     print(generate_invite_url(discord_bot_application_id, int(discord_guild_id)))
-    sys.exit()
+    sys.exit()  # NOTE: Prevent executing/initializing any of the other util classes & functions in case they require the settings values to be loaded (this may cause errors as the settings values should not need to be provided to just use the "generate_invite_url" command-line function
 
 
-import io  # NOTE: These imports are below the command-line function to run generate_invite_url, which terminates prematurely in order to not import Settings (which will encounter errors when no environment variables are found)
+import io
 import math
 from typing import Collection, Any
 
@@ -82,11 +92,16 @@ from config import settings
 
 # noinspection SpellCheckingInspection
 def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, filename: str, description: str, extra_text: str = "") -> discord.File:
+    """
+        Shortcut function to generate an image of a plot bar chart from the
+        given data & format variables.
+    """
+
     plt.style.use("cyberpunk")
 
     max_data_value: int = max(data.values()) + 1
 
-    extra_values: dict[str, int] = {}
+    extra_values: dict[str, int] = {}  # NOTE: The "extra_values" dictionary represents columns of data that should be formatted differently to the standard data columns
     if "Total" in data:
         extra_values["Total"] = data.pop("Total")
 
@@ -107,7 +122,7 @@ def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, f
         if tick_label.get_text() == "Total":
             tick_label.set_fontweight("bold")
 
-        if index % 2 == 1 and count_xticklabels > 4:
+        if index % 2 == 1 and count_xticklabels > 4:  # NOTE: Shifts the y location of every other horizontal label down so that they do not overlap with one-another
             tick_label.set_y(tick_label.get_position()[1] - 0.044)
 
     plt.yticks(range(0, max_data_value, math.ceil(max_data_value / 15)))
@@ -171,6 +186,12 @@ def amount_of_time_formatter(value: float, time_scale: str) -> str:
 
 
 class TeXBot(discord.Bot):
+    """
+        Subclass of the default Bot class provided by Pycord. This subclass
+        allows for storing commonly accessed roles & channels from the CSS
+        Discord Server, while also raising the correct errors if necessary.
+    """
+
     def __init__(self, *args: Any, **options: Any) -> None:
         self._css_guild: discord.Guild | None = None
         self._committee_role: discord.Role | None = None
