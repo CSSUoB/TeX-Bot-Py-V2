@@ -48,7 +48,7 @@ if __name__ == "__main__" and "generate_invite_url" in sys.argv:  # NOTE: Execut
     else:
         try:
             # noinspection PyShadowingNames
-            discord_bot_application_id = list(filter(lambda argument: not argument.startswith("--"), sys.argv))[sys.argv.index("generate_invite_url") + 1]
+            discord_bot_application_id = [argument for argument in sys.argv if not argument.startswith("--")][sys.argv.index("generate_invite_url") + 1]
         except IndexError as discord_bot_application_id_index_error:
             raise ValueError("\"discord_bot_application_id\" must be provided as an argument to the generate_invite_url utility function.") from discord_bot_application_id_index_error
 
@@ -62,7 +62,7 @@ if __name__ == "__main__" and "generate_invite_url" in sys.argv:  # NOTE: Execut
     else:
         try:
             # noinspection PyShadowingNames
-            discord_guild_id = list(filter(lambda argument: not argument.startswith("--"), sys.argv))[sys.argv.index("generate_invite_url") + 2]
+            discord_guild_id = [argument for argument in sys.argv if not argument.startswith("--")][sys.argv.index("generate_invite_url") + 2]
         except IndexError:
             import dotenv
             dotenv.load_dotenv()
@@ -104,6 +104,9 @@ def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, f
     extra_values: dict[str, int] = {}  # NOTE: The "extra_values" dictionary represents columns of data that should be formatted differently to the standard data columns
     if "Total" in data:
         extra_values["Total"] = data.pop("Total")
+
+    if len(data) > 4:
+        data = {key: value for index, (key, value) in enumerate(data.items()) if value > 0 or index <= 4}
 
     bars = plt.bar(data.keys(), data.values())
 
