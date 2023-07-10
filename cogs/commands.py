@@ -756,7 +756,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.send_error(
                 ctx,
                 command_name="make_member",
-                message="You must be a inducted as guest member of the CSS Discord server to use \"/makemember\"."
+                message="You must be inducted as guest member of the CSS Discord server to use \"/makemember\"."
             )
             return
 
@@ -881,6 +881,8 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
             return
 
+        await ctx.defer(ephemeral=True)
+
         message_counts: dict[str, int] = {"Total": 0}
 
         role_name: str
@@ -919,7 +921,10 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
             return
 
-        await ctx.respond(
+        await ctx.respond(":point_down:Your stats graph is shown below:point_down:")
+
+        await ctx.channel.send(
+            f"**{ctx.user.display_name}** used `/{ctx.command}`",
             file=utils.plot_bar_chart(
                 message_counts,
                 xlabel="Role Name",
@@ -957,6 +962,8 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 logging_message=str(GuestRoleDoesNotExist())
             )
             return
+
+        await ctx.defer(ephemeral=True)
 
         message_counts: dict[str, dict[str, int]] = {
             "roles": {"Total": 0},
@@ -1007,7 +1014,10 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
             return
 
-        await ctx.respond(
+        await ctx.respond(":point_down:Your stats graph is shown below:point_down:")
+
+        await ctx.channel.send(
+            f"**{ctx.user.display_name}** used `/{ctx.command}`",
             files=[
                 utils.plot_bar_chart(
                     message_counts["roles"],
@@ -1069,9 +1079,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.send_error(
                 ctx,
                 command_name="user_stats",
-                message="You must be a inducted as guest member of the CSS Discord server to use this command."
+                message="You must be inducted as guest member of the CSS Discord server to use this command."
             )
             return
+
+        await ctx.defer(ephemeral=True)
 
         message_counts: dict[str, int] = {"Total": 0}
 
@@ -1096,7 +1108,10 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
             return
 
-        await ctx.respond(
+        await ctx.respond(":point_down:Your stats graph is shown below:point_down:")
+
+        await ctx.channel.send(
+            f"**{ctx.user.display_name}** used `/{ctx.command}`",
             file=utils.plot_bar_chart(
                 message_counts,
                 xlabel="Channel Name",
@@ -1124,6 +1139,8 @@ class SlashCommandsCog(ApplicationCommandsCog):
             logging.critical(guild_error)
             await self.bot.close()
             return
+
+        await ctx.defer(ephemeral=True)
 
         left_member_counts: dict[str, int] = {
             "Total": await LeftMember.objects.acount()
@@ -1156,7 +1173,10 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
             return
 
-        await ctx.respond(
+        await ctx.respond(":point_down:Your stats graph is shown below:point_down:")
+
+        await ctx.channel.send(
+            f"**{ctx.user.display_name}** used `/{ctx.command}`",
             file=utils.plot_bar_chart(
                 left_member_counts,
                 xlabel="Role Name",
