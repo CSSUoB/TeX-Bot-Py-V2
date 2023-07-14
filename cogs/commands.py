@@ -1383,7 +1383,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             return
 
         member_role: discord.Role | None = self.bot.member_role
-        if not guest_role:
+        if not member_role:
             await self.send_error(
                 ctx,
                 error_code="E1023",
