@@ -1,3 +1,8 @@
+"""
+    Contains repeating tasks that are executed at set intervals (E.g. database
+    cleanup or sending message reminders to members' DMs.
+"""
+
 import datetime
 import logging
 from datetime import timedelta
@@ -17,6 +22,8 @@ from utils import TeXBot
 
 
 class TasksCog(TeXBotCog):
+    """ Cog container class that defines & initialises all recurring tasks. """
+
     def __init__(self, bot: TeXBot) -> None:
         if settings["SEND_INTRODUCTION_REMINDERS"]:
             if settings["SEND_INTRODUCTION_REMINDERS"] == "interval":
@@ -35,6 +42,11 @@ class TasksCog(TeXBotCog):
         super().__init__(bot)
 
     def cog_unload(self) -> None:
+        """
+            Unload hook that ends all running tasks whenever the tasks cog is
+            unloaded (whether dynamically or when the bot closes).
+        """
+
         self.introduction_reminder.cancel()
         self.kick_no_introduction_members.cancel()
         self.clear_reminder_backlog.cancel()
@@ -42,6 +54,12 @@ class TasksCog(TeXBotCog):
 
     @tasks.loop(minutes=15)
     async def clear_reminder_backlog(self) -> None:
+        """
+            Recurring task to send any late Discord reminders still stored in
+            the database that have not been processed & sent to the member at
+            the specified time.
+        """
+
         reminder: DiscordReminder
         async for reminder in DiscordReminder.objects.all():
             if (discord.utils.utcnow() - reminder.send_datetime) > datetime.timedelta(minutes=15):
@@ -76,10 +94,22 @@ class TasksCog(TeXBotCog):
 
     @clear_reminder_backlog.before_loop
     async def before_clear_reminder_backlog(self) -> None:
+        """
+            Pre-execution hook that will prevent the clear_reminder_backlog task
+            from executing before the bot is ready.
+        """
+
         await self.bot.wait_until_ready()
 
     @tasks.loop(hours=24)
     async def kick_no_introduction_members(self) -> None:
+        """
+            Recurring task to kick any Discord members that have not introduced
+            themselves to the CSS Discord server & meet all other prerequisites.
+
+            See README.md for the full list of conditions.
+        """
+
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -116,10 +146,23 @@ class TasksCog(TeXBotCog):
 
     @kick_no_introduction_members.before_loop
     async def before_kick_no_introduction_members(self) -> None:
+        """
+            Pre-execution hook that will prevent the kick_no_introduction_members task
+            from executing before the bot is ready.
+        """
+
         await self.bot.wait_until_ready()
 
     @tasks.loop(**settings["INTRODUCTION_REMINDER_INTERVAL"])
     async def introduction_reminder(self) -> None:
+        """
+            Recurring task to send a reminder message to Discord members' DMs
+            that they have not introduced themselves to the CSS Discord server.
+
+            See README.md for the full list of conditions for when these
+            reminders are sent.
+        """
+
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -158,6 +201,11 @@ class TasksCog(TeXBotCog):
 
     @introduction_reminder.before_loop
     async def before_introduction_reminder(self) -> None:
+        """
+            Pre-execution hook that will prevent the introduction_reminder task
+            from executing before the bot is ready.
+        """
+
         await self.bot.wait_until_ready()
 
     class Opt_Out_Introduction_Reminders_View(View):
@@ -233,6 +281,15 @@ class TasksCog(TeXBotCog):
 
     @tasks.loop(**settings["GET_ROLES_REMINDER_INTERVAL"])
     async def get_roles_reminder(self) -> None:
+        """
+            Recurring task to send a reminder message to Discord members' DMs
+            that they have not given themselves any of the optional opt-in
+            roles.
+
+            See README.md for the full list of conditions for when these
+            reminders are sent.
+        """
+
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -277,8 +334,17 @@ class TasksCog(TeXBotCog):
 
     @get_roles_reminder.before_loop
     async def before_get_roles_reminder(self) -> None:
+        """
+            Pre-execution hook that will prevent the get_roles_reminder task
+            from executing before the bot is ready.
+        """
+
         await self.bot.wait_until_ready()
 
 
 def setup(bot: TeXBot) -> None:
+    """
+        Setup callable to statically add the tasks cog to the bot at startup.
+    """
+
     bot.add_cog(TasksCog(bot))

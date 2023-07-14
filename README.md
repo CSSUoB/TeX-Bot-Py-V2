@@ -14,6 +14,7 @@ Users of the bot may encounter error codes when attempting to execute slash-comm
 * `E1031` - The CSS Discord server does not contain a text channel with the name "#roles" (required for the `/writeroles` command)
 * `E1032` - The CSS Discord server does not contain a text channel with the name "#general" (required for the `/induct` command)
 * `E1041` - The guild member IDs could not be retrieved from the MEMBERS_PAGE_URL
+* `E1042` - The reference to the `@everyone` role could not be correctly retrieved
 
 ## Dependencies
 
