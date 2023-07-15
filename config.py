@@ -177,7 +177,7 @@ class Settings(metaclass=SettingsMeta):
 
             console_log_level: str = str(os.getenv("CONSOLE_LOG_LEVEL", "INFO")).upper()
             if console_log_level not in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}:
-                raise ImproperlyConfigured("LOG_LEVEL must be one of: \"DEBUG\", \"INFO\", \"WARNING\", \"ERROR\" or \"CRITICAL\"")
+                raise ImproperlyConfigured(f"""LOG_LEVEL must be one of {",".join(f'"{log_level_choice}"' for log_level_choice in log_level_choices[:-1])} or \"{log_level_choices[-1]}\".""")
             # noinspection SpellCheckingInspection
             logging.basicConfig(
                 level=getattr(logging, console_log_level), format="%(levelname)s | %(module)s: %(message)s"
