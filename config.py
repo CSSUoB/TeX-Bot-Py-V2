@@ -10,7 +10,7 @@ import os
 import re
 from datetime import timedelta
 from pathlib import Path
-from typing import Any, Callable, Match
+from typing import Any, Callable, Match, Sequence
 
 import django
 import dotenv
@@ -175,7 +175,7 @@ class Settings(metaclass=SettingsMeta):
 
             cls._settings["STATISTICS_ROLES"] = set(filter(None, os.getenv("STATISTICS_ROLES", "").split(","))) or {"Committee", "Committee-Elect", "Student Rep", "Member", "Guest", "Server Booster", "Foundation Year", "First Year", "Second Year", "Final Year", "Year In Industry", "Year Abroad", "PGT", "PGR", "Alumnus/Alumna", "Postdoc", "Quiz Victor"}
 
-            log_level_choices: Iterable[str] = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
+            log_level_choices: Sequence[str] = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
             console_log_level: str = str(os.getenv("CONSOLE_LOG_LEVEL", "INFO")).upper()
             if console_log_level not in log_level_choices:
                 raise ImproperlyConfigured(f"""LOG_LEVEL must be one of {",".join(f'"{log_level_choice}"' for log_level_choice in log_level_choices[:-1])} or \"{log_level_choices[-1]}\".""")
