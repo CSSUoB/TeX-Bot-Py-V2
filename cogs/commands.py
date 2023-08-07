@@ -880,7 +880,15 @@ class SlashCommandsCog(ApplicationCommandsCog):
             async with http_session.get(url=settings["MEMBERS_PAGE_URL"]) as http_response:
                 response_html: str = await http_response.text()
 
-        filtered_response_html: bs4.Tag | None = BeautifulSoup(response_html, "html.parser").find("table", {"id": "ctl00_Main_rptGroups_ctl03_gvMemberships"})
+        # get the two tables containing the member IDs
+        all_members_table_id = "ctl00_Main_rptGroups_ctl05_gvMemberships"
+        standard_members_table_id = "ctl00_Main_rptGroups_ctl03_gvMemberships"
+        
+        all_members_html = BeautifulSoup(response_html, "html.parser").find("table", {"id": all_members_table_id})
+        standard_members_html = BeautifulSoup(response_html, "html.parser").find("table", {"id": standard_members_table_id})
+
+        # combine the two tables
+        filtered_response_html = BeautifulSoup(str(all_members_html) + str(standard_members_html), "html.parser")
 
         if filtered_response_html:
             guild_member_ids.update(row.contents[2].text for row in filtered_response_html.find_all("tr", {"class": ["msl_row", "msl_altrow"]}))
