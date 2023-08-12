@@ -92,15 +92,6 @@ class TasksCog(TeXBotCog):
 
                 await reminder.adelete()
 
-    @clear_reminder_backlog.before_loop
-    async def before_clear_reminder_backlog(self) -> None:
-        """
-            Pre-execution hook that will prevent the clear_reminder_backlog task
-            from executing before the bot is ready.
-        """
-
-        await self.bot.wait_until_ready()
-
     @tasks.loop(hours=24)
     async def kick_no_introduction_members(self) -> None:
         """
@@ -143,15 +134,6 @@ class TasksCog(TeXBotCog):
                     )
                 except discord.Forbidden as kick_error:
                     logging.error(f"Member with ID: {member.id} could not be kicked due to {kick_error.text}")
-
-    @kick_no_introduction_members.before_loop
-    async def before_kick_no_introduction_members(self) -> None:
-        """
-            Pre-execution hook that will prevent the kick_no_introduction_members task
-            from executing before the bot is ready.
-        """
-
-        await self.bot.wait_until_ready()
 
     @tasks.loop(**settings["INTRODUCTION_REMINDER_INTERVAL"])
     async def introduction_reminder(self) -> None:
@@ -198,15 +180,6 @@ class TasksCog(TeXBotCog):
                 )
 
                 await SentOneOffIntroductionReminderMember.objects.acreate(member_id=member.id)
-
-    @introduction_reminder.before_loop
-    async def before_introduction_reminder(self) -> None:
-        """
-            Pre-execution hook that will prevent the introduction_reminder task
-            from executing before the bot is ready.
-        """
-
-        await self.bot.wait_until_ready()
 
     class Opt_Out_Introduction_Reminders_View(View):
         def __init__(self, bot: TeXBot):
@@ -332,10 +305,13 @@ class TasksCog(TeXBotCog):
 
                 await SentGetRolesReminderMember.objects.acreate(hashed_member_id=hashed_member_id)
 
+    @clear_reminder_backlog.before_loop
+    @kick_no_introduction_members.before_loop
+    @introduction_reminder.before_loop
     @get_roles_reminder.before_loop
-    async def before_get_roles_reminder(self) -> None:
+    async def before_tasks(self) -> None:
         """
-            Pre-execution hook that will prevent the get_roles_reminder task
+            Pre-execution hook that will prevent the any tasks
             from executing before the bot is ready.
         """
 
