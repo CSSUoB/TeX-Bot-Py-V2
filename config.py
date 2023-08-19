@@ -72,7 +72,7 @@ class Settings(metaclass=SettingsMeta):
             dotenv.load_dotenv()
 
             discord_bot_token: str = os.getenv("DISCORD_BOT_TOKEN", "")
-            if not discord_bot_token or not re.match(r"\A([A-Za-z0-9]{24,26})\.([A-Za-z0-9]{6})\.([A-Za-z0-9_-]{27,38})\Z", discord_bot_token):
+            if not discord_bot_token or not re.match(r"\A([A-Za-z0-9]{24,26})\.([A-Za-z0-9_]{6})\.([A-Za-z0-9_-]{27,38})\Z", discord_bot_token):
                 raise ImproperlyConfigured("DISCORD_BOT_TOKEN must be a valid Discord bot token (see https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts).")
             cls._settings["DISCORD_BOT_TOKEN"] = discord_bot_token
 
