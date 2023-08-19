@@ -115,14 +115,6 @@ class ApplicationCommandsCog(TeXBotCog):
             return
         
         applicant_role: discord.Role | None = self.bot.applicant_role
-        if not applicant_role:
-            await self.send_error(
-                ctx,
-                error_code="E1025",
-                command_name="induct",
-                logging_message=str(ApplicantRoleDoesNotExist())
-            )
-            return
 
         interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
         if not interaction_member:
@@ -181,10 +173,11 @@ class ApplicationCommandsCog(TeXBotCog):
                 f"""{random.choice(settings["WELCOME_MESSAGES"]).replace("<User>", induction_member.mention).strip()} :tada:\nRemember to grab your roles in {roles_channel_mention} and say hello to everyone here! :wave:"""
             )
 
-        await induction_member.remove_roles(
-            applicant_role,  # type: ignore
-            reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\""
-        )
+        if applicant_role:
+            await induction_member.remove_roles(
+                applicant_role,  # type: ignore
+                reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\""
+            )
 
         await induction_member.add_roles(
             guest_role,  # type: ignore
