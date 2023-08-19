@@ -9,7 +9,7 @@ from discord_logging.handler import DiscordHandler
 
 from cogs.utils import TeXBotCog
 from db.core.models import IntroductionReminderOptOutMember, LeftMember
-from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
+from exceptions import ApplicantRoleDoesNotExist, ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
 from config import settings
 from utils import TeXBot
 from .tasks import TasksCog
@@ -62,6 +62,9 @@ class Events_Cog(TeXBotCog):
 
         if not discord.utils.get(guild.roles, name="Archivist"):
             logging.warning(ArchivistRoleDoesNotExist())
+
+        if not discord.utils.get(guild.roles, name="Applicant"):
+            logging.warning(ApplicantRoleDoesNotExist())
 
         if not discord.utils.get(guild.text_channels, name="roles"):
             logging.warning(RolesChannelDoesNotExist())
