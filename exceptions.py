@@ -266,6 +266,17 @@ class ArchivistRoleDoesNotExist(RoleDoesNotExist):
         super().__init__(message, role_name="Archivist", dependant_commands={"archive"})
 
 
+class ApplicantRoleDoesNotExist(RoleDoesNotExist):
+    """
+        Exception class to raise when the required Discord role with the name
+        "Member" does not exist.
+    """
+
+    def __init__(self, message: str | None = None) -> None:
+        # noinspection SpellCheckingInspection
+        super().__init__(message, role_name="Applicant", dependant_commands={"induct"})
+
+
 class ChannelDoesNotExist(BaseDoesNotExistError):
     """
         Exception class to raise when a required Discord channel with the given
