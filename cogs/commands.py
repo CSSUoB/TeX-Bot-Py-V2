@@ -22,7 +22,7 @@ import utils
 from cogs.utils import TeXBotAutocompleteContext, TeXBotCog
 from config import settings
 from db.core.models import DiscordReminder, LeftMember, UoBMadeMember
-from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
+from exceptions import ApplicantRoleDoesNotExist, ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
 from utils import TeXBot
 
 
@@ -113,6 +113,8 @@ class ApplicationCommandsCog(TeXBotCog):
                 logging_message=str(CommitteeRoleDoesNotExist())
             )
             return
+        
+        applicant_role: discord.Role | None = self.bot.applicant_role
 
         interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
         if not interaction_member:
@@ -169,6 +171,12 @@ class ApplicationCommandsCog(TeXBotCog):
 
             await general_channel.send(
                 f"""{random.choice(settings["WELCOME_MESSAGES"]).replace("<User>", induction_member.mention).strip()} :tada:\nRemember to grab your roles in {roles_channel_mention} and say hello to everyone here! :wave:"""
+            )
+
+        if applicant_role:
+            await induction_member.remove_roles(
+                applicant_role,  # type: ignore
+                reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\""
             )
 
         await induction_member.add_roles(
