@@ -274,7 +274,7 @@ class ApplicantRoleDoesNotExist(RoleDoesNotExist):
 
     def __init__(self, message: str | None = None) -> None:
         # noinspection SpellCheckingInspection
-        super().__init__(message, role_name="Applicant", dependant_commands={"induct"})
+        super().__init__(message, role_name="Applicant")
 
 
 class ChannelDoesNotExist(BaseDoesNotExistError):
