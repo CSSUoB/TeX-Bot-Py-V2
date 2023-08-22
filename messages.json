@@ -14,7 +14,7 @@
         "<User> just joined. Hide your bananas.",
         "<User> just arrived. Seems OP - please nerf.",
         "<User> just slid into the CSS server.",
-        "A <User> has spawned in the CSS server.",
+        "A <User> has spawned in the CCS server.",
         "Where’s <User>? In the CSS server!",
         "<User> hopped into the CSS server. Kangaroo!!",
         "<User> just showed up. Hold my beer.",
@@ -30,7 +30,7 @@
         "<User> is here, as the CSS prophecy foretold.",
         "<User> is here to kick CSS butt and chew bubblegum. And <User> is all out of gum.",
         "Hello. Is it <User> you're looking for?",
-        "Roses are red, violets are blue, <User> joined the CSS server for you",
+        "Roses are red, violets are blue, <User> joined the CCS server for you",
         "Hey <User>, welcome to CSS!"
     ],
     "roles_messages": [
