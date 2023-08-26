@@ -22,7 +22,7 @@ import utils
 from cogs.utils import TeXBotAutocompleteContext, TeXBotCog
 from config import settings
 from db.core.models import DiscordReminder, LeftMember, UoBMadeMember
-from exceptions import ApplicantRoleDoesNotExist, ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
+from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
 from utils import TeXBot
 
 
@@ -113,8 +113,6 @@ class ApplicationCommandsCog(TeXBotCog):
                 logging_message=str(CommitteeRoleDoesNotExist())
             )
             return
-        
-        applicant_role: discord.Role | None = self.bot.applicant_role
 
         interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
         if not interaction_member:
@@ -173,16 +171,18 @@ class ApplicationCommandsCog(TeXBotCog):
                 f"""{random.choice(settings["WELCOME_MESSAGES"]).replace("<User>", induction_member.mention).strip()} :tada:\nRemember to grab your roles in {roles_channel_mention} and say hello to everyone here! :wave:"""
             )
 
-        if applicant_role:
-            await induction_member.remove_roles(
-                applicant_role,  # type: ignore
-                reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\""
-            )
-
         await induction_member.add_roles(
             guest_role,  # type: ignore
             reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\""
         )
+
+        applicant_role: discord.Role | None = discord.utils.get(self.bot.css_guild.roles, name="Applicant")
+
+        if applicant_role and applicant_role in induction_member.roles:
+            await induction_member.remove_roles(
+                applicant_role,  # type: ignore
+                reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\""
+            )
 
         await ctx.respond("User inducted successfully.", ephemeral=True)
 

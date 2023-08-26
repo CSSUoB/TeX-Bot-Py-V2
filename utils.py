@@ -170,6 +170,7 @@ def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, f
 
 
 def amount_of_time_formatter(value: float, time_scale: str) -> str:
+    # noinspection GrazieInspection
     """
         Returns the formatted amount of time value according to the provided
         time_scale.
@@ -242,13 +243,6 @@ class TeXBot(discord.Bot):
             self._archivist_role = discord.utils.get(self.css_guild.roles, name="Archivist")
 
         return self._archivist_role
-    
-    @property
-    def applicant_role(self) -> discord.Role | None:
-        if not self._applicant_role or not discord.utils.get(self.css_guild.roles, id=self._applicant_role.id):
-            self._applicant_role = discord.utils.get(self.css_guild.roles, name="Applicant")
-
-        return self._applicant_role
 
     @property
     def roles_channel(self) -> discord.TextChannel | None:
