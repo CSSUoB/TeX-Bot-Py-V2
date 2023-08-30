@@ -1,11 +1,11 @@
-name: Github Container Registry Image CI
+name: Build Container Image & Push To Github Container Registry
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  build-and-push-image:
+  build-and-push-container-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
