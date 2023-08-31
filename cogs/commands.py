@@ -176,6 +176,14 @@ class ApplicationCommandsCog(TeXBotCog):
             reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\""
         )
 
+        applicant_role: discord.Role | None = discord.utils.get(self.bot.css_guild.roles, name="Applicant")
+
+        if applicant_role and applicant_role in induction_member.roles:
+            await induction_member.remove_roles(
+                applicant_role,  # type: ignore
+                reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\""
+            )
+
         await ctx.respond("User inducted successfully.", ephemeral=True)
 
 

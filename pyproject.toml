@@ -3,7 +3,15 @@ name = "TeX-Bot"
 version = "0.4.0"
 license = "Apache-2.0"
 description = "TeX-Bot, but back in Python!"
-authors = ["CarrotManMatt <matt@carrotmanmatt.com>"]
+authors = [
+    "CarrotManMatt <matt@carrotmanmatt.com>",
+    "sapphyree",
+    "MattyTheHacker",
+    "FrozenDude101",
+    "noodleWrecker7",
+    "JTWWilson",
+    "LMBishop"
+]
 readme = "README.md"
 repository = "https://github.com/CSSUoB/TeX-Bot-Py-V2.git"
 keywords = ["discord", "uob", "uob-css", "TeXBot"]
@@ -20,9 +28,9 @@ classifiers = [
 python = "^3.11.3"
 py-cord = "^2.4"
 python-dotenv = "^1.0.0"
-validators = "^0.20.0"
+validators = "^0.21.2"
 beautifulsoup4 = "^4.12.2"
-emoji = "^2.6.0"
+emoji = "^2.8.0"
 parsedatetime = "^2.6"
 django = "4.2.3"
 matplotlib = "^3.7.1"

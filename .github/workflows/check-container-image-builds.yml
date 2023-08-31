@@ -1,11 +1,11 @@
-name: Github Container Registry Image CI
+name: Check Container Image Builds
 
 on:
   pull_request:
     branches: [ "main" ]
 
 jobs:
-  build-image:
+  build-container-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
