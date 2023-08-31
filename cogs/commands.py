@@ -10,7 +10,6 @@ import re
 import time
 
 import aiohttp
-import bs4
 import discord
 import parsedatetime
 from bs4 import BeautifulSoup
@@ -888,21 +887,24 @@ class SlashCommandsCog(ApplicationCommandsCog):
             async with http_session.get(url=settings["MEMBERS_PAGE_URL"]) as http_response:
                 response_html: str = await http_response.text()
 
-        # get the two tables containing the member IDs
-        all_members_table_id = "ctl00_Main_rptGroups_ctl05_gvMemberships"
-        standard_members_table_id = "ctl00_Main_rptGroups_ctl03_gvMemberships"
-        
-        all_members_html = BeautifulSoup(response_html, "html.parser").find("table", {"id": all_members_table_id})
-        standard_members_html = BeautifulSoup(response_html, "html.parser").find("table", {"id": standard_members_table_id})
+        table_id: str
+        for table_id in ("ctl00_Main_rptGroups_ctl05_gvMemberships", "ctl00_Main_rptGroups_ctl03_gvMemberships"):
+            parsed_html: BeautifulSoup = BeautifulSoup(
+                response_html,
+                "html.parser"
+            ).find(
+                "table",
+                {"id": table_id}
+            )
 
-        # combine the two tables
-        filtered_response_html = BeautifulSoup(str(all_members_html) + str(standard_members_html), "html.parser")
+            if parsed_html:
+                guild_member_ids.update(
+                    row.contents[2].text for row in parsed_html.find_all("tr", {"class": ["msl_row", "msl_altrow"]})
+                )
 
-        if filtered_response_html:
-            guild_member_ids.update(row.contents[2].text for row in filtered_response_html.find_all("tr", {"class": ["msl_row", "msl_altrow"]}))
-            guild_member_ids.discard("")
-            guild_member_ids.discard("\n")
-            guild_member_ids.discard(" ")
+        guild_member_ids.discard("")
+        guild_member_ids.discard("\n")
+        guild_member_ids.discard(" ")
 
         if not guild_member_ids:
             try:
