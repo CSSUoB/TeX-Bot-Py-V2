@@ -10,6 +10,7 @@ import re
 import time
 
 import aiohttp
+import bs4
 import discord
 import parsedatetime
 from bs4 import BeautifulSoup
@@ -889,7 +890,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         table_id: str
         for table_id in ("ctl00_Main_rptGroups_ctl05_gvMemberships", "ctl00_Main_rptGroups_ctl03_gvMemberships"):
-            parsed_html: BeautifulSoup = BeautifulSoup(
+            parsed_html: bs4.Tag | None = BeautifulSoup(
                 response_html,
                 "html.parser"
             ).find(
