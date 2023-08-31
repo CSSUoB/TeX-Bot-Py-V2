@@ -5,9 +5,21 @@
 
 import os
 import re
-import sys
+from argparse import ArgumentParser, Namespace
 
 import discord
+
+if __name__ != "__main__":  # NOTE: Preventing loading modules that would cause errors if this file has been run from the command-line without pre-initialisation
+    import io
+    import math
+    from typing import Collection, Any
+
+    import matplotlib.pyplot as plt
+    import mplcyberpunk
+    from matplotlib.text import Text as Plot_Text
+
+    from exceptions import GuildDoesNotExist
+    from config import settings
 
 
 # noinspection PyShadowingNames
@@ -39,228 +51,241 @@ def generate_invite_url(discord_bot_application_id: str, discord_guild_id: int) 
     )
 
 
-if __name__ == "__main__" and "generate_invite_url" in sys.argv:  # NOTE: Execute the "generate_invite_url" function if this script is called from the command-line (passing along any provided arguments)
-    argument: str
-    for argument in sys.argv:
-        if argument.startswith("--discord_bot_application_id="):
-            discord_bot_application_id: str = argument.removeprefix("--discord_bot_application_id=")
-            break
-    else:
-        try:
-            # noinspection PyShadowingNames
-            discord_bot_application_id = [argument for argument in sys.argv if not argument.startswith("--")][sys.argv.index("generate_invite_url") + 1]
-        except IndexError as discord_bot_application_id_index_error:
-            raise ValueError("\"discord_bot_application_id\" must be provided as an argument to the generate_invite_url utility function.") from discord_bot_application_id_index_error
+if __name__ != "__main__":  # NOTE: Preventing using modules that have not been loaded if this file has been run from the command-line
+    # noinspection SpellCheckingInspection
+    def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, filename: str, description: str, extra_text: str = "") -> discord.File:
+        """
+            Shortcut function to generate an image of a plot bar chart from the
+            given data & format variables.
+        """
 
-    if not re.match(r"\A\d{17,20}\Z", discord_bot_application_id):
-        raise ValueError("\"discord_bot_application_id\" must be a valid Discord application ID (see https://support-dev.discord.com/hc/en-gb/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-).")
+        plt.style.use("cyberpunk")
 
-    for argument in sys.argv:
-        if argument.startswith("--discord_guild_id="):
-            discord_guild_id: str = argument.removeprefix("--discord_guild_id=")
-            break
-    else:
-        try:
-            # noinspection PyShadowingNames
-            discord_guild_id = [argument for argument in sys.argv if not argument.startswith("--")][sys.argv.index("generate_invite_url") + 2]
-        except IndexError:
+        max_data_value: int = max(data.values()) + 1
+
+        extra_values: dict[str, int] = {}  # NOTE: The "extra_values" dictionary represents columns of data that should be formatted differently to the standard data columns
+        if "Total" in data:
+            extra_values["Total"] = data.pop("Total")
+
+        if len(data) > 4:
+            data = {key: value for index, (key, value) in enumerate(data.items()) if value > 0 or index <= 4}
+
+        bars = plt.bar(data.keys(), data.values())
+
+        if extra_values:
+            extra_bars = plt.bar(extra_values.keys(), extra_values.values())
+            mplcyberpunk.add_bar_gradient(extra_bars)
+
+        mplcyberpunk.add_bar_gradient(bars)
+
+        xticklabels: Collection[Plot_Text] = plt.gca().get_xticklabels()
+        count_xticklabels: int = len(xticklabels)
+
+        index: int
+        tick_label: Plot_Text
+        for index, tick_label in enumerate(xticklabels):
+            if tick_label.get_text() == "Total":
+                tick_label.set_fontweight("bold")
+
+            if index % 2 == 1 and count_xticklabels > 4:  # NOTE: Shifts the y location of every other horizontal label down so that they do not overlap with one-another
+                tick_label.set_y(tick_label.get_position()[1] - 0.044)
+
+        plt.yticks(range(0, max_data_value, math.ceil(max_data_value / 15)))
+
+        xlabel_obj: Plot_Text = plt.xlabel(
+            xlabel,
+            fontweight="bold",
+            fontsize="large",
+            wrap=True
+        )
+        xlabel_obj._get_wrap_line_width = lambda: 475
+
+        ylabel_obj: Plot_Text = plt.ylabel(
+            ylabel,
+            fontweight="bold",
+            fontsize="large",
+            wrap=True
+        )
+        ylabel_obj._get_wrap_line_width = lambda: 375
+
+        title_obj: Plot_Text = plt.title(title, fontsize="x-large", wrap=True)
+        title_obj._get_wrap_line_width = lambda: 500
+
+        if extra_text:
+            extra_text_obj: Plot_Text = plt.text(
+                0.5,
+                -0.27,
+                extra_text,
+                ha="center",
+                transform=plt.gca().transAxes,
+                wrap=True,
+                fontstyle="italic",
+                fontsize="small"
+            )
+            extra_text_obj._get_wrap_line_width = lambda: 400
+            plt.subplots_adjust(bottom=0.2)
+
+        plot_file = io.BytesIO()
+        plt.savefig(plot_file, format="png")
+        plt.close()
+        plot_file.seek(0)
+
+        discord_plot_file: discord.File = discord.File(
+            plot_file,
+            filename,
+            description=description
+        )
+
+        plot_file.close()
+
+        return discord_plot_file
+
+
+    def amount_of_time_formatter(value: float, time_scale: str) -> str:
+        # noinspection GrazieInspection
+        """
+            Returns the formatted amount of time value according to the provided
+            time_scale.
+
+            E.g. past "1 days" => past "day", past "2.00 weeks" => past "2 weeks",
+            past "3.14159 months" => past "3.14 months"
+        """
+
+        if value == 1:
+            return f"{time_scale}"
+
+        elif value % 1 == 0:
+            return f"{value} {time_scale}s"
+
+        else:
+            return f"{value:.3} {time_scale}s"
+
+
+    class TeXBot(discord.Bot):
+        """
+            Subclass of the default Bot class provided by Pycord.
+
+            This subclass allows for storing commonly accessed roles & channels
+            from the CSS Discord Server, while also raising the correct errors
+            if necessary.
+        """
+
+        def __init__(self, *args: Any, **options: Any) -> None:
+            self._css_guild: discord.Guild | None = None
+            self._committee_role: discord.Role | None = None
+            self._guest_role: discord.Role | None = None
+            self._member_role: discord.Role | None = None
+            self._archivist_role: discord.Role | None = None
+            self._applicant_role: discord.Role | None = None
+            self._roles_channel: discord.TextChannel | None = None
+            self._general_channel: discord.TextChannel | None = None
+            self._welcome_channel: discord.TextChannel | None = None
+
+            super().__init__(*args, **options)  # type: ignore
+
+        @property
+        def css_guild(self) -> discord.Guild:
+            if not self._css_guild or not discord.utils.get(self.guilds, id=settings["DISCORD_GUILD_ID"]):
+                raise GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"])
+
+            return self._css_guild
+
+        @property
+        def committee_role(self) -> discord.Role | None:
+            if not self._committee_role or not discord.utils.get(self.css_guild.roles, id=self._committee_role.id):
+                self._committee_role = discord.utils.get(self.css_guild.roles, name="Committee")
+
+            return self._committee_role
+
+        @property
+        def guest_role(self) -> discord.Role | None:
+            if not self._guest_role or not discord.utils.get(self.css_guild.roles, id=self._guest_role.id):
+                self._guest_role = discord.utils.get(self.css_guild.roles, name="Guest")
+
+            return self._guest_role
+
+        @property
+        def member_role(self) -> discord.Role | None:
+            if not self._member_role or not discord.utils.get(self.css_guild.roles, id=self._member_role.id):
+                self._member_role = discord.utils.get(self.css_guild.roles, name="Member")
+
+            return self._member_role
+
+        @property
+        def archivist_role(self) -> discord.Role | None:
+            if not self._archivist_role or not discord.utils.get(self.css_guild.roles, id=self._archivist_role.id):
+                self._archivist_role = discord.utils.get(self.css_guild.roles, name="Archivist")
+
+            return self._archivist_role
+
+        @property
+        def roles_channel(self) -> discord.TextChannel | None:
+            if not self._roles_channel or not discord.utils.get(self.css_guild.text_channels, id=self._roles_channel.id):
+                self._roles_channel = discord.utils.get(self.css_guild.text_channels, name="roles")
+
+            return self._roles_channel
+
+        @property
+        def general_channel(self) -> discord.TextChannel | None:
+            if not self._general_channel or not discord.utils.get(self.css_guild.text_channels, id=self._general_channel.id):
+                self._general_channel = discord.utils.get(self.css_guild.text_channels, name="general")
+
+            return self._general_channel
+
+        @property
+        def welcome_channel(self) -> discord.TextChannel | None:
+            if not self._welcome_channel or not discord.utils.get(self.css_guild.text_channels, id=self._welcome_channel.id):
+                self._welcome_channel = self.css_guild.rules_channel or discord.utils.get(self.css_guild.text_channels, name="welcome")
+
+            return self._welcome_channel
+
+if __name__ == "__main__":
+    arg_parser: ArgumentParser = ArgumentParser(
+        description="Executes common command-line utility functions"
+    )
+    function_subparsers = arg_parser.add_subparsers(
+        title="functions",
+        required=True,
+        help="Utility function to execute",
+        dest="function"
+    )
+
+    generate_invite_url_arg_parser: ArgumentParser = function_subparsers.add_parser(
+        "generate_invite_url",
+        description="Generates the URL to invite the bot to the given Discord server"
+    )
+    generate_invite_url_arg_parser.add_argument(
+        "discord_bot_application_id",
+        help="Must be a valid Discord application ID (see https://support-dev.discord.com/hc/en-gb/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)"
+    )
+    generate_invite_url_arg_parser.add_argument(
+        "discord_guild_id",
+        nargs="?",
+        help="The value of the environment variable DISCORD_GUILD_ID is used if this argument is omitted. Must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
+    )
+
+    parsed_args: Namespace = arg_parser.parse_args()
+
+    if parsed_args.function == "generate_invite_url":
+        if not re.match(r"\A\d{17,20}\Z", parsed_args.discord_bot_application_id):
+            arg_parser.error("discord_bot_application_id must be a valid Discord application ID (see https://support-dev.discord.com/hc/en-gb/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)")
+
+        discord_guild_id: str = parsed_args.discord_guild_id or ""
+        if not discord_guild_id:
             import dotenv
+
             dotenv.load_dotenv()
             discord_guild_id = os.getenv("DISCORD_GUILD_ID", "")
 
             if not discord_guild_id:
-                raise ValueError("\"discord_guild_id\" must be provided as an argument to the generate_invite_url utility function or otherwise set the DISCORD_GUILD_ID environment variable.")
+                arg_parser.error("\"discord_guild_id\" must be provided as an argument to the generate_invite_url utility function or otherwise set the DISCORD_GUILD_ID environment variable")
 
-    if not re.match(r"\A\d{17,20}\Z", discord_guild_id):
-        raise ValueError("DISCORD_GUILD_ID must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id).")
+        if not re.match(r"\A\d{17,20}\Z", discord_guild_id):
+            arg_parser.error("discord_guild_id must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)")
 
-    print(generate_invite_url(discord_bot_application_id, int(discord_guild_id)))
-    sys.exit()  # NOTE: Prevent executing/initializing any of the other util classes & functions in case they require the settings values to be loaded (this may cause errors as the settings values should not need to be provided to just use the "generate_invite_url" command-line function
-
-
-import io
-import math
-from typing import Collection, Any
-
-import matplotlib.pyplot as plt
-import mplcyberpunk
-from matplotlib.text import Text as Plot_Text
-
-from exceptions import GuildDoesNotExist
-from config import settings
-
-
-# noinspection SpellCheckingInspection
-def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, filename: str, description: str, extra_text: str = "") -> discord.File:
-    """
-        Shortcut function to generate an image of a plot bar chart from the
-        given data & format variables.
-    """
-
-    plt.style.use("cyberpunk")
-
-    max_data_value: int = max(data.values()) + 1
-
-    extra_values: dict[str, int] = {}  # NOTE: The "extra_values" dictionary represents columns of data that should be formatted differently to the standard data columns
-    if "Total" in data:
-        extra_values["Total"] = data.pop("Total")
-
-    if len(data) > 4:
-        data = {key: value for index, (key, value) in enumerate(data.items()) if value > 0 or index <= 4}
-
-    bars = plt.bar(data.keys(), data.values())
-
-    if extra_values:
-        extra_bars = plt.bar(extra_values.keys(), extra_values.values())
-        mplcyberpunk.add_bar_gradient(extra_bars)
-
-    mplcyberpunk.add_bar_gradient(bars)
-
-    xticklabels: Collection[Plot_Text] = plt.gca().get_xticklabels()
-    count_xticklabels: int = len(xticklabels)
-
-    index: int
-    tick_label: Plot_Text
-    for index, tick_label in enumerate(xticklabels):
-        if tick_label.get_text() == "Total":
-            tick_label.set_fontweight("bold")
-
-        if index % 2 == 1 and count_xticklabels > 4:  # NOTE: Shifts the y location of every other horizontal label down so that they do not overlap with one-another
-            tick_label.set_y(tick_label.get_position()[1] - 0.044)
-
-    plt.yticks(range(0, max_data_value, math.ceil(max_data_value / 15)))
-
-    xlabel_obj: Plot_Text = plt.xlabel(xlabel, fontweight="bold", fontsize="large", wrap=True)
-    xlabel_obj._get_wrap_line_width = lambda: 475
-
-    ylabel_obj: Plot_Text = plt.ylabel(ylabel, fontweight="bold", fontsize="large", wrap=True)
-    ylabel_obj._get_wrap_line_width = lambda: 375
-
-    title_obj: Plot_Text = plt.title(title, fontsize="x-large", wrap=True)
-    title_obj._get_wrap_line_width = lambda: 500
-
-    if extra_text:
-        extra_text_obj: Plot_Text = plt.text(
-            0.5,
-            -0.27,
-            extra_text,
-            ha="center",
-            transform=plt.gca().transAxes,
-            wrap=True,
-            fontstyle="italic",
-            fontsize="small"
+        print(
+            generate_invite_url(
+                parsed_args.discord_bot_application_id, int(discord_guild_id)
+            )
         )
-        extra_text_obj._get_wrap_line_width = lambda: 400
-        plt.subplots_adjust(bottom=0.2)
-
-    plot_file = io.BytesIO()
-    plt.savefig(plot_file, format="png")
-    plt.close()
-    plot_file.seek(0)
-
-    discord_plot_file: discord.File = discord.File(
-        plot_file,
-        filename,
-        description=description
-    )
-
-    plot_file.close()
-
-    return discord_plot_file
-
-
-def amount_of_time_formatter(value: float, time_scale: str) -> str:
-    # noinspection GrazieInspection
-    """
-        Returns the formatted amount of time value according to the provided
-        time_scale.
-
-        E.g. past "1 days" => past "day", past "2.00 weeks" => past "2 weeks",
-        past "3.14159 months" => past "3.14 months"
-    """
-
-    if value == 1:
-        return f"{time_scale}"
-
-    elif value % 1 == 0:
-        return f"{value} {time_scale}s"
-
-    else:
-        return f"{value:.3} {time_scale}s"
-
-
-class TeXBot(discord.Bot):
-    """
-        Subclass of the default Bot class provided by Pycord. This subclass
-        allows for storing commonly accessed roles & channels from the CSS
-        Discord Server, while also raising the correct errors if necessary.
-    """
-
-    def __init__(self, *args: Any, **options: Any) -> None:
-        self._css_guild: discord.Guild | None = None
-        self._committee_role: discord.Role | None = None
-        self._guest_role: discord.Role | None = None
-        self._member_role: discord.Role | None = None
-        self._archivist_role: discord.Role | None = None
-        self._applicant_role: discord.Role | None = None
-        self._roles_channel: discord.TextChannel | None = None
-        self._general_channel: discord.TextChannel | None = None
-        self._welcome_channel: discord.TextChannel | None = None
-
-        super().__init__(*args, **options)  # type: ignore
-
-    @property
-    def css_guild(self) -> discord.Guild:
-        if not self._css_guild or not discord.utils.get(self.guilds, id=settings["DISCORD_GUILD_ID"]):
-            raise GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"])
-
-        return self._css_guild
-
-    @property
-    def committee_role(self) -> discord.Role | None:
-        if not self._committee_role or not discord.utils.get(self.css_guild.roles, id=self._committee_role.id):
-            self._committee_role = discord.utils.get(self.css_guild.roles, name="Committee")
-
-        return self._committee_role
-
-    @property
-    def guest_role(self) -> discord.Role | None:
-        if not self._guest_role or not discord.utils.get(self.css_guild.roles, id=self._guest_role.id):
-            self._guest_role = discord.utils.get(self.css_guild.roles, name="Guest")
-
-        return self._guest_role
-
-    @property
-    def member_role(self) -> discord.Role | None:
-        if not self._member_role or not discord.utils.get(self.css_guild.roles, id=self._member_role.id):
-            self._member_role = discord.utils.get(self.css_guild.roles, name="Member")
-
-        return self._member_role
-
-    @property
-    def archivist_role(self) -> discord.Role | None:
-        if not self._archivist_role or not discord.utils.get(self.css_guild.roles, id=self._archivist_role.id):
-            self._archivist_role = discord.utils.get(self.css_guild.roles, name="Archivist")
-
-        return self._archivist_role
-
-    @property
-    def roles_channel(self) -> discord.TextChannel | None:
-        if not self._roles_channel or not discord.utils.get(self.css_guild.text_channels, id=self._roles_channel.id):
-            self._roles_channel = discord.utils.get(self.css_guild.text_channels, name="roles")
-
-        return self._roles_channel
-
-    @property
-    def general_channel(self) -> discord.TextChannel | None:
-        if not self._general_channel or not discord.utils.get(self.css_guild.text_channels, id=self._general_channel.id):
-            self._general_channel = discord.utils.get(self.css_guild.text_channels, name="general")
-
-        return self._general_channel
-
-    @property
-    def welcome_channel(self) -> discord.TextChannel | None:
-        if not self._welcome_channel or not discord.utils.get(self.css_guild.text_channels, id=self._welcome_channel.id):
-            self._welcome_channel = self.css_guild.rules_channel or discord.utils.get(self.css_guild.text_channels, name="welcome")
-
-        return self._welcome_channel
+        arg_parser.exit()
