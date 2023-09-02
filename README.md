@@ -2,6 +2,8 @@
 
 TeX-Bot, but back in Python! This is a [Discord bot](https://discord.com/build/app-developers) used for managing the [CSS Discord server](https://cssbham.com/discord).
 
+![Tests](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yml)
+
 ## Error Codes
 
 Users of the bot may encounter error codes when attempting to execute slash-commands, the list of error code descriptions is given here:
@@ -35,10 +37,10 @@ poetry shell
 ```
 
 ```shell
-python utils.py generate_invite_url --discord_bot_application_id="[Replace with your Discord application ID]" --discord_guild_id="[Replace with the ID of the CSS Discord server]"
+python utils.py generate_invite_url {discord_bot_application_id} {discord_guild_id}
 ```
 
-You'll also need to set a number of environment variables:
+You'll also need to set a number of environment variables, before running the bot:
 
 * `DISCORD_BOT_TOKEN`: The Discord token for the bot you created (available on your bot page in the [Developer Portal](https://discord.com/developers/applications)).
 * `DISCORD_GUILD_ID`: The ID of the CSS Discord server.
@@ -46,7 +48,7 @@ You'll also need to set a number of environment variables:
 * `MEMBERS_PAGE_URL`: The URL of the CSS members page (currently found on the Guild of Students website, make sure it's sorted by group).
 * `MEMBERS_PAGE_COOKIE`: The CSS members page session cookie (probably listed as `.ASPXAUTH`, gives the bot permission to view your members page as if it were logged in to the website as a Committee member, you can extract this from your web browser after logging into the CSS members page).
 
-You can put these in a `.env` file in the root folder as it uses [python-dotenv](https://saurabh-kumar.com/python-dotenv/), so you don't have to keep them in your environment. There is an `example.env` file in the repo that you can rename and populate.
+If running the bot from the built container image these environment variables can be defined in your `docker-config.yml` file. Otherwise, you can put these in a `.env` file in the root folder as it uses [python-dotenv](https://saurabh-kumar.com/python-dotenv/). There is an `example.env` file in the repo that you can rename and populate.
 
 There are also many other configurations that can be changed in order to alter the behaviour of the bot. These are all listed in the `example.env` file, along with the behaviours that will change.
 

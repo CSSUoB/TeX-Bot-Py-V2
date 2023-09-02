@@ -26,13 +26,13 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.11.3"
-py-cord = "^2.4"
+py-cord-dev = "2.5.0rc5"  # NOTE: Pycord has temporarily lost the ability to create new releases on the main pypi page so the development version is used. This has been tested to be stable
 python-dotenv = "^1.0.0"
 validators = "^0.21.2"
 beautifulsoup4 = "^4.12.2"
 emoji = "^2.8.0"
 parsedatetime = "^2.6"
-django = "4.2.3"
+django = "4.2.3"  # NOTE: Stick to this version of Django, until the django-stubs package is updated
 matplotlib = "^3.7.1"
 mplcyberpunk = "^0.7.0"
 python-logging-discord-handler = "^0.1.4"
@@ -40,6 +40,8 @@ python-logging-discord-handler = "^0.1.4"
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.4"
 django-stubs = {extras = ["compatible-mypy"], version = "4.2.3"}
+pytest = "^7.4"
+pytest-subtests = "^0.11"
 
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]
@@ -47,6 +49,7 @@ warn_unused_configs = true
 disallow_untyped_calls = true
 disallow_untyped_defs = true
 check_untyped_defs = true
+disallow_any_generics = true
 disallow_untyped_decorators = true
 warn_redundant_casts = true
 warn_unused_ignores = true
@@ -55,6 +58,7 @@ no_implicit_reexport = true
 strict_equality = true
 strict_concatenate = true
 ignore_missing_imports = true
+warn_unreachable = true
 
 [tool.django-stubs]
 django_settings_module = "db.settings"
