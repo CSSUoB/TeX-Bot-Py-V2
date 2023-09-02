@@ -100,7 +100,7 @@ class Settings(metaclass=SettingsMeta):
 
             with open(messages_file_path, "r", encoding="utf8") as messages_file:
                 try:
-                    messages_dict: dict = json.load(messages_file)
+                    messages_dict: dict[Any, Any] = json.load(messages_file)
                 except json.JSONDecodeError as messages_file_error:
                     raise ImproperlyConfigured("Messages JSON file must contain a JSON string that can be decoded into a Python dict object.") from messages_file_error
 
@@ -134,7 +134,7 @@ class Settings(metaclass=SettingsMeta):
             else:
                 cls._settings["SEND_INTRODUCTION_REMINDERS"] = False
 
-            introduction_reminder_interval: Match | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z", str(os.getenv("INTRODUCTION_REMINDER_INTERVAL", "6h")))
+            introduction_reminder_interval: Match[str] | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z", str(os.getenv("INTRODUCTION_REMINDER_INTERVAL", "6h")))
             cls._settings["INTRODUCTION_REMINDER_INTERVAL"] = {"hours": 6}
             if cls._settings["SEND_INTRODUCTION_REMINDERS"]:
                 if not introduction_reminder_interval:
@@ -146,7 +146,7 @@ class Settings(metaclass=SettingsMeta):
                 raise ImproperlyConfigured("KICK_NO_INTRODUCTION_MEMBERS must be a boolean value.")
             cls._settings["KICK_NO_INTRODUCTION_MEMBERS"] = kick_no_introduction_members in TRUE_VALUES
 
-            kick_no_introduction_members_delay: Match | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z", str(os.getenv("KICK_NO_INTRODUCTION_MEMBERS_DELAY", "5d")))
+            kick_no_introduction_members_delay: Match[str] | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z", str(os.getenv("KICK_NO_INTRODUCTION_MEMBERS_DELAY", "5d")))
             cls._settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] = timedelta()
             if cls._settings["KICK_NO_INTRODUCTION_MEMBERS"]:
                 if not kick_no_introduction_members_delay:
@@ -160,7 +160,7 @@ class Settings(metaclass=SettingsMeta):
                 raise ImproperlyConfigured("SEND_GET_ROLES_REMINDERS must be a boolean value.")
             cls._settings["SEND_GET_ROLES_REMINDERS"] = send_get_roles_reminders in TRUE_VALUES
 
-            get_roles_reminder_interval: Match | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z", str(os.getenv("GET_ROLES_REMINDER_INTERVAL", "24h")))
+            get_roles_reminder_interval: Match[str] | None = re.match(r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z", str(os.getenv("GET_ROLES_REMINDER_INTERVAL", "24h")))
             cls._settings["GET_ROLES_REMINDER_INTERVAL"] = {"hours": 24}
             if cls._settings["SEND_GET_ROLES_REMINDERS"]:
                 if not get_roles_reminder_interval:
