@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-container-image:
+  check-container-image-builds:
     runs-on: ubuntu-latest
     permissions:
       contents: read

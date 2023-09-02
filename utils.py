@@ -46,7 +46,7 @@ def generate_invite_url(discord_bot_application_id: str, discord_guild_id: int) 
             view_audit_log=True
         ),
         guild=discord.Object(id=discord_guild_id),
-        scopes={"bot", "applications.commands"},
+        scopes=("bot", "applications.commands"),
         disable_guild_select=True
     )
 
@@ -268,7 +268,7 @@ if __name__ == "__main__":
 
     if parsed_args.function == "generate_invite_url":
         if not re.match(r"\A\d{17,20}\Z", parsed_args.discord_bot_application_id):
-            arg_parser.error("discord_bot_application_id must be a valid Discord application ID (see https://support-dev.discord.com/hc/en-gb/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)")
+            generate_invite_url_arg_parser.error("discord_bot_application_id must be a valid Discord application ID (see https://support-dev.discord.com/hc/en-gb/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)")
 
         discord_guild_id: str = parsed_args.discord_guild_id or ""
         if not discord_guild_id:
@@ -278,14 +278,14 @@ if __name__ == "__main__":
             discord_guild_id = os.getenv("DISCORD_GUILD_ID", "")
 
             if not discord_guild_id:
-                arg_parser.error("\"discord_guild_id\" must be provided as an argument to the generate_invite_url utility function or otherwise set the DISCORD_GUILD_ID environment variable")
+                generate_invite_url_arg_parser.error("discord_guild_id must be provided as an argument to the generate_invite_url utility function or otherwise set the DISCORD_GUILD_ID environment variable")
 
         if not re.match(r"\A\d{17,20}\Z", discord_guild_id):
-            arg_parser.error("discord_guild_id must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)")
+            generate_invite_url_arg_parser.error("discord_guild_id must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)")
 
         print(
             generate_invite_url(
                 parsed_args.discord_bot_application_id, int(discord_guild_id)
             )
         )
-        arg_parser.exit()
+        generate_invite_url_arg_parser.exit()
