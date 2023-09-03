@@ -8,6 +8,7 @@ import re
 import string
 import subprocess
 import sys
+
 from pathlib import Path
 from subprocess import CompletedProcess
 
@@ -62,6 +63,12 @@ class BaseTestArgumentParser:
             command line outputs in class variables.
         """
 
+        if not re.match(r"\A[a-zA-Z0-9._\-+!\"' ]*\Z", util_function_name):
+            raise TypeError(f"util_function_name must be a valid function name for the utils.py command-line program.")
+
+        if any(not re.match(r"\A[a-zA-Z0-9._\-+!\"' ]*\Z", argument) for argument in arguments):
+            raise ValueError("All arguments must be valid arguments for the utils.py command-line program.")
+
         project_root: Path = Path(__file__).resolve()
         for _ in range(6):
             project_root = project_root.parent
@@ -73,6 +80,7 @@ class BaseTestArgumentParser:
 
         parser_output: CompletedProcess = subprocess.run(
             f"""{sys.executable} utils.py{" " if util_function_name else ""}{util_function_name}{" " if arguments else ""}{" ".join(arguments)}""",
+            shell=True,
             cwd=project_root.parent,
             capture_output=True
         )
