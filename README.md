@@ -2,7 +2,7 @@
 
 TeX-Bot, but back in Python! This is a [Discord bot](https://discord.com/build/app-developers) used for managing the [CSS Discord server](https://cssbham.com/discord).
 
-![Tests](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yml)
+![Tests](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yml/badge.svg)
 
 ## Error Codes
 
