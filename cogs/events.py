@@ -93,7 +93,7 @@ class Events_Cog(TeXBotCog):
         if before.guild != guild or after.guild != guild or before.bot or after.bot:
             return
 
-        guest_role: discord.Role | None = self.bot.guest_role
+        guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
             logging.critical(GuestRoleDoesNotExist())
             await self.bot.close()
@@ -118,12 +118,12 @@ class Events_Cog(TeXBotCog):
                     )
 
             welcome_channel_mention: str = "`#welcome`"
-            welcome_channel: discord.TextChannel | None = self.bot.welcome_channel
+            welcome_channel: discord.TextChannel | None = await self.bot.welcome_channel
             if welcome_channel:
                 welcome_channel_mention = welcome_channel.mention
 
             roles_channel_mention: str = "`#roles`"
-            roles_channel: discord.TextChannel | None = self.bot.roles_channel
+            roles_channel: discord.TextChannel | None = await self.bot.roles_channel
             if roles_channel:
                 roles_channel_mention = roles_channel.mention
 

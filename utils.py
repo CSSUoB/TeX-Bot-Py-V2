@@ -191,51 +191,76 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
             return self._css_guild
 
         @property
-        def committee_role(self) -> discord.Role | None:
+        async def committee_role(self) -> discord.Role | None:
             if not self._committee_role or not discord.utils.get(self.css_guild.roles, id=self._committee_role.id):
-                self._committee_role = discord.utils.get(self.css_guild.roles, name="Committee")
+                self._committee_role = discord.utils.get(
+                    await self.css_guild.fetch_roles(),
+                    name="Committee"
+                )
 
             return self._committee_role
 
         @property
-        def guest_role(self) -> discord.Role | None:
+        async def guest_role(self) -> discord.Role | None:
             if not self._guest_role or not discord.utils.get(self.css_guild.roles, id=self._guest_role.id):
-                self._guest_role = discord.utils.get(self.css_guild.roles, name="Guest")
+                self._guest_role = discord.utils.get(
+                    await self.css_guild.fetch_roles(),
+                    name="Guest"
+                )
 
             return self._guest_role
 
         @property
-        def member_role(self) -> discord.Role | None:
+        async def member_role(self) -> discord.Role | None:
             if not self._member_role or not discord.utils.get(self.css_guild.roles, id=self._member_role.id):
                 self._member_role = discord.utils.get(self.css_guild.roles, name="Member")
+                self._member_role = discord.utils.get(
+                    await self.css_guild.fetch_roles(),
+                    name="Member"
+                )
 
             return self._member_role
 
         @property
-        def archivist_role(self) -> discord.Role | None:
+        async def archivist_role(self) -> discord.Role | None:
             if not self._archivist_role or not discord.utils.get(self.css_guild.roles, id=self._archivist_role.id):
-                self._archivist_role = discord.utils.get(self.css_guild.roles, name="Archivist")
+                self._archivist_role = discord.utils.get(
+                    await self.css_guild.fetch_roles(),
+                    name="Archivist"
+                )
 
             return self._archivist_role
 
         @property
-        def roles_channel(self) -> discord.TextChannel | None:
+        async def roles_channel(self) -> discord.TextChannel | None:
             if not self._roles_channel or not discord.utils.get(self.css_guild.text_channels, id=self._roles_channel.id):
-                self._roles_channel = discord.utils.get(self.css_guild.text_channels, name="roles")
+                self._roles_channel = discord.utils.get(
+                    await self.css_guild.fetch_channels(),
+                    name="roles",
+                    type=discord.ChannelType.text
+                )
 
             return self._roles_channel
 
         @property
-        def general_channel(self) -> discord.TextChannel | None:
+        async def general_channel(self) -> discord.TextChannel | None:
             if not self._general_channel or not discord.utils.get(self.css_guild.text_channels, id=self._general_channel.id):
-                self._general_channel = discord.utils.get(self.css_guild.text_channels, name="general")
+                self._general_channel = discord.utils.get(
+                    await self.css_guild.fetch_channels(),
+                    name="general",
+                    type=discord.ChannelType.text
+                )
 
             return self._general_channel
 
         @property
-        def welcome_channel(self) -> discord.TextChannel | None:
+        async def welcome_channel(self) -> discord.TextChannel | None:
             if not self._welcome_channel or not discord.utils.get(self.css_guild.text_channels, id=self._welcome_channel.id):
-                self._welcome_channel = self.css_guild.rules_channel or discord.utils.get(self.css_guild.text_channels, name="welcome")
+                self._welcome_channel = self.css_guild.rules_channel or discord.utils.get(
+                    await self.css_guild.fetch_channels(),
+                    name="welcome",
+                    type=discord.ChannelType.text
+                )
 
             return self._welcome_channel
 
