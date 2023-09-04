@@ -234,35 +234,34 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
         @property
         async def roles_channel(self) -> discord.TextChannel | None:
             if not self._roles_channel or not discord.utils.get(self.css_guild.text_channels, id=self._roles_channel.id):
-                self._roles_channel = discord.utils.get(
-                    await self.css_guild.fetch_channels(),
-                    name="roles",
-                    type=discord.ChannelType.text
-                )
+                self._roles_channel = await self._fetch_text_channel("roles")
 
             return self._roles_channel
 
         @property
         async def general_channel(self) -> discord.TextChannel | None:
             if not self._general_channel or not discord.utils.get(self.css_guild.text_channels, id=self._general_channel.id):
-                self._general_channel = discord.utils.get(
-                    await self.css_guild.fetch_channels(),
-                    name="general",
-                    type=discord.ChannelType.text
-                )
+                self._general_channel = await self._fetch_text_channel("general")
 
             return self._general_channel
 
         @property
         async def welcome_channel(self) -> discord.TextChannel | None:
             if not self._welcome_channel or not discord.utils.get(self.css_guild.text_channels, id=self._welcome_channel.id):
-                self._welcome_channel = self.css_guild.rules_channel or discord.utils.get(
-                    await self.css_guild.fetch_channels(),
-                    name="welcome",
-                    type=discord.ChannelType.text
-                )
+                self._welcome_channel = self.css_guild.rules_channel or await self._fetch_text_channel("welcome")
 
             return self._welcome_channel
+
+        async def _fetch_text_channel(self, name: str) -> discord.TextChannel | None:
+            text_channel: discord.VoiceChannel | discord.StageChannel | discord.TextChannel | discord.ForumChannel | discord.CategoryChannel | None = discord.utils.get(
+                await self.css_guild.fetch_channels(),
+                name=name,
+                type=discord.ChannelType.text
+            )
+
+            assert isinstance(text_channel, discord.TextChannel) or text_channel is None
+
+            return text_channel
 
 if __name__ == "__main__":
     arg_parser: ArgumentParser = ArgumentParser(
