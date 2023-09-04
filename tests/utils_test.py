@@ -78,7 +78,7 @@ class BaseTestArgumentParser:
         else:
             raise FileNotFoundError("Could not locate project root directory.")
 
-        parser_output: CompletedProcess = subprocess.run(
+        parser_output: CompletedProcess[bytes] = subprocess.run(
             f"""{sys.executable} utils.py{" " if util_function_name else ""}{util_function_name}{" " if arguments else ""}{" ".join(arguments)}""",
             shell=True,
             cwd=project_root.parent,

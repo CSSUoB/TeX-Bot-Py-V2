@@ -45,6 +45,7 @@ pytest-subtests = "^0.11"
 
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]
+exclude = "db/settings\\.py$"
 warn_unused_configs = true
 disallow_untyped_calls = true
 disallow_untyped_defs = true

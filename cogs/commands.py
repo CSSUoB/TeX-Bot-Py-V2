@@ -451,7 +451,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         input_type=str,
         description="The amount of time to wait before reminding you",
         required=True,
-        autocomplete=discord.utils.basic_autocomplete(remind_me_autocomplete_get_delays),
+        autocomplete=discord.utils.basic_autocomplete(remind_me_autocomplete_get_delays),  # type: ignore
     )
     @discord.option(  # type: ignore
         name="message",
@@ -599,7 +599,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         name="channel",
         description="The channel that the message, you wish to edit, is in.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore
         required=True,
         parameter_name="str_channel_id"
     )
@@ -731,7 +731,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         name="user",
         description="The user to induct.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(induct_autocomplete_get_members),
+        autocomplete=discord.utils.basic_autocomplete(induct_autocomplete_get_members),  # type: ignore
         required=True,
         parameter_name="str_induct_member_id"
     )
@@ -943,7 +943,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         name="channel",
         description="The channel to display the stats for.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore
         required=False,
         parameter_name="str_channel_id"
     )
@@ -1337,7 +1337,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         name="category",
         description="The category to archive.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(archive_autocomplete_get_categories),
+        autocomplete=discord.utils.basic_autocomplete(archive_autocomplete_get_categories),  # type: ignore
         required=True,
         parameter_name="str_category_id"
     )
