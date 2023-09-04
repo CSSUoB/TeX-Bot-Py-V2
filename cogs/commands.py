@@ -80,7 +80,7 @@ class ApplicationCommandsCog(TeXBotCog):
         construct_error_message += ":warning:"
 
         if message:
-            message = re.sub(r"<[@&#]?\d+>", lambda match: f"`{match.group(0)}`", message.strip())
+            message = re.sub(r"<([@&#]?|(@[&#])?)\d+>", lambda match: f"`{match.group(0)}`", message.strip())
             construct_error_message += f"\n`{message}`"
 
         await ctx.respond(construct_error_message, ephemeral=True)
