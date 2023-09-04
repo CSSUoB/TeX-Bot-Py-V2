@@ -63,7 +63,7 @@ class BaseTestArgumentParser:
             command line outputs in class variables.
         """
 
-        if not re.match(r"\A[a-zA-Z0-9._\-+!\"' ]*\Z", util_function_name):
+        if not re.match(r"\A[a-zA-Z0-9._\-+!\"' ]*\Z", util_function_name):  # NOTE: Because executing utils.py from a command-line subprocess requires it to be spawned as a shell, security issues can occur. Therefore loose validation checks are required for the values of util_function_name & arguments (see https://stackoverflow.com/a/29023432/14403974)
             raise TypeError(f"util_function_name must be a valid function name for the utils.py command-line program.")
 
         if any(not re.match(r"\A[a-zA-Z0-9._\-+!\"' ]*\Z", argument) for argument in arguments):
