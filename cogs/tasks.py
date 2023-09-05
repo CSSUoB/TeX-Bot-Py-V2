@@ -108,7 +108,7 @@ class TasksCog(TeXBotCog):
             await self.bot.close()
             return
 
-        guest_role: discord.Role | None = self.bot.guest_role
+        guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
             logging.critical(GuestRoleDoesNotExist())
             await self.bot.close()
@@ -152,7 +152,7 @@ class TasksCog(TeXBotCog):
             await self.bot.close()
             return
 
-        guest_role: discord.Role | None = self.bot.guest_role
+        guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
             logging.critical(GuestRoleDoesNotExist())
             await self.bot.close()
@@ -171,6 +171,7 @@ class TasksCog(TeXBotCog):
 
             if ((settings["SEND_INTRODUCTION_REMINDERS"] == "once" and not await SentOneOffIntroductionReminderMember.objects.filter(hashed_member_id=SentOneOffIntroductionReminderMember.hash_member_id(member.id)).aexists()) or settings["SEND_INTRODUCTION_REMINDERS"] == "interval") and (discord.utils.utcnow() - member.joined_at) > max(settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] / 3, timedelta(days=1)) and not await IntroductionReminderOptOutMember.objects.filter(hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(member.id)).aexists():
                 async for message in member.history():
+                    # noinspection PyUnresolvedReferences
                     if message.components and isinstance(message.components[0], discord.ActionRow) and isinstance(message.components[0].children[0], discord.Button) and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button":
                         await message.edit(view=None)
 
@@ -270,14 +271,14 @@ class TasksCog(TeXBotCog):
             await self.bot.close()
             return
 
-        guest_role: discord.Role | None = self.bot.guest_role
+        guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
             logging.critical(GuestRoleDoesNotExist())
             await self.bot.close()
             return
 
         roles_channel_mention: str = "`#roles`"
-        roles_channel: discord.TextChannel | None = self.bot.roles_channel
+        roles_channel: discord.TextChannel | None = await self.bot.roles_channel
         if roles_channel:
             roles_channel_mention = roles_channel.mention
 
@@ -311,7 +312,7 @@ class TasksCog(TeXBotCog):
     @get_roles_reminder.before_loop
     async def before_tasks(self) -> None:
         """
-            Pre-execution hook that will prevent the any tasks
+            Pre-execution hook that will prevent any tasks
             from executing before the bot is ready.
         """
 
