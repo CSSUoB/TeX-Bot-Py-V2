@@ -42,6 +42,7 @@ mypy = "^1.4"
 django-stubs = {extras = ["compatible-mypy"], version = "4.2.3"}
 pytest = "^7.4"
 pytest-subtests = "^0.11"
+ruff = "^0.0.287"
 
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]
@@ -63,3 +64,38 @@ warn_unreachable = true
 
 [tool.django-stubs]
 django_settings_module = "db.settings"
+
+[tool.ruff]
+select = ["E", "F", "W", "C"]
+ignore = ["N818"]
+line-length = 95
+unfixable = ["ALL"]
+target-version ="py311"
+task-tags = [
+    "TODO",
+    "FIXME",
+    "HACK",
+    "BUG",
+    "NOBUG",
+    "REQ",
+    "IDEA",
+    "NOTE",
+    "ISSUE"
+]
+
+[tool.ruff.flake8-pytest-style]
+parametrize-values-type = "tuple"
+
+[tool.ruff.mccabe]
+max-complexity = 18
+
+[tool.ruff.pycodestyle]
+ignore-overlong-task-comments = true
+max-doc-length = 95
+
+[tool.ruff.pylint]
+allow-magic-value-types = ["bytes"]
+max-branches = 4
+
+[tool.ruff.pyupgrade]
+keep-runtime-typing = true
