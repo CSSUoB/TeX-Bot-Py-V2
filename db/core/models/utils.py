@@ -125,9 +125,9 @@ class HashedDiscordMember(AsyncBaseModel):
     )
 
     class Meta:
-        abstract = True
         """Metadata options about this model."""
 
+        abstract: bool = True
 
     def __repr__(self) -> str:
         """Generate a developer-focused representation of the hashed discord member's ID."""

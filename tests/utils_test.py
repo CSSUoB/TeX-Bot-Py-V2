@@ -240,22 +240,29 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
     @classmethod
     def test_error_when_invalid_discord_guild_id(cls) -> None:
-        invalid_discord_guild_id: str = "".join(
-            random.choices(string.ascii_letters + string.digits, k=7)
         """Test for the correct error when an invalid discord_guild_id is provided."""
+        expected_usage_message: str = (
+            "usage: utils.py generate_invite_url [-h]"
+            " discord_bot_application_id [discord_guild_id]"
+        )
+        expected_error_message: str = (
+            "utils.py generate_invite_url: error: discord_guild_id must be"
+            " a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
         )
         cls.execute_util_function(
             "generate_invite_url",
             str(
                 random.randint(10000000000000000, 99999999999999999999)
             ),
-            invalid_discord_guild_id
+            "".join(
+                random.choices(string.ascii_letters + string.digits, k=7)
+            )
         )
 
         assert cls.parser_output_return_code != 0
         assert not cls.parser_output_stdout
-        assert "usage: utils.py generate_invite_url [-h] discord_bot_application_id [discord_guild_id]" in cls.parser_output_stderr
-        assert "utils.py generate_invite_url: error: discord_guild_id must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)" in cls.parser_output_stderr
+        assert expected_usage_message in cls.parser_output_stderr
+        assert expected_error_message in cls.parser_output_stderr
 
     @classmethod
     def test_error_when_too_many_arguments(cls) -> None:

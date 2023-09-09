@@ -178,26 +178,26 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
 
         @property
         def css_guild(self) -> discord.Guild:
-            if not self._css_guild or not discord.utils.get(self.guilds, id=settings["DISCORD_GUILD_ID"]):
             """
             Shortcut accessor to the CSS guild (Discord server).
 
             This shortcut accessor provides a consistent way of accessing the CSS server object
             without having to repeatedly search for it, in the bot's list of guilds, by its ID.
             """
+            if not self._css_guild or not self._bot_has_guild(settings["DISCORD_GUILD_ID"]):
                 raise GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"])
 
             return self._css_guild
 
         @property
         async def committee_role(self) -> discord.Role | None:
-            if not self._committee_role or not discord.utils.get(self.css_guild.roles, id=self._committee_role.id):
             """
             Shortcut accessor to the committee role.
 
             The committee role is the role held by elected members of the CSS committee.
             Many commands are limited to use by only committee members.
             """
+            if not self._committee_role or not self._guild_has_role(self._committee_role):
                 self._committee_role = discord.utils.get(
                     await self.css_guild.fetch_roles(),
                     name="Committee"
@@ -207,7 +207,6 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
 
         @property
         async def guest_role(self) -> discord.Role | None:
-            if not self._guest_role or not discord.utils.get(self.css_guild.roles, id=self._guest_role.id):
             """
             Shortcut accessor to the guest role.
 
@@ -216,6 +215,7 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
             It is given to members only after they have sent a message with a short
             introduction about themselves.
             """
+            if not self._guest_role or not self._guild_has_role(self._guest_role):
                 self._guest_role = discord.utils.get(
                     await self.css_guild.fetch_roles(),
                     name="Guest"
@@ -225,7 +225,6 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
 
         @property
         async def member_role(self) -> discord.Role | None:
-            if not self._member_role or not discord.utils.get(self.css_guild.roles, id=self._member_role.id):
             """
             Shortcut accessor to the member role.
 
@@ -234,6 +233,7 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
             It provides bragging rights to other server members by showing the member's name in
             green!
             """
+            if not self._member_role or not self._guild_has_role(self._member_role):
                 self._member_role = discord.utils.get(self.css_guild.roles, name="Member")
                 self._member_role = discord.utils.get(
                     await self.css_guild.fetch_roles(),
@@ -260,34 +260,37 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
 
         @property
         async def roles_channel(self) -> discord.TextChannel | None:
-            if not self._roles_channel or not discord.utils.get(self.css_guild.text_channels, id=self._roles_channel.id):
             """
             Shortcut accessor to the welcome text channel.
 
             The roles text channel is the one that contains the message declaring all the
             available opt-in roles to members.
             """
+            if not self._roles_channel or not self._guild_has_channel(self._roles_channel):
                 self._roles_channel = await self._fetch_text_channel("roles")
 
             return self._roles_channel
 
         @property
         async def general_channel(self) -> discord.TextChannel | None:
-            if not self._general_channel or not discord.utils.get(self.css_guild.text_channels, id=self._general_channel.id):
             """Shortcut accessor to the general text channel."""
+            if not self._general_channel or not self._guild_has_channel(self._general_channel):
                 self._general_channel = await self._fetch_text_channel("general")
 
             return self._general_channel
 
         @property
         async def welcome_channel(self) -> discord.TextChannel | None:
-            if not self._welcome_channel or not discord.utils.get(self.css_guild.text_channels, id=self._welcome_channel.id):
-                self._welcome_channel = self.css_guild.rules_channel or await self._fetch_text_channel("welcome")
             """
             Shortcut accessor to the welcome text channel.
 
             The welcome text channel is the one that contains the welcome message & rules.
             """
+            if not self._welcome_channel or not self._guild_has_channel(self._welcome_channel):
+                self._welcome_channel = (
+                    self.css_guild.rules_channel or
+                    await self._fetch_text_channel("welcome")
+                )
 
             return self._welcome_channel
 
