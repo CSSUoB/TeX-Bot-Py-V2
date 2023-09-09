@@ -72,7 +72,7 @@ class AsyncBaseModel(models.Model):
         if commit:
             self.save(using)
 
-    update.alters_data = True  # type: ignore
+    update.alters_data: bool = True  # type: ignore[attr-defined, misc]
 
     # noinspection SpellCheckingInspection
     async def aupdate(self, commit: bool = True, using: str | None = None, **kwargs: Any) -> None:
@@ -84,7 +84,7 @@ class AsyncBaseModel(models.Model):
         """
         await sync_to_async(self.update)(commit=commit, using=using, **kwargs)
 
-    aupdate.alters_data = True  # type: ignore
+    aupdate.alters_data: bool = True  # type: ignore[attr-defined, misc]
 
     @classmethod
     def get_proxy_field_names(cls) -> set[str]:
@@ -145,7 +145,7 @@ class HashedDiscordMember(AsyncBaseModel):
         return f"{self.hashed_member_id}"
 
     @staticmethod
-    def hash_member_id(member_id: str | int) -> str:
+    def hash_member_id(member_id: Any) -> str:
         """
         Hash the provided member_id.
 

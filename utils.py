@@ -187,7 +187,7 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
             self._general_channel: discord.TextChannel | None = None
             self._welcome_channel: discord.TextChannel | None = None
 
-            super().__init__(*args, **options)  # type: ignore
+            super().__init__(*args, **options)  # type: ignore[no-untyped-call]
 
         @property
         def css_guild(self) -> discord.Guild:
