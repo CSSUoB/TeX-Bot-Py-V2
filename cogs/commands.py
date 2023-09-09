@@ -59,7 +59,7 @@ class ApplicationCommandsCog(TeXBotCog):
         if error_code:
             committee_mention: str = "committee"
 
-            committee_role: discord.Role | None = self.bot.committee_role
+            committee_role: discord.Role | None = await self.bot.committee_role
             if committee_role:
                 committee_mention = committee_role.mention
 
@@ -80,7 +80,7 @@ class ApplicationCommandsCog(TeXBotCog):
         construct_error_message += ":warning:"
 
         if message:
-            message = re.sub(r"<[@&#]?\d+>", lambda match: f"`{match.group(0)}`", message.strip())
+            message = re.sub(r"<([@&#]?|(@[&#])?)\d+>", lambda match: f"`{match.group(0)}`", message.strip())
             construct_error_message += f"\n`{message}`"
 
         await ctx.respond(construct_error_message, ephemeral=True)
@@ -94,7 +94,7 @@ class ApplicationCommandsCog(TeXBotCog):
             (irrelevant of where this process was requested from).
         """
 
-        guest_role: discord.Role | None = self.bot.guest_role
+        guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
             await self.send_error(
                 ctx,
@@ -104,7 +104,7 @@ class ApplicationCommandsCog(TeXBotCog):
             )
             return
 
-        committee_role: discord.Role | None = self.bot.committee_role
+        committee_role: discord.Role | None = await self.bot.committee_role
         if not committee_role:
             await self.send_error(
                 ctx,
@@ -151,7 +151,7 @@ class ApplicationCommandsCog(TeXBotCog):
             return
 
         if not silent:
-            general_channel: discord.TextChannel | None = self.bot.general_channel
+            general_channel: discord.TextChannel | None = await self.bot.general_channel
             if not general_channel:
                 await self.send_error(
                     ctx,
@@ -163,7 +163,7 @@ class ApplicationCommandsCog(TeXBotCog):
 
             roles_channel_mention: str = "`#roles`"
 
-            roles_channel: discord.TextChannel | None = self.bot.roles_channel
+            roles_channel: discord.TextChannel | None = await self.bot.roles_channel
             if roles_channel:
                 roles_channel_mention = roles_channel.mention
 
@@ -306,7 +306,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         except GuildDoesNotExist:
             return set()
 
-        channel_permissions_limiter: discord.Member | discord.Role | None = ctx.bot.guest_role
+        channel_permissions_limiter: discord.Member | discord.Role | None = await ctx.bot.guest_role
         if not channel_permissions_limiter:
             return set()
 
@@ -336,7 +336,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         except GuildDoesNotExist:
             return set()
 
-        committee_role: discord.Role | None = ctx.bot.committee_role
+        committee_role: discord.Role | None = await ctx.bot.committee_role
         if not committee_role:
             return set()
 
@@ -364,7 +364,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         members: set[discord.Member] = {member for member in guild.members if not member.bot}
 
-        guest_role: discord.Role | None = ctx.bot.guest_role
+        guest_role: discord.Role | None = await ctx.bot.guest_role
         if guest_role:
             members = {member for member in members if guest_role not in member.roles}
 
@@ -390,7 +390,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.bot.close()
             return
 
-        committee_role: discord.Role | None = self.bot.committee_role
+        committee_role: discord.Role | None = await self.bot.committee_role
         if not committee_role:
             await self.send_error(
                 ctx, error_code="E1021", command_name=command_name, logging_message=str(CommitteeRoleDoesNotExist())
@@ -451,7 +451,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         input_type=str,
         description="The amount of time to wait before reminding you",
         required=True,
-        autocomplete=discord.utils.basic_autocomplete(remind_me_autocomplete_get_delays),
+        autocomplete=discord.utils.basic_autocomplete(remind_me_autocomplete_get_delays),  # type: ignore
     )
     @discord.option(  # type: ignore
         name="message",
@@ -543,7 +543,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.bot.close()
             return
 
-        committee_role: discord.Role | None = self.bot.committee_role
+        committee_role: discord.Role | None = await self.bot.committee_role
         if not committee_role:
             await self.send_error(
                 ctx,
@@ -553,7 +553,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
             return
 
-        roles_channel: discord.TextChannel | None = self.bot.roles_channel
+        roles_channel: discord.TextChannel | None = await self.bot.roles_channel
         if not roles_channel:
             await self.send_error(
                 ctx,
@@ -599,7 +599,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         name="channel",
         description="The channel that the message, you wish to edit, is in.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore
         required=True,
         parameter_name="str_channel_id"
     )
@@ -641,7 +641,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.bot.close()
             return
 
-        committee_role: discord.Role | None = self.bot.committee_role
+        committee_role: discord.Role | None = await self.bot.committee_role
         if not committee_role:
             await self.send_error(
                 ctx,
@@ -731,7 +731,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         name="user",
         description="The user to induct.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(induct_autocomplete_get_members),
+        autocomplete=discord.utils.basic_autocomplete(induct_autocomplete_get_members),  # type: ignore
         required=True,
         parameter_name="str_induct_member_id"
     )
@@ -817,7 +817,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.bot.close()
             return
 
-        member_role: discord.Role | None = self.bot.member_role
+        member_role: discord.Role | None = await self.bot.member_role
         if not member_role:
             await self.send_error(
                 ctx,
@@ -827,7 +827,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
             return
 
-        guest_role: discord.Role | None = self.bot.guest_role
+        guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
             await self.send_error(
                 ctx,
@@ -872,7 +872,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         if await UoBMadeMember.objects.filter(hashed_uob_id=UoBMadeMember.hash_uob_id(uob_id)).aexists():
             committee_mention: str = "committee"
 
-            committee_role: discord.Role | None = self.bot.committee_role
+            committee_role: discord.Role | None = await self.bot.committee_role
             if committee_role:
                 committee_mention = committee_role.mention
 
@@ -954,7 +954,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         name="channel",
         description="The channel to display the stats for.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore
         required=False,
         parameter_name="str_channel_id"
     )
@@ -1079,7 +1079,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.bot.close()
             return
 
-        guest_role: discord.Role | None = self.bot.guest_role
+        guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
             await self.send_error(
                 ctx,
@@ -1198,7 +1198,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
             return
 
-        guest_role: discord.Role | None = self.bot.guest_role
+        guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
             await self.send_error(
                 ctx,
@@ -1348,7 +1348,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         name="category",
         description="The category to archive.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(archive_autocomplete_get_categories),
+        autocomplete=discord.utils.basic_autocomplete(archive_autocomplete_get_categories),  # type: ignore
         required=True,
         parameter_name="str_category_id"
     )
@@ -1381,7 +1381,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
             return
 
-        committee_role: discord.Role | None = self.bot.committee_role
+        committee_role: discord.Role | None = await self.bot.committee_role
         if not committee_role:
             await self.send_error(
                 ctx,
@@ -1391,7 +1391,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
             return
 
-        guest_role: discord.Role | None = self.bot.guest_role
+        guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
             await self.send_error(
                 ctx,
@@ -1401,7 +1401,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
             return
 
-        member_role: discord.Role | None = self.bot.member_role
+        member_role: discord.Role | None = await self.bot.member_role
         if not member_role:
             await self.send_error(
                 ctx,
@@ -1411,7 +1411,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
             return
 
-        archivist_role: discord.Role | None = self.bot.archivist_role
+        archivist_role: discord.Role | None = await self.bot.archivist_role
         if not archivist_role:
             await self.send_error(
                 ctx,

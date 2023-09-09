@@ -93,7 +93,7 @@ class Events_Cog(TeXBotCog):
         if before.guild != guild or after.guild != guild or before.bot or after.bot:
             return
 
-        guest_role: discord.Role | None = self.bot.guest_role
+        guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
             logging.critical(GuestRoleDoesNotExist())
             await self.bot.close()
@@ -118,12 +118,12 @@ class Events_Cog(TeXBotCog):
                     )
 
             welcome_channel_mention: str = "`#welcome`"
-            welcome_channel: discord.TextChannel | None = self.bot.welcome_channel
+            welcome_channel: discord.TextChannel | None = await self.bot.welcome_channel
             if welcome_channel:
                 welcome_channel_mention = welcome_channel.mention
 
             roles_channel_mention: str = "`#roles`"
-            roles_channel: discord.TextChannel | None = self.bot.roles_channel
+            roles_channel: discord.TextChannel | None = await self.bot.roles_channel
             if roles_channel:
                 roles_channel_mention = roles_channel.mention
 
@@ -131,7 +131,7 @@ class Events_Cog(TeXBotCog):
                 f"**Congrats on joining the CSS Discord server as a guest!** You now have access to contribute to all the public channels.\n\nSome things to do to get started:\n1. Check out our rules in {welcome_channel_mention}\n2. Head to {roles_channel_mention} and click on the icons to get optional roles like pronouns and year groups\n3. Change your nickname to whatever you wish others to refer to you as (You can do this by right-clicking your name in the members list to the right & selecting \"Edit Server Profile\")"
             )
             await after.send(
-                "You can also get yourself an annual membership to CSS for only £5! Just head to https://cssbham.com/join. You'll get awesome perks like a free T-shirt:shirt:, access to member only events:calender_spiral: & a cool green name on the CSS Discord server:green_square:! Checkout all the perks at https://cssbham.com/membership."
+                "You can also get yourself an annual membership to CSS for only £5! Just head to https://cssbham.com/join. You'll get awesome perks like a free T-shirt:shirt:, access to member only events:calendar_spiral: & a cool green name on the CSS Discord server:green_square:! Checkout all the perks at https://cssbham.com/membership."
             )
 
     @TeXBotCog.listener()
