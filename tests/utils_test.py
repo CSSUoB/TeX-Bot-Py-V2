@@ -6,7 +6,6 @@ import re
 import string
 import subprocess
 import sys
-
 from pathlib import Path
 from subprocess import CompletedProcess
 

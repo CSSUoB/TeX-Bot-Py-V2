@@ -16,9 +16,14 @@ from discord.ui import View
 from django.core.exceptions import ValidationError
 
 from cogs.utils import TeXBotCog
-from db.core.models import DiscordReminder, IntroductionReminderOptOutMember, SentGetRolesReminderMember, SentOneOffIntroductionReminderMember
-from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
 from config import settings
+from db.core.models import (
+    DiscordReminder,
+    IntroductionReminderOptOutMember,
+    SentGetRolesReminderMember,
+    SentOneOffIntroductionReminderMember,
+)
+from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
 from utils import TeXBot
 
 

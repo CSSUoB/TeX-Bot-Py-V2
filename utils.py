@@ -9,14 +9,23 @@ import discord
 if __name__ != "__main__":  # NOTE: Preventing loading modules that would cause errors if this file has been run from the command-line without pre-initialisation
     import io
     import math
-    from typing import Collection, Any
+    from typing import Any, Collection, TypeAlias
 
     import matplotlib.pyplot as plt
     import mplcyberpunk
     from matplotlib.text import Text as Plot_Text
 
-    from exceptions import GuildDoesNotExist
     from config import settings
+    from exceptions import GuildDoesNotExist
+
+    ChannelTypes: TypeAlias = (
+        discord.VoiceChannel
+        | discord.StageChannel
+        | discord.TextChannel
+        | discord.ForumChannel
+        | discord.CategoryChannel
+        | None
+    )
 
 
 # noinspection PyShadowingNames
@@ -295,7 +304,7 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
             return self._welcome_channel
 
         async def _fetch_text_channel(self, name: str) -> discord.TextChannel | None:
-            text_channel: discord.VoiceChannel | discord.StageChannel | discord.TextChannel | discord.ForumChannel | discord.CategoryChannel | None = discord.utils.get(
+            text_channel: ChannelTypes = discord.utils.get(
                 await self.css_guild.fetch_channels(),
                 name=name,
                 type=discord.ChannelType.text

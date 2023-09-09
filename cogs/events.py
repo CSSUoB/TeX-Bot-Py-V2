@@ -6,10 +6,19 @@ import discord
 from discord_logging.handler import DiscordHandler
 
 from cogs.utils import TeXBotCog
-from db.core.models import IntroductionReminderOptOutMember, LeftMember
-from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
 from config import settings
+from db.core.models import IntroductionReminderOptOutMember, LeftMember
+from exceptions import (
+    ArchivistRoleDoesNotExist,
+    CommitteeRoleDoesNotExist,
+    GeneralChannelDoesNotExist,
+    GuestRoleDoesNotExist,
+    GuildDoesNotExist,
+    MemberRoleDoesNotExist,
+    RolesChannelDoesNotExist,
+)
 from utils import TeXBot
+
 from .tasks import TasksCog
 
 

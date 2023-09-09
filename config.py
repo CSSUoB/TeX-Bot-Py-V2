@@ -17,7 +17,11 @@ import django
 import dotenv
 import validators
 
-from exceptions import ImproperlyConfigured, MessagesJSONFileMissingKey, MessagesJSONFileValueError
+from exceptions import (
+    ImproperlyConfigured,
+    MessagesJSONFileMissingKey,
+    MessagesJSONFileValueError,
+)
 
 
 TRUE_VALUES: set[str] = {"true", "1", "t", "y", "yes", "on"}

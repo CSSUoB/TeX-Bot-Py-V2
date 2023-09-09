@@ -19,7 +19,15 @@ import utils
 from cogs.utils import TeXBotAutocompleteContext, TeXBotCog
 from config import settings
 from db.core.models import DiscordReminder, LeftMember, UoBMadeMember
-from exceptions import ArchivistRoleDoesNotExist, CommitteeRoleDoesNotExist, GeneralChannelDoesNotExist, GuestRoleDoesNotExist, GuildDoesNotExist, MemberRoleDoesNotExist, RolesChannelDoesNotExist
+from exceptions import (
+    ArchivistRoleDoesNotExist,
+    CommitteeRoleDoesNotExist,
+    GeneralChannelDoesNotExist,
+    GuestRoleDoesNotExist,
+    GuildDoesNotExist,
+    MemberRoleDoesNotExist,
+    RolesChannelDoesNotExist,
+)
 from utils import TeXBot
 
 
