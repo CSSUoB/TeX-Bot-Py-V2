@@ -1,6 +1,7 @@
 """
-    Contains repeating tasks that are executed at set intervals (E.g. database
-    cleanup or sending message reminders to members' DMs.
+Contains repeating tasks that are executed at set intervals.
+
+(E.g. database cleanup or sending message reminders to members' DMs).
 """
 
 import datetime
@@ -22,9 +23,10 @@ from utils import TeXBot
 
 
 class TasksCog(TeXBotCog):
-    """ Cog container class that defines & initialises all recurring tasks. """
+    """Cog container class that defines & initialises all recurring tasks."""
 
     def __init__(self, bot: TeXBot) -> None:
+        """Start all task managers when this cog is initialised."""
         if settings["SEND_INTRODUCTION_REMINDERS"]:
             if settings["SEND_INTRODUCTION_REMINDERS"] == "interval":
                 SentOneOffIntroductionReminderMember.objects.all().delete()
@@ -43,10 +45,10 @@ class TasksCog(TeXBotCog):
 
     def cog_unload(self) -> None:
         """
-            Unload hook that ends all running tasks whenever the tasks cog is
-            unloaded (whether dynamically or when the bot closes).
-        """
+        Unload hook that ends all running tasks whenever the tasks cog is unloaded.
 
+        This may be run dynamically or when the bot closes.
+        """
         self.introduction_reminder.cancel()
         self.kick_no_introduction_members.cancel()
         self.clear_reminder_backlog.cancel()
@@ -54,12 +56,7 @@ class TasksCog(TeXBotCog):
 
     @tasks.loop(minutes=15)
     async def clear_reminder_backlog(self) -> None:
-        """
-            Recurring task to send any late Discord reminders still stored in
-            the database that have not been processed & sent to the member at
-            the specified time.
-        """
-
+        """Recurring task to send any late Discord reminders still stored in the database."""
         reminder: DiscordReminder
         async for reminder in DiscordReminder.objects.all():
             if (discord.utils.utcnow() - reminder.send_datetime) > datetime.timedelta(minutes=15):
@@ -95,12 +92,11 @@ class TasksCog(TeXBotCog):
     @tasks.loop(hours=24)
     async def kick_no_introduction_members(self) -> None:
         """
-            Recurring task to kick any Discord members that have not introduced
-            themselves to the CSS Discord server & meet all other prerequisites.
+        Recurring task to kick any Discord members that have not introduced themselves.
 
-            See README.md for the full list of conditions.
+        Other prerequisites must be met for this task to be activated, see README.md for the
+        full list of conditions.
         """
-
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -138,13 +134,14 @@ class TasksCog(TeXBotCog):
     @tasks.loop(**settings["INTRODUCTION_REMINDER_INTERVAL"])
     async def introduction_reminder(self) -> None:
         """
-            Recurring task to send a reminder message to Discord members' DMs
-            that they have not introduced themselves to the CSS Discord server.
+        Recurring task to send an introduction reminder message to Discord members' DMs.
 
-            See README.md for the full list of conditions for when these
-            reminders are sent.
+        The introduction reminder suggests that the Discord member should send a message to
+        introduce themselves to the CSS Discord server.
+
+        See README.md for the full list of conditions for when these
+        reminders are sent.
         """
-
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -183,13 +180,30 @@ class TasksCog(TeXBotCog):
                 await SentOneOffIntroductionReminderMember.objects.acreate(member_id=member.id)
 
     class Opt_Out_Introduction_Reminders_View(View):
+        """
+        A discord.View containing a button to opt-in/out of introduction reminders.
+
+        This discord.View contains a single button that can change the state of whether the
+        member will be sent reminders to send an introduction message in the
+        CSS Discord server.
+        The view object will be sent to the member's DMs, after a delay period after
+        joining the CSS Discord server.
+        """
+
         def __init__(self, bot: TeXBot):
+            """Initialize a new discord.View, to opt-in/out of introduction reminders."""
             self.bot: TeXBot = bot
 
             super().__init__(timeout=None)
 
         @ui.button(label="Opt-out of introduction reminders", custom_id="opt_out_introduction_reminders_button", style=discord.ButtonStyle.red, emoji=discord.PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias")))
         async def opt_out_introduction_reminders_button_callback(self, button: discord.Button, interaction: discord.Interaction) -> None:
+            """
+            Set the opt-in/out flag depending on the status of the button.
+
+            This function is attached as a button's callback, so will run whenever the button
+            is pressed.
+            """
             try:
                 guild: discord.Guild = self.bot.css_guild
             except GuildDoesNotExist as guild_error:
@@ -256,14 +270,14 @@ class TasksCog(TeXBotCog):
     @tasks.loop(**settings["GET_ROLES_REMINDER_INTERVAL"])
     async def get_roles_reminder(self) -> None:
         """
-            Recurring task to send a reminder message to Discord members' DMs
-            that they have not given themselves any of the optional opt-in
-            roles.
+        Recurring task to send an opt-in roles reminder message to Discord members' DMs.
 
-            See README.md for the full list of conditions for when these
-            reminders are sent.
+        The opt-in reminder message suggests that the Discord member has not given themselves
+        any of the optional opt-in roles.
+
+        See README.md for the full list of conditions for when these
+        reminders are sent.
         """
-
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -311,17 +325,14 @@ class TasksCog(TeXBotCog):
     @introduction_reminder.before_loop
     @get_roles_reminder.before_loop
     async def before_tasks(self) -> None:
-        """
-            Pre-execution hook that will prevent any tasks
-            from executing before the bot is ready.
-        """
-
+        """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
         await self.bot.wait_until_ready()
 
 
 def setup(bot: TeXBot) -> None:
     """
-        Setup callable to statically add the tasks cog to the bot at startup.
-    """
+    Add the tasks cog to the bot.
 
+    This is called at startup, to load all the cogs onto the bot.
+    """
     bot.add_cog(TasksCog(bot))

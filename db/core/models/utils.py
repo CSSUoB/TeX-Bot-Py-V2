@@ -1,6 +1,4 @@
-"""
-    Utility classes & functions provided for all models to use.
-"""
+"""Utility classes & functions."""
 
 import hashlib
 import re
@@ -14,18 +12,19 @@ from django.db import models
 
 class AsyncBaseModel(models.Model):
     """
-        Asynchronous Base model that provides extra synchronous & asynchronous
-        utility methods for all other models to use.
+    Asynchronous base model, defining extra synchronous & asynchronous utility methods.
 
-        This class is abstract so should not be instantiated or have a table
-        made for it in the database (see
-        https://docs.djangoproject.com/en/stable/topics/db/models/#abstract-base-classes).
+    This class is abstract so should not be instantiated or have a table made for it in the
+    database (see https://docs.djangoproject.com/en/stable/topics/db/models/#abstract-base-classes).
     """
 
     class Meta:
+        """Metadata options about this model."""
+
         abstract = True
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initialize a new model instance, capturing any proxy field values."""
         proxy_fields: dict[str, Any] = {field_name: kwargs.pop(field_name) for field_name in set(kwargs.keys()) & self.get_proxy_field_names()}
 
         super().__init__(*args, **kwargs)
@@ -37,23 +36,22 @@ class AsyncBaseModel(models.Model):
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         """
-            Saves the current instance to the database, only after the model
-            has been cleaned. This ensures any data in the database is valid,
-            even if the data was not added via a ModelForm (E.g. data is added
-            using the ORM API).
-        """
+        Save the current instance to the database, only after the model has been cleaned.
 
+        Cleaning the model ensures all data in the database is valid, even if the data was not
+        added via a ModelForm (E.g. data is added using the ORM API).
+        """
         self.full_clean()
 
         super().save(*args, **kwargs)
 
     def update(self, commit: bool = True, using: str | None = None, **kwargs: Any) -> None:
         """
-            Changes an in-memory object's values & save that object to the
-            database all in one operation (based on Django's
-            Queryset.bulk_update method).
-        """
+        Change an in-memory object's values, then save it to the database.
 
+        This simplifies the two steps into a single operation
+        (based on Django's Queryset.bulk_update method).
+        """
         unexpected_kwargs: set[str] = set()
 
         field_name: str
@@ -79,11 +77,11 @@ class AsyncBaseModel(models.Model):
     # noinspection SpellCheckingInspection
     async def aupdate(self, commit: bool = True, using: str | None = None, **kwargs: Any) -> None:
         """
-            Asyncronously changes an in-memory object's values & save that
-            object to the database all in one operation (based on Django's
-            Queryset.bulk_update method).
-        """
+        Asyncronously change an in-memory object's values, then save it to the database.
 
+        This simplifies the two steps into a single operation
+        (based on Django's Queryset.bulk_update method).
+        """
         await sync_to_async(self.update)(commit=commit, using=using, **kwargs)
 
     aupdate.alters_data = True  # type: ignore
@@ -91,24 +89,25 @@ class AsyncBaseModel(models.Model):
     @classmethod
     def get_proxy_field_names(cls) -> set[str]:
         """
-            Returns a set of names of extra properties of this model that can
-            be saved to the database, even though those fields don't actually
-            exist. They are just proxy fields.
-        """
+        Return the set of extra names of properties that can be saved to the database.
 
+        These are proxy fields because their values are not stored as object attributes,
+        however, they can be used as a reference to a real attribute when saving objects to the
+        database.
+        """
         return set()
 
 
 class HashedDiscordMember(AsyncBaseModel):
     """
-        Abstract base model to represent a Discord server member (identified by
-        their hashed Discord member ID). This base model is inherited by any
-        other model that wishes to represent a Discord member having a state
-        happened to them.
+    Abstract base model to represent a Discord server member.
 
-        This class is abstract so should not be instantiated or have a table
-        made for it in the database (see
-        https://docs.djangoproject.com/en/stable/topics/db/models/#abstract-base-classes).
+    The Discord server member is identified by their hashed Discord member ID.
+    This base model is inherited by any other model that wishes to store that a Discord member
+    had an event happen to them.
+
+    This class is abstract so should not be instantiated or have a table made for it in the
+    database (see https://docs.djangoproject.com/en/stable/topics/db/models/#abstract-base-classes).
     """
 
     hashed_member_id = models.CharField(
@@ -127,27 +126,32 @@ class HashedDiscordMember(AsyncBaseModel):
 
     class Meta:
         abstract = True
+        """Metadata options about this model."""
+
 
     def __repr__(self) -> str:
+        """Generate a developer-focused representation of the hashed discord member's ID."""
         return f"<{self._meta.verbose_name}: \"{self.hashed_member_id}\">"
 
     def __setattr__(self, name: str, value: Any) -> None:
+        """Set the attribute name to the given value, with special cases for proxy fields."""
         if name == "member_id":
             self.hashed_member_id = self.hash_member_id(value)
         else:
             super().__setattr__(name, value)
 
     def __str__(self) -> str:
+        """Generate the string representation of a generic HashedDiscordMember."""
         return f"{self.hashed_member_id}"
 
     @staticmethod
     def hash_member_id(member_id: str | int) -> str:
         """
-            Hashes the provided member_id into the format that hashed_member_ids
-            are stored in the database when new objects of this class are
-            created.
-        """
+        Hash the provided member_id.
 
+        The member_id value is hashed into the format that hashed_member_ids are stored in the
+        database when new objects of this class are created.
+        """
         if not isinstance(member_id, (str, int)) or not re.match(r"\A\d{17,20}\Z", str(member_id)):
             raise ValueError(f"\"{member_id}\" is not a valid Discord member ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)")
 
@@ -156,9 +160,10 @@ class HashedDiscordMember(AsyncBaseModel):
     @classmethod
     def get_proxy_field_names(cls) -> set[str]:
         """
-            Returns a set of names of extra properties of this model that can
-            be saved to the database, even though those fields don't actually
-            exist. They are just proxy fields.
-        """
+        Return the set of extra names of properties that can be saved to the database.
 
+        These are proxy fields because their values are not stored as object attributes,
+        however, they can be used as a reference to a real attribute when saving objects to the
+        database.
+        """
         return super().get_proxy_field_names() | {"member_id"}

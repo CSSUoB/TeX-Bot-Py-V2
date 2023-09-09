@@ -1,8 +1,9 @@
 """
-    The main entrypoint into the running of the bot. It loads the settings
-    values from the .env file/the environment variables, then ensures the Django
-    database is correctly migrated to the latest version and finally begins
-    the asynchronous running process for the Discord bot.
+The main entrypoint into the running of the bot.
+
+It loads the settings values from the .env file/the environment variables,
+then ensures the Django database is correctly migrated to the latest version and finally begins
+the asynchronous running process for the Discord bot.
 """
 
 import sys

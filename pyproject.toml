@@ -66,8 +66,8 @@ warn_unreachable = true
 django_settings_module = "db.settings"
 
 [tool.ruff]
-select = ["E", "F", "W", "C"]
-ignore = ["N818"]
+select = ["E", "F", "W", "C", "D"]
+ignore = ["N818", "D203", "D212"]
 line-length = 95
 unfixable = ["ALL"]
 target-version ="py311"

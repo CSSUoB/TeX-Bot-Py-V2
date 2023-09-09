@@ -1,7 +1,8 @@
 """
-    Settings values that are imported from the .env file or the current
-    environment variables. These values are used to configure the functionality
-    of the bot at run-time.
+Contains settings values and import & setup functions.
+
+Settings values are imported from the .env file or the current environment variables.
+These values are used to configure the functionality of the bot at run-time.
 """
 
 import json
@@ -41,6 +42,7 @@ class SettingsMeta(type):
             raise AttributeError(f"type object '{self.__name__}' has no attribute '{item}'")
 
     def __getitem__(self, item: str) -> Any:
+        """Retrieve settings value by key lookup."""
         try:
             return getattr(self, item)
         except AttributeError as getattr_error:
@@ -189,9 +191,10 @@ class Settings(metaclass=SettingsMeta):
     @classmethod
     def setup_django(cls) -> None:
         """
-            Setup function to ensure the correct settings module has been loaded
-            into the Django process, so that the models (defined using Django)
-            can be accessed.
+        Load the correct settings module into the Django process.
+
+        Model instances & database data cannot be accessed by cogs until
+        Django's settings module has been loaded.
         """
 
         if not cls._is_django_setup:

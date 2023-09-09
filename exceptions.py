@@ -1,34 +1,28 @@
-"""
-    Custom exception classes that could be raised within the cogs modules.
-"""
+"""Custom exception classes that could be raised within the cogs modules."""
 
 import abc
 from typing import Any, Collection
 
 
 class ImproperlyConfigured(Exception):
-    """
-        Exception class to raise when environment variables are not correctly
-        supplied.
-    """
+    """Exception class to raise when environment variables are not correctly provided."""
 
     pass
 
 
 class BaseError(BaseException, abc.ABC):
-    """
-        Base exception mixin that provides the functionality for custom
-        exceptions to inherit from, along with an existing concrete type.
-    """
+    """Base exception parent class."""
 
     DEFAULT_MESSAGE: str
 
     def __init__(self, message: str | None = None) -> None:
+        """Initialize a new exception with the given error message."""
         self.message: str = message or self.DEFAULT_MESSAGE
 
         super().__init__(self.message)
 
     def __repr__(self) -> str:
+        """Generate a developer-focused representation of the exception's attributes."""
         formatted: str = self.message
 
         attributes: set[str] = set(self.__dict__.keys())
@@ -40,18 +34,11 @@ class BaseError(BaseException, abc.ABC):
 
 
 class BaseDoesNotExistError(ValueError, BaseError, abc.ABC):
-    """
-        Exception class to raise when a required Discord entity with the given
-        type and name/ID does not exist.
-    """
+    """Exception class to raise when a required Discord entity is missing."""
 
     @staticmethod
     def format_does_not_exist_with_dependencies(value: str, does_not_exist_type: str, dependant_commands: Collection[str], dependant_tasks: Collection[str], dependant_events: Collection[str]) -> str:
-        """
-            Returns a formatted string of an error that the given Discord
-            entity does not exist.
-        """
-
+        """Format a string, stating that the given Discord entity does not exist."""
         if not dependant_commands and not dependant_tasks and not dependant_events:
             raise ValueError("The arguments \"dependant_commands\" & \"dependant_tasks\" cannot all be empty.")
 
@@ -129,54 +116,46 @@ class BaseDoesNotExistError(ValueError, BaseError, abc.ABC):
 
 
 class InvalidMessagesJSONFile(ImproperlyConfigured, BaseError):
-    """
-        Exception class to raise when the provided messages.json file has an
-        invalid structure, at the given key, in some way.
-    """
+    """Exception class to raise when the messages.json file has an invalid structure."""
 
     DEFAULT_MESSAGE: str = "The messages JSON file has an invalid structure at the given key."
 
     def __init__(self, message: str | None = None, dict_key: str | None = None) -> None:
+        """Initialize an ImproperlyConfigured exception for an invalid messages.json file."""
         self.dict_key: str | None = dict_key
 
         super().__init__(message)
 
 
 class MessagesJSONFileMissingKey(InvalidMessagesJSONFile):
-    """
-        Exception class to raise when the provided messages.json file is missing
-        a required key.
-    """
+    """Exception class to raise when a key in the messages.json file is missing."""
 
     DEFAULT_MESSAGE: str = "The messages JSON file is missing a required key."
 
     def __init__(self, message: str | None = None, missing_key: str | None = None) -> None:
+        """Initialize a new InvalidMessagesJSONFile exception for a missing key."""
         super().__init__(message, dict_key=missing_key)
 
 
 class MessagesJSONFileValueError(InvalidMessagesJSONFile):
-    """
-        Exception class to raise when the provided messages.json file has an
-        invalid value for the given key.
-    """
+    """Exception class to raise when a key in the messages.json file has an invalid value."""
 
     DEFAULT_MESSAGE: str = "The messages JSON file has an invalid value."
 
     def __init__(self, message: str | None = None, dict_key: str | None = None, invalid_value: Any | None = None) -> None:
+        """Initialize a new InvalidMessagesJSONFile exception for a key's invalid value."""
         self.invalid_value: Any | None = invalid_value
 
         super().__init__(message, dict_key)
 
 
 class GuildDoesNotExist(BaseDoesNotExistError):
-    """
-        Exception class to raise when a required Discord guild with the given
-        ID does not exist.
-    """
+    """Exception class to raise when a required Discord guild is missing."""
 
     DEFAULT_MESSAGE: str = "Server with given ID does not exist or is not accessible to the bot."
 
     def __init__(self, message: str | None = None, guild_id: int | None = None) -> None:
+        """Initialize a new DoesNotExist exception for a guild not existing."""
         self.guild_id: int | None = guild_id
 
         if guild_id and not message:
@@ -186,14 +165,12 @@ class GuildDoesNotExist(BaseDoesNotExistError):
 
 
 class RoleDoesNotExist(BaseDoesNotExistError):
-    """
-        Exception class to raise when a required Discord role with the given
-        name does not exist.
-    """
+    """Exception class to raise when a required Discord role is missing."""
 
     DEFAULT_MESSAGE: str = "Role with given name does not exist."
 
     def __init__(self, message: str | None = None, role_name: str | None = None, dependant_commands: Collection[str] | None = None, dependant_tasks: Collection[str] | None = None, dependant_events: Collection[str] | None = None) -> None:
+        """Initialize a new DoesNotExist exception for a role not existing."""
         self.role_name: str | None = role_name
 
         self.dependant_commands: set[str] = set()
@@ -224,57 +201,47 @@ class RoleDoesNotExist(BaseDoesNotExistError):
 
 
 class CommitteeRoleDoesNotExist(RoleDoesNotExist):
-    """
-        Exception class to raise when the required Discord role with the name
-        "Committee" does not exist.
-    """
+    """Exception class to raise when the "Committee" Discord role is missing."""
 
     def __init__(self, message: str | None = None) -> None:
+        """Initialize a new RoleDoesNotExist exception with role_name=Committee."""
         # noinspection SpellCheckingInspection
         super().__init__(message, role_name="Committee", dependant_commands={"writeroles", "editmessage", "induct", "archive", "delete-all"})
 
 
 class GuestRoleDoesNotExist(RoleDoesNotExist):
-    """
-        Exception class to raise when the required Discord role with the name
-        "Guest" does not exist.
-    """
+    """Exception class to raise when the "Guest" Discord role is missing."""
 
     def __init__(self, message: str | None = None) -> None:
+        """Initialize a new RoleDoesNotExist exception with role_name=Guest."""
         # noinspection SpellCheckingInspection
         super().__init__(message, role_name="Guest", dependant_commands={"induct", "makemember", "stats", "archive"}, dependant_tasks={"kick_no_introduction_members", "introduction_reminder"})
 
 
 class MemberRoleDoesNotExist(RoleDoesNotExist):
-    """
-        Exception class to raise when the required Discord role with the name
-        "Member" does not exist.
-    """
+    """Exception class to raise when the "Member" Discord role is missing."""
 
     def __init__(self, message: str | None = None) -> None:
+        """Initialize a new RoleDoesNotExist exception with role_name=Member."""
         # noinspection SpellCheckingInspection
         super().__init__(message, role_name="Member", dependant_commands={"makemember"})
 
 
 class ArchivistRoleDoesNotExist(RoleDoesNotExist):
-    """
-        Exception class to raise when the required Discord role with the name
-        "Archivist" does not exist.
-    """
+    """Exception class to raise when the "Archivist" Discord role is missing."""
 
     def __init__(self, message: str | None = None) -> None:
+        """Initialize a new RoleDoesNotExist exception with role_name=Archivist."""
         super().__init__(message, role_name="Archivist", dependant_commands={"archive"})
 
 
 class ChannelDoesNotExist(BaseDoesNotExistError):
-    """
-        Exception class to raise when a required Discord channel with the given
-        name does not exist.
-    """
+    """Exception class to raise when a required Discord channel is missing."""
 
     DEFAULT_MESSAGE: str = "Channel with given name does not exist."
 
     def __init__(self, message: str | None = None, channel_name: str | None = None, dependant_commands: Collection[str] | None = None, dependant_tasks: Collection[str] | None = None, dependant_events: Collection[str] | None = None) -> None:
+        """Initialize a new DoesNotExist exception for a channel not existing."""
         self.channel_name: str | None = channel_name
 
         self.dependant_commands: set[str] = set()
@@ -305,22 +272,18 @@ class ChannelDoesNotExist(BaseDoesNotExistError):
 
 
 class RolesChannelDoesNotExist(ChannelDoesNotExist):
-    """
-        Exception class to raise when a required Discord channel with the name
-        "Roles" does not exist.
-    """
+    """Exception class to raise when the "Roles" Discord channel is missing."""
 
     def __init__(self, message: str | None = None) -> None:
+        """Initialize a new ChannelDoesNotExist exception with channel_name=roles."""
         # noinspection SpellCheckingInspection
         super().__init__(message, channel_name="roles", dependant_commands={"writeroles"})
 
 
 class GeneralChannelDoesNotExist(ChannelDoesNotExist):
-    """
-        Exception class to raise when a required Discord channel with the name
-        "General" does not exist.
-    """
+    """Exception class to raise when the "General" Discord channel is missing."""
 
     def __init__(self, message: str | None = None) -> None:
+        """Initialize a new ChannelDoesNotExist exception with channel_name=general."""
         # noinspection SpellCheckingInspection
         super().__init__(message, channel_name="general", dependant_commands={"induct"})

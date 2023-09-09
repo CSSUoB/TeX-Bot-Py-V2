@@ -1,7 +1,4 @@
-"""
-    Utility classes & functions provided for use across the whole of the
-    project.
-"""
+"""Utility classes & functions provided for use across the whole of the project."""
 
 import os
 import re
@@ -25,10 +22,11 @@ if __name__ != "__main__":  # NOTE: Preventing loading modules that would cause 
 # noinspection PyShadowingNames
 def generate_invite_url(discord_bot_application_id: str, discord_guild_id: int) -> str:
     """
-        Returns the OAuth invite URL for the bot to the given Discord server,
-        using the permissions required for the bot to run.
-    """
+    Generate the correct OAuth invite URL for the bot.
 
+    This invite URL directs to the given Discord server and requests only the permissions
+    required for the bot to run.
+    """
     return discord.utils.oauth_url(
         client_id=discord_bot_application_id,
         permissions=discord.Permissions(
@@ -54,11 +52,7 @@ def generate_invite_url(discord_bot_application_id: str, discord_guild_id: int) 
 if __name__ != "__main__":  # NOTE: Preventing using modules that have not been loaded if this file has been run from the command-line
     # noinspection SpellCheckingInspection
     def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, filename: str, description: str, extra_text: str = "") -> discord.File:
-        """
-            Shortcut function to generate an image of a plot bar chart from the
-            given data & format variables.
-        """
-
+        """Generate an image of a plot bar chart from the given data & format variables."""
         plt.style.use("cyberpunk")
 
         max_data_value: int = max(data.values()) + 1
@@ -142,15 +136,13 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
 
 
     def amount_of_time_formatter(value: float, time_scale: str) -> str:
-        # noinspection GrazieInspection
         """
-            Returns the formatted amount of time value according to the provided
-            time_scale.
+        Format the amount of time value according to the provided time_scale.
 
-            E.g. past "1 days" => past "day", past "2.00 weeks" => past "2 weeks",
-            past "3.14159 months" => past "3.14 months"
+        E.g. past "1 days" => past "day",
+        past "2.00 weeks" => past "2 weeks",
+        past "3.14159 months" => past "3.14 months"
         """
-
         if value == 1:
             return f"{time_scale}"
 
@@ -163,14 +155,15 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
 
     class TeXBot(discord.Bot):
         """
-            Subclass of the default Bot class provided by Pycord.
+        Subclass of the default Bot class provided by Pycord.
 
-            This subclass allows for storing commonly accessed roles & channels
-            from the CSS Discord Server, while also raising the correct errors
-            if necessary.
+        This subclass allows for storing commonly accessed roles & channels from the
+        CSS Discord Server, while also raising the correct errors if these objects do not
+        exist.
         """
 
         def __init__(self, *args: Any, **options: Any) -> None:
+            """Initialize a new discord.Bot subclass with empty shortcut accessors."""
             self._css_guild: discord.Guild | None = None
             self._committee_role: discord.Role | None = None
             self._guest_role: discord.Role | None = None
@@ -186,6 +179,12 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
         @property
         def css_guild(self) -> discord.Guild:
             if not self._css_guild or not discord.utils.get(self.guilds, id=settings["DISCORD_GUILD_ID"]):
+            """
+            Shortcut accessor to the CSS guild (Discord server).
+
+            This shortcut accessor provides a consistent way of accessing the CSS server object
+            without having to repeatedly search for it, in the bot's list of guilds, by its ID.
+            """
                 raise GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"])
 
             return self._css_guild
@@ -193,6 +192,12 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
         @property
         async def committee_role(self) -> discord.Role | None:
             if not self._committee_role or not discord.utils.get(self.css_guild.roles, id=self._committee_role.id):
+            """
+            Shortcut accessor to the committee role.
+
+            The committee role is the role held by elected members of the CSS committee.
+            Many commands are limited to use by only committee members.
+            """
                 self._committee_role = discord.utils.get(
                     await self.css_guild.fetch_roles(),
                     name="Committee"
@@ -203,6 +208,14 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
         @property
         async def guest_role(self) -> discord.Role | None:
             if not self._guest_role or not discord.utils.get(self.css_guild.roles, id=self._guest_role.id):
+            """
+            Shortcut accessor to the guest role.
+
+            The guest role is the core role that provides members with access to talk in the
+            main channels of the CSS Discord server.
+            It is given to members only after they have sent a message with a short
+            introduction about themselves.
+            """
                 self._guest_role = discord.utils.get(
                     await self.css_guild.fetch_roles(),
                     name="Guest"
@@ -213,6 +226,14 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
         @property
         async def member_role(self) -> discord.Role | None:
             if not self._member_role or not discord.utils.get(self.css_guild.roles, id=self._member_role.id):
+            """
+            Shortcut accessor to the member role.
+
+            The member role is the one only accessible to server members after they have
+            verified a purchased membership to CSS.
+            It provides bragging rights to other server members by showing the member's name in
+            green!
+            """
                 self._member_role = discord.utils.get(self.css_guild.roles, name="Member")
                 self._member_role = discord.utils.get(
                     await self.css_guild.fetch_roles(),
@@ -223,6 +244,12 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
 
         @property
         async def archivist_role(self) -> discord.Role | None:
+            """
+            Shortcut accessor to the archivist role.
+
+            The archivist role is the one that allows members to see channels & categories
+            that are no longer in use, which are hidden to all other members.
+            """
             if not self._archivist_role or not discord.utils.get(self.css_guild.roles, id=self._archivist_role.id):
                 self._archivist_role = discord.utils.get(
                     await self.css_guild.fetch_roles(),
@@ -234,6 +261,12 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
         @property
         async def roles_channel(self) -> discord.TextChannel | None:
             if not self._roles_channel or not discord.utils.get(self.css_guild.text_channels, id=self._roles_channel.id):
+            """
+            Shortcut accessor to the welcome text channel.
+
+            The roles text channel is the one that contains the message declaring all the
+            available opt-in roles to members.
+            """
                 self._roles_channel = await self._fetch_text_channel("roles")
 
             return self._roles_channel
@@ -241,6 +274,7 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
         @property
         async def general_channel(self) -> discord.TextChannel | None:
             if not self._general_channel or not discord.utils.get(self.css_guild.text_channels, id=self._general_channel.id):
+            """Shortcut accessor to the general text channel."""
                 self._general_channel = await self._fetch_text_channel("general")
 
             return self._general_channel
@@ -249,6 +283,11 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
         async def welcome_channel(self) -> discord.TextChannel | None:
             if not self._welcome_channel or not discord.utils.get(self.css_guild.text_channels, id=self._welcome_channel.id):
                 self._welcome_channel = self.css_guild.rules_channel or await self._fetch_text_channel("welcome")
+            """
+            Shortcut accessor to the welcome text channel.
+
+            The welcome text channel is the one that contains the welcome message & rules.
+            """
 
             return self._welcome_channel
 

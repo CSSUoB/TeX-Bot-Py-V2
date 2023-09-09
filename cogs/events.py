@@ -1,6 +1,4 @@
-"""
-    Contains event listeners for startup & events within the CSS Discord server.
-"""
+"""Contains event listeners for startup & events within the CSS Discord server."""
 
 import logging
 
@@ -16,19 +14,15 @@ from .tasks import TasksCog
 
 
 class Events_Cog(TeXBotCog):
-    """
-        Cog container class that attaches all listeners for the events that need
-        to be observed.
-    """
+    """Cog container class for all listeners for the events that need to be observed."""
 
     @TeXBotCog.listener()
     async def on_ready(self) -> None:
         """
-            Event listener to populate the additional custom attributes of the
-            bot after initialisation (i.e. once the bot is ready to make API
-            requests).
-        """
+        Populate the shortcut accessors of the bot after initialisation.
 
+        Shortcut accessors should only be populated once the bot is ready to make API requests.
+        """
         if settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
             discord_logging_handler: DiscordHandler = DiscordHandler(
                 self.bot.user.name if self.bot.user else "TeXBot",
@@ -78,11 +72,11 @@ class Events_Cog(TeXBotCog):
     @TeXBotCog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
         """
-            Event listener to send a welcome message to this member's DMs &
-            remove the introduction reminder flags for this member when they get
-            inducted as a guest into the CSS Discord server.
-        """
+        Send a welcome message to this member's DMs & remove introduction reminder flags.
 
+        These post-induction actions are only applied to users that have just been inducted as
+        a guest into the CSS Discord server.
+        """
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -136,11 +130,7 @@ class Events_Cog(TeXBotCog):
 
     @TeXBotCog.listener()
     async def on_member_leave(self, member: discord.Member) -> None:
-        """
-            Event listener to update the statistics of the roles that members
-            had when they left the CSS Discord server.
-        """
-
+        """Update the stats of the roles that members had when they left the Discord server."""
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -156,7 +146,9 @@ class Events_Cog(TeXBotCog):
 
 def setup(bot: TeXBot) -> None:
     """
-        Setup callable to statically add the events cog to the bot at startup.
+    Add the events cog to the bot.
+
+    This is called at startup, to load all the cogs onto the bot.
     """
 
     bot.add_cog(Events_Cog(bot))

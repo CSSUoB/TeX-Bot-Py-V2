@@ -1,7 +1,4 @@
-"""
-    Model classes that store extra information longer-term between individual
-    Discord command events.
-"""
+"""Model classes that store extra information between individual event handling call-backs."""
 
 import hashlib
 import re
@@ -16,52 +13,63 @@ from .utils import AsyncBaseModel, HashedDiscordMember
 
 class IntroductionReminderOptOutMember(HashedDiscordMember):
     """
-        Model to represent a Discord server member (identified by their hashed
-        Discord member ID) that has requested to be opted-out of reminders to
-        introduce themselves in the CSS Discord server.
+    Model to represent a Discord server member that has opted out of introduction reminders.
+
+    Opting-out of introduction reminders means that they have requested to not be sent any
+    messages reminding them to introduce themselves in the CSS Discord server.
+    The Discord server member is identified by their hashed Discord member ID.
     """
 
     class Meta:
+        """Metadata options about this model."""
+
         verbose_name = "Hashed Discord ID of Member that has Opted-Out of Introduction Reminders"
         verbose_name_plural = "Hashed Discord IDs of Members that have Opted-Out of Introduction Reminders"
 
 
 class SentOneOffIntroductionReminderMember(HashedDiscordMember):
     """
-        Model to represent a Discord server member (identified by their hashed
-        Discord member ID) that has already been sent their single reminder to
-        introduce themselves in the CSS Discord server, when
-        SEND_INTRODUCTION_REMINDERS is set to "Once".
+    Represents a Discord server member that has been sent a one-off introduction reminder.
+
+    A one-off introduction reminder sends a single message reminding the member to introduce
+    themselves in the CSS Discord server, when SEND_INTRODUCTION_REMINDERS is set to "Once".
+    The Discord server member is identified by their hashed Discord member ID.
     """
 
     class Meta:
+        """Metadata options about this model."""
+
         verbose_name = "Hashed Discord ID of Member that has had a one-off Introduction reminder sent to their DMs"
         verbose_name_plural = "Hashed Discord IDs of Members that have had a one-off Introduction reminder sent to their DMs"
 
 
 class SentGetRolesReminderMember(HashedDiscordMember):
     """
-        Model to represent a Discord server member (identified by their hashed
-        Discord member ID) that has already been sent a reminder to get their
-        opt-in roles within the CSS Discord server.
+    Represents a Discord server member that has already been sent an opt-in roles reminder.
 
-        Storing this prevents Discord members from being sent the same reminder
-        to get their opt-in roles multiple times, even if they have still not
-        yet got their opt-in roles.
+    The opt-in roles reminder suggests to the member to visit the #roles channel to claim some
+    opt-in roles within the CSS Discord server.
+    The Discord server member is identified by their hashed Discord member ID.
+
+    Storing this prevents Discord members from being sent the same reminder to get their
+    opt-in roles multiple times, even if they have still not yet got their opt-in roles.
     """
 
     class Meta:
+        """Metadata options about this model."""
+
         verbose_name = "Hashed Discord ID of Member that has had a \"Get Roles\" reminder sent to their DMs"
         verbose_name_plural = "Hashed Discord IDs of Members that have had a \"Get Roles\" reminder sent to their DMs"
 
 
 class UoBMadeMember(AsyncBaseModel):
     """
-        Model to represent a CSS member (identified by their hashed Uob ID) that
-        has successfully been given the Member role on the CSS Discord server.
+    Represents a CSS member that has successfully been given the Member role.
 
-        Storing the successfully made members prevents multiple people from
-        getting the Member role using the same purchased society membership.
+    The CSS member is identified by their hashed UoB ID.
+
+    Storing the successfully made members prevents multiple people from getting the Member role
+    using the same purchased society membership.
     """
 
     hashed_uob_id = models.CharField(
@@ -79,29 +87,34 @@ class UoBMadeMember(AsyncBaseModel):
     )
 
     class Meta:
+        """Metadata options about this model."""
+
         verbose_name = "Hashed UoB ID of User that has been made Member"
         verbose_name_plural = "Hashed UoB IDs of Users that have been made Member"
 
     def __repr__(self) -> str:
+        """Generate a developer-focused representation of the member's hashed UoB ID."""
         return f"<{self._meta.verbose_name}: \"{self.hashed_uob_id}\">"
 
     def __setattr__(self, name: str, value: Any) -> None:
+        """Set the attribute name to the given value, with special cases for proxy fields."""
         if name == "uob_id":
             self.hashed_uob_id = self.hash_uob_id(value)
         else:
             super().__setattr__(name, value)
 
     def __str__(self) -> str:
+        """Generate the string representation of this UoBMadeMember."""
         return f"{self.hashed_uob_id}"
 
     @staticmethod
     def hash_uob_id(uob_id: Any) -> str:
         """
-            Hashes the provided uob_id into the format that hashed_uob_ids
-            are stored in the database when new UoBMadeMember objects are
-            created.
-        """
+        Hash the provided uob_id.
 
+        The uob_id value is hashed into the format that hashed_uob_ids are stored in the
+        database when new UoBMadeMember objects are created.
+        """
         if not isinstance(uob_id, (str, int)) or not re.match(r"\A\d{7}\Z", str(uob_id)):
             raise ValueError(f"\"{uob_id}\" is not a valid UoB Student ID.")
 
@@ -110,11 +123,12 @@ class UoBMadeMember(AsyncBaseModel):
     @classmethod
     def get_proxy_field_names(cls) -> set[str]:
         """
-            Returns a set of names of extra properties of this model that can
-            be saved to the database, even though those fields don't actually
-            exist. They are just proxy fields.
-        """
+        Return the set of extra names of properties that can be saved to the database.
 
+        These are proxy fields because their values are not stored as object attributes,
+        however, they can be used as a reference to a real attribute when saving objects to the
+        database.
+        """
         return super().get_proxy_field_names() | {"uob_id"}
 
 
@@ -192,6 +206,7 @@ class DiscordReminder(AsyncBaseModel):
 
     @property
     def channel_id(self) -> int:
+        """The ID of the channel that the reminder needs to be sent in."""
         return int(self._channel_id)
 
     @channel_id.setter
@@ -199,6 +214,8 @@ class DiscordReminder(AsyncBaseModel):
         self._channel_id = str(channel_id)
 
     class Meta:
+        """Metadata options about this model."""
+
         verbose_name = "A Reminder for a Discord Member"
         verbose_name_plural = "Reminders for Discord Members"
         constraints = [
@@ -209,6 +226,7 @@ class DiscordReminder(AsyncBaseModel):
         ]
 
     def __repr__(self) -> str:
+        """Generate a developer-focused representation of this DiscordReminder's attributes."""
         return f"<{self._meta.verbose_name}: \"{self.hashed_member_id}\", \"{self.channel_id}\", \"{self.send_datetime}\">"
 
     def __setattr__(self, name: str, value: Any) -> None:
@@ -218,6 +236,7 @@ class DiscordReminder(AsyncBaseModel):
             super().__setattr__(name, value)
 
     def __str__(self) -> str:
+        """Generate the string representation of this DiscordReminder."""
         construct_str: str = f"{self.hashed_member_id}"
 
         if self.message:
@@ -227,11 +246,11 @@ class DiscordReminder(AsyncBaseModel):
 
     def format_message(self, user_mention: str | None) -> str:
         """
-            Returns the formatted message stored by this reminder, adds a
-            mention to the user that requested the reminder if passed in from
-            the calling context.
-        """
+        Return the formatted message stored by this reminder.
 
+        Adds a mention to the member that requested the reminder, if passed in from the calling
+        context.
+        """
         constructed_message: str = "This is your reminder"
 
         if user_mention:
@@ -260,9 +279,11 @@ class DiscordReminder(AsyncBaseModel):
     @classmethod
     def get_proxy_field_names(cls) -> set[str]:
         """
-            Returns a set of names of extra properties of this model that can
-            be saved to the database, even though those fields don't actually
-            exist. They are just proxy fields.
+        Return the set of extra names of properties that can be saved to the database.
+
+        These are proxy fields because their values are not stored as object attributes,
+        however, they can be used as a reference to a real attribute when saving objects to the
+        database.
         """
 
         return super().get_proxy_field_names() | {"member_id", "channel_id"}
@@ -270,17 +291,17 @@ class DiscordReminder(AsyncBaseModel):
 
 class LeftMember(AsyncBaseModel):
     """
-        Model to represent a list of roles that a Discord server member had when
-        they left the CSS Discord server.
+    Represents a list of roles that a member had when they left the CSS Discord server.
 
-        Storing this allows the stats commands to calculate which roles were
-        most often held by Discord members when they left the CSS Discord server.
+    Storing this allows the stats commands to calculate which roles were most often held by
+    Discord members when they left the CSS Discord server.
     """
 
     _roles = models.JSONField("List of roles a Member had")
 
     @property
     def roles(self) -> set[str]:
+        """Retrieve the set of roles the member had when they left the CSS Discord server."""
         return set(self._roles)
 
     @roles.setter
@@ -288,24 +309,27 @@ class LeftMember(AsyncBaseModel):
         self._roles = list(roles)
 
     class Meta:
+        """Metadata options about this model."""
+
         verbose_name = "A List of Roles that a Member had when they left the CSS Discord server"
         verbose_name_plural = "Lists of Roles that Members had when they left the CSS Discord server"
 
     def clean(self) -> None:
         """
-            Performs extra model-wide validation after clean() has been called
-            on every field by self.clean_fields.
-        """
+        Perform extra model-wide validation.
 
+        This runs after clean() has been called on every field by self.clean_fields.
+        """
         if any(not isinstance(role, str) for role in self.roles):
             raise ValidationError({"_roles": "Roles must be a set of strings representing the role names."}, code="invalid")
 
     @classmethod
     def get_proxy_field_names(cls) -> set[str]:
         """
-            Returns a set of names of extra properties of this model that can
-            be saved to the database, even though those fields don't actually
-            exist. They are just proxy fields.
-        """
+        Return the set of extra names of properties that can be saved to the database.
 
+        These are proxy fields because their values are not stored as object attributes,
+        however, they can be used as a reference to a real attribute when saving objects to the
+        database.
+        """
         return super().get_proxy_field_names() | {"roles"}

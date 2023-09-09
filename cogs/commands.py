@@ -1,7 +1,4 @@
-"""
-    Contains the definition & callbacks for slash-commands &
-    user-context-commands.
-"""
+"""Contains the definition & callbacks for slash-commands & user-context-commands."""
 
 import logging
 import math
@@ -28,9 +25,11 @@ from utils import TeXBot
 
 class ApplicationCommandsCog(TeXBotCog):
     """
-        Base cog container class that defines methods/class attributes that need
-        to be accessible to all child application commands cog container classes
-        (slash-commands & context-based-commands).
+    Base application command cog container class.
+
+    Defines the methods and class attributes that need to be accessible to all
+    child application commands cog container classes
+    (slash-commands & context-based-commands).
     """
 
     ERROR_ACTIVITIES: dict[str, str] = {
@@ -49,10 +48,11 @@ class ApplicationCommandsCog(TeXBotCog):
 
     async def send_error(self, ctx: discord.ApplicationContext, error_code: str | None = None, command_name: str | None = None, message: str | None = None, logging_message: str | None = None) -> None:
         """
-            Constructs & formats an error message from the given details, then
-            sends it as the response to the given application command context.
-        """
+        Construct & format an error message from the given details.
 
+        The constructed error message is then sent as the response to the given
+        application command context.
+        """
         construct_error_message: str = ":warning:There was an error"
         construct_logging_error_message: str = ""
 
@@ -89,11 +89,7 @@ class ApplicationCommandsCog(TeXBotCog):
             logging.error(f"{construct_logging_error_message} {logging_message}")
 
     async def _induct(self, ctx: discord.ApplicationContext, induction_member: discord.Member, guild: discord.Guild, silent: bool) -> None:
-        """
-            Internal method to perform the actual induction process of a member
-            (irrelevant of where this process was requested from).
-        """
-
+        """Perform the actual process of inducting a member by giving them the Guest role."""
         guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
             await self.send_error(
@@ -188,10 +184,7 @@ class ApplicationCommandsCog(TeXBotCog):
 
 
 class SlashCommandsCog(ApplicationCommandsCog):
-    """
-        Cog container class that defines all subroutines that will be available,
-        under the bot, as slash-commands.
-    """
+    """Cog container class that defines all subroutines, available as slash-commands."""
 
     stats: discord.SlashCommandGroup = discord.SlashCommandGroup(
         "stats",
@@ -205,10 +198,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
     @staticmethod
     async def remind_me_autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> set[str]:
         """
-            Autocomplete callable that generates the common delay input values,
-            that may be entered by users, for the "remind_me" slash-command.
-        """
+        Autocomplete callable that generates the common delay input values.
 
+        The delay entered by a member in the "remind_me" slash-command must be within this set
+        of common delay input values.
+        """
         if not ctx.value:
             return {"in 5 minutes", "1 hours time", "1min", "30 secs", "2 days time", "22/9/2040", "5h"}
 
@@ -293,11 +287,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
     @staticmethod
     async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:
         """
-            Autocomplete callable that generates the set of available selectable
-            channels, for the user, in any slash-command options that have a
-            channel input-type.
-        """
+        Autocomplete callable that generates the set of available selectable channels.
 
+        The list of available selectable channels is unique to each member, and is used in any
+        slash-command options that have a channel input-type.
+        """
         if not ctx.interaction.user:
             return set()
 
@@ -323,11 +317,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
     @staticmethod
     async def archive_autocomplete_get_categories(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:
         """
-            Autocomplete callable that generates the set of available selectable
-            categories, for the user, in any of the "archive" slash-command
-            options that have a category input-type.
-        """
+        Autocomplete callable that generates the set of available selectable categories.
 
+        The list of available selectable categories is unique to each member, and is used in
+        any of the "archive" slash-command options that have a category input-type.
+        """
         if not ctx.interaction.user:
             return set()
 
@@ -352,11 +346,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
     @staticmethod
     async def induct_autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:
         """
-            Autocomplete callable that generates the set of available selectable
-            members, in any of the "induct" slash-command options that have a
-            member input-type.
-        """
+        Autocomplete callable that generates the set of available selectable members.
 
+        This list of selectable members is used in any of the "induct" slash-command options
+        that have a member input-type.
+        """
         try:
             guild: discord.Guild = ctx.bot.css_guild
         except GuildDoesNotExist:
@@ -375,11 +369,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             return {discord.OptionChoice(name=member.name, value=str(member.id)) for member in members}
 
     async def _delete_all(self, ctx: discord.ApplicationContext, command_name: str, delete_model: type[Model]) -> None:
-        """
-            Internal method to perform the actual deletion process of all
-            instances of the given model class.
-        """
-
+        """Perform the actual deletion process of all instances of the given model class."""
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -420,8 +410,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
     @discord.slash_command(description="Replies with Pong!")  # type: ignore
     async def ping(self, ctx: discord.ApplicationContext) -> None:
-        """ Definition & callback response of the "ping" command. """
-
+        """Definition & callback response of the "ping" command."""
         await ctx.respond(
             random.choices(
                 [
@@ -435,8 +424,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
     @discord.slash_command(description="Displays information about the source code of this bot.")  # type: ignore
     async def source(self, ctx: discord.ApplicationContext) -> None:
-        """ Definition & callback response of the "source" command. """
-
+        """Definition & callback response of the "source" command."""
         await ctx.respond(
             "TeX is an open-source project made specifically for the CSS Discord! You can see and contribute to the source code at https://github.com/CSSUoB/TeX-Bot-Py-V2",
             ephemeral=True
@@ -461,12 +449,10 @@ class SlashCommandsCog(ApplicationCommandsCog):
     )
     async def remind_me(self, ctx: discord.ApplicationContext, delay: str, message: str) -> None:
         """
-            Definition & callback response of the "remind_me" command.
+        Definition & callback response of the "remind_me" command.
 
-            The "remind_me" command responds with the given message after the
-            specified time.
+        The "remind_me" command responds with the given message after the specified time.
         """
-
         parsed_time: tuple[time.struct_time, int] = parsedatetime.Calendar().parseDT(delay, tzinfo=timezone.get_current_timezone())
 
         if parsed_time[1] == 0:
@@ -525,12 +511,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
     )
     async def write_roles(self, ctx: discord.ApplicationContext) -> None:
         """
-            Definition & callback response of the "write_roles" command.
+        Definition & callback response of the "write_roles" command.
 
-            The "write_roles" command populates the "#roles" channel with the
-            correct messages defined in the messages.json file.
+        The "write_roles" command populates the "#roles" channel with the correct messages
+        defined in the messages.json file.
         """
-
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -623,12 +608,10 @@ class SlashCommandsCog(ApplicationCommandsCog):
     )
     async def edit_message(self, ctx: discord.ApplicationContext, str_channel_id: str, str_message_id: str, new_message_content: str) -> None:
         """
-            Definition & callback response of the "edit_message" command.
+        Definition & callback response of the "edit_message" command.
 
-            The "write_roles" command edits a message sent by TeX-Bot to the
-            value supplied.
+        The "write_roles" command edits a message sent by TeX-Bot to the value supplied.
         """
-
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -744,12 +727,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
     )
     async def induct(self, ctx: discord.ApplicationContext, str_induct_member_id: str, silent: bool) -> None:
         """
-            Definition & callback response of the "induct" command.
+        Definition & callback response of the "induct" command.
 
-            The "induct" command inducts a given member into the CSS Discord
-            server by giving them the "Guest" role.
+        The "induct" command inducts a given member into the CSS Discord server by giving them
+        the "Guest" role.
         """
-
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -799,12 +781,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
     )
     async def make_member(self, ctx: discord.ApplicationContext, uob_id: str) -> None:
         """
-            Definition & callback response of the "make_member" command.
+        Definition & callback response of the "make_member" command.
 
-            The "make_member" command validates that the given member has a
-            valid CSS membership then gives the member the "Member" role.
+        The "make_member" command validates that the given member has a valid CSS membership
+        then gives the member the "Member" role.
         """
-
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -949,12 +930,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
     )
     async def channel_stats(self, ctx: discord.ApplicationContext, str_channel_id: str) -> None:
         """
-            Definition & callback response of the "channel_stats" command.
+        Definition & callback response of the "channel_stats" command.
 
-            The "channel_stats" command sends a graph of the stats about
-            messages sent in the given channel.
+        The "channel_stats" command sends a graph of the stats about messages sent in the given
+        channel.
         """
-
         channel_id: int = ctx.channel_id
 
         if str_channel_id:
@@ -1050,12 +1030,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
     )
     async def server_stats(self, ctx: discord.ApplicationContext) -> None:
         """
-            Definition & callback response of the "server_stats" command.
+        Definition & callback response of the "server_stats" command.
 
-            The "server_stats" command sends a graph of the stats about
-            messages sent in the whole of the CSS Discord server.
+        The "server_stats" command sends a graph of the stats about messages sent in the whole
+        of the CSS Discord server.
         """
-
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -1160,12 +1139,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
     )
     async def user_stats(self, ctx: discord.ApplicationContext) -> None:
         """
-            Definition & callback response of the "user_stats" command.
+        Definition & callback response of the "user_stats" command.
 
-            The "user_stats" command sends a graph of the stats about
-            messages sent by the given member.
+        The "user_stats" command sends a graph of the stats about messages sent by the given
+        member.
         """
-
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -1251,12 +1229,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
     )
     async def left_member_stats(self, ctx: discord.ApplicationContext) -> None:
         """
-            Definition & callback response of the "left_member_stats" command.
+        Definition & callback response of the "left_member_stats" command.
 
-            The "left_member_stats" command sends a graph of the stats about
-            the roles that members had when they left the CSS Discord server.
+        The "left_member_stats" command sends a graph of the stats about the roles that members
+        had when they left the CSS Discord server.
         """
-
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -1321,15 +1298,36 @@ class SlashCommandsCog(ApplicationCommandsCog):
         name="reminders", description="Deletes all Reminders from the backend database."
     )
     async def delete_all_reminders(self, ctx: discord.ApplicationContext) -> None:
-        await self._delete_all(ctx, command_name="delete_all_reminders", delete_model=DiscordReminder)
+        """
+        Definition & callback response of the "delete_all_uob_made_members" command.
+
+        The "delete_all_uob_made_members" uses the _delete_all() function to delete all
+         UoBMadeMember instance objects stored in the database.
+        """
+        await self._delete_all(
+            ctx,
+            command_name="delete_all_reminders",
+            delete_model=DiscordReminder
+        )
 
     @delete_all.command(
-        name="uob-made-members", description="Deletes all UoB Made Members from the backend database."
+        name="uob-made-members",
+        description="Deletes all UoB Made Members from the backend database."
     )
     async def delete_all_uob_made_members(self, ctx: discord.ApplicationContext) -> None:
-        await self._delete_all(ctx, command_name="delete_all_uob_made_members", delete_model=UoBMadeMember)
+        """
+        Definition & callback response of the "delete_all_uob_made_members" command.
 
-    @discord.slash_command(  # type: ignore
+        The "delete_all_uob_made_members" uses the _delete_all() function to delete all
+         UoBMadeMember instance objects stored in the database.
+        """
+        await self._delete_all(
+            ctx,
+            command_name="delete_all_uob_made_members",
+            delete_model=UoBMadeMember
+        )
+
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="archive",
         description="Archives the selected category."
     )
@@ -1343,12 +1341,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
     )
     async def archive(self, ctx: discord.ApplicationContext, str_category_id: str) -> None:
         """
-            Definition & callback response of the "archive" command.
+        Definition & callback response of the "archive" command.
 
-            The "archive" command hides a given category from view of casual
-            members unless they have the "Archivist" role.
+        The "archive" command hides a given category from view of casual members unless they
+        have the "Archivist" role.
         """
-
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
@@ -1535,10 +1532,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
 
 class UserCommandsCog(ApplicationCommandsCog):
-    """
-        Cog container class that defines all subroutines that will be available,
-        under the bot, as user-context-commands.
-    """
+    """Cog container class for all subroutines, available as user-context-commands."""
 
     async def _user_command_induct(self, ctx: discord.ApplicationContext, member: discord.Member, silent: bool) -> None:
         """
@@ -1563,34 +1557,31 @@ class UserCommandsCog(ApplicationCommandsCog):
     @discord.user_command(name="Induct User")  # type: ignore
     async def non_silent_induct(self, ctx: discord.ApplicationContext, member: discord.Member) -> None:
         """
-            Definition & callback response of the "non_silent_induct" user-context-command.
+        Definition & callback response of the "non_silent_induct" user-context-command.
 
-            The "non_silent_induct" command executes the same process as the
-            "induct" slash-command, and thus inducts a given member into the
-            CSS Discord server by giving them the "Guest" role, only without
-            broadcasting a welcome message.
+        The "non_silent_induct" command executes the same process as the
+        "induct" slash-command, and thus inducts a given member into the CSS Discord server by
+        giving them the "Guest" role, only without broadcasting a welcome message.
         """
-
         await self._user_command_induct(ctx, member, silent=False)
 
     @discord.user_command(name="Silently Induct User")  # type: ignore
     async def silent_induct(self, ctx: discord.ApplicationContext, member: discord.Member) -> None:
         """
-            Definition & callback response of the "silent_induct" user-context-command.
+        Definition & callback response of the "silent_induct" user-context-command.
 
-            The "silent_induct" command executes the same process as the
-            "induct" slash-command, and thus inducts a given member into the
-            CSS Discord server by giving them the "Guest" role.
+        The "silent_induct" command executes the same process as the "induct" slash-command,
+        and thus inducts a given member into the CSS Discord server by giving them the
+        "Guest" role.
         """
-
         await self._user_command_induct(ctx, member, silent=True)
 
 
 def setup(bot: TeXBot) -> None:
     """
-        Setup callable to statically add the commands cogs to the bot at
-        startup.
-    """
+    Add the commands cogs to the bot.
 
+    This is called at startup, to load all the cogs onto the bot.
+    """
     bot.add_cog(SlashCommandsCog(bot))
     bot.add_cog(UserCommandsCog(bot))
