@@ -150,7 +150,7 @@ class ApplicationCommandsCog(TeXBotCog):
             await self.send_error(
                 ctx,
                 command_name="induct",
-                message=f"Member cannot be inducted because they are a bot."
+                message="Member cannot be inducted because they are a bot."
             )
             return
 
@@ -204,7 +204,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
     )
 
     @staticmethod
-    async def remind_me_autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> set[str]:
+    async def remind_me_autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> set[str]:  # noqa: C901
         """
         Autocomplete callable that generates the common delay input values.
 
@@ -467,7 +467,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.send_error(
                 ctx,
                 command_name="remind_me",
-                message=f"The value provided in the \"delay\" argument was not a time/date."
+                message="The value provided in the \"delay\" argument was not a time/date."
             )
             return
 
@@ -906,7 +906,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
             await interaction_member.add_roles(
                 member_role,  # type: ignore
-                reason=f"TeX Bot slash-command: \"/makemember\""
+                reason="TeX Bot slash-command: \"/makemember\""
             )
 
             try:
@@ -1013,7 +1013,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.send_error(
                 ctx,
                 command_name="channel_stats",
-                message=f"There are not enough messages sent in this channel."
+                message="There are not enough messages sent in this channel."
             )
             return
 
@@ -1212,7 +1212,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.send_error(
                 ctx,
                 command_name="user_stats",
-                message=f"You have not sent enough messages."
+                message="You have not sent enough messages."
             )
             return
 
@@ -1283,7 +1283,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.send_error(
                 ctx,
                 command_name="left_member_stats",
-                message=f"Not enough data about members that have left the server."
+                message="Not enough data about members that have left the server."
             )
             return
 
@@ -1303,7 +1303,8 @@ class SlashCommandsCog(ApplicationCommandsCog):
         )
 
     @delete_all.command(
-        name="reminders", description="Deletes all Reminders from the backend database."
+        name="reminders",
+        description="Deletes all Reminders from the backend database."
     )
     async def delete_all_reminders(self, ctx: discord.ApplicationContext) -> None:
         """
@@ -1531,7 +1532,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 await self.send_error(
                     ctx,
                     command_name="archive",
-                    message=f"Bot does not have access to the channels in the selected category."
+                    message="Bot does not have access to the channels in the selected category."
                 )
                 logging.error(f"Bot did not have access to the channels in the selected category: {category.name}.")
                 return

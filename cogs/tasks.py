@@ -89,7 +89,7 @@ class TasksCog(TeXBotCog):
                     return
 
                 await channel.send(
-                    f"**Sorry it's a bit late! (I'm just catching up with some reminders I missed!)**\n\n{reminder.format_message(user_mention)}"
+                    f"**Sorry it's a bit late! (I'm just catching up with some reminders I missed!)**\n\n{reminder.get_formatted_message(user_mention)}"
                 )
 
                 await reminder.adelete()

@@ -37,7 +37,7 @@ class BaseDoesNotExistError(ValueError, BaseError, abc.ABC):
     """Exception class to raise when a required Discord entity is missing."""
 
     @staticmethod
-    def format_does_not_exist_with_dependencies(value: str, does_not_exist_type: str, dependant_commands: Collection[str], dependant_tasks: Collection[str], dependant_events: Collection[str]) -> str:
+    def format_does_not_exist_with_dependencies(value: str, does_not_exist_type: str, dependant_commands: Collection[str], dependant_tasks: Collection[str], dependant_events: Collection[str]) -> str:  # noqa: C901
         """Format a string, stating that the given Discord entity does not exist."""
         if not dependant_commands and not dependant_tasks and not dependant_events:
             raise ValueError("The arguments \"dependant_commands\" & \"dependant_tasks\" cannot all be empty.")
@@ -206,7 +206,11 @@ class CommitteeRoleDoesNotExist(RoleDoesNotExist):
     def __init__(self, message: str | None = None) -> None:
         """Initialize a new RoleDoesNotExist exception with role_name=Committee."""
         # noinspection SpellCheckingInspection
-        super().__init__(message, role_name="Committee", dependant_commands={"writeroles", "editmessage", "induct", "archive", "delete-all"})
+        super().__init__(
+            message,
+            role_name="Committee",
+            dependant_commands={"writeroles", "editmessage", "induct", "archive", "delete-all"}
+        )
 
 
 class GuestRoleDoesNotExist(RoleDoesNotExist):
@@ -215,7 +219,12 @@ class GuestRoleDoesNotExist(RoleDoesNotExist):
     def __init__(self, message: str | None = None) -> None:
         """Initialize a new RoleDoesNotExist exception with role_name=Guest."""
         # noinspection SpellCheckingInspection
-        super().__init__(message, role_name="Guest", dependant_commands={"induct", "makemember", "stats", "archive"}, dependant_tasks={"kick_no_introduction_members", "introduction_reminder"})
+        super().__init__(
+            message,
+            role_name="Guest",
+            dependant_commands={"induct", "makemember", "stats", "archive"},
+            dependant_tasks={"kick_no_introduction_members", "introduction_reminder"}
+        )
 
 
 class MemberRoleDoesNotExist(RoleDoesNotExist):

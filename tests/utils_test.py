@@ -54,7 +54,7 @@ class BaseTestArgumentParser:
         The command line outputs are stored in class variables for later access.
         """
         if not re.match(r"\A[a-zA-Z0-9._\-+!\"' ]*\Z", util_function_name):  # NOTE: Because executing utils.py from a command-line subprocess requires it to be spawned as a shell, security issues can occur. Therefore loose validation checks are required for the values of util_function_name & arguments (see https://stackoverflow.com/a/29023432/14403974)
-            raise TypeError(f"util_function_name must be a valid function name for the utils.py command-line program.")
+            raise TypeError("util_function_name must be a valid function name for the utils.py command-line program.")
 
         if any(not re.match(r"\A[a-zA-Z0-9._\-+!\"' ]*\Z", argument) for argument in arguments):
             raise ValueError("All arguments must be valid arguments for the utils.py command-line program.")
@@ -248,6 +248,7 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
             "utils.py generate_invite_url: error: discord_guild_id must be"
             " a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
         )
+
         cls.execute_util_function(
             "generate_invite_url",
             str(
@@ -269,6 +270,10 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
         extra_argument: str = str(
             random.randint(10000000000000000, 99999999999999999999)
         )
+        expected_error_message: str = (
+            "utils.py: error:"
+            f" unrecognized arguments: {extra_argument}"
+        )
 
         cls.execute_util_function(
             "generate_invite_url",
@@ -284,4 +289,4 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
         assert cls.parser_output_return_code != 0
         assert not cls.parser_output_stdout
         assert "usage: utils.py [-h] {generate_invite_url}" in cls.parser_output_stderr
-        assert f"utils.py: error: unrecognized arguments: {extra_argument}" in cls.parser_output_stderr
+        assert expected_error_message in cls.parser_output_stderr

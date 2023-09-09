@@ -133,10 +133,6 @@ class UoBMadeMember(AsyncBaseModel):
 
 
 class DiscordReminder(AsyncBaseModel):
-    """
-        Model to represent a reminder that a Discord server member has requested
-        to be sent in the future.
-    """
 
     class ChannelType(models.IntegerChoices):
         """
@@ -159,6 +155,7 @@ class DiscordReminder(AsyncBaseModel):
 
         def __str__(self) -> str:
             return self.label
+    """Represents a reminder that a Discord server member has requested to be sent to them."""
 
     hashed_member_id = models.CharField(
         "Hashed Discord Member ID",
