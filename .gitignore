@@ -17,6 +17,9 @@ pids
 # pytest cache
 .pytest_cache
 
+# ruff cache
+.ruff_cache
+
 # Python bytecode cache
 __pycache__
 
