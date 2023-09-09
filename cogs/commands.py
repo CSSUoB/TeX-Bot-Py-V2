@@ -177,7 +177,7 @@ class ApplicationCommandsCog(TeXBotCog):
             )
 
         await induction_member.add_roles(
-            guest_role,  # type: ignore
+            guest_role,
             reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\""
         )
 
@@ -185,7 +185,7 @@ class ApplicationCommandsCog(TeXBotCog):
 
         if applicant_role and applicant_role in induction_member.roles:
             await induction_member.remove_roles(
-                applicant_role,  # type: ignore
+                applicant_role,
                 reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\""
             )
 
@@ -418,7 +418,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         await ctx.respond(f"""All {"Reminders" if delete_model == DiscordReminder else "UoB Made Members" if delete_model == UoBMadeMember else "objects"} deleted successfully.""", ephemeral=True)
 
-    @discord.slash_command(description="Replies with Pong!")  # type: ignore
+    @discord.slash_command(description="Replies with Pong!")  # type: ignore[no-untyped-call, misc]
     async def ping(self, ctx: discord.ApplicationContext) -> None:
         """Definition & callback response of the "ping" command."""
         await ctx.respond(
@@ -432,7 +432,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             ephemeral=True
         )
 
-    @discord.slash_command(description="Displays information about the source code of this bot.")  # type: ignore
+    @discord.slash_command(description="Displays information about the source code of this bot.")  # type: ignore[no-untyped-call, misc]
     async def source(self, ctx: discord.ApplicationContext) -> None:
         """Definition & callback response of the "source" command."""
         await ctx.respond(
@@ -440,18 +440,18 @@ class SlashCommandsCog(ApplicationCommandsCog):
             ephemeral=True
         )
 
-    @discord.slash_command(  # type: ignore
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="remindme",
         description="Responds with the given message after the specified time."
     )
-    @discord.option(  # type: ignore
+    @discord.option(  # type: ignore[no-untyped-call, misc]
         name="delay",
         input_type=str,
         description="The amount of time to wait before reminding you",
         required=True,
-        autocomplete=discord.utils.basic_autocomplete(remind_me_autocomplete_get_delays),  # type: ignore
+        autocomplete=discord.utils.basic_autocomplete(remind_me_autocomplete_get_delays),  # type: ignore[arg-type]
     )
-    @discord.option(  # type: ignore
+    @discord.option(  # type: ignore[no-untyped-call, misc]
         name="message",
         input_type=str,
         description="The message you want to be reminded with.",
@@ -515,7 +515,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         await reminder.adelete()
 
     # noinspection SpellCheckingInspection
-    @discord.slash_command(  # type: ignore
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="writeroles",
         description="Populates #roles with the correct messages."
     )
@@ -586,19 +586,19 @@ class SlashCommandsCog(ApplicationCommandsCog):
         await ctx.respond("All messages sent successfully.", ephemeral=True)
 
     # noinspection SpellCheckingInspection
-    @discord.slash_command(  # type: ignore
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="editmessage",
         description="Edits a message sent by TeX-Bot to the value supplied."
     )
-    @discord.option(  # type: ignore
+    @discord.option(  # type: ignore[no-untyped-call, misc]
         name="channel",
         description="The channel that the message, you wish to edit, is in.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore[arg-type]
         required=True,
         parameter_name="str_channel_id"
     )
-    @discord.option(  # type: ignore
+    @discord.option(  # type: ignore[no-untyped-call, misc]
         name="message_id",
         input_type=str,
         description="The ID of the message you wish to edit.",
@@ -607,7 +607,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         min_length=17,
         parameter_name="str_message_id"
     )
-    @discord.option(  # type: ignore
+    @discord.option(  # type: ignore[no-untyped-call, misc]
         name="text",
         input_type=str,
         description="The new text you want the message to say.",
@@ -716,19 +716,19 @@ class SlashCommandsCog(ApplicationCommandsCog):
         else:
             await ctx.respond("Message edited successfully.", ephemeral=True)
 
-    @discord.slash_command(  # type: ignore
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="induct",
         description="Gives a user the @Guest role, then sends a message in #general saying hello."
     )
-    @discord.option(  # type: ignore
+    @discord.option(  # type: ignore[no-untyped-call, misc]
         name="user",
         description="The user to induct.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(induct_autocomplete_get_members),  # type: ignore
+        autocomplete=discord.utils.basic_autocomplete(induct_autocomplete_get_members),  # type: ignore[arg-type]
         required=True,
         parameter_name="str_induct_member_id"
     )
-    @discord.option(  # type: ignore
+    @discord.option(  # type: ignore[no-untyped-call, misc]
         name="silent",
         description="Triggers whether a message is sent or not.",
         input_type=bool,
@@ -776,11 +776,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
         await self._induct(ctx, induct_member, guild, silent)
 
     # noinspection SpellCheckingInspection
-    @discord.slash_command(  # type: ignore
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="makemember",
         description="Gives you the Member role when supplied with an appropriate Student ID."
     )
-    @discord.option(  # type: ignore
+    @discord.option(  # type: ignore[no-untyped-call, misc]
         name="studentid",
         description="Your UoB Student ID",
         input_type=str,
@@ -907,7 +907,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
 
             await interaction_member.add_roles(
-                member_role,  # type: ignore
+                member_role,
                 reason="TeX Bot slash-command: \"/makemember\""
             )
 
@@ -930,11 +930,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
         name="channel",
         description="Displays the stats for the current/a given channel."
     )
-    @discord.option(  # type: ignore
+    @discord.option(  # type: ignore[no-untyped-call, misc]
         name="channel",
         description="The channel to display the stats for.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore[arg-type]
         required=False,
         parameter_name="str_channel_id"
     )
@@ -1342,11 +1342,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
         name="archive",
         description="Archives the selected category."
     )
-    @discord.option(  # type: ignore
+    @discord.option(  # type: ignore[no-untyped-call, misc]
         name="category",
         description="The category to archive.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(archive_autocomplete_get_categories),  # type: ignore
+        autocomplete=discord.utils.basic_autocomplete(archive_autocomplete_get_categories),  # type: ignore[arg-type]
         required=True,
         parameter_name="str_category_id"
     )
@@ -1561,7 +1561,7 @@ class UserCommandsCog(ApplicationCommandsCog):
 
         await self._induct(ctx, member, guild, silent)
 
-    @discord.user_command(name="Induct User")  # type: ignore
+    @discord.user_command(name="Induct User")  # type: ignore[no-untyped-call, misc]
     async def non_silent_induct(self, ctx: discord.ApplicationContext, member: discord.Member) -> None:
         """
         Definition & callback response of the "non_silent_induct" user-context-command.
@@ -1572,7 +1572,7 @@ class UserCommandsCog(ApplicationCommandsCog):
         """
         await self._user_command_induct(ctx, member, silent=False)
 
-    @discord.user_command(name="Silently Induct User")  # type: ignore
+    @discord.user_command(name="Silently Induct User")  # type: ignore[no-untyped-call, misc]
     async def silent_induct(self, ctx: discord.ApplicationContext, member: discord.Member) -> None:
         """
         Definition & callback response of the "silent_induct" user-context-command.
