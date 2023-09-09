@@ -244,7 +244,7 @@ class DiscordReminder(AsyncBaseModel):
 
         return construct_str
 
-    def format_message(self, user_mention: str | None) -> str:
+    def get_formatted_message(self, user_mention: str | None) -> str:
         """
         Return the formatted message stored by this reminder.
 

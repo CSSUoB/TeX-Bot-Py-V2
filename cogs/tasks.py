@@ -174,12 +174,12 @@ class TasksCog(TeXBotCog):
 
                 await member.send(
                     content="Hey! It seems like you joined the CSS Discord server but have not yet introduced yourself.\nYou will only get access to the rest of the server after sending an introduction message.",
-                    view=self.Opt_Out_Introduction_Reminders_View(self.bot) if settings["SEND_INTRODUCTION_REMINDERS"] == "interval" else None  # type: ignore
+                    view=self.OptOutIntroductionRemindersView(self.bot) if settings["SEND_INTRODUCTION_REMINDERS"] == "interval" else None  # type: ignore[arg-type]
                 )
 
                 await SentOneOffIntroductionReminderMember.objects.acreate(member_id=member.id)
 
-    class Opt_Out_Introduction_Reminders_View(View):
+    class OptOutIntroductionRemindersView(View):
         """
         A discord.View containing a button to opt-in/out of introduction reminders.
 

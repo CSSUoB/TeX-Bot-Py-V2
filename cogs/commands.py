@@ -500,7 +500,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         if ctx.guild:
             user_mention = ctx.user.mention
 
-        await ctx.send_followup(reminder.format_message(user_mention))
+        await ctx.send_followup(reminder.get_formatted_message(user_mention))
 
         await reminder.adelete()
 
@@ -1535,11 +1535,7 @@ class UserCommandsCog(ApplicationCommandsCog):
     """Cog container class for all subroutines, available as user-context-commands."""
 
     async def _user_command_induct(self, ctx: discord.ApplicationContext, member: discord.Member, silent: bool) -> None:
-        """
-            Internal method to apply required method arguments of the "_induct"
-            method, for this whole cog.
-        """
-
+        """Call the _induct command, providing the required command arguments."""
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
