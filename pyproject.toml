@@ -32,14 +32,14 @@ validators = "^0.22.0"
 beautifulsoup4 = "^4.12.2"
 emoji = "^2.8.0"
 parsedatetime = "^2.6"
-django = "4.2.3"  # NOTE: Stick to this version of Django, until the django-stubs package is updated
+django = "4.2.5"
 matplotlib = "^3.7.1"
 mplcyberpunk = "^0.7.0"
 python-logging-discord-handler = "^0.1.4"
 
 [tool.poetry.group.dev.dependencies]
-mypy = "^1.4"
-django-stubs = {extras = ["compatible-mypy"], version = "4.2.3"}
+mypy = "^1.5"
+django-stubs = {extras = ["compatible-mypy"], version = "4.2.4"}
 pytest = "^7.4"
 pytest-subtests = "^0.11"
 ruff = "^0.0.287"
@@ -59,7 +59,6 @@ warn_unused_ignores = true
 warn_return_any = true
 no_implicit_reexport = true
 strict_equality = true
-strict_concatenate = true
 ignore_missing_imports = true
 warn_unreachable = true
 
