@@ -11,7 +11,7 @@ import os
 import re
 from datetime import timedelta
 from pathlib import Path
-from typing import Any, Callable, Match, Sequence
+from typing import Any, Callable, Final, Match, Sequence
 
 import django
 import dotenv
@@ -23,9 +23,9 @@ from exceptions import (
     MessagesJSONFileValueError,
 )
 
+TRUE_VALUES: Final[frozenset[str]] = frozenset({"true", "1", "t", "y", "yes", "on"})
+FALSE_VALUES: Final[frozenset[str]] = frozenset({"false", "0", "f", "n", "no", "off"})
 
-TRUE_VALUES: set[str] = {"true", "1", "t", "y", "yes", "on"}
-FALSE_VALUES: set[str] = {"false", "0", "f", "n", "no", "off"}
 
 
 class SettingsMeta(type):

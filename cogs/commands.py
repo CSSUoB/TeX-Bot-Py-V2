@@ -5,6 +5,7 @@ import math
 import random
 import re
 import time
+from typing import Final, Mapping
 
 import aiohttp
 import bs4
@@ -40,7 +41,7 @@ class ApplicationCommandsCog(TeXBotCog):
     (slash-commands & context-based-commands).
     """
 
-    ERROR_ACTIVITIES: dict[str, str] = {
+    ERROR_ACTIVITIES: Final[Mapping[str, str]] = {
         "ping": "reply with Pong!!",
         "write_roles": "send messages",
         "edit_message": "edit the message",
@@ -237,6 +238,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
             return {f"in {delay_choice}" for delay_choice in delay_choices}
 
+        match: re.Match[str] | None
         if match := re.match(r"\Ain (?P<partial_date>\d{0,3})\Z", ctx.value):
             for joiner in {"", " "}:
                 for has_s in {"", "s"}:

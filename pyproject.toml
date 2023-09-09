@@ -47,6 +47,7 @@ ruff = "^0.0.287"
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]
 exclude = "db/settings\\.py$"
+extra_checks = true
 warn_unused_configs = true
 disallow_untyped_calls = true
 disallow_untyped_defs = true
