@@ -1,5 +1,6 @@
 """Contains the definition & callbacks for slash-commands & user-context-commands."""
 
+import itertools
 import logging
 import math
 import random
@@ -215,10 +216,10 @@ class SlashCommandsCog(ApplicationCommandsCog):
         if not ctx.value:
             return {"in 5 minutes", "1 hours time", "1min", "30 secs", "2 days time", "22/9/2040", "5h"}
 
-        seconds_choices: set[str] = {"s", "sec", "seconds"}
-        minutes_choices: set[str] = {"m", "min", "mins"}
+        seconds_choices: set[str] = {"s", "sec", "second"}
+        minutes_choices: set[str] = {"m", "min", "minute"}
         hours_choices: set[str] = {"h", "hr", "hour"}
-        days_choices: set[str] = {"d", "day"}
+        days_choices: set[str] = {"d", "dy", "day"}
         weeks_choices: set[str] = {"w", "wk", "week"}
         years_choices: set[str] = {"y", "yr", "year"}
         time_choices: set[str] = seconds_choices | minutes_choices | hours_choices | days_choices | weeks_choices | years_choices
@@ -227,35 +228,25 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         if re.match(r"\Ain? ?\Z", ctx.value):
             time_num: int
-            for time_num in range(1, 150):
-                joiner: str
-                for joiner in {"", " "}:
-                    has_s: str
-                    for has_s in {"", "s"}:
-                        delay_choices.update(f"{time_num}{joiner}{time_choice}{has_s}" for time_choice in time_choices)
-                        delay_choices.update(f"{time_num}{joiner}{time_choice.title()}{has_s}" for time_choice in time_choices)
-                        delay_choices.update(f"{time_num}{joiner}{time_choice.upper()}{has_s}" for time_choice in time_choices)
+            joiner: str
+            has_s: str
+            for time_num, joiner, has_s in itertools.product(range(1, 150), {"", " "}, {"", "s"}):
+                delay_choices.update(f"{time_num}{joiner}{time_choice}{has_s}" for time_choice in time_choices if not (len(time_choice) <= 1 and has_s))
 
             return {f"in {delay_choice}" for delay_choice in delay_choices}
 
         match: re.Match[str] | None
         if match := re.match(r"\Ain (?P<partial_date>\d{0,3})\Z", ctx.value):
-            for joiner in {"", " "}:
-                for has_s in {"", "s"}:
-                    delay_choices.update(f"""{match.group("partial_date")}{joiner}{time_choice}{has_s}""" for time_choice in time_choices)
-                    delay_choices.update(f"""{match.group("partial_date")}{joiner}{time_choice.title()}{has_s}""" for time_choice in time_choices)
-                    delay_choices.update(f"""{match.group("partial_date")}{joiner}{time_choice.upper()}{has_s}""" for time_choice in time_choices)
+            for joiner, has_s in itertools.product({"", " "}, {"", "s"}):
+                delay_choices.update(f"""{match.group("partial_date")}{joiner}{time_choice}{has_s}""" for time_choice in time_choices if not (len(time_choice) <= 1 and has_s))
 
             return {f"in {delay_choice}" for delay_choice in delay_choices}
 
         current_year: int = discord.utils.utcnow().year
 
         if re.match(r"\A\d{1,3}\Z", ctx.value):
-            for joiner in {"", " "}:
-                for has_s in {"", "s"}:
-                    delay_choices.update(f"{joiner}{time_choice}{has_s}" for time_choice in time_choices)
-                    delay_choices.update(f"{joiner}{time_choice.title()}{has_s}" for time_choice in time_choices)
-                    delay_choices.update(f"{joiner}{time_choice.upper()}{has_s}" for time_choice in time_choices)
+            for joiner, has_s in itertools.product({"", " "}, {"", "s"}):
+                delay_choices.update(f"{joiner}{time_choice}{has_s}" for time_choice in time_choices if not (len(time_choice) <= 1 and has_s))
 
             if 1 <= int(ctx.value) <= 31:
                 month: int
@@ -266,6 +257,19 @@ class SlashCommandsCog(ApplicationCommandsCog):
                             delay_choices.add(f"{joiner}{month}{joiner}{year}")
                             if month < 10:
                                 delay_choices.add(f"{joiner}0{month}{joiner}{year}")
+
+        elif match := re.match(r"\A\d{1,3}(?P<ctx_time_choice> ?[A-Za-z]*)\Z", ctx.value):
+            time_choice: str
+            for joiner, time_choice, has_s in itertools.product({"", " "}, time_choices, {"", "s"}):
+                if has_s and len(time_choice) <= 1:
+                    continue
+
+                time_choice = joiner + time_choice + has_s
+
+                slice_size: int
+                for slice_size in range(1, len(time_choice) + 1):
+                    if match.group("ctx_time_choice").casefold() == time_choice[:slice_size]:
+                        delay_choices.add(time_choice[slice_size:])
 
         elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?\Z", ctx.value):
             if 1 <= int(match.group("date")) <= 31:
@@ -292,7 +296,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 for year in range(current_year, current_year + 40):
                     delay_choices.add(f"{year}"[len(match.group("partial_year")):])
 
-        return {f"{ctx.value}{delay_choice}" for delay_choice in delay_choices}
+        return {f"{ctx.value}{delay_choice}".casefold() for delay_choice in delay_choices}
 
     @staticmethod
     async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:
@@ -485,14 +489,14 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 send_datetime=parsed_time[0],
                 channel_type=ctx.channel.type
             )
-        except ValidationError as create_interaction_reminder_opt_out_member_error:
-            if "__all__" not in create_interaction_reminder_opt_out_member_error.message_dict or all("already exists" not in error for error in create_interaction_reminder_opt_out_member_error.message_dict["__all__"]):
+        except ValidationError as create_discord_reminder_error:
+            if "__all__" not in create_discord_reminder_error.message_dict or all("already exists" not in error for error in create_discord_reminder_error.message_dict["__all__"]):
                 await self.send_error(
                     ctx,
                     command_name="remind_me",
                     message="An unrecoverable error occurred."
                 )
-                logging.critical(create_interaction_reminder_opt_out_member_error)
+                logging.critical(f"Error when creating DiscordReminder object: {create_discord_reminder_error}")
                 await self.bot.close()
                 return
             else:
