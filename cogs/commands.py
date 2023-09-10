@@ -414,7 +414,8 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
             return
 
-        await delete_model.objects.all().adelete()
+        # noinspection PyProtectedMember
+        await delete_model._default_manager.all().adelete()
 
         await ctx.respond(f"""All {"Reminders" if delete_model == DiscordReminder else "UoB Made Members" if delete_model == UoBMadeMember else "objects"} deleted successfully.""", ephemeral=True)
 
