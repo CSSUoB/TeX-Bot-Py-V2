@@ -111,7 +111,7 @@ class TestArgumentParser(BaseTestArgumentParser):
         assert f"utils.py: error: argument function: invalid choice: '{invalid_function}' (choose from 'generate_invite_url')" in cls.parser_output_stderr
 
     @classmethod
-    @pytest.mark.parametrize("help_argument", ["-h", "--help"])
+    @pytest.mark.parametrize("help_argument", ("-h", "--help"))
     def test_help(cls, help_argument: str) -> None:
         """Test for the correct response when any of the help arguments are provided."""
         cls.execute_util_function("", help_argument)
@@ -126,7 +126,7 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
     """Test case to unit-test the generate_invite_url argument parser."""
 
     @classmethod
-    def execute_util_function(cls, util_function_name: str, *arguments: str) -> None:
+    def execute_util_function(cls, util_function_name: str, *arguments: str, delete_env_guild_id: bool = True) -> None:
         """
         Execute the given utility function.
 
@@ -136,7 +136,14 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
         if env_file_path.is_file():
             env_file_path = env_file_path.rename(Path("temp.env"))
 
+        old_env_discord_guild_id: str | None = os.environ.get("DISCORD_GUILD_ID")
+        if delete_env_guild_id and old_env_discord_guild_id is not None:
+            del os.environ["DISCORD_GUILD_ID"]
+
         super().execute_util_function(util_function_name, *arguments)
+
+        if delete_env_guild_id and old_env_discord_guild_id is not None:
+            os.environ["DISCORD_GUILD_ID"] = old_env_discord_guild_id
 
         if env_file_path.is_file():
             env_file_path.rename(Path(".env"))
@@ -157,7 +164,8 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
         cls.execute_util_function(
             "generate_invite_url",
-            discord_bot_application_id
+            discord_bot_application_id,
+            delete_env_guild_id=False
         )
 
         if old_env_discord_guild_id:
