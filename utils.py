@@ -307,6 +307,15 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
 
             return self._welcome_channel
 
+        def _bot_has_guild(self, guild_id: int) -> bool:
+            return bool(discord.utils.get(self.guilds, id=guild_id))
+
+        def _guild_has_role(self, role: discord.Role) -> bool:
+            return bool(discord.utils.get(self.css_guild.roles, id=role.id))
+
+        def _guild_has_channel(self, channel: discord.TextChannel) -> bool:
+            return bool(discord.utils.get(self.css_guild.text_channels, id=channel.id))
+
         async def _fetch_text_channel(self, name: str) -> discord.TextChannel | None:
             text_channel: ChannelTypes = discord.utils.get(
                 await self.css_guild.fetch_channels(),

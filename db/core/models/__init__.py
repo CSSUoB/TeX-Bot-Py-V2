@@ -4,6 +4,7 @@ import hashlib
 import re
 from typing import Any
 
+import discord
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
@@ -132,29 +133,7 @@ class UoBMadeMember(AsyncBaseModel):
         return super().get_proxy_field_names() | {"uob_id"}
 
 
-class DiscordReminder(AsyncBaseModel):
-
-    class ChannelType(models.IntegerChoices):
-        """
-            Enum to represent the allowed choices of the channel_type field of a
-            DiscordReminder.
-        """
-
-        TEXT = 0, "text"
-        PRIVATE = 1, "private"
-        VOICE = 2, "voice"
-        GROUP = 3, "group"
-        CATEGORY = 4, "category"
-        NEWS = 5, "news"
-        NEWS_THREAD = 10, "news_thread"
-        PUBLIC_THREAD = 11, "public_thread"
-        PRIVATE_THREAD = 12, "private_thread"
-        STAGE_VOICE = 13, "stage_voice"
-        DIRECTORY = 14, "directory"
-        FORUM = 15, "forum"
-
-        def __str__(self) -> str:
-            return self.label
+class DiscordReminder(HashedDiscordMember):
     """Represents a reminder that a Discord server member has requested to be sent to them."""
 
     hashed_member_id = models.CharField(
@@ -188,9 +167,9 @@ class DiscordReminder(AsyncBaseModel):
             )
         ]
     )
-    channel_type = models.IntegerField(
+    _channel_type = models.IntegerField(
         "Discord Channel Type of the channel that the reminder needs to be sent in",
-        choices=ChannelType.choices,
+        choices=[(channel_type.value, channel_type.name) for channel_type in discord.ChannelType],
         null=True,
         blank=True
     )
@@ -210,6 +189,21 @@ class DiscordReminder(AsyncBaseModel):
     def channel_id(self, channel_id: str | int) -> None:
         self._channel_id = str(channel_id)
 
+    @property
+    def channel_type(self) -> discord.ChannelType:
+        """The type of channel that the reminder needs to be sent in."""
+        return discord.ChannelType(self._channel_type)
+
+    @channel_type.setter
+    def channel_type(self, channel_type: discord.ChannelType | int) -> None:
+        if isinstance(channel_type, discord.ChannelType):
+            try:
+                channel_type = int(channel_type.value)
+            except ValueError:
+                raise TypeError("channel_type must be an integer or an instance of discord.ChannelType.")
+
+        self._channel_type = channel_type
+
     class Meta:
         """Metadata options about this model."""
 
@@ -225,12 +219,6 @@ class DiscordReminder(AsyncBaseModel):
     def __repr__(self) -> str:
         """Generate a developer-focused representation of this DiscordReminder's attributes."""
         return f"<{self._meta.verbose_name}: \"{self.hashed_member_id}\", \"{self.channel_id}\", \"{self.send_datetime}\">"
-
-    def __setattr__(self, name: str, value: Any) -> None:
-        if name == "member_id":
-            self.hashed_member_id = self.hash_member_id(value)
-        else:
-            super().__setattr__(name, value)
 
     def __str__(self) -> str:
         """Generate the string representation of this DiscordReminder."""
@@ -260,19 +248,6 @@ class DiscordReminder(AsyncBaseModel):
 
         return constructed_message
 
-    @staticmethod
-    def hash_member_id(member_id: Any) -> str:
-        """
-            Hashes the provided member_id into the format that hashed_member_ids
-            are stored in the database when new DiscordReminder objects are
-            created.
-        """
-
-        if not isinstance(member_id, (str, int)) or not re.match(r"\A\d{17,20}\Z", str(member_id)):
-            raise ValueError(f"\"{member_id}\" is not a valid Discord member ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)")
-
-        return hashlib.sha256(str(member_id).encode()).hexdigest()
-
     @classmethod
     def get_proxy_field_names(cls) -> set[str]:
         """
@@ -282,8 +257,7 @@ class DiscordReminder(AsyncBaseModel):
         however, they can be used as a reference to a real attribute when saving objects to the
         database.
         """
-
-        return super().get_proxy_field_names() | {"member_id", "channel_id"}
+        return super().get_proxy_field_names() | {"channel_id", "channel_type"}
 
 
 class LeftMember(AsyncBaseModel):
