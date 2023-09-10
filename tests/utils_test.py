@@ -9,9 +9,10 @@ import sys
 from pathlib import Path
 from subprocess import CompletedProcess
 
+import discord
 import pytest
 
-from utils import generate_invite_url
+import utils
 
 
 class TestGenerateInviteURL:
@@ -28,7 +29,7 @@ class TestGenerateInviteURL:
             99999999999999999999
         )
 
-        invite_url: str = generate_invite_url(
+        invite_url: str = utils.generate_invite_url(
             discord_bot_application_id,
             discord_guild_id
         )
@@ -37,6 +38,70 @@ class TestGenerateInviteURL:
             f"https://discord.com/.*={discord_bot_application_id}.*={discord_guild_id}",
             invite_url
         )
+
+
+class TestPlotBarChart:
+    """Test case to unit-test the plot_bar_chart function."""
+
+    def test_bar_chart_generates(self) -> None:
+        """Test that the bar chart generates successfully when valid arguments are passed."""
+        filename: str = "output_chart.png"
+        description: str = "Bar chart of the counted value of different roles."
+
+        bar_chart_image: discord.File = utils.plot_bar_chart(
+            data={"role1": 5, "role2": 7},
+            xlabel="Role Name",
+            ylabel="Counted value",
+            title="Counted Value Of Each Role",
+            filename=filename,
+            description=description,
+            extra_text="This is extra text"
+        )
+
+        assert bar_chart_image.filename == filename
+        assert bar_chart_image.description == description
+        assert bool(bar_chart_image.fp.read()) is True
+
+
+class TestAmountOfTimeFormatter:
+    """Test case to unit-test the amount_of_time_formatter function."""
+
+    @pytest.mark.parametrize(
+        "time_value",
+        (1, 1.0, 0.999999, 1.000001)
+    )
+    def test_format_unit_value(self, time_value: float) -> None:
+        """Test that a value of one only includes the time_scale."""
+        time_scale: str = "day"
+
+        formatted_amount_of_time: str = utils.amount_of_time_formatter(time_value, time_scale)
+
+        assert formatted_amount_of_time == time_scale
+        assert not formatted_amount_of_time.endswith("s")
+
+    # noinspection PyTypeChecker
+    @pytest.mark.parametrize(
+        "time_value",
+        tuple(range(2, 21)) + (2.00, 0, 0.0, 25.0, -0, -0.0, -25.0)
+    )
+    def test_format_integer_value(self, time_value: float) -> None:
+        """Test that an integer value includes the value and time_scale pluralized."""
+        time_scale: str = "day"
+
+        assert utils.amount_of_time_formatter(
+            time_value,
+            time_scale
+        ) == f"{int(time_value)} {time_scale}s"
+
+    @pytest.mark.parametrize("time_value", (3.14159, 0.005, 25.0333333))
+    def test_format_float_value(self, time_value: float) -> None:
+        """Test that a float value includes the rounded value and time_scale pluralized."""
+        time_scale: str = "day"
+
+        assert utils.amount_of_time_formatter(
+            time_value,
+            time_scale
+        ) == f"{time_value:.2f} {time_scale}s"
 
 
 class BaseTestArgumentParser:
@@ -175,7 +240,7 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
         assert cls.parser_output_return_code == 0
         assert not cls.parser_output_stderr
-        assert cls.parser_output_stdout == generate_invite_url(
+        assert cls.parser_output_stdout == utils.generate_invite_url(
             discord_bot_application_id,
             discord_guild_id
         )
@@ -199,7 +264,7 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
         assert cls.parser_output_return_code == 0
         assert not cls.parser_output_stderr
-        assert cls.parser_output_stdout == generate_invite_url(
+        assert cls.parser_output_stdout == utils.generate_invite_url(
             discord_bot_application_id,
             discord_guild_id
         )

@@ -156,14 +156,14 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
         past "2.00 weeks" => past "2 weeks",
         past "3.14159 months" => past "3.14 months"
         """
-        if value == 1:
+        if value == 1 or float(f"{value:.2f}") == 1:
             return f"{time_scale}"
 
-        elif value % 1 == 0:
-            return f"{value} {time_scale}s"
+        elif value % 1 == 0 or float(f"{value:.2f}") % 1 == 0:
+            return f"{int(value)} {time_scale}s"
 
         else:
-            return f"{value:.3} {time_scale}s"
+            return f"{value:.2f} {time_scale}s"
 
 
     class TeXBot(discord.Bot):
@@ -323,7 +323,8 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
                 type=discord.ChannelType.text
             )
 
-            assert isinstance(text_channel, discord.TextChannel) or text_channel is None
+            if text_channel is not None and not isinstance(text_channel, discord.TextChannel):
+                raise TypeError(f"Received non text channel when attempting to fetch {name} text channel.")
 
             return text_channel
 
