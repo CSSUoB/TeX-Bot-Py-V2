@@ -28,4 +28,4 @@ WORKDIR /app
 
 COPY . ./
 
-ENTRYPOINT ["python", "main.py"]
+ENTRYPOINT ["python", "-m", "main"]
