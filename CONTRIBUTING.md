@@ -1,6 +1,6 @@
 # Contributing
 
-A big welcome and thank you for considering contributing to CSS' open source projects! We welcome anybody who wants to contribute, and we actively encourage everyone to do so, especially if you have never contributed before.
+A big welcome and thank you for considering contributing to CSS' open-source projects! We welcome anybody who wants to contribute, and we actively encourage everyone to do so, especially if you have never contributed before.
 
 ## Quick Links
 
@@ -50,6 +50,7 @@ This bot is written in Python using [Pycord](https://pycord.dev) and uses [Disco
 * `cogs/tasks.py`: contains repeating tasks
 * `cogs/utils.py`: contains common utility classes & functions used by the other cog modules
 * `db.core.models`: contains all the database ORM models to interact with storing information longer-term (between individual command events)
+* `tests/`: contains the complete test suite for TeX-Bot-Py-V2, based on the pytest framework
 
 ## Making Your First Contribution
 
@@ -57,7 +58,7 @@ After you have found an issue which needs solving, it's time to start working on
 
 ### Code Style
 
-In general, follow the formatting in the file you are editing. We also have a [Pycharm `codeStyleConfig.xml`](https://www.jetbrains.com/help/pycharm/configuring-code-style.html) file and [mypy](https://www.mypy-lang.org/) type checking which you can configure your IDE to use.
+In general, follow the formatting in the file you are editing. You should also install the development dependencies [ruff](https://ruff.rs/docs) code linting and [mypy](https://www.mypy-lang.org/) type checking which you can configure your IDE to use.
 
 ### Git Commit Messages
 
