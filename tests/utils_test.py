@@ -1,6 +1,4 @@
-"""
-    Test suite for utils.py
-"""
+"""Test suite for utils.py."""
 
 import os
 import random
@@ -8,7 +6,6 @@ import re
 import string
 import subprocess
 import sys
-
 from pathlib import Path
 from subprocess import CompletedProcess
 
@@ -18,15 +15,11 @@ from utils import generate_invite_url
 
 
 class TestGenerateInviteURL:
-    """ Test case to unit-test the low-level URL generation function. """
+    """Test case to unit-test the low-level URL generation function."""
 
     @staticmethod
     def test_url_generates() -> None:
-        """
-            Test that the invite URL generates successfully when valid arguments
-            are passed to the generation function.
-        """
-
+        """Test that the invite URL generates successfully when valid arguments are passed."""
         discord_bot_application_id: str = "".join(
             random.choices(string.digits, k=random.randint(17, 20))
         )
@@ -47,10 +40,7 @@ class TestGenerateInviteURL:
 
 
 class BaseTestArgumentParser:
-    """
-        Parent class to define the execution code used by all ArgumentParser
-        test cases.
-    """
+    """Parent class to define the execution code used by all ArgumentParser test cases."""
 
     parser_output_return_code: int
     parser_output_stdout: str
@@ -59,12 +49,12 @@ class BaseTestArgumentParser:
     @classmethod
     def execute_util_function(cls, util_function_name: str, *arguments: str) -> None:
         """
-            Common function to execute the given utility function and store the
-            command line outputs in class variables.
-        """
+        Execute the given utility function.
 
+        The command line outputs are stored in class variables for later access.
+        """
         if not re.match(r"\A[a-zA-Z0-9._\-+!\"' ]*\Z", util_function_name):  # NOTE: Because executing utils.py from a command-line subprocess requires it to be spawned as a shell, security issues can occur. Therefore loose validation checks are required for the values of util_function_name & arguments (see https://stackoverflow.com/a/29023432/14403974)
-            raise TypeError(f"util_function_name must be a valid function name for the utils.py command-line program.")
+            raise TypeError("util_function_name must be a valid function name for the utils.py command-line program.")
 
         if any(not re.match(r"\A[a-zA-Z0-9._\-+!\"' ]*\Z", argument) for argument in arguments):
             raise ValueError("All arguments must be valid arguments for the utils.py command-line program.")
@@ -95,15 +85,11 @@ class BaseTestArgumentParser:
 
 
 class TestArgumentParser(BaseTestArgumentParser):
-    """ Test case to unit-test the overall argument parser. """
+    """Test case to unit-test the overall argument parser."""
 
     @classmethod
     def test_error_when_no_function(cls) -> None:
-        """
-            Test that the correct error is displayed when no function name is
-            provided.
-        """
-
+        """Test for the correct error when no function name is provided."""
         cls.execute_util_function(util_function_name="")
 
         assert cls.parser_output_return_code != 0
@@ -113,11 +99,7 @@ class TestArgumentParser(BaseTestArgumentParser):
 
     @classmethod
     def test_error_when_invalid_function(cls) -> None:
-        """
-            Test that the correct error is displayed when an invalid function
-            name is provided.
-        """
-
+        """Test for the correct error when an invalid function name is provided."""
         invalid_function: str = "".join(
             random.choices(string.ascii_letters + string.digits, k=7)
         )
@@ -131,11 +113,7 @@ class TestArgumentParser(BaseTestArgumentParser):
     @classmethod
     @pytest.mark.parametrize("help_argument", ["-h", "--help"])
     def test_help(cls, help_argument: str) -> None:
-        """
-            Test that the correct response is given when any of the help
-            arguments are provided.
-        """
-
+        """Test for the correct response when any of the help arguments are provided."""
         cls.execute_util_function("", help_argument)
 
         assert cls.parser_output_return_code == 0
@@ -145,15 +123,15 @@ class TestArgumentParser(BaseTestArgumentParser):
 
 
 class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
-    """ Test case to unit-test the generate_invite_url argument parser. """
+    """Test case to unit-test the generate_invite_url argument parser."""
 
     @classmethod
     def execute_util_function(cls, util_function_name: str, *arguments: str) -> None:
         """
-            Common function to execute the given utility function and store the
-            command line outputs in class variables.
-        """
+        Execute the given utility function.
 
+        The command line outputs are stored in class variables for later access.
+        """
         env_file_path: Path = Path(".env")
         if env_file_path.is_file():
             env_file_path = env_file_path.rename(Path("temp.env"))
@@ -165,11 +143,7 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
     @classmethod
     def test_url_generates_without_discord_guild_id_environment_variable(cls) -> None:
-        """
-            Test that the correct response is given when the discord_guild_id is
-            provided as an environment variable.
-        """
-
+        """Test for the correct response when discord_guild_id is given as an env variable."""
         discord_bot_application_id: str = str(
             random.randint(10000000000000000, 99999999999999999999)
         )
@@ -200,11 +174,7 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
     @classmethod
     def test_url_generates_with_discord_guild_id_environment_variable(cls) -> None:
-        """
-            Test that the correct response is given when the discord_guild_id is
-            provided as a function argument.
-        """
-
+        """Test for the correct response when discord_guild_id is provided as an argument."""
         discord_bot_application_id: str = str(
             random.randint(10000000000000000, 99999999999999999999)
         )
@@ -228,11 +198,7 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
     @classmethod
     def test_error_when_no_discord_bot_application_id(cls) -> None:
-        """
-            Test that the correct error is displayed when no
-            discord_bot_application_id is provided.
-        """
-
+        """Test for the correct error when no discord_bot_application_id is provided."""
         cls.execute_util_function(util_function_name="generate_invite_url")
 
         assert cls.parser_output_return_code != 0
@@ -242,11 +208,7 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
     @classmethod
     def test_error_when_invalid_discord_bot_application_id(cls) -> None:
-        """
-            Test that the correct error is displayed when an invalid
-            discord_bot_application_id is provided.
-        """
-
+        """Test for the correct error with an invalid discord_bot_application_id."""
         invalid_discord_bot_application_id: str = "".join(
             random.choices(string.ascii_letters + string.digits, k=7)
         )
@@ -262,11 +224,7 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
     @classmethod
     def test_error_when_no_discord_guild_id(cls) -> None:
-        """
-            Test that the correct error is displayed when no discord_guild_id is
-            provided.
-        """
-
+        """Test for the correct error when no discord_guild_id is provided."""
         cls.execute_util_function(
             "generate_invite_url",
             "".join(
@@ -281,36 +239,40 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
     @classmethod
     def test_error_when_invalid_discord_guild_id(cls) -> None:
-        """
-            Test that the correct error is displayed when an invalid
-            discord_guild_id is provided.
-        """
-
-        invalid_discord_guild_id: str = "".join(
-            random.choices(string.ascii_letters + string.digits, k=7)
+        """Test for the correct error when an invalid discord_guild_id is provided."""
+        expected_usage_message: str = (
+            "usage: utils.py generate_invite_url [-h]"
+            " discord_bot_application_id [discord_guild_id]"
         )
+        expected_error_message: str = (
+            "utils.py generate_invite_url: error: discord_guild_id must be"
+            " a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
+        )
+
         cls.execute_util_function(
             "generate_invite_url",
             str(
                 random.randint(10000000000000000, 99999999999999999999)
             ),
-            invalid_discord_guild_id
+            "".join(
+                random.choices(string.ascii_letters + string.digits, k=7)
+            )
         )
 
         assert cls.parser_output_return_code != 0
         assert not cls.parser_output_stdout
-        assert "usage: utils.py generate_invite_url [-h] discord_bot_application_id [discord_guild_id]" in cls.parser_output_stderr
-        assert "utils.py generate_invite_url: error: discord_guild_id must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)" in cls.parser_output_stderr
+        assert expected_usage_message in cls.parser_output_stderr
+        assert expected_error_message in cls.parser_output_stderr
 
     @classmethod
     def test_error_when_too_many_arguments(cls) -> None:
-        """
-            Test that the correct error is displayed when too many arguments are
-            provided.
-        """
-
+        """Test for the correct error when too many arguments are provided."""
         extra_argument: str = str(
             random.randint(10000000000000000, 99999999999999999999)
+        )
+        expected_error_message: str = (
+            "utils.py: error:"
+            f" unrecognized arguments: {extra_argument}"
         )
 
         cls.execute_util_function(
@@ -327,4 +289,4 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
         assert cls.parser_output_return_code != 0
         assert not cls.parser_output_stdout
         assert "usage: utils.py [-h] {generate_invite_url}" in cls.parser_output_stderr
-        assert f"utils.py: error: unrecognized arguments: {extra_argument}" in cls.parser_output_stderr
+        assert expected_error_message in cls.parser_output_stderr

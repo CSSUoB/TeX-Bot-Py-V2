@@ -1,7 +1,4 @@
-"""
-    Utility classes & functions provided for use across the whole of the
-    project.
-"""
+"""Utility classes & functions provided for use across the whole of the project."""
 
 import os
 import re
@@ -12,23 +9,33 @@ import discord
 if __name__ != "__main__":  # NOTE: Preventing loading modules that would cause errors if this file has been run from the command-line without pre-initialisation
     import io
     import math
-    from typing import Collection, Any
+    from typing import Any, Collection, TypeAlias
 
     import matplotlib.pyplot as plt
     import mplcyberpunk
     from matplotlib.text import Text as Plot_Text
 
-    from exceptions import GuildDoesNotExist
     from config import settings
+    from exceptions import GuildDoesNotExist
+
+    ChannelTypes: TypeAlias = (
+        discord.VoiceChannel
+        | discord.StageChannel
+        | discord.TextChannel
+        | discord.ForumChannel
+        | discord.CategoryChannel
+        | None
+    )
 
 
 # noinspection PyShadowingNames
 def generate_invite_url(discord_bot_application_id: str, discord_guild_id: int) -> str:
     """
-        Returns the OAuth invite URL for the bot to the given Discord server,
-        using the permissions required for the bot to run.
-    """
+    Generate the correct OAuth invite URL for the bot.
 
+    This invite URL directs to the given Discord server and requests only the permissions
+    required for the bot to run.
+    """
     return discord.utils.oauth_url(
         client_id=discord_bot_application_id,
         permissions=discord.Permissions(
@@ -53,12 +60,8 @@ def generate_invite_url(discord_bot_application_id: str, discord_guild_id: int) 
 
 if __name__ != "__main__":  # NOTE: Preventing using modules that have not been loaded if this file has been run from the command-line
     # noinspection SpellCheckingInspection
-    def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, filename: str, description: str, extra_text: str = "") -> discord.File:
-        """
-            Shortcut function to generate an image of a plot bar chart from the
-            given data & format variables.
-        """
-
+    def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, filename: str, description: str, extra_text: str = "") -> discord.File:  # noqa: E501
+        """Generate an image of a plot bar chart from the given data & format variables."""
         plt.style.use("cyberpunk")
 
         max_data_value: int = max(data.values()) + 1
@@ -68,7 +71,11 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
             extra_values["Total"] = data.pop("Total")
 
         if len(data) > 4:
-            data = {key: value for index, (key, value) in enumerate(data.items()) if value > 0 or index <= 4}
+            data = {
+                key: value
+                for index, (key, value) in enumerate(data.items())
+                if value > 0 or index <= 4
+            }
 
         bars = plt.bar(data.keys(), data.values())
 
@@ -142,15 +149,13 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
 
 
     def amount_of_time_formatter(value: float, time_scale: str) -> str:
-        # noinspection GrazieInspection
         """
-            Returns the formatted amount of time value according to the provided
-            time_scale.
+        Format the amount of time value according to the provided time_scale.
 
-            E.g. past "1 days" => past "day", past "2.00 weeks" => past "2 weeks",
-            past "3.14159 months" => past "3.14 months"
+        E.g. past "1 days" => past "day",
+        past "2.00 weeks" => past "2 weeks",
+        past "3.14159 months" => past "3.14 months"
         """
-
         if value == 1:
             return f"{time_scale}"
 
@@ -163,14 +168,15 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
 
     class TeXBot(discord.Bot):
         """
-            Subclass of the default Bot class provided by Pycord.
+        Subclass of the default Bot class provided by Pycord.
 
-            This subclass allows for storing commonly accessed roles & channels
-            from the CSS Discord Server, while also raising the correct errors
-            if necessary.
+        This subclass allows for storing commonly accessed roles & channels from the
+        CSS Discord Server, while also raising the correct errors if these objects do not
+        exist.
         """
 
         def __init__(self, *args: Any, **options: Any) -> None:
+            """Initialize a new discord.Bot subclass with empty shortcut accessors."""
             self._css_guild: discord.Guild | None = None
             self._committee_role: discord.Role | None = None
             self._guest_role: discord.Role | None = None
@@ -181,18 +187,30 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
             self._general_channel: discord.TextChannel | None = None
             self._welcome_channel: discord.TextChannel | None = None
 
-            super().__init__(*args, **options)  # type: ignore
+            super().__init__(*args, **options)  # type: ignore[no-untyped-call]
 
         @property
         def css_guild(self) -> discord.Guild:
-            if not self._css_guild or not discord.utils.get(self.guilds, id=settings["DISCORD_GUILD_ID"]):
+            """
+            Shortcut accessor to the CSS guild (Discord server).
+
+            This shortcut accessor provides a consistent way of accessing the CSS server object
+            without having to repeatedly search for it, in the bot's list of guilds, by its ID.
+            """
+            if not self._css_guild or not self._bot_has_guild(settings["DISCORD_GUILD_ID"]):
                 raise GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"])
 
             return self._css_guild
 
         @property
         async def committee_role(self) -> discord.Role | None:
-            if not self._committee_role or not discord.utils.get(self.css_guild.roles, id=self._committee_role.id):
+            """
+            Shortcut accessor to the committee role.
+
+            The committee role is the role held by elected members of the CSS committee.
+            Many commands are limited to use by only committee members.
+            """
+            if not self._committee_role or not self._guild_has_role(self._committee_role):
                 self._committee_role = discord.utils.get(
                     await self.css_guild.fetch_roles(),
                     name="Committee"
@@ -202,7 +220,15 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
 
         @property
         async def guest_role(self) -> discord.Role | None:
-            if not self._guest_role or not discord.utils.get(self.css_guild.roles, id=self._guest_role.id):
+            """
+            Shortcut accessor to the guest role.
+
+            The guest role is the core role that provides members with access to talk in the
+            main channels of the CSS Discord server.
+            It is given to members only after they have sent a message with a short
+            introduction about themselves.
+            """
+            if not self._guest_role or not self._guild_has_role(self._guest_role):
                 self._guest_role = discord.utils.get(
                     await self.css_guild.fetch_roles(),
                     name="Guest"
@@ -212,7 +238,15 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
 
         @property
         async def member_role(self) -> discord.Role | None:
-            if not self._member_role or not discord.utils.get(self.css_guild.roles, id=self._member_role.id):
+            """
+            Shortcut accessor to the member role.
+
+            The member role is the one only accessible to server members after they have
+            verified a purchased membership to CSS.
+            It provides bragging rights to other server members by showing the member's name in
+            green!
+            """
+            if not self._member_role or not self._guild_has_role(self._member_role):
                 self._member_role = discord.utils.get(self.css_guild.roles, name="Member")
                 self._member_role = discord.utils.get(
                     await self.css_guild.fetch_roles(),
@@ -223,6 +257,12 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
 
         @property
         async def archivist_role(self) -> discord.Role | None:
+            """
+            Shortcut accessor to the archivist role.
+
+            The archivist role is the one that allows members to see channels & categories
+            that are no longer in use, which are hidden to all other members.
+            """
             if not self._archivist_role or not discord.utils.get(self.css_guild.roles, id=self._archivist_role.id):
                 self._archivist_role = discord.utils.get(
                     await self.css_guild.fetch_roles(),
@@ -233,27 +273,51 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
 
         @property
         async def roles_channel(self) -> discord.TextChannel | None:
-            if not self._roles_channel or not discord.utils.get(self.css_guild.text_channels, id=self._roles_channel.id):
+            """
+            Shortcut accessor to the welcome text channel.
+
+            The roles text channel is the one that contains the message declaring all the
+            available opt-in roles to members.
+            """
+            if not self._roles_channel or not self._guild_has_channel(self._roles_channel):
                 self._roles_channel = await self._fetch_text_channel("roles")
 
             return self._roles_channel
 
         @property
         async def general_channel(self) -> discord.TextChannel | None:
-            if not self._general_channel or not discord.utils.get(self.css_guild.text_channels, id=self._general_channel.id):
+            """Shortcut accessor to the general text channel."""
+            if not self._general_channel or not self._guild_has_channel(self._general_channel):
                 self._general_channel = await self._fetch_text_channel("general")
 
             return self._general_channel
 
         @property
         async def welcome_channel(self) -> discord.TextChannel | None:
-            if not self._welcome_channel or not discord.utils.get(self.css_guild.text_channels, id=self._welcome_channel.id):
-                self._welcome_channel = self.css_guild.rules_channel or await self._fetch_text_channel("welcome")
+            """
+            Shortcut accessor to the welcome text channel.
+
+            The welcome text channel is the one that contains the welcome message & rules.
+            """
+            if not self._welcome_channel or not self._guild_has_channel(self._welcome_channel):
+                self._welcome_channel = (
+                    self.css_guild.rules_channel or
+                    await self._fetch_text_channel("welcome")
+                )
 
             return self._welcome_channel
 
+        def _bot_has_guild(self, guild_id: int) -> bool:
+            return bool(discord.utils.get(self.guilds, id=guild_id))
+
+        def _guild_has_role(self, role: discord.Role) -> bool:
+            return bool(discord.utils.get(self.css_guild.roles, id=role.id))
+
+        def _guild_has_channel(self, channel: discord.TextChannel) -> bool:
+            return bool(discord.utils.get(self.css_guild.text_channels, id=channel.id))
+
         async def _fetch_text_channel(self, name: str) -> discord.TextChannel | None:
-            text_channel: discord.VoiceChannel | discord.StageChannel | discord.TextChannel | discord.ForumChannel | discord.CategoryChannel | None = discord.utils.get(
+            text_channel: ChannelTypes = discord.utils.get(
                 await self.css_guild.fetch_channels(),
                 name=name,
                 type=discord.ChannelType.text
@@ -285,14 +349,18 @@ if __name__ == "__main__":
     generate_invite_url_arg_parser.add_argument(
         "discord_guild_id",
         nargs="?",
-        help="The value of the environment variable DISCORD_GUILD_ID is used if this argument is omitted. Must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
+        help="The value of the environment variable DISCORD_GUILD_ID is used"
+             " if this argument is omitted. Must be a valid Discord guild ID"
+             " (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
     )
 
     parsed_args: Namespace = arg_parser.parse_args()
 
     if parsed_args.function == "generate_invite_url":
         if not re.match(r"\A\d{17,20}\Z", parsed_args.discord_bot_application_id):
-            generate_invite_url_arg_parser.error("discord_bot_application_id must be a valid Discord application ID (see https://support-dev.discord.com/hc/en-gb/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)")
+            generate_invite_url_arg_parser.error(
+                "discord_bot_application_id must be a valid Discord application ID (see https://support-dev.discord.com/hc/en-gb/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)"
+            )
 
         discord_guild_id: str = parsed_args.discord_guild_id or ""
         if not discord_guild_id:
@@ -302,14 +370,21 @@ if __name__ == "__main__":
             discord_guild_id = os.getenv("DISCORD_GUILD_ID", "")
 
             if not discord_guild_id:
-                generate_invite_url_arg_parser.error("discord_guild_id must be provided as an argument to the generate_invite_url utility function or otherwise set the DISCORD_GUILD_ID environment variable")
+                generate_invite_url_arg_parser.error(
+                    "discord_guild_id must be provided as an argument"
+                    " to the generate_invite_url utility function"
+                    " or otherwise set the DISCORD_GUILD_ID environment variable"
+                )
 
         if not re.match(r"\A\d{17,20}\Z", discord_guild_id):
-            generate_invite_url_arg_parser.error("discord_guild_id must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)")
+            generate_invite_url_arg_parser.error(
+                "discord_guild_id must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
+            )
 
         print(
             generate_invite_url(
-                parsed_args.discord_bot_application_id, int(discord_guild_id)
+                parsed_args.discord_bot_application_id,
+                int(discord_guild_id)
             )
         )
         generate_invite_url_arg_parser.exit()

@@ -1,16 +1,15 @@
-"""
-    Configurations to make core app ready to import into settings.py.
-"""
+"""Configurations to make core app ready to import into settings.py."""
 
 from django.apps import AppConfig
 
 
 class CoreConfig(AppConfig):
     """
-        Class acting as a container of all the configuration required for the
-        core app. Extends the AppConfig class which contains the methods to
-        initialise the app, apply migrations, etc.
+    Contains all the configuration required for the core app.
+
+    Extends the django.apps.AppConfig class which contains the methods to initialise the app,
+    apply migrations, etc.
     """
 
-    default_auto_field = "django.db.models.BigAutoField"
-    name = "db.core"
+    default_auto_field: str = "django.db.models.BigAutoField"
+    name: str = "db.core"
