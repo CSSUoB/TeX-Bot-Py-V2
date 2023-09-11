@@ -6,7 +6,8 @@ from argparse import ArgumentParser, Namespace
 
 import discord
 
-if __name__ != "__main__":  # NOTE: Preventing loading modules that would cause errors if this file has been run from the command-line without pre-initialisation
+# NOTE: Preventing loading modules that would cause errors if this file has been run from the command-line without pre-initialisation
+if __name__ != "__main__":
     import io
     import math
     from typing import Any, Collection, TypeAlias
@@ -58,7 +59,8 @@ def generate_invite_url(discord_bot_application_id: str, discord_guild_id: int) 
     )
 
 
-if __name__ != "__main__":  # NOTE: Preventing using modules that have not been loaded if this file has been run from the command-line
+# NOTE: Preventing using modules that have not been loaded if this file has been run from the command-line
+if __name__ != "__main__":
     # noinspection SpellCheckingInspection
     def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, filename: str, description: str, extra_text: str = "") -> discord.File:  # noqa: E501
         """Generate an image of a plot bar chart from the given data & format variables."""
@@ -66,7 +68,8 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
 
         max_data_value: int = max(data.values()) + 1
 
-        extra_values: dict[str, int] = {}  # NOTE: The "extra_values" dictionary represents columns of data that should be formatted differently to the standard data columns
+        # NOTE: The "extra_values" dictionary represents columns of data that should be formatted differently to the standard data columns
+        extra_values: dict[str, int] = {}
         if "Total" in data:
             extra_values["Total"] = data.pop("Total")
 
@@ -94,7 +97,8 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
             if tick_label.get_text() == "Total":
                 tick_label.set_fontweight("bold")
 
-            if index % 2 == 1 and count_xticklabels > 4:  # NOTE: Shifts the y location of every other horizontal label down so that they do not overlap with one-another
+            # NOTE: Shifts the y location of every other horizontal label down so that they do not overlap with one-another
+            if index % 2 == 1 and count_xticklabels > 4:
                 tick_label.set_y(tick_label.get_position()[1] - 0.044)
 
         plt.yticks(range(0, max_data_value, math.ceil(max_data_value / 15)))
@@ -263,7 +267,7 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
             The archivist role is the one that allows members to see channels & categories
             that are no longer in use, which are hidden to all other members.
             """
-            if not self._archivist_role or not discord.utils.get(self.css_guild.roles, id=self._archivist_role.id):
+            if not self._archivist_role or not self._guild_has_role(self._archivist_role):
                 self._archivist_role = discord.utils.get(
                     await self.css_guild.fetch_roles(),
                     name="Archivist"
@@ -301,8 +305,8 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
             """
             if not self._welcome_channel or not self._guild_has_channel(self._welcome_channel):
                 self._welcome_channel = (
-                    self.css_guild.rules_channel or
-                    await self._fetch_text_channel("welcome")
+                    self.css_guild.rules_channel
+                    or await self._fetch_text_channel("welcome")
                 )
 
             return self._welcome_channel
@@ -324,7 +328,9 @@ if __name__ != "__main__":  # NOTE: Preventing using modules that have not been 
             )
 
             if text_channel is not None and not isinstance(text_channel, discord.TextChannel):
-                raise TypeError(f"Received non text channel when attempting to fetch {name} text channel.")
+                raise TypeError(
+                    f"Received non text channel when attempting to fetch {name} text channel."
+                )
 
             return text_channel
 
