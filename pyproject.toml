@@ -67,9 +67,10 @@ django_settings_module = "db.settings"
 
 [tool.ruff]
 select = ["E", "F", "W", "C", "I", "N", "D", "S"]
-ignore = ["N818", "N806", "D203", "D212"]
+ignore = ["N818", "N806", "D203", "D212", "S101", "S311"]
 line-length = 95
 unfixable = ["ALL"]
+#fixable = ["E501"]
 target-version ="py311"
 task-tags = [
     "TODO",
