@@ -25,7 +25,11 @@ class AsyncBaseModel(models.Model):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize a new model instance, capturing any proxy field values."""
-        proxy_fields: dict[str, Any] = {field_name: kwargs.pop(field_name) for field_name in set(kwargs.keys()) & self.get_proxy_field_names()}
+        proxy_fields: dict[str, Any] = {
+            field_name: kwargs.pop(field_name)
+            for field_name
+            in set(kwargs.keys()) & self.get_proxy_field_names()
+        }
 
         super().__init__(*args, **kwargs)
 
@@ -63,7 +67,10 @@ class AsyncBaseModel(models.Model):
                 unexpected_kwargs.add(field_name)
 
         if unexpected_kwargs:
-            raise TypeError(f"{self._meta.model.__name__} got unexpected keyword arguments: {tuple(unexpected_kwargs)}")
+            raise TypeError(
+                f"{self._meta.model.__name__} got unexpected keyword arguments:"
+                f" {tuple(unexpected_kwargs)}"
+            )
 
         value: Any
         for field_name, value in kwargs.items():
@@ -75,7 +82,7 @@ class AsyncBaseModel(models.Model):
     update.alters_data: bool = True  # type: ignore[attr-defined, misc]
 
     # noinspection SpellCheckingInspection
-    async def aupdate(self, commit: bool = True, using: str | None = None, **kwargs: Any) -> None:
+    async def aupdate(self, commit: bool = True, using: str | None = None, **kwargs: Any) -> None:  # noqa: E501
         """
         Asyncronously change an in-memory object's values, then save it to the database.
 
@@ -152,7 +159,11 @@ class HashedDiscordMember(AsyncBaseModel):
         The member_id value is hashed into the format that hashed_member_ids are stored in the
         database when new objects of this class are created.
         """
-        if not isinstance(member_id, (str, int)) or not re.match(r"\A\d{17,20}\Z", str(member_id)):
+        def is_valid_member_id(value: str | int) -> bool:
+            """Validate whether the provided value is a valid Discord member ID."""
+            return bool(re.match(r"\A\d{17,20}\Z", str(value)))
+
+        if not isinstance(member_id, (str, int)) or not is_valid_member_id(member_id):
             raise ValueError(f"\"{member_id}\" is not a valid Discord member ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)")
 
         return hashlib.sha256(str(member_id).encode()).hexdigest()

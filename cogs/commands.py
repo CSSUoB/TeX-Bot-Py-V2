@@ -6,7 +6,7 @@ import math
 import random
 import re
 import time
-from typing import Final, Mapping
+from typing import Final, Iterator, Mapping, TypeAlias
 
 import aiohttp
 import bs4
@@ -32,6 +32,8 @@ from exceptions import (
 )
 from utils import TeXBot
 
+MentionableMember: TypeAlias = discord.Member | discord.Role | None
+
 
 class ApplicationCommandsCog(TeXBotCog):
     """
@@ -56,7 +58,7 @@ class ApplicationCommandsCog(TeXBotCog):
         "archive": "archive the selected category"
     }
 
-    async def send_error(self, ctx: discord.ApplicationContext, error_code: str | None = None, command_name: str | None = None, message: str | None = None, logging_message: str | None = None) -> None:
+    async def send_error(self, ctx: discord.ApplicationContext, error_code: str | None = None, command_name: str | None = None, message: str | None = None, logging_message: str | None = None) -> None:  # noqa: E501
         """
         Construct & format an error message from the given details.
 
@@ -73,7 +75,11 @@ class ApplicationCommandsCog(TeXBotCog):
             if committee_role:
                 committee_mention = committee_role.mention
 
-            construct_error_message = f"**Contact a {committee_mention} member, referencing error code: {error_code}**\n" + construct_error_message
+            construct_error_message = (
+                    f"**Contact a {committee_mention} member, referencing error code:"
+                    f" {error_code}**\n"
+                    + construct_error_message
+            )
 
             construct_logging_error_message += f"{error_code} :"
 
@@ -90,7 +96,10 @@ class ApplicationCommandsCog(TeXBotCog):
         construct_error_message += ":warning:"
 
         if message:
-            message = re.sub(r"<([@&#]?|(@[&#])?)\d+>", lambda match: f"`{match.group(0)}`", message.strip())
+            message = re.sub(
+                r"<([@&#]?|(@[&#])?)\d+>",
+                lambda match: f"`{match.group(0)}`", message.strip()
+            )
             construct_error_message += f"\n`{message}`"
 
         await ctx.respond(construct_error_message, ephemeral=True)
@@ -98,7 +107,7 @@ class ApplicationCommandsCog(TeXBotCog):
         if logging_message:
             logging.error(f"{construct_logging_error_message} {logging_message}")
 
-    async def _induct(self, ctx: discord.ApplicationContext, induction_member: discord.Member, guild: discord.Guild, silent: bool) -> None:
+    async def _induct(self, ctx: discord.ApplicationContext, induction_member: discord.Member, guild: discord.Guild, silent: bool) -> None:  # noqa: E501
         """Perform the actual process of inducting a member by giving them the Guest role."""
         guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
@@ -143,7 +152,10 @@ class ApplicationCommandsCog(TeXBotCog):
 
         if guest_role in induction_member.roles:
             await ctx.respond(
-                ":information_source: No changes made. User has already been inducted. :information_source:",
+                (
+                    ":information_source: No changes made. User has already been inducted."
+                    " :information_source:"
+                ),
                 ephemeral=True
             )
             return
@@ -174,7 +186,12 @@ class ApplicationCommandsCog(TeXBotCog):
                 roles_channel_mention = roles_channel.mention
 
             await general_channel.send(
-                f"""{random.choice(settings["WELCOME_MESSAGES"]).replace("<User>", induction_member.mention).strip()} :tada:\nRemember to grab your roles in {roles_channel_mention} and say hello to everyone here! :wave:"""
+                f"""{
+                    random.choice(settings["WELCOME_MESSAGES"]).replace(
+                        "<User>",
+                        induction_member.mention).strip()
+                    } :tada:\nRemember to grab your roles in {roles_channel_mention}"""
+                f""" and say hello to everyone here! :wave:"""
             )
 
         await induction_member.add_roles(
@@ -182,7 +199,10 @@ class ApplicationCommandsCog(TeXBotCog):
             reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\""
         )
 
-        applicant_role: discord.Role | None = discord.utils.get(self.bot.css_guild.roles, name="Applicant")
+        applicant_role: discord.Role | None = discord.utils.get(
+            self.bot.css_guild.roles,
+            name="Applicant"
+        )
 
         if applicant_role and applicant_role in induction_member.roles:
             await induction_member.remove_roles(
@@ -206,7 +226,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
     )
 
     @staticmethod
-    async def remind_me_autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> set[str]:  # noqa: C901
+    async def remind_me_autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> set[str]:  # noqa: C901, E501
         """
         Autocomplete callable that generates the common delay input values.
 
@@ -214,39 +234,74 @@ class SlashCommandsCog(ApplicationCommandsCog):
         of common delay input values.
         """
         if not ctx.value:
-            return {"in 5 minutes", "1 hours time", "1min", "30 secs", "2 days time", "22/9/2040", "5h"}
+            return {
+                "in 5 minutes",
+                "1 hours time",
+                "1min",
+                "30 secs",
+                "2 days time",
+                "22/9/2040",
+                "5h"
+            }
 
-        seconds_choices: set[str] = {"s", "sec", "second"}
-        minutes_choices: set[str] = {"m", "min", "minute"}
-        hours_choices: set[str] = {"h", "hr", "hour"}
-        days_choices: set[str] = {"d", "dy", "day"}
-        weeks_choices: set[str] = {"w", "wk", "week"}
-        years_choices: set[str] = {"y", "yr", "year"}
-        time_choices: set[str] = seconds_choices | minutes_choices | hours_choices | days_choices | weeks_choices | years_choices
+        SECONDS_CHOICES: Final[frozenset[str]] = frozenset({"s", "sec", "second"})
+        MINUTES_CHOICES: Final[frozenset[str]] = frozenset({"m", "min", "minute"})
+        HOURS_CHOICES: Final[frozenset[str]] = frozenset({"h", "hr", "hour"})
+        DAYS_CHOICES: Final[frozenset[str]] = frozenset({"d", "dy", "day"})
+        WEEKS_CHOICES: Final[frozenset[str]] = frozenset({"w", "wk", "week"})
+        YEARS_CHOICES: Final[frozenset[str]] = frozenset({"y", "yr", "year"})
+        TIME_CHOICES: Final[frozenset[str]] = (
+            SECONDS_CHOICES
+            | MINUTES_CHOICES
+            | HOURS_CHOICES
+            | DAYS_CHOICES
+            | WEEKS_CHOICES
+            | YEARS_CHOICES
+        )
 
         delay_choices: set[str] = set()
 
-        if re.match(r"\Ain? ?\Z", ctx.value):
+        if re.match(r"\Ain? ?\Z", ctx.value):  # noqa: E501
+            FORMATTED_TIME_NUMS: Final[Iterator[tuple[int, str, str]]] = itertools.product(
+                range(1, 150),
+                {"", " "},
+                {"", "s"}
+            )
             time_num: int
             joiner: str
             has_s: str
-            for time_num, joiner, has_s in itertools.product(range(1, 150), {"", " "}, {"", "s"}):
-                delay_choices.update(f"{time_num}{joiner}{time_choice}{has_s}" for time_choice in time_choices if not (len(time_choice) <= 1 and has_s))
+            for time_num, joiner, has_s in FORMATTED_TIME_NUMS:
+                delay_choices.update(
+                    f"{time_num}{joiner}{time_choice}{has_s}"
+                    for time_choice
+                    in TIME_CHOICES
+                    if not (len(time_choice) <= 1 and has_s)
+                )
 
             return {f"in {delay_choice}" for delay_choice in delay_choices}
 
         match: re.Match[str] | None
-        if match := re.match(r"\Ain (?P<partial_date>\d{0,3})\Z", ctx.value):
+        if match := re.match(r"\Ain (?P<partial_date>\d{0,3})\Z", ctx.value):  # noqa: E501
             for joiner, has_s in itertools.product({"", " "}, {"", "s"}):
-                delay_choices.update(f"""{match.group("partial_date")}{joiner}{time_choice}{has_s}""" for time_choice in time_choices if not (len(time_choice) <= 1 and has_s))
+                delay_choices.update(
+                    f"""{match.group("partial_date")}{joiner}{time_choice}{has_s}"""
+                    for time_choice
+                    in TIME_CHOICES
+                    if not (len(time_choice) <= 1 and has_s)
+                )
 
             return {f"in {delay_choice}" for delay_choice in delay_choices}
 
         current_year: int = discord.utils.utcnow().year
 
-        if re.match(r"\A\d{1,3}\Z", ctx.value):
+        if re.match(r"\A\d{1,3}\Z", ctx.value):  # noqa: E501
             for joiner, has_s in itertools.product({"", " "}, {"", "s"}):
-                delay_choices.update(f"{joiner}{time_choice}{has_s}" for time_choice in time_choices if not (len(time_choice) <= 1 and has_s))
+                delay_choices.update(
+                    f"{joiner}{time_choice}{has_s}"
+                    for time_choice
+                    in TIME_CHOICES
+                    if not (len(time_choice) <= 1 and has_s)
+                )
 
             if 1 <= int(ctx.value) <= 31:
                 month: int
@@ -258,9 +313,14 @@ class SlashCommandsCog(ApplicationCommandsCog):
                             if month < 10:
                                 delay_choices.add(f"{joiner}0{month}{joiner}{year}")
 
-        elif match := re.match(r"\A\d{1,3}(?P<ctx_time_choice> ?[A-Za-z]*)\Z", ctx.value):
+        elif match := re.match(r"\A\d{1,3}(?P<ctx_time_choice> ?[A-Za-z]*)\Z", ctx.value):  # noqa: E501
+            FORMATTED_TIME_CHOICES: Final[Iterator[tuple[str, str, str]]] = itertools.product(
+                {"", " "},
+                TIME_CHOICES,
+                {"", "s"}
+            )
             time_choice: str
-            for joiner, time_choice, has_s in itertools.product({"", " "}, time_choices, {"", "s"}):
+            for joiner, time_choice, has_s in FORMATTED_TIME_CHOICES:
                 if has_s and len(time_choice) <= 1:
                     continue
 
@@ -271,7 +331,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
                     if match.group("ctx_time_choice").casefold() == time_choice[:slice_size]:
                         delay_choices.add(time_choice[slice_size:])
 
-        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?\Z", ctx.value):
+        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?\Z", ctx.value):  # noqa: E501
             if 1 <= int(match.group("date")) <= 31:
                 for month in range(1, 12):
                     for year in range(current_year, current_year + 40):
@@ -280,18 +340,18 @@ class SlashCommandsCog(ApplicationCommandsCog):
                             if month < 10:
                                 delay_choices.add(f"0{month}{joiner}{year}")
 
-        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2})\Z", ctx.value):
+        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2})\Z", ctx.value):  # noqa: E501
             if 1 <= int(match.group("date")) <= 31 and 1 <= int(match.group("month")) <= 12:
                 for year in range(current_year, current_year + 40):
                     for joiner in {"/", " / ", "-", " - ", ".", " . "}:
                         delay_choices.add(f"{joiner}{year}")
 
-        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?\Z", ctx.value):
+        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?\Z", ctx.value):  # noqa: E501
             if 1 <= int(match.group("date")) <= 31 and 1 <= int(match.group("month")) <= 12:
                 for year in range(current_year, current_year + 40):
                     delay_choices.add(f"{year}")
 
-        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?(?P<partial_year>\d{1,3})\Z", ctx.value):
+        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?(?P<partial_year>\d{1,3})\Z", ctx.value):  # noqa: E501
             if 1 <= int(match.group("date")) <= 31 and 1 <= int(match.group("month")) <= 12:
                 for year in range(current_year, current_year + 40):
                     delay_choices.add(f"{year}"[len(match.group("partial_year")):])
@@ -299,7 +359,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         return {f"{ctx.value}{delay_choice}".casefold() for delay_choice in delay_choices}
 
     @staticmethod
-    async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:
+    async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable channels.
 
@@ -314,7 +374,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         except GuildDoesNotExist:
             return set()
 
-        channel_permissions_limiter: discord.Member | discord.Role | None = await ctx.bot.guest_role
+        channel_permissions_limiter: MentionableMember = await ctx.bot.guest_role
         if not channel_permissions_limiter:
             return set()
 
@@ -323,13 +383,27 @@ class SlashCommandsCog(ApplicationCommandsCog):
             channel_permissions_limiter = interaction_member
 
         if not ctx.value or re.match(r"\A#.*\Z", ctx.value):
-            return {discord.OptionChoice(name=f"#{channel.name}", value=str(channel.id)) for channel in guild.text_channels if channel.permissions_for(channel_permissions_limiter).is_superset(discord.Permissions(send_messages=True, view_channel=True))}
+            return {
+                discord.OptionChoice(name=f"#{channel.name}", value=str(channel.id))
+                for channel
+                in guild.text_channels
+                if channel.permissions_for(channel_permissions_limiter).is_superset(
+                    discord.Permissions(send_messages=True, view_channel=True)
+                )
+            }
 
         else:
-            return {discord.OptionChoice(name=channel.name, value=str(channel.id)) for channel in guild.text_channels if channel.permissions_for(channel_permissions_limiter).is_superset(discord.Permissions(send_messages=True, view_channel=True))}
+            return {
+                discord.OptionChoice(name=channel.name, value=str(channel.id))
+                for channel
+                in guild.text_channels
+                if channel.permissions_for(channel_permissions_limiter).is_superset(
+                    discord.Permissions(send_messages=True, view_channel=True)
+                )
+            }
 
     @staticmethod
-    async def archive_autocomplete_get_categories(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:
+    async def archive_autocomplete_get_categories(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable categories.
 
@@ -355,10 +429,17 @@ class SlashCommandsCog(ApplicationCommandsCog):
         if committee_role not in interaction_member.roles:
             return set()
 
-        return {discord.OptionChoice(name=category.name, value=str(category.id)) for category in guild.categories if category.permissions_for(interaction_member).is_superset(discord.Permissions(send_messages=True, view_channel=True))}
+        return {
+            discord.OptionChoice(name=category.name, value=str(category.id))
+            for category
+            in guild.categories
+            if category.permissions_for(interaction_member).is_superset(
+                discord.Permissions(send_messages=True, view_channel=True)
+            )
+        }
 
     @staticmethod
-    async def induct_autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:
+    async def induct_autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable members.
 
@@ -377,12 +458,20 @@ class SlashCommandsCog(ApplicationCommandsCog):
             members = {member for member in members if guest_role not in member.roles}
 
         if not ctx.value or re.match(r"\A@.*\Z", ctx.value):
-            return {discord.OptionChoice(name=f"@{member.name}", value=str(member.id)) for member in members}
+            return {
+                discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
+                for member
+                in members
+            }
 
         else:
-            return {discord.OptionChoice(name=member.name, value=str(member.id)) for member in members}
+            return {
+                discord.OptionChoice(name=member.name, value=str(member.id))
+                for member
+                in members
+            }
 
-    async def _delete_all(self, ctx: discord.ApplicationContext, command_name: str, delete_model: type[Model]) -> None:
+    async def _delete_all(self, ctx: discord.ApplicationContext, command_name: str, delete_model: type[Model]) -> None:  # noqa: E501
         """Perform the actual deletion process of all instances of the given model class."""
         try:
             guild: discord.Guild = self.bot.css_guild
@@ -397,14 +486,19 @@ class SlashCommandsCog(ApplicationCommandsCog):
         committee_role: discord.Role | None = await self.bot.committee_role
         if not committee_role:
             await self.send_error(
-                ctx, error_code="E1021", command_name=command_name, logging_message=str(CommitteeRoleDoesNotExist())
+                ctx,
+                error_code="E1021",
+                command_name=command_name,
+                logging_message=str(CommitteeRoleDoesNotExist())
             )
             return
 
         interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
         if not interaction_member:
             await self.send_error(
-                ctx, command_name=command_name, message="You must be a member of the CSS Discord server to use this command."
+                ctx,
+                command_name=command_name,
+                message="You must be a member of the CSS Discord server to use this command."
             )
             return
 
@@ -414,16 +508,28 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 committee_role_mention = committee_role.mention
 
             await self.send_error(
-                ctx, command_name=command_name, message=f"Only {committee_role_mention} members can run this command."
+                ctx,
+                command_name=command_name,
+                message=f"Only {committee_role_mention} members can run this command."
             )
             return
 
         # noinspection PyProtectedMember
         await delete_model._default_manager.all().adelete()
 
-        await ctx.respond(f"""All {"Reminders" if delete_model == DiscordReminder else "UoB Made Members" if delete_model == UoBMadeMember else "objects"} deleted successfully.""", ephemeral=True)
+        await ctx.respond(
+            f"""All {
+                "Reminders"
+                if delete_model == DiscordReminder
+                else
+                    "UoB Made Members"
+                    if delete_model == UoBMadeMember
+                    else "objects"
+            } deleted successfully.""",
+            ephemeral=True
+        )
 
-    @discord.slash_command(description="Replies with Pong!")  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(description="Replies with Pong!")  # type: ignore[no-untyped-call, misc] # noqa: E501
     async def ping(self, ctx: discord.ApplicationContext) -> None:
         """Definition & callback response of the "ping" command."""
         await ctx.respond(
@@ -432,16 +538,24 @@ class SlashCommandsCog(ApplicationCommandsCog):
                     "Pong!",
                     "64 bytes from TeX: icmp_seq=1 ttl=63 time=0.01 ms"
                 ],
-                weights=(100 - settings["PING_COMMAND_EASTER_EGG_PROBABILITY"], settings["PING_COMMAND_EASTER_EGG_PROBABILITY"])
+                weights=(
+                    100 - settings["PING_COMMAND_EASTER_EGG_PROBABILITY"],
+                    settings["PING_COMMAND_EASTER_EGG_PROBABILITY"]
+                )
             )[0],
             ephemeral=True
         )
 
-    @discord.slash_command(description="Displays information about the source code of this bot.")  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        description="Displays information about the source code of this bot."
+    )
     async def source(self, ctx: discord.ApplicationContext) -> None:
         """Definition & callback response of the "source" command."""
         await ctx.respond(
-            "TeX is an open-source project made specifically for the CSS Discord! You can see and contribute to the source code at https://github.com/CSSUoB/TeX-Bot-Py-V2",
+            (
+                "TeX is an open-source project made specifically for the CSS Discord server!"
+                " You can see and contribute to the source code at https://github.com/CSSUoB/TeX-Bot-Py-V2"
+            ),
             ephemeral=True
         )
 
@@ -454,7 +568,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         input_type=str,
         description="The amount of time to wait before reminding you",
         required=True,
-        autocomplete=discord.utils.basic_autocomplete(remind_me_autocomplete_get_delays),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(remind_me_autocomplete_get_delays),  # type: ignore[arg-type] # noqa: E501
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="message",
@@ -462,13 +576,16 @@ class SlashCommandsCog(ApplicationCommandsCog):
         description="The message you want to be reminded with.",
         required=False
     )
-    async def remind_me(self, ctx: discord.ApplicationContext, delay: str, message: str) -> None:
+    async def remind_me(self, ctx: discord.ApplicationContext, delay: str, message: str) -> None:  # noqa: E501
         """
         Definition & callback response of the "remind_me" command.
 
         The "remind_me" command responds with the given message after the specified time.
         """
-        parsed_time: tuple[time.struct_time, int] = parsedatetime.Calendar().parseDT(delay, tzinfo=timezone.get_current_timezone())
+        parsed_time: tuple[time.struct_time, int] = parsedatetime.Calendar().parseDT(
+            delay,
+            tzinfo=timezone.get_current_timezone()
+        )
 
         if parsed_time[1] == 0:
             await self.send_error(
@@ -490,13 +607,24 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 channel_type=ctx.channel.type
             )
         except ValidationError as create_discord_reminder_error:
-            if "__all__" not in create_discord_reminder_error.message_dict or all("already exists" not in error for error in create_discord_reminder_error.message_dict["__all__"]):
+            error_is_already_exists: bool = (
+                "__all__" in create_discord_reminder_error.message_dict
+                and any(
+                    "already exists" in error
+                    for error
+                    in create_discord_reminder_error.message_dict["__all__"]
+                )
+            )
+            if not error_is_already_exists:
                 await self.send_error(
                     ctx,
                     command_name="remind_me",
                     message="An unrecoverable error occurred."
                 )
-                logging.critical(f"Error when creating DiscordReminder object: {create_discord_reminder_error}")
+                logging.critical(
+                    "Error when creating DiscordReminder object:"
+                    f" {create_discord_reminder_error}"
+                )
                 await self.bot.close()
                 return
             else:
@@ -599,7 +727,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         name="channel",
         description="The channel that the message, you wish to edit, is in.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore[arg-type] # noqa: E501
         required=True,
         parameter_name="str_channel_id"
     )
@@ -621,7 +749,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         min_length=1,
         parameter_name="new_message_content"
     )
-    async def edit_message(self, ctx: discord.ApplicationContext, str_channel_id: str, str_message_id: str, new_message_content: str) -> None:
+    async def edit_message(self, ctx: discord.ApplicationContext, str_channel_id: str, str_message_id: str, new_message_content: str) -> None:  # noqa: E501
         """
         Definition & callback response of the "edit_message" command.
 
@@ -690,7 +818,10 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         message_id: int = int(str_message_id)
 
-        channel: discord.TextChannel | None = discord.utils.get(guild.text_channels, id=channel_id)
+        channel: discord.TextChannel | None = discord.utils.get(
+            guild.text_channels,
+            id=channel_id
+        )
         if not channel:
             await self.send_error(
                 ctx,
@@ -715,7 +846,10 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.send_error(
                 ctx,
                 command_name="edit_message",
-                message=f"Message with ID \"{message_id}\" cannot be edited because it belongs to another user."
+                message=(
+                    f"Message with ID \"{message_id}\" cannot be edited because it belongs to"
+                    " another user."
+                )
             )
             return
         else:
@@ -723,13 +857,15 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="induct",
-        description="Gives a user the @Guest role, then sends a message in #general saying hello."
+        description=(
+            "Gives a user the @Guest role, then sends a message in #general saying hello."
+        )
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="user",
         description="The user to induct.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(induct_autocomplete_get_members),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(induct_autocomplete_get_members),  # type: ignore[arg-type] # noqa: E501
         required=True,
         parameter_name="str_induct_member_id"
     )
@@ -740,7 +876,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         default=False,
         required=False
     )
-    async def induct(self, ctx: discord.ApplicationContext, str_induct_member_id: str, silent: bool) -> None:
+    async def induct(self, ctx: discord.ApplicationContext, str_induct_member_id: str, silent: bool) -> None:  # noqa: E501
         """
         Definition & callback response of the "induct" command.
 
@@ -844,7 +980,10 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         if member_role in interaction_member.roles:
             await ctx.respond(
-                ":information_source: No changes made. You're already a member - why are you trying this again? :information_source:",
+                (
+                    ":information_source: No changes made. You're already a member"
+                    " - why are you trying this again? :information_source:"
+                ),
                 ephemeral=True
             )
             return
@@ -853,7 +992,10 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.send_error(
                 ctx,
                 command_name="make_member",
-                message="You must be inducted as guest member of the CSS Discord server to use \"/makemember\"."
+                message=(
+                    "You must be inducted as guest member of the CSS Discord server"
+                    " to use \"/makemember\"."
+                )
             )
             return
 
@@ -865,7 +1007,10 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
             return
 
-        if await UoBMadeMember.objects.filter(hashed_uob_id=UoBMadeMember.hash_uob_id(uob_id)).aexists():
+        uob_id_already_used: bool = await UoBMadeMember.objects.filter(
+            hashed_uob_id=UoBMadeMember.hash_uob_id(uob_id)
+        ).aexists()
+        if uob_id_already_used:
             committee_mention: str = "committee"
 
             committee_role: discord.Role | None = await self.bot.committee_role
@@ -873,19 +1018,35 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 committee_mention = committee_role.mention
 
             await ctx.respond(
-                f":information_source: No changes made. This student ID has already been used. Please contact a {committee_mention} member if this is an error. :information_source:",
+                (
+                    ":information_source: No changes made. This student ID has already"
+                    f" been used. Please contact a {committee_mention} member if this is"
+                    " an error. :information_source:"
+                ),
                 ephemeral=True
             )
             return
 
         guild_member_ids: set[str] = set()
 
-        async with aiohttp.ClientSession(headers={"Cache-Control": "no-cache", "Pragma": "no-cache", "Expires": "0"}, cookies={".ASPXAUTH": settings["MEMBERS_PAGE_COOKIE"]}) as http_session:
+        request_headers: dict[str, str] = {
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
+            "Expires": "0"
+        }
+        request_cookies: dict[str, str] = {".ASPXAUTH": settings["MEMBERS_PAGE_COOKIE"]}
+        async with aiohttp.ClientSession(headers=request_headers, cookies=request_cookies) as http_session:  # noqa: E501
             async with http_session.get(url=settings["MEMBERS_PAGE_URL"]) as http_response:
                 response_html: str = await http_response.text()
 
+        MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
+            {
+                "ctl00_Main_rptGroups_ctl05_gvMemberships",
+                "ctl00_Main_rptGroups_ctl03_gvMemberships"
+            }
+        )
         table_id: str
-        for table_id in ("ctl00_Main_rptGroups_ctl05_gvMemberships", "ctl00_Main_rptGroups_ctl03_gvMemberships"):
+        for table_id in MEMBER_HTML_TABLE_IDS:
             parsed_html: bs4.Tag | None = BeautifulSoup(
                 response_html,
                 "html.parser"
@@ -896,7 +1057,12 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
             if parsed_html:
                 guild_member_ids.update(
-                    row.contents[2].text for row in parsed_html.find_all("tr", {"class": ["msl_row", "msl_altrow"]})
+                    row.contents[2].text
+                    for row
+                    in parsed_html.find_all(
+                        "tr",
+                        {"class": ["msl_row", "msl_altrow"]}
+                    )
                 )
 
         guild_member_ids.discard("")
@@ -905,7 +1071,9 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         if not guild_member_ids:
             try:
-                raise IOError("The guild member IDs could not be retrieved from the MEMBERS_PAGE_URL.")
+                raise IOError(
+                    "The guild member IDs could not be retrieved from the MEMBERS_PAGE_URL."
+                )
             except IOError as guild_member_ids_error:
                 await self.send_error(
                     ctx,
@@ -916,30 +1084,38 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 await self.bot.close()
                 return
 
-        if uob_id in guild_member_ids:
-            await ctx.respond(
-                "Successfully made you a member!",
-                ephemeral=True
-            )
-
-            await interaction_member.add_roles(
-                member_role,
-                reason="TeX Bot slash-command: \"/makemember\""
-            )
-
-            try:
-                await UoBMadeMember.objects.acreate(uob_id=uob_id)
-            except ValidationError as create_uob_made_member_error:
-                if "hashed_uob_id" not in create_uob_made_member_error.message_dict or all("already exists" not in error for error in create_uob_made_member_error.message_dict["hashed_uob_id"]):
-                    raise
-
-        else:
+        if uob_id not in guild_member_ids:
             await self.send_error(
                 ctx,
                 command_name="make_member",
-                message="You must be a member of The Computer Science Society to use this command.\nThe provided student ID must match the UoB student ID that you purchased your CSS membership with."
+                message=(
+                    "You must be a member of The Computer Science Society to use this command."
+                    "\nThe provided student ID must match the UoB student ID"
+                    " that you purchased your CSS membership with."
+                )
             )
             return
+
+        await ctx.respond("Successfully made you a member!", ephemeral=True)
+
+        await interaction_member.add_roles(
+            member_role,
+            reason="TeX Bot slash-command: \"/makemember\""
+        )
+
+        try:
+            await UoBMadeMember.objects.acreate(uob_id=uob_id)
+        except ValidationError as create_uob_made_member_error:
+            error_is_already_exists: bool = (
+                "hashed_uob_id" in create_uob_made_member_error.message_dict
+                and any(
+                   "already exists" in error
+                   for error
+                   in create_uob_made_member_error.message_dict["hashed_uob_id"]
+                )
+            )
+            if not error_is_already_exists:
+                raise
 
     # noinspection SpellCheckingInspection
     @stats.command(
@@ -950,11 +1126,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
         name="channel",
         description="The channel to display the stats for.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore[arg-type] # noqa: E501
         required=False,
         parameter_name="str_channel_id"
     )
-    async def channel_stats(self, ctx: discord.ApplicationContext, str_channel_id: str) -> None:
+    async def channel_stats(self, ctx: discord.ApplicationContext, str_channel_id: str) -> None:  # noqa: E501
         """
         Definition & callback response of the "channel_stats" command.
 
@@ -986,7 +1162,10 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.bot.close()
             return
 
-        channel: discord.TextChannel | None = discord.utils.get(guild.text_channels, id=channel_id)
+        channel: discord.TextChannel | None = discord.utils.get(
+            guild.text_channels,
+            id=channel_id
+        )
         if not channel:
             await self.send_error(
                 ctx,
@@ -1004,8 +1183,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
             if discord.utils.get(guild.roles, name=role_name):
                 message_counts[f"@{role_name}"] = 0
 
+        message_history_period: discord.iterators.HistoryIterator = channel.history(
+            after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]
+        )
         message: discord.Message
-        async for message in channel.history(after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]):
+        async for message in message_history_period:
             if message.author.bot:
                 continue
 
@@ -1014,12 +1196,17 @@ class SlashCommandsCog(ApplicationCommandsCog):
             if isinstance(message.author, discord.User):
                 continue
 
-            author_role_names: set[str] = {author_role.name for author_role in message.author.roles}
+            author_role_names: set[str] = {
+                author_role.name
+                for author_role
+                in message.author.roles
+            }
 
             author_role_name: str
             for author_role_name in author_role_names:
                 if f"@{author_role_name}" in message_counts.keys():
-                    if author_role_name == "Committee" and "Committee-Elect" in author_role_names:
+                    is_author_role_name: bool = author_role_name == "Committee"
+                    if is_author_role_name and "Committee-Elect" in author_role_names:
                         continue
 
                     if author_role_name == "Guest" and "Member" in author_role_names:
@@ -1042,11 +1229,25 @@ class SlashCommandsCog(ApplicationCommandsCog):
             file=utils.plot_bar_chart(
                 message_counts,
                 xlabel="Role Name",
-                ylabel=f"""Number of Messages Sent (in the past {utils.amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")})""",
+                ylabel=(
+                    f"""Number of Messages Sent (in the past {
+                        utils.amount_of_time_formatter(
+                            settings["STATISTICS_DAYS"].days,
+                            "day"
+                        )
+                    })"""
+                ),
                 title=f"Most Active Roles in #{channel.name}",
                 filename=f"{channel.name}_channel_stats.png",
-                description=f"Bar chart of the number of messages sent by different roles in {channel.mention}.",
-                extra_text="Messages sent by members with multiple roles are counted once for each role (except for @Member vs @Guest & @Committee vs @Committee-Elect)"
+                description=(
+                    "Bar chart of the number of messages"
+                    f" sent by different roles in {channel.mention}."
+                ),
+                extra_text=(
+                    "Messages sent by members with multiple roles are counted once"
+                    " for each role"
+                    " (except for @Member vs @Guest & @Committee vs @Committee-Elect)"
+                )
             )
         )
 
@@ -1097,13 +1298,19 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         channel: discord.TextChannel
         for channel in guild.text_channels:
-            if not channel.permissions_for(guest_role).is_superset(discord.Permissions(send_messages=True)):
+            member_has_access_to_channel: bool = channel.permissions_for(
+                guest_role
+            ).is_superset(discord.Permissions(send_messages=True))
+            if not member_has_access_to_channel:
                 continue
 
             message_counts["channels"][f"#{channel.name}"] = 0
 
+            message_history_period: discord.iterators.HistoryIterator = channel.history(
+                after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]
+            )
             message: discord.Message
-            async for message in channel.history(after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]):
+            async for message in message_history_period:
                 if message.author.bot:
                     continue
 
@@ -1113,12 +1320,17 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 if isinstance(message.author, discord.User):
                     continue
 
-                author_role_names: set[str] = {author_role.name for author_role in message.author.roles}
+                author_role_names: set[str] = {
+                    author_role.name
+                    for author_role
+                    in message.author.roles
+                }
 
                 author_role_name: str
                 for author_role_name in author_role_names:
                     if f"@{author_role_name}" in message_counts["roles"].keys():
-                        if author_role_name == "Committee" and "Committee-Elect" in author_role_names:
+                        is_author_role_committee: bool = author_role_name == "Committee"
+                        if is_author_role_committee and "Committee-Elect" in author_role_names:
                             continue
 
                         if author_role_name == "Guest" and "Member" in author_role_names:
@@ -1126,7 +1338,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
                         message_counts["roles"][f"@{author_role_name}"] += 1
 
-        if math.ceil(max(message_counts["roles"].values()) / 15) < 1 or math.ceil(max(message_counts["channels"].values()) / 15) < 1:
+        too_few_roles_stats: bool = math.ceil(max(message_counts["roles"].values()) / 15) < 1
+        too_few_channels_stats: bool = math.ceil(
+            max(message_counts["channels"].values()) / 15
+        ) < 1
+        if too_few_roles_stats or too_few_channels_stats:
             await self.send_error(
                 ctx,
                 command_name="server_stats",
@@ -1142,19 +1358,43 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 utils.plot_bar_chart(
                     message_counts["roles"],
                     xlabel="Role Name",
-                    ylabel=f"""Number of Messages Sent (in the past {utils.amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")})""",
+                    ylabel=(
+                        f"""Number of Messages Sent (in the past {
+                            utils.amount_of_time_formatter(
+                                settings["STATISTICS_DAYS"].days,
+                                "day"
+                            )
+                        })"""
+                    ),
                     title="Most Active Roles in the CSS Discord Server",
                     filename="roles_server_stats.png",
-                    description="Bar chart of the number of messages sent by different roles in the CSS Discord server.",
-                    extra_text="Messages sent by members with multiple roles are counted once for each role (except for @Member vs @Guest & @Committee vs @Committee-Elect)"
+                    description=(
+                        "Bar chart of the number of messages sent by different roles"
+                        " in the CSS Discord server."
+                    ),
+                    extra_text=(
+                        "Messages sent by members with multiple roles are counted once"
+                        " for each role"
+                        " (except for @Member vs @Guest & @Committee vs @Committee-Elect)"
+                    )
                 ),
                 utils.plot_bar_chart(
                     message_counts["channels"],
                     xlabel="Channel Name",
-                    ylabel=f"""Number of Messages Sent (in the past {utils.amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")})""",
+                    ylabel=(
+                        f"""Number of Messages Sent (in the past {
+                            utils.amount_of_time_formatter(
+                                settings["STATISTICS_DAYS"].days,
+                                "day"
+                            )
+                        })"""
+                    ),
                     title="Most Active Channels in the CSS Discord Server",
                     filename="channels_server_stats.png",
-                    description="Bar chart of the number of messages sent in different text channels in the CSS Discord server."
+                    description=(
+                        "Bar chart of the number of messages sent in different text channels"
+                        " in the CSS Discord server."
+                    )
                 ),
             ]
         )
@@ -1205,7 +1445,10 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.send_error(
                 ctx,
                 command_name="user_stats",
-                message="You must be inducted as guest member of the CSS Discord server to use this command."
+                message=(
+                    "You must be inducted as guest member of the CSS Discord server"
+                    " to use this command."
+                )
             )
             return
 
@@ -1215,13 +1458,19 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         channel: discord.TextChannel
         for channel in guild.text_channels:
-            if not channel.permissions_for(guest_role).is_superset(discord.Permissions(send_messages=True)):
+            member_has_access_to_channel: bool = channel.permissions_for(
+                guest_role
+            ).is_superset(discord.Permissions(send_messages=True))
+            if not member_has_access_to_channel:
                 continue
 
             message_counts[f"#{channel.name}"] = 0
 
+            message_history_period: discord.iterators.HistoryIterator = channel.history(
+                after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]
+            )
             message: discord.Message
-            async for message in channel.history(after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]):
+            async for message in message_history_period:
                 if message.author == ctx.user and not message.author.bot:
                     message_counts[f"#{channel.name}"] += 1
                     message_counts["Total"] += 1
@@ -1241,10 +1490,20 @@ class SlashCommandsCog(ApplicationCommandsCog):
             file=utils.plot_bar_chart(
                 message_counts,
                 xlabel="Channel Name",
-                ylabel=f"""Number of Messages Sent (in the past {utils.amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")})""",
+                ylabel=(
+                    f"""Number of Messages Sent (in the past {
+                        utils.amount_of_time_formatter(
+                            settings["STATISTICS_DAYS"].days,
+                            "day"
+                        )
+                    })"""
+                ),
                 title="Your Most Active Channels in the CSS Discord Server",
                 filename=f"{ctx.user}_stats.png",
-                description=f"Bar chart of the number of messages sent by {ctx.user} in different channels in the CSS Discord server."
+                description=(
+                    f"Bar chart of the number of messages sent by {ctx.user}"
+                    " in different channels in the CSS Discord server."
+                )
             )
         )
 
@@ -1289,7 +1548,8 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 if left_member_role not in left_member_counts:
                     continue
 
-                if left_member_role == "@Committee" and "@Committee-Elect" in left_member.roles:
+                is_committee_role: bool = left_member_role == "@Committee"
+                if is_committee_role and "@Committee-Elect" in left_member.roles:
                     continue
 
                 if left_member_role == "@Guest" and "@Member" in left_member.roles:
@@ -1313,10 +1573,19 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 left_member_counts,
                 xlabel="Role Name",
                 ylabel="Number of Members that have left the CSS Discord Server",
-                title="Most Common Roles that Members had when they left the CSS Discord Server",
+                title=(
+                    "Most Common Roles that Members had when they left the CSS Discord Server"
+                ),
                 filename="left_members_stats.png",
-                description="Bar chart of the number of members with different roles that have left the CSS Discord server.",
-                extra_text="Members that left with multiple roles are counted once for each role (except for @Member vs @Guest & @Committee vs @Committee-Elect)"
+                description=(
+                    "Bar chart of the number of members with different roles"
+                    " that have left the CSS Discord server."
+                ),
+                extra_text=(
+                    "Members that left with multiple roles"
+                    " are counted once for each role"
+                    " (except for @Member vs @Guest & @Committee vs @Committee-Elect)"
+                )
             )
         )
 
@@ -1362,7 +1631,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         name="category",
         description="The category to archive.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(archive_autocomplete_get_categories),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(archive_autocomplete_get_categories),  # type: ignore[arg-type] # noqa: E501
         required=True,
         parameter_name="str_category_id"
     )
@@ -1453,7 +1722,9 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 error_code="E1042",
                 command_name="archive"
             )
-            logging.error("The reference to the \"@everyone\" role could not be correctly retrieved.")
+            logging.error(
+                "The reference to the \"@everyone\" role could not be correctly retrieved."
+            )
             return
 
         if not re.match(r"\A\d{17,20}\Z", str_category_id):
@@ -1466,7 +1737,10 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         category_id: int = int(str_category_id)
 
-        category: discord.CategoryChannel | None = discord.utils.get(guild.categories, id=category_id)
+        category: discord.CategoryChannel | None = discord.utils.get(
+            guild.categories,
+            id=category_id
+        )
         if not category:
             await self.send_error(
                 ctx,
@@ -1477,16 +1751,36 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         if "archive" in category.name:
             await ctx.respond(
-                ":information_source: No changes made. Category has already been archived. :information_source:",
+                (
+                    ":information_source: No changes made. Category has already been archived."
+                    " :information_source:"
+                ),
                 ephemeral=True
             )
             return
 
         # noinspection PyUnreachableCode
-        channel: discord.VoiceChannel | discord.StageChannel | discord.TextChannel | discord.ForumChannel | discord.CategoryChannel
+        channel: (
+            discord.VoiceChannel
+            | discord.StageChannel
+            | discord.TextChannel
+            | discord.ForumChannel
+            | discord.CategoryChannel
+        )
         for channel in category.channels:
             try:
-                if channel.permissions_for(committee_role).is_superset(discord.Permissions(view_channel=True)) and not channel.permissions_for(guest_role).is_superset(discord.Permissions(view_channel=True)):
+                channel_needs_committee_archiving: bool = (
+                    channel.permissions_for(committee_role).is_superset(
+                        discord.Permissions(view_channel=True)
+                    )
+                    and not channel.permissions_for(guest_role).is_superset(
+                        discord.Permissions(view_channel=True)
+                    )
+                )
+                channel_needs_normal_archiving: bool = channel.permissions_for(
+                    guest_role
+                ).is_superset(discord.Permissions(view_channel=True))
+                if channel_needs_committee_archiving:
                     await channel.set_permissions(
                         everyone_role,
                         reason=f"{interaction_member.display_name} used \"/archive\".",
@@ -1508,7 +1802,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
                         reason=f"{interaction_member.display_name} used \"/archive\"."
                     )
 
-                elif channel.permissions_for(guest_role).is_superset(discord.Permissions(view_channel=True)):
+                elif channel_needs_normal_archiving:
                     await channel.set_permissions(
                         everyone_role,
                         reason=f"{interaction_member.display_name} used \"/archive\".",
@@ -1541,7 +1835,10 @@ class SlashCommandsCog(ApplicationCommandsCog):
                         command_name="archive",
                         message=f"Channel {channel.mention} had invalid permissions"
                     )
-                    logging.error(f"Channel {channel.name} had invalid permissions, so could not be archived.")
+                    logging.error(
+                        f"Channel {channel.name} had invalid permissions,"
+                        " so could not be archived."
+                    )
                     return
 
                 # await category.edit(name=f"Archived - {category.name}")
@@ -1550,9 +1847,14 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 await self.send_error(
                     ctx,
                     command_name="archive",
-                    message="Bot does not have access to the channels in the selected category."
+                    message=(
+                        "Bot does not have access to the channels in the selected category."
+                    )
                 )
-                logging.error(f"Bot did not have access to the channels in the selected category: {category.name}.")
+                logging.error(
+                    "Bot did not have access to the channels in the selected category:"
+                    f" {category.name}."
+                )
                 return
 
         await ctx.respond("Category successfully archived", ephemeral=True)
@@ -1561,7 +1863,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 class UserCommandsCog(ApplicationCommandsCog):
     """Cog container class for all subroutines, available as user-context-commands."""
 
-    async def _user_command_induct(self, ctx: discord.ApplicationContext, member: discord.Member, silent: bool) -> None:
+    async def _user_command_induct(self, ctx: discord.ApplicationContext, member: discord.Member, silent: bool) -> None:  # noqa: E501
         """Call the _induct command, providing the required command arguments."""
         try:
             guild: discord.Guild = self.bot.css_guild
@@ -1578,7 +1880,7 @@ class UserCommandsCog(ApplicationCommandsCog):
         await self._induct(ctx, member, guild, silent)
 
     @discord.user_command(name="Induct User")  # type: ignore[no-untyped-call, misc]
-    async def non_silent_induct(self, ctx: discord.ApplicationContext, member: discord.Member) -> None:
+    async def non_silent_induct(self, ctx: discord.ApplicationContext, member: discord.Member) -> None:  # noqa: E501
         """
         Definition & callback response of the "non_silent_induct" user-context-command.
 
@@ -1589,7 +1891,7 @@ class UserCommandsCog(ApplicationCommandsCog):
         await self._user_command_induct(ctx, member, silent=False)
 
     @discord.user_command(name="Silently Induct User")  # type: ignore[no-untyped-call, misc]
-    async def silent_induct(self, ctx: discord.ApplicationContext, member: discord.Member) -> None:
+    async def silent_induct(self, ctx: discord.ApplicationContext, member: discord.Member) -> None:  # noqa: E501
         """
         Definition & callback response of the "silent_induct" user-context-command.
 

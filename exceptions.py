@@ -37,16 +37,21 @@ class BaseDoesNotExistError(ValueError, BaseError, abc.ABC):
     """Exception class to raise when a required Discord entity is missing."""
 
     @staticmethod
-    def format_does_not_exist_with_dependencies(value: str, does_not_exist_type: str, dependant_commands: Collection[str], dependant_tasks: Collection[str], dependant_events: Collection[str]) -> str:  # noqa: C901
+    def format_does_not_exist_with_dependencies(value: str, does_not_exist_type: str, dependant_commands: Collection[str], dependant_tasks: Collection[str], dependant_events: Collection[str]) -> str:  # noqa: C901, E501
         """Format a string, stating that the given Discord entity does not exist."""
         if not dependant_commands and not dependant_tasks and not dependant_events:
-            raise ValueError("The arguments \"dependant_commands\" & \"dependant_tasks\" cannot all be empty.")
+            raise ValueError(
+                "The arguments \"dependant_commands\" & \"dependant_tasks\""
+                " cannot all be empty."
+            )
 
         formatted_dependant_commands: str = ""
 
         if dependant_commands:
             if len(dependant_commands) == 1:
-                formatted_dependant_commands += f"\"/{next(iter(dependant_commands))}\" command"
+                formatted_dependant_commands += (
+                    f"\"/{next(iter(dependant_commands))}\" command"
+                )
             else:
                 index: int
                 dependant_command: str
@@ -63,7 +68,10 @@ class BaseDoesNotExistError(ValueError, BaseError, abc.ABC):
         if does_not_exist_type == "channel":
             value = f"#{value}"
 
-        partial_message: str = f"""\"{value}\" {does_not_exist_type} must exist in order to use the {formatted_dependant_commands}"""
+        partial_message: str = (
+            f"\"{value}\" {does_not_exist_type} must exist"
+            f"in order to use the {formatted_dependant_commands}"
+        )
 
         if dependant_tasks:
             formatted_dependant_tasks: str = ""
@@ -142,7 +150,7 @@ class MessagesJSONFileValueError(InvalidMessagesJSONFile):
 
     DEFAULT_MESSAGE: str = "The messages JSON file has an invalid value."
 
-    def __init__(self, message: str | None = None, dict_key: str | None = None, invalid_value: Any | None = None) -> None:
+    def __init__(self, message: str | None = None, dict_key: str | None = None, invalid_value: Any | None = None) -> None:  # noqa: E501
         """Initialize a new InvalidMessagesJSONFile exception for a key's invalid value."""
         self.invalid_value: Any | None = invalid_value
 
@@ -152,14 +160,20 @@ class MessagesJSONFileValueError(InvalidMessagesJSONFile):
 class GuildDoesNotExist(BaseDoesNotExistError):
     """Exception class to raise when a required Discord guild is missing."""
 
-    DEFAULT_MESSAGE: str = "Server with given ID does not exist or is not accessible to the bot."
+    DEFAULT_MESSAGE: str = (
+        "Server with given ID does not exist"
+        " or is not accessible to the bot."
+    )
 
     def __init__(self, message: str | None = None, guild_id: int | None = None) -> None:
         """Initialize a new DoesNotExist exception for a guild not existing."""
         self.guild_id: int | None = guild_id
 
         if guild_id and not message:
-            message = f"Server with ID \"{self.guild_id}\" does not exist or is not accessible to the bot."
+            message = (
+                f"Server with ID \"{self.guild_id}\" does not exist"
+                " or is not accessible to the bot."
+            )
 
         super().__init__(message)
 
@@ -169,7 +183,7 @@ class RoleDoesNotExist(BaseDoesNotExistError):
 
     DEFAULT_MESSAGE: str = "Role with given name does not exist."
 
-    def __init__(self, message: str | None = None, role_name: str | None = None, dependant_commands: Collection[str] | None = None, dependant_tasks: Collection[str] | None = None, dependant_events: Collection[str] | None = None) -> None:
+    def __init__(self, message: str | None = None, role_name: str | None = None, dependant_commands: Collection[str] | None = None, dependant_tasks: Collection[str] | None = None, dependant_events: Collection[str] | None = None) -> None:  # noqa: E501
         """Initialize a new DoesNotExist exception for a role not existing."""
         self.role_name: str | None = role_name
 
@@ -249,7 +263,7 @@ class ChannelDoesNotExist(BaseDoesNotExistError):
 
     DEFAULT_MESSAGE: str = "Channel with given name does not exist."
 
-    def __init__(self, message: str | None = None, channel_name: str | None = None, dependant_commands: Collection[str] | None = None, dependant_tasks: Collection[str] | None = None, dependant_events: Collection[str] | None = None) -> None:
+    def __init__(self, message: str | None = None, channel_name: str | None = None, dependant_commands: Collection[str] | None = None, dependant_tasks: Collection[str] | None = None, dependant_events: Collection[str] | None = None) -> None:  # noqa: E501
         """Initialize a new DoesNotExist exception for a channel not existing."""
         self.channel_name: str | None = channel_name
 

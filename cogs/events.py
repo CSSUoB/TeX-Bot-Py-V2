@@ -36,15 +36,25 @@ class EventsCog(TeXBotCog):
             discord_logging_handler: DiscordHandler = DiscordHandler(
                 self.bot.user.name if self.bot.user else "TeXBot",
                 settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
-                avatar_url=self.bot.user.avatar.url if self.bot.user and self.bot.user.avatar else None)
+                avatar_url=(
+                    self.bot.user.avatar.url
+                    if self.bot.user and self.bot.user.avatar
+                    else None
+                )
+            )
             discord_logging_handler.setLevel(logging.WARNING)
             # noinspection SpellCheckingInspection
-            discord_logging_handler.setFormatter(logging.Formatter("%(levelname)s | %(message)s"))
+            discord_logging_handler.setFormatter(
+                logging.Formatter("%(levelname)s | %(message)s")
+            )
 
             logging.getLogger("").addHandler(discord_logging_handler)
 
         else:
-            logging.warning("DISCORD_LOG_CHANNEL_WEBHOOK_URL was not set, so error logs will not be sent to the Discord log channel.")
+            logging.warning(
+                "DISCORD_LOG_CHANNEL_WEBHOOK_URL was not set,"
+                " so error logs will not be sent to the Discord log channel."
+            )
 
         guild: discord.Guild | None = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
         if not guild:
@@ -104,7 +114,7 @@ class EventsCog(TeXBotCog):
 
         if guest_role not in before.roles and guest_role in after.roles:
             try:
-                introduction_reminder_opt_out_member: IntroductionReminderOptOutMember = await IntroductionReminderOptOutMember.objects.aget(
+                introduction_reminder_opt_out_member: IntroductionReminderOptOutMember = await IntroductionReminderOptOutMember.objects.aget(  # noqa: E501
                     hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(
                         before.id
                     )
@@ -115,7 +125,13 @@ class EventsCog(TeXBotCog):
                 await introduction_reminder_opt_out_member.adelete()
 
             async for message in after.history():
-                if "joined the CSS Discord server but have not yet introduced" in message.content and message.author.bot:
+                message_is_introduction_reminder: bool = (
+                    (
+                        "joined the CSS Discord server but have not yet introduced"
+                    ) in message.content
+                    and message.author.bot
+                )
+                if message_is_introduction_reminder:
                     await message.delete(
                         reason="Delete introduction reminders after member is inducted."
                     )
@@ -131,10 +147,23 @@ class EventsCog(TeXBotCog):
                 roles_channel_mention = roles_channel.mention
 
             await after.send(
-                f"**Congrats on joining the CSS Discord server as a guest!** You now have access to contribute to all the public channels.\n\nSome things to do to get started:\n1. Check out our rules in {welcome_channel_mention}\n2. Head to {roles_channel_mention} and click on the icons to get optional roles like pronouns and year groups\n3. Change your nickname to whatever you wish others to refer to you as (You can do this by right-clicking your name in the members list to the right & selecting \"Edit Server Profile\")"
+                "**Congrats on joining the CSS Discord server as a guest!**"
+                " You now have access to contribute to all the public channels."
+                "\n\nSome things to do to get started:"
+                f"\n1. Check out our rules in {welcome_channel_mention}"
+                f"\n2. Head to {roles_channel_mention} and click on the icons to get"
+                " optional roles like pronouns and year groups"
+                "\n3. Change your nickname to whatever you wish others to refer to you as"
+                " (You can do this by right-clicking your name in the members list"
+                " to the right & selecting \"Edit Server Profile\")"
             )
             await after.send(
-                "You can also get yourself an annual membership to CSS for only £5! Just head to https://cssbham.com/join. You'll get awesome perks like a free T-shirt:shirt:, access to member only events:calendar_spiral: & a cool green name on the CSS Discord server:green_square:! Checkout all the perks at https://cssbham.com/membership."
+                "You can also get yourself an annual membership to CSS for only £5!"
+                " Just head to https://cssbham.com/join."
+                " You'll get awesome perks like a free T-shirt:shirt:,"
+                " access to member only events:calendar_spiral:"
+                " & a cool green name on the CSS Discord server:green_square:!"
+                " Checkout all the perks at https://cssbham.com/membership."
             )
 
     @TeXBotCog.listener()
@@ -150,7 +179,9 @@ class EventsCog(TeXBotCog):
         if member.guild != guild or member.bot:
             return
 
-        await LeftMember.objects.acreate(roles={f"@{role.name}" for role in member.roles if role.name != "@everyone"})
+        await LeftMember.objects.acreate(
+            roles={f"@{role.name}" for role in member.roles if role.name != "@everyone"}
+        )
 
 
 def setup(bot: TeXBot) -> None:
