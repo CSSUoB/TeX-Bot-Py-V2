@@ -2,7 +2,7 @@
 
 import hashlib
 import re
-from typing import Any
+from typing import Any, Final
 
 import discord
 from django.core.exceptions import ValidationError
@@ -132,8 +132,9 @@ class UoBMadeMember(AsyncBaseModel):
         The uob_id value is hashed into the format that hashed_uob_ids are stored in the
         database when new UoBMadeMember objects are created.
         """
-        if not isinstance(uob_id, (str, int)) or not re.match(r"\A\d{7}\Z", str(uob_id)):
-            raise ValueError(f"\"{uob_id}\" is not a valid UoB Student ID.")
+        if not isinstance(uob_id, str | int) or not re.match(r"\A\d{7}\Z", str(uob_id)):
+            INVALID_UOB_ID_MESSAGE: Final[str] = f"\"{uob_id}\" is not a valid UoB Student ID."
+            raise ValueError(INVALID_UOB_ID_MESSAGE)
 
         return hashlib.sha256(str(uob_id).encode()).hexdigest()
 
@@ -220,9 +221,10 @@ class DiscordReminder(HashedDiscordMember):
             try:
                 channel_type = int(channel_type.value)
             except ValueError:
-                raise TypeError(
+                INVALID_CHANNEL_TYPE_MESSAGE: Final[str] = (
                     "channel_type must be an integer or an instance of discord.ChannelType."
                 )
+                raise TypeError(INVALID_CHANNEL_TYPE_MESSAGE) from None
 
         self._channel_type = channel_type
 
@@ -231,7 +233,7 @@ class DiscordReminder(HashedDiscordMember):
 
         verbose_name = "A Reminder for a Discord Member"
         verbose_name_plural = "Reminders for Discord Members"
-        constraints = [
+        constraints = [  # noqa: RUF012
             models.UniqueConstraint(
                 fields=["hashed_member_id", "message", "_channel_id"],
                 name="unique_user_channel_message"

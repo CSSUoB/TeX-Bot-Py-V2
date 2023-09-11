@@ -1,13 +1,12 @@
 """Custom exception classes that could be raised within the cogs modules."""
 
 import abc
-from typing import Any, Collection
+from collections.abc import Collection
+from typing import Any, Final
 
 
 class ImproperlyConfigured(Exception):
     """Exception class to raise when environment variables are not correctly provided."""
-
-    pass
 
 
 class BaseError(BaseException, abc.ABC):
@@ -37,13 +36,14 @@ class BaseDoesNotExistError(ValueError, BaseError, abc.ABC):
     """Exception class to raise when a required Discord entity is missing."""
 
     @staticmethod
-    def format_does_not_exist_with_dependencies(value: str, does_not_exist_type: str, dependant_commands: Collection[str], dependant_tasks: Collection[str], dependant_events: Collection[str]) -> str:  # noqa: C901, E501
+    def format_does_not_exist_with_dependencies(value: str, does_not_exist_type: str, dependant_commands: Collection[str], dependant_tasks: Collection[str], dependant_events: Collection[str]) -> str:  # noqa: C901, E501, PLR0912
         """Format a string, stating that the given Discord entity does not exist."""
         if not dependant_commands and not dependant_tasks and not dependant_events:
-            raise ValueError(
+            EMPTY_ARGS_MESSAGE: Final[str] = (
                 "The arguments \"dependant_commands\" & \"dependant_tasks\""
                 " cannot all be empty."
             )
+            raise ValueError(EMPTY_ARGS_MESSAGE)
 
         formatted_dependant_commands: str = ""
 
@@ -70,7 +70,7 @@ class BaseDoesNotExistError(ValueError, BaseError, abc.ABC):
 
         partial_message: str = (
             f"\"{value}\" {does_not_exist_type} must exist"
-            f"in order to use the {formatted_dependant_commands}"
+            f" in order to use the {formatted_dependant_commands}"
         )
 
         if dependant_tasks:

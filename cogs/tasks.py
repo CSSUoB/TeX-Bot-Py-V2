@@ -5,6 +5,7 @@ Contains repeating tasks that are executed at set intervals.
 """
 
 import datetime
+import functools
 import logging
 from typing import Final
 
@@ -108,17 +109,20 @@ class TasksCog(TeXBotCog):
             )
             if time_since_reminder_needed_to_be_sent > datetime.timedelta(minutes=15):
                 user: discord.User | None = discord.utils.find(
-                    lambda u: (
-                        not u.bot
-                        and DiscordReminder.hash_member_id(u.id) == reminder.hashed_member_id
+                    functools.partial(
+                        lambda u, r: (
+                            not u.bot
+                            and DiscordReminder.hash_member_id(u.id) == r.hashed_member_id
+                        ),
+                        reminder
                     ),
                     self.bot.users
                 )
 
                 if not user:
                     logging.warning(
-                        f"User with hashed user ID: {reminder.hashed_member_id}"
-                        " no longer exists."
+                        "User with hashed user ID: %s no longer exists.",
+                        reminder.hashed_member_id
                     )
                     await reminder.adelete()
                     continue
@@ -181,8 +185,9 @@ class TasksCog(TeXBotCog):
 
             if not member.joined_at:
                 logging.error(
-                    f"Member with ID: {member.id} could not be checked whether to kick,"
-                    " because their \"joined_at\" attribute was None."
+                    "Member with ID: %s could not be checked whether to kick,"
+                    " because their \"joined_at\" attribute was None.",
+                    member.id
                 )
                 continue
 
@@ -201,8 +206,9 @@ class TasksCog(TeXBotCog):
                     )
                 except discord.Forbidden as kick_error:
                     logging.error(
-                        f"Member with ID: {member.id} could not be kicked"
-                        f" due to {kick_error.text}"
+                        "Member with ID: %s could not be kicked due to %s",
+                        member.id,
+                        kick_error.text
                     )
 
     @tasks.loop(**settings["INTRODUCTION_REMINDER_INTERVAL"])
@@ -236,8 +242,9 @@ class TasksCog(TeXBotCog):
 
             if not member.joined_at:
                 logging.error(
-                    f"Member with ID: {member.id} could not be checked whether to send"
-                    " introduction_reminder, because their \"joined_at\" attribute was None."
+                    "Member with ID: %s could not be checked whether to send"
+                    " introduction_reminder, because their \"joined_at\" attribute was None.",
+                    member.id
                 )
                 continue
 
@@ -300,7 +307,7 @@ class TasksCog(TeXBotCog):
         joining the CSS Discord server.
         """
 
-        def __init__(self, bot: TeXBot):
+        def __init__(self, bot: TeXBot) -> None:
             """Initialize a new discord.View, to opt-in/out of introduction reminders."""
             self.bot: TeXBot = bot
 
@@ -458,15 +465,20 @@ class TasksCog(TeXBotCog):
                 continue
 
             async for log in guild.audit_logs(action=AuditLogAction.member_role_update):
-                if log.target == member:
-                    if guest_role not in log.before.roles and guest_role in log.after.roles:
-                        guest_role_received_time = log.created_at
-                        break
+                log_adds_guest_role: bool = (
+                    log.target == member
+                    and guest_role not in log.before.roles
+                    and guest_role in log.after.roles
+                )
+                if log_adds_guest_role:
+                    guest_role_received_time = log.created_at
+                    break
             else:
                 logging.error(
-                    f"Member with ID: {member.id} could not be checked"
-                    " whether to send role_reminder,"
-                    " because their \"guest_role_received_time\" could not be found."
+                    "Member with ID: %s could not be checked whether to send"
+                    " role_reminder, because their \"guest_role_received_time\""
+                    " could not be found.",
+                    member.id
                 )
                 continue
 

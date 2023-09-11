@@ -2,7 +2,7 @@
 
 import hashlib
 import re
-from typing import Any
+from typing import Any, Final
 
 from asgiref.sync import sync_to_async
 from django.core.exceptions import FieldDoesNotExist
@@ -23,6 +23,17 @@ class AsyncBaseModel(models.Model):
 
         abstract = True
 
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Save the current instance to the database, only after the model has been cleaned.
+
+        Cleaning the model ensures all data in the database is valid, even if the data was not
+        added via a ModelForm (E.g. data is added using the ORM API).
+        """
+        self.full_clean()
+
+        super().save(*args, **kwargs)
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize a new model instance, capturing any proxy field values."""
         proxy_fields: dict[str, Any] = {
@@ -38,18 +49,7 @@ class AsyncBaseModel(models.Model):
         for field_name, value in proxy_fields.items():
             setattr(self, field_name, value)
 
-    def save(self, *args: Any, **kwargs: Any) -> None:
-        """
-        Save the current instance to the database, only after the model has been cleaned.
-
-        Cleaning the model ensures all data in the database is valid, even if the data was not
-        added via a ModelForm (E.g. data is added using the ORM API).
-        """
-        self.full_clean()
-
-        super().save(*args, **kwargs)
-
-    def update(self, commit: bool = True, using: str | None = None, **kwargs: Any) -> None:
+    def update(self, *, commit: bool = True, using: str | None = None, **kwargs: Any) -> None:
         """
         Change an in-memory object's values, then save it to the database.
 
@@ -67,10 +67,11 @@ class AsyncBaseModel(models.Model):
                 unexpected_kwargs.add(field_name)
 
         if unexpected_kwargs:
-            raise TypeError(
+            UNEXPECTED_KWARGS_MESSAGE: Final[str] = (
                 f"{self._meta.model.__name__} got unexpected keyword arguments:"
                 f" {tuple(unexpected_kwargs)}"
             )
+            raise TypeError(UNEXPECTED_KWARGS_MESSAGE)
 
         value: Any
         for field_name, value in kwargs.items():
@@ -82,7 +83,7 @@ class AsyncBaseModel(models.Model):
     update.alters_data: bool = True  # type: ignore[attr-defined, misc]
 
     # noinspection SpellCheckingInspection
-    async def aupdate(self, commit: bool = True, using: str | None = None, **kwargs: Any) -> None:  # noqa: E501
+    async def aupdate(self, *, commit: bool = True, using: str | None = None, **kwargs: Any) -> None:  # noqa: E501
         """
         Asyncronously change an in-memory object's values, then save it to the database.
 
@@ -163,8 +164,12 @@ class HashedDiscordMember(AsyncBaseModel):
             """Validate whether the provided value is a valid Discord member ID."""
             return bool(re.match(r"\A\d{17,20}\Z", str(value)))
 
-        if not isinstance(member_id, (str, int)) or not is_valid_member_id(member_id):
-            raise ValueError(f"\"{member_id}\" is not a valid Discord member ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)")
+        if not isinstance(member_id, str | int) or not is_valid_member_id(member_id):
+            INVALID_MEMBER_ID_MESSAGE: Final[str] = (
+                f"\"{member_id}\" is not a valid Discord member ID"
+                " (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
+            )
+            raise ValueError(INVALID_MEMBER_ID_MESSAGE)
 
         return hashlib.sha256(str(member_id).encode()).hexdigest()
 
