@@ -119,7 +119,6 @@ class BaseTestArgumentParser:
 
         The command line outputs are stored in class variables for later access.
         """
-        # NOTE: Because executing utils.py from a command-line subprocess requires it to be spawned as a shell, security issues can occur. Therefore loose validation checks are required for the values of util_function_name & arguments (see https://stackoverflow.com/a/29023432/14403974)
         if not re.match(r"\A[a-zA-Z0-9._\-+!\"' ]*\Z", util_function_name):
             raise TypeError(
                 "util_function_name must be a valid function name for"
@@ -145,14 +144,13 @@ class BaseTestArgumentParser:
         else:
             raise FileNotFoundError("Could not locate project root directory.")
 
-        subprocess_args: list[str] = [sys.executable, "utils.py"]
+        subprocess_args: list[str] = [sys.executable, "-m", "utils"]
         if util_function_name:
             subprocess_args.append(util_function_name)
         subprocess_args.extend(arguments)
 
         parser_output: CompletedProcess[bytes] = subprocess.run(
-            " ".join(subprocess_args),
-            shell=True,
+            subprocess_args,  # noqa: S603
             cwd=project_root.parent,
             capture_output=True
         )
