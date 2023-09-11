@@ -151,7 +151,7 @@ class BaseTestArgumentParser:
         subprocess_args.extend(arguments)
 
         parser_output: CompletedProcess[bytes] = subprocess.run(
-            subprocess_args,
+            " ".join(subprocess_args),
             shell=True,
             cwd=project_root.parent,
             capture_output=True
