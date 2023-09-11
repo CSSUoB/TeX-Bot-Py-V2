@@ -24,8 +24,12 @@ class IntroductionReminderOptOutMember(HashedDiscordMember):
     class Meta:
         """Metadata options about this model."""
 
-        verbose_name = "Hashed Discord ID of Member that has Opted-Out of Introduction Reminders"
-        verbose_name_plural = "Hashed Discord IDs of Members that have Opted-Out of Introduction Reminders"
+        verbose_name = (
+            "Hashed Discord ID of Member that has Opted-Out of Introduction Reminders"
+        )
+        verbose_name_plural = (
+            "Hashed Discord IDs of Members that have Opted-Out of Introduction Reminders"
+        )
 
 
 class SentOneOffIntroductionReminderMember(HashedDiscordMember):
@@ -40,8 +44,14 @@ class SentOneOffIntroductionReminderMember(HashedDiscordMember):
     class Meta:
         """Metadata options about this model."""
 
-        verbose_name = "Hashed Discord ID of Member that has had a one-off Introduction reminder sent to their DMs"
-        verbose_name_plural = "Hashed Discord IDs of Members that have had a one-off Introduction reminder sent to their DMs"
+        verbose_name = (
+            "Hashed Discord ID of Member that has had a one-off Introduction reminder"
+            " sent to their DMs"
+        )
+        verbose_name_plural = (
+            "Hashed Discord IDs of Members that have had a one-off Introduction reminder"
+            " sent to their DMs"
+        )
 
 
 class SentGetRolesReminderMember(HashedDiscordMember):
@@ -59,8 +69,14 @@ class SentGetRolesReminderMember(HashedDiscordMember):
     class Meta:
         """Metadata options about this model."""
 
-        verbose_name = "Hashed Discord ID of Member that has had a \"Get Roles\" reminder sent to their DMs"
-        verbose_name_plural = "Hashed Discord IDs of Members that have had a \"Get Roles\" reminder sent to their DMs"
+        verbose_name = (
+            "Hashed Discord ID of Member that has had a \"Get Roles\" reminder"
+            " sent to their DMs"
+        )
+        verbose_name_plural = (
+            "Hashed Discord IDs of Members that have had a \"Get Roles\" reminder"
+            " sent to their DMs"
+        )
 
 
 class UoBMadeMember(AsyncBaseModel):
@@ -169,7 +185,11 @@ class DiscordReminder(HashedDiscordMember):
     )
     _channel_type = models.IntegerField(
         "Discord Channel Type of the channel that the reminder needs to be sent in",
-        choices=[(channel_type.value, channel_type.name) for channel_type in discord.ChannelType],
+        choices=[
+            (channel_type.value, channel_type.name)
+            for channel_type
+            in discord.ChannelType
+        ],
         null=True,
         blank=True
     )
@@ -200,7 +220,9 @@ class DiscordReminder(HashedDiscordMember):
             try:
                 channel_type = int(channel_type.value)
             except ValueError:
-                raise TypeError("channel_type must be an integer or an instance of discord.ChannelType.")
+                raise TypeError(
+                    "channel_type must be an integer or an instance of discord.ChannelType."
+                )
 
         self._channel_type = channel_type
 
@@ -218,7 +240,10 @@ class DiscordReminder(HashedDiscordMember):
 
     def __repr__(self) -> str:
         """Generate a developer-focused representation of this DiscordReminder's attributes."""
-        return f"<{self._meta.verbose_name}: \"{self.hashed_member_id}\", \"{self.channel_id}\", \"{self.send_datetime}\">"
+        return (
+            f"<{self._meta.verbose_name}: \"{self.hashed_member_id}\","
+            f" \"{self.channel_id}\", \"{self.send_datetime}\">"
+        )
 
     def __str__(self) -> str:
         """Generate the string representation of this DiscordReminder."""
@@ -282,8 +307,12 @@ class LeftMember(AsyncBaseModel):
     class Meta:
         """Metadata options about this model."""
 
-        verbose_name = "A List of Roles that a Member had when they left the CSS Discord server"
-        verbose_name_plural = "Lists of Roles that Members had when they left the CSS Discord server"
+        verbose_name = (
+            "A List of Roles that a Member had when they left the CSS Discord server"
+        )
+        verbose_name_plural = (
+            "Lists of Roles that Members had when they left the CSS Discord server"
+        )
 
     def clean(self) -> None:
         """
@@ -292,7 +321,12 @@ class LeftMember(AsyncBaseModel):
         This runs after clean() has been called on every field by self.clean_fields.
         """
         if any(not isinstance(role, str) for role in self.roles):
-            raise ValidationError({"_roles": "Roles must be a set of strings representing the role names."}, code="invalid")
+            raise ValidationError(
+                {
+                    "_roles": "Roles must be a set of strings representing the role names."
+                },
+                code="invalid"
+            )
 
     @classmethod
     def get_proxy_field_names(cls) -> set[str]:
