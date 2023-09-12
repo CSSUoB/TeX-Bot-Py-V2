@@ -9,7 +9,7 @@ from utils import TeXBot
 class TeXBotCog(Cog):
     """Base Cog subclass that stores a reference to the currently running bot."""
 
-    def __init__(self, bot: TeXBot):
+    def __init__(self, bot: TeXBot) -> None:
         """Initialize a new cog instance, storing a reference to the bot object."""
         self.bot: TeXBot = bot
 

@@ -61,8 +61,7 @@ class EventsCog(TeXBotCog):
             logging.critical(GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"]))
             await self.bot.close()
             return
-        else:
-            self.bot._css_guild = guild
+        self.bot.set_css_guild(guild)
 
         if not discord.utils.get(guild.roles, name="Committee"):
             logging.warning(CommitteeRoleDoesNotExist())
@@ -86,7 +85,7 @@ class EventsCog(TeXBotCog):
             TasksCog.OptOutIntroductionRemindersView(self.bot)
         )
 
-        logging.info(f"Ready! Logged in as {self.bot.user}")
+        logging.info("Ready! Logged in as %s", self.bot.user)
 
     @TeXBotCog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:

@@ -8,12 +8,14 @@ import subprocess
 import sys
 from pathlib import Path
 from subprocess import CompletedProcess
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
-import discord
 import pytest
 
 import utils
+
+if TYPE_CHECKING:
+    import discord
 
 
 class TestGenerateInviteURL:
@@ -83,7 +85,7 @@ class TestAmountOfTimeFormatter:
     # noinspection PyTypeChecker
     @pytest.mark.parametrize(
         "time_value",
-        tuple(range(2, 21)) + (2.00, 0, 0.0, 25.0, -0, -0.0, -25.0)
+        (*range(2, 21), 2.00, 0, 0.0, 25.0, -0, -0.0, -25.0)
     )
     def test_format_integer_value(self, time_value: float) -> None:
         """Test that an integer value includes the value and time_scale pluralized."""
@@ -120,10 +122,11 @@ class BaseTestArgumentParser:
         The command line outputs are stored in class variables for later access.
         """
         if not re.match(r"\A[a-zA-Z0-9._\-+!\"' ]*\Z", util_function_name):
-            raise TypeError(
+            INVALID_FUNCTION_NAME_MESSAGE: Final[str] = (
                 "util_function_name must be a valid function name for"
                 " the utils.py command-line program."
             )
+            raise TypeError(INVALID_FUNCTION_NAME_MESSAGE)
 
         arguments_contain_invalid_symbol: bool = any(
             not re.match(r"\A[a-zA-Z0-9._\-+!\"' ]*\Z", argument)
@@ -131,18 +134,21 @@ class BaseTestArgumentParser:
             in arguments
         )
         if arguments_contain_invalid_symbol:
-            raise ValueError(
+            INVALID_ARGUMENTS_MESSAGE: Final[str] = (
                 "All arguments must be valid arguments for the utils.py command-line program."
             )
+            raise ValueError(INVALID_ARGUMENTS_MESSAGE)
 
         project_root: Path = Path(__file__).resolve()
         for _ in range(6):
             project_root = project_root.parent
 
-            if "README.md" in (path.name for path in Path(".").parent.iterdir()):
+            if "README.md" in (path.name for path in Path().parent.iterdir()):
                 break
         else:
-            raise FileNotFoundError("Could not locate project root directory.")
+            # noinspection PyFinal
+            NO_ROOT_DIRECTORY_MESSAGE: Final[str] = "Could not locate project root directory."
+            raise FileNotFoundError(NO_ROOT_DIRECTORY_MESSAGE)
 
         subprocess_args: list[str] = [sys.executable, "-m", "utils"]
         if util_function_name:
@@ -152,7 +158,8 @@ class BaseTestArgumentParser:
         parser_output: CompletedProcess[bytes] = subprocess.run(
             subprocess_args,  # noqa: S603
             cwd=project_root.parent,
-            capture_output=True
+            capture_output=True,
+            check=False
         )
 
         cls.parser_output_return_code = parser_output.returncode

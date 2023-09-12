@@ -2,6 +2,7 @@
 
 import os
 import re
+import sys
 from argparse import ArgumentParser, Namespace
 
 import discord
@@ -10,14 +11,18 @@ import discord
 if __name__ != "__main__":
     import io
     import math
-    from typing import Any, Collection, TypeAlias
+    from typing import TYPE_CHECKING, Any, Final, TypeAlias
 
     import matplotlib.pyplot as plt
     import mplcyberpunk
-    from matplotlib.text import Text as Plot_Text
 
     from config import settings
     from exceptions import GuildDoesNotExist
+
+    if TYPE_CHECKING:
+        from collections.abc import Collection
+
+        from matplotlib.text import Text as Plot_Text
 
     ChannelTypes: TypeAlias = (
         discord.VoiceChannel
@@ -109,7 +114,7 @@ if __name__ != "__main__":
             fontsize="large",
             wrap=True
         )
-        xlabel_obj._get_wrap_line_width = lambda: 475
+        xlabel_obj._get_wrap_line_width = lambda: 475  # noqa: SLF001
 
         ylabel_obj: Plot_Text = plt.ylabel(
             ylabel,
@@ -117,10 +122,10 @@ if __name__ != "__main__":
             fontsize="large",
             wrap=True
         )
-        ylabel_obj._get_wrap_line_width = lambda: 375
+        ylabel_obj._get_wrap_line_width = lambda: 375  # noqa: SLF001
 
         title_obj: Plot_Text = plt.title(title, fontsize="x-large", wrap=True)
-        title_obj._get_wrap_line_width = lambda: 500
+        title_obj._get_wrap_line_width = lambda: 500  # noqa: SLF001
 
         if extra_text:
             extra_text_obj: Plot_Text = plt.text(
@@ -133,7 +138,7 @@ if __name__ != "__main__":
                 fontstyle="italic",
                 fontsize="small"
             )
-            extra_text_obj._get_wrap_line_width = lambda: 400
+            extra_text_obj._get_wrap_line_width = lambda: 400  # noqa: SLF001
             plt.subplots_adjust(bottom=0.2)
 
         plot_file = io.BytesIO()
@@ -163,11 +168,10 @@ if __name__ != "__main__":
         if value == 1 or float(f"{value:.2f}") == 1:
             return f"{time_scale}"
 
-        elif value % 1 == 0 or float(f"{value:.2f}") % 1 == 0:
+        if value % 1 == 0 or float(f"{value:.2f}") % 1 == 0:
             return f"{int(value)} {time_scale}s"
 
-        else:
-            return f"{value:.2f} {time_scale}s"
+        return f"{value:.2f} {time_scale}s"
 
 
     class TeXBot(discord.Bot):
@@ -190,6 +194,8 @@ if __name__ != "__main__":
             self._roles_channel: discord.TextChannel | None = None
             self._general_channel: discord.TextChannel | None = None
             self._welcome_channel: discord.TextChannel | None = None
+
+            self._css_guild_set: bool = False
 
             super().__init__(*args, **options)  # type: ignore[no-untyped-call]
 
@@ -328,11 +334,27 @@ if __name__ != "__main__":
             )
 
             if text_channel is not None and not isinstance(text_channel, discord.TextChannel):
-                raise TypeError(
+                INVALID_TEXT_CHANNEL_MESSAGE: Final[str] = (
                     f"Received non text channel when attempting to fetch {name} text channel."
                 )
+                raise TypeError(INVALID_TEXT_CHANNEL_MESSAGE)
 
             return text_channel
+
+        def set_css_guild(self, css_guild: discord.Guild) -> None:
+            """
+            Set the css_guild value that the bot will reference in the future.
+
+            This can only be set once.
+            """
+            if self._css_guild_set:
+                CSS_GUILD_SET_MESSAGE: Final[str] = (
+                    "The bot's css_guild property has already been set, it cannot be changed."
+                )
+                raise RuntimeError(CSS_GUILD_SET_MESSAGE)
+
+            self._css_guild = css_guild
+            self._css_guild_set = True
 
 if __name__ == "__main__":
     arg_parser: ArgumentParser = ArgumentParser(
@@ -388,10 +410,12 @@ if __name__ == "__main__":
                 "discord_guild_id must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
             )
 
-        print(
+        sys.stdout.write(
             generate_invite_url(
                 parsed_args.discord_bot_application_id,
                 int(discord_guild_id)
             )
         )
-        generate_invite_url_arg_parser.exit()
+        sys.stdout.flush()
+
+        generate_invite_url_arg_parser.exit(status=0)

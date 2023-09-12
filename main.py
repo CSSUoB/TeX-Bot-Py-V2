@@ -28,7 +28,7 @@ intents.members = True
 bot = TeXBot(intents=intents)
 
 cog: str
-for cog in {"events", "commands", "tasks"}:
+for cog in ("events", "commands", "tasks"):
     bot.load_extension(f"cogs.{cog}")
 
 if __name__ == "__main__":

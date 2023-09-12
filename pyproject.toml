@@ -66,8 +66,69 @@ warn_unreachable = true
 django_settings_module = "db.settings"
 
 [tool.ruff]
-select = ["E", "F", "W", "C", "I", "N", "D", "S"]
-ignore = ["N818", "N806", "D203", "D212", "S101", "S311"]
+select = [
+    "E",
+    "F",
+    "W",
+    "C",
+    "I",
+    "N",
+    "D",
+    "UP",
+    "YTT",
+    "ANN",
+    "ASYNC",
+    "S",
+    "BLE",
+    "FBT",
+    "B",
+    "A",
+    "COM",
+    "DTZ",
+    "T",
+    "DJ",
+    "EM",
+    "G",
+    "INP",
+    "PIE",
+    "PT",
+    "Q",
+    "RSE",
+    "RET",
+    "SLF",
+    "SLOT",
+    "SIM",
+    "TID",
+    "TCH",
+    "ARG",
+    "PTH",
+    "TD",
+    "FIX",
+    "ERA",
+    "PGH",
+    "PL",
+    "TRY",
+    "FLY",
+    "PERF",
+    "FURB",
+    "RUF"
+]
+ignore = [
+    "N818",
+    "N806",
+    "D203",
+    "D212",
+    "ANN101",
+    "ANN102",
+    "ANN401",
+    "S101",
+    "S311",
+    "COM812",
+    "Q003",
+    "PLR0911",
+    "PLR0915",
+    "TRY400"
+]
 line-length = 95
 unfixable = ["ALL"]
 target-version ="py311"
@@ -95,8 +156,9 @@ ignore-overlong-task-comments = true
 max-doc-length = 95
 
 [tool.ruff.pylint]
-allow-magic-value-types = ["bytes"]
-max-branches = 4
+allow-magic-value-types = ["str", "bytes", "int"]
+max-args = 7
+max-branches = 19
 
 [tool.ruff.pyupgrade]
 keep-runtime-typing = true

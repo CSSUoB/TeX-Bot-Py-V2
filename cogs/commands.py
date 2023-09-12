@@ -5,8 +5,8 @@ import logging
 import math
 import random
 import re
-import time
-from typing import Final, Iterator, Mapping, TypeAlias
+from collections.abc import Iterator, Mapping
+from typing import TYPE_CHECKING, Final, TypeAlias
 
 import aiohttp
 import bs4
@@ -31,6 +31,9 @@ from exceptions import (
     RolesChannelDoesNotExist,
 )
 from utils import TeXBot
+
+if TYPE_CHECKING:
+    import time
 
 MentionableMember: TypeAlias = discord.Member | discord.Role | None
 
@@ -105,9 +108,9 @@ class ApplicationCommandsCog(TeXBotCog):
         await ctx.respond(construct_error_message, ephemeral=True)
 
         if logging_message:
-            logging.error(f"{construct_logging_error_message} {logging_message}")
+            logging.error("%s %s", construct_logging_error_message, logging_message)
 
-    async def _induct(self, ctx: discord.ApplicationContext, induction_member: discord.Member, guild: discord.Guild, silent: bool) -> None:  # noqa: E501
+    async def _induct(self, ctx: discord.ApplicationContext, induction_member: discord.Member, guild: discord.Guild, *, silent: bool) -> None:  # noqa: E501
         """Perform the actual process of inducting a member by giving them the Guest role."""
         guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
@@ -226,7 +229,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
     )
 
     @staticmethod
-    async def remind_me_autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> set[str]:  # noqa: C901, E501
+    async def remind_me_autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> set[str]:  # noqa: C901, E501, PLR0912
         """
         Autocomplete callable that generates the common delay input values.
 
@@ -261,7 +264,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         delay_choices: set[str] = set()
 
-        if re.match(r"\Ain? ?\Z", ctx.value):  # noqa: E501
+        if re.match(r"\Ain? ?\Z", ctx.value):
             FORMATTED_TIME_NUMS: Final[Iterator[tuple[int, str, str]]] = itertools.product(
                 range(1, 150),
                 {"", " "},
@@ -281,7 +284,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             return {f"in {delay_choice}" for delay_choice in delay_choices}
 
         match: re.Match[str] | None
-        if match := re.match(r"\Ain (?P<partial_date>\d{0,3})\Z", ctx.value):  # noqa: E501
+        if match := re.match(r"\Ain (?P<partial_date>\d{0,3})\Z", ctx.value):
             for joiner, has_s in itertools.product({"", " "}, {"", "s"}):
                 delay_choices.update(
                     f"""{match.group("partial_date")}{joiner}{time_choice}{has_s}"""
@@ -294,7 +297,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         current_year: int = discord.utils.utcnow().year
 
-        if re.match(r"\A\d{1,3}\Z", ctx.value):  # noqa: E501
+        if re.match(r"\A\d{1,3}\Z", ctx.value):
             for joiner, has_s in itertools.product({"", " "}, {"", "s"}):
                 delay_choices.update(
                     f"{joiner}{time_choice}{has_s}"
@@ -308,7 +311,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 for month in range(1, 12):
                     year: int
                     for year in range(current_year, current_year + 40):
-                        for joiner in {"/", " / ", "-", " - ", ".", " . "}:
+                        for joiner in ("/", " / ", "-", " - ", ".", " . "):
                             delay_choices.add(f"{joiner}{month}{joiner}{year}")
                             if month < 10:
                                 delay_choices.add(f"{joiner}0{month}{joiner}{year}")
@@ -324,18 +327,18 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 if has_s and len(time_choice) <= 1:
                     continue
 
-                time_choice = joiner + time_choice + has_s
+                formatted_time_choice: str = joiner + time_choice + has_s
 
                 slice_size: int
-                for slice_size in range(1, len(time_choice) + 1):
-                    if match.group("ctx_time_choice").casefold() == time_choice[:slice_size]:
-                        delay_choices.add(time_choice[slice_size:])
+                for slice_size in range(1, len(formatted_time_choice) + 1):
+                    if match.group("ctx_time_choice").casefold() == formatted_time_choice[:slice_size]:  # noqa: E501
+                        delay_choices.add(formatted_time_choice[slice_size:])
 
-        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?\Z", ctx.value):  # noqa: E501
+        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?\Z", ctx.value):
             if 1 <= int(match.group("date")) <= 31:
                 for month in range(1, 12):
                     for year in range(current_year, current_year + 40):
-                        for joiner in {"/", " / ", "-", " - ", ".", " . "}:
+                        for joiner in ("/", " / ", "-", " - ", ".", " . "):
                             delay_choices.add(f"{month}{joiner}{year}")
                             if month < 10:
                                 delay_choices.add(f"0{month}{joiner}{year}")
@@ -343,7 +346,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2})\Z", ctx.value):  # noqa: E501
             if 1 <= int(match.group("date")) <= 31 and 1 <= int(match.group("month")) <= 12:
                 for year in range(current_year, current_year + 40):
-                    for joiner in {"/", " / ", "-", " - ", ".", " . "}:
+                    for joiner in ("/", " / ", "-", " - ", ".", " . "):
                         delay_choices.add(f"{joiner}{year}")
 
         elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?\Z", ctx.value):  # noqa: E501
@@ -351,7 +354,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 for year in range(current_year, current_year + 40):
                     delay_choices.add(f"{year}")
 
-        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?(?P<partial_year>\d{1,3})\Z", ctx.value):  # noqa: E501
+        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?(?P<partial_year>\d{1,3})\Z", ctx.value):  # noqa: E501, SIM102
             if 1 <= int(match.group("date")) <= 31 and 1 <= int(match.group("month")) <= 12:
                 for year in range(current_year, current_year + 40):
                     delay_choices.add(f"{year}"[len(match.group("partial_year")):])
@@ -392,15 +395,14 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 )
             }
 
-        else:
-            return {
-                discord.OptionChoice(name=channel.name, value=str(channel.id))
-                for channel
-                in guild.text_channels
-                if channel.permissions_for(channel_permissions_limiter).is_superset(
-                    discord.Permissions(send_messages=True, view_channel=True)
-                )
-            }
+        return {
+            discord.OptionChoice(name=channel.name, value=str(channel.id))
+            for channel
+            in guild.text_channels
+            if channel.permissions_for(channel_permissions_limiter).is_superset(
+                discord.Permissions(send_messages=True, view_channel=True)
+            )
+        }
 
     @staticmethod
     async def archive_autocomplete_get_categories(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
@@ -464,12 +466,11 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 in members
             }
 
-        else:
-            return {
-                discord.OptionChoice(name=member.name, value=str(member.id))
-                for member
-                in members
-            }
+        return {
+            discord.OptionChoice(name=member.name, value=str(member.id))
+            for member
+            in members
+        }
 
     async def _delete_all(self, ctx: discord.ApplicationContext, command_name: str, delete_model: type[Model]) -> None:  # noqa: E501
         """Perform the actual deletion process of all instances of the given model class."""
@@ -515,7 +516,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             return
 
         # noinspection PyProtectedMember
-        await delete_model._default_manager.all().adelete()
+        await delete_model._default_manager.all().adelete()  # noqa: SLF001
 
         await ctx.respond(
             f"""All {
@@ -622,18 +623,18 @@ class SlashCommandsCog(ApplicationCommandsCog):
                     message="An unrecoverable error occurred."
                 )
                 logging.critical(
-                    "Error when creating DiscordReminder object:"
-                    f" {create_discord_reminder_error}"
+                    "Error when creating DiscordReminder object: %s",
+                    create_discord_reminder_error
                 )
                 await self.bot.close()
                 return
-            else:
-                await self.send_error(
-                    ctx,
-                    command_name="remind_me",
-                    message="You already have a reminder with that message in this channel!"
-                )
-                return
+
+            await self.send_error(
+                ctx,
+                command_name="remind_me",
+                message="You already have a reminder with that message in this channel!"
+            )
+            return
 
         await ctx.respond("Reminder set!", ephemeral=True)
 
@@ -876,7 +877,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         default=False,
         required=False
     )
-    async def induct(self, ctx: discord.ApplicationContext, str_induct_member_id: str, silent: bool) -> None:  # noqa: E501
+    async def induct(self, ctx: discord.ApplicationContext, str_induct_member_id: str, *, silent: bool) -> None:  # noqa: E501
         """
         Definition & callback response of the "induct" command.
 
@@ -914,7 +915,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
             return
 
-        await self._induct(ctx, induct_member, guild, silent)
+        await self._induct(ctx, induct_member, guild, silent=silent)
 
     # noinspection SpellCheckingInspection
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -1035,7 +1036,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             "Expires": "0"
         }
         request_cookies: dict[str, str] = {".ASPXAUTH": settings["MEMBERS_PAGE_COOKIE"]}
-        async with aiohttp.ClientSession(headers=request_headers, cookies=request_cookies) as http_session:  # noqa: E501
+        async with aiohttp.ClientSession(headers=request_headers, cookies=request_cookies) as http_session:  # noqa: E501, SIM117
             async with http_session.get(url=settings["MEMBERS_PAGE_URL"]) as http_response:
                 response_html: str = await http_response.text()
 
@@ -1070,19 +1071,18 @@ class SlashCommandsCog(ApplicationCommandsCog):
         guild_member_ids.discard(" ")
 
         if not guild_member_ids:
-            try:
-                raise IOError(
-                    "The guild member IDs could not be retrieved from the MEMBERS_PAGE_URL."
-                )
-            except IOError as guild_member_ids_error:
-                await self.send_error(
-                    ctx,
-                    error_code="E1041",
-                    command_name="make_member"
-                )
-                logging.critical(guild_member_ids_error)
-                await self.bot.close()
-                return
+            guild_member_ids_error: OSError = OSError(
+                "The guild member IDs could not be retrieved from the MEMBERS_PAGE_URL."
+            )
+
+            await self.send_error(
+                ctx,
+                error_code="E1041",
+                command_name="make_member"
+            )
+            logging.critical(guild_member_ids_error)
+            await self.bot.close()
+            return
 
         if uob_id not in guild_member_ids:
             await self.send_error(
@@ -1204,7 +1204,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
             author_role_name: str
             for author_role_name in author_role_names:
-                if f"@{author_role_name}" in message_counts.keys():
+                if f"@{author_role_name}" in message_counts:
                     is_author_role_name: bool = author_role_name == "Committee"
                     if is_author_role_name and "Committee-Elect" in author_role_names:
                         continue
@@ -1328,7 +1328,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
                 author_role_name: str
                 for author_role_name in author_role_names:
-                    if f"@{author_role_name}" in message_counts["roles"].keys():
+                    if f"@{author_role_name}" in message_counts["roles"]:
                         is_author_role_committee: bool = author_role_name == "Committee"
                         if is_author_role_committee and "Committee-Elect" in author_role_names:
                             continue
@@ -1836,12 +1836,10 @@ class SlashCommandsCog(ApplicationCommandsCog):
                         message=f"Channel {channel.mention} had invalid permissions"
                     )
                     logging.error(
-                        f"Channel {channel.name} had invalid permissions,"
-                        " so could not be archived."
+                        "Channel %s had invalid permissions, so could not be archived.",
+                        channel.name
                     )
                     return
-
-                # await category.edit(name=f"Archived - {category.name}")
 
             except discord.Forbidden:
                 await self.send_error(
@@ -1853,7 +1851,8 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 )
                 logging.error(
                     "Bot did not have access to the channels in the selected category:"
-                    f" {category.name}."
+                    " %s.",
+                    category.name
                 )
                 return
 
@@ -1863,7 +1862,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 class UserCommandsCog(ApplicationCommandsCog):
     """Cog container class for all subroutines, available as user-context-commands."""
 
-    async def _user_command_induct(self, ctx: discord.ApplicationContext, member: discord.Member, silent: bool) -> None:  # noqa: E501
+    async def _user_command_induct(self, ctx: discord.ApplicationContext, member: discord.Member, *, silent: bool) -> None:  # noqa: E501
         """Call the _induct command, providing the required command arguments."""
         try:
             guild: discord.Guild = self.bot.css_guild
@@ -1877,7 +1876,7 @@ class UserCommandsCog(ApplicationCommandsCog):
             await self.bot.close()
             raise
 
-        await self._induct(ctx, member, guild, silent)
+        await self._induct(ctx, member, guild, silent=silent)
 
     @discord.user_command(name="Induct User")  # type: ignore[no-untyped-call, misc]
     async def non_silent_induct(self, ctx: discord.ApplicationContext, member: discord.Member) -> None:  # noqa: E501
