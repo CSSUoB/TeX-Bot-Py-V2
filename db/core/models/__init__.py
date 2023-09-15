@@ -6,7 +6,7 @@ from typing import Any, Final
 
 import discord
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator, MinValueValidator
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
 from .utils import AsyncBaseModel, HashedDiscordMember
