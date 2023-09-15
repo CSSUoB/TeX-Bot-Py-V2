@@ -6,7 +6,7 @@ from typing import Any, Final
 
 import discord
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, MinValueValidator
 from django.db import models
 
 from .utils import AsyncBaseModel, HashedDiscordMember
@@ -340,3 +340,36 @@ class LeftMember(AsyncBaseModel):
         database.
         """
         return super().get_proxy_field_names() | {"roles"}
+
+
+class StrikedMember(HashedDiscordMember):
+    """
+    Represents a Discord server member that has been given one or more strikes.
+
+    Being given a strike indicates that the Discord server member has previously broken one or
+    more of the CSS Discord server rules, which resulted in a moderation action being taken
+    against them.
+
+    Storing the number of strikes a Discord server member has allows future moderation actions
+    to be given with increasing severity (as outlined in the
+    CSS Discord server moderation document (https://docs.google.com/document/d/1wAskMt0U75dTLrTeb-ZbW4vn1qmSvp1LehjyUAJ74dU/edit).
+    """
+
+    strikes = models.PositiveIntegerField(
+        "Number of strikes",
+        null=False,
+        blank=False,
+        validators=[MinValueValidator(0)]
+    )
+
+    class Meta:
+        """Metadata options about this model."""
+
+        verbose_name = (
+            "Hashed Discord ID of Member that has been previously given one or more strikes"
+            " because they broke one or more of the CSS Discord server rules"
+        )
+        verbose_name_plural = (
+            "Hashed Discord IDs of Members that have been previously given one or more"
+            " strikes because they broke one or more of the CSS Discord server rules"
+        )
