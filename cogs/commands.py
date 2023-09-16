@@ -20,7 +20,7 @@ from django.utils import timezone
 import utils
 from cogs.utils import TeXBotAutocompleteContext, TeXBotCog
 from config import settings
-from db.core.models import DiscordReminder, LeftMember, UoBMadeMember
+from db.core.models import DiscordReminder, LeftMember, UoBMadeMember, MemberStrikes
 from exceptions import (
     ArchivistRoleDoesNotExist,
     CommitteeRoleDoesNotExist,
@@ -58,7 +58,8 @@ class ApplicationCommandsCog(TeXBotCog):
         "server_stats": "display whole server statistics",
         "user_stats": "display your statistics",
         "left_member_stats": "display statistics about the members that have left the server",
-        "archive": "archive the selected category"
+        "archive": "archive the selected category",
+        "strike": "increase the number of strikes this member has"
     }
 
     async def send_error(self, ctx: discord.ApplicationContext, error_code: str | None = None, command_name: str | None = None, message: str | None = None, logging_message: str | None = None) -> None:  # noqa: E501
@@ -465,6 +466,38 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 for member
                 in members
             }
+
+        return {
+            discord.OptionChoice(name=member.name, value=str(member.id))
+            for member
+            in members
+        }
+
+    @staticmethod
+    async def strike_autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+        """
+        Autocomplete callable that generates the set of available selectable members.
+
+        This list of selectable members is used in any of the "strike" slash-command options
+        that have a member input-type.
+        """
+        try:
+            guild: discord.Guild = ctx.bot.css_guild
+        except GuildDoesNotExist:
+            return set()
+
+        members: set[discord.Member] = {member for member in guild.members if not member.bot}
+
+        if not ctx.value or re.match(r"\A@.*\Z", ctx.value):
+            return {
+                discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
+                for member
+                in members
+            }
+
+        for member in members:
+            print(str(member.id))
+            break
 
         return {
             discord.OptionChoice(name=member.name, value=str(member.id))
@@ -1857,6 +1890,63 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 return
 
         await ctx.respond("Category successfully archived", ephemeral=True)
+
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        name="strike",
+        description=(
+            "Gives a user an additional strike,"
+            " then performs the appropriate moderation action."
+        )
+    )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="user",
+        description="The user to give a strike to.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(strike_autocomplete_get_members),  # type: ignore[arg-type] # noqa: E501
+        required=True,
+        parameter_name="str_strike_member_id"
+    )
+    async def strike(self, ctx: discord.ApplicationContext, str_strike_member_id: str) -> None:  # noqa: E501
+        """
+        Definition & callback response of the "strike" command.
+
+        The "strike" command adds an additional strike to the given member, then performs the
+        appropriate moderation action to the member, according to the new number of strikes.
+        """
+        try:
+            guild: discord.Guild = self.bot.css_guild
+        except GuildDoesNotExist as guild_error:
+            await self.send_error(
+                ctx,
+                error_code="E1011",
+                command_name="strike"
+            )
+            logging.critical(guild_error)
+            await self.bot.close()
+            return
+
+        str_strike_member_id = str_strike_member_id.replace("<@", "").replace(">", "")
+
+        if not re.match(r"\A\d{17,20}\Z", str_strike_member_id):
+            await self.send_error(
+                ctx,
+                command_name="strike",
+                message=f"\"{str_strike_member_id}\" is not a valid user ID."
+            )
+            return
+
+        strike_member_id: int = int(str_strike_member_id)
+
+        strike_member: discord.Member | None = guild.get_member(strike_member_id)
+        if not strike_member:
+            await self.send_error(
+                ctx,
+                command_name="strike",
+                message=f"Member with ID \"{strike_member_id}\" does not exist."
+            )
+            return
+
+        await self._strike(ctx, strike_member, guild)
 
 
 class UserCommandsCog(ApplicationCommandsCog):

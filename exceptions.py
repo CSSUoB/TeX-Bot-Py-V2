@@ -223,7 +223,14 @@ class CommitteeRoleDoesNotExist(RoleDoesNotExist):
         super().__init__(
             message,
             role_name="Committee",
-            dependant_commands={"writeroles", "editmessage", "induct", "archive", "delete-all"}
+            dependant_commands={
+                "writeroles",
+                "editmessage",
+                "induct",
+                "strike",
+                "archive",
+                "delete-all"
+            }
         )
 
 
