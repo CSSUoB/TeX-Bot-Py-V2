@@ -193,7 +193,7 @@ if __name__ != "__main__":
             self._applicant_role: discord.Role | None = None
             self._roles_channel: discord.TextChannel | None = None
             self._general_channel: discord.TextChannel | None = None
-            self._welcome_channel: discord.TextChannel | None = None
+            self._rules_channel: discord.TextChannel | None = None
 
             self._css_guild_set: bool = False
 
@@ -303,19 +303,19 @@ if __name__ != "__main__":
             return self._general_channel
 
         @property
-        async def welcome_channel(self) -> discord.TextChannel | None:
+        async def rules_channel(self) -> discord.TextChannel | None:
             """
-            Shortcut accessor to the welcome text channel.
+            Shortcut accessor to the rules text channel.
 
             The welcome text channel is the one that contains the welcome message & rules.
             """
-            if not self._welcome_channel or not self._guild_has_channel(self._welcome_channel):
-                self._welcome_channel = (
+            if not self._rules_channel or not self._guild_has_channel(self._rules_channel):
+                self._rules_channel = (
                     self.css_guild.rules_channel
                     or await self._fetch_text_channel("welcome")
                 )
 
-            return self._welcome_channel
+            return self._rules_channel
 
         def _bot_has_guild(self, guild_id: int) -> bool:
             return bool(discord.utils.get(self.guilds, id=guild_id))

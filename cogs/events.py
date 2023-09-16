@@ -135,10 +135,10 @@ class EventsCog(TeXBotCog):
                         reason="Delete introduction reminders after member is inducted."
                     )
 
-            welcome_channel_mention: str = "`#welcome`"
-            welcome_channel: discord.TextChannel | None = await self.bot.welcome_channel
-            if welcome_channel:
-                welcome_channel_mention = welcome_channel.mention
+            rules_channel_mention: str = "`#welcome`"
+            rules_channel: discord.TextChannel | None = await self.bot.rules_channel
+            if rules_channel:
+                rules_channel_mention = rules_channel.mention
 
             roles_channel_mention: str = "`#roles`"
             roles_channel: discord.TextChannel | None = await self.bot.roles_channel
@@ -149,7 +149,7 @@ class EventsCog(TeXBotCog):
                 "**Congrats on joining the CSS Discord server as a guest!**"
                 " You now have access to contribute to all the public channels."
                 "\n\nSome things to do to get started:"
-                f"\n1. Check out our rules in {welcome_channel_mention}"
+                f"\n1. Check out our rules in {rules_channel_mention}"
                 f"\n2. Head to {roles_channel_mention} and click on the icons to get"
                 " optional roles like pronouns and year groups"
                 "\n3. Change your nickname to whatever you wish others to refer to you as"
