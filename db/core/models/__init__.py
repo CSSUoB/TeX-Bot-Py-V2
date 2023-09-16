@@ -342,7 +342,7 @@ class LeftMember(AsyncBaseModel):
         return super().get_proxy_field_names() | {"roles"}
 
 
-class StrikedMember(HashedDiscordMember):
+class MemberStrikes(HashedDiscordMember):
     """
     Represents a Discord server member that has been given one or more strikes.
 
@@ -358,8 +358,9 @@ class StrikedMember(HashedDiscordMember):
     strikes = models.PositiveIntegerField(
         "Number of strikes",
         null=False,
-        blank=False,
-        validators=[MinValueValidator(0)]
+        blank=True,
+        validators=[MinValueValidator(0)],
+        default=0
     )
 
     class Meta:
