@@ -1988,6 +1988,23 @@ class UserCommandsCog(ApplicationCommandsCog):
         """
         await self._user_command_induct(ctx, member, silent=True)
 
+    @discord.user_command(name="Strike User")  # type: ignore[no-untyped-call, misc]
+    async def strike(self, ctx: discord.ApplicationContext, member: discord.Member) -> None:
+        """Call the _strike command, providing the required command arguments."""
+        try:
+            guild: discord.Guild = self.bot.css_guild
+        except GuildDoesNotExist as guild_error:
+            await self.send_error(
+                ctx,
+                error_code="E1011",
+                command_name="strike"
+            )
+            logging.critical(guild_error)
+            await self.bot.close()
+            raise
+
+        await self._strike(ctx, member, guild)
+
 
 def setup(bot: TeXBot) -> None:
     """
