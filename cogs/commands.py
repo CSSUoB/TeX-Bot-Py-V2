@@ -495,10 +495,6 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 in members
             }
 
-        for member in members:
-            print(str(member.id))
-            break
-
         return {
             discord.OptionChoice(name=member.name, value=str(member.id))
             for member
@@ -928,6 +924,8 @@ class SlashCommandsCog(ApplicationCommandsCog):
             logging.critical(guild_error)
             await self.bot.close()
             return
+
+        str_induct_member_id = str_induct_member_id.replace("<@", "").replace(">", "")
 
         if not re.match(r"\A\d{17,20}\Z", str_induct_member_id):
             await self.send_error(
