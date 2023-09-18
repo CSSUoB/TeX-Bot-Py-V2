@@ -398,6 +398,19 @@ class Settings:
                 format="%(levelname)s | %(module)s: %(message)s"
             )
 
+            self._settings["MODERATION_DOCUMENT_URL"] = os.getenv(
+                "MODERATION_DOCUMENT_URL", ""
+            )
+            moderation_document_url_is_valid: bool = (
+                self._settings["MODERATION_DOCUMENT_URL"]
+                and validators.url(self._settings["MODERATION_DOCUMENT_URL"])
+            )
+            if not moderation_document_url_is_valid:
+                MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
+                    "MODERATION_DOCUMENT_URL must be a valid URL."
+                )
+                raise ImproperlyConfigured(MODERATION_DOCUMENT_URL_MESSAGE)
+
             self._is_env_variables_setup = True
 
     def _setup_django(self) -> None:

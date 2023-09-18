@@ -20,7 +20,7 @@ from django.utils import timezone
 import utils
 from cogs.utils import TeXBotAutocompleteContext, TeXBotCog
 from config import settings
-from db.core.models import DiscordReminder, LeftMember, UoBMadeMember, MemberStrikes
+from db.core.models import DiscordReminder, LeftMember, MemberStrikes, UoBMadeMember
 from exceptions import (
     ArchivistRoleDoesNotExist,
     CommitteeRoleDoesNotExist,
