@@ -13,6 +13,7 @@ import bs4
 import discord
 import parsedatetime
 from bs4 import BeautifulSoup
+from discord.ui import View
 from django.core.exceptions import ValidationError
 from django.db.models import Model
 from django.utils import timezone
@@ -215,6 +216,184 @@ class ApplicationCommandsCog(TeXBotCog):
             )
 
         await ctx.respond("User inducted successfully.", ephemeral=True)
+
+    async def _strike(self, ctx: discord.ApplicationContext, strike_member: discord.Member, guild: discord.Guild) -> None:  # noqa: E501
+        """
+        Perform the actual process of giving a member an additional strike.
+
+        Also calls the process of performing the appropriate moderation action,
+        given the new number of strikes that the member has.
+        """
+        committee_role: discord.Role | None = await self.bot.committee_role
+        if not committee_role:
+            await self.send_error(
+                ctx,
+                error_code="E1021",
+                command_name="strike",
+                logging_message=str(CommitteeRoleDoesNotExist())
+            )
+            return
+
+        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
+        if not interaction_member:
+            await self.send_error(
+                ctx,
+                command_name="strike",
+                message="You must be a member of the CSS Discord server to use this command."
+            )
+            return
+
+        if committee_role not in interaction_member.roles:
+            committee_role_mention: str = "@Committee"
+            if ctx.guild:
+                committee_role_mention = committee_role.mention
+
+            await self.send_error(
+                ctx,
+                command_name="strike",
+                message=f"Only {committee_role_mention} members can run this command."
+            )
+            return
+
+        if strike_member.bot:
+            await self.send_error(
+                ctx,
+                command_name="strike",
+                message="Member cannot be given an additional strike because they are a bot."
+            )
+            return
+
+        member_strikes: MemberStrikes = (
+            await MemberStrikes.objects.aget_or_create(
+                hashed_member_id=MemberStrikes.hash_member_id(strike_member.id)
+            )
+        )[0]
+
+        if member_strikes.strikes < 3:
+            member_strikes.strikes += 1
+            await member_strikes.asave()
+
+        rules_channel_mention: str = "`#welcome`"
+        rules_channel: discord.TextChannel | None = await self.bot.rules_channel
+        if rules_channel:
+            rules_channel_mention = rules_channel.mention
+
+        includes_ban_message: str = ""
+        if member_strikes.strikes >= 3:
+            includes_ban_message = (
+                "\nBecause you now have been given 3 strikes, you have been banned from"
+                " the CSS Discord server and we have contacted the Guild of Students for"
+                " further action & advice."
+            )
+
+        str_strikes: str = str(member_strikes.strikes) if member_strikes.strikes < 3 else "3"
+
+        await strike_member.send(
+            "Hi, a recent incident occurred in which you may have broken one or more of"
+            " the CSS Discord server's rules.\nWe have increased the number of strikes"
+            f" associated with your account to {str_strikes}"
+            " and the corresponding moderation action will soon be applied to you."
+            " To find what moderation action corresponds to which strike level,"
+            " you can view the CSS Discord server moderation document here:"
+            f" {settings.MODERATION_DOCUMENT_URL}"
+            f"\nPlease ensure you have read the rules in {rules_channel_mention} so that"
+            " your future behaviour adheres to them."
+            f"{includes_ban_message}\n\nA committee member will be in contact with you"
+            " shortly, to discuss this further."
+        )
+
+        SUGGESTED_ACTIONS: Final[Mapping[int, str]] = {1: "time-out", 2: "kick", 3: "ban"}
+
+        confirm_strike_message: str = (
+            f"Successfully increased {strike_member.mention}'s strikes to"
+            f" {member_strikes.strikes}.\nThe suggested moderation action is to"
+            f" {SUGGESTED_ACTIONS[member_strikes.strikes]} the user. Would you"
+            " like the bot to perform this action for you?"
+        )
+
+        if member_strikes.strikes > 3:
+            confirm_strike_message = (
+                f"{strike_member.mention}'s number of strikes was not increased"
+                f" because they already had {member_strikes.strikes}."
+                " How did this happen?\nHaving more than 3 strikes suggests that"
+                " the user should be banned. Would you like the bot to perform"
+                " this action for you?"
+            )
+
+        await ctx.respond(
+            content=confirm_strike_message,
+            view=self.ConfirmStrikeMemberView(),
+            ephemeral=True
+        )
+
+        button_interaction: discord.Interaction = await self.bot.wait_for(
+            "interaction",
+            check=lambda interaction: (
+                interaction.type == discord.InteractionType.component
+                and interaction.user == ctx.user
+                and interaction.channel == ctx.channel
+                and "custom_id" in interaction.data
+                and interaction.data["custom_id"] in {
+                    "yes_strike_member",
+                    "no_strike_member"
+                }
+            )
+        )
+
+        actual_strike_amount: int = (
+            member_strikes.strikes if member_strikes.strikes < 3 else 3
+        )
+
+        if button_interaction.data["custom_id"] == "no_strike_member":  # type: ignore[index, typeddict-item] # noqa: E501
+            await ctx.respond(
+                f"Aborted performing {SUGGESTED_ACTIONS[actual_strike_amount]} action"
+                f" on {strike_member.mention}.",
+                ephemeral=True
+            )
+            return
+
+        await self._perform_moderation_action(strike_member, actual_strike_amount)
+
+        await ctx.respond(
+            f"Successfully performed {SUGGESTED_ACTIONS[actual_strike_amount]} action"
+            f" on {strike_member.mention}.",
+            ephemeral=True
+        )
+
+    class ConfirmStrikeMemberView(View):
+        """A discord.View containing two buttons to confirm giving the member a strike."""
+
+        @discord.ui.button(
+            label="Yes",
+            style=discord.ButtonStyle.red,
+            custom_id="yes_strike_member"
+        )
+        async def yes_strike_member_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
+            """
+            Delete the message associated with the view, when the Yes button is pressed.
+
+            This function is attached as a button's callback, so will run whenever the button
+            is pressed.
+            The actual handling of the event is done by the command that sent the view,
+            so all that is required is to delete the original message that sent this view.
+            """
+            await interaction.response.edit_message(delete_after=0)
+
+        @discord.ui.button(
+            label="No",
+            style=discord.ButtonStyle.grey,
+            custom_id="no_strike_member"
+        )
+        async def no_strike_member_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
+            """
+            Delete the message associated with the view, when the No button is pressed.
+
+            This function is attached as a button's callback, so will run whenever the button
+            is pressed.
+            The actual handling of the event is done by the command that sent the view,
+            so all that is required is to delete the original message that sent this view.
+            """
+            await interaction.response.edit_message(delete_after=0)
 
 
 class SlashCommandsCog(ApplicationCommandsCog):
