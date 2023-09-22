@@ -20,7 +20,7 @@ Users of the bot may encounter error codes when attempting to execute slash-comm
 
 ## Dependencies
 
-Ensure that you have [Poetry](https://python-poetry.org/) & [mypy](https://www.mypy-lang.org/) installed, then navigate to the root folder and run the following command:
+Ensure that you have [Poetry](https://python-poetry.org/) installed, then navigate to the root folder and run the following command:
 
 ```shell
 poetry install
@@ -66,4 +66,4 @@ The configuration variables `SEND_INTRODUCTION_REMINDERS`, `SEND_GET_ROLES_REMIN
 
 Contributions are welcome. If you want to contribute, please raise a PR, and we'll review, test and (likely) merge it. Please comment on issues you'd like to work on for assignment to prevent duplication of work. If you find any bugs/problems or have any feature suggestion, please raise an issue.
 
-Please utilise the [Pycharm `codeStyleConfig.xml`](https://www.jetbrains.com/help/pycharm/configuring-code-style.html) file and [mypy](https://www.mypy-lang.org/) type checking so that the repo has a consistent style.
+Please ensure your new code adheres to [mypy](https://www.mypy-lang.org/)'s type checking & [ruff](https://ruff.rs/)'s linting so that the repo has a consistent style. By also running [pytest]()'s test suite you can ensure your contributions provide valid functionality.
