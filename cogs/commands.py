@@ -1,5 +1,6 @@
 """Contains the definition & callbacks for slash-commands & user-context-commands."""
 
+import datetime
 import itertools
 import logging
 import math
@@ -217,6 +218,37 @@ class ApplicationCommandsCog(TeXBotCog):
 
         await ctx.respond("User inducted successfully.", ephemeral=True)
 
+    @staticmethod
+    async def _perform_moderation_action(strike_member: discord.Member, strikes: int, committee_member: discord.Member) -> None:  # noqa: E501
+        """
+        Perform the actual process of applying a moderation action to a member.
+
+        The appropriate moderation action to apply is determined by the number of strikes
+        the member has. The CSS Discord moderation document outlines which
+        number of strikes corresponds to which moderation action.
+        """
+        if not 1 <= strikes <= 3:
+            INVALID_STRIKE_AMOUNT_MESSAGE: Final[str] = (
+                "'strikes' cannot be greater than 3 or less than 1"
+            )
+            raise ValueError(INVALID_STRIKE_AMOUNT_MESSAGE)
+
+        MODERATION_ACTION_REASON: Final[str] = (
+            f"**{committee_member.display_name}** used `/strike`"
+        )
+
+        if strikes == 1:
+            await strike_member.timeout_for(
+                datetime.timedelta(hours=24),
+                reason=MODERATION_ACTION_REASON
+            )
+
+        elif strikes == 2:
+            await strike_member.kick(reason=MODERATION_ACTION_REASON)
+
+        elif strikes == 3:
+            await strike_member.ban(reason=MODERATION_ACTION_REASON)
+
     async def _strike(self, ctx: discord.ApplicationContext, strike_member: discord.Member, guild: discord.Guild) -> None:  # noqa: E501
         """
         Perform the actual process of giving a member an additional strike.
@@ -286,12 +318,14 @@ class ApplicationCommandsCog(TeXBotCog):
                 " further action & advice."
             )
 
-        str_strikes: str = str(member_strikes.strikes) if member_strikes.strikes < 3 else "3"
+        actual_strike_amount: int = (
+            member_strikes.strikes if member_strikes.strikes < 3 else 3
+        )
 
         await strike_member.send(
             "Hi, a recent incident occurred in which you may have broken one or more of"
             " the CSS Discord server's rules.\nWe have increased the number of strikes"
-            f" associated with your account to {str_strikes}"
+            f" associated with your account to {actual_strike_amount}"
             " and the corresponding moderation action will soon be applied to you."
             " To find what moderation action corresponds to which strike level,"
             " you can view the CSS Discord server moderation document here:"
@@ -340,10 +374,6 @@ class ApplicationCommandsCog(TeXBotCog):
             )
         )
 
-        actual_strike_amount: int = (
-            member_strikes.strikes if member_strikes.strikes < 3 else 3
-        )
-
         if button_interaction.data["custom_id"] == "no_strike_member":  # type: ignore[index, typeddict-item] # noqa: E501
             await ctx.respond(
                 f"Aborted performing {SUGGESTED_ACTIONS[actual_strike_amount]} action"
@@ -352,7 +382,11 @@ class ApplicationCommandsCog(TeXBotCog):
             )
             return
 
-        await self._perform_moderation_action(strike_member, actual_strike_amount)
+        await self._perform_moderation_action(
+            strike_member,
+            actual_strike_amount,
+            committee_member=interaction_member
+        )
 
         await ctx.respond(
             f"Successfully performed {SUGGESTED_ACTIONS[actual_strike_amount]} action"
