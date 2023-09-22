@@ -12,7 +12,7 @@ A big welcome and thank you for considering contributing to CSS' open-source pro
 
 ## Getting Started
 
-If you have never used git before, we would recommend that you read the [GitHub's Getting Started guide](https://guides.github.com/introduction/getting-started-with-git/). Additionally, linked below are some helpful resources:
+If you have never used git before, we would recommend that you read [GitHub's Getting Started guide](https://guides.github.com/introduction/getting-started-with-git/). Additionally, linked below are some helpful resources:
 
 * [GitHub git guides](https://github.com/git-guides)
 * [git - the simple guide](https://rogerdudler.github.io/git-guide/)
@@ -33,7 +33,7 @@ We recommend also reading the following if you're unsure or not confident:
 
 ## Using the Issue Tracker
 
-We use GitHub issues to track bugs and feature requests. If you find an issue with the bot, the best place to report it is through the issue tracker. If you are looking for issues to contribute code to, it's a good idea to look at the [issues labelled "good-first-issue"](https://github.com/CSSUoB/TeX-Bot-Py/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Agood-first-issue)!
+We use GitHub issues to track bugs and feature requests. If you find an issue with the bot, the best place to report it is through the issue tracker. If you are looking for issues to contribute code to, it's a good idea to look at the [issues labelled "good-first-issue"](https://github.com/CSSUoB/TeX-Bot-Py-V2/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Agood-first-issue)!
 
 When submitting an issue, please be as descriptive as possible. If you are submitting a bug report, please include the steps to reproduce the bug, and the environment it is in. If you are submitting a feature request, please include the steps to implement the feature.
 
@@ -58,7 +58,7 @@ After you have found an issue which needs solving, it's time to start working on
 
 ### Code Style
 
-In general, follow the formatting in the file you are editing. You should also install the development dependencies [ruff](https://ruff.rs/docs) code linting and [mypy](https://www.mypy-lang.org/) type checking which you can configure your IDE to use.
+In general, follow the formatting in the file you are editing. You should also install the development dependencies [ruff](https://ruff.rs) code linting and [mypy](https://www.mypy-lang.org/) type checking which you can configure your IDE to use.
 
 ### Git Commit Messages
 
