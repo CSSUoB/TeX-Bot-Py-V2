@@ -88,6 +88,16 @@ class EventsCog(TeXBotCog):
         logging.info("Ready! Logged in as %s", self.bot.user)
 
     @TeXBotCog.listener()
+    async def on_application_command_error(self, ctx: discord.ApplicationContext, error: discord.DiscordException) -> None:  # noqa: E501
+        """Log any major command errors in the logging channel & stderr."""
+        await self.bot.send_error(
+            ctx,
+            message="Please contact a committee member.",
+            command_name=ctx.command.qualified_name,
+            logging_message=str(error)
+        )
+
+    @TeXBotCog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
         """
         Send a welcome message to this member's DMs & remove introduction reminder flags.
