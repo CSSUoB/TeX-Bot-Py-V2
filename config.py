@@ -395,7 +395,7 @@ class Settings:
             # noinspection SpellCheckingInspection
             logging.basicConfig(
                 level=getattr(logging, console_log_level),
-                format="%(levelname)s | %(module)s: %(message)s"
+                format="%(levelname)s: %(message)s"
             )
 
             self._is_env_variables_setup = True
