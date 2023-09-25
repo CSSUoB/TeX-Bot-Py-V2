@@ -107,4 +107,4 @@ jobs:
         run: poetry install --no-interaction --no-root
 
       - name: Run ruff
-        run: poetry run ruff check .
+        run: poetry run ruff check . --no-fix
