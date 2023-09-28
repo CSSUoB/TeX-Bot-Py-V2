@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import sys
+import typing
 from argparse import ArgumentParser, Namespace
 
 import discord
@@ -68,7 +69,8 @@ def generate_invite_url(discord_bot_application_id: str, discord_guild_id: int) 
 
 # NOTE: Preventing using modules that have not been loaded if this file has been run from the command-line
 if __name__ != "__main__":
-    # noinspection SpellCheckingInspection
+    # noinspection PyTypeChecker, SpellCheckingInspection
+    @typing.no_type_check
     def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, filename: str, description: str, extra_text: str = "") -> discord.File:  # noqa: E501
         """Generate an image of a plot bar chart from the given data & format variables."""
         plt.style.use("cyberpunk")
@@ -397,7 +399,7 @@ if __name__ != "__main__":
                         + construct_error_message
                 )
 
-                construct_logging_error_message += f"{error_code} :"
+                construct_logging_error_message += f"{error_code}:"
 
             if command_name:
                 construct_error_message += (
