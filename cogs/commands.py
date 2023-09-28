@@ -5,7 +5,6 @@ import logging
 import math
 import random
 import re
-from collections.abc import Iterator, Mapping
 from typing import TYPE_CHECKING, Final, TypeAlias
 
 import aiohttp
@@ -34,6 +33,7 @@ from utils import TeXBot
 
 if TYPE_CHECKING:
     import time
+    from collections.abc import Iterator
 
 MentionableMember: TypeAlias = discord.Member | discord.Role | None
 
@@ -47,74 +47,11 @@ class ApplicationCommandsCog(TeXBotCog):
     (slash-commands & context-based-commands).
     """
 
-    ERROR_ACTIVITIES: Final[Mapping[str, str]] = {
-        "ping": "reply with Pong!!",
-        "write_roles": "send messages",
-        "edit_message": "edit the message",
-        "induct": "induct user",
-        "make_member": "make you a member",
-        "remind_me": "remind you",
-        "channel_stats": "display channel statistics",
-        "server_stats": "display whole server statistics",
-        "user_stats": "display your statistics",
-        "left_member_stats": "display statistics about the members that have left the server",
-        "archive": "archive the selected category"
-    }
-
-    async def send_error(self, ctx: discord.ApplicationContext, error_code: str | None = None, command_name: str | None = None, message: str | None = None, logging_message: str | None = None) -> None:  # noqa: E501
-        """
-        Construct & format an error message from the given details.
-
-        The constructed error message is then sent as the response to the given
-        application command context.
-        """
-        construct_error_message: str = ":warning:There was an error"
-        construct_logging_error_message: str = ""
-
-        if error_code:
-            committee_mention: str = "committee"
-
-            committee_role: discord.Role | None = await self.bot.committee_role
-            if committee_role:
-                committee_mention = committee_role.mention
-
-            construct_error_message = (
-                    f"**Contact a {committee_mention} member, referencing error code:"
-                    f" {error_code}**\n"
-                    + construct_error_message
-            )
-
-            construct_logging_error_message += f"{error_code} :"
-
-        if command_name:
-            construct_error_message += f" when trying to {self.ERROR_ACTIVITIES[command_name]}"
-
-            construct_logging_error_message += f" ({command_name})"
-
-        if message:
-            construct_error_message += ":"
-        else:
-            construct_error_message += "."
-
-        construct_error_message += ":warning:"
-
-        if message:
-            message = re.sub(
-                r"<([@&#]?|(@[&#])?)\d+>",
-                lambda match: f"`{match.group(0)}`", message.strip()
-            )
-            construct_error_message += f"\n`{message}`"
-
-        await ctx.respond(construct_error_message, ephemeral=True)
-
-        if logging_message:
-            logging.error("%s %s", construct_logging_error_message, logging_message)
-
     async def _induct(self, ctx: discord.ApplicationContext, induction_member: discord.Member, guild: discord.Guild, *, silent: bool) -> None:  # noqa: E501
         """Perform the actual process of inducting a member by giving them the Guest role."""
         guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1022",
                 command_name="induct",
@@ -124,7 +61,7 @@ class ApplicationCommandsCog(TeXBotCog):
 
         committee_role: discord.Role | None = await self.bot.committee_role
         if not committee_role:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1021",
                 command_name="induct",
@@ -134,7 +71,7 @@ class ApplicationCommandsCog(TeXBotCog):
 
         interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
         if not interaction_member:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="induct",
                 message="You must be a member of the CSS Discord server to use this command."
@@ -146,7 +83,7 @@ class ApplicationCommandsCog(TeXBotCog):
             if ctx.guild:
                 committee_role_mention = committee_role.mention
 
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="induct",
                 message=f"Only {committee_role_mention} members can run this command."
@@ -164,7 +101,7 @@ class ApplicationCommandsCog(TeXBotCog):
             return
 
         if induction_member.bot:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="induct",
                 message="Member cannot be inducted because they are a bot."
@@ -174,7 +111,7 @@ class ApplicationCommandsCog(TeXBotCog):
         if not silent:
             general_channel: discord.TextChannel | None = await self.bot.general_channel
             if not general_channel:
-                await self.send_error(
+                await self.bot.send_error(
                     ctx,
                     error_code="E1032",
                     command_name="induct",
@@ -477,7 +414,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx, error_code="E1011", command_name=command_name
             )
             logging.critical(guild_error)
@@ -486,7 +423,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         committee_role: discord.Role | None = await self.bot.committee_role
         if not committee_role:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1021",
                 command_name=command_name,
@@ -496,7 +433,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
         if not interaction_member:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name=command_name,
                 message="You must be a member of the CSS Discord server to use this command."
@@ -508,7 +445,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             if ctx.guild:
                 committee_role_mention = committee_role.mention
 
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name=command_name,
                 message=f"Only {committee_role_mention} members can run this command."
@@ -589,7 +526,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         )
 
         if parsed_time[1] == 0:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="remind_me",
                 message="The value provided in the \"delay\" argument was not a time/date."
@@ -617,7 +554,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 )
             )
             if not error_is_already_exists:
-                await self.send_error(
+                await self.bot.send_error(
                     ctx,
                     command_name="remind_me",
                     message="An unrecoverable error occurred."
@@ -629,7 +566,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 await self.bot.close()
                 return
 
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="remind_me",
                 message="You already have a reminder with that message in this channel!"
@@ -663,7 +600,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1011",
                 command_name="write_roles"
@@ -674,7 +611,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         committee_role: discord.Role | None = await self.bot.committee_role
         if not committee_role:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1021",
                 command_name="write_roles",
@@ -684,7 +621,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         roles_channel: discord.TextChannel | None = await self.bot.roles_channel
         if not roles_channel:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1031",
                 command_name="write_roles",
@@ -694,7 +631,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
         if not interaction_member:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="write_roles",
                 message="You must be a member of the CSS Discord server to use this command."
@@ -706,7 +643,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             if ctx.guild:
                 committee_role_mention = committee_role.mention
 
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="write_roles",
                 message=f"Only {committee_role_mention} members can run this command."
@@ -759,7 +696,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1011",
                 command_name="edit_message"
@@ -770,7 +707,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         committee_role: discord.Role | None = await self.bot.committee_role
         if not committee_role:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1021",
                 command_name="edit_message",
@@ -780,7 +717,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
         if not interaction_member:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="edit_message",
                 message="You must be a member of the CSS Discord server to use this command."
@@ -792,7 +729,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             if ctx.guild:
                 committee_role_mention = committee_role.mention
 
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="edit_message",
                 message=f"Only {committee_role_mention} members can run this command."
@@ -800,7 +737,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             return
 
         if not re.match(r"\A\d{17,20}\Z", str_channel_id):
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="edit_message",
                 message=f"\"{str_channel_id}\" is not a valid channel ID."
@@ -810,7 +747,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         channel_id: int = int(str_channel_id)
 
         if not re.match(r"\A\d{17,20}\Z", str_message_id):
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="edit_message",
                 message=f"\"{str_message_id}\" is not a valid message ID."
@@ -824,7 +761,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             id=channel_id
         )
         if not channel:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="edit_message",
                 message=f"Text channel with ID \"{channel_id}\" does not exist."
@@ -834,7 +771,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         try:
             message: discord.Message = await channel.fetch_message(message_id)
         except discord.NotFound:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="edit_message",
                 message=f"Message with ID \"{message_id}\" does not exist."
@@ -844,7 +781,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         try:
             await message.edit(content=new_message_content)
         except discord.Forbidden:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="edit_message",
                 message=(
@@ -887,7 +824,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1011",
                 command_name="induct"
@@ -897,7 +834,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             return
 
         if not re.match(r"\A\d{17,20}\Z", str_induct_member_id):
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="induct",
                 message=f"\"{str_induct_member_id}\" is not a valid user ID."
@@ -908,7 +845,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         induct_member: discord.Member | None = guild.get_member(induct_member_id)
         if not induct_member:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="induct",
                 message=f"Member with ID \"{induct_member_id}\" does not exist."
@@ -941,7 +878,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1011",
                 command_name="make_member"
@@ -952,7 +889,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         member_role: discord.Role | None = await self.bot.member_role
         if not member_role:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1023",
                 command_name="make_member",
@@ -962,7 +899,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1022",
                 command_name="make_member",
@@ -972,7 +909,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
         if not interaction_member:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="make_member",
                 message="You must be a member of the CSS Discord server to use this command."
@@ -990,7 +927,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             return
 
         if guest_role not in interaction_member.roles:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="make_member",
                 message=(
@@ -1001,7 +938,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             return
 
         if not re.match(r"\A\d{7}\Z", uob_id):
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="make_member",
                 message=f"\"{uob_id}\" is not a valid UoB Student ID."
@@ -1075,7 +1012,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 "The guild member IDs could not be retrieved from the MEMBERS_PAGE_URL."
             )
 
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1041",
                 command_name="make_member"
@@ -1085,7 +1022,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             return
 
         if uob_id not in guild_member_ids:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="make_member",
                 message=(
@@ -1141,7 +1078,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         if str_channel_id:
             if not re.match(r"\A\d{17,20}\Z", str_channel_id):
-                await self.send_error(
+                await self.bot.send_error(
                     ctx,
                     command_name="channel_stats",
                     message=f"\"{str_channel_id}\" is not a valid channel ID."
@@ -1153,7 +1090,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1011",
                 command_name="channel_stats"
@@ -1167,7 +1104,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             id=channel_id
         )
         if not channel:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="channel_stats",
                 message=f"Text channel with ID \"{channel_id}\" does not exist."
@@ -1215,7 +1152,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
                     message_counts[f"@{author_role_name}"] += 1
 
         if math.ceil(max(message_counts.values()) / 15) < 1:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="channel_stats",
                 message="There are not enough messages sent in this channel."
@@ -1265,7 +1202,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1011",
                 command_name="server_stats"
@@ -1276,7 +1213,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1022",
                 command_name="server_stats",
@@ -1343,7 +1280,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             max(message_counts["channels"].values()) / 15
         ) < 1
         if too_few_roles_stats or too_few_channels_stats:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="server_stats",
                 message="There are not enough messages sent."
@@ -1413,7 +1350,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1011",
                 command_name="user_stats"
@@ -1424,7 +1361,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
         if not interaction_member:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="user_stats",
                 message="You must be a member of the CSS Discord server to use this command."
@@ -1433,7 +1370,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1022",
                 command_name="user_stats",
@@ -1442,7 +1379,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             return
 
         if guest_role not in interaction_member.roles:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="user_stats",
                 message=(
@@ -1476,7 +1413,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
                     message_counts["Total"] += 1
 
         if math.ceil(max(message_counts.values()) / 15) < 1:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="user_stats",
                 message="You have not sent enough messages."
@@ -1522,7 +1459,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1011",
                 command_name="left_member_stats"
@@ -1558,7 +1495,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
                 left_member_counts[left_member_role] += 1
 
         if math.ceil(max(left_member_counts.values()) / 15) < 1:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="left_member_stats",
                 message="Not enough data about members that have left the server."
@@ -1645,7 +1582,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1011",
                 command_name="archive"
@@ -1656,7 +1593,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
         if not interaction_member:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="archive",
                 message="You must be a member of the CSS Discord server to use this command."
@@ -1665,7 +1602,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         committee_role: discord.Role | None = await self.bot.committee_role
         if not committee_role:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1021",
                 command_name="archive",
@@ -1675,7 +1612,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1022",
                 command_name="archive",
@@ -1685,7 +1622,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         member_role: discord.Role | None = await self.bot.member_role
         if not member_role:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1023",
                 command_name="archive",
@@ -1695,7 +1632,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         archivist_role: discord.Role | None = await self.bot.archivist_role
         if not archivist_role:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1024",
                 command_name="archive",
@@ -1708,7 +1645,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             if ctx.guild:
                 committee_role_mention = f"`{committee_role.mention}`"
 
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="archive",
                 message=f"Only {committee_role_mention} members can run this command."
@@ -1717,7 +1654,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         everyone_role: discord.Role | None = discord.utils.get(guild.roles, name="@everyone")
         if not everyone_role:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1042",
                 command_name="archive"
@@ -1728,7 +1665,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             return
 
         if not re.match(r"\A\d{17,20}\Z", str_category_id):
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="archive",
                 message=f"\"{str_category_id}\" is not a valid category ID."
@@ -1742,7 +1679,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             id=category_id
         )
         if not category:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 command_name="archive",
                 message=f"Category with ID \"{category_id}\" does not exist."
@@ -1830,7 +1767,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
                     )
 
                 else:
-                    await self.send_error(
+                    await self.bot.send_error(
                         ctx,
                         command_name="archive",
                         message=f"Channel {channel.mention} had invalid permissions"
@@ -1842,7 +1779,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
                     return
 
             except discord.Forbidden:
-                await self.send_error(
+                await self.bot.send_error(
                     ctx,
                     command_name="archive",
                     message=(
@@ -1867,7 +1804,7 @@ class UserCommandsCog(ApplicationCommandsCog):
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
-            await self.send_error(
+            await self.bot.send_error(
                 ctx,
                 error_code="E1011",
                 command_name="induct"
