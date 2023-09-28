@@ -110,7 +110,6 @@ select = [
     "TRY",
     "FLY",
     "PERF",
-    "FURB",
     "RUF"
 ]
 ignore = [
