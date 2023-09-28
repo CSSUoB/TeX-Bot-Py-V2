@@ -33,7 +33,7 @@ beautifulsoup4 = "^4.12.2"
 emoji = "^2.8.0"
 parsedatetime = "^2.6"
 django = "4.2.5"
-matplotlib = "^3.7.1"
+matplotlib = "^3.8.0"
 mplcyberpunk = "^0.7.0"
 python-logging-discord-handler = "^0.1.4"
 
@@ -42,7 +42,7 @@ mypy = "^1.5"
 django-stubs = {extras = ["compatible-mypy"], version = "4.2.4"}
 pytest = "^7.4"
 pytest-subtests = "^0.11"
-ruff = "^0.0.287"
+ruff = "^0.0.291"
 
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]
