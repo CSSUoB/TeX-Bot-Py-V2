@@ -237,7 +237,11 @@ class GuestRoleDoesNotExist(RoleDoesNotExist):
             message,
             role_name="Guest",
             dependant_commands={"induct", "makemember", "stats", "archive"},
-            dependant_tasks={"kick_no_introduction_members", "introduction_reminder"}
+            dependant_tasks={
+                "kick_no_introduction_members",
+                "introduction_reminder",
+                "get_roles_reminder"
+            }
         )
 
 

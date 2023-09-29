@@ -27,6 +27,7 @@ from db.core.models import (
 from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
 from utils import TeXBot
 
+# noinspection SpellCheckingInspection
 OPT_IN_ROLE_NAMES: Final[frozenset[str]] = frozenset(
     {
         "He / Him",
