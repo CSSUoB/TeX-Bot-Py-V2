@@ -223,7 +223,14 @@ class CommitteeRoleDoesNotExist(RoleDoesNotExist):
         super().__init__(
             message,
             role_name="Committee",
-            dependant_commands={"writeroles", "editmessage", "induct", "archive", "delete-all"}
+            dependant_commands={
+                "writeroles",
+                "editmessage",
+                "induct",
+                "archive",
+                "delete-all",
+                "ensure-members-inducted"
+            }
         )
 
 
@@ -236,7 +243,7 @@ class GuestRoleDoesNotExist(RoleDoesNotExist):
         super().__init__(
             message,
             role_name="Guest",
-            dependant_commands={"induct", "stats", "archive"},
+            dependant_commands={"induct", "stats", "archive", "ensure-members-inducted"},
             dependant_tasks={
                 "kick_no_introduction_members",
                 "introduction_reminder",
