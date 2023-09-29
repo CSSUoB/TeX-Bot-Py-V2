@@ -111,11 +111,14 @@ class TasksCog(TeXBotCog):
             if time_since_reminder_needed_to_be_sent > datetime.timedelta(minutes=15):
                 user: discord.User | None = discord.utils.find(
                     functools.partial(
-                        lambda u, r: (
-                            not u.bot
-                            and DiscordReminder.hash_member_id(u.id) == r.hashed_member_id
+                        lambda _user, _reminder: (
+                            not _user.bot
+                            and (
+                                DiscordReminder.hash_member_id(_user.id)
+                                == _reminder.hashed_member_id
+                            )
                         ),
-                        reminder
+                        _reminder=reminder
                     ),
                     self.bot.users
                 )
@@ -131,7 +134,7 @@ class TasksCog(TeXBotCog):
                 channel: discord.PartialMessageable = self.bot.get_partial_messageable(
                     reminder.channel_id,
                     type=(
-                        discord.ChannelType(reminder.channel_type)
+                        discord.ChannelType(reminder.channel_type.value)
                         if reminder.channel_type
                         else None
                     )
