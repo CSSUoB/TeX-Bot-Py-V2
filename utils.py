@@ -190,6 +190,8 @@ if __name__ != "__main__":
             "write_roles": "send messages",
             "edit_message": "edit the message",
             "induct": "induct user",
+            "silent_induct": "silently induct user",
+            "non_silent_induct": "induct user and send welcome message",
             "make_member": "make you a member",
             "remind_me": "remind you",
             "channel_stats": "display channel statistics",
@@ -374,7 +376,7 @@ if __name__ != "__main__":
             self._css_guild = css_guild
             self._css_guild_set = True
 
-        async def send_error(self, ctx: discord.ApplicationContext, error_code: str | None = None, command_name: str | None = None, message: str | None = None, logging_message: str | None = None) -> None:  # noqa: E501
+        async def send_error(self, ctx: discord.ApplicationContext, error_code: str | None = None, message: str | None = None, logging_message: str | None = None) -> None:  # noqa: E501
             """
             Construct & format an error message from the given details.
 
@@ -399,14 +401,22 @@ if __name__ != "__main__":
 
                 construct_logging_error_message += f"{error_code} :"
 
-            if command_name:
+            command_name: str = (
+                ctx.command.callback.__name__
+                if (
+                    hasattr(ctx.command, "callback")
+                    and not ctx.command.callback.__name__.startswith("_")
+                )
+                else ctx.command.qualified_name
+            )
+            if command_name in self.ERROR_ACTIVITIES:
                 construct_error_message += (
                     f" when trying to {self.ERROR_ACTIVITIES[command_name]}"
                 )
 
-                if construct_logging_error_message:
-                    construct_logging_error_message += " "
-                construct_logging_error_message += f"({command_name})"
+            if construct_logging_error_message:
+                construct_logging_error_message += " "
+            construct_logging_error_message += f"({command_name})"
 
             if message:
                 construct_error_message += ":"
