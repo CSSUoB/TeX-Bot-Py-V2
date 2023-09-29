@@ -849,15 +849,6 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
             return
 
-        guest_role: discord.Role | None = await self.bot.guest_role
-        if not guest_role:
-            await self.bot.send_error(
-                ctx,
-                error_code="E1022",
-                logging_message=str(GuestRoleDoesNotExist())
-            )
-            return
-
         interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
         if not interaction_member:
             await self.bot.send_error(
@@ -873,16 +864,6 @@ class SlashCommandsCog(ApplicationCommandsCog):
                     " - why are you trying this again? :information_source:"
                 ),
                 ephemeral=True
-            )
-            return
-
-        if guest_role not in interaction_member.roles:
-            await self.bot.send_error(
-                ctx,
-                message=(
-                    "You must be inducted as guest member of the CSS Discord server"
-                    " to use \"/makemember\"."
-                )
             )
             return
 
@@ -956,13 +937,14 @@ class SlashCommandsCog(ApplicationCommandsCog):
         guild_member_ids.discard(" ")
 
         if not guild_member_ids:
-            guild_member_ids_error: OSError = OSError(
-                "The guild member IDs could not be retrieved from the MEMBERS_PAGE_URL."
+            await self.bot.send_error(
+                ctx,
+                error_code="E1041",
+                logging_message=OSError(
+                    "The guild member IDs could not be retrieved from"
+                    " the MEMBERS_PAGE_URL."
+                )
             )
-
-            await self.bot.send_error(ctx, error_code="E1041")
-            logging.critical(guild_member_ids_error)
-            await self.bot.close()
             return
 
         if uob_id not in guild_member_ids:
@@ -978,10 +960,33 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         await ctx.respond("Successfully made you a member!", ephemeral=True)
 
-        await interaction_member.add_roles(
+        await interaction_member.add_roles(  # NOTE: The "Member" role must be added to the user **before** the "Guest" role to ensure that the welcome message does not include the suggestion to purchase membership
             member_role,
             reason="TeX Bot slash-command: \"/makemember\""
         )
+
+        guest_role: discord.Role | None = await self.bot.guest_role
+        if not guest_role:
+            logging.warning(
+                "\"/makemember\" command used but the \"Guest\" role does not exist."
+                " Some user's may now have the \"Member\" role without the \"Guest\" role."
+                " Use the \"/ensure-members-inducted\" command to fix this issue."
+            )
+        elif guest_role not in interaction_member.roles:
+            await interaction_member.add_roles(
+                guest_role,
+                reason="TeX Bot slash-command: \"/makemember\""
+            )
+
+        applicant_role: discord.Role | None = discord.utils.get(
+            self.bot.css_guild.roles,
+            name="Applicant"
+        )
+        if applicant_role and applicant_role in interaction_member.roles:
+            await interaction_member.remove_roles(
+                applicant_role,
+                reason="TeX Bot slash-command: \"/makemember\""
+            )
 
         try:
             await UoBMadeMember.objects.acreate(uob_id=uob_id)

@@ -202,7 +202,8 @@ if __name__ != "__main__":
             "left_member_stats": (
                 "display statistics about the members that have left the server"
             ),
-            "archive": "archive the selected category"
+            "archive": "archive the selected category",
+            "ensure_members_inducted": "ensure all members are inducted"
         }
 
         def __init__(self, *args: Any, **options: Any) -> None:

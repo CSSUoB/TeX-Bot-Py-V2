@@ -115,12 +115,7 @@ class EventsCog(TeXBotCog):
             return
 
         guest_role: discord.Role | None = await self.bot.guest_role
-        if not guest_role:
-            logging.critical(GuestRoleDoesNotExist())
-            await self.bot.close()
-            return
-
-        if guest_role not in before.roles and guest_role in after.roles:
+        if guest_role and guest_role not in before.roles and guest_role in after.roles:
             try:
                 introduction_reminder_opt_out_member: IntroductionReminderOptOutMember = await IntroductionReminderOptOutMember.objects.aget(  # noqa: E501
                     hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(
@@ -154,8 +149,14 @@ class EventsCog(TeXBotCog):
             if roles_channel:
                 roles_channel_mention = roles_channel.mention
 
+            user_type: str = "guest"
+
+            member_role: discord.Role | None = await self.bot.member_role
+            if member_role and member_role in after.roles:
+                user_type = "member"
+
             await after.send(
-                "**Congrats on joining the CSS Discord server as a guest!**"
+                f"**Congrats on joining the CSS Discord server as a {user_type}!**"
                 " You now have access to contribute to all the public channels."
                 "\n\nSome things to do to get started:"
                 f"\n1. Check out our rules in {welcome_channel_mention}"
@@ -165,14 +166,15 @@ class EventsCog(TeXBotCog):
                 " (You can do this by right-clicking your name in the members list"
                 " to the right & selecting \"Edit Server Profile\")"
             )
-            await after.send(
-                "You can also get yourself an annual membership to CSS for only £5!"
-                " Just head to https://cssbham.com/join."
-                " You'll get awesome perks like a free T-shirt:shirt:,"
-                " access to member only events:calendar_spiral:"
-                " & a cool green name on the CSS Discord server:green_square:!"
-                " Checkout all the perks at https://cssbham.com/membership."
-            )
+            if user_type != "member":
+                await after.send(
+                    "You can also get yourself an annual membership to CSS for only £5!"
+                    " Just head to https://cssbham.com/join."
+                    " You'll get awesome perks like a free T-shirt:shirt:,"
+                    " access to member only events:calendar_spiral:"
+                    " & a cool green name on the CSS Discord server:green_square:!"
+                    " Checkout all the perks at https://cssbham.com/membership."
+                )
 
     @TeXBotCog.listener()
     async def on_member_leave(self, member: discord.Member) -> None:
