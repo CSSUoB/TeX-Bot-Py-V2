@@ -378,7 +378,7 @@ if __name__ != "__main__":
             self._css_guild = css_guild
             self._css_guild_set = True
 
-        async def send_error(self, ctx: discord.ApplicationContext, error_code: str | None = None, message: str | None = None, logging_message: str | None = None) -> None:  # noqa: E501
+        async def send_error(self, ctx: discord.ApplicationContext, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
             """
             Construct & format an error message from the given details.
 
@@ -401,7 +401,7 @@ if __name__ != "__main__":
                         + construct_error_message
                 )
 
-                construct_logging_error_message += f"{error_code}:"
+                construct_logging_error_message += error_code
 
             command_name: str = (
                 ctx.command.callback.__name__

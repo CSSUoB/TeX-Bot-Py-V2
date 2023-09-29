@@ -93,7 +93,7 @@ class EventsCog(TeXBotCog):
         await self.bot.send_error(
             ctx,
             message="Please contact a committee member.",
-            logging_message=str(error)
+            logging_message=error
         )
 
     @TeXBotCog.listener()

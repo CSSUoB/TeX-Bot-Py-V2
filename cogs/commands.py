@@ -1148,7 +1148,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.bot.send_error(
                 ctx,
                 error_code="E1022",
-                logging_message=str(GuestRoleDoesNotExist())
+                logging_message=GuestRoleDoesNotExist()
             )
             return
 
@@ -1295,7 +1295,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.bot.send_error(
                 ctx,
                 error_code="E1022",
-                logging_message=str(GuestRoleDoesNotExist())
+                logging_message=GuestRoleDoesNotExist()
             )
             return
 
@@ -1506,7 +1506,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.bot.send_error(
                 ctx,
                 error_code="E1021",
-                logging_message=str(CommitteeRoleDoesNotExist())
+                logging_message=CommitteeRoleDoesNotExist()
             )
             return
 
@@ -1515,7 +1515,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.bot.send_error(
                 ctx,
                 error_code="E1022",
-                logging_message=str(GuestRoleDoesNotExist())
+                logging_message=GuestRoleDoesNotExist()
             )
             return
 
@@ -1524,7 +1524,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.bot.send_error(
                 ctx,
                 error_code="E1023",
-                logging_message=str(MemberRoleDoesNotExist())
+                logging_message=MemberRoleDoesNotExist()
             )
             return
 
@@ -1533,7 +1533,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.bot.send_error(
                 ctx,
                 error_code="E1024",
-                logging_message=str(ArchivistRoleDoesNotExist())
+                logging_message=ArchivistRoleDoesNotExist()
             )
             return
 
