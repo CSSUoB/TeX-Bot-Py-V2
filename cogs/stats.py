@@ -1,14 +1,22 @@
+import io
 import logging
 import math
 import re
+from typing import TYPE_CHECKING
 
 import discord
+import matplotlib.pyplot as plt
+import mplcyberpunk
 
-import utils
 from cogs._utils import TeXBotCog
 from config import settings
 from db.core.models import LeftMember
 from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
+
+if TYPE_CHECKING:
+    from collections.abc import Collection
+
+    from matplotlib.text import Text as Plot_Text
 
 
 class StatsCommandsCog(TeXBotCog):
@@ -16,6 +24,115 @@ class StatsCommandsCog(TeXBotCog):
         "stats",
         "Various statistics about the CSS Discord server"
     )
+
+    @staticmethod
+    def amount_of_time_formatter(value: float, time_scale: str) -> str:
+        """
+        Format the amount of time value according to the provided time_scale.
+
+        E.g. past "1 days" => past "day",
+        past "2.00 weeks" => past "2 weeks",
+        past "3.14159 months" => past "3.14 months"
+        """
+        if value == 1 or float(f"{value:.2f}") == 1:
+            return f"{time_scale}"
+
+        if value % 1 == 0 or float(f"{value:.2f}") % 1 == 0:
+            return f"{int(value)} {time_scale}s"
+
+        return f"{value:.2f} {time_scale}s"
+
+    # noinspection SpellCheckingInspection
+    @staticmethod
+    def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, filename: str, description: str, extra_text: str = "") -> discord.File:  # noqa: E501
+        """Generate an image of a plot bar chart from the given data & format variables."""
+        plt.style.use("cyberpunk")
+
+        max_data_value: int = max(data.values()) + 1
+
+        # NOTE: The "extra_values" dictionary represents columns of data that should be formatted differently to the standard data columns
+        extra_values: dict[str, int] = {}
+        if "Total" in data:
+            extra_values["Total"] = data.pop("Total")
+
+        if len(data) > 4:
+            data = {
+                key: value
+                for index, (key, value)
+                in enumerate(data.items())
+                if value > 0 or index <= 4
+            }
+
+        bars = plt.bar(*zip(*data.items(), strict=True))
+
+        if extra_values:
+            extra_bars = plt.bar(*zip(*extra_values.items(), strict=True))
+            mplcyberpunk.add_bar_gradient(extra_bars)
+
+        mplcyberpunk.add_bar_gradient(bars)
+
+        xticklabels: Collection[Plot_Text] = plt.gca().get_xticklabels()
+        count_xticklabels: int = len(xticklabels)
+
+        index: int
+        tick_label: Plot_Text
+        for index, tick_label in enumerate(xticklabels):
+            if tick_label.get_text() == "Total":
+                tick_label.set_fontweight("bold")
+
+            # NOTE: Shifts the y location of every other horizontal label down so that they do not overlap with one-another
+            if index % 2 == 1 and count_xticklabels > 4:
+                tick_label.set_y(tick_label.get_position()[1] - 0.044)
+
+        plt.yticks(range(0, max_data_value, math.ceil(max_data_value / 15)))
+
+        xlabel_obj: Plot_Text = plt.xlabel(
+            xlabel,
+            fontweight="bold",
+            fontsize="large",
+            wrap=True
+        )
+        xlabel_obj._get_wrap_line_width = lambda: 475  # type: ignore[attr-defined] # noqa: SLF001, E501
+
+        ylabel_obj: Plot_Text = plt.ylabel(
+            ylabel,
+            fontweight="bold",
+            fontsize="large",
+            wrap=True
+        )
+        ylabel_obj._get_wrap_line_width = lambda: 375  # type: ignore[attr-defined] # noqa: SLF001, E501
+
+        title_obj: Plot_Text = plt.title(title, fontsize="x-large", wrap=True)
+        title_obj._get_wrap_line_width = lambda: 500  # type: ignore[attr-defined] # noqa: SLF001, E501
+
+        if extra_text:
+            extra_text_obj: Plot_Text = plt.text(
+                0.5,
+                -0.27,
+                extra_text,
+                ha="center",
+                transform=plt.gca().transAxes,
+                wrap=True,
+                fontstyle="italic",
+                fontsize="small"
+            )
+            extra_text_obj._get_wrap_line_width = lambda: 400  # type: ignore[attr-defined] # noqa: SLF001, E501
+            plt.subplots_adjust(bottom=0.2)
+
+        plot_file = io.BytesIO()
+        plt.savefig(plot_file, format="png")
+        plt.close()
+        plot_file.seek(0)
+
+        discord_plot_file: discord.File = discord.File(
+            plot_file,
+            filename,
+            description=description
+        )
+
+        plot_file.close()
+
+        return discord_plot_file
 
     # noinspection SpellCheckingInspection
     @stats.command(
@@ -121,12 +238,12 @@ class StatsCommandsCog(TeXBotCog):
 
         await ctx.channel.send(
             f"**{ctx.user.display_name}** used `/{ctx.command}`",
-            file=utils.plot_bar_chart(
+            file=self.plot_bar_chart(
                 message_counts,
                 xlabel="Role Name",
                 ylabel=(
                     f"""Number of Messages Sent (in the past {
-                        utils.amount_of_time_formatter(
+                        self.amount_of_time_formatter(
                             settings["STATISTICS_DAYS"].days,
                             "day"
                         )
@@ -243,12 +360,12 @@ class StatsCommandsCog(TeXBotCog):
         await ctx.channel.send(
             f"**{ctx.user.display_name}** used `/{ctx.command}`",
             files=[
-                utils.plot_bar_chart(
+                self.plot_bar_chart(
                     message_counts["roles"],
                     xlabel="Role Name",
                     ylabel=(
                         f"""Number of Messages Sent (in the past {
-                        utils.amount_of_time_formatter(
+                        self.amount_of_time_formatter(
                             settings["STATISTICS_DAYS"].days,
                             "day"
                         )
@@ -266,12 +383,12 @@ class StatsCommandsCog(TeXBotCog):
                         " (except for @Member vs @Guest & @Committee vs @Committee-Elect)"
                     )
                 ),
-                utils.plot_bar_chart(
+                self.plot_bar_chart(
                     message_counts["channels"],
                     xlabel="Channel Name",
                     ylabel=(
                         f"""Number of Messages Sent (in the past {
-                            utils.amount_of_time_formatter(
+                            self.amount_of_time_formatter(
                                 settings["STATISTICS_DAYS"].days,
                                 "day"
                             )
@@ -369,12 +486,12 @@ class StatsCommandsCog(TeXBotCog):
 
         await ctx.channel.send(
             f"**{ctx.user.display_name}** used `/{ctx.command}`",
-            file=utils.plot_bar_chart(
+            file=self.plot_bar_chart(
                 message_counts,
                 xlabel="Channel Name",
                 ylabel=(
                     f"""Number of Messages Sent (in the past {
-                        utils.amount_of_time_formatter(
+                        self.amount_of_time_formatter(
                             settings["STATISTICS_DAYS"].days,
                             "day"
                         )
@@ -446,7 +563,7 @@ class StatsCommandsCog(TeXBotCog):
 
         await ctx.channel.send(
             f"**{ctx.user.display_name}** used `/{ctx.command}`",
-            file=utils.plot_bar_chart(
+            file=self.plot_bar_chart(
                 left_member_counts,
                 xlabel="Role Name",
                 ylabel="Number of Members that have left the CSS Discord Server",
