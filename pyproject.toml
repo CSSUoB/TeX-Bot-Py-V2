@@ -129,7 +129,7 @@ ignore = [
     "TRY400"
 ]
 line-length = 95
-fixable = ["I001"]
+fixable = ["I001", "TCH", "F401"]
 target-version ="py311"
 task-tags = [
     "TODO",
