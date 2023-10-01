@@ -1,6 +1,5 @@
 """Utility classes & functions provided for use across the whole of the project."""
 
-import logging
 import os
 import re
 import sys
@@ -13,7 +12,6 @@ import discord
 if __name__ != "__main__":
     import io
     import math
-    from collections.abc import Mapping
     from typing import TYPE_CHECKING, Any, Final, TypeAlias
 
     import matplotlib.pyplot as plt
@@ -186,25 +184,6 @@ if __name__ != "__main__":
         CSS Discord Server, while also raising the correct errors if these objects do not
         exist.
         """
-
-        ERROR_ACTIVITIES: Final[Mapping[str, str]] = {
-            "ping": "reply to ping",
-            "write_roles": "send messages",
-            "edit_message": "edit the message",
-            "induct": "induct user",
-            "silent_induct": "silently induct user",
-            "non_silent_induct": "induct user and send welcome message",
-            "make_member": "make you a member",
-            "remind_me": "remind you",
-            "channel_stats": "display channel statistics",
-            "server_stats": "display whole server statistics",
-            "user_stats": "display your statistics",
-            "left_member_stats": (
-                "display statistics about the members that have left the server"
-            ),
-            "archive": "archive the selected category",
-            "ensure_members_inducted": "ensure all members are inducted"
-        }
 
         def __init__(self, *args: Any, **options: Any) -> None:
             """Initialize a new discord.Bot subclass with empty shortcut accessors."""
@@ -379,68 +358,6 @@ if __name__ != "__main__":
             self._css_guild = css_guild
             self._css_guild_set = True
 
-        async def send_error(self, ctx: discord.ApplicationContext, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
-            """
-            Construct & format an error message from the given details.
-
-            The constructed error message is then sent as the response to the given
-            application command context.
-            """
-            construct_error_message: str = ":warning:There was an error"
-            construct_logging_error_message: str = ""
-
-            if error_code:
-                committee_mention: str = "committee"
-
-                committee_role: discord.Role | None = await self.committee_role
-                if committee_role:
-                    committee_mention = committee_role.mention
-
-                construct_error_message = (
-                        f"**Contact a {committee_mention} member, referencing error code:"
-                        f" {error_code}**\n"
-                        + construct_error_message
-                )
-
-                construct_logging_error_message += error_code
-
-            command_name: str = (
-                ctx.command.callback.__name__
-                if (
-                    hasattr(ctx.command, "callback")
-                    and not ctx.command.callback.__name__.startswith("_")
-                )
-                else ctx.command.qualified_name
-            )
-            if command_name in self.ERROR_ACTIVITIES:
-                construct_error_message += (
-                    f" when trying to {self.ERROR_ACTIVITIES[command_name]}"
-                )
-
-            if construct_logging_error_message:
-                construct_logging_error_message += " "
-            construct_logging_error_message += f"({command_name})"
-
-            if message:
-                construct_error_message += ":"
-            else:
-                construct_error_message += "."
-
-            construct_error_message += ":warning:"
-
-            if message:
-                message = re.sub(
-                    r"<([@&#]?|(@[&#])?)\d+>",
-                    lambda match: f"`{match.group(0)}`", message.strip()
-                )
-                construct_error_message += f"\n`{message}`"
-
-            await ctx.respond(construct_error_message, ephemeral=True)
-
-            if logging_message:
-                if construct_logging_error_message:
-                    construct_logging_error_message += " "
-                logging.error("%s%s", construct_logging_error_message, logging_message)
 
 if __name__ == "__main__":
     arg_parser: ArgumentParser = ArgumentParser(
