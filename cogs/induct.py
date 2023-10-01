@@ -276,6 +276,8 @@ class InductCommandCog(BaseInductCog):
             await self.bot.close()
             return
 
+        str_induct_member_id = str_induct_member_id.replace("<@", "").replace(">", "")
+
         if not re.match(r"\A\d{17,20}\Z", str_induct_member_id):
             await self.send_error(
                 ctx,
