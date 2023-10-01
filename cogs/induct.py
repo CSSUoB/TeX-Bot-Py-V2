@@ -12,7 +12,7 @@ from exceptions import (
     CommitteeRoleDoesNotExist,
     GeneralChannelDoesNotExist,
     GuestRoleDoesNotExist,
-    GuildDoesNotExist
+    GuildDoesNotExist,
 )
 
 

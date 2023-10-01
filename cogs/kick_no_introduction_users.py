@@ -6,10 +6,7 @@ from discord.ext import tasks
 
 from cogs._utils import TeXBotCog
 from config import settings
-from exceptions import (
-    GuestRoleDoesNotExist,
-    GuildDoesNotExist
-)
+from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
 from utils import TeXBot
 
 if TYPE_CHECKING:

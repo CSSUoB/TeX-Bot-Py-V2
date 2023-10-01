@@ -12,7 +12,7 @@ from cogs._utils import TeXBotCog
 from config import settings
 from db.core.models import (
     IntroductionReminderOptOutMember,
-    SentOneOffIntroductionReminderMember
+    SentOneOffIntroductionReminderMember,
 )
 from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
 from utils import TeXBot

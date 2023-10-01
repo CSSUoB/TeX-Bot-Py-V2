@@ -4,7 +4,6 @@ import discord
 from discord_logging.handler import DiscordHandler
 
 from cogs._utils import TeXBotCog
-from cogs.tasks import TasksCog
 from config import settings
 from exceptions import (
     ArchivistRoleDoesNotExist,
@@ -13,7 +12,7 @@ from exceptions import (
     GuestRoleDoesNotExist,
     GuildDoesNotExist,
     MemberRoleDoesNotExist,
-    RolesChannelDoesNotExist
+    RolesChannelDoesNotExist,
 )
 
 
@@ -73,9 +72,5 @@ class StartupCog(TeXBotCog):
 
         if not discord.utils.get(guild.text_channels, name="general"):
             logging.warning(GeneralChannelDoesNotExist())
-
-        self.bot.add_view(
-            TasksCog.OptOutIntroductionRemindersView(self.bot)  # TODO: Move to IntroductionRemindersCog
-        )
 
         logging.info("Ready! Logged in as %s", self.bot.user)

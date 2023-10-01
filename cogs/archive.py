@@ -9,7 +9,7 @@ from exceptions import (
     CommitteeRoleDoesNotExist,
     GuestRoleDoesNotExist,
     GuildDoesNotExist,
-    MemberRoleDoesNotExist
+    MemberRoleDoesNotExist,
 )
 
 

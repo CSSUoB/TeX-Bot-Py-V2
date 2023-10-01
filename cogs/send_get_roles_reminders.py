@@ -9,10 +9,7 @@ from discord.ext import tasks
 from cogs._utils import TeXBotCog
 from config import settings
 from db.core.models import SentGetRolesReminderMember
-from exceptions import (
-    GuestRoleDoesNotExist,
-    GuildDoesNotExist
-)
+from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
 from utils import TeXBot
 
 
