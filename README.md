@@ -9,9 +9,9 @@ TeX-Bot, but back in Python! This is a [Discord bot](https://discord.com/build/a
 Users of the bot may encounter error codes when attempting to execute slash-commands, the list of error code descriptions is given here:
 
 * `E1011` - The value for the environment variable `DISCORD_GUILD_ID` is an ID that references a Discord server that does not exist
-* `E1021` - The CSS Discord server does not contain a role with the name "Committee" (required for the `/writeroles`, `/editmessage`, `/induct`, `/archive` & `/delete-all` commands)
-* `E1022` - The CSS Discord server does not contain a role with the name "Guest" (required for the `/induct`, `/makemember`, `/stats` & `/archive` commands and the `kick_no_introduction_members` & `introduction_reminder` tasks)
-* `E1023` - The CSS Discord server does not contain a role with the name "Member" (required for the `/makemember` command)
+* `E1021` - The CSS Discord server does not contain a role with the name "Committee" (required for the `/writeroles`, `/editmessage`, `/induct`, `/archive`, `/delete-all` & `/ensure-members-inducted` commands)
+* `E1022` - The CSS Discord server does not contain a role with the name "Guest" (required for the `/induct`, `/stats`, `/archive` & `/ensure-members-inducted` commands and the `kick_no_introduction_members` & `introduction_reminder` tasks)
+* `E1023` - The CSS Discord server does not contain a role with the name "Member" (required for the `/makemember` & `/ensure-members-inducted` command)
 * `E1024` - The CSS Discord server does not contain a role with the name "Archivist" (required for the `/archive` command)
 * `E1031` - The CSS Discord server does not contain a text channel with the name "#roles" (required for the `/writeroles` command)
 * `E1032` - The CSS Discord server does not contain a text channel with the name "#general" (required for the `/induct` command)
@@ -40,7 +40,7 @@ poetry shell
 python utils.py generate_invite_url {discord_bot_application_id} {discord_guild_id}
 ```
 
-You'll also need to set a number of environment variables, before running the bot:
+You'll also need to set a number of environment variables before running the bot:
 
 * `DISCORD_BOT_TOKEN`: The Discord token for the bot you created (available on your bot page in the [Developer Portal](https://discord.com/developers/applications)).
 * `DISCORD_GUILD_ID`: The ID of the CSS Discord server.
@@ -48,7 +48,7 @@ You'll also need to set a number of environment variables, before running the bo
 * `MEMBERS_PAGE_URL`: The URL of the CSS members page (currently found on the Guild of Students website, make sure it's sorted by group).
 * `MEMBERS_PAGE_COOKIE`: The CSS members page session cookie (probably listed as `.ASPXAUTH`, gives the bot permission to view your members page as if it were logged in to the website as a Committee member, you can extract this from your web browser after logging into the CSS members page).
 
-If running the bot from the built container image these environment variables can be defined in your `docker-config.yml` file. Otherwise, you can put these in a `.env` file in the root folder as it uses [python-dotenv](https://saurabh-kumar.com/python-dotenv/). There is an `example.env` file in the repo that you can rename and populate.
+If running the bot from the built container image, these environment variables can be defined in your `docker-config.yml` file. Otherwise, you can put these in a `.env` file in the root folder as it uses [python-dotenv](https://saurabh-kumar.com/python-dotenv/). There is an `example.env` file in the repo that you can rename and populate.
 
 There are also many other configurations that can be changed in order to alter the behaviour of the bot. These are all listed in the `example.env` file, along with the behaviours that will change.
 

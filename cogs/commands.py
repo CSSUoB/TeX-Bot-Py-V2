@@ -849,15 +849,6 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
             return
 
-        guest_role: discord.Role | None = await self.bot.guest_role
-        if not guest_role:
-            await self.bot.send_error(
-                ctx,
-                error_code="E1022",
-                logging_message=str(GuestRoleDoesNotExist())
-            )
-            return
-
         interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
         if not interaction_member:
             await self.bot.send_error(
@@ -873,16 +864,6 @@ class SlashCommandsCog(ApplicationCommandsCog):
                     " - why are you trying this again? :information_source:"
                 ),
                 ephemeral=True
-            )
-            return
-
-        if guest_role not in interaction_member.roles:
-            await self.bot.send_error(
-                ctx,
-                message=(
-                    "You must be inducted as guest member of the CSS Discord server"
-                    " to use \"/makemember\"."
-                )
             )
             return
 
@@ -956,13 +937,14 @@ class SlashCommandsCog(ApplicationCommandsCog):
         guild_member_ids.discard(" ")
 
         if not guild_member_ids:
-            guild_member_ids_error: OSError = OSError(
-                "The guild member IDs could not be retrieved from the MEMBERS_PAGE_URL."
+            await self.bot.send_error(
+                ctx,
+                error_code="E1041",
+                logging_message=OSError(
+                    "The guild member IDs could not be retrieved from"
+                    " the MEMBERS_PAGE_URL."
+                )
             )
-
-            await self.bot.send_error(ctx, error_code="E1041")
-            logging.critical(guild_member_ids_error)
-            await self.bot.close()
             return
 
         if uob_id not in guild_member_ids:
@@ -978,10 +960,34 @@ class SlashCommandsCog(ApplicationCommandsCog):
 
         await ctx.respond("Successfully made you a member!", ephemeral=True)
 
+        # NOTE: The "Member" role must be added to the user **before** the "Guest" role to ensure that the welcome message does not include the suggestion to purchase membership
         await interaction_member.add_roles(
             member_role,
             reason="TeX Bot slash-command: \"/makemember\""
         )
+
+        guest_role: discord.Role | None = await self.bot.guest_role
+        if not guest_role:
+            logging.warning(
+                "\"/makemember\" command used but the \"Guest\" role does not exist."
+                " Some user's may now have the \"Member\" role without the \"Guest\" role."
+                " Use the \"/ensure-members-inducted\" command to fix this issue."
+            )
+        elif guest_role not in interaction_member.roles:
+            await interaction_member.add_roles(
+                guest_role,
+                reason="TeX Bot slash-command: \"/makemember\""
+            )
+
+        applicant_role: discord.Role | None = discord.utils.get(
+            self.bot.css_guild.roles,
+            name="Applicant"
+        )
+        if applicant_role and applicant_role in interaction_member.roles:
+            await interaction_member.remove_roles(
+                applicant_role,
+                reason="TeX Bot slash-command: \"/makemember\""
+            )
 
         try:
             await UoBMadeMember.objects.acreate(uob_id=uob_id)
@@ -1148,7 +1154,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.bot.send_error(
                 ctx,
                 error_code="E1022",
-                logging_message=str(GuestRoleDoesNotExist())
+                logging_message=GuestRoleDoesNotExist()
             )
             return
 
@@ -1295,7 +1301,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.bot.send_error(
                 ctx,
                 error_code="E1022",
-                logging_message=str(GuestRoleDoesNotExist())
+                logging_message=GuestRoleDoesNotExist()
             )
             return
 
@@ -1440,6 +1446,95 @@ class SlashCommandsCog(ApplicationCommandsCog):
             )
         )
 
+    # noinspection SpellCheckingInspection
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        name="ensure-members-inducted",
+        description="Ensures all users with the @Member role also have the @Guest role."
+    )
+    async def ensure_members_inducted(self, ctx: discord.ApplicationContext) -> None:
+        """
+        Definition & callback response of the "ensure_members_inducted" command.
+
+        The "ensure_members_inducted" command ensures that users within the CSS Discord server
+        that have the "Member" role have also been given the "Guest" role.
+        """
+        try:
+            guild: discord.Guild = self.bot.css_guild
+        except GuildDoesNotExist as guild_error:
+            await self.bot.send_error(ctx, error_code="E1011")
+            logging.critical(guild_error)
+            await self.bot.close()
+            return
+
+        committee_role: discord.Role | None = await self.bot.committee_role
+        if not committee_role:
+            await self.bot.send_error(
+                ctx,
+                error_code="E1021",
+                logging_message=CommitteeRoleDoesNotExist()
+            )
+            return
+
+        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
+        if not interaction_member:
+            await self.bot.send_error(
+                ctx,
+                message="You must be a member of the CSS Discord server to use this command."
+            )
+            return
+
+        if committee_role not in interaction_member.roles:
+            committee_role_mention: str = "@Committee"
+            if ctx.guild:
+                committee_role_mention = committee_role.mention
+
+            await self.bot.send_error(
+                ctx,
+                message=f"Only {committee_role_mention} members can run this command."
+            )
+            return
+
+        member_role: discord.Role | None = await self.bot.member_role
+        if not member_role:
+            await self.bot.send_error(
+                ctx,
+                error_code="E1023",
+                logging_message=MemberRoleDoesNotExist()
+            )
+            return
+
+        guest_role: discord.Role | None = await self.bot.guest_role
+        if not guest_role:
+            await self.bot.send_error(
+                ctx,
+                error_code="E1022",
+                logging_message=GuestRoleDoesNotExist()
+            )
+            return
+
+        await ctx.defer(ephemeral=True)
+
+        changes_made: bool = False
+
+        member: discord.Member
+        for member in guild.members:
+            if guest_role in member.roles:
+                continue
+
+            if member_role in member.roles and guest_role not in member.roles:
+                changes_made = True
+                await member.add_roles(
+                    guest_role,
+                    reason=(
+                        f"{ctx.user} used TeX Bot slash-command: \"/ensure-members-inducted\""
+                    )
+                )
+
+        if changes_made:
+            await ctx.respond("All members successfully inducted", ephemeral=True)
+        else:
+            await ctx.respond("No members required inducting", ephemeral=True)
+
     @delete_all.command(
         name="reminders",
         description="Deletes all Reminders from the backend database."
@@ -1506,7 +1601,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.bot.send_error(
                 ctx,
                 error_code="E1021",
-                logging_message=str(CommitteeRoleDoesNotExist())
+                logging_message=CommitteeRoleDoesNotExist()
             )
             return
 
@@ -1515,7 +1610,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.bot.send_error(
                 ctx,
                 error_code="E1022",
-                logging_message=str(GuestRoleDoesNotExist())
+                logging_message=GuestRoleDoesNotExist()
             )
             return
 
@@ -1524,7 +1619,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.bot.send_error(
                 ctx,
                 error_code="E1023",
-                logging_message=str(MemberRoleDoesNotExist())
+                logging_message=MemberRoleDoesNotExist()
             )
             return
 
@@ -1533,7 +1628,7 @@ class SlashCommandsCog(ApplicationCommandsCog):
             await self.bot.send_error(
                 ctx,
                 error_code="E1024",
-                logging_message=str(ArchivistRoleDoesNotExist())
+                logging_message=ArchivistRoleDoesNotExist()
             )
             return
 

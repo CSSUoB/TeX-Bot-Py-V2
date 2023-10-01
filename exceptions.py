@@ -223,7 +223,14 @@ class CommitteeRoleDoesNotExist(RoleDoesNotExist):
         super().__init__(
             message,
             role_name="Committee",
-            dependant_commands={"writeroles", "editmessage", "induct", "archive", "delete-all"}
+            dependant_commands={
+                "writeroles",
+                "editmessage",
+                "induct",
+                "archive",
+                "delete-all",
+                "ensure-members-inducted"
+            }
         )
 
 
@@ -236,7 +243,7 @@ class GuestRoleDoesNotExist(RoleDoesNotExist):
         super().__init__(
             message,
             role_name="Guest",
-            dependant_commands={"induct", "makemember", "stats", "archive"},
+            dependant_commands={"induct", "stats", "archive", "ensure-members-inducted"},
             dependant_tasks={
                 "kick_no_introduction_members",
                 "introduction_reminder",
@@ -251,7 +258,11 @@ class MemberRoleDoesNotExist(RoleDoesNotExist):
     def __init__(self, message: str | None = None) -> None:
         """Initialize a new RoleDoesNotExist exception with role_name=Member."""
         # noinspection SpellCheckingInspection
-        super().__init__(message, role_name="Member", dependant_commands={"makemember"})
+        super().__init__(
+            message,
+            role_name="Member",
+            dependant_commands={"makemember", "ensure-members-inducted"}
+        )
 
 
 class ArchivistRoleDoesNotExist(RoleDoesNotExist):
