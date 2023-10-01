@@ -1,3 +1,5 @@
+"""Contains cog classes for any delete_all interactions."""
+
 import logging
 
 import discord
@@ -9,6 +11,8 @@ from exceptions import CommitteeRoleDoesNotExist, GuildDoesNotExist
 
 
 class DeleteAllCommandsCog(TeXBotCog):
+    """Cog class that defines the "/delete-all" command group and command call-back methods."""
+
     delete_all: discord.SlashCommandGroup = discord.SlashCommandGroup(
         "delete-all",
         "Delete all instances of the selected object type from the backend database"

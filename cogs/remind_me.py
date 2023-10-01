@@ -23,6 +23,8 @@ if TYPE_CHECKING:
 
 
 class RemindMeCommandCog(TeXBotCog):
+    """Cog class that defines the "/remindme" command and its call-back method."""
+
     @staticmethod
     async def autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> set[str]:  # noqa: C901, E501, PLR0912
         """

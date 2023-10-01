@@ -1,3 +1,5 @@
+"""Contains cog classes for any edit_message interactions."""
+
 import logging
 import re
 
@@ -8,6 +10,9 @@ from exceptions import CommitteeRoleDoesNotExist, GuildDoesNotExist
 
 
 class EditMessageCommandCog(TeXBotCog):
+    # noinspection SpellCheckingInspection
+    """Cog class that defines the "/editmessage" command and its call-back method."""
+
     # noinspection SpellCheckingInspection
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="editmessage",

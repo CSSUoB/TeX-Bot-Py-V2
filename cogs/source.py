@@ -1,9 +1,13 @@
+"""Contains cog classes for any source interactions."""
+
 import discord
 
 from cogs._utils import TeXBotCog
 
 
 class SourceCommandCog(TeXBotCog):
+    """Cog class that defines the "/source" command and its call-back method."""
+
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         description="Displays information about the source code of this bot."
     )

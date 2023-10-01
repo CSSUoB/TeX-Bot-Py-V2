@@ -1,3 +1,5 @@
+"""Contains cog classes for any write_roles interactions."""
+
 import logging
 
 import discord
@@ -8,6 +10,9 @@ from exceptions import CommitteeRoleDoesNotExist, GuildDoesNotExist, RolesChanne
 
 
 class WriteRolesCommandCog(TeXBotCog):
+    # noinspection SpellCheckingInspection
+    """Cog class that defines the "/writeroles" command and its call-back method."""
+
     # noinspection SpellCheckingInspection
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="writeroles",

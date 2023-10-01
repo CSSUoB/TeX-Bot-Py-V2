@@ -1,3 +1,5 @@
+"""Contains cog classes for any send_introduction_reminders interactions."""
+
 import datetime
 import logging
 
@@ -19,6 +21,8 @@ from utils import TeXBot
 
 
 class SendIntroductionRemindersTaskCog(TeXBotCog):
+    """Cog class that defines the send_introduction_reminders task."""
+
     def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
         if settings["SEND_INTRODUCTION_REMINDERS"]:
@@ -39,6 +43,7 @@ class SendIntroductionRemindersTaskCog(TeXBotCog):
 
     @TeXBotCog.listener()
     async def on_ready(self) -> None:
+        """Add OptOutIntroductionRemindersView to the bot's list of permanent views."""
         self.bot.add_view(
             self.OptOutIntroductionRemindersView(self.bot)
         )

@@ -1,3 +1,5 @@
+"""Contains cog classes for any make_member interactions."""
+
 import logging
 import re
 from typing import Final
@@ -15,6 +17,9 @@ from exceptions import GuildDoesNotExist, MemberRoleDoesNotExist
 
 
 class MakeMemberCommandCog(TeXBotCog):
+    # noinspection SpellCheckingInspection
+    """Cog class that defines the "/makemember" command and its call-back method."""
+
     # noinspection SpellCheckingInspection
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="makemember",

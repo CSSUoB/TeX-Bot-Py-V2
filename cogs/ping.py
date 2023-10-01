@@ -1,3 +1,5 @@
+"""Contains cog classes for any ping interactions."""
+
 import random
 
 import discord
@@ -7,6 +9,8 @@ from config import settings
 
 
 class PingCommandCog(TeXBotCog):
+    """Cog class that defines the "/remindme" command and its call-back method."""
+
     @discord.slash_command(description="Replies with Pong!")  # type: ignore[no-untyped-call, misc] # noqa: E501
     async def ping(self, ctx: discord.ApplicationContext) -> None:
         """Definition & callback response of the "ping" command."""

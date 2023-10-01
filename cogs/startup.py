@@ -1,3 +1,5 @@
+"""Contains cog classes for any startup interactions."""
+
 import logging
 
 import discord
@@ -17,6 +19,8 @@ from exceptions import (
 
 
 class StartupCog(TeXBotCog):
+    """Cog class that defines additional code to execute upon startup."""
+
     @TeXBotCog.listener()
     async def on_ready(self) -> None:
         """

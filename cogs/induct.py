@@ -1,3 +1,5 @@
+"""Contains cog classes for any induction interactions."""
+
 import logging
 import random
 import re
@@ -18,6 +20,8 @@ from exceptions import (
 
 
 class InductSendMessageCog(TeXBotCog):
+    """Cog class that defines the "/induct" command and its call-back method."""
+
     @TeXBotCog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
         """

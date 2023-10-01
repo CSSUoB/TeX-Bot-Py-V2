@@ -1,3 +1,5 @@
+"""Contains cog classes for any send_get_roles_reminders interactions."""
+
 import datetime
 import logging
 from typing import Final
@@ -14,6 +16,8 @@ from utils import TeXBot
 
 
 class SendGetRolesRemindersTaskCog(TeXBotCog):
+    """Cog class that defines the send_get_roles_reminders task."""
+
     def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
         if settings["SEND_GET_ROLES_REMINDERS"]:

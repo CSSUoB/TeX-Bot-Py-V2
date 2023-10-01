@@ -1,3 +1,5 @@
+"""Contains cog classes for any kick_no_introduction_users interactions."""
+
 import logging
 from typing import TYPE_CHECKING
 
@@ -14,6 +16,8 @@ if TYPE_CHECKING:
 
 
 class KickNoIntroductionUsersTaskCog(TeXBotCog):
+    """Cog class that defines the kick_no_introduction_users task."""
+
     def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
         if settings["SEND_GET_ROLES_REMINDERS"]:

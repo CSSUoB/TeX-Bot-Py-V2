@@ -1,3 +1,5 @@
+"""Contains cog classes for any archival interactions."""
+
 import logging
 import re
 
@@ -14,6 +16,8 @@ from exceptions import (
 
 
 class ArchiveCommandCog(TeXBotCog):
+    """Cog class that defines the "/archive" command and its call-back method."""
+
     @staticmethod
     async def autocomplete_get_categories(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
         """

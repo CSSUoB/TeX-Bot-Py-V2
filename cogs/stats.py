@@ -1,3 +1,5 @@
+"""Contains cog classes for any stats interactions."""
+
 import logging
 import math
 import re
@@ -12,6 +14,8 @@ from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
 
 
 class StatsCommandsCog(TeXBotCog):
+    """Cog class that defines the "/stats" command group and its command call-back methods."""
+
     stats: discord.SlashCommandGroup = discord.SlashCommandGroup(
         "stats",
         "Various statistics about the CSS Discord server"
