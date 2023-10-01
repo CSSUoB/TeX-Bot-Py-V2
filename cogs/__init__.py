@@ -8,16 +8,19 @@ cogs for command & event handling and repeating tasks.
 from typing import TYPE_CHECKING
 
 from cogs.archive import ArchiveCommandCog
-from cogs.clear_reminders_backlog import ClearRemindersBacklogTaskCog
 from cogs.command_error import CommandErrorCog
 from cogs.delete_all import DeleteAllCommandsCog
 from cogs.edit_message import EditMessageCommandCog
-from cogs.ensure_members_inducted import EnsureMembersInductedCommandCog
-from cogs.induct import InductCommandCog, InductSendMessageCog, InductUserCommandsCog
+from cogs.induct import (
+    EnsureMembersInductedCommandCog,
+    InductCommandCog,
+    InductSendMessageCog,
+    InductUserCommandsCog
+)
 from cogs.kick_no_introduction_users import KickNoIntroductionUsersTaskCog
 from cogs.make_member import MakeMemberCommandCog
 from cogs.ping import PingCommandCog
-from cogs.remind_me import RemindMeCommandCog
+from cogs.remind_me import ClearRemindersBacklogTaskCog, RemindMeCommandCog
 from cogs.send_get_roles_reminders import SendGetRolesRemindersTaskCog
 from cogs.send_introduction_reminders import SendIntroductionRemindersTaskCog
 from cogs.source import SourceCommandCog
@@ -36,7 +39,6 @@ def setup(bot: TeXBot) -> None:
     """Add all the cogs to the bot, at bot startup."""
     cogs: Iterable[type[TeXBotCog]] = (
         ArchiveCommandCog,
-        ClearRemindersBacklogTaskCog,
         CommandErrorCog,
         DeleteAllCommandsCog,
         EditMessageCommandCog,
@@ -47,6 +49,7 @@ def setup(bot: TeXBot) -> None:
         KickNoIntroductionUsersTaskCog,
         MakeMemberCommandCog,
         PingCommandCog,
+        ClearRemindersBacklogTaskCog,
         RemindMeCommandCog,
         SendGetRolesRemindersTaskCog,
         SendIntroductionRemindersTaskCog,
