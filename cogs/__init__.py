@@ -15,7 +15,7 @@ from cogs.induct import (
     EnsureMembersInductedCommandCog,
     InductCommandCog,
     InductSendMessageCog,
-    InductUserCommandsCog
+    InductUserCommandsCog,
 )
 from cogs.kick_no_introduction_users import KickNoIntroductionUsersTaskCog
 from cogs.make_member import MakeMemberCommandCog
