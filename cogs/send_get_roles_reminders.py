@@ -107,22 +107,22 @@ class SendGetRolesRemindersTaskCog(TeXBotCog):
             if not member_requires_opt_in_roles_reminder:
                 continue
 
-            async for log in guild.audit_logs(action=AuditLogAction.member_role_update):
-                log_adds_guest_role: bool = (
-                    log.target == member
-                    and guest_role not in log.before.roles
-                    and guest_role in log.after.roles
+            try:
+                guest_role_received_time: datetime.datetime = next(
+                    log.created_at
+                    async for log
+                    in guild.audit_logs(action=AuditLogAction.member_role_update)
+                    if (
+                        log.target == member
+                        and guest_role not in log.before.roles
+                        and guest_role in log.after.roles
+                    )
                 )
-                if log_adds_guest_role:
-                    guest_role_received_time = log.created_at
-                    break
-            else:
+            except StopIteration:
                 logging.error(
-                    (
-                        "Member with ID: %s could not be checked whether to send"
-                        " role_reminder, because their \"guest_role_received_time\""
-                        " could not be found."
-                    ),
+                    "Member with ID: %s could not be checked whether to send"
+                    " role_reminder, because their \"guest_role_received_time\""
+                    " could not be found.",
                     member.id
                 )
                 continue
