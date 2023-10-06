@@ -120,9 +120,11 @@ class SendGetRolesRemindersTaskCog(TeXBotCog):
                 )
             except StopIteration:
                 logging.error(
-                    "Member with ID: %s could not be checked whether to send"
-                    " role_reminder, because their \"guest_role_received_time\""
-                    " could not be found.",
+                    (
+                        "Member with ID: %s could not be checked whether to send"
+                        " role_reminder, because their \"guest_role_received_time\""
+                        " could not be found."
+                    ),
                     member.id
                 )
                 continue
