@@ -107,8 +107,18 @@ class SendGetRolesRemindersTaskCog(TeXBotCog):
             if not member_requires_opt_in_roles_reminder:
                 continue
 
+            hashed_member_id: str = SentGetRolesReminderMember.hash_member_id(member.id)
+            sent_get_roles_reminder_member_exists: bool = (
+                await SentGetRolesReminderMember.objects.filter(
+                    hashed_member_id=hashed_member_id
+                ).aexists()
+            )
+            if sent_get_roles_reminder_member_exists:
+                continue
+
             try:
-                guest_role_received_time: datetime.datetime = next(
+                # noinspection PyTypeChecker
+                guest_role_received_time: datetime.datetime = await anext(
                     log.created_at
                     async for log
                     in guild.audit_logs(action=AuditLogAction.member_role_update)
@@ -129,28 +139,23 @@ class SendGetRolesRemindersTaskCog(TeXBotCog):
                 )
                 continue
 
-            hashed_member_id: str = SentGetRolesReminderMember.hash_member_id(member.id)
-
             time_since_role_received: datetime.timedelta = (
                     discord.utils.utcnow() - guest_role_received_time
             )
-            if time_since_role_received > datetime.timedelta(days=1):
-                sent_get_roles_reminder_member_exists: bool = (
-                    await SentGetRolesReminderMember.objects.filter(
-                        hashed_member_id=hashed_member_id
-                    ).aexists()
-                )
-                if not sent_get_roles_reminder_member_exists:
-                    await member.send(
-                        "Hey! It seems like you joined the CSS Discord server and been given"
-                        " the `@Guest` role but have not yet nabbed yourself any opt-in roles."
-                        f"\nYou can head to {roles_channel_mention} and click on the icons"
-                        " to get optional roles like pronouns and year group identifiers"
-                    )
+            if time_since_role_received <= datetime.timedelta(days=1):
+                continue
 
-                await SentGetRolesReminderMember.objects.acreate(
-                    hashed_member_id=hashed_member_id
-                )
+            await member.send(
+                "Hey! It seems like you joined the CSS Discord server and have been"
+                " given the `@Guest` role but have not yet nabbed yourself any"
+                f" opt-in roles.\nYou can head to {roles_channel_mention}"
+                " and click on the icons to get optional roles like pronouns"
+                " and year group identifiers"
+            )
+
+            await SentGetRolesReminderMember.objects.acreate(
+                hashed_member_id=hashed_member_id
+            )
 
     @send_get_roles_reminders.before_loop
     async def before_tasks(self) -> None:
