@@ -27,9 +27,7 @@ intents.members = True
 
 bot = TeXBot(intents=intents)
 
-cog: str
-for cog in ("events", "commands", "tasks"):
-    bot.load_extension(f"cogs.{cog}")
+bot.load_extension("cogs")
 
 if __name__ == "__main__":
     management.call_command("migrate")

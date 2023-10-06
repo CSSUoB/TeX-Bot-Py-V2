@@ -150,16 +150,16 @@ class Settings:
                 "DISCORD_LOG_CHANNEL_WEBHOOK_URL",
                 ""
             )
-            discord_log_channel_webhook_url_is_valid: bool = (
+            discord_log_channel_webhook_url_not_valid: bool = (
                 self._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]
-                and (
-                    not validators.url(self._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"])
-                    or not self._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"].startswith(
+                and not (
+                    validators.url(self._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"])
+                    and self._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"].startswith(
                         "https://discord.com/api/webhooks/"
                     )
                 )
             )
-            if discord_log_channel_webhook_url_is_valid:
+            if discord_log_channel_webhook_url_not_valid:
                 INVALID_WEBHOOK_URL_MESSAGE: Final[str] = (
                     "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL"
                     " that points to a discord channel where logs should be displayed."

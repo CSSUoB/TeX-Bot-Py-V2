@@ -1,10 +1,8 @@
 """Utility classes & functions provided for use across the whole of the project."""
 
-import logging
 import os
 import re
 import sys
-import typing
 from argparse import ArgumentParser, Namespace
 
 import discord
@@ -13,7 +11,6 @@ import discord
 if __name__ != "__main__":
     import io
     import math
-    from collections.abc import Mapping
     from typing import TYPE_CHECKING, Any, Final, TypeAlias
 
     import matplotlib.pyplot as plt
@@ -69,8 +66,7 @@ def generate_invite_url(discord_bot_application_id: str, discord_guild_id: int) 
 
 # NOTE: Preventing using modules that have not been loaded if this file has been run from the command-line
 if __name__ != "__main__":
-    # noinspection PyTypeChecker, SpellCheckingInspection
-    @typing.no_type_check
+    # noinspection SpellCheckingInspection
     def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, filename: str, description: str, extra_text: str = "") -> discord.File:  # noqa: E501
         """Generate an image of a plot bar chart from the given data & format variables."""
         plt.style.use("cyberpunk")
@@ -89,10 +85,10 @@ if __name__ != "__main__":
                 if value > 0 or index <= 4
             }
 
-        bars = plt.bar(data.keys(), data.values())
+        bars = plt.bar(*zip(*data.items(), strict=True))
 
         if extra_values:
-            extra_bars = plt.bar(extra_values.keys(), extra_values.values())
+            extra_bars = plt.bar(*zip(*extra_values.items(), strict=True))
             mplcyberpunk.add_bar_gradient(extra_bars)
 
         mplcyberpunk.add_bar_gradient(bars)
@@ -118,7 +114,7 @@ if __name__ != "__main__":
             fontsize="large",
             wrap=True
         )
-        xlabel_obj._get_wrap_line_width = lambda: 475  # noqa: SLF001
+        xlabel_obj._get_wrap_line_width = lambda: 475  # type: ignore[attr-defined] # noqa: SLF001, E501
 
         ylabel_obj: Plot_Text = plt.ylabel(
             ylabel,
@@ -126,10 +122,10 @@ if __name__ != "__main__":
             fontsize="large",
             wrap=True
         )
-        ylabel_obj._get_wrap_line_width = lambda: 375  # noqa: SLF001
+        ylabel_obj._get_wrap_line_width = lambda: 375  # type: ignore[attr-defined] # noqa: SLF001, E501
 
         title_obj: Plot_Text = plt.title(title, fontsize="x-large", wrap=True)
-        title_obj._get_wrap_line_width = lambda: 500  # noqa: SLF001
+        title_obj._get_wrap_line_width = lambda: 500  # type: ignore[attr-defined] # noqa: SLF001, E501
 
         if extra_text:
             extra_text_obj: Plot_Text = plt.text(
@@ -142,7 +138,7 @@ if __name__ != "__main__":
                 fontstyle="italic",
                 fontsize="small"
             )
-            extra_text_obj._get_wrap_line_width = lambda: 400  # noqa: SLF001
+            extra_text_obj._get_wrap_line_width = lambda: 400  # type: ignore[attr-defined] # noqa: SLF001, E501
             plt.subplots_adjust(bottom=0.2)
 
         plot_file = io.BytesIO()
@@ -187,25 +183,6 @@ if __name__ != "__main__":
         exist.
         """
 
-        ERROR_ACTIVITIES: Final[Mapping[str, str]] = {
-            "ping": "reply to ping",
-            "write_roles": "send messages",
-            "edit_message": "edit the message",
-            "induct": "induct user",
-            "silent_induct": "silently induct user",
-            "non_silent_induct": "induct user and send welcome message",
-            "make_member": "make you a member",
-            "remind_me": "remind you",
-            "channel_stats": "display channel statistics",
-            "server_stats": "display whole server statistics",
-            "user_stats": "display your statistics",
-            "left_member_stats": (
-                "display statistics about the members that have left the server"
-            ),
-            "archive": "archive the selected category",
-            "ensure_members_inducted": "ensure all members are inducted"
-        }
-
         def __init__(self, *args: Any, **options: Any) -> None:
             """Initialize a new discord.Bot subclass with empty shortcut accessors."""
             self._css_guild: discord.Guild | None = None
@@ -216,7 +193,7 @@ if __name__ != "__main__":
             self._applicant_role: discord.Role | None = None
             self._roles_channel: discord.TextChannel | None = None
             self._general_channel: discord.TextChannel | None = None
-            self._welcome_channel: discord.TextChannel | None = None
+            self._rules_channel: discord.TextChannel | None = None
 
             self._css_guild_set: bool = False
 
@@ -326,19 +303,19 @@ if __name__ != "__main__":
             return self._general_channel
 
         @property
-        async def welcome_channel(self) -> discord.TextChannel | None:
+        async def rules_channel(self) -> discord.TextChannel | None:
             """
             Shortcut accessor to the welcome text channel.
 
             The welcome text channel is the one that contains the welcome message & rules.
             """
-            if not self._welcome_channel or not self._guild_has_channel(self._welcome_channel):
-                self._welcome_channel = (
+            if not self._rules_channel or not self._guild_has_channel(self._rules_channel):
+                self._rules_channel = (
                     self.css_guild.rules_channel
                     or await self._fetch_text_channel("welcome")
                 )
 
-            return self._welcome_channel
+            return self._rules_channel
 
         def _bot_has_guild(self, guild_id: int) -> bool:
             return bool(discord.utils.get(self.guilds, id=guild_id))
@@ -379,68 +356,6 @@ if __name__ != "__main__":
             self._css_guild = css_guild
             self._css_guild_set = True
 
-        async def send_error(self, ctx: discord.ApplicationContext, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
-            """
-            Construct & format an error message from the given details.
-
-            The constructed error message is then sent as the response to the given
-            application command context.
-            """
-            construct_error_message: str = ":warning:There was an error"
-            construct_logging_error_message: str = ""
-
-            if error_code:
-                committee_mention: str = "committee"
-
-                committee_role: discord.Role | None = await self.committee_role
-                if committee_role:
-                    committee_mention = committee_role.mention
-
-                construct_error_message = (
-                        f"**Contact a {committee_mention} member, referencing error code:"
-                        f" {error_code}**\n"
-                        + construct_error_message
-                )
-
-                construct_logging_error_message += error_code
-
-            command_name: str = (
-                ctx.command.callback.__name__
-                if (
-                    hasattr(ctx.command, "callback")
-                    and not ctx.command.callback.__name__.startswith("_")
-                )
-                else ctx.command.qualified_name
-            )
-            if command_name in self.ERROR_ACTIVITIES:
-                construct_error_message += (
-                    f" when trying to {self.ERROR_ACTIVITIES[command_name]}"
-                )
-
-            if construct_logging_error_message:
-                construct_logging_error_message += " "
-            construct_logging_error_message += f"({command_name})"
-
-            if message:
-                construct_error_message += ":"
-            else:
-                construct_error_message += "."
-
-            construct_error_message += ":warning:"
-
-            if message:
-                message = re.sub(
-                    r"<([@&#]?|(@[&#])?)\d+>",
-                    lambda match: f"`{match.group(0)}`", message.strip()
-                )
-                construct_error_message += f"\n`{message}`"
-
-            await ctx.respond(construct_error_message, ephemeral=True)
-
-            if logging_message:
-                if construct_logging_error_message:
-                    construct_logging_error_message += " "
-                logging.error("%s%s", construct_logging_error_message, logging_message)
 
 if __name__ == "__main__":
     arg_parser: ArgumentParser = ArgumentParser(
