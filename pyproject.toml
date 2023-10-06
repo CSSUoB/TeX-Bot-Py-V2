@@ -25,24 +25,24 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.11.3"
+python = "^3.11"
 py-cord-dev = "2.5.0rc5"  # NOTE: Pycord has temporarily lost the ability to create new releases on the main pypi page so the development version is used. This has been tested to be stable
-python-dotenv = "^1.0.0"
-validators = "^0.22.0"
-beautifulsoup4 = "^4.12.2"
-emoji = "^2.8.0"
+python-dotenv = "^1.0"
+validators = "^0.22"
+beautifulsoup4 = "^4.12"
+emoji = "^2.8"
 parsedatetime = "^2.6"
 django = "4.2.5"
 matplotlib = "^3.8"
-mplcyberpunk = "^0.7.0"
-python-logging-discord-handler = "^0.1.4"
+mplcyberpunk = "^0.7"
+python-logging-discord-handler = "^0.1"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.5"
 django-stubs = {extras = ["compatible-mypy"], version = "4.2.4"}
 pytest = "^7.4"
 pytest-subtests = "^0.11"
-ruff = "^0.0.287"
+ruff = "^0.0"
 
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]
@@ -110,7 +110,6 @@ select = [
     "TRY",
     "FLY",
     "PERF",
-    "FURB",
     "RUF"
 ]
 ignore = [
@@ -130,7 +129,7 @@ ignore = [
     "TRY400"
 ]
 line-length = 95
-fixable = ["I001"]
+fixable = ["I001", "TCH", "F401"]
 target-version ="py311"
 task-tags = [
     "TODO",

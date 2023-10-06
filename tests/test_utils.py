@@ -114,6 +114,21 @@ class BaseTestArgumentParser:
     parser_output_stdout: str
     parser_output_stderr: str
 
+    @staticmethod
+    def _get_project_root() -> Path:
+        project_root: Path = Path(__file__).resolve()
+        for _ in range(6):
+            project_root = project_root.parent
+
+            if "README.md" in (path.name for path in project_root.iterdir()):
+                break
+        else:
+            # noinspection PyFinal
+            NO_ROOT_DIRECTORY_MESSAGE: Final[str] = "Could not locate project root directory."
+            raise FileNotFoundError(NO_ROOT_DIRECTORY_MESSAGE)
+
+        return project_root
+
     @classmethod
     def execute_util_function(cls, util_function_name: str, *arguments: str) -> None:
         """
@@ -139,17 +154,6 @@ class BaseTestArgumentParser:
             )
             raise ValueError(INVALID_ARGUMENTS_MESSAGE)
 
-        project_root: Path = Path(__file__).resolve()
-        for _ in range(6):
-            project_root = project_root.parent
-
-            if "README.md" in (path.name for path in Path().parent.iterdir()):
-                break
-        else:
-            # noinspection PyFinal
-            NO_ROOT_DIRECTORY_MESSAGE: Final[str] = "Could not locate project root directory."
-            raise FileNotFoundError(NO_ROOT_DIRECTORY_MESSAGE)
-
         subprocess_args: list[str] = [sys.executable, "-m", "utils"]
         if util_function_name:
             subprocess_args.append(util_function_name)
@@ -157,7 +161,7 @@ class BaseTestArgumentParser:
 
         parser_output: CompletedProcess[bytes] = subprocess.run(
             subprocess_args,  # noqa: S603
-            cwd=project_root.parent,
+            cwd=cls._get_project_root(),
             capture_output=True,
             check=False
         )
@@ -228,9 +232,10 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
         The command line outputs are stored in class variables for later access.
         """
-        env_file_path: Path = Path(".env")
+        PROJECT_ROOT: Final[Path] = cls._get_project_root()
+        env_file_path: Path = PROJECT_ROOT / Path(".env")
         if env_file_path.is_file():
-            env_file_path = env_file_path.rename(Path("temp.env"))
+            env_file_path = env_file_path.rename(PROJECT_ROOT / Path("._env"))
 
         old_env_discord_guild_id: str | None = os.environ.get("DISCORD_GUILD_ID")
         if delete_env_guild_id and old_env_discord_guild_id is not None:
@@ -242,7 +247,7 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
             os.environ["DISCORD_GUILD_ID"] = old_env_discord_guild_id
 
         if env_file_path.is_file():
-            env_file_path.rename(Path(".env"))
+            env_file_path.rename(PROJECT_ROOT / Path(".env"))
 
     @classmethod
     def test_url_generates_without_discord_guild_id_environment_variable(cls) -> None:

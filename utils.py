@@ -114,7 +114,7 @@ if __name__ != "__main__":
             fontsize="large",
             wrap=True
         )
-        xlabel_obj._get_wrap_line_width = lambda: 475  # type: ignore[attr-defined]  # noqa: SLF001, E501
+        xlabel_obj._get_wrap_line_width = lambda: 475  # type: ignore[attr-defined] # noqa: SLF001, E501
 
         ylabel_obj: Plot_Text = plt.ylabel(
             ylabel,
@@ -122,10 +122,10 @@ if __name__ != "__main__":
             fontsize="large",
             wrap=True
         )
-        ylabel_obj._get_wrap_line_width = lambda: 375  # type: ignore[attr-defined]  # noqa: SLF001, E501
+        ylabel_obj._get_wrap_line_width = lambda: 375  # type: ignore[attr-defined] # noqa: SLF001, E501
 
         title_obj: Plot_Text = plt.title(title, fontsize="x-large", wrap=True)
-        title_obj._get_wrap_line_width = lambda: 500  # type: ignore[attr-defined]  # noqa: SLF001, E501
+        title_obj._get_wrap_line_width = lambda: 500  # type: ignore[attr-defined] # noqa: SLF001, E501
 
         if extra_text:
             extra_text_obj: Plot_Text = plt.text(
@@ -355,6 +355,7 @@ if __name__ != "__main__":
 
             self._css_guild = css_guild
             self._css_guild_set = True
+
 
 if __name__ == "__main__":
     arg_parser: ArgumentParser = ArgumentParser(

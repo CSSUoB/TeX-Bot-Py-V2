@@ -28,7 +28,7 @@ from exceptions import (
 TRUE_VALUES: Final[frozenset[str]] = frozenset({"true", "1", "t", "y", "yes", "on"})
 FALSE_VALUES: Final[frozenset[str]] = frozenset({"false", "0", "f", "n", "no", "off"})
 VALID_SEND_INTRODUCTION_REMINDERS_VALUES: Final[frozenset[str]] = frozenset(
-    {"true", "1", "t", "y", "yes", "on"} | TRUE_VALUES | FALSE_VALUES
+    {"once"} | TRUE_VALUES | FALSE_VALUES
 )
 DEFAULT_STATISTICS_ROLES: Final[frozenset[str]] = frozenset(
     {
@@ -395,7 +395,7 @@ class Settings:
             # noinspection SpellCheckingInspection
             logging.basicConfig(
                 level=getattr(logging, console_log_level),
-                format="%(levelname)s | %(module)s: %(message)s"
+                format="%(levelname)s: %(message)s"
             )
 
             self._settings["MODERATION_DOCUMENT_URL"] = os.getenv(
