@@ -26,6 +26,7 @@ from cogs.send_introduction_reminders import SendIntroductionRemindersTaskCog
 from cogs.source import SourceCommandCog
 from cogs.startup import StartupCog
 from cogs.stats import StatsCommandsCog
+from cogs.strike import StrikeCommandCog, StrikeUserCommandCog
 from cogs.write_roles import WriteRolesCommandCog
 from utils import TeXBot
 
@@ -56,6 +57,8 @@ def setup(bot: TeXBot) -> None:
         SourceCommandCog,
         StartupCog,
         StatsCommandsCog,
+        StrikeCommandCog,
+        StrikeUserCommandCog,
         WriteRolesCommandCog,
     )
     Cog: type[TeXBotCog]
