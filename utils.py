@@ -17,7 +17,17 @@ if __name__ != "__main__":
     import mplcyberpunk
 
     from config import settings
-    from exceptions import GuildDoesNotExist
+    from exceptions import (
+        ArchivistRoleDoesNotExist,
+        CommitteeRoleDoesNotExist,
+        EveryoneRoleCouldNotBeRetrieved,
+        GeneralChannelDoesNotExist,
+        GuestRoleDoesNotExist,
+        GuildDoesNotExist,
+        MemberRoleDoesNotExist,
+        RolesChannelDoesNotExist,
+        UserNotInCSSDiscordServer,
+    )
 
     if TYPE_CHECKING:
         from collections.abc import Collection
@@ -213,7 +223,7 @@ if __name__ != "__main__":
             return self._css_guild
 
         @property
-        async def committee_role(self) -> discord.Role | None:
+        async def committee_role(self) -> discord.Role:
             """
             Shortcut accessor to the committee role.
 
@@ -226,10 +236,13 @@ if __name__ != "__main__":
                     name="Committee"
                 )
 
+            if not self._committee_role:
+                raise CommitteeRoleDoesNotExist
+
             return self._committee_role
 
         @property
-        async def guest_role(self) -> discord.Role | None:
+        async def guest_role(self) -> discord.Role:
             """
             Shortcut accessor to the guest role.
 
@@ -244,10 +257,13 @@ if __name__ != "__main__":
                     name="Guest"
                 )
 
+            if not self._guest_role:
+                raise GuestRoleDoesNotExist
+
             return self._guest_role
 
         @property
-        async def member_role(self) -> discord.Role | None:
+        async def member_role(self) -> discord.Role:
             """
             Shortcut accessor to the member role.
 
@@ -263,10 +279,13 @@ if __name__ != "__main__":
                     name="Member"
                 )
 
+            if not self._member_role:
+                raise MemberRoleDoesNotExist
+
             return self._member_role
 
         @property
-        async def archivist_role(self) -> discord.Role | None:
+        async def archivist_role(self) -> discord.Role:
             """
             Shortcut accessor to the archivist role.
 
@@ -279,10 +298,13 @@ if __name__ != "__main__":
                     name="Archivist"
                 )
 
+            if not self._archivist_role:
+                raise ArchivistRoleDoesNotExist
+
             return self._archivist_role
 
         @property
-        async def roles_channel(self) -> discord.TextChannel | None:
+        async def roles_channel(self) -> discord.TextChannel:
             """
             Shortcut accessor to the welcome text channel.
 
@@ -292,18 +314,24 @@ if __name__ != "__main__":
             if not self._roles_channel or not self._guild_has_channel(self._roles_channel):
                 self._roles_channel = await self._fetch_text_channel("roles")
 
+            if not self._roles_channel:
+                raise RolesChannelDoesNotExist
+
             return self._roles_channel
 
         @property
-        async def general_channel(self) -> discord.TextChannel | None:
+        async def general_channel(self) -> discord.TextChannel:
             """Shortcut accessor to the general text channel."""
             if not self._general_channel or not self._guild_has_channel(self._general_channel):
                 self._general_channel = await self._fetch_text_channel("general")
 
+            if not self._general_channel:
+                raise GeneralChannelDoesNotExist
+
             return self._general_channel
 
         @property
-        async def rules_channel(self) -> discord.TextChannel | None:
+        async def rules_channel(self) -> discord.TextChannel:
             """
             Shortcut accessor to the welcome text channel.
 
@@ -314,6 +342,9 @@ if __name__ != "__main__":
                     self.css_guild.rules_channel
                     or await self._fetch_text_channel("welcome")
                 )
+
+            if not self._rules_channel:
+                raise CommitteeRoleDoesNotExist
 
             return self._rules_channel
 
@@ -340,6 +371,24 @@ if __name__ != "__main__":
                 raise TypeError(INVALID_TEXT_CHANNEL_MESSAGE)
 
             return text_channel
+
+        async def get_css_user(self, user: discord.Member | discord.User) -> discord.Member:
+            css_user: discord.Member | None = self.css_guild.get_member(user.id)
+            if not css_user:
+                raise UserNotInCSSDiscordServer(user_id=user.id)
+            return css_user
+
+        async def get_everyone_role(self) -> discord.Role:
+            everyone_role: discord.Role | None = discord.utils.get(
+                self.css_guild.roles,
+                name="@everyone"
+            )
+            if not everyone_role:
+                raise EveryoneRoleCouldNotBeRetrieved
+            return everyone_role
+
+        async def check_user_has_committee_role(self, user: discord.Member | discord.User) -> bool:  # noqa: E501
+            return await self.committee_role in (await self.get_css_user(user)).roles
 
         def set_css_guild(self, css_guild: discord.Guild) -> None:
             """
