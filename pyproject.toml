@@ -32,7 +32,7 @@ validators = "^0.22"
 beautifulsoup4 = "^4.12"
 emoji = "^2.8"
 parsedatetime = "^2.6"
-django = "4.2.5"
+django = "4.2.6"
 matplotlib = "^3.8"
 mplcyberpunk = "^0.7"
 python-logging-discord-handler = "^0.1"
@@ -129,7 +129,7 @@ ignore = [
     "TRY400"
 ]
 line-length = 95
-fixable = ["I001", "TCH", "F401"]
+fixable = ["I001", "TCH", "F401", "RUF100"]
 target-version ="py311"
 task-tags = [
     "TODO",

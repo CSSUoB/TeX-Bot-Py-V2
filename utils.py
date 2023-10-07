@@ -114,7 +114,7 @@ if __name__ != "__main__":
             fontsize="large",
             wrap=True
         )
-        xlabel_obj._get_wrap_line_width = lambda: 475  # type: ignore[attr-defined] # noqa: SLF001, E501
+        xlabel_obj._get_wrap_line_width = lambda: 475  # type: ignore[attr-defined] # noqa: SLF001
 
         ylabel_obj: Plot_Text = plt.ylabel(
             ylabel,
@@ -122,10 +122,10 @@ if __name__ != "__main__":
             fontsize="large",
             wrap=True
         )
-        ylabel_obj._get_wrap_line_width = lambda: 375  # type: ignore[attr-defined] # noqa: SLF001, E501
+        ylabel_obj._get_wrap_line_width = lambda: 375  # type: ignore[attr-defined] # noqa: SLF001
 
         title_obj: Plot_Text = plt.title(title, fontsize="x-large", wrap=True)
-        title_obj._get_wrap_line_width = lambda: 500  # type: ignore[attr-defined] # noqa: SLF001, E501
+        title_obj._get_wrap_line_width = lambda: 500  # type: ignore[attr-defined] # noqa: SLF001
 
         if extra_text:
             extra_text_obj: Plot_Text = plt.text(
@@ -138,7 +138,7 @@ if __name__ != "__main__":
                 fontstyle="italic",
                 fontsize="small"
             )
-            extra_text_obj._get_wrap_line_width = lambda: 400  # type: ignore[attr-defined] # noqa: SLF001, E501
+            extra_text_obj._get_wrap_line_width = lambda: 400  # type: ignore[attr-defined] # noqa: SLF001
             plt.subplots_adjust(bottom=0.2)
 
         plot_file = io.BytesIO()

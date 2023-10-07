@@ -26,7 +26,7 @@ class RemindMeCommandCog(TeXBotCog):
     """Cog class that defines the "/remindme" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> set[str]:  # noqa: C901, E501, PLR0912
+    async def autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> set[str]:  # noqa: C901, PLR0912
         """
         Autocomplete callable that generates the common delay input values.
 
@@ -116,7 +116,7 @@ class RemindMeCommandCog(TeXBotCog):
                     if month < 10:
                         delay_choices.add(f"{joiner}0{month}{joiner}{year}")
 
-        elif match := re.match(r"\A\d{1,3}(?P<ctx_time_choice> ?[A-Za-z]*)\Z", ctx.value):  # noqa: E501
+        elif match := re.match(r"\A\d{1,3}(?P<ctx_time_choice> ?[A-Za-z]*)\Z", ctx.value):
             FORMATTED_TIME_CHOICES: Final[Iterator[tuple[str, str, str]]] = itertools.product(
                 {"", " "},
                 TIME_CHOICES,
@@ -173,7 +173,7 @@ class RemindMeCommandCog(TeXBotCog):
         input_type=str,
         description="The amount of time to wait before reminding you",
         required=True,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_delays),  # type: ignore[arg-type] # noqa: E501
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_delays),  # type: ignore[arg-type]
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="message",
