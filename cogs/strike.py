@@ -212,7 +212,7 @@ class BaseStrikeCog(TeXBotCog):
         )
 
         if button_interaction.data[
-            "custom_id"] == "no_strike_member":  # type: ignore[index, typeddict-item] # noqa: E501
+            "custom_id"] == "no_strike_member":  # type: ignore[index, typeddict-item]
             await ctx.respond(
                 f"Aborted performing {SUGGESTED_ACTIONS[actual_strike_amount]} action"
                 f" on {strike_member.mention}.",
@@ -275,11 +275,11 @@ class StrikeCommandCog(BaseStrikeCog):
         name="user",
         description="The user to give a strike to.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(strike_autocomplete_get_members),  # type: ignore[arg-type] # noqa: E501
+        autocomplete=discord.utils.basic_autocomplete(strike_autocomplete_get_members),  # type: ignore[arg-type]
         required=True,
         parameter_name="str_strike_member_id"
     )
-    async def strike(self, ctx: discord.ApplicationContext, str_strike_member_id: str) -> None:  # noqa: E501
+    async def strike(self, ctx: discord.ApplicationContext, str_strike_member_id: str) -> None:
         """
         Definition & callback response of the "strike" command.
 
