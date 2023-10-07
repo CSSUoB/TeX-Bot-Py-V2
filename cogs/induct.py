@@ -255,7 +255,7 @@ class InductCommandCog(BaseInductCog):
         name="user",
         description="The user to induct.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type] # noqa: E501
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
         required=True,
         parameter_name="str_induct_member_id"
     )

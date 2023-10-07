@@ -62,7 +62,7 @@ class ArchiveCommandCog(TeXBotCog):
         name="category",
         description="The category to archive.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_categories),  # type: ignore[arg-type] # noqa: E501
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_categories),  # type: ignore[arg-type]
         required=True,
         parameter_name="str_category_id"
     )
