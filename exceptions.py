@@ -161,8 +161,7 @@ class GuildDoesNotExist(BaseDoesNotExistError):
     """Exception class to raise when a required Discord guild is missing."""
 
     DEFAULT_MESSAGE: str = (
-        "Server with given ID does not exist"
-        " or is not accessible to the bot."
+        "Server with given ID does not exist or is not accessible to the bot."
     )
 
     def __init__(self, message: str | None = None, guild_id: int | None = None) -> None:

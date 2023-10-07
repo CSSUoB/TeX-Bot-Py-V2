@@ -4,7 +4,7 @@ import logging
 
 import discord
 
-from cogs._utils import TeXBotCog
+from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from config import settings
 from exceptions import CommitteeRoleDoesNotExist, GuildDoesNotExist, RolesChannelDoesNotExist
 
@@ -18,7 +18,7 @@ class WriteRolesCommandCog(TeXBotCog):
         name="writeroles",
         description="Populates #roles with the correct messages."
     )
-    async def write_roles(self, ctx: discord.ApplicationContext) -> None:
+    async def write_roles(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "write_roles" command.
 

@@ -2,7 +2,7 @@
 
 import discord
 
-from cogs._utils import TeXBotCog
+from cogs._utils import TeXBotApplicationContext, TeXBotCog
 
 
 class SourceCommandCog(TeXBotCog):
@@ -11,7 +11,7 @@ class SourceCommandCog(TeXBotCog):
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         description="Displays information about the source code of this bot."
     )
-    async def source(self, ctx: discord.ApplicationContext) -> None:
+    async def source(self, ctx: TeXBotApplicationContext) -> None:
         """Definition & callback response of the "source" command."""
         await ctx.respond(
             (

@@ -7,7 +7,7 @@ from typing import Literal
 
 import discord
 
-from cogs._utils import TeXBotAutocompleteContext, TeXBotCog
+from cogs._utils import TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotCog
 from config import settings
 from db.core.models import IntroductionReminderOptOutMember
 from exceptions import (
@@ -110,7 +110,7 @@ class BaseInductCog(TeXBotCog):
     child user-induction cog container classes.
     """
 
-    async def _perform_induction(self, ctx: discord.ApplicationContext, induction_member: discord.Member, guild: discord.Guild, *, silent: bool) -> None:  # noqa: E501
+    async def _perform_induction(self, ctx: TeXBotApplicationContext, induction_member: discord.Member, guild: discord.Guild, *, silent: bool) -> None:  # noqa: E501
         """Perform the actual process of inducting a member by giving them the Guest role."""
         guest_role: discord.Role | None = await self.bot.guest_role
         if not guest_role:
@@ -266,7 +266,7 @@ class InductCommandCog(BaseInductCog):
         default=False,
         required=False
     )
-    async def induct(self, ctx: discord.ApplicationContext, str_induct_member_id: str, *, silent: bool) -> None:  # noqa: E501
+    async def induct(self, ctx: TeXBotApplicationContext, str_induct_member_id: str, *, silent: bool) -> None:  # noqa: E501
         """
         Definition & callback response of the "induct" command.
 
@@ -306,7 +306,7 @@ class InductCommandCog(BaseInductCog):
 class InductUserCommandsCog(BaseInductCog):
     """Cog class that defines the context menu induction commands & their call-back methods."""
 
-    async def _user_command_induct(self, ctx: discord.ApplicationContext, member: discord.Member, *, silent: bool) -> None:  # noqa: E501
+    async def _user_command_induct(self, ctx: TeXBotApplicationContext, member: discord.Member, *, silent: bool) -> None:  # noqa: E501
         """Call the _perform_induction method, providing the required command arguments."""
         try:
             guild: discord.Guild = self.bot.css_guild
@@ -322,7 +322,7 @@ class InductUserCommandsCog(BaseInductCog):
         await self._perform_induction(ctx, member, guild, silent=silent)
 
     @discord.user_command(name="Induct User")  # type: ignore[no-untyped-call, misc]
-    async def non_silent_induct(self, ctx: discord.ApplicationContext, member: discord.Member) -> None:  # noqa: E501
+    async def non_silent_induct(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:  # noqa: E501
         """
         Definition & callback response of the "non_silent_induct" user-context-command.
 
@@ -333,7 +333,7 @@ class InductUserCommandsCog(BaseInductCog):
         await self._user_command_induct(ctx, member, silent=False)
 
     @discord.user_command(name="Silently Induct User")  # type: ignore[no-untyped-call, misc]
-    async def silent_induct(self, ctx: discord.ApplicationContext, member: discord.Member) -> None:  # noqa: E501
+    async def silent_induct(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:  # noqa: E501
         """
         Definition & callback response of the "silent_induct" user-context-command.
 
@@ -352,7 +352,7 @@ class EnsureMembersInductedCommandCog(TeXBotCog):
         name="ensure-members-inducted",
         description="Ensures all users with the @Member role also have the @Guest role."
     )
-    async def ensure_members_inducted(self, ctx: discord.ApplicationContext) -> None:
+    async def ensure_members_inducted(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "ensure_members_inducted" command.
 

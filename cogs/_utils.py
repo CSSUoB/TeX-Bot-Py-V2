@@ -29,6 +29,18 @@ class TeXBotAutocompleteContext(discord.AutocompleteContext):
     bot: TeXBot
 
 
+class TeXBotApplicationContext(discord.ApplicationContext):
+    """
+    Type-hinting class overriding ApplicationContext's reference to the Bot class.
+
+    Pycord's default ApplicationContext references the standard discord.Bot class,
+    but cogs require a reference to the TeXBot class, so this ApplicationContext subclass
+    should be used in cogs instead.
+    """
+
+    bot: TeXBot
+
+
 class TeXBotCog(Cog):
     """Base Cog subclass that stores a reference to the currently running bot."""
 
@@ -55,7 +67,7 @@ class TeXBotCog(Cog):
         """Initialize a new cog instance, storing a reference to the bot object."""
         self.bot: TeXBot = bot
 
-    async def send_error(self, ctx: discord.ApplicationContext, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
+    async def send_error(self, ctx: TeXBotApplicationContext, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
         """
         Construct & format an error message from the given details.
 

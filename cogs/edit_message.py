@@ -5,7 +5,7 @@ import re
 
 import discord
 
-from cogs._utils import TeXBotCog
+from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from exceptions import CommitteeRoleDoesNotExist, GuildDoesNotExist
 
 
@@ -46,7 +46,7 @@ class EditMessageCommandCog(TeXBotCog):
         min_length=1,
         parameter_name="new_message_content"
     )
-    async def edit_message(self, ctx: discord.ApplicationContext, str_channel_id: str, str_message_id: str, new_message_content: str) -> None:  # noqa: E501
+    async def edit_message(self, ctx: TeXBotApplicationContext, str_channel_id: str, str_message_id: str, new_message_content: str) -> None:  # noqa: E501
         """
         Definition & callback response of the "edit_message" command.
 

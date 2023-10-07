@@ -5,7 +5,6 @@ import re
 
 import discord
 
-from cogs._utils import TeXBotAutocompleteContext, TeXBotCog
 from exceptions import (
     ArchivistRoleDoesNotExist,
     CommitteeRoleDoesNotExist,
@@ -13,6 +12,8 @@ from exceptions import (
     GuildDoesNotExist,
     MemberRoleDoesNotExist,
 )
+from cogs._checks import Checks
+from cogs._utils import TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotCog
 
 
 class ArchiveCommandCog(TeXBotCog):
@@ -66,7 +67,9 @@ class ArchiveCommandCog(TeXBotCog):
         required=True,
         parameter_name="str_category_id"
     )
-    async def archive(self, ctx: discord.ApplicationContext, str_category_id: str) -> None:
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))
+    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))
+    async def archive(self, ctx: TeXBotApplicationContext, str_category_id: str) -> None:
         """
         Definition & callback response of the "archive" command.
 

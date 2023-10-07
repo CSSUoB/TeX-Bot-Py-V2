@@ -5,7 +5,7 @@ import logging
 import discord
 from django.db.models import Model
 
-from cogs._utils import TeXBotCog
+from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from db.core.models import DiscordReminder, UoBMadeMember
 from exceptions import CommitteeRoleDoesNotExist, GuildDoesNotExist
 
@@ -18,7 +18,7 @@ class DeleteAllCommandsCog(TeXBotCog):
         "Delete all instances of the selected object type from the backend database"
     )
 
-    async def _delete_all(self, ctx: discord.ApplicationContext, delete_model: type[Model]) -> None:  # noqa: E501
+    async def _delete_all(self, ctx: TeXBotApplicationContext, delete_model: type[Model]) -> None:  # noqa: E501
         """Perform the actual deletion process of all instances of the given model class."""
         try:
             guild: discord.Guild = self.bot.css_guild
@@ -75,7 +75,7 @@ class DeleteAllCommandsCog(TeXBotCog):
         name="reminders",
         description="Deletes all Reminders from the backend database."
     )
-    async def delete_all_reminders(self, ctx: discord.ApplicationContext) -> None:
+    async def delete_all_reminders(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "delete_all_uob_made_members" command.
 
@@ -88,7 +88,7 @@ class DeleteAllCommandsCog(TeXBotCog):
         name="uob-made-members",
         description="Deletes all UoB Made Members from the backend database."
     )
-    async def delete_all_uob_made_members(self, ctx: discord.ApplicationContext) -> None:
+    async def delete_all_uob_made_members(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "delete_all_uob_made_members" command.
 

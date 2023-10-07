@@ -10,7 +10,7 @@ import discord
 from bs4 import BeautifulSoup
 from django.core.exceptions import ValidationError
 
-from cogs._utils import TeXBotCog
+from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from config import settings
 from db.core.models import UoBMadeMember
 from exceptions import GuildDoesNotExist, MemberRoleDoesNotExist
@@ -34,7 +34,7 @@ class MakeMemberCommandCog(TeXBotCog):
         min_length=7,
         parameter_name="uob_id"
     )
-    async def make_member(self, ctx: discord.ApplicationContext, uob_id: str) -> None:
+    async def make_member(self, ctx: TeXBotApplicationContext, uob_id: str) -> None:
         """
         Definition & callback response of the "make_member" command.
 

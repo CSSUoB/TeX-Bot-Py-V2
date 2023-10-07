@@ -4,7 +4,7 @@ import random
 
 import discord
 
-from cogs._utils import TeXBotCog
+from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from config import settings
 
 
@@ -12,7 +12,7 @@ class PingCommandCog(TeXBotCog):
     """Cog class that defines the "/remindme" command and its call-back method."""
 
     @discord.slash_command(description="Replies with Pong!")  # type: ignore[no-untyped-call, misc]
-    async def ping(self, ctx: discord.ApplicationContext) -> None:
+    async def ping(self, ctx: TeXBotApplicationContext) -> None:
         """Definition & callback response of the "ping" command."""
         await ctx.respond(
             random.choices(

@@ -7,7 +7,7 @@ import re
 import discord
 
 import utils
-from cogs._utils import TeXBotCog
+from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from config import settings
 from db.core.models import LeftMember
 from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
@@ -36,7 +36,7 @@ class StatsCommandsCog(TeXBotCog):
         required=False,
         parameter_name="str_channel_id"
     )
-    async def channel_stats(self, ctx: discord.ApplicationContext, str_channel_id: str) -> None:  # noqa: E501
+    async def channel_stats(self, ctx: TeXBotApplicationContext, str_channel_id: str) -> None:
         """
         Definition & callback response of the "channel_stats" command.
 
@@ -154,7 +154,7 @@ class StatsCommandsCog(TeXBotCog):
         name="server",
         description="Displays the stats for the whole of the CSS Discord server."
     )
-    async def server_stats(self, ctx: discord.ApplicationContext) -> None:
+    async def server_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "server_stats" command.
 
@@ -295,7 +295,7 @@ class StatsCommandsCog(TeXBotCog):
         name="self",
         description="Displays stats about the number of messages you have sent."
     )
-    async def user_stats(self, ctx: discord.ApplicationContext) -> None:
+    async def user_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "user_stats" command.
 
@@ -398,7 +398,7 @@ class StatsCommandsCog(TeXBotCog):
         name="leftmembers",
         description="Displays the stats about members that have left the CSS Discord server."
     )
-    async def left_member_stats(self, ctx: discord.ApplicationContext) -> None:
+    async def left_member_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "left_member_stats" command.
 
