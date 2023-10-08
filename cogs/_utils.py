@@ -45,13 +45,20 @@ class TeXBotCog(Cog):
     """Base Cog subclass that stores a reference to the currently running bot."""
 
     ERROR_ACTIVITIES: Final[Mapping[str, str]] = {
-        "ping": "reply to ping",
-        "write_roles": "send messages",
+        "archive": "archive the selected category",
+        "delete_all_reminders": (
+            "delete all `DiscordReminder` objects from the backend database"
+        ),
+        "delete_all_uob_made_members": (
+            "delete all `UoBMadeMember` objects from the backend database"
+        ),
         "edit_message": "edit the message",
         "induct": "induct user",
         "silent_induct": "silently induct user",
         "non_silent_induct": "induct user and send welcome message",
+        "ensure_members_inducted": "ensure all members are inducted",
         "make_member": "make you a member",
+        "ping": "reply to ping",
         "remind_me": "remind you",
         "channel_stats": "display channel statistics",
         "server_stats": "display whole server statistics",
@@ -59,8 +66,7 @@ class TeXBotCog(Cog):
         "left_member_stats": (
             "display statistics about the members that have left the server"
         ),
-        "archive": "archive the selected category",
-        "ensure_members_inducted": "ensure all members are inducted"
+        "write_roles": "send messages"
     }
 
     def __init__(self, bot: TeXBot) -> None:
