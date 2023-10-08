@@ -1,17 +1,37 @@
 """Contains cog classes for any edit_message interactions."""
 
-import logging
 import re
 
 import discord
+from discord.ext import commands
 
-from cogs._utils import TeXBotApplicationContext, TeXBotCog
-from exceptions import CommitteeRoleDoesNotExist, GuildDoesNotExist
+from cogs._checks import Checks
+from cogs._utils import TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotCog
+from exceptions import BaseDoesNotExistError, UserNotInCSSDiscordServer
 
 
 class EditMessageCommandCog(TeXBotCog):
     # noinspection SpellCheckingInspection
     """Cog class that defines the "/editmessage" command and its call-back method."""
+
+    @staticmethod
+    async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+        """
+        Autocomplete callable that generates the set of available selectable channels.
+
+        The list of available selectable channels is unique to each member, and is used in any
+        of the "edit-message" slash-command options that have a channel input-type.
+        """
+        if not ctx.interaction.user:
+            return set()
+
+        try:
+            interaction_user: discord.Member = await ctx.bot.get_css_user(ctx.interaction.user)
+            assert await ctx.bot.check_user_has_committee_role(interaction_user)
+        except (AssertionError, BaseDoesNotExistError, UserNotInCSSDiscordServer):
+            return set()
+
+        return await TeXBotCog.autocomplete_get_text_channels(ctx)
 
     # noinspection SpellCheckingInspection
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -22,9 +42,7 @@ class EditMessageCommandCog(TeXBotCog):
         name="channel",
         description="The channel that the message, you wish to edit, is in.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(
-            TeXBotCog.autocomplete_get_text_channels  # type: ignore[arg-type]
-        ),
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore[arg-type]
         required=True,
         parameter_name="str_channel_id"
     )
@@ -46,47 +64,15 @@ class EditMessageCommandCog(TeXBotCog):
         min_length=1,
         parameter_name="new_message_content"
     )
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))
+    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))
     async def edit_message(self, ctx: TeXBotApplicationContext, str_channel_id: str, str_message_id: str, new_message_content: str) -> None:  # noqa: E501
         """
         Definition & callback response of the "edit_message" command.
 
         The "write_roles" command edits a message sent by TeX-Bot to the value supplied.
         """
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
-        committee_role: discord.Role | None = await self.bot.committee_role
-        if not committee_role:
-            await self.send_error(
-                ctx,
-                error_code="E1021",
-                logging_message=str(CommitteeRoleDoesNotExist())
-            )
-            return
-
-        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
-        if not interaction_member:
-            await self.send_error(
-                ctx,
-                message="You must be a member of the CSS Discord server to use this command."
-            )
-            return
-
-        if committee_role not in interaction_member.roles:
-            committee_role_mention: str = "@Committee"
-            if ctx.guild:
-                committee_role_mention = committee_role.mention
-
-            await self.send_error(
-                ctx,
-                message=f"Only {committee_role_mention} members can run this command."
-            )
-            return
+        css_guild: discord.Guild = self.bot.css_guild
 
         if not re.match(r"\A\d{17,20}\Z", str_channel_id):
             await self.send_error(
@@ -107,7 +93,7 @@ class EditMessageCommandCog(TeXBotCog):
         message_id: int = int(str_message_id)
 
         channel: discord.TextChannel | None = discord.utils.get(
-            guild.text_channels,
+            css_guild.text_channels,
             id=channel_id
         )
         if not channel:
