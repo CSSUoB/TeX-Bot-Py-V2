@@ -1,5 +1,6 @@
 """Utility classes used for the cogs section of this project."""
 
+import contextlib
 import logging
 import re
 from collections.abc import Mapping
@@ -8,13 +9,17 @@ from typing import TYPE_CHECKING, Final
 import discord
 from discord import Cog
 
-from exceptions import GuildDoesNotExist
+from exceptions import (
+    BaseDoesNotExistError,
+    CommitteeRoleDoesNotExist,
+    UserNotInCSSDiscordServer
+)
 from utils import TeXBot
 
 if TYPE_CHECKING:
     from typing import TypeAlias
 
-    MentionableMember: TypeAlias = discord.Member | discord.Role | None
+    MentionableMember: TypeAlias = discord.Member | discord.Role
 
 
 class TeXBotAutocompleteContext(discord.AutocompleteContext):
@@ -84,11 +89,11 @@ class TeXBotCog(Cog):
         construct_logging_error_message: str = ""
 
         if error_code:
+            # noinspection PyUnusedLocal
             committee_mention: str = "committee"
 
-            committee_role: discord.Role | None = await self.bot.committee_role
-            if committee_role:
-                committee_mention = committee_role.mention
+            with contextlib.suppress(CommitteeRoleDoesNotExist):
+                committee_mention = (await self.bot.committee_role).mention
 
             construct_error_message = (
                 f"**Contact a {committee_mention} member, referencing error code:"
@@ -145,23 +150,20 @@ class TeXBotCog(Cog):
             return set()
 
         try:
-            guild: discord.Guild = ctx.bot.css_guild
-        except GuildDoesNotExist:
+            css_guild: discord.Guild = ctx.bot.css_guild
+            # noinspection PyUnusedLocal
+            channel_permissions_limiter: MentionableMember = await ctx.bot.guest_role
+        except BaseDoesNotExistError:
             return set()
 
-        channel_permissions_limiter: MentionableMember = await ctx.bot.guest_role
-        if not channel_permissions_limiter:
-            return set()
-
-        interaction_member: discord.Member | None = guild.get_member(ctx.interaction.user.id)
-        if interaction_member:
-            channel_permissions_limiter = interaction_member
+        with contextlib.suppress(BaseDoesNotExistError, UserNotInCSSDiscordServer):
+            channel_permissions_limiter = await ctx.bot.get_css_user(ctx.interaction.user)
 
         if not ctx.value or re.match(r"\A#.*\Z", ctx.value):
             return {
                 discord.OptionChoice(name=f"#{channel.name}", value=str(channel.id))
                 for channel
-                in guild.text_channels
+                in css_guild.text_channels
                 if channel.permissions_for(channel_permissions_limiter).is_superset(
                     discord.Permissions(send_messages=True, view_channel=True)
                 )
@@ -170,7 +172,7 @@ class TeXBotCog(Cog):
         return {
             discord.OptionChoice(name=channel.name, value=str(channel.id))
             for channel
-            in guild.text_channels
+            in css_guild.text_channels
             if channel.permissions_for(channel_permissions_limiter).is_superset(
                 discord.Permissions(send_messages=True, view_channel=True)
             )

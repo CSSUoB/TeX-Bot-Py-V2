@@ -49,7 +49,7 @@ class MakeMemberCommandCog(TeXBotCog):
             await self.bot.close()
             return
 
-        member_role: discord.Role | None = await self.bot.member_role
+        member_role: discord.Role = await self.bot.member_role
         if not member_role:
             await self.send_error(
                 ctx,
@@ -89,7 +89,7 @@ class MakeMemberCommandCog(TeXBotCog):
         if uob_id_already_used:
             committee_mention: str = "committee"
 
-            committee_role: discord.Role | None = await self.bot.committee_role
+            committee_role: discord.Role = await self.bot.committee_role
             if committee_role:
                 committee_mention = committee_role.mention
 
@@ -175,7 +175,7 @@ class MakeMemberCommandCog(TeXBotCog):
             reason="TeX Bot slash-command: \"/makemember\""
         )
 
-        guest_role: discord.Role | None = await self.bot.guest_role
+        guest_role: discord.Role = await self.bot.guest_role
         if not guest_role:
             logging.warning(
                 "\"/makemember\" command used but the \"Guest\" role does not exist."
@@ -188,7 +188,7 @@ class MakeMemberCommandCog(TeXBotCog):
                 reason="TeX Bot slash-command: \"/makemember\""
             )
 
-        applicant_role: discord.Role | None = discord.utils.get(
+        applicant_role: discord.Role = discord.utils.get(
             self.bot.css_guild.roles,
             name="Applicant"
         )

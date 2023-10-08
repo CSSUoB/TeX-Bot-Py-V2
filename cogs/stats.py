@@ -169,7 +169,7 @@ class StatsCommandsCog(TeXBotCog):
             await self.bot.close()
             return
 
-        guest_role: discord.Role | None = await self.bot.guest_role
+        guest_role: discord.Role = await self.bot.guest_role
         if not guest_role:
             await self.send_error(
                 ctx,
@@ -318,7 +318,7 @@ class StatsCommandsCog(TeXBotCog):
             )
             return
 
-        guest_role: discord.Role | None = await self.bot.guest_role
+        guest_role: discord.Role = await self.bot.guest_role
         if not guest_role:
             await self.send_error(
                 ctx,

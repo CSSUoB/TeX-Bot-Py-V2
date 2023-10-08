@@ -33,7 +33,7 @@ class WriteRolesCommandCog(TeXBotCog):
             await self.bot.close()
             return
 
-        committee_role: discord.Role | None = await self.bot.committee_role
+        committee_role: discord.Role = await self.bot.committee_role
         if not committee_role:
             await self.send_error(
                 ctx,

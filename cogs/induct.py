@@ -40,7 +40,7 @@ class InductSendMessageCog(TeXBotCog):
         if before.guild != guild or after.guild != guild or before.bot or after.bot:
             return
 
-        guest_role: discord.Role | None = await self.bot.guest_role
+        guest_role: discord.Role = await self.bot.guest_role
         if guest_role and guest_role not in before.roles and guest_role in after.roles:
             try:
                 introduction_reminder_opt_out_member: IntroductionReminderOptOutMember = await IntroductionReminderOptOutMember.objects.aget(  # noqa: E501
@@ -76,7 +76,7 @@ class InductSendMessageCog(TeXBotCog):
 
             user_type: Literal["guest", "member"] = "guest"
 
-            member_role: discord.Role | None = await self.bot.member_role
+            member_role: discord.Role = await self.bot.member_role
             if member_role and member_role in after.roles:
                 user_type = "member"
 
@@ -112,7 +112,7 @@ class BaseInductCog(TeXBotCog):
 
     async def _perform_induction(self, ctx: TeXBotApplicationContext, induction_member: discord.Member, guild: discord.Guild, *, silent: bool) -> None:  # noqa: E501
         """Perform the actual process of inducting a member by giving them the Guest role."""
-        guest_role: discord.Role | None = await self.bot.guest_role
+        guest_role: discord.Role = await self.bot.guest_role
         if not guest_role:
             await self.send_error(
                 ctx,
@@ -121,7 +121,7 @@ class BaseInductCog(TeXBotCog):
             )
             return
 
-        committee_role: discord.Role | None = await self.bot.committee_role
+        committee_role: discord.Role = await self.bot.committee_role
         if not committee_role:
             await self.send_error(
                 ctx,
@@ -228,7 +228,7 @@ class InductCommandCog(BaseInductCog):
 
         members: set[discord.Member] = {member for member in guild.members if not member.bot}
 
-        guest_role: discord.Role | None = await ctx.bot.guest_role
+        guest_role: discord.Role = await ctx.bot.guest_role
         if guest_role:
             members = {member for member in members if guest_role not in member.roles}
 
@@ -367,7 +367,7 @@ class EnsureMembersInductedCommandCog(TeXBotCog):
             await self.bot.close()
             return
 
-        committee_role: discord.Role | None = await self.bot.committee_role
+        committee_role: discord.Role = await self.bot.committee_role
         if not committee_role:
             await self.send_error(
                 ctx,
@@ -395,7 +395,7 @@ class EnsureMembersInductedCommandCog(TeXBotCog):
             )
             return
 
-        member_role: discord.Role | None = await self.bot.member_role
+        member_role: discord.Role = await self.bot.member_role
         if not member_role:
             await self.send_error(
                 ctx,
@@ -404,7 +404,7 @@ class EnsureMembersInductedCommandCog(TeXBotCog):
             )
             return
 
-        guest_role: discord.Role | None = await self.bot.guest_role
+        guest_role: discord.Role = await self.bot.guest_role
         if not guest_role:
             await self.send_error(
                 ctx,
