@@ -41,16 +41,39 @@ When submitting an issue, please be as descriptive as possible. If you are submi
 
 This bot is written in Python using [Pycord](https://pycord.dev) and uses [Discord's slash commands](https://support.discord.com/hc/en-gb/articles/1500000368501-Slash-Commands-FAQ). We would recommend being somewhat familiar with the library and language terminology before contributing.
 
+#### Top level files
+
 * `main.py`: is the main entrypoint to instantiate the bot object & run it
 * `exceptions.py`: contains common exception super-classes that may be raised when certain errors occur
-* `setup.py`: retrieves the environment variables & populates the correct values into the `settings` attribute
+* `config.py`: retrieves the environment variables & populates the correct values into the `settings` attribute
 * `utils.py`: contains common utility classes & functions used by the top-level modules
-* `cogs/commands.py`: contains slash commands & user context-menu commands
-* `cogs/events.py`: contains event listeners
-* `cogs/tasks.py`: contains repeating tasks
-* `cogs/utils.py`: contains common utility classes & functions used by the other cog modules
-* `db.core.models`: contains all the database ORM models to interact with storing information longer-term (between individual command events)
+
+#### Other significant directories
+* `db/core/models/`: contains all the database ORM models to interact with storing information longer-term (between individual command events)
 * `tests/`: contains the complete test suite for TeX-Bot-Py-V2, based on the pytest framework
+* `cogs/`: contains all of the cogs for TeX-Bot-Py-V2, see below for more information
+  
+#### Cogs
+Cogs are attachable modules that are loaded onto the `discord.Bot` instance. They combine related listeners and commands (each as individual methods) into one class. There are separate cog files for each activity, and one \_\_init\_\_ file which instantiates them all:
+
+*For more information about what these Cogs do, please look at the annotations within the files themselves*
+
+* `cogs/__init__.py`: instantiates all the Cog classes within this directory
+* `cogs/archive.py`: cogs for archival interactions
+* `cogs/command_error.py`: cogs for command_error interactions
+* `cogs/delete_all.py`: cogs for delete_all interactions
+* `cogs/edit_message.py`: cogs for edit_message interactions
+* `cogs/induct.py`: cogs for induct interactions
+* `cogs/kick_no_introduction_users.py`: cogs related to kicking users that have not introduced themselves
+* `cogs/make_member.py`: cogs related to making members
+* `cogs/ping.py`: cogs for pinging interactions
+* `cogs/remind_me.py`: cogs for remind_me interactions
+* `cogs/send_get_roles_reminders.py`: cogs relating to sending reminders to users about opt-in roles
+* `cogs/send_introduction_reminders.py`: cogs relating to sending reminders to users about introducing themselves
+* `cogs/source.py`: cogs for source interactions
+* `cogs/startup.py`: cogs for startup
+* `cogs/stats.py`: cogs for stats interactions
+* `cogs/write_roles.py`: cogs relating to writing roles
 
 ## Making Your First Contribution
 
