@@ -12,7 +12,7 @@ from discord import Cog
 from exceptions import (
     BaseDoesNotExistError,
     CommitteeRoleDoesNotExist,
-    UserNotInCSSDiscordServer
+    UserNotInCSSDiscordServer,
 )
 from utils import TeXBot
 

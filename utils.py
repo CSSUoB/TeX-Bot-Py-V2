@@ -373,12 +373,14 @@ if __name__ != "__main__":
             return text_channel
 
         async def get_css_user(self, user: discord.Member | discord.User) -> discord.Member:
+            """Util method to retrieve a member of the CSS Discord server by their ID."""
             css_user: discord.Member | None = self.css_guild.get_member(user.id)
             if not css_user:
                 raise UserNotInCSSDiscordServer(user_id=user.id)
             return css_user
 
         async def get_everyone_role(self) -> discord.Role:
+            """Util method to retrieve the "@everyone" role from the CSS Discord server."""
             everyone_role: discord.Role | None = discord.utils.get(
                 self.css_guild.roles,
                 name="@everyone"
@@ -388,6 +390,7 @@ if __name__ != "__main__":
             return everyone_role
 
         async def check_user_has_committee_role(self, user: discord.Member | discord.User) -> bool:  # noqa: E501
+            """Util method to validate whether the given user has the "Committee" role."""
             return await self.committee_role in (await self.get_css_user(user)).roles
 
         def set_css_guild(self, css_guild: discord.Guild) -> None:
