@@ -16,6 +16,8 @@ from exceptions import (
     GuestRoleDoesNotExist,
     GuildDoesNotExist,
     MemberRoleDoesNotExist,
+    RolesChannelDoesNotExist,
+    RulesChannelDoesNotExist,
 )
 
 
@@ -64,15 +66,21 @@ class InductSendMessageCog(TeXBotCog):
                         reason="Delete introduction reminders after member is inducted."
                     )
 
-            rules_channel_mention: str = "`#welcome`"
-            rules_channel: discord.TextChannel | None = await self.bot.rules_channel
-            if rules_channel:
-                rules_channel_mention = rules_channel.mention
+        rules_channel_mention: str = "`#welcome`"
+        try:
+            rules_channel: discord.TextChannel = await self.bot.rules_channel
+        except RulesChannelDoesNotExist:
+            pass
+        else:
+            rules_channel_mention = rules_channel.mention
 
-            roles_channel_mention: str = "`#roles`"
-            roles_channel: discord.TextChannel | None = await self.bot.roles_channel
-            if roles_channel:
-                roles_channel_mention = roles_channel.mention
+        roles_channel_mention: str = "`#roles`"
+        try:
+            roles_channel: discord.TextChannel = await self.bot.roles_channel
+        except RolesChannelDoesNotExist:
+            pass
+        else:
+            roles_channel_mention = roles_channel.mention
 
             user_type: Literal["guest", "member"] = "guest"
 

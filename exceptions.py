@@ -125,6 +125,12 @@ class BaseDoesNotExistError(ValueError, TeXBotBaseError, abc.ABC):
         return f"{partial_message}."
 
 
+class RulesChannelDoesNotExist(ValueError, TeXBotBaseError):
+    """Exception class to raise when the channel, marked as the rules channel, is missing."""
+
+    DEFAULT_MESSAGE: str = "There is no channel marked as the rules channel."
+
+
 class UserNotInCSSDiscordServer(ValueError, TeXBotBaseError):
     """Exception class for when no members of the CSS Discord Server have the given user ID."""
 

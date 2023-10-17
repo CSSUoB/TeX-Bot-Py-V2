@@ -26,6 +26,7 @@ if __name__ != "__main__":
         GuildDoesNotExist,
         MemberRoleDoesNotExist,
         RolesChannelDoesNotExist,
+        RulesChannelDoesNotExist,
         UserNotInCSSDiscordServer,
     )
 
@@ -344,7 +345,7 @@ if __name__ != "__main__":
                 )
 
             if not self._rules_channel:
-                raise CommitteeRoleDoesNotExist
+                raise RulesChannelDoesNotExist
 
             return self._rules_channel
 
