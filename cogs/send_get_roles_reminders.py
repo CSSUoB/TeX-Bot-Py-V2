@@ -11,7 +11,7 @@ from discord.ext import tasks
 from cogs._utils import TeXBotCog
 from config import settings
 from db.core.models import SentGetRolesReminderMember
-from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
+from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist, RolesChannelDoesNotExist
 from utils import TeXBot
 
 
@@ -58,8 +58,11 @@ class SendGetRolesRemindersTaskCog(TeXBotCog):
             return
 
         roles_channel_mention: str = "`#roles`"
-        roles_channel: discord.TextChannel | None = await self.bot.roles_channel
-        if roles_channel:
+        try:
+            roles_channel: discord.TextChannel = await self.bot.roles_channel
+        except RolesChannelDoesNotExist:
+            pass
+        else:
             roles_channel_mention = roles_channel.mention
 
         # noinspection SpellCheckingInspection

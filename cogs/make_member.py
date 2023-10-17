@@ -188,7 +188,7 @@ class MakeMemberCommandCog(TeXBotCog):
                 reason="TeX Bot slash-command: \"/makemember\""
             )
 
-        applicant_role: discord.Role = discord.utils.get(
+        applicant_role: discord.Role | None = discord.utils.get(
             self.bot.css_guild.roles,
             name="Applicant"
         )
