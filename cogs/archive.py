@@ -53,8 +53,8 @@ class ArchiveCommandCog(TeXBotCog):
         required=True,
         parameter_name="str_category_id"
     )
-    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))
-    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
+    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
     async def archive(self, ctx: TeXBotApplicationContext, str_category_id: str) -> None:
         """
         Definition & callback response of the "archive" command.

@@ -31,10 +31,10 @@ class CommandErrorCog(TeXBotCog):
             logging_message = None if isinstance(error, GuildDoesNotExist) else error.original
 
         elif isinstance(error, CheckAnyFailure):
-            if error.checks[0] == Checks.check_interaction_user_in_css_guild:
+            if error.checks[0] == Checks.check_interaction_user_in_css_guild:  # type: ignore[comparison-overlap]
                 message = "You must be a member of the CSS Discord server to use this command."
 
-            elif error.checks[0] == Checks.check_interaction_user_has_committee_role:
+            elif error.checks[0] == Checks.check_interaction_user_has_committee_role:  # type: ignore[comparison-overlap]
                 # noinspection PyUnusedLocal
                 committee_role_mention: str = "@Committee"
                 with contextlib.suppress(BaseDoesNotExistError):

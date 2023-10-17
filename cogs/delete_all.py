@@ -39,14 +39,14 @@ class DeleteAllCommandsCog(TeXBotCog):
         name="reminders",
         description="Deletes all Reminders from the backend database."
     )
-    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))
-    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
+    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
     async def delete_all_reminders(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "delete_all_uob_made_members" command.
 
         The "delete_all_uob_made_members" uses the _delete_all() function to delete all
-         UoBMadeMember instance objects stored in the database.
+        UoBMadeMember instance objects stored in the database.
         """
         await self._delete_all(ctx, delete_model=DiscordReminder)
 
@@ -54,8 +54,8 @@ class DeleteAllCommandsCog(TeXBotCog):
         name="uob-made-members",
         description="Deletes all UoB Made Members from the backend database."
     )
-    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))
-    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
+    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
     async def delete_all_uob_made_members(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "delete_all_uob_made_members" command.
