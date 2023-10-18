@@ -9,7 +9,7 @@ class ImproperlyConfigured(Exception):
     """Exception class to raise when environment variables are not correctly provided."""
 
 
-class BaseError(BaseException, abc.ABC):
+class TeXBotBaseError(BaseException, abc.ABC):
     """Base exception parent class."""
 
     DEFAULT_MESSAGE: str
@@ -32,7 +32,13 @@ class BaseError(BaseException, abc.ABC):
         return formatted
 
 
-class BaseDoesNotExistError(ValueError, BaseError, abc.ABC):
+class BaseErrorWithErrorCode(TeXBotBaseError, abc.ABC):
+    """Base class for exception errors that have an error code."""
+
+    ERROR_CODE: str
+
+
+class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
     """Exception class to raise when a required Discord entity is missing."""
 
     @staticmethod
@@ -123,7 +129,7 @@ class BaseDoesNotExistError(ValueError, BaseError, abc.ABC):
         return f"{partial_message}."
 
 
-class InvalidMessagesJSONFile(ImproperlyConfigured, BaseError):
+class InvalidMessagesJSONFile(TeXBotBaseError, ImproperlyConfigured):
     """Exception class to raise when the messages.json file has an invalid structure."""
 
     DEFAULT_MESSAGE: str = "The messages JSON file has an invalid structure at the given key."
@@ -164,6 +170,7 @@ class GuildDoesNotExist(BaseDoesNotExistError):
         "Server with given ID does not exist"
         " or is not accessible to the bot."
     )
+    ERROR_CODE: str = "E1011"
 
     def __init__(self, message: str | None = None, guild_id: int | None = None) -> None:
         """Initialize a new DoesNotExist exception for a guild not existing."""
@@ -217,6 +224,8 @@ class RoleDoesNotExist(BaseDoesNotExistError):
 class CommitteeRoleDoesNotExist(RoleDoesNotExist):
     """Exception class to raise when the "Committee" Discord role is missing."""
 
+    ERROR_CODE: str = "E1021"
+
     def __init__(self, message: str | None = None) -> None:
         """Initialize a new RoleDoesNotExist exception with role_name=Committee."""
         # noinspection SpellCheckingInspection
@@ -238,6 +247,8 @@ class CommitteeRoleDoesNotExist(RoleDoesNotExist):
 class GuestRoleDoesNotExist(RoleDoesNotExist):
     """Exception class to raise when the "Guest" Discord role is missing."""
 
+    ERROR_CODE: str = "E1022"
+
     def __init__(self, message: str | None = None) -> None:
         """Initialize a new RoleDoesNotExist exception with role_name=Guest."""
         # noinspection SpellCheckingInspection
@@ -256,6 +267,8 @@ class GuestRoleDoesNotExist(RoleDoesNotExist):
 class MemberRoleDoesNotExist(RoleDoesNotExist):
     """Exception class to raise when the "Member" Discord role is missing."""
 
+    ERROR_CODE: str = "E1023"
+
     def __init__(self, message: str | None = None) -> None:
         """Initialize a new RoleDoesNotExist exception with role_name=Member."""
         # noinspection SpellCheckingInspection
@@ -268,6 +281,8 @@ class MemberRoleDoesNotExist(RoleDoesNotExist):
 
 class ArchivistRoleDoesNotExist(RoleDoesNotExist):
     """Exception class to raise when the "Archivist" Discord role is missing."""
+
+    ERROR_CODE: str = "E1024"
 
     def __init__(self, message: str | None = None) -> None:
         """Initialize a new RoleDoesNotExist exception with role_name=Archivist."""
@@ -313,6 +328,8 @@ class ChannelDoesNotExist(BaseDoesNotExistError):
 class RolesChannelDoesNotExist(ChannelDoesNotExist):
     """Exception class to raise when the "Roles" Discord channel is missing."""
 
+    ERROR_CODE: str = "E1031"
+
     def __init__(self, message: str | None = None) -> None:
         """Initialize a new ChannelDoesNotExist exception with channel_name=roles."""
         # noinspection SpellCheckingInspection
@@ -321,6 +338,8 @@ class RolesChannelDoesNotExist(ChannelDoesNotExist):
 
 class GeneralChannelDoesNotExist(ChannelDoesNotExist):
     """Exception class to raise when the "General" Discord channel is missing."""
+
+    ERROR_CODE: str = "E1032"
 
     def __init__(self, message: str | None = None) -> None:
         """Initialize a new ChannelDoesNotExist exception with channel_name=general."""
