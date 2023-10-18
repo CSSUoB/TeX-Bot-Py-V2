@@ -51,7 +51,6 @@ class CommandErrorCog(TeXBotCog):
         )
 
         if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(error.original, GuildDoesNotExist):  # noqa: E501
-            # TODO: Use ctx.command for stacktrace
             command_name: str = (
                 ctx.command.callback.__name__
                 if (hasattr(ctx.command, "callback")
@@ -69,6 +68,7 @@ class CommandErrorCog(TeXBotCog):
                     )
                     if message_part
                 ),
-                exc_info=NotImplementedError()
+                # TODO: Use ctx.command for stacktrace
+                exc_info=...
             )
             await self.bot.close()
