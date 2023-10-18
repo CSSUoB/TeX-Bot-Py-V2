@@ -28,7 +28,9 @@ class CommandErrorCog(TeXBotCog):
         if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(error.original, BaseErrorWithErrorCode):  # noqa: E501
             message = None
             error_code = error.original.ERROR_CODE
-            logging_message = None if isinstance(error, GuildDoesNotExist) else error.original
+            logging_message = (
+                None if isinstance(error.original, GuildDoesNotExist) else error.original
+            )
 
         elif isinstance(error, CheckAnyFailure):
             if error.checks[0] == Checks.check_interaction_user_in_css_guild:  # type: ignore[comparison-overlap]
@@ -50,5 +52,23 @@ class CommandErrorCog(TeXBotCog):
 
         if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(error.original, GuildDoesNotExist):  # noqa: E501
             # TODO: Use ctx.command for stacktrace
-            logging.critical(error, exc_info=NotImplementedError())
+            command_name: str = (
+                ctx.command.callback.__name__
+                if (hasattr(ctx.command, "callback")
+                    and not ctx.command.callback.__name__.startswith("_"))
+                else ctx.command.qualified_name
+            )
+            logging.critical(
+                " ".join(
+                    message_part
+                    for message_part
+                    in (
+                        error.original.ERROR_CODE,
+                        f"({command_name})" if command_name in self.ERROR_ACTIVITIES else "",
+                        str(error.original)
+                    )
+                    if message_part
+                ),
+                exc_info=NotImplementedError()
+            )
             await self.bot.close()

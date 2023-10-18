@@ -86,7 +86,6 @@ class TeXBotCog(Cog):
         application command context.
         """
         construct_error_message: str = ":warning:There was an error"
-        construct_logging_error_message: str = ""
 
         if error_code:
             # noinspection PyUnusedLocal
@@ -101,22 +100,16 @@ class TeXBotCog(Cog):
                 + construct_error_message
             )
 
-            construct_logging_error_message += error_code
-
         command_name: str = (
             ctx.command.callback.__name__
             if (hasattr(ctx.command, "callback")
-            and not ctx.command.callback.__name__.startswith("_"))
+                and not ctx.command.callback.__name__.startswith("_"))
             else ctx.command.qualified_name
         )
         if command_name in self.ERROR_ACTIVITIES:
             construct_error_message += (
                 f" when trying to {self.ERROR_ACTIVITIES[command_name]}"
             )
-
-        if construct_logging_error_message:
-            construct_logging_error_message += " "
-        construct_logging_error_message += f"({command_name})"
 
         if message:
             construct_error_message += ":"
@@ -134,9 +127,18 @@ class TeXBotCog(Cog):
         await ctx.respond(construct_error_message, ephemeral=True)
 
         if logging_message:
-            if construct_logging_error_message:
-                construct_logging_error_message += " "
-            logging.error("%s%s", construct_logging_error_message, logging_message)
+            logging.error(
+                " ".join(
+                    message_part
+                    for message_part
+                    in (
+                        error_code if error_code else "",
+                        f"({command_name})",
+                        str(logging_message)
+                    )
+                    if message_part
+                )
+            )
 
     @staticmethod
     async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
