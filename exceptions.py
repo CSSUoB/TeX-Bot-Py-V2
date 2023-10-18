@@ -32,10 +32,14 @@ class TeXBotBaseError(BaseException, abc.ABC):
         return formatted
 
 
-class BaseDoesNotExistError(ValueError, TeXBotBaseError, abc.ABC):
-    """Exception class to raise when a required Discord entity is missing."""
+class BaseErrorWithErrorCode(TeXBotBaseError, abc.ABC):
+    """Base class for exception errors that have an error code."""
 
     ERROR_CODE: str
+
+
+class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
+    """Exception class to raise when a required Discord entity is missing."""
 
     @staticmethod
     def format_does_not_exist_with_dependencies(value: str, does_not_exist_type: str, dependant_commands: Collection[str], dependant_tasks: Collection[str], dependant_events: Collection[str]) -> str:  # noqa: C901, E501, PLR0912
@@ -125,13 +129,13 @@ class BaseDoesNotExistError(ValueError, TeXBotBaseError, abc.ABC):
         return f"{partial_message}."
 
 
-class RulesChannelDoesNotExist(ValueError, TeXBotBaseError):
+class RulesChannelDoesNotExist(TeXBotBaseError, ValueError):
     """Exception class to raise when the channel, marked as the rules channel, is missing."""
 
     DEFAULT_MESSAGE: str = "There is no channel marked as the rules channel."
 
 
-class UserNotInCSSDiscordServer(ValueError, TeXBotBaseError):
+class UserNotInCSSDiscordServer(TeXBotBaseError, ValueError):
     """Exception class for when no members of the CSS Discord Server have the given user ID."""
 
     DEFAULT_MESSAGE: str = (
@@ -145,7 +149,7 @@ class UserNotInCSSDiscordServer(ValueError, TeXBotBaseError):
         super().__init__(message)
 
 
-class EveryoneRoleCouldNotBeRetrieved(ValueError, TeXBotBaseError):
+class EveryoneRoleCouldNotBeRetrieved(BaseErrorWithErrorCode, ValueError):
     """Exception class for when the "@everyone" role could not be retrieved."""
 
     DEFAULT_MESSAGE: str = (
@@ -154,7 +158,7 @@ class EveryoneRoleCouldNotBeRetrieved(ValueError, TeXBotBaseError):
     ERROR_CODE: str = "E1042"
 
 
-class InvalidMessagesJSONFile(ImproperlyConfigured, TeXBotBaseError):
+class InvalidMessagesJSONFile(TeXBotBaseError, ImproperlyConfigured):
     """Exception class to raise when the messages.json file has an invalid structure."""
 
     DEFAULT_MESSAGE: str = "The messages JSON file has an invalid structure at the given key."

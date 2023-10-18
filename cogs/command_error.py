@@ -10,8 +10,8 @@ from cogs._checks import Checks
 from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from exceptions import (
     BaseDoesNotExistError,
-    EveryoneRoleCouldNotBeRetrieved,
     GuildDoesNotExist,
+    BaseErrorWithErrorCode,
 )
 
 
@@ -25,7 +25,7 @@ class CommandErrorCog(TeXBotCog):
         message: str | None = "Please contact a committee member."
         logging_message: str | BaseException | None = None
 
-        if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(error.original, BaseDoesNotExistError | EveryoneRoleCouldNotBeRetrieved):  # noqa: E501
+        if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(error.original, BaseErrorWithErrorCode):  # noqa: E501
             message = None
             error_code = error.original.ERROR_CODE
             logging_message = None if isinstance(error, GuildDoesNotExist) else error.original
@@ -48,7 +48,7 @@ class CommandErrorCog(TeXBotCog):
             logging_message=logging_message
         )
 
-        if isinstance(error, GuildDoesNotExist):
+        if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(error.original, GuildDoesNotExist):  # noqa: E501
             # TODO: Use ctx.command for stacktrace
             logging.critical(error, exc_info=NotImplementedError())
             await self.bot.close()
