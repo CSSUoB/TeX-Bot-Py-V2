@@ -67,8 +67,6 @@ class CommandErrorCog(TeXBotCog):
                         str(error.original)
                     )
                     if message_part
-                ),
-                # TODO: Use ctx.command for stacktrace
-                exc_info=...
+                )
             )
             await self.bot.close()
