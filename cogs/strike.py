@@ -1,4 +1,5 @@
 """Contains cog classes for any strike interactions."""
+
 import datetime
 import logging
 import re
@@ -7,7 +8,11 @@ from typing import TYPE_CHECKING, Final
 import discord
 from discord.ui import View
 
-from cogs._utils import TeXBotAutocompleteContext, TeXBotCog
+from cogs._utils import (
+    TeXBotAutocompleteContext,
+    TeXBotCog,
+    capture_guild_does_not_exist_error,
+)
 from config import settings
 from db.core.models import MemberStrikes
 from exceptions import CommitteeRoleDoesNotExist, GuildDoesNotExist
@@ -200,19 +205,18 @@ class BaseStrikeCog(TeXBotCog):
         button_interaction: discord.Interaction = await self.bot.wait_for(
             "interaction",
             check=lambda interaction: (
-                    interaction.type == discord.InteractionType.component
-                    and interaction.user == ctx.user
-                    and interaction.channel == ctx.channel
-                    and "custom_id" in interaction.data
-                    and interaction.data["custom_id"] in {
-                        "yes_strike_member",
-                        "no_strike_member"
-                    }
+                interaction.type == discord.InteractionType.component
+                and interaction.user == ctx.user
+                and interaction.channel == ctx.channel
+                and "custom_id" in interaction.data
+                and interaction.data["custom_id"] in {
+                    "yes_strike_member",
+                    "no_strike_member"
+                }
             )
         )
 
-        if button_interaction.data[
-            "custom_id"] == "no_strike_member":  # type: ignore[index, typeddict-item]
+        if button_interaction.data["custom_id"] == "no_strike_member":  # type: ignore[index, typeddict-item]
             await ctx.respond(
                 f"Aborted performing {SUGGESTED_ACTIONS[actual_strike_amount]} action"
                 f" on {strike_member.mention}.",
@@ -230,6 +234,70 @@ class BaseStrikeCog(TeXBotCog):
             f"Successfully performed {SUGGESTED_ACTIONS[actual_strike_amount]} action"
             f" on {strike_member.mention}.",
             ephemeral=True
+        )
+
+
+class ManualModerationCog(BaseStrikeCog):
+    """
+    Cog class defining the event listeners for manually applying moderation actions.
+
+    When Committee members manually apply moderation actions on users, these event listeners
+    will be run to confirm the actions are tracked.
+    """
+
+    async def _confirm_manual_add_strike(self, target: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501
+        css_guild: discord.Guild = self.bot.css_guild
+        try:
+            # noinspection PyTypeChecker
+            audit_log_entry: discord.AuditLogEntry = await anext(
+                _audit_log_entry
+                async for _audit_log_entry
+                in css_guild.audit_logs(
+                    after=discord.utils.utcnow() - datetime.timedelta(minutes=1),
+                    action=action
+                )
+                if _audit_log_entry.target == target
+            )
+        except StopIteration:
+            return
+
+    @TeXBotCog.listener()
+    @capture_guild_does_not_exist_error
+    async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
+        css_guild: discord.Guild = self.bot.css_guild
+        if before.guild != css_guild or after.guild != css_guild or before.bot or after.bot:
+            return
+
+        if not after.timed_out:
+            return
+
+        await self._confirm_manual_add_strike(
+            target=after,
+            action=discord.AuditLogAction.member_update
+        )
+
+    @TeXBotCog.listener()
+    @capture_guild_does_not_exist_error
+    async def on_member_remove(self, member: discord.Member) -> None:
+        css_guild: discord.Guild = self.bot.css_guild
+        if member.guild != css_guild or member.bot:
+            return
+
+        await self._confirm_manual_add_strike(
+            target=member,
+            action=discord.AuditLogAction.kick
+        )
+
+    @TeXBotCog.listener()
+    @capture_guild_does_not_exist_error
+    async def on_member_ban(self, guild: discord.Guild, user: discord.User | discord.Member) -> None:  # noqa: E501
+        css_guild: discord.Guild = self.bot.css_guild
+        if guild != css_guild or user.bot:
+            return
+
+        await self._confirm_manual_add_strike(
+            target=user,
+            action=discord.AuditLogAction.ban
         )
 
 

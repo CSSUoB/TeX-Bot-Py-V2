@@ -1,9 +1,10 @@
 """Utility classes used for the cogs section of this project."""
 
+import functools
 import logging
 import re
-from collections.abc import Mapping
-from typing import TYPE_CHECKING, Final
+from collections.abc import Callable, Coroutine, Mapping
+from typing import TYPE_CHECKING, Any, Final, ParamSpec, TypeVar
 
 import discord
 from discord import Cog
@@ -15,6 +16,9 @@ if TYPE_CHECKING:
     from typing import TypeAlias
 
     MentionableMember: TypeAlias = discord.Member | discord.Role | None
+
+P = ParamSpec("P")
+T = TypeVar("T")
 
 
 class TeXBotAutocompleteContext(discord.AutocompleteContext):
@@ -157,3 +161,15 @@ class TeXBotCog(Cog):
                 discord.Permissions(send_messages=True, view_channel=True)
             )
         }
+
+
+def capture_guild_does_not_exist_error(func: Callable[P, Coroutine[Any, Any, T]]) -> Callable[P, Coroutine[Any, Any, T | None]]:  # noqa: E501
+    @functools.wraps(func)
+    async def wrapper(self: TeXBotCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:
+        try:
+            return await func(self, *args, **kwargs)  # type: ignore[arg-type]
+        except GuildDoesNotExist as guild_error:
+            logging.critical(guild_error)
+            await self.bot.close()
+            return None
+    return wrapper  # type: ignore[return-value]
