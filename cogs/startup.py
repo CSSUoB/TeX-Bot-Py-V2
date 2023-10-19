@@ -77,4 +77,22 @@ class StartupCog(TeXBotCog):
         if not discord.utils.get(guild.text_channels, name="general"):
             logging.warning(GeneralChannelDoesNotExist())
 
+        if settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] != "DM":
+            manual_moderation_warning_message_location_exists: bool = bool(
+                discord.utils.get(
+                    guild.text_channels,
+                    name=settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"]
+                )
+            )
+            if not manual_moderation_warning_message_location_exists:
+                logging.critical(
+                    (
+                        "The channel %s does not exist, so cannot be used as the location"
+                        " for sending manual-moderation warning messages"
+                    ),
+                    repr(settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"])
+                )
+                await self.bot.close()
+                return
+
         logging.info("Ready! Logged in as %s", self.bot.user)
