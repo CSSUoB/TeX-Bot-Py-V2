@@ -137,7 +137,7 @@ class TeXBotCog(Cog):
                         str(logging_message)
                     )
                     if message_part
-                )
+                ).rstrip(": ;")
             )
 
     @staticmethod
