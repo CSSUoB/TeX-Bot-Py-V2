@@ -166,6 +166,13 @@ class TeXBotCog(Cog):
 def capture_guild_does_not_exist_error(func: Callable[P, Coroutine[Any, Any, T]]) -> Callable[P, Coroutine[Any, Any, T | None]]:  # noqa: E501
     @functools.wraps(func)
     async def wrapper(self: TeXBotCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:
+        if not isinstance(self, TeXBotCog):
+            INVALID_METHOD_TYPE_MESSAGE: Final[str] = (
+                f"Parameter {self.__name__!r} of"
+                f" decorator {capture_guild_does_not_exist_error.__name__!r}"
+                f" must be an instance of {TeXBotCog.__name__!r}/one of its subclasses."
+            )
+            raise TypeError(INVALID_METHOD_TYPE_MESSAGE)
         try:
             return await func(self, *args, **kwargs)  # type: ignore[arg-type]
         except GuildDoesNotExist as guild_error:
