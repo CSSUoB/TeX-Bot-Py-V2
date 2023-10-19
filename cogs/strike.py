@@ -12,10 +12,11 @@ from cogs._utils import (
     TeXBotAutocompleteContext,
     TeXBotCog,
     capture_guild_does_not_exist_error,
+    capture_strike_tracking_error,
 )
 from config import settings
 from db.core.models import MemberStrikes
-from exceptions import CommitteeRoleDoesNotExist, GuildDoesNotExist
+from exceptions import CommitteeRoleDoesNotExist, GuildDoesNotExist, StrikeTrackingError
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -245,6 +246,7 @@ class ManualModerationCog(BaseStrikeCog):
     will be run to confirm the actions are tracked.
     """
 
+    @capture_strike_tracking_error
     async def _confirm_manual_add_strike(self, target: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501
         css_guild: discord.Guild = self.bot.css_guild
         try:
@@ -259,7 +261,24 @@ class ManualModerationCog(BaseStrikeCog):
                 if _audit_log_entry.target == target
             )
         except StopIteration:
-            return
+            IRRETRIEVABLE_AUDIT_LOG_MESSAGE: Final[str] = (
+                f"Unable to retrieve audit log entry of {str(action)!r} action"
+                f" on user {str(target)!r}"
+            )
+            raise StrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
+
+        unable_to_determine_confirmation_message_channel: bool = bool(
+            not audit_log_entry.user
+            or audit_log_entry.user.bot
+            and settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] == "DM"
+        )
+        if unable_to_determine_confirmation_message_channel:
+            INDETERMINABLE_CHANNEL_MESSAGE: Final[str] = (
+                "Cannot determine channel to send manual-moderation warning messages to"
+            )
+            raise StrikeTrackingError(INDETERMINABLE_CHANNEL_MESSAGE)
+
+        # confirmation_message_channel: discord.TextChannel =
 
     @TeXBotCog.listener()
     @capture_guild_does_not_exist_error

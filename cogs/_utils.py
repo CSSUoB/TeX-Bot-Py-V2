@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Final, ParamSpec, TypeVar
 import discord
 from discord import Cog
 
-from exceptions import GuildDoesNotExist
+from exceptions import GuildDoesNotExist, StrikeTrackingError
 from utils import TeXBot
 
 if TYPE_CHECKING:
@@ -163,20 +163,40 @@ class TeXBotCog(Cog):
         }
 
 
-def capture_guild_does_not_exist_error(func: Callable[P, Coroutine[Any, Any, T]]) -> Callable[P, Coroutine[Any, Any, T | None]]:  # noqa: E501
+def capture_error(error_type: type[BaseException], close_func: Callable[[BaseException], None], func: Callable[P, Coroutine[Any, Any, T]]) -> Callable[P, Coroutine[Any, Any, T | None]]:  # noqa: E501
     @functools.wraps(func)
     async def wrapper(self: TeXBotCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:
         if not isinstance(self, TeXBotCog):
-            INVALID_METHOD_TYPE_MESSAGE: Final[str] = (
-                f"Parameter {self.__name__!r} of"
-                f" decorator {capture_guild_does_not_exist_error.__name__!r}"
+            INVALID_METHOD_TYPE_MESSAGE: Final[str] = (  # type: ignore[unreachable]
+                f"Parameter {self.__name__!r} of any 'capture_error' decorator"
                 f" must be an instance of {TeXBotCog.__name__!r}/one of its subclasses."
             )
             raise TypeError(INVALID_METHOD_TYPE_MESSAGE)
         try:
             return await func(self, *args, **kwargs)  # type: ignore[arg-type]
-        except GuildDoesNotExist as guild_error:
-            logging.critical(guild_error)
+        except error_type as error:
+            close_func(error)
             await self.bot.close()
             return None
     return wrapper  # type: ignore[return-value]
+
+
+def guild_does_not_exist_error_close_func(error: BaseException) -> None:
+    logging.critical(str(error).rstrip(".:"))
+
+
+def strike_tracking_error_close_func(error: BaseException) -> None:
+    guild_does_not_exist_error_close_func(error)
+    logging.warning("This is likely to have lead to untracked moderation actions")
+
+
+capture_guild_does_not_exist_error: Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T | None]]] = functools.partial(  # noqa: E501
+    capture_error,
+    ErrorType=GuildDoesNotExist,
+    close_func=guild_does_not_exist_error_close_func
+)
+capture_strike_tracking_error: Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T | None]]] = functools.partial(  # noqa: E501
+    capture_error,
+    ErrorType=StrikeTrackingError,
+    close_func=strike_tracking_error_close_func
+)
