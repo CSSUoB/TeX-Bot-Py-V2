@@ -350,11 +350,12 @@ class ManualModerationCog(BaseStrikeCog):
     @TeXBotCog.listener()
     @capture_guild_does_not_exist_error
     async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
+        """Flag manually applied timeout & track strikes accordingly."""
         css_guild: discord.Guild = self.bot.css_guild
         if before.guild != css_guild or after.guild != css_guild or before.bot or after.bot:
             return
 
-        if not after.timed_out:
+        if not after.timed_out or before.timed_out == after.timed_out:
             return
 
         await self._confirm_manual_add_strike(
@@ -365,6 +366,7 @@ class ManualModerationCog(BaseStrikeCog):
     @TeXBotCog.listener()
     @capture_guild_does_not_exist_error
     async def on_member_remove(self, member: discord.Member) -> None:
+        """Flag manually applied kick & track strikes accordingly."""
         css_guild: discord.Guild = self.bot.css_guild
         if member.guild != css_guild or member.bot:
             return
@@ -377,6 +379,7 @@ class ManualModerationCog(BaseStrikeCog):
     @TeXBotCog.listener()
     @capture_guild_does_not_exist_error
     async def on_member_ban(self, guild: discord.Guild, user: discord.User | discord.Member) -> None:  # noqa: E501
+        """Flag manually applied ban & track strikes accordingly."""
         css_guild: discord.Guild = self.bot.css_guild
         if guild != css_guild or user.bot:
             return
