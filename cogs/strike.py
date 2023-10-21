@@ -89,6 +89,44 @@ class ConfirmStrikeMemberView(View):
         await interaction.response.edit_message(delete_after=0)
 
 
+class ConfirmManualModerationView(View):
+    """A discord.View to confirm manually applying a moderation action."""
+
+    @discord.ui.button(
+        label="Yes",
+        style=discord.ButtonStyle.red,
+        custom_id="yes_manual_moderation_action"
+    )
+    async def yes_manual_moderation_action_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
+        """
+        Delete the message associated with the view, when the Yes button is pressed.
+
+        This function is attached as a button's callback, so will run whenever the button
+        is pressed.
+        The actual handling of the event is done by
+        the manual moderation tracker subroutine that sent the view,
+        so all that is required is to delete the original message that sent this view.
+        """
+        await interaction.response.edit_message(delete_after=0)
+
+    @discord.ui.button(
+        label="No",
+        style=discord.ButtonStyle.grey,
+        custom_id="no_manual_moderation_action"
+    )
+    async def no_manual_moderation_action_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
+        """
+        Delete the message associated with the view, when the No button is pressed.
+
+        This function is attached as a button's callback, so will run whenever the button
+        is pressed.
+        The actual handling of the event is done by
+        the manual moderation tracker subroutine that sent the view,
+        so all that is required is to delete the original message that sent this view.
+        """
+        await interaction.response.edit_message(delete_after=0)
+
+
 class BaseStrikeCog(TeXBotCog):
     """
     Base strike cog container class.
