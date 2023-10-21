@@ -211,7 +211,7 @@ class BaseStrikeCog(TeXBotCog):
             " and the corresponding moderation action will soon be applied to you."
             " To find what moderation action corresponds to which strike level,"
             " you can view the CSS Discord server moderation document"
-            f" [here]({settings.MODERATION_DOCUMENT_URL})\nPlease ensure you have read"
+            f" [here](<{settings.MODERATION_DOCUMENT_URL}>)\nPlease ensure you have read"
             f" the rules in {rules_channel_mention} so that your future behaviour adheres"
             f" to them.{includes_ban_message}\n\nA committee member will be in contact"
             " with you shortly, to discuss this further."
@@ -248,10 +248,7 @@ class BaseStrikeCog(TeXBotCog):
                 and interaction.user == ctx.user
                 and interaction.channel == ctx.channel
                 and "custom_id" in interaction.data
-                and interaction.data["custom_id"] in {
-                    "yes_strike_member",
-                    "no_strike_member"
-                }
+                and interaction.data["custom_id"] in {"yes_strike_member", "no_strike_member"}
             )
         )
 
@@ -285,7 +282,7 @@ class ManualModerationCog(BaseStrikeCog):
     """
 
     @capture_strike_tracking_error
-    async def _confirm_manual_add_strike(self, target: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501
+    async def _confirm_manual_add_strike(self, strike_member: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501
         css_guild: discord.Guild = self.bot.css_guild
         try:
             # noinspection PyTypeChecker
@@ -296,12 +293,12 @@ class ManualModerationCog(BaseStrikeCog):
                     after=discord.utils.utcnow() - datetime.timedelta(minutes=1),
                     action=action
                 )
-                if _audit_log_entry.target == target
+                if _audit_log_entry.target == strike_member
             )
         except StopIteration:
             IRRETRIEVABLE_AUDIT_LOG_MESSAGE: Final[str] = (
                 f"Unable to retrieve audit log entry of {str(action)!r} action"
-                f" on user {str(target)!r}"
+                f" on user {str(strike_member)!r}"
             )
             raise StrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
 
@@ -345,7 +342,62 @@ class ManualModerationCog(BaseStrikeCog):
 
             confirmation_message_channel = guild_confirmation_message_channel
 
-        await confirmation_message_channel.send("charles was timed out")
+        MODERATION_ACTIONS: Final[Mapping[discord.AuditLogAction, str]] = {
+            discord.AuditLogAction.member_update: "timed-out",
+            discord.AuditLogAction.kick: "kicked",
+            discord.AuditLogAction.ban: "banned"
+        }
+
+        member_strikes: MemberStrikes = (
+            await MemberStrikes.objects.aget_or_create(
+                hashed_member_id=MemberStrikes.hash_member_id(strike_member.id)
+            )
+        )[0]
+
+        confirmation_message: discord.Message = await confirmation_message_channel.send(
+            content=(
+                f"Hi {audit_log_entry.user.display_name},"
+                f" I just noticed that you {MODERATION_ACTIONS[action]}"
+                f" {strike_member.mention}. Because you did this manually"
+                " (rather than using my `/strike` command), I could not automatically"
+                f" keep track of the number of strikes {strike_member.mention} has."
+                f" Would you like me to increase {strike_member.mention}'s strikes"
+                f" from {member_strikes.strikes} to {member_strikes.strikes + 1}"
+                " and send them the moderation alert message?"
+            ),
+            view=ConfirmManualModerationView()
+        )
+
+        button_interaction: discord.Interaction = await self.bot.wait_for(
+            "interaction",
+            check=lambda interaction: (
+                interaction.type == discord.InteractionType.component
+                and interaction.user == audit_log_entry.user
+                and interaction.channel == confirmation_message_channel
+                and "custom_id" in interaction.data
+                and interaction.data["custom_id"] in {
+                    "yes_manual_moderation_action",
+                    "no_manual_moderation_action"
+                }
+            )
+        )
+
+        if button_interaction.data["custom_id"] == "no_manual_moderation_action":  # type: ignore[index, typeddict-item]
+            await confirmation_message.delete()
+            aborted_strike_message: discord.Message = await confirmation_message_channel.send(
+                f"Aborted increasing {strike_member.mention}'s strikes"
+                " & sending moderation alert message."
+                " (This manual moderation action has not been tracked.)"
+                f"""\nᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ {
+                    discord.utils.format_dt(
+                        discord.utils.utcnow() + datetime.timedelta(minutes=2),
+                        "R"
+                    )
+                }"""
+            )
+            await asyncio.sleep(120)
+            await aborted_strike_message.delete()
+            return
 
     @TeXBotCog.listener()
     @capture_guild_does_not_exist_error
@@ -359,7 +411,7 @@ class ManualModerationCog(BaseStrikeCog):
             return
 
         await self._confirm_manual_add_strike(
-            target=after,
+            strike_member=after,
             action=discord.AuditLogAction.member_update
         )
 
@@ -372,7 +424,7 @@ class ManualModerationCog(BaseStrikeCog):
             return
 
         await self._confirm_manual_add_strike(
-            target=member,
+            strike_member=member,
             action=discord.AuditLogAction.kick
         )
 
@@ -385,7 +437,7 @@ class ManualModerationCog(BaseStrikeCog):
             return
 
         await self._confirm_manual_add_strike(
-            target=user,
+            strike_member=user,
             action=discord.AuditLogAction.ban
         )
 

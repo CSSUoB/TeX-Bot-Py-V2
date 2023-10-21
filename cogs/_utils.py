@@ -191,12 +191,12 @@ def strike_tracking_error_close_func(error: BaseException) -> None:
 
 
 capture_guild_does_not_exist_error: Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T | None]]] = functools.partial(  # noqa: E501
-    capture_error,
+    capture_error,  # type: ignore[arg-type]
     error_type=GuildDoesNotExist,
     close_func=guild_does_not_exist_error_close_func
 )
 capture_strike_tracking_error: Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T | None]]] = functools.partial(  # noqa: E501
-    capture_error,
+    capture_error,  # type: ignore[arg-type]
     error_type=StrikeTrackingError,
     close_func=strike_tracking_error_close_func
 )
