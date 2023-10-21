@@ -163,7 +163,7 @@ class TeXBotCog(Cog):
         }
 
 
-def capture_error(error_type: type[BaseException], close_func: Callable[[BaseException], None], func: Callable[P, Coroutine[Any, Any, T]]) -> Callable[P, Coroutine[Any, Any, T | None]]:  # noqa: E501
+def capture_error(func: Callable[P, Coroutine[Any, Any, T]], error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> Callable[P, Coroutine[Any, Any, T | None]]:  # noqa: E501
     @functools.wraps(func)
     async def wrapper(self: TeXBotCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:
         if not isinstance(self, TeXBotCog):
@@ -187,16 +187,16 @@ def guild_does_not_exist_error_close_func(error: BaseException) -> None:
 
 def strike_tracking_error_close_func(error: BaseException) -> None:
     guild_does_not_exist_error_close_func(error)
-    logging.warning("This is likely to have lead to untracked moderation actions")
+    logging.warning("Critical errors are likely to lead to untracked moderation actions")
 
 
 capture_guild_does_not_exist_error: Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T | None]]] = functools.partial(  # noqa: E501
     capture_error,
-    ErrorType=GuildDoesNotExist,
+    error_type=GuildDoesNotExist,
     close_func=guild_does_not_exist_error_close_func
 )
 capture_strike_tracking_error: Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T | None]]] = functools.partial(  # noqa: E501
     capture_error,
-    ErrorType=StrikeTrackingError,
+    error_type=StrikeTrackingError,
     close_func=strike_tracking_error_close_func
 )

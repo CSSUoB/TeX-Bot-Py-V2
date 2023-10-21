@@ -164,6 +164,13 @@ class MessagesJSONFileValueError(InvalidMessagesJSONFile):
 
 
 class StrikeTrackingError(TeXBotBaseError, RuntimeError):
+    """
+    Exception class to raise when any error occurs while tracking moderation actions.
+
+    If this error occurs, it is likely that manually applied moderation actions will be missed
+    and not tracked correctly.
+    """
+
     DEFAULT_MESSAGE: str = (
         "An error occurred while trying to track manually applied moderation actions."
     )

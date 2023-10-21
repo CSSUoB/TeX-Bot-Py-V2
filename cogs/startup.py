@@ -92,6 +92,20 @@ class StartupCog(TeXBotCog):
                     ),
                     repr(settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"])
                 )
+                manual_moderation_warning_message_location_similar_to_dm: bool = (
+                    settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"].lower()
+                    in ("dm", "dms")
+                )
+                if manual_moderation_warning_message_location_similar_to_dm:
+                    logging.info(
+                        (
+                            "If you meant to set the location"
+                            " for sending manual-moderation warning messages to be"
+                            " the DMs of the committee member that applied"
+                            " the manual moderation action, use the value of %s"
+                        ),
+                        repr("DM")
+                    )
                 await self.bot.close()
                 return
 

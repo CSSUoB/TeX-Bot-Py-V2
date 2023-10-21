@@ -267,9 +267,11 @@ class ManualModerationCog(BaseStrikeCog):
             )
             raise StrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
 
+        if not audit_log_entry.user:
+            raise StrikeTrackingError
+
         unable_to_determine_confirmation_message_channel: bool = bool(
-            not audit_log_entry.user
-            or audit_log_entry.user.bot
+            audit_log_entry.user.bot
             and settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] == "DM"
         )
         if unable_to_determine_confirmation_message_channel:
@@ -278,7 +280,34 @@ class ManualModerationCog(BaseStrikeCog):
             )
             raise StrikeTrackingError(INDETERMINABLE_CHANNEL_MESSAGE)
 
-        # confirmation_message_channel: discord.TextChannel =
+        confirmation_message_channel: discord.DMChannel | discord.TextChannel
+        if settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] == "DM":
+            confirmation_message_channel = await audit_log_entry.user.create_dm()  # type: ignore[misc]
+            if not confirmation_message_channel.recipient:
+                confirmation_message_channel.recipient = (
+                    self.bot.get_user(
+                        audit_log_entry.user.id
+                    )
+                    if isinstance(audit_log_entry.user, discord.Member)
+                    else audit_log_entry.user
+                )
+        else:
+            guild_confirmation_message_channel: discord.TextChannel | None = discord.utils.get(
+                css_guild.text_channels,
+                name=settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"]
+            )
+            if not guild_confirmation_message_channel:
+                CHANNEL_DOES_NOT_EXIST_MESSAGE: Final[str] = (
+                    "The channel"
+                    f""" {settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"]!r}"""
+                    " does not exist, so cannot be used as the location"
+                    " for sending manual-moderation warning messages"
+                )
+                raise StrikeTrackingError(CHANNEL_DOES_NOT_EXIST_MESSAGE)
+
+            confirmation_message_channel = guild_confirmation_message_channel
+
+        await confirmation_message_channel.send("charles was timed out")
 
     @TeXBotCog.listener()
     @capture_guild_does_not_exist_error
