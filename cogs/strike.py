@@ -1,9 +1,12 @@
 """Contains cog classes for any strike interactions."""
 
+import asyncio
 import datetime
+import functools
 import logging
 import re
-from typing import TYPE_CHECKING, Final
+from collections.abc import Awaitable, Callable
+from typing import TYPE_CHECKING, Any, Final
 
 import discord
 from discord.ui import View
@@ -22,7 +25,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
 
-async def perform_moderation_action(strike_member: discord.Member, strikes: int, committee_member: discord.Member) -> None:  # noqa: E501
+async def perform_moderation_action(strike_user: discord.Member, strikes: int, committee_member: discord.Member | discord.User) -> None:  # noqa: E501
     """
     Perform the actual process of applying a moderation action to a member.
 
@@ -41,16 +44,16 @@ async def perform_moderation_action(strike_member: discord.Member, strikes: int,
     )
 
     if strikes == 1:
-        await strike_member.timeout_for(
+        await strike_user.timeout_for(
             datetime.timedelta(hours=24),
             reason=MODERATION_ACTION_REASON
         )
 
     elif strikes == 2:
-        await strike_member.kick(reason=MODERATION_ACTION_REASON)
+        await strike_user.kick(reason=MODERATION_ACTION_REASON)
 
     elif strikes == 3:
-        await strike_member.ban(reason=MODERATION_ACTION_REASON)
+        await strike_user.ban(reason=MODERATION_ACTION_REASON)
 
 
 class ConfirmStrikeMemberView(View):
@@ -135,7 +138,116 @@ class BaseStrikeCog(TeXBotCog):
     by child strike cog container classes.
     """
 
-    async def _perform_strike(self, ctx: discord.ApplicationContext, strike_member: discord.Member, guild: discord.Guild) -> None:  # noqa: E501
+    async def _perform_strike(self, send_func: Callable[..., Awaitable[Any]], interaction_user: discord.User, strike_user: discord.User | discord.Member, member_strikes: MemberStrikes, button_callback_channel: discord.TextChannel | discord.DMChannel, *, perform_action: bool) -> None:  # noqa: E501
+        if perform_action and isinstance(strike_user, discord.User):
+            STRIKE_USER_TYPE_ERROR_MESSAGE: Final[str] = (
+                "Cannot perform moderation action on non-guild member."
+            )
+            raise TypeError(STRIKE_USER_TYPE_ERROR_MESSAGE)
+
+        if member_strikes.strikes < 3:
+            member_strikes.strikes += 1
+            await member_strikes.asave()
+
+        rules_channel_mention: str = "`#welcome`"
+        rules_channel: discord.TextChannel | None = await self.bot.rules_channel
+        if rules_channel:
+            rules_channel_mention = rules_channel.mention
+
+        includes_ban_message: str = ""
+        if member_strikes.strikes >= 3:
+            includes_ban_message = (
+                "\nBecause you now have been given 3 strikes, you have been banned from"
+                " the CSS Discord server and we have contacted the Guild of Students for"
+                " further action & advice."
+            )
+
+        actual_strike_amount: int = (
+            member_strikes.strikes
+            if member_strikes.strikes < 3
+            else 3
+        )
+
+        await strike_user.send(
+            "Hi, a recent incident occurred in which you may have broken one or more of"
+            " the CSS Discord server's rules.\nWe have increased the number of strikes"
+            f" associated with your account to {actual_strike_amount}"
+            " and the corresponding moderation action will soon be applied to you."
+            " To find what moderation action corresponds to which strike level,"
+            " you can view the CSS Discord server moderation document"
+            f" [here](<{settings.MODERATION_DOCUMENT_URL}>)\nPlease ensure you have read"
+            f" the rules in {rules_channel_mention} so that your future behaviour adheres"
+            f" to them.{includes_ban_message}\n\nA committee member will be in contact"
+            " with you shortly, to discuss this further."
+        )
+
+        SUGGESTED_ACTIONS: Final[Mapping[int, str]] = {1: "time-out", 2: "kick", 3: "ban"}
+
+        confirm_strike_message: str = (
+            f"Successfully increased {strike_user.mention}'s strikes to"
+            f" {member_strikes.strikes}."
+        )
+
+        if perform_action:
+            confirm_strike_message = (
+                f"{confirm_strike_message}\nThe suggested moderation action is to"
+                f" {SUGGESTED_ACTIONS[member_strikes.strikes]} the user. Would you"
+                " like the bot to perform this action for you?"
+            )
+
+        if member_strikes.strikes > 3:
+            confirm_strike_message = (
+                f"{strike_user.mention}'s number of strikes was not increased"
+                f" because they already had {member_strikes.strikes}."
+                " How did this happen?"
+            )
+            if perform_action:
+                confirm_strike_message = (
+                    f"{confirm_strike_message}\nHaving more than 3 strikes suggests that"
+                    " the user should be banned. Would you like the bot to perform"
+                    " this action for you?"
+                )
+
+        if not perform_action:
+            return
+
+        assert isinstance(strike_user, discord.Member)
+
+        await send_func(
+            content=confirm_strike_message,
+            view=ConfirmStrikeMemberView()
+        )
+
+        button_interaction: discord.Interaction = await self.bot.wait_for(
+            "interaction",
+            check=lambda interaction: (
+                interaction.type == discord.InteractionType.component
+                and interaction.user == interaction_user
+                and interaction.channel == button_callback_channel
+                and "custom_id" in interaction.data
+                and interaction.data["custom_id"] in {"yes_strike_member", "no_strike_member"}
+            )
+        )
+
+        if button_interaction.data["custom_id"] == "no_strike_member":  # type: ignore[index, typeddict-item]
+            await send_func(
+                f"Aborted performing {SUGGESTED_ACTIONS[actual_strike_amount]} action"
+                f" on {strike_user.mention}."
+            )
+            return
+
+        await perform_moderation_action(
+            strike_user,
+            actual_strike_amount,
+            committee_member=interaction_user
+        )
+
+        await send_func(
+            f"Successfully performed {SUGGESTED_ACTIONS[actual_strike_amount]} action"
+            f" on {strike_user.mention}."
+        )
+
+    async def _command_perform_strike(self, ctx: discord.ApplicationContext, strike_member: discord.Member, guild: discord.Guild) -> None:  # noqa: E501
         """
         Perform the actual process of giving a member an additional strike.
 
@@ -183,93 +295,13 @@ class BaseStrikeCog(TeXBotCog):
             )
         )[0]
 
-        if member_strikes.strikes < 3:
-            member_strikes.strikes += 1
-            await member_strikes.asave()
-
-        rules_channel_mention: str = "`#welcome`"
-        rules_channel: discord.TextChannel | None = await self.bot.rules_channel
-        if rules_channel:
-            rules_channel_mention = rules_channel.mention
-
-        includes_ban_message: str = ""
-        if member_strikes.strikes >= 3:
-            includes_ban_message = (
-                "\nBecause you now have been given 3 strikes, you have been banned from"
-                " the CSS Discord server and we have contacted the Guild of Students for"
-                " further action & advice."
-            )
-
-        actual_strike_amount: int = (
-            member_strikes.strikes if member_strikes.strikes < 3 else 3
-        )
-
-        await strike_member.send(
-            "Hi, a recent incident occurred in which you may have broken one or more of"
-            " the CSS Discord server's rules.\nWe have increased the number of strikes"
-            f" associated with your account to {actual_strike_amount}"
-            " and the corresponding moderation action will soon be applied to you."
-            " To find what moderation action corresponds to which strike level,"
-            " you can view the CSS Discord server moderation document"
-            f" [here](<{settings.MODERATION_DOCUMENT_URL}>)\nPlease ensure you have read"
-            f" the rules in {rules_channel_mention} so that your future behaviour adheres"
-            f" to them.{includes_ban_message}\n\nA committee member will be in contact"
-            " with you shortly, to discuss this further."
-        )
-
-        SUGGESTED_ACTIONS: Final[Mapping[int, str]] = {1: "time-out", 2: "kick", 3: "ban"}
-
-        confirm_strike_message: str = (
-            f"Successfully increased {strike_member.mention}'s strikes to"
-            f" {member_strikes.strikes}.\nThe suggested moderation action is to"
-            f" {SUGGESTED_ACTIONS[member_strikes.strikes]} the user. Would you"
-            " like the bot to perform this action for you?"
-        )
-
-        if member_strikes.strikes > 3:
-            confirm_strike_message = (
-                f"{strike_member.mention}'s number of strikes was not increased"
-                f" because they already had {member_strikes.strikes}."
-                " How did this happen?\nHaving more than 3 strikes suggests that"
-                " the user should be banned. Would you like the bot to perform"
-                " this action for you?"
-            )
-
-        await ctx.respond(
-            content=confirm_strike_message,
-            view=ConfirmStrikeMemberView(),
-            ephemeral=True
-        )
-
-        button_interaction: discord.Interaction = await self.bot.wait_for(
-            "interaction",
-            check=lambda interaction: (
-                interaction.type == discord.InteractionType.component
-                and interaction.user == ctx.user
-                and interaction.channel == ctx.channel
-                and "custom_id" in interaction.data
-                and interaction.data["custom_id"] in {"yes_strike_member", "no_strike_member"}
-            )
-        )
-
-        if button_interaction.data["custom_id"] == "no_strike_member":  # type: ignore[index, typeddict-item]
-            await ctx.respond(
-                f"Aborted performing {SUGGESTED_ACTIONS[actual_strike_amount]} action"
-                f" on {strike_member.mention}.",
-                ephemeral=True
-            )
-            return
-
-        await perform_moderation_action(
-            strike_member,
-            actual_strike_amount,
-            committee_member=interaction_member
-        )
-
-        await ctx.respond(
-            f"Successfully performed {SUGGESTED_ACTIONS[actual_strike_amount]} action"
-            f" on {strike_member.mention}.",
-            ephemeral=True
+        await self._perform_strike(
+            send_func=functools.partial(ctx.respond, ephemeral=True),
+            interaction_user=ctx.user,
+            strike_user=strike_member,
+            member_strikes=member_strikes,
+            button_callback_channel=ctx.channel,
+            perform_action=True
         )
 
 
@@ -282,7 +314,7 @@ class ManualModerationCog(BaseStrikeCog):
     """
 
     @capture_strike_tracking_error
-    async def _confirm_manual_add_strike(self, strike_member: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501
+    async def _confirm_manual_add_strike(self, strike_user: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501
         css_guild: discord.Guild = self.bot.css_guild
         try:
             # noinspection PyTypeChecker
@@ -293,12 +325,12 @@ class ManualModerationCog(BaseStrikeCog):
                     after=discord.utils.utcnow() - datetime.timedelta(minutes=1),
                     action=action
                 )
-                if _audit_log_entry.target == strike_member
+                if _audit_log_entry.target == strike_user
             )
         except StopIteration:
             IRRETRIEVABLE_AUDIT_LOG_MESSAGE: Final[str] = (
                 f"Unable to retrieve audit log entry of {str(action)!r} action"
-                f" on user {str(strike_member)!r}"
+                f" on user {str(strike_user)!r}"
             )
             raise StrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
 
@@ -350,7 +382,7 @@ class ManualModerationCog(BaseStrikeCog):
 
         member_strikes: MemberStrikes = (
             await MemberStrikes.objects.aget_or_create(
-                hashed_member_id=MemberStrikes.hash_member_id(strike_member.id)
+                hashed_member_id=MemberStrikes.hash_member_id(strike_user.id)
             )
         )[0]
 
@@ -358,10 +390,10 @@ class ManualModerationCog(BaseStrikeCog):
             content=(
                 f"Hi {audit_log_entry.user.display_name},"
                 f" I just noticed that you {MODERATION_ACTIONS[action]}"
-                f" {strike_member.mention}. Because you did this manually"
+                f" {strike_user.mention}. Because you did this manually"
                 " (rather than using my `/strike` command), I could not automatically"
-                f" keep track of the number of strikes {strike_member.mention} has."
-                f" Would you like me to increase {strike_member.mention}'s strikes"
+                f" keep track of the number of strikes {strike_user.mention} has."
+                f" Would you like me to increase {strike_user.mention}'s strikes"
                 f" from {member_strikes.strikes} to {member_strikes.strikes + 1}"
                 " and send them the moderation alert message?"
             ),
@@ -385,19 +417,33 @@ class ManualModerationCog(BaseStrikeCog):
         if button_interaction.data["custom_id"] == "no_manual_moderation_action":  # type: ignore[index, typeddict-item]
             await confirmation_message.delete()
             aborted_strike_message: discord.Message = await confirmation_message_channel.send(
-                f"Aborted increasing {strike_member.mention}'s strikes"
+                f"Aborted increasing {strike_user.mention}'s strikes"
                 " & sending moderation alert message."
                 " (This manual moderation action has not been tracked.)"
-                f"""\nᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ {
+                "\nᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"  # noqa: RUF001
+                f"""{
                     discord.utils.format_dt(
                         discord.utils.utcnow() + datetime.timedelta(minutes=2),
                         "R"
                     )
                 }"""
             )
-            await asyncio.sleep(120)
+            await asyncio.sleep(118)
             await aborted_strike_message.delete()
             return
+
+        interaction_user: discord.User | None = self.bot.get_user(audit_log_entry.user.id)
+        if not interaction_user:
+            raise StrikeTrackingError
+
+        await self._perform_strike(
+            send_func=confirmation_message_channel.send,
+            interaction_user=interaction_user,
+            strike_user=strike_user,
+            member_strikes=member_strikes,
+            button_callback_channel=confirmation_message_channel,
+            perform_action=False
+        )
 
     @TeXBotCog.listener()
     @capture_guild_does_not_exist_error
@@ -411,7 +457,7 @@ class ManualModerationCog(BaseStrikeCog):
             return
 
         await self._confirm_manual_add_strike(
-            strike_member=after,
+            strike_user=after,
             action=discord.AuditLogAction.member_update
         )
 
@@ -424,7 +470,7 @@ class ManualModerationCog(BaseStrikeCog):
             return
 
         await self._confirm_manual_add_strike(
-            strike_member=member,
+            strike_user=member,
             action=discord.AuditLogAction.kick
         )
 
@@ -437,7 +483,7 @@ class ManualModerationCog(BaseStrikeCog):
             return
 
         await self._confirm_manual_add_strike(
-            strike_member=user,
+            strike_user=user,
             action=discord.AuditLogAction.ban
         )
 
@@ -522,7 +568,7 @@ class StrikeCommandCog(BaseStrikeCog):
             )
             return
 
-        await self._perform_strike(ctx, strike_member, guild)
+        await self._command_perform_strike(ctx, strike_member, guild)
 
 
 class StrikeUserCommandCog(BaseStrikeCog):
@@ -539,4 +585,4 @@ class StrikeUserCommandCog(BaseStrikeCog):
             await self.bot.close()
             raise
 
-        await self._perform_strike(ctx, member, guild)
+        await self._command_perform_strike(ctx, member, guild)
