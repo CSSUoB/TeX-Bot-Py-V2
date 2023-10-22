@@ -4,6 +4,7 @@ import os
 import re
 import sys
 from argparse import ArgumentParser, Namespace
+from collections.abc import Sequence
 
 import discord
 
@@ -357,7 +358,7 @@ if __name__ != "__main__":
             self._css_guild_set = True
 
 
-if __name__ == "__main__":
+def main(argv: Sequence[str] | None = None) -> int:
     arg_parser: ArgumentParser = ArgumentParser(
         description="Executes common command-line utility functions"
     )
@@ -379,12 +380,14 @@ if __name__ == "__main__":
     generate_invite_url_arg_parser.add_argument(
         "discord_guild_id",
         nargs="?",
-        help="The value of the environment variable DISCORD_GUILD_ID is used"
-             " if this argument is omitted. Must be a valid Discord guild ID"
-             " (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
+        help=(
+            "The value of the environment variable DISCORD_GUILD_ID is used"
+            " if this argument is omitted. Must be a valid Discord guild ID"
+            " (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
+        )
     )
 
-    parsed_args: Namespace = arg_parser.parse_args()
+    parsed_args: Namespace = arg_parser.parse_args(argv)
 
     if parsed_args.function == "generate_invite_url":
         if not re.match(r"\A\d{17,20}\Z", parsed_args.discord_bot_application_id):
@@ -418,5 +421,10 @@ if __name__ == "__main__":
             )
         )
         sys.stdout.flush()
+        return 0
 
-        generate_invite_url_arg_parser.exit(status=0)
+    generate_invite_url_arg_parser.error(f"Unknown function: {parsed_args.function!r}")  # noqa: RET503
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
