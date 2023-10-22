@@ -359,6 +359,7 @@ if __name__ != "__main__":
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Run this script as a CLI tool with argument parsing."""
     arg_parser: ArgumentParser = ArgumentParser(
         description="Executes common command-line utility functions"
     )
