@@ -34,7 +34,7 @@
         "I heard <User> got some cookies ontop of their fridge.",
         "It's-a you, <User>!",
         "Some people in this world hold unimaginable power and superhuman abilities...\nOh btw unrelated but <User> just joined, say hi.",
-        "$ ./introduce.ts -user '<User>'\n> Welcome to CSS, <User>!",
+        "$ ./introduce.ts -user '<User>'\n\\> Welcome to CSS, <User>!",
         "I see the player you mean.\n<User>\nYes. Take care. It has reached a higher level now. It can read our thoughts.",
         "Hey, <User>. You're finally awake. You were trying to cross the border, right? Walked right into that Imperial ambush, same as us, and that thief over there.",
         "You're a wizard <User>",
