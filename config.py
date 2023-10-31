@@ -398,6 +398,29 @@ class Settings:
                 format="%(levelname)s: %(message)s"
             )
 
+            self._settings["MODERATION_DOCUMENT_URL"] = os.getenv(
+                "MODERATION_DOCUMENT_URL", ""
+            )
+            moderation_document_url_is_valid: bool = (
+                self._settings["MODERATION_DOCUMENT_URL"]
+                and validators.url(self._settings["MODERATION_DOCUMENT_URL"])
+            )
+            if not moderation_document_url_is_valid:
+                MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
+                    "MODERATION_DOCUMENT_URL must be a valid URL."
+                )
+                raise ImproperlyConfigured(MODERATION_DOCUMENT_URL_MESSAGE)
+
+            self._settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] = os.getenv(
+                "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION", "DM"
+            )
+            if not self._settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"]:
+                MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE: Final[str] = (
+                    "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE must be a valid name"
+                    " of a channel in the CSS Discord server."
+                )
+                raise ImproperlyConfigured(MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE)
+
             self._is_env_variables_setup = True
 
     def _setup_django(self) -> None:
