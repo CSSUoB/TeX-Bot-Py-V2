@@ -714,7 +714,7 @@ class StrikeUserCommandCog(BaseStrikeCog):
     """Cog class that defines the context menu strike command & its call-back method."""
 
     @discord.user_command(name="Strike User")  # type: ignore[no-untyped-call, misc]
-    async def strike(self, ctx: discord.ApplicationContext, member: discord.Member) -> None:
+    async def user_strike(self, ctx: discord.ApplicationContext, member: discord.Member) -> None:
         """Call the _strike command, providing the required command arguments."""
         try:
             guild: discord.Guild = self.bot.css_guild
