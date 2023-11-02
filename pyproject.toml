@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "TeX-Bot"
-version = "0.4.0"
+version = "0.5.0"
 license = "Apache-2.0"
 description = "TeX-Bot, but back in Python!"
 authors = [

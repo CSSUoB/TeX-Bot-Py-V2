@@ -474,13 +474,13 @@ class StatsCommandsCog(TeXBotCog):
     async def on_member_leave(self, member: discord.Member) -> None:
         """Update the stats of the roles that members had when they left the Discord server."""
         try:
-            guild: discord.Guild = self.bot.css_guild
+            css_guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
             logging.critical(guild_error)
             await self.bot.close()
             return
 
-        if member.guild != guild or member.bot:
+        if member.guild != css_guild or member.bot:
             return
 
         await LeftMember.objects.acreate(

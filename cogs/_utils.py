@@ -1,10 +1,11 @@
 """Utility classes used for the cogs section of this project."""
 
 import contextlib
+import functools
 import logging
 import re
-from collections.abc import Mapping
-from typing import TYPE_CHECKING, Final
+from collections.abc import Callable, Coroutine, Mapping
+from typing import TYPE_CHECKING, Any, Final, ParamSpec, TypeVar
 
 import discord
 from discord import Cog
@@ -12,6 +13,8 @@ from discord import Cog
 from exceptions import (
     BaseDoesNotExistError,
     CommitteeRoleDoesNotExist,
+    GuildDoesNotExist,
+    StrikeTrackingError,
     UserNotInCSSDiscordServer,
 )
 from utils import TeXBot
@@ -20,6 +23,9 @@ if TYPE_CHECKING:
     from typing import TypeAlias
 
     MentionableMember: TypeAlias = discord.Member | discord.Role
+
+P = ParamSpec("P")
+T = TypeVar("T")
 
 
 class TeXBotAutocompleteContext(discord.AutocompleteContext):
@@ -179,3 +185,42 @@ class TeXBotCog(Cog):
                 discord.Permissions(send_messages=True, view_channel=True)
             )
         }
+
+
+def capture_error(func: Callable[P, Coroutine[Any, Any, T]], error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> Callable[P, Coroutine[Any, Any, T | None]]:  # noqa: E501
+    @functools.wraps(func)
+    async def wrapper(self: TeXBotCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:
+        if not isinstance(self, TeXBotCog):
+            INVALID_METHOD_TYPE_MESSAGE: Final[str] = (  # type: ignore[unreachable]
+                f"Parameter {self.__name__!r} of any 'capture_error' decorator"
+                f" must be an instance of {TeXBotCog.__name__!r}/one of its subclasses."
+            )
+            raise TypeError(INVALID_METHOD_TYPE_MESSAGE)
+        try:
+            return await func(self, *args, **kwargs)  # type: ignore[arg-type]
+        except error_type as error:
+            close_func(error)
+            await self.bot.close()
+            return None
+    return wrapper  # type: ignore[return-value]
+
+
+def guild_does_not_exist_error_close_func(error: BaseException) -> None:
+    logging.critical(str(error).rstrip(".:"))
+
+
+def strike_tracking_error_close_func(error: BaseException) -> None:
+    guild_does_not_exist_error_close_func(error)
+    logging.warning("Critical errors are likely to lead to untracked moderation actions")
+
+
+capture_guild_does_not_exist_error: Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T | None]]] = functools.partial(  # noqa: E501
+    capture_error,  # type: ignore[arg-type]
+    error_type=GuildDoesNotExist,
+    close_func=guild_does_not_exist_error_close_func
+)
+capture_strike_tracking_error: Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T | None]]] = functools.partial(  # noqa: E501
+    capture_error,  # type: ignore[arg-type]
+    error_type=StrikeTrackingError,
+    close_func=strike_tracking_error_close_func
+)

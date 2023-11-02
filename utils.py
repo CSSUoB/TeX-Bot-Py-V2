@@ -334,7 +334,7 @@ if __name__ != "__main__":
         @property
         async def rules_channel(self) -> discord.TextChannel:
             """
-            Shortcut accessor to the welcome text channel.
+            Shortcut accessor to the rules text channel.
 
             The welcome text channel is the one that contains the welcome message & rules.
             """

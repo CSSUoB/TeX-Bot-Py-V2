@@ -192,6 +192,19 @@ class MessagesJSONFileValueError(InvalidMessagesJSONFile):
         super().__init__(message, dict_key)
 
 
+class StrikeTrackingError(TeXBotBaseError, RuntimeError):
+    """
+    Exception class to raise when any error occurs while tracking moderation actions.
+
+    If this error occurs, it is likely that manually applied moderation actions will be missed
+    and not tracked correctly.
+    """
+
+    DEFAULT_MESSAGE: str = (
+        "An error occurred while trying to track manually applied moderation actions."
+    )
+
+
 class GuildDoesNotExist(BaseDoesNotExistError):
     """Exception class to raise when a required Discord guild is missing."""
 
@@ -264,6 +277,7 @@ class CommitteeRoleDoesNotExist(RoleDoesNotExist):
                 "writeroles",
                 "editmessage",
                 "induct",
+                "strike",
                 "archive",
                 "delete-all",
                 "ensure-members-inducted"
