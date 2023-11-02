@@ -12,6 +12,7 @@ import discord
 from discord.ui import View
 
 from cogs._utils import (
+    TeXBotApplicationContext,
     TeXBotAutocompleteContext,
     TeXBotCog,
     capture_guild_does_not_exist_error,
@@ -312,7 +313,7 @@ class BaseStrikeCog(TeXBotCog):
             button_callback_channel
         )
 
-    async def _command_perform_strike(self, ctx: discord.ApplicationContext, strike_member: discord.Member, guild: discord.Guild) -> None:  # noqa: E501
+    async def _command_perform_strike(self, ctx: TeXBotApplicationContext, strike_member: discord.Member, guild: discord.Guild) -> None:  # noqa: E501
         """
         Perform the actual process of giving a member an additional strike.
 
@@ -673,7 +674,7 @@ class StrikeCommandCog(BaseStrikeCog):
         required=True,
         parameter_name="str_strike_member_id"
     )
-    async def strike(self, ctx: discord.ApplicationContext, str_strike_member_id: str) -> None:
+    async def strike(self, ctx: TeXBotApplicationContext, str_strike_member_id: str) -> None:
         """
         Definition & callback response of the "strike" command.
 
@@ -714,7 +715,7 @@ class StrikeUserCommandCog(BaseStrikeCog):
     """Cog class that defines the context menu strike command & its call-back method."""
 
     @discord.user_command(name="Strike User")  # type: ignore[no-untyped-call, misc]
-    async def strike(self, ctx: discord.ApplicationContext, member: discord.Member) -> None:
+    async def strike(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:
         """Call the _strike command, providing the required command arguments."""
         try:
             guild: discord.Guild = self.bot.css_guild

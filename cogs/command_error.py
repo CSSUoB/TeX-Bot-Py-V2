@@ -10,8 +10,8 @@ from cogs._checks import Checks
 from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from exceptions import (
     BaseDoesNotExistError,
-    GuildDoesNotExist,
     BaseErrorWithErrorCode,
+    GuildDoesNotExist,
 )
 
 

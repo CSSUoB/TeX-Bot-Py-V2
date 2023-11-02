@@ -57,7 +57,7 @@ class SendGetRolesRemindersTaskCog(TeXBotCog):
             await self.bot.close()
             return
 
-        roles_channel_mention: str = "`#roles`"
+        roles_channel_mention: str = "#roles"
         try:
             roles_channel: discord.TextChannel = await self.bot.roles_channel
         except RolesChannelDoesNotExist:

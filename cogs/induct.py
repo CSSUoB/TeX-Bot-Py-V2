@@ -82,7 +82,7 @@ class InductSendMessageCog(TeXBotCog):
         else:
             rules_channel_mention = rules_channel.mention
 
-        roles_channel_mention: str = "`#roles`"
+        roles_channel_mention: str = "#roles"
         try:
             roles_channel: discord.TextChannel = await self.bot.roles_channel
         except RolesChannelDoesNotExist:
@@ -153,7 +153,8 @@ class BaseInductCog(TeXBotCog):
 
         if not silent:
             general_channel: discord.TextChannel = await self.bot.general_channel
-            roles_channel_mention: str = "`#roles`"
+            roles_channel_mention: str = "#roles"
+            committee_role_mention: str = "@Committee"
 
             try:
                 roles_channel: discord.TextChannel = await self.bot.roles_channel
@@ -161,13 +162,19 @@ class BaseInductCog(TeXBotCog):
                 pass
             else:
                 roles_channel_mention = roles_channel.mention
+            try:
+                committee_role: discord.Role = await self.bot.committee_role
+            except CommitteeRoleDoesNotExist:
+                pass
+            else:
+                committee_role_mention = committee_role.mention
 
             await general_channel.send(
                 f"""{
                     random.choice(settings["WELCOME_MESSAGES"]).replace(
                         "<User>",
                         induction_member.mention
-                    ).replace("<@Committee>", committee_role.mention).strip()
+                    ).replace("<@Committee>", committee_role_mention).strip()
                 } :tada:\nRemember to grab your roles in {roles_channel_mention}"""
                 f""" and say hello to everyone here! :wave:"""
             )
@@ -269,18 +276,20 @@ class InductCommandCog(BaseInductCog):
             return
 
         induct_user: discord.User | None = self.bot.get_user(int(str_induct_member_id))
-        try:
-            if induct_user is None:
-                raise UserNotInCSSDiscordServer
+        if induct_user:
+            try:
+                induct_member: discord.Member = await self.bot.get_css_user(induct_user)
+            except UserNotInCSSDiscordServer:
+                induct_user = None
 
-            induct_member: discord.Member = await self.bot.get_css_user(induct_user)
-        except UserNotInCSSDiscordServer:
+        if not induct_user:
             await self.send_error(
                 ctx,
                 message=f"Member with ID \"{str_induct_member_id}\" does not exist."
             )
             return
 
+        # noinspection PyUnboundLocalVariable
         await self._perform_induction(ctx, induct_member, silent=silent)
 
 
