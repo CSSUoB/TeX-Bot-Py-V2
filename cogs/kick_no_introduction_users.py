@@ -8,7 +8,7 @@ from discord.ext import tasks
 
 from cogs._utils import TeXBotCog
 from config import settings
-from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
+from exceptions import BaseDoesNotExistError
 from utils import TeXBot
 
 if TYPE_CHECKING:
@@ -43,14 +43,9 @@ class KickNoIntroductionUsersTaskCog(TeXBotCog):
         """
         try:
             guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
-        guest_role: discord.Role = await self.bot.guest_role
-        if not guest_role:
-            logging.critical(GuestRoleDoesNotExist())
+            guest_role: discord.Role = await self.bot.guest_role
+        except BaseDoesNotExistError as does_not_exist_error:
+            logging.critical(does_not_exist_error)
             await self.bot.close()
             return
 
