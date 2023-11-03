@@ -8,7 +8,7 @@ from typing import Literal
 import discord
 from discord.ext import commands
 
-from cogs._checks import Checks
+from cogs._command_checks import Checks
 from cogs._utils import TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotCog
 from config import settings
 from db.core.models import IntroductionReminderOptOutMember

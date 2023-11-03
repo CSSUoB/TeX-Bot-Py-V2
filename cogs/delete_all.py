@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 from django.db.models import Model
 
-from cogs._checks import Checks
+from cogs._command_checks import Checks
 from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from db.core.models import DiscordReminder, UoBMadeMember
 

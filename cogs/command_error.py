@@ -6,7 +6,7 @@ import logging
 import discord
 from discord.ext.commands import CheckAnyFailure
 
-from cogs._checks import Checks
+from cogs._command_checks import Checks
 from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from exceptions import (
     BaseDoesNotExistError,
