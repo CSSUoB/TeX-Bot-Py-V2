@@ -297,6 +297,8 @@ class InductUserCommandsCog(BaseInductCog):
     """Cog class that defines the context menu induction commands & their call-back methods."""
 
     @discord.user_command(name="Induct User")  # type: ignore[no-untyped-call, misc]
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
+    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
     async def non_silent_induct(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:  # noqa: E501
         """
         Definition & callback response of the "non_silent_induct" user-context-command.
@@ -308,6 +310,8 @@ class InductUserCommandsCog(BaseInductCog):
         await self._perform_induction(ctx, member, silent=False)
 
     @discord.user_command(name="Silently Induct User")  # type: ignore[no-untyped-call, misc]
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
+    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
     async def silent_induct(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:  # noqa: E501
         """
         Definition & callback response of the "silent_induct" user-context-command.
