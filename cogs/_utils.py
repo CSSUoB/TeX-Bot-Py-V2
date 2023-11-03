@@ -187,40 +187,42 @@ class TeXBotCog(Cog):
         }
 
 
-def capture_error(func: Callable[P, Coroutine[Any, Any, T]], error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> Callable[P, Coroutine[Any, Any, T | None]]:  # noqa: E501
-    @functools.wraps(func)
-    async def wrapper(self: TeXBotCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:
-        if not isinstance(self, TeXBotCog):
-            INVALID_METHOD_TYPE_MESSAGE: Final[str] = (  # type: ignore[unreachable]
-                f"Parameter {self.__name__!r} of any 'capture_error' decorator"
-                f" must be an instance of {TeXBotCog.__name__!r}/one of its subclasses."
-            )
-            raise TypeError(INVALID_METHOD_TYPE_MESSAGE)
-        try:
-            return await func(self, *args, **kwargs)  # type: ignore[arg-type]
-        except error_type as error:
-            close_func(error)
-            await self.bot.close()
-            return None
-    return wrapper  # type: ignore[return-value]
+class ErrorCaptureDecorators:
+    @staticmethod
+    def capture_error_and_close(func: Callable[P, Coroutine[Any, Any, T]], error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> Callable[P, Coroutine[Any, Any, T | None]]:  # noqa: E501
+        @functools.wraps(func)
+        async def wrapper(self: TeXBotCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:
+            if not isinstance(self, TeXBotCog):
+                INVALID_METHOD_TYPE_MESSAGE: Final[str] = (  # type: ignore[unreachable]
+                    f"Parameter {self.__name__!r} of any 'capture_error' decorator"
+                    f" must be an instance of {TeXBotCog.__name__!r}/one of its subclasses."
+                )
+                raise TypeError(INVALID_METHOD_TYPE_MESSAGE)
+            try:
+                return await func(self, *args, **kwargs)  # type: ignore[arg-type]
+            except error_type as error:
+                close_func(error)
+                await self.bot.close()
+                return None
+        return wrapper  # type: ignore[return-value]
 
+    @staticmethod
+    def critical_error_close_func(error: BaseException) -> None:
+        logging.critical(str(error).rstrip(".:"))
 
-def guild_does_not_exist_error_close_func(error: BaseException) -> None:
-    logging.critical(str(error).rstrip(".:"))
-
-
-def strike_tracking_error_close_func(error: BaseException) -> None:
-    guild_does_not_exist_error_close_func(error)
-    logging.warning("Critical errors are likely to lead to untracked moderation actions")
+    @classmethod
+    def strike_tracking_error_close_func(cls, error: BaseException) -> None:
+        cls.critical_error_close_func(error)
+        logging.warning("Critical errors are likely to lead to untracked moderation actions")
 
 
 capture_guild_does_not_exist_error: Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T | None]]] = functools.partial(  # noqa: E501
-    capture_error,  # type: ignore[arg-type]
+    ErrorCaptureDecorators.capture_error_and_close,  # type: ignore[arg-type]
     error_type=GuildDoesNotExist,
-    close_func=guild_does_not_exist_error_close_func
+    close_func=ErrorCaptureDecorators.critical_error_close_func
 )
 capture_strike_tracking_error: Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T | None]]] = functools.partial(  # noqa: E501
-    capture_error,  # type: ignore[arg-type]
+    ErrorCaptureDecorators.capture_error_and_close,  # type: ignore[arg-type]
     error_type=StrikeTrackingError,
-    close_func=strike_tracking_error_close_func
+    close_func=ErrorCaptureDecorators.strike_tracking_error_close_func
 )

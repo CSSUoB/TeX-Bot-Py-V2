@@ -9,7 +9,12 @@ import discord
 from discord.ext import commands
 
 from cogs._command_checks import Checks
-from cogs._utils import TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotCog
+from cogs._utils import (
+    TeXBotApplicationContext,
+    TeXBotAutocompleteContext,
+    TeXBotCog,
+    capture_guild_does_not_exist_error,
+)
 from config import settings
 from db.core.models import IntroductionReminderOptOutMember
 from exceptions import (
@@ -27,19 +32,15 @@ class InductSendMessageCog(TeXBotCog):
     """Cog class that defines the "/induct" command and its call-back method."""
 
     @TeXBotCog.listener()
-    async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:  # noqa: PLR0912
+    @capture_guild_does_not_exist_error
+    async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
         """
         Send a welcome message to this member's DMs & remove introduction reminder flags.
 
         These post-induction actions are only applied to users that have just been inducted as
         a guest into the CSS Discord server.
         """
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
+        guild: discord.Guild = self.bot.css_guild
 
         if before.guild != guild or after.guild != guild or before.bot or after.bot:
             return
