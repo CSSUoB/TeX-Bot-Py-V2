@@ -27,7 +27,7 @@ class InductSendMessageCog(TeXBotCog):
     """Cog class that defines the "/induct" command and its call-back method."""
 
     @TeXBotCog.listener()
-    async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
+    async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:  # noqa: PLR0912
         """
         Send a welcome message to this member's DMs & remove introduction reminder flags.
 
@@ -327,6 +327,8 @@ class EnsureMembersInductedCommandCog(TeXBotCog):
         name="ensure-members-inducted",
         description="Ensures all users with the @Member role also have the @Guest role."
     )
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
+    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
     async def ensure_members_inducted(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "ensure_members_inducted" command.
@@ -334,66 +336,16 @@ class EnsureMembersInductedCommandCog(TeXBotCog):
         The "ensure_members_inducted" command ensures that users within the CSS Discord server
         that have the "Member" role have also been given the "Guest" role.
         """
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
-        committee_role: discord.Role = await self.bot.committee_role
-        if not committee_role:
-            await self.send_error(
-                ctx,
-                error_code="E1021",
-                logging_message=CommitteeRoleDoesNotExist()
-            )
-            return
-
-        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
-        if not interaction_member:
-            await self.send_error(
-                ctx,
-                message="You must be a member of the CSS Discord server to use this command."
-            )
-            return
-
-        if committee_role not in interaction_member.roles:
-            committee_role_mention: str = "@Committee"
-            if ctx.guild:
-                committee_role_mention = committee_role.mention
-
-            await self.send_error(
-                ctx,
-                message=f"Only {committee_role_mention} members can run this command."
-            )
-            return
-
+        css_guild: discord.Guild = self.bot.css_guild
         member_role: discord.Role = await self.bot.member_role
-        if not member_role:
-            await self.send_error(
-                ctx,
-                error_code="E1023",
-                logging_message=MemberRoleDoesNotExist()
-            )
-            return
-
         guest_role: discord.Role = await self.bot.guest_role
-        if not guest_role:
-            await self.send_error(
-                ctx,
-                error_code="E1022",
-                logging_message=GuestRoleDoesNotExist()
-            )
-            return
 
         await ctx.defer(ephemeral=True)
 
         changes_made: bool = False
 
         member: discord.Member
-        for member in guild.members:
+        for member in css_guild.members:
             if guest_role in member.roles:
                 continue
 
@@ -406,7 +358,11 @@ class EnsureMembersInductedCommandCog(TeXBotCog):
                     )
                 )
 
-        if changes_made:
-            await ctx.respond("All members successfully inducted", ephemeral=True)
-        else:
-            await ctx.respond("No members required inducting", ephemeral=True)
+        await ctx.respond(
+            (
+                "All members successfully inducted"
+                if changes_made
+                else "No members required inducting"
+            ),
+            ephemeral=True
+        )
