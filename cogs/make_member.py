@@ -8,12 +8,14 @@ import aiohttp
 import bs4
 import discord
 from bs4 import BeautifulSoup
+from discord.ext import commands
 from django.core.exceptions import ValidationError
 
+from cogs._command_checks import Checks
 from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from config import settings
 from db.core.models import UoBMadeMember
-from exceptions import GuildDoesNotExist, MemberRoleDoesNotExist
+from exceptions import CommitteeRoleDoesNotExist
 
 
 class MakeMemberCommandCog(TeXBotCog):
@@ -34,6 +36,7 @@ class MakeMemberCommandCog(TeXBotCog):
         min_length=7,
         parameter_name="uob_id"
     )
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
     async def make_member(self, ctx: TeXBotApplicationContext, uob_id: str) -> None:
         """
         Definition & callback response of the "make_member" command.
@@ -41,30 +44,8 @@ class MakeMemberCommandCog(TeXBotCog):
         The "make_member" command validates that the given member has a valid CSS membership
         then gives the member the "Member" role.
         """
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
         member_role: discord.Role = await self.bot.member_role
-        if not member_role:
-            await self.send_error(
-                ctx,
-                error_code="E1023",
-                logging_message=str(MemberRoleDoesNotExist())
-            )
-            return
-
-        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
-        if not interaction_member:
-            await self.send_error(
-                ctx,
-                message="You must be a member of the CSS Discord server to use this command."
-            )
-            return
+        interaction_member: discord.Member = await ctx.bot.get_css_user(ctx.user)
 
         if member_role in interaction_member.roles:
             await ctx.respond(
@@ -89,8 +70,11 @@ class MakeMemberCommandCog(TeXBotCog):
         if uob_id_already_used:
             committee_mention: str = "committee"
 
-            committee_role: discord.Role = await self.bot.committee_role
-            if committee_role:
+            try:
+                committee_role: discord.Role = await self.bot.committee_role
+            except CommitteeRoleDoesNotExist:
+                pass
+            else:
                 committee_mention = committee_role.mention
 
             await ctx.respond(
@@ -167,13 +151,28 @@ class MakeMemberCommandCog(TeXBotCog):
             )
             return
 
-        await ctx.respond("Successfully made you a member!", ephemeral=True)
-
         # NOTE: The "Member" role must be added to the user **before** the "Guest" role to ensure that the welcome message does not include the suggestion to purchase membership
         await interaction_member.add_roles(
             member_role,
             reason="TeX Bot slash-command: \"/makemember\""
         )
+
+        try:
+            await UoBMadeMember.objects.acreate(uob_id=uob_id)
+        except ValidationError as create_uob_made_member_error:
+            error_is_already_exists: bool = (
+                "hashed_uob_id" in create_uob_made_member_error.message_dict
+                and any(
+                    "already exists"
+                    in error
+                    for error
+                    in create_uob_made_member_error.message_dict["hashed_uob_id"]
+                )
+            )
+            if not error_is_already_exists:
+                raise
+
+        await ctx.respond("Successfully made you a member!", ephemeral=True)
 
         guest_role: discord.Role = await self.bot.guest_role
         if not guest_role:
@@ -197,18 +196,3 @@ class MakeMemberCommandCog(TeXBotCog):
                 applicant_role,
                 reason="TeX Bot slash-command: \"/makemember\""
             )
-
-        try:
-            await UoBMadeMember.objects.acreate(uob_id=uob_id)
-        except ValidationError as create_uob_made_member_error:
-            error_is_already_exists: bool = (
-                "hashed_uob_id" in create_uob_made_member_error.message_dict
-                and any(
-                    "already exists"
-                    in error
-                    for error
-                    in create_uob_made_member_error.message_dict["hashed_uob_id"]
-                )
-            )
-            if not error_is_already_exists:
-                raise

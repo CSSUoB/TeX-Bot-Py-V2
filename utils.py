@@ -217,6 +217,8 @@ if __name__ != "__main__":
 
             This shortcut accessor provides a consistent way of accessing the CSS server object
             without having to repeatedly search for it, in the bot's list of guilds, by its ID.
+
+            Raises `GuildDoesNotExist` if the given ID does not link to a Discord server.
             """
             if not self._css_guild or not self._bot_has_guild(settings["DISCORD_GUILD_ID"]):
                 raise GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"])
@@ -230,6 +232,8 @@ if __name__ != "__main__":
 
             The committee role is the role held by elected members of the CSS committee.
             Many commands are limited to use by only committee members.
+
+            Raises `CommitteeRoleDoesNotExist` if the role does not exist.
             """
             if not self._committee_role or not self._guild_has_role(self._committee_role):
                 self._committee_role = discord.utils.get(
@@ -251,6 +255,8 @@ if __name__ != "__main__":
             main channels of the CSS Discord server.
             It is given to members only after they have sent a message with a short
             introduction about themselves.
+
+            Raises `GuestRoleDoesNotExist` if the role does not exist.
             """
             if not self._guest_role or not self._guild_has_role(self._guest_role):
                 self._guest_role = discord.utils.get(
@@ -272,6 +278,8 @@ if __name__ != "__main__":
             verified a purchased membership to CSS.
             It provides bragging rights to other server members by showing the member's name in
             green!
+
+            Raises `MemberRoleDoesNotExist` if the role does not exist.
             """
             if not self._member_role or not self._guild_has_role(self._member_role):
                 self._member_role = discord.utils.get(self.css_guild.roles, name="Member")
@@ -292,6 +300,8 @@ if __name__ != "__main__":
 
             The archivist role is the one that allows members to see channels & categories
             that are no longer in use, which are hidden to all other members.
+
+            Raises `ArchivistRoleDoesNotExist` if the role does not exist.
             """
             if not self._archivist_role or not self._guild_has_role(self._archivist_role):
                 self._archivist_role = discord.utils.get(
@@ -311,6 +321,8 @@ if __name__ != "__main__":
 
             The roles text channel is the one that contains the message declaring all the
             available opt-in roles to members.
+
+            Raises `RolesChannelDoesNotExist` if the channel does not exist.
             """
             if not self._roles_channel or not self._guild_has_channel(self._roles_channel):
                 self._roles_channel = await self._fetch_text_channel("roles")
@@ -322,7 +334,11 @@ if __name__ != "__main__":
 
         @property
         async def general_channel(self) -> discord.TextChannel:
-            """Shortcut accessor to the general text channel."""
+            """
+            Shortcut accessor to the general text channel.
+
+            Raises `GeneralChannelDoesNotExist` if the channel does not exist.
+            """
             if not self._general_channel or not self._guild_has_channel(self._general_channel):
                 self._general_channel = await self._fetch_text_channel("general")
 
@@ -336,7 +352,9 @@ if __name__ != "__main__":
             """
             Shortcut accessor to the rules text channel.
 
-            The welcome text channel is the one that contains the welcome message & rules.
+            The rules text channel is the one that contains the welcome message & rules.
+
+            Raises `RulesChannelDoesNotExist` if the channel does not exist.
             """
             if not self._rules_channel or not self._guild_has_channel(self._rules_channel):
                 self._rules_channel = (
@@ -374,14 +392,23 @@ if __name__ != "__main__":
             return text_channel
 
         async def get_css_user(self, user: discord.Member | discord.User) -> discord.Member:
-            """Util method to retrieve a member of the CSS Discord server by their ID."""
+            """
+            Util method to retrieve a member of the CSS Discord server by their ID.
+
+            Raises `UserNotInCSSDiscordServer` if the user is not in the CSS Discord server.
+            """
             css_user: discord.Member | None = self.css_guild.get_member(user.id)
             if not css_user:
                 raise UserNotInCSSDiscordServer(user_id=user.id)
             return css_user
 
         async def get_everyone_role(self) -> discord.Role:
-            """Util method to retrieve the "@everyone" role from the CSS Discord server."""
+            """
+            Util method to retrieve the "@everyone" role from the CSS Discord server.
+
+            Raises `EveryoneRoleCouldNotBeRetrieved` if the @everyone role
+            could not be retrieved.
+            """
             everyone_role: discord.Role | None = discord.utils.get(
                 self.css_guild.roles,
                 name="@everyone"
