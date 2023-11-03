@@ -1,6 +1,6 @@
 """Contains cog classes for any induction interactions."""
 
-import logging
+import contextlib
 import random
 import re
 from typing import Literal
@@ -74,30 +74,19 @@ class InductSendMessageCog(TeXBotCog):
                     reason="Delete introduction reminders after member is inducted."
                 )
 
+        # noinspection PyUnusedLocal
         rules_channel_mention: str = "`#welcome`"
-        try:
-            rules_channel: discord.TextChannel = await self.bot.rules_channel
-        except RulesChannelDoesNotExist:
-            pass
-        else:
-            rules_channel_mention = rules_channel.mention
+        with contextlib.suppress(RulesChannelDoesNotExist):
+            rules_channel_mention = (await self.bot.rules_channel).mention
 
+        # noinspection PyUnusedLocal
         roles_channel_mention: str = "#roles"
-        try:
-            roles_channel: discord.TextChannel = await self.bot.roles_channel
-        except RolesChannelDoesNotExist:
-            pass
-        else:
-            roles_channel_mention = roles_channel.mention
+        with contextlib.suppress(RolesChannelDoesNotExist):
+            roles_channel_mention = (await self.bot.roles_channel).mention
 
         user_type: Literal["guest", "member"] = "guest"
-
-        try:
-            member_role: discord.Role = await self.bot.member_role
-        except MemberRoleDoesNotExist:
-            pass
-        else:
-            if member_role in after.roles:
+        with contextlib.suppress(MemberRoleDoesNotExist):
+            if await self.bot.member_role in after.roles:
                 user_type = "member"
 
         await after.send(
@@ -153,21 +142,16 @@ class BaseInductCog(TeXBotCog):
 
         if not silent:
             general_channel: discord.TextChannel = await self.bot.general_channel
-            roles_channel_mention: str = "#roles"
-            committee_role_mention: str = "@Committee"
 
-            try:
-                roles_channel: discord.TextChannel = await self.bot.roles_channel
-            except RolesChannelDoesNotExist:
-                pass
-            else:
-                roles_channel_mention = roles_channel.mention
-            try:
-                committee_role: discord.Role = await self.bot.committee_role
-            except CommitteeRoleDoesNotExist:
-                pass
-            else:
-                committee_role_mention = committee_role.mention
+            # noinspection PyUnusedLocal
+            roles_channel_mention: str = "#roles"
+            with contextlib.suppress(RolesChannelDoesNotExist):
+                roles_channel_mention = (await self.bot.roles_channel).mention
+
+            # noinspection PyUnusedLocal
+            committee_role_mention: str = "@Committee"
+            with contextlib.suppress(CommitteeRoleDoesNotExist):
+                committee_role_mention = (await self.bot.committee_role).mention
 
             await general_channel.send(
                 f"""{

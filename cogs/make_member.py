@@ -1,5 +1,6 @@
 """Contains cog classes for any make_member interactions."""
 
+import contextlib
 import logging
 import re
 from typing import Final
@@ -15,7 +16,7 @@ from cogs._command_checks import Checks
 from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from config import settings
 from db.core.models import UoBMadeMember
-from exceptions import CommitteeRoleDoesNotExist
+from exceptions import CommitteeRoleDoesNotExist, GuestRoleDoesNotExist
 
 
 class MakeMemberCommandCog(TeXBotCog):
@@ -68,14 +69,10 @@ class MakeMemberCommandCog(TeXBotCog):
             hashed_uob_id=UoBMadeMember.hash_uob_id(uob_id)
         ).aexists()
         if uob_id_already_used:
+            # noinspection PyUnusedLocal
             committee_mention: str = "committee"
-
-            try:
-                committee_role: discord.Role = await self.bot.committee_role
-            except CommitteeRoleDoesNotExist:
-                pass
-            else:
-                committee_mention = committee_role.mention
+            with contextlib.suppress(CommitteeRoleDoesNotExist):
+                committee_mention = (await self.bot.roles_channel).mention
 
             await ctx.respond(
                 (

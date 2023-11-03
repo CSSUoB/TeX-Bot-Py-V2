@@ -64,7 +64,7 @@ class CommandErrorCog(TeXBotCog):
                     in (
                         error.original.ERROR_CODE,
                         f"({command_name})" if command_name in self.ERROR_ACTIVITIES else "",
-                        str(error.original)
+                        str(error.original).rstrip(".:")
                     )
                     if message_part
                 )
