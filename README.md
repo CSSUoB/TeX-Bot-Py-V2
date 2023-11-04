@@ -23,7 +23,7 @@ Users of the bot may encounter error codes when attempting to execute slash-comm
 Ensure that you have [Poetry](https://python-poetry.org/) installed, then navigate to the root folder and run the following command:
 
 ```shell
-poetry install
+poetry install --no-root
 ```
 
 ## Setup
