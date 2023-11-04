@@ -28,14 +28,14 @@ class WriteRolesCommandCog(TeXBotCog):
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
+            await self.command_send_error(ctx, error_code="E1011")
             logging.critical(guild_error)
             await self.bot.close()
             return
 
         committee_role: discord.Role = await self.bot.committee_role
         if not committee_role:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 error_code="E1021",
                 logging_message=str(CommitteeRoleDoesNotExist())
@@ -44,7 +44,7 @@ class WriteRolesCommandCog(TeXBotCog):
 
         roles_channel: discord.TextChannel | None = await self.bot.roles_channel
         if not roles_channel:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 error_code="E1031",
                 logging_message=str(RolesChannelDoesNotExist())
@@ -53,7 +53,7 @@ class WriteRolesCommandCog(TeXBotCog):
 
         interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
         if not interaction_member:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message="You must be a member of the CSS Discord server to use this command."
             )
@@ -64,7 +64,7 @@ class WriteRolesCommandCog(TeXBotCog):
             if ctx.guild:
                 committee_role_mention = committee_role.mention
 
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"Only {committee_role_mention} members can run this command."
             )

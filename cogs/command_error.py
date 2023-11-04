@@ -43,7 +43,7 @@ class CommandErrorCog(TeXBotCog):
                     committee_role_mention = (await self.bot.committee_role).mention
                 message = f"Only {committee_role_mention} members can run this command."
 
-        await self.send_error(
+        await self.command_send_error(
             ctx,
             error_code=error_code,
             message=message,

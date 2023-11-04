@@ -47,7 +47,7 @@ class StatsCommandsCog(TeXBotCog):
 
         if str_channel_id:
             if not re.match(r"\A\d{17,20}\Z", str_channel_id):
-                await self.send_error(
+                await self.command_send_error(
                     ctx,
                     message=f"\"{str_channel_id}\" is not a valid channel ID."
                 )
@@ -58,7 +58,7 @@ class StatsCommandsCog(TeXBotCog):
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
+            await self.command_send_error(ctx, error_code="E1011")
             logging.critical(guild_error)
             await self.bot.close()
             return
@@ -68,7 +68,7 @@ class StatsCommandsCog(TeXBotCog):
             id=channel_id
         )
         if not channel:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"Text channel with ID \"{channel_id}\" does not exist."
             )
@@ -115,7 +115,7 @@ class StatsCommandsCog(TeXBotCog):
                     message_counts[f"@{author_role_name}"] += 1
 
         if math.ceil(max(message_counts.values()) / 15) < 1:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message="There are not enough messages sent in this channel."
             )
@@ -164,14 +164,14 @@ class StatsCommandsCog(TeXBotCog):
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
+            await self.command_send_error(ctx, error_code="E1011")
             logging.critical(guild_error)
             await self.bot.close()
             return
 
         guest_role: discord.Role = await self.bot.guest_role
         if not guest_role:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 error_code="E1022",
                 logging_message=GuestRoleDoesNotExist()
@@ -239,7 +239,7 @@ class StatsCommandsCog(TeXBotCog):
             max(message_counts["channels"].values()) / 15
         ) < 1
         if too_few_roles_stats or too_few_channels_stats:
-            await self.send_error(ctx, message="There are not enough messages sent.")
+            await self.command_send_error(ctx, message="There are not enough messages sent.")
             return
 
         await ctx.respond(":point_down:Your stats graph is shown below:point_down:")
@@ -305,14 +305,14 @@ class StatsCommandsCog(TeXBotCog):
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
+            await self.command_send_error(ctx, error_code="E1011")
             logging.critical(guild_error)
             await self.bot.close()
             return
 
         interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
         if not interaction_member:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message="You must be a member of the CSS Discord server to use this command."
             )
@@ -320,7 +320,7 @@ class StatsCommandsCog(TeXBotCog):
 
         guest_role: discord.Role = await self.bot.guest_role
         if not guest_role:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 error_code="E1022",
                 logging_message=GuestRoleDoesNotExist()
@@ -328,7 +328,7 @@ class StatsCommandsCog(TeXBotCog):
             return
 
         if guest_role not in interaction_member.roles:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=(
                     "You must be inducted as guest member of the CSS Discord server"
@@ -363,7 +363,7 @@ class StatsCommandsCog(TeXBotCog):
                     message_counts["Total"] += 1
 
         if math.ceil(max(message_counts.values()) / 15) < 1:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message="You have not sent enough messages."
             )
@@ -408,7 +408,7 @@ class StatsCommandsCog(TeXBotCog):
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
+            await self.command_send_error(ctx, error_code="E1011")
             logging.critical(guild_error)
             await self.bot.close()
             return
@@ -440,7 +440,7 @@ class StatsCommandsCog(TeXBotCog):
                 left_member_counts[left_member_role] += 1
 
         if math.ceil(max(left_member_counts.values()) / 15) < 1:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message="Not enough data about members that have left the server."
             )

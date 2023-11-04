@@ -135,7 +135,7 @@ class BaseInductCog(TeXBotCog):
             return
 
         if induction_member.bot:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message="Member cannot be inducted because they are a bot."
             )
@@ -254,7 +254,7 @@ class InductCommandCog(BaseInductCog):
         str_induct_member_id = str_induct_member_id.replace("<@", "").replace(">", "")
 
         if not re.match(r"\A\d{17,20}\Z", str_induct_member_id):
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"\"{str_induct_member_id}\" is not a valid user ID."
             )
@@ -268,7 +268,7 @@ class InductCommandCog(BaseInductCog):
                 induct_user = None
 
         if not induct_user:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"Member with ID \"{str_induct_member_id}\" does not exist."
             )

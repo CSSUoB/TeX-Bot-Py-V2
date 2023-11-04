@@ -59,7 +59,7 @@ class MakeMemberCommandCog(TeXBotCog):
             return
 
         if not re.match(r"\A\d{7}\Z", uob_id):
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"\"{uob_id}\" is not a valid UoB Student ID."
             )
@@ -127,7 +127,7 @@ class MakeMemberCommandCog(TeXBotCog):
         guild_member_ids.discard(" ")
 
         if not guild_member_ids:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 error_code="E1041",
                 logging_message=OSError(
@@ -138,7 +138,7 @@ class MakeMemberCommandCog(TeXBotCog):
             return
 
         if uob_id not in guild_member_ids:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=(
                     "You must be a member of The Computer Science Society to use this command."

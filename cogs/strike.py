@@ -322,7 +322,7 @@ class BaseStrikeCog(TeXBotCog):
         """
         committee_role: discord.Role | None = await self.bot.committee_role
         if not committee_role:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 error_code="E1021",
                 logging_message=CommitteeRoleDoesNotExist()
@@ -331,7 +331,7 @@ class BaseStrikeCog(TeXBotCog):
 
         interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
         if not interaction_member:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message="You must be a member of the CSS Discord server to use this command."
             )
@@ -342,14 +342,14 @@ class BaseStrikeCog(TeXBotCog):
             if ctx.guild:
                 committee_role_mention = committee_role.mention
 
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"Only {committee_role_mention} members can run this command."
             )
             return
 
         if strike_member.bot:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message="Member cannot be given an additional strike because they are a bot."
             )
@@ -684,7 +684,7 @@ class StrikeCommandCog(BaseStrikeCog):
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
+            await self.command_send_error(ctx, error_code="E1011")
             logging.critical(guild_error)
             await self.bot.close()
             return
@@ -692,7 +692,7 @@ class StrikeCommandCog(BaseStrikeCog):
         str_strike_member_id = str_strike_member_id.replace("<@", "").replace(">", "")
 
         if not re.match(r"\A\d{17,20}\Z", str_strike_member_id):
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"\"{str_strike_member_id}\" is not a valid user ID."
             )
@@ -702,7 +702,7 @@ class StrikeCommandCog(BaseStrikeCog):
 
         strike_member: discord.Member | None = guild.get_member(strike_member_id)
         if not strike_member:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"Member with ID \"{strike_member_id}\" does not exist."
             )
@@ -720,7 +720,7 @@ class StrikeUserCommandCog(BaseStrikeCog):
         try:
             guild: discord.Guild = self.bot.css_guild
         except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
+            await self.command_send_error(ctx, error_code="E1011")
             logging.critical(guild_error)
             await self.bot.close()
             raise

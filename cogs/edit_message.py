@@ -75,7 +75,7 @@ class EditMessageCommandCog(TeXBotCog):
         css_guild: discord.Guild = self.bot.css_guild
 
         if not re.match(r"\A\d{17,20}\Z", str_channel_id):
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"\"{str_channel_id}\" is not a valid channel ID."
             )
@@ -84,7 +84,7 @@ class EditMessageCommandCog(TeXBotCog):
         channel_id: int = int(str_channel_id)
 
         if not re.match(r"\A\d{17,20}\Z", str_message_id):
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"\"{str_message_id}\" is not a valid message ID."
             )
@@ -97,7 +97,7 @@ class EditMessageCommandCog(TeXBotCog):
             id=channel_id
         )
         if not channel:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"Text channel with ID \"{channel_id}\" does not exist."
             )
@@ -106,7 +106,7 @@ class EditMessageCommandCog(TeXBotCog):
         try:
             message: discord.Message = await channel.fetch_message(message_id)
         except discord.NotFound:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"Message with ID \"{message_id}\" does not exist."
             )
@@ -115,7 +115,7 @@ class EditMessageCommandCog(TeXBotCog):
         try:
             await message.edit(content=new_message_content)
         except discord.Forbidden:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=(
                     f"Message with ID \"{message_id}\" cannot be edited because it belongs to"

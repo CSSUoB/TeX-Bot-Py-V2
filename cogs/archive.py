@@ -71,7 +71,7 @@ class ArchiveCommandCog(TeXBotCog):
         everyone_role: discord.Role = await self.bot.get_everyone_role()
 
         if not re.match(r"\A\d{17,20}\Z", str_category_id):
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"\"{str_category_id}\" is not a valid category ID."
             )
@@ -84,7 +84,7 @@ class ArchiveCommandCog(TeXBotCog):
             id=category_id
         )
         if not category:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"Category with ID \"{category_id}\" does not exist."
             )
@@ -172,7 +172,7 @@ class ArchiveCommandCog(TeXBotCog):
                     )
 
                 else:
-                    await self.send_error(
+                    await self.command_send_error(
                         ctx,
                         message=f"Channel {channel.mention} had invalid permissions"
                     )
@@ -183,7 +183,7 @@ class ArchiveCommandCog(TeXBotCog):
                     return
 
             except discord.Forbidden:
-                await self.send_error(
+                await self.command_send_error(
                     ctx,
                     message=(
                         "Bot does not have access to the channels in the selected category."
