@@ -216,6 +216,7 @@ class ErrorCaptureDecorators:
         logging.warning("Critical errors are likely to lead to untracked moderation actions")
 
 
+# TODO: define as new functions rather than partials, for easier typing
 capture_guild_does_not_exist_error: Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T | None]]] = functools.partial(  # noqa: E501
     ErrorCaptureDecorators.capture_error_and_close,  # type: ignore[arg-type]
     error_type=GuildDoesNotExist,

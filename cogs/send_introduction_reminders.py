@@ -1,6 +1,7 @@
 """Contains cog classes for any send_introduction_reminders interactions."""
 
 import datetime
+import functools
 import logging
 
 import discord
@@ -10,13 +11,13 @@ from discord.ext import tasks
 from discord.ui import View
 from django.core.exceptions import ValidationError
 
-from cogs._utils import TeXBotCog
+from cogs._utils import ErrorCaptureDecorators, TeXBotCog, capture_guild_does_not_exist_error
 from config import settings
 from db.core.models import (
     IntroductionReminderOptOutMember,
     SentOneOffIntroductionReminderMember,
 )
-from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
+from exceptions import GuestRoleDoesNotExist, UserNotInCSSDiscordServer
 from utils import TeXBot
 
 
@@ -49,6 +50,12 @@ class SendIntroductionRemindersTaskCog(TeXBotCog):
         )
 
     @tasks.loop(**settings["INTRODUCTION_REMINDER_INTERVAL"])
+    @functools.partial(
+        ErrorCaptureDecorators.capture_error_and_close,  # type: ignore[arg-type]
+        error_type=GuestRoleDoesNotExist,
+        close_func=ErrorCaptureDecorators.critical_error_close_func
+    )
+    @capture_guild_does_not_exist_error
     async def send_introduction_reminders(self) -> None:
         """
         Recurring task to send an introduction reminder message to Discord members' DMs.
@@ -59,18 +66,8 @@ class SendIntroductionRemindersTaskCog(TeXBotCog):
         See README.md for the full list of conditions for when these
         reminders are sent.
         """
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
+        guild: discord.Guild = self.bot.css_guild
         guest_role: discord.Role = await self.bot.guest_role
-        if not guest_role:
-            logging.critical(GuestRoleDoesNotExist())
-            await self.bot.close()
-            return
 
         member: discord.Member
         for member in guild.members:
@@ -172,13 +169,6 @@ class SendIntroductionRemindersTaskCog(TeXBotCog):
             This function is attached as a button's callback, so will run whenever the button
             is pressed.
             """
-            try:
-                guild: discord.Guild = self.bot.css_guild
-            except GuildDoesNotExist as guild_error:
-                logging.critical(guild_error)
-                await self.bot.close()
-                return
-
             if not interaction.user:
                 await interaction.response.send_message(
                     (
@@ -189,7 +179,12 @@ class SendIntroductionRemindersTaskCog(TeXBotCog):
                 )
                 return
 
-            interaction_member: discord.Member | None = guild.get_member(interaction.user.id)
+            try:
+                interaction_member: discord.Member = await self.bot.get_css_user(
+                    interaction.user
+                )
+            except UserNotInCSSDiscordServer:
+                raise NotImplementedError from None
 
             button_will_make_opt_out: bool = (
                     button.style == discord.ButtonStyle.red

@@ -171,18 +171,20 @@ class MakeMemberCommandCog(TeXBotCog):
 
         await ctx.respond("Successfully made you a member!", ephemeral=True)
 
-        guest_role: discord.Role = await self.bot.guest_role
-        if not guest_role:
+        try:
+            guest_role: discord.Role = await self.bot.guest_role
+        except GuestRoleDoesNotExist:
             logging.warning(
                 "\"/makemember\" command used but the \"Guest\" role does not exist."
                 " Some user's may now have the \"Member\" role without the \"Guest\" role."
                 " Use the \"/ensure-members-inducted\" command to fix this issue."
             )
-        elif guest_role not in interaction_member.roles:
-            await interaction_member.add_roles(
-                guest_role,
-                reason="TeX Bot slash-command: \"/makemember\""
-            )
+        else:
+            if guest_role not in interaction_member.roles:
+                await interaction_member.add_roles(
+                    guest_role,
+                    reason="TeX Bot slash-command: \"/makemember\""
+                )
 
         applicant_role: discord.Role | None = discord.utils.get(
             self.bot.css_guild.roles,

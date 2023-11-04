@@ -1,6 +1,8 @@
 """Contains cog classes for any send_get_roles_reminders interactions."""
 
+import contextlib
 import datetime
+import functools
 import logging
 from typing import Final
 
@@ -8,10 +10,10 @@ import discord
 from discord import AuditLogAction
 from discord.ext import tasks
 
-from cogs._utils import TeXBotCog
+from cogs._utils import ErrorCaptureDecorators, TeXBotCog, capture_guild_does_not_exist_error
 from config import settings
 from db.core.models import SentGetRolesReminderMember
-from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist, RolesChannelDoesNotExist
+from exceptions import GuestRoleDoesNotExist, RolesChannelDoesNotExist
 from utils import TeXBot
 
 
@@ -34,6 +36,12 @@ class SendGetRolesRemindersTaskCog(TeXBotCog):
         self.send_get_roles_reminders.cancel()
 
     @tasks.loop(**settings["GET_ROLES_REMINDER_INTERVAL"])
+    @functools.partial(
+        ErrorCaptureDecorators.capture_error_and_close,  # type: ignore[arg-type]
+        error_type=GuestRoleDoesNotExist,
+        close_func=ErrorCaptureDecorators.critical_error_close_func
+    )
+    @capture_guild_does_not_exist_error
     async def send_get_roles_reminders(self) -> None:
         """
         Recurring task to send an opt-in roles reminder message to Discord members' DMs.
@@ -44,26 +52,13 @@ class SendGetRolesRemindersTaskCog(TeXBotCog):
         See README.md for the full list of conditions for when these
         reminders are sent.
         """
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
+        guild: discord.Guild = self.bot.css_guild
         guest_role: discord.Role = await self.bot.guest_role
-        if not guest_role:
-            logging.critical(GuestRoleDoesNotExist())
-            await self.bot.close()
-            return
 
+        # noinspection PyUnusedLocal
         roles_channel_mention: str = "#roles"
-        try:
-            roles_channel: discord.TextChannel = await self.bot.roles_channel
-        except RolesChannelDoesNotExist:
-            pass
-        else:
-            roles_channel_mention = roles_channel.mention
+        with contextlib.suppress(RolesChannelDoesNotExist):
+            roles_channel_mention = (await self.bot.roles_channel).mention
 
         # noinspection SpellCheckingInspection
         OPT_IN_ROLE_NAMES: Final[frozenset[str]] = frozenset(
