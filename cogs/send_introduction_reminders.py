@@ -154,6 +154,16 @@ class SendIntroductionRemindersTaskCog(TeXBotCog):
 
             super().__init__(timeout=None)
 
+        async def send_error(self, interaction: discord.Interaction, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
+            await TeXBotCog.send_error(
+                self.bot,
+                interaction,
+                interaction_name="opt_out_introduction_reminders",
+                error_code=error_code,
+                message=message,
+                logging_message=logging_message
+            )
+
         @ui.button(
             label="Opt-out of introduction reminders",
             custom_id="opt_out_introduction_reminders_button",
@@ -170,12 +180,13 @@ class SendIntroductionRemindersTaskCog(TeXBotCog):
             is pressed.
             """
             if not interaction.user:
-                await interaction.response.send_message(
-                    (
-                        ":warning:There was an error when trying to opt-in/out of"
-                        " introduction reminders.:warning:"
-                    ),
-                    ephemeral=True
+                await self.send_error(
+                    interaction,
+                    error_code="E1043",
+                    logging_message=(
+                        "Button callback \"opt_out_introduction_reminders_button_callback\""
+                        " did not contain the related user"
+                    )
                 )
                 return
 
