@@ -186,8 +186,9 @@ class BaseInductCog(TeXBotCog):
                 f"""{
                     random.choice(settings["WELCOME_MESSAGES"]).replace(
                         "<User>",
-                        induction_member.mention).strip()
-                    } :tada:\nRemember to grab your roles in {roles_channel_mention}"""
+                        induction_member.mention
+                    ).replace("<@Committee>", committee_role.mention).strip()
+                } :tada:\nRemember to grab your roles in {roles_channel_mention}"""
                 f""" and say hello to everyone here! :wave:"""
             )
 
