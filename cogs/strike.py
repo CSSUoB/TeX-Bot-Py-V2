@@ -6,7 +6,7 @@ import functools
 import logging
 import re
 from collections.abc import Awaitable, Callable, Mapping
-from typing import TYPE_CHECKING, Any, Final
+from typing import Any, Final
 
 import discord
 from discord.ui import View
@@ -20,9 +20,6 @@ from cogs._utils import (
 from config import settings
 from db.core.models import MemberStrikes
 from exceptions import CommitteeRoleDoesNotExist, GuildDoesNotExist, StrikeTrackingError
-
-if TYPE_CHECKING:
-    from collections.abc import Mapping
 
 
 async def perform_moderation_action(strike_user: discord.Member, strikes: int, committee_member: discord.Member | discord.User) -> None:  # noqa: E501
