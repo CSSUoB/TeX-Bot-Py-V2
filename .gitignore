@@ -40,3 +40,4 @@ __pycache__
 # Local files
 local/
 *.sqlite3
+*.db
