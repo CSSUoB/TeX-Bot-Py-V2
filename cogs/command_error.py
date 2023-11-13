@@ -29,7 +29,7 @@ class CommandErrorCog(TeXBotCog):
             message = None
             error_code = error.original.ERROR_CODE
             logging_message = (
-                None if isinstance(error.original, GuildDoesNotExist) else error.original
+                None if isinstance(error.original, GuildDoesNotExist) else error.original  # type: ignore[unreachable]
             )
 
         elif isinstance(error, CheckAnyFailure):

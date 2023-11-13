@@ -202,7 +202,7 @@ if TYPE_CHECKING:
 
 class ErrorCaptureDecorators:
     @staticmethod
-    def capture_error_and_close(func: DecoratorInputFunc[P, T], error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> WrapperOutputFunc[P, T]:  # noqa: E501
+    def capture_error_and_close(func: "DecoratorInputFunc[P, T]", error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> "WrapperOutputFunc[P, T]":  # noqa: E501
         @functools.wraps(func)
         async def wrapper(self: TeXBotCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:
             if not isinstance(self, TeXBotCog):

@@ -271,7 +271,7 @@ class DiscordReminder(HashedDiscordMember):
         constructed_message += "!"
 
         if self.message:
-            constructed_message = f"""**{constructed_message}**\n{self.message}"""
+            constructed_message = f"**{constructed_message}**\n{self.message}"
 
         return constructed_message
 
