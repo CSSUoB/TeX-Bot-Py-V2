@@ -36,7 +36,7 @@ class KickNoIntroductionUsersTaskCog(TeXBotCog):
 
     @tasks.loop(hours=24)
     @functools.partial(
-        ErrorCaptureDecorators.capture_error_and_close,  # type: ignore[arg-type]
+        ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExist,
         close_func=ErrorCaptureDecorators.critical_error_close_func
     )

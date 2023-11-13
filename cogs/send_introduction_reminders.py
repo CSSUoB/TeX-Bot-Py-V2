@@ -51,7 +51,7 @@ class SendIntroductionRemindersTaskCog(TeXBotCog):
 
     @tasks.loop(**settings["INTRODUCTION_REMINDER_INTERVAL"])
     @functools.partial(
-        ErrorCaptureDecorators.capture_error_and_close,  # type: ignore[arg-type]
+        ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExist,
         close_func=ErrorCaptureDecorators.critical_error_close_func
     )

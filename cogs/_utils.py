@@ -186,14 +186,23 @@ if TYPE_CHECKING:
     from typing import TypeAlias
 
     MentionableMember: TypeAlias = discord.Member | discord.Role
-    WrapperInputFunc: TypeAlias = Callable[Concatenate[TeXBotCog, P] | P, Coroutine[Any, Any, T]]  # type: ignore[valid-type,misc]
-    WrapperOutputFunc: TypeAlias = Callable[Concatenate[TeXBotCog, P] | P, Coroutine[Any, Any, T | None]]  # type: ignore[valid-type,misc]
-    DecoratorInputFunc: TypeAlias = Callable[Concatenate[TeXBotCog, P], Coroutine[Any, Any, T]]
+    WrapperInputFunc: TypeAlias = Callable[  # type: ignore[valid-type, misc]
+        Concatenate[TeXBotCog, P] | P,
+        Coroutine[Any, Any, T]
+    ]
+    WrapperOutputFunc: TypeAlias = Callable[  # type: ignore[valid-type, misc]
+        Concatenate[TeXBotCog, P] | P,
+        Coroutine[Any, Any, T | None]
+    ]
+    DecoratorInputFunc: TypeAlias = Callable[
+        Concatenate[TeXBotCog, P],
+        Coroutine[Any, Any, T]
+    ]
 
 
 class ErrorCaptureDecorators:
     @staticmethod
-    def capture_error_and_close(func: Callable[P, Coroutine[Any, Any, T]], error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> Callable[P, Coroutine[Any, Any, T | None]]:  # noqa: E501
+    def capture_error_and_close(func: DecoratorInputFunc[P, T], error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> WrapperOutputFunc[P, T]:  # noqa: E501
         @functools.wraps(func)
         async def wrapper(self: TeXBotCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:
             if not isinstance(self, TeXBotCog):
@@ -203,12 +212,12 @@ class ErrorCaptureDecorators:
                 )
                 raise TypeError(INVALID_METHOD_TYPE_MESSAGE)
             try:
-                return await func(self, *args, **kwargs)  # type: ignore[arg-type]
+                return await func(self, *args, **kwargs)
             except error_type as error:
                 close_func(error)
                 await self.bot.close()
                 return None
-        return wrapper  # type: ignore[return-value]
+        return wrapper
 
     @staticmethod
     def critical_error_close_func(error: BaseException) -> None:
@@ -220,14 +229,17 @@ class ErrorCaptureDecorators:
         logging.warning("Critical errors are likely to lead to untracked moderation actions")
 
 
-# TODO: define as new functions rather than partials, for easier typing
-capture_guild_does_not_exist_error: Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T | None]]] = functools.partial(  # noqa: E501
-    ErrorCaptureDecorators.capture_error_and_close,  # type: ignore[arg-type]
-    error_type=GuildDoesNotExist,
-    close_func=ErrorCaptureDecorators.critical_error_close_func
-)
-capture_strike_tracking_error: Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T | None]]] = functools.partial(  # noqa: E501
-    ErrorCaptureDecorators.capture_error_and_close,  # type: ignore[arg-type]
-    error_type=StrikeTrackingError,
-    close_func=ErrorCaptureDecorators.strike_tracking_error_close_func
-)
+def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T]") -> "WrapperOutputFunc[P, T]":  # noqa: E501
+    return ErrorCaptureDecorators.capture_error_and_close(
+        func,
+        error_type=GuildDoesNotExist,
+        close_func=ErrorCaptureDecorators.critical_error_close_func
+    )
+
+
+def capture_strike_tracking_error(func: "WrapperInputFunc[P, T]") -> "WrapperOutputFunc[P, T]":
+    return ErrorCaptureDecorators.capture_error_and_close(
+        func,
+        error_type=StrikeTrackingError,
+        close_func=ErrorCaptureDecorators.strike_tracking_error_close_func
+    )
