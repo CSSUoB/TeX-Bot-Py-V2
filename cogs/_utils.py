@@ -5,7 +5,7 @@ import functools
 import logging
 import re
 from collections.abc import Callable, Coroutine, Mapping
-from typing import TYPE_CHECKING, Any, Final, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, Any, Concatenate, Final, ParamSpec, TypeVar
 
 import discord
 from discord import Cog
@@ -18,11 +18,6 @@ from exceptions import (
     UserNotInCSSDiscordServer,
 )
 from utils import TeXBot
-
-if TYPE_CHECKING:
-    from typing import TypeAlias
-
-    MentionableMember: TypeAlias = discord.Member | discord.Role
 
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -185,6 +180,15 @@ class TeXBotCog(Cog):
                 discord.Permissions(send_messages=True, view_channel=True)
             )
         }
+
+
+if TYPE_CHECKING:
+    from typing import TypeAlias
+
+    MentionableMember: TypeAlias = discord.Member | discord.Role
+    WrapperInputFunc: TypeAlias = Callable[Concatenate[TeXBotCog, P] | P, Coroutine[Any, Any, T]]  # type: ignore[valid-type,misc]
+    WrapperOutputFunc: TypeAlias = Callable[Concatenate[TeXBotCog, P] | P, Coroutine[Any, Any, T | None]]  # type: ignore[valid-type,misc]
+    DecoratorInputFunc: TypeAlias = Callable[Concatenate[TeXBotCog, P], Coroutine[Any, Any, T]]
 
 
 class ErrorCaptureDecorators:
