@@ -77,8 +77,8 @@ class TeXBotCog(Cog):
                 committee_mention = committee_role.mention
 
             construct_error_message = (
-                f"**Contact a {committee_mention} member, referencing error code:"
-                f" {error_code}**\n"
+                f"**Contact a {committee_mention} member, referencing error code: "
+                f"{error_code}**\n"
                 + construct_error_message
             )
 
@@ -108,7 +108,9 @@ class TeXBotCog(Cog):
 
         if message:
             message = re.sub(
-                r"<([@&#]?|(@[&#])?)\d+>", lambda match: f"`{match.group(0)}`", message.strip()
+                r"<([@&#]?|(@[&#])?)\d+>",
+                lambda match: f"`{match.group(0)}`",
+                message.strip()
             )
             construct_error_message += f"\n`{message}`"
 
@@ -168,8 +170,8 @@ def capture_error(func: Callable[P, Coroutine[Any, Any, T]], error_type: type[Ba
     async def wrapper(self: TeXBotCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:
         if not isinstance(self, TeXBotCog):
             INVALID_METHOD_TYPE_MESSAGE: Final[str] = (  # type: ignore[unreachable]
-                f"Parameter {self.__name__!r} of any 'capture_error' decorator"
-                f" must be an instance of {TeXBotCog.__name__!r}/one of its subclasses."
+                f"Parameter {self.__name__!r} of any 'capture_error' decorator "
+                f"must be an instance of {TeXBotCog.__name__!r}/one of its subclasses."
             )
             raise TypeError(INVALID_METHOD_TYPE_MESSAGE)
         try:

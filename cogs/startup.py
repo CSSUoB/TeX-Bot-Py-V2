@@ -48,8 +48,8 @@ class StartupCog(TeXBotCog):
 
         else:
             logging.warning(
-                "DISCORD_LOG_CHANNEL_WEBHOOK_URL was not set,"
-                " so error logs will not be sent to the Discord log channel."
+                "DISCORD_LOG_CHANNEL_WEBHOOK_URL was not set, "
+                "so error logs will not be sent to the Discord log channel."
             )
 
         guild: discord.Guild | None = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
@@ -87,8 +87,8 @@ class StartupCog(TeXBotCog):
             if not manual_moderation_warning_message_location_exists:
                 logging.critical(
                     (
-                        "The channel %s does not exist, so cannot be used as the location"
-                        " for sending manual-moderation warning messages"
+                        "The channel %s does not exist, so cannot be used as the location "
+                        "for sending manual-moderation warning messages"
                     ),
                     repr(settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"])
                 )
@@ -99,10 +99,10 @@ class StartupCog(TeXBotCog):
                 if manual_moderation_warning_message_location_similar_to_dm:
                     logging.info(
                         (
-                            "If you meant to set the location"
-                            " for sending manual-moderation warning messages to be"
-                            " the DMs of the committee member that applied"
-                            " the manual moderation action, use the value of %s"
+                            "If you meant to set the location "
+                            "for sending manual-moderation warning messages to be "
+                            "the DMs of the committee member that applied "
+                            "the manual moderation action, use the value of %s"
                         ),
                         repr("DM")
                     )

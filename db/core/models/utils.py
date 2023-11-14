@@ -68,8 +68,8 @@ class AsyncBaseModel(models.Model):
 
         if unexpected_kwargs:
             UNEXPECTED_KWARGS_MESSAGE: Final[str] = (
-                f"{self._meta.model.__name__} got unexpected keyword arguments:"
-                f" {tuple(unexpected_kwargs)}"
+                f"{self._meta.model.__name__} got unexpected keyword arguments: "
+                f"{tuple(unexpected_kwargs)}"
             )
             raise TypeError(UNEXPECTED_KWARGS_MESSAGE)
 
@@ -166,8 +166,8 @@ class HashedDiscordMember(AsyncBaseModel):
 
         if not isinstance(member_id, str | int) or not is_valid_member_id(member_id):
             INVALID_MEMBER_ID_MESSAGE: Final[str] = (
-                f"\"{member_id}\" is not a valid Discord member ID"
-                " (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
+                f"\"{member_id}\" is not a valid Discord member ID "
+                "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
             )
             raise ValueError(INVALID_MEMBER_ID_MESSAGE)
 

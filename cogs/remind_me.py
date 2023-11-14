@@ -324,9 +324,9 @@ class ClearRemindersBacklogTaskCog(TeXBotCog):
                     return
 
                 await channel.send(
-                    "**Sorry it's a bit late!"
-                    " (I'm just catching up with some reminders I missed!)**"
-                    f"\n\n{reminder.get_formatted_message(user_mention)}"
+                    "**Sorry it's a bit late! "
+                    "(I'm just catching up with some reminders I missed!)**\n\n"
+                    f"{reminder.get_formatted_message(user_mention)}"
                 )
 
                 await reminder.adelete()

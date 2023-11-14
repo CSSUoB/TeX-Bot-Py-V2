@@ -167,8 +167,8 @@ class ArchiveCommandCog(TeXBotCog):
         if "archive" in category.name:
             await ctx.respond(
                 (
-                    ":information_source: No changes made. Category has already been archived."
-                    " :information_source:"
+                    ":information_source: No changes made. "
+                    "Category has already been archived. :information_source:"
                 ),
                 ephemeral=True
             )
@@ -265,8 +265,8 @@ class ArchiveCommandCog(TeXBotCog):
                 )
                 logging.error(
                     (
-                        "Bot did not have access to the channels in the selected category:"
-                        " %s."
+                        "Bot did not have access to the channels in the selected category: "
+                        "%s."
                     ),
                     category.name
                 )

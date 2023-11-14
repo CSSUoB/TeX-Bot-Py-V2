@@ -132,8 +132,8 @@ class EditMessageCommandCog(TeXBotCog):
             await self.send_error(
                 ctx,
                 message=(
-                    f"Message with ID \"{message_id}\" cannot be edited because it belongs to"
-                    " another user."
+                    f"Message with ID \"{message_id}\" cannot be edited because it belongs to "
+                    "another user."
                 )
             )
             return
