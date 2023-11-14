@@ -46,8 +46,8 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
         """Format a string, stating that the given Discord entity does not exist."""
         if not dependant_commands and not dependant_tasks and not dependant_events:
             EMPTY_ARGS_MESSAGE: Final[str] = (
-                "The arguments \"dependant_commands\" & \"dependant_tasks\""
-                " cannot all be empty."
+                "The arguments \"dependant_commands\" & \"dependant_tasks\" "
+                "cannot all be empty."
             )
             raise ValueError(EMPTY_ARGS_MESSAGE)
 
@@ -75,8 +75,8 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
             value = f"#{value}"
 
         partial_message: str = (
-            f"\"{value}\" {does_not_exist_type} must exist"
-            f" in order to use the {formatted_dependant_commands}"
+            f"\"{value}\" {does_not_exist_type} must exist "
+            f"in order to use the {formatted_dependant_commands}"
         )
 
         if dependant_tasks:
@@ -209,7 +209,8 @@ class GuildDoesNotExist(BaseDoesNotExistError):
     """Exception class to raise when a required Discord guild is missing."""
 
     DEFAULT_MESSAGE: str = (
-        "Server with given ID does not exist or is not accessible to the bot."
+        "Server with given ID does not exist "
+        "or is not accessible to the bot."
     )
     ERROR_CODE: str = "E1011"
 
@@ -219,8 +220,8 @@ class GuildDoesNotExist(BaseDoesNotExistError):
 
         if guild_id and not message:
             message = (
-                f"Server with ID \"{self.guild_id}\" does not exist"
-                " or is not accessible to the bot."
+                f"Server with ID \"{self.guild_id}\" does not exist "
+                "or is not accessible to the bot."
             )
 
         super().__init__(message)

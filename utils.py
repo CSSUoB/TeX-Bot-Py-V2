@@ -459,9 +459,9 @@ if __name__ == "__main__":
     generate_invite_url_arg_parser.add_argument(
         "discord_guild_id",
         nargs="?",
-        help="The value of the environment variable DISCORD_GUILD_ID is used"
-             " if this argument is omitted. Must be a valid Discord guild ID"
-             " (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
+        help="The value of the environment variable DISCORD_GUILD_ID is used "
+             "if this argument is omitted. Must be a valid Discord guild ID "
+             "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
     )
 
     parsed_args: Namespace = arg_parser.parse_args()
@@ -481,9 +481,9 @@ if __name__ == "__main__":
 
             if not discord_guild_id:
                 generate_invite_url_arg_parser.error(
-                    "discord_guild_id must be provided as an argument"
-                    " to the generate_invite_url utility function"
-                    " or otherwise set the DISCORD_GUILD_ID environment variable"
+                    "discord_guild_id must be provided as an argument "
+                    "to the generate_invite_url utility function "
+                    "or otherwise set the DISCORD_GUILD_ID environment variable"
                 )
 
         if not re.match(r"\A\d{17,20}\Z", discord_guild_id):

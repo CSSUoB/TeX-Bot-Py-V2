@@ -51,8 +51,8 @@ class MakeMemberCommandCog(TeXBotCog):
         if member_role in interaction_member.roles:
             await ctx.respond(
                 (
-                    ":information_source: No changes made. You're already a member"
-                    " - why are you trying this again? :information_source:"
+                    ":information_source: No changes made. You're already a member "
+                    "- why are you trying this again? :information_source:"
                 ),
                 ephemeral=True
             )
@@ -76,9 +76,9 @@ class MakeMemberCommandCog(TeXBotCog):
 
             await ctx.respond(
                 (
-                    ":information_source: No changes made. This student ID has already"
-                    f" been used. Please contact a {committee_mention} member if this is"
-                    " an error. :information_source:"
+                    ":information_source: No changes made. This student ID has already "
+                    f"been used. Please contact a {committee_mention} member if this is "
+                    "an error. :information_source:"
                 ),
                 ephemeral=True
             )
@@ -131,8 +131,8 @@ class MakeMemberCommandCog(TeXBotCog):
                 ctx,
                 error_code="E1041",
                 logging_message=OSError(
-                    "The guild member IDs could not be retrieved from"
-                    " the MEMBERS_PAGE_URL."
+                    "The guild member IDs could not be retrieved from "
+                    "the MEMBERS_PAGE_URL."
                 )
             )
             return
@@ -141,9 +141,10 @@ class MakeMemberCommandCog(TeXBotCog):
             await self.send_error(
                 ctx,
                 message=(
-                    "You must be a member of The Computer Science Society to use this command."
-                    "\nThe provided student ID must match the UoB student ID"
-                    " that you purchased your CSS membership with."
+                    "You must be a member of The Computer Science Society "
+                    "to use this command.\n"
+                    "The provided student ID must match the UoB student ID "
+                    "that you purchased your CSS membership with."
                 )
             )
             return
@@ -175,9 +176,9 @@ class MakeMemberCommandCog(TeXBotCog):
             guest_role: discord.Role = await self.bot.guest_role
         except GuestRoleDoesNotExist:
             logging.warning(
-                "\"/makemember\" command used but the \"Guest\" role does not exist."
-                " Some user's may now have the \"Member\" role without the \"Guest\" role."
-                " Use the \"/ensure-members-inducted\" command to fix this issue."
+                "\"/makemember\" command used but the \"Guest\" role does not exist. "
+                "Some user's may now have the \"Member\" role without the \"Guest\" role. "
+                "Use the \"/ensure-members-inducted\" command to fix this issue."
             )
         else:
             if guest_role not in interaction_member.roles:

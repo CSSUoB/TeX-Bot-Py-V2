@@ -91,24 +91,24 @@ class InductSendMessageCog(TeXBotCog):
                 user_type = "member"
 
         await after.send(
-            f"**Congrats on joining the CSS Discord server as a {user_type}!**"
-            " You now have access to contribute to all the public channels."
-            "\n\nSome things to do to get started:"
-            f"\n1. Check out our rules in {rules_channel_mention}"
-            f"\n2. Head to {roles_channel_mention} and click on the icons to get"
-            " optional roles like pronouns and year groups"
-            "\n3. Change your nickname to whatever you wish others to refer to you as"
-            " (You can do this by right-clicking your name in the members list"
-            " to the right & selecting \"Edit Server Profile\")"
+            f"**Congrats on joining the CSS Discord server as a {user_type}!** "
+            "You now have access to contribute to all the public channels.\n\n"
+            "Some things to do to get started:\n"
+            f"1. Check out our rules in {rules_channel_mention}\n"
+            f"2. Head to {roles_channel_mention} and click on the icons to get "
+            "optional roles like pronouns and year groups\n"
+            "3. Change your nickname to whatever you wish others to refer to you as "
+            "(You can do this by right-clicking your name in the members list "
+            "to the right & selecting \"Edit Server Profile\")."
         )
         if user_type != "member":
             await after.send(
-                "You can also get yourself an annual membership to CSS for only £5!"
-                " Just head to https://cssbham.com/join."
-                " You'll get awesome perks like a free T-shirt:shirt:,"
-                " access to member only events:calendar_spiral:"
-                " & a cool green name on the CSS Discord server:green_square:!"
-                " Checkout all the perks at https://cssbham.com/membership."
+                "You can also get yourself an annual membership to CSS for only £5! "
+                "Just head to https://cssbham.com/join. "
+                "You'll get awesome perks like a free T-shirt:shirt:, "
+                "access to member only events:calendar_spiral: "
+                "& a cool green name on the CSS Discord server:green_square:! "
+                "Checkout all the perks at https://cssbham.com/membership."
             )
 
 
@@ -127,8 +127,8 @@ class BaseInductCog(TeXBotCog):
         if guest_role in induction_member.roles:
             await ctx.respond(
                 (
-                    ":information_source: No changes made. User has already been inducted."
-                    " :information_source:"
+                    ":information_source: No changes made. User has already been inducted. "
+                    ":information_source:"
                 ),
                 ephemeral=True
             )
