@@ -80,9 +80,9 @@ class SendIntroductionRemindersTaskCog(TeXBotCog):
             if not member.joined_at:
                 logging.error(
                     (
-                        "Member with ID: %s could not be checked whether to send"
-                        " introduction_reminder, because their \"joined_at\" attribute"
-                        " was None."
+                        "Member with ID: %s could not be checked whether to send "
+                        "introduction_reminder, because their \"joined_at\" attribute "
+                        "was None."
                     ),
                     member.id
                 )
@@ -126,10 +126,10 @@ class SendIntroductionRemindersTaskCog(TeXBotCog):
 
                 await member.send(
                     content=(
-                        "Hey! It seems like you joined the CSS Discord server"
-                        " but have not yet introduced yourself.\nYou will only get access"
-                        " to the rest of the server after sending"
-                        " an introduction message."
+                        "Hey! It seems like you joined the CSS Discord server "
+                        "but have not yet introduced yourself.\nYou will only get access "
+                        "to the rest of the server after sending "
+                        "an introduction message."
                     ),
                     view=(
                         self.OptOutIntroductionRemindersView(self.bot)
@@ -182,8 +182,8 @@ class SendIntroductionRemindersTaskCog(TeXBotCog):
             if not interaction.user:
                 await interaction.response.send_message(
                     (
-                        ":warning:There was an error when trying to opt-in/out of"
-                        " introduction reminders.:warning:"
+                        ":warning:There was an error when trying to opt-in/out of "
+                        "introduction reminders.:warning:"
                     ),
                     ephemeral=True
                 )
@@ -208,9 +208,9 @@ class SendIntroductionRemindersTaskCog(TeXBotCog):
                 if not interaction_member:
                     await interaction.response.send_message(
                         (
-                            ":warning:There was an error when trying to opt-out of"
-                            " introduction reminders.:warning:\n`You must be a member of"
-                            " the CSS Discord server to opt-out of introduction reminders.`"
+                            ":warning:There was an error when trying to opt-out of "
+                            "introduction reminders.:warning:\n`You must be a member of "
+                            "the CSS Discord server to opt-out of introduction reminders.`"
                         ),
                         ephemeral=True
                     )
@@ -246,10 +246,10 @@ class SendIntroductionRemindersTaskCog(TeXBotCog):
                 if not interaction_member:
                     await interaction.response.send_message(
                         (
-                            ":warning:There was an error when trying to opt back in"
-                            " to introduction reminders.:warning:\n`You must be a member of"
-                            " the CSS Discord server to opt back in to"
-                            " introduction reminders.`"
+                            ":warning:There was an error when trying to opt back in "
+                            "to introduction reminders.:warning:\n`You must be a member of "
+                            "the CSS Discord server to opt back in to "
+                            "introduction reminders.`"
                         ),
                         ephemeral=True
                     )

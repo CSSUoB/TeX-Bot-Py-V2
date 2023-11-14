@@ -45,12 +45,12 @@ class SentOneOffIntroductionReminderMember(HashedDiscordMember):
         """Metadata options about this model."""
 
         verbose_name = (
-            "Hashed Discord ID of Member that has had a one-off Introduction reminder"
-            " sent to their DMs"
+            "Hashed Discord ID of Member that has had a one-off Introduction reminder "
+            "sent to their DMs"
         )
         verbose_name_plural = (
-            "Hashed Discord IDs of Members that have had a one-off Introduction reminder"
-            " sent to their DMs"
+            "Hashed Discord IDs of Members that have had a one-off Introduction reminder "
+            "sent to their DMs"
         )
 
 
@@ -70,12 +70,12 @@ class SentGetRolesReminderMember(HashedDiscordMember):
         """Metadata options about this model."""
 
         verbose_name = (
-            "Hashed Discord ID of Member that has had a \"Get Roles\" reminder"
-            " sent to their DMs"
+            "Hashed Discord ID of Member that has had a \"Get Roles\" reminder "
+            "sent to their DMs"
         )
         verbose_name_plural = (
-            "Hashed Discord IDs of Members that have had a \"Get Roles\" reminder"
-            " sent to their DMs"
+            "Hashed Discord IDs of Members that have had a \"Get Roles\" reminder "
+            "sent to their DMs"
         )
 
 
@@ -243,8 +243,8 @@ class DiscordReminder(HashedDiscordMember):
     def __repr__(self) -> str:
         """Generate a developer-focused representation of this DiscordReminder's attributes."""
         return (
-            f"<{self._meta.verbose_name}: \"{self.hashed_member_id}\","
-            f" \"{self.channel_id}\", \"{self.send_datetime}\">"
+            f"<{self._meta.verbose_name}: \"{self.hashed_member_id}\", "
+            f"\"{self.channel_id}\", \"{self.send_datetime}\">"
         )
 
     def __str__(self) -> str:
@@ -367,10 +367,10 @@ class MemberStrikes(HashedDiscordMember):
         """Metadata options about this model."""
 
         verbose_name = (
-            "Hashed Discord ID of Member that has been previously given one or more strikes"
-            " because they broke one or more of the CSS Discord server rules"
+            "Hashed Discord ID of Member that has been previously given one or more strikes "
+            "because they broke one or more of the CSS Discord server rules"
         )
         verbose_name_plural = (
-            "Hashed Discord IDs of Members that have been previously given one or more"
-            " strikes because they broke one or more of the CSS Discord server rules"
+            "Hashed Discord IDs of Members that have been previously given one or more "
+            "strikes because they broke one or more of the CSS Discord server rules"
         )
