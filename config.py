@@ -131,8 +131,8 @@ class Settings:
             )
             if not discord_bot_token_is_valid:
                 INVALID_BOT_TOKEN_MESSAGE: Final[str] = (
-                    "DISCORD_BOT_TOKEN must be a valid Discord bot token"
-                    " (see https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)."
+                    "DISCORD_BOT_TOKEN must be a valid Discord bot token "
+                    "(see https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)."
                 )
                 raise ImproperlyConfigured(INVALID_BOT_TOKEN_MESSAGE)
             self._settings["DISCORD_BOT_TOKEN"] = discord_bot_token
@@ -140,8 +140,8 @@ class Settings:
             discord_guild_id: str = os.getenv("DISCORD_GUILD_ID", "")
             if not discord_guild_id or not re.match(r"\A\d{17,20}\Z", discord_guild_id):
                 INVALID_GUILD_ID_MESSAGE: Final[str] = (
-                    "DISCORD_GUILD_ID must be a valid Discord guild ID"
-                    " (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)."
+                    "DISCORD_GUILD_ID must be a valid Discord guild ID "
+                    "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)."
                 )
                 raise ImproperlyConfigured(INVALID_GUILD_ID_MESSAGE)
             self._settings["DISCORD_GUILD_ID"] = int(discord_guild_id)
@@ -161,8 +161,8 @@ class Settings:
             )
             if discord_log_channel_webhook_url_not_valid:
                 INVALID_WEBHOOK_URL_MESSAGE: Final[str] = (
-                    "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL"
-                    " that points to a discord channel where logs should be displayed."
+                    "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL "
+                    "that points to a discord channel where logs should be displayed."
                 )
                 raise ImproperlyConfigured(INVALID_WEBHOOK_URL_MESSAGE)
 
@@ -179,8 +179,8 @@ class Settings:
                 ) from ping_command_easter_egg_probability_error
             if not 100 >= self._settings["PING_COMMAND_EASTER_EGG_PROBABILITY"] >= 0:
                 PROBABILITY_IS_NOT_IN_RANGE_MESSAGE: Final[str] = (
-                    "PING_COMMAND_EASTER_EGG_PROBABILITY must be a value"
-                    " between & including 1 & 0."
+                    "PING_COMMAND_EASTER_EGG_PROBABILITY must be a value "
+                    "between & including 1 & 0."
                 )
                 raise ImproperlyConfigured(PROBABILITY_IS_NOT_IN_RANGE_MESSAGE)
 
@@ -201,8 +201,8 @@ class Settings:
                     messages_dict: dict[Any, Any] = json.load(messages_file)
                 except json.JSONDecodeError as messages_file_error:
                     JSON_DECODING_ERROR_MESSAGE: Final[str] = (
-                        "Messages JSON file must contain a JSON string that can be decoded"
-                        " into a Python dict object."
+                        "Messages JSON file must contain a JSON string that can be decoded "
+                        "into a Python dict object."
                     )
                     raise ImproperlyConfigured(
                         JSON_DECODING_ERROR_MESSAGE
@@ -266,8 +266,8 @@ class Settings:
             ).lower()
             if send_introduction_reminders not in VALID_SEND_INTRODUCTION_REMINDERS_VALUES:
                 INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE: Final[str] = (
-                    "SEND_INTRODUCTION_REMINDERS must be one of:"
-                    " \"Once\", \"Interval\" or \"False\"."
+                    "SEND_INTRODUCTION_REMINDERS must be one of: "
+                    "\"Once\", \"Interval\" or \"False\"."
                 )
                 raise ImproperlyConfigured(INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE)
             if send_introduction_reminders in ("once", "interval"):
@@ -285,8 +285,8 @@ class Settings:
             if self._settings["SEND_INTRODUCTION_REMINDERS"]:
                 if not introduction_reminder_interval:
                     INVALID_INTRODUCTION_REMINDER_INTERVAL_MESSAGE: Final[str] = (
-                        "INTRODUCTION_REMINDER_INTERVAL must contain the interval"
-                        " in any combination of seconds, minutes or hours."
+                        "INTRODUCTION_REMINDER_INTERVAL must contain the interval "
+                        "in any combination of seconds, minutes or hours."
                     )
                     raise ImproperlyConfigured(INVALID_INTRODUCTION_REMINDER_INTERVAL_MESSAGE)
                 self._settings["INTRODUCTION_REMINDER_INTERVAL"] = {
@@ -316,8 +316,8 @@ class Settings:
             if self._settings["KICK_NO_INTRODUCTION_MEMBERS"]:
                 if not kick_no_introduction_members_delay:
                     INVALID_KICK_NO_INTRODUCTION_MEMBERS_DELAY_MESSAGE: Final[str] = (
-                        "KICK_NO_INTRODUCTION_MEMBERS_DELAY must contain the delay"
-                        " in any combination of seconds, minutes, hours, days or weeks."
+                        "KICK_NO_INTRODUCTION_MEMBERS_DELAY must contain the delay "
+                        "in any combination of seconds, minutes, hours, days or weeks."
                     )
                     raise ImproperlyConfigured(
                         INVALID_KICK_NO_INTRODUCTION_MEMBERS_DELAY_MESSAGE
@@ -358,8 +358,8 @@ class Settings:
             if self._settings["SEND_GET_ROLES_REMINDERS"]:
                 if not get_roles_reminder_interval:
                     INVALID_GET_ROLES_REMINDER_INTERVAL_MESSAGE: Final[str] = (
-                        "GET_ROLES_REMINDER_INTERVAL must contain the interval"
-                        " in any combination of seconds, minutes or hours."
+                        "GET_ROLES_REMINDER_INTERVAL must contain the interval "
+                        "in any combination of seconds, minutes or hours."
                     )
                     raise ImproperlyConfigured(INVALID_GET_ROLES_REMINDER_INTERVAL_MESSAGE)
                 self._settings["GET_ROLES_REMINDER_INTERVAL"] = {
@@ -397,6 +397,29 @@ class Settings:
                 level=getattr(logging, console_log_level),
                 format="%(levelname)s: %(message)s"
             )
+
+            self._settings["MODERATION_DOCUMENT_URL"] = os.getenv(
+                "MODERATION_DOCUMENT_URL", ""
+            )
+            moderation_document_url_is_valid: bool = (
+                self._settings["MODERATION_DOCUMENT_URL"]
+                and validators.url(self._settings["MODERATION_DOCUMENT_URL"])
+            )
+            if not moderation_document_url_is_valid:
+                MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
+                    "MODERATION_DOCUMENT_URL must be a valid URL."
+                )
+                raise ImproperlyConfigured(MODERATION_DOCUMENT_URL_MESSAGE)
+
+            self._settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] = os.getenv(
+                "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION", "DM"
+            )
+            if not self._settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"]:
+                MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE: Final[str] = (
+                    "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE must be a valid name "
+                    "of a channel in the CSS Discord server."
+                )
+                raise ImproperlyConfigured(MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE)
 
             self._is_env_variables_setup = True
 

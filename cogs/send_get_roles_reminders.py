@@ -73,6 +73,7 @@ class SendGetRolesRemindersTaskCog(TeXBotCog):
                 "First Year",
                 "Second Year",
                 "Final Year",
+                "Joint Honours"
                 "Year In Industry",
                 "Year Abroad",
                 "PGT",
@@ -131,9 +132,9 @@ class SendGetRolesRemindersTaskCog(TeXBotCog):
             except StopIteration:
                 logging.error(
                     (
-                        "Member with ID: %s could not be checked whether to send"
-                        " role_reminder, because their \"guest_role_received_time\""
-                        " could not be found."
+                        "Member with ID: %s could not be checked whether to send "
+                        "role_reminder, because their \"guest_role_received_time\" "
+                        "could not be found."
                     ),
                     member.id
                 )
@@ -146,11 +147,11 @@ class SendGetRolesRemindersTaskCog(TeXBotCog):
                 continue
 
             await member.send(
-                "Hey! It seems like you joined the CSS Discord server and have been"
-                " given the `@Guest` role but have not yet nabbed yourself any"
-                f" opt-in roles.\nYou can head to {roles_channel_mention}"
-                " and click on the icons to get optional roles like pronouns"
-                " and year group identifiers"
+                "Hey! It seems like you joined the CSS Discord server and have been "
+                "given the `@Guest` role but have not yet nabbed yourself any "
+                f"opt-in roles.\nYou can head to {roles_channel_mention} "
+                "and click on the icons to get optional roles like pronouns "
+                "and year group identifiers."
             )
 
             await SentGetRolesReminderMember.objects.acreate(

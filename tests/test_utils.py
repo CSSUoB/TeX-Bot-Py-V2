@@ -138,8 +138,8 @@ class BaseTestArgumentParser:
         """
         if not re.match(r"\A[a-zA-Z0-9._\-+!\"' ]*\Z", util_function_name):
             INVALID_FUNCTION_NAME_MESSAGE: Final[str] = (
-                "util_function_name must be a valid function name for"
-                " the utils.py command-line program."
+                "util_function_name must be a valid function name for "
+                "the utils.py command-line program."
             )
             raise TypeError(INVALID_FUNCTION_NAME_MESSAGE)
 
@@ -309,12 +309,12 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
     def test_error_when_no_discord_bot_application_id(cls) -> None:
         """Test for the correct error when no discord_bot_application_id is provided."""
         EXPECTED_USAGE_MESSAGE: Final[str] = (
-            "usage: utils.py generate_invite_url [-h]"
-            " discord_bot_application_id [discord_guild_id]"
+            "usage: utils.py generate_invite_url [-h] "
+            "discord_bot_application_id [discord_guild_id]"
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py generate_invite_url: error: the following arguments are required:"
-            " discord_bot_application_id"
+            "utils.py generate_invite_url: error: the following arguments are required: "
+            "discord_bot_application_id"
         )
         cls.execute_util_function(util_function_name="generate_invite_url")
 
@@ -327,13 +327,13 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
     def test_error_when_invalid_discord_bot_application_id(cls) -> None:
         """Test for the correct error with an invalid discord_bot_application_id."""
         EXPECTED_USAGE_MESSAGE: Final[str] = (
-            "usage: utils.py generate_invite_url [-h]"
-            " discord_bot_application_id [discord_guild_id]"
+            "usage: utils.py generate_invite_url [-h] "
+            "discord_bot_application_id [discord_guild_id]"
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py generate_invite_url: error: discord_bot_application_id must be"
-            " a valid Discord application ID"
-            " (see https://support-dev.discord.com/hc/en-gb/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)"
+            "utils.py generate_invite_url: error: discord_bot_application_id must be "
+            "a valid Discord application ID "
+            "(see https://support-dev.discord.com/hc/en-gb/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)"
         )
 
         cls.execute_util_function(
@@ -352,13 +352,13 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
     def test_error_when_no_discord_guild_id(cls) -> None:
         """Test for the correct error when no discord_guild_id is provided."""
         EXPECTED_USAGE_MESSAGE: Final[str] = (
-            "usage: utils.py generate_invite_url [-h]"
-            " discord_bot_application_id [discord_guild_id]"
+            "usage: utils.py generate_invite_url [-h] "
+            "discord_bot_application_id [discord_guild_id]"
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py generate_invite_url: error: discord_guild_id must be provided as an"
-            " argument to the generate_invite_url utility function or otherwise set"
-            " the DISCORD_GUILD_ID environment variable"
+            "utils.py generate_invite_url: error: discord_guild_id must be provided as an "
+            "argument to the generate_invite_url utility function or otherwise set "
+            "the DISCORD_GUILD_ID environment variable"
         )
 
         cls.execute_util_function(
@@ -377,12 +377,12 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
     def test_error_when_invalid_discord_guild_id(cls) -> None:
         """Test for the correct error when an invalid discord_guild_id is provided."""
         EXPECTED_USAGE_MESSAGE: Final[str] = (
-            "usage: utils.py generate_invite_url [-h]"
-            " discord_bot_application_id [discord_guild_id]"
+            "usage: utils.py generate_invite_url [-h] "
+            "discord_bot_application_id [discord_guild_id]"
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py generate_invite_url: error: discord_guild_id must be"
-            " a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
+            "utils.py generate_invite_url: error: discord_guild_id must be "
+            "a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
         )
 
         cls.execute_util_function(
@@ -407,8 +407,8 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
             random.randint(10000000000000000, 99999999999999999999)
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py: error:"
-            f" unrecognized arguments: {EXTRA_ARGUMENT}"
+            "utils.py: error: "
+            f"unrecognized arguments: {EXTRA_ARGUMENT}"
         )
 
         cls.execute_util_function(
