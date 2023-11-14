@@ -73,6 +73,7 @@ class SendGetRolesRemindersTaskCog(TeXBotCog):
                 "First Year",
                 "Second Year",
                 "Final Year",
+                "Joint Honours"
                 "Year In Industry",
                 "Year Abroad",
                 "PGT",
