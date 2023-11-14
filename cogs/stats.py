@@ -139,13 +139,13 @@ class StatsCommandsCog(TeXBotCog):
                 title=f"Most Active Roles in #{channel.name}",
                 filename=f"{channel.name}_channel_stats.png",
                 description=(
-                    "Bar chart of the number of messages"
-                    f" sent by different roles in {channel.mention}."
+                    "Bar chart of the number of messages "
+                    f"sent by different roles in {channel.mention}."
                 ),
                 extra_text=(
-                    "Messages sent by members with multiple roles are counted once"
-                    " for each role"
-                    " (except for @Member vs @Guest & @Committee vs @Committee-Elect)"
+                    "Messages sent by members with multiple roles are counted once "
+                    "for each role "
+                    "(except for @Member vs @Guest & @Committee vs @Committee-Elect)"
                 )
             )
         )
@@ -261,13 +261,13 @@ class StatsCommandsCog(TeXBotCog):
                     title="Most Active Roles in the CSS Discord Server",
                     filename="roles_server_stats.png",
                     description=(
-                        "Bar chart of the number of messages sent by different roles"
-                        " in the CSS Discord server."
+                        "Bar chart of the number of messages sent by different roles "
+                        "in the CSS Discord server."
                     ),
                     extra_text=(
-                        "Messages sent by members with multiple roles are counted once"
-                        " for each role"
-                        " (except for @Member vs @Guest & @Committee vs @Committee-Elect)"
+                        "Messages sent by members with multiple roles are counted once "
+                        "for each role "
+                        "(except for @Member vs @Guest & @Committee vs @Committee-Elect)"
                     )
                 ),
                 utils.plot_bar_chart(
@@ -284,8 +284,8 @@ class StatsCommandsCog(TeXBotCog):
                     title="Most Active Channels in the CSS Discord Server",
                     filename="channels_server_stats.png",
                     description=(
-                        "Bar chart of the number of messages sent in different text channels"
-                        " in the CSS Discord server."
+                        "Bar chart of the number of messages sent in different text channels "
+                        "in the CSS Discord server."
                     )
                 ),
             ]
@@ -331,8 +331,8 @@ class StatsCommandsCog(TeXBotCog):
             await self.send_error(
                 ctx,
                 message=(
-                    "You must be inducted as guest member of the CSS Discord server"
-                    " to use this command."
+                    "You must be inducted as guest member of the CSS Discord server "
+                    "to use this command."
                 )
             )
             return
@@ -387,8 +387,8 @@ class StatsCommandsCog(TeXBotCog):
                 title="Your Most Active Channels in the CSS Discord Server",
                 filename=f"{ctx.user}_stats.png",
                 description=(
-                    f"Bar chart of the number of messages sent by {ctx.user}"
-                    " in different channels in the CSS Discord server."
+                    f"Bar chart of the number of messages sent by {ctx.user} "
+                    "in different channels in the CSS Discord server."
                 )
             )
         )
@@ -459,13 +459,13 @@ class StatsCommandsCog(TeXBotCog):
                 ),
                 filename="left_members_stats.png",
                 description=(
-                    "Bar chart of the number of members with different roles"
-                    " that have left the CSS Discord server."
+                    "Bar chart of the number of members with different roles "
+                    "that have left the CSS Discord server."
                 ),
                 extra_text=(
-                    "Members that left with multiple roles"
-                    " are counted once for each role"
-                    " (except for @Member vs @Guest & @Committee vs @Committee-Elect)"
+                    "Members that left with multiple roles "
+                    "are counted once for each role "
+                    "(except for @Member vs @Guest & @Committee vs @Committee-Elect)"
                 )
             )
         )

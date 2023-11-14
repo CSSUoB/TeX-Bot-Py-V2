@@ -62,8 +62,8 @@ class KickNoIntroductionUsersTaskCog(TeXBotCog):
             if not member.joined_at:
                 logging.error(
                     (
-                        "Member with ID: %s could not be checked whether to kick,"
-                        " because their \"joined_at\" attribute was None."
+                        "Member with ID: %s could not be checked whether to kick, "
+                        "because their \"joined_at\" attribute was None."
                     ),
                     member.id
                 )
@@ -78,8 +78,8 @@ class KickNoIntroductionUsersTaskCog(TeXBotCog):
                 try:
                     await member.kick(
                         reason=(
-                            "Member was in server without introduction sent"
-                            f" for longer than {kick_no_introduction_members_delay}"
+                            "Member was in server without introduction sent "
+                            f"for longer than {kick_no_introduction_members_delay}"
                         )
                     )
                 except discord.Forbidden as kick_error:
