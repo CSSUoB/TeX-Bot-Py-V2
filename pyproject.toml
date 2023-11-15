@@ -43,6 +43,7 @@ django-stubs = {extras = ["compatible-mypy"], version = "4.2.4"}
 pytest = "^7.4"
 pytest-subtests = "^0.11"
 ruff = "^0.0"
+pymarkdownlnt = "^0.9"
 
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]
