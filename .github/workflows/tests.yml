@@ -142,3 +142,18 @@ jobs:
 
       - name: Run poetry check
         run: poetry check --no-interaction --lock && poetry check --no-interaction
+
+  json-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Run JSON Checker
+        run: IFS=$'\n' && set -f && for f in $(find . -name '*.json'); do if [ -z "$(git check-ignore $f)" ]; then python3 -mjson.tool "$f" > /dev/null || echo "INVALID $f" >&2; fi; done; unset IFS && set +f
