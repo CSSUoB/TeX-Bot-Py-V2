@@ -88,7 +88,7 @@ After you have found an issue which needs solving, it's time to start working on
 
 ### Code Style
 
-In general, follow the formatting in the file you are editing. You should also install the development dependencies [ruff](https://ruff.rs) code linting and [mypy](https://www.mypy-lang.org/) type checking which you can configure your IDE to use.
+In general, follow the formatting in the file you are editing. You should also run the development tools [ruff](https://ruff.rs) & [PyMarkdownlnt](https://github.com/jackdewinter/pymarkdown) code linting and [mypy](https://www.mypy-lang.org/) type checking which you can configure your IDE to use.
 
 ### Git Commit Messages
 
