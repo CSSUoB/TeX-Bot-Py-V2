@@ -18,7 +18,8 @@ If you have never used git before, we would recommend that you read [GitHub's Ge
 * [git - the simple guide](https://rogerdudler.github.io/git-guide/)
 * [Getting Git Right (Atlassian)](https://www.atlassian.com/git/)
 
-If you are new to contributing to open-source projects on GitHub, the general workflow is as follows:
+If you are new to contributing to open-source projects on GitHub,
+the general workflow is as follows:
 
 1. Fork this repository and clone it
 2. Create a branch off main
@@ -28,8 +29,8 @@ If you are new to contributing to open-source projects on GitHub, the general wo
 
 We recommend also reading the following if you're unsure or not confident:
 
-* https://makeapullrequest.com/
-* https://www.firsttimersonly.com/
+* [How To Make A Pull Request](https://makeapullrequest.com/)
+* [Contributing To An Open Source Project For The First Time](https://www.firsttimersonly.com/)
 
 ## Using the Issue Tracker
 
@@ -41,21 +42,24 @@ When submitting an issue, please be as descriptive as possible. If you are submi
 
 This bot is written in Python using [Pycord](https://pycord.dev) and uses [Discord's slash commands](https://support.discord.com/hc/en-gb/articles/1500000368501-Slash-Commands-FAQ). We would recommend being somewhat familiar with the library and language terminology before contributing.
 
-#### Top level files
+### Top level files
 
 * `main.py`: is the main entrypoint to instantiate the bot object & run it
 * `exceptions.py`: contains common exception super-classes that may be raised when certain errors occur
 * `config.py`: retrieves the environment variables & populates the correct values into the `settings` attribute
 * `utils.py`: contains common utility classes & functions used by the top-level modules
 
-#### Other significant directories
+### Other significant directories
+
 * `db/core/models/`: contains all the database ORM models to interact with storing information longer-term (between individual command events)
 * `tests/`: contains the complete test suite for TeX-Bot-Py-V2, based on the pytest framework
-* `cogs/`: contains all of the cogs for TeX-Bot-Py-V2, see below for more information
-  
-#### Cogs
+* `cogs/`: contains all the cogs for TeX-Bot-Py-V2, see below for more information
+
+### Cogs
+
 Cogs are attachable modules that are loaded onto the `discord.Bot` instance. They combine related listeners and commands (each as individual methods) into one class. There are separate cog files for each activity, and one \_\_init\_\_ file which instantiates them all:
 
+<!--- pyml disable-next-line no-emphasis-as-heading-->
 *For more information about what these Cogs do, please look at the annotations within the files themselves*
 
 * `cogs/__init__.py`: instantiates all the Cog classes within this directory
@@ -64,12 +68,15 @@ Cogs are attachable modules that are loaded onto the `discord.Bot` instance. The
 * `cogs/delete_all.py`: cogs for delete_all interactions
 * `cogs/edit_message.py`: cogs for edit_message interactions
 * `cogs/induct.py`: cogs for induct interactions
-* `cogs/kick_no_introduction_users.py`: cogs related to kicking users that have not introduced themselves
+* `cogs/kick_no_introduction_users.py`: cogs related to kicking users that have not
+introduced themselves
 * `cogs/make_member.py`: cogs related to making members
 * `cogs/ping.py`: cogs for pinging interactions
 * `cogs/remind_me.py`: cogs for remind_me interactions
-* `cogs/send_get_roles_reminders.py`: cogs relating to sending reminders to users about opt-in roles
-* `cogs/send_introduction_reminders.py`: cogs relating to sending reminders to users about introducing themselves
+* `cogs/send_get_roles_reminders.py`: cogs relating to sending reminders to users
+about opt-in roles
+* `cogs/send_introduction_reminders.py`: cogs relating to sending reminders to users about
+introducing themselves
 * `cogs/source.py`: cogs for source interactions
 * `cogs/startup.py`: cogs for startup
 * `cogs/stats.py`: cogs for stats interactions
@@ -93,7 +100,7 @@ Additionally, we request that you keep the commit subject under 80 characters fo
 
 For example:
 
-```
+```none
 Fix TeX becoming sentient
 
 <more detailed description here>
