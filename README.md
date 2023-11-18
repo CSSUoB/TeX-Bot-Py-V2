@@ -66,4 +66,4 @@ The configuration variables `SEND_INTRODUCTION_REMINDERS`, `SEND_GET_ROLES_REMIN
 
 Contributions are welcome. If you want to contribute, please raise a PR, and we'll review, test and (likely) merge it. Please comment on issues you'd like to work on for assignment to prevent duplication of work. If you find any bugs/problems or have any feature suggestion, please raise an issue.
 
-Please ensure your new code adheres to [mypy](https://www.mypy-lang.org/)'s type checking and [ruff](https://ruff.rs/) & [PyMarkdownlnt](https://github.com/jackdewinter/pymarkdown)'s linting so that the repo has a consistent style. By also running [pytest](https://pytest.org)'s test suite you can ensure your contributions provide valid functionality.
+Please ensure your new code adheres to [mypy](https://www.mypy-lang.org/)'s type checking and [ruff](https://ruff.rs/) & [PyMarkdown](https://github.com/jackdewinter/pymarkdown)'s linting so that the repo has a consistent style. By also running [pytest](https://pytest.org)'s test suite you can ensure your contributions provide valid functionality.
