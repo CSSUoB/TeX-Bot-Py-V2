@@ -90,6 +90,8 @@ After you have found an issue which needs solving, it's time to start working on
 
 In general, follow the formatting in the file you are editing. You should also run the development tools [ruff](https://ruff.rs) & [PyMarkdownlnt](https://github.com/jackdewinter/pymarkdown) code linting and [mypy](https://www.mypy-lang.org/) type checking which you can configure your IDE to use.
 
+The tools [ruff](https://ruff.rs) & [mypy](https://www.mypy-lang.org/) can be run as normal from the command line (as long as you are [within the poetry environment](https://python-poetry.org/docs/basic-usage/#activating-the-virtual-environment)), however, [PyMarkdownlnt](https://github.com/jackdewinter/pymarkdown) **cannot** be run as show in its own documentation. This is because some markdown files contain custom-formatted tables that [PyMarkdownlnt](https://github.com/jackdewinter/pymarkdown) cannot parse. Therefore, you *must* run [PyMarkdownlnt](https://github.com/jackdewinter/pymarkdown) using the script in ..., which removes any custom-formatted tables from files before they are linted.
+
 ### Git Commit Messages
 
 Commit messages should be written in the imperative present tense. For example, "Fix bug #1".

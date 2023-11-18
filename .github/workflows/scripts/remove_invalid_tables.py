@@ -1,5 +1,7 @@
 """Removes invalid tables in MD files for correct linting."""
 
+# TODO: Add how to run this script in `CONTRIBUTING.md`
+
 import itertools
 import pickle
 import re
