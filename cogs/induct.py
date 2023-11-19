@@ -24,7 +24,6 @@ from exceptions import (
     MemberRoleDoesNotExist,
     RolesChannelDoesNotExist,
     RulesChannelDoesNotExist,
-    UserNotInCSSDiscordServer,
 )
 
 
@@ -251,27 +250,12 @@ class InductCommandCog(BaseInductCog):
         The "induct" command inducts a given member into the CSS Discord server by giving them
         the "Guest" role.
         """
-        str_induct_member_id = str_induct_member_id.replace("<@", "").replace(">", "")
-
-        if not re.match(r"\A\d{17,20}\Z", str_induct_member_id):
-            await self.send_error(
-                ctx,
-                message=f"\"{str_induct_member_id}\" is not a valid user ID."
+        try:
+            induct_member: discord.Member = await self.bot.get_member_from_str_id(
+                str_induct_member_id
             )
-            return
-
-        induct_user: discord.User | None = self.bot.get_user(int(str_induct_member_id))
-        if induct_user:
-            try:
-                induct_member: discord.Member = await self.bot.get_css_user(induct_user)
-            except UserNotInCSSDiscordServer:
-                induct_user = None
-
-        if not induct_user:
-            await self.send_error(
-                ctx,
-                message=f"Member with ID \"{str_induct_member_id}\" does not exist."
-            )
+        except ValueError as e:
+            await self.send_error(ctx, message=e.args[0])
             return
 
         # noinspection PyUnboundLocalVariable

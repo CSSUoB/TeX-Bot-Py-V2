@@ -683,33 +683,14 @@ class StrikeCommandCog(BaseStrikeCog):
         appropriate moderation action to the member, according to the new number of strikes.
         """
         try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
-        str_strike_member_id = str_strike_member_id.replace("<@", "").replace(">", "")
-
-        if not re.match(r"\A\d{17,20}\Z", str_strike_member_id):
-            await self.send_error(
-                ctx,
-                message=f"\"{str_strike_member_id}\" is not a valid user ID."
+            strike_member: discord.Member = await self.bot.get_member_from_str_id(
+                str_strike_member_id
             )
+        except ValueError as e:
+            await self.send_error(ctx, message=e.args[0])
             return
 
-        strike_member_id: int = int(str_strike_member_id)
-
-        strike_member: discord.Member | None = guild.get_member(strike_member_id)
-        if not strike_member:
-            await self.send_error(
-                ctx,
-                message=f"Member with ID \"{strike_member_id}\" does not exist."
-            )
-            return
-
-        await self._command_perform_strike(ctx, strike_member, guild)
+        await self._command_perform_strike(ctx, strike_member)
 
 
 class StrikeUserCommandCog(BaseStrikeCog):

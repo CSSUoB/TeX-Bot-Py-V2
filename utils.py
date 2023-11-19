@@ -391,17 +391,6 @@ if __name__ != "__main__":
 
             return text_channel
 
-        async def get_css_user(self, user: discord.Member | discord.User) -> discord.Member:
-            """
-            Util method to retrieve a member of the CSS Discord server by their ID.
-
-            Raises `UserNotInCSSDiscordServer` if the user is not in the CSS Discord server.
-            """
-            css_user: discord.Member | None = self.css_guild.get_member(user.id)
-            if not css_user:
-                raise UserNotInCSSDiscordServer(user_id=user.id)
-            return css_user
-
         async def get_everyone_role(self) -> discord.Role:
             """
             Util method to retrieve the "@everyone" role from the CSS Discord server.
@@ -435,6 +424,42 @@ if __name__ != "__main__":
 
             self._css_guild = css_guild
             self._css_guild_set = True
+
+        async def get_css_user(self, user: discord.Member | discord.User) -> discord.Member:
+            """
+            Util method to retrieve a member of the CSS Discord server from their User object.
+
+            Raises `UserNotInCSSDiscordServer` if the user is not in the CSS Discord server.
+            """
+            css_user: discord.Member | None = self.css_guild.get_member(user.id)
+            if not css_user:
+                raise UserNotInCSSDiscordServer(user_id=user.id)
+            return css_user
+
+        async def get_member_from_str_id(self, str_member_id: str) -> discord.Member:
+            """
+            Util method to attempt to retrieve a member of the CSS Discord server by an ID.
+
+            Raises `ValueError` if the provided ID does not represent any member
+            of the CSS Discord server.
+            """
+            str_member_id = str_member_id.replace("<@", "").replace(">", "")
+
+            if not re.match(r"\A\d{17,20}\Z", str_member_id):
+                INVALID_USER_ID_MESSAGE: Final[str] = (
+                    f"\"{str_member_id}\" is not a valid user ID."
+                )
+                raise ValueError(INVALID_USER_ID_MESSAGE)
+
+            user: discord.User | None = self.get_user(int(str_member_id))
+            if not user:
+                raise ValueError(UserNotInCSSDiscordServer(user_id=int(str_member_id)).message)
+            try:
+                member: discord.Member = await self.get_css_user(user)
+            except UserNotInCSSDiscordServer as e:
+                raise ValueError from e
+
+            return member
 
 
 if __name__ == "__main__":
