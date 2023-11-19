@@ -5,10 +5,20 @@ import functools
 import logging
 import re
 from collections.abc import Callable, Coroutine, Mapping
-from typing import TYPE_CHECKING, Any, Concatenate, Final, ParamSpec, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Concatenate,
+    Final,
+    ParamSpec,
+    Protocol,
+    TypedDict,
+    TypeVar,
+)
 
 import discord
 from discord import Cog
+from discord.ui import View
 
 from exceptions import (
     BaseDoesNotExistError,
@@ -245,3 +255,34 @@ def capture_strike_tracking_error(func: "WrapperInputFunc[P, T]") -> "WrapperOut
         error_type=StrikeTrackingError,
         close_func=ErrorCaptureDecorators.strike_tracking_error_close_func
     )
+
+
+class MessageSenderComponent(Protocol):
+    async def send(self, content: str, *, view: View | None = None) -> Any:
+        raise NotImplementedError
+
+
+class ChannelMessageSender(MessageSenderComponent):
+    def __init__(self, channel: discord.DMChannel | discord.TextChannel) -> None:
+        self.channel: discord.DMChannel | discord.TextChannel = channel
+
+    class _BaseSendKwargs(TypedDict):
+        content: str
+
+    class SendKwargs(_BaseSendKwargs, total=False):
+        view: View
+
+    async def send(self, content: str, *, view: View | None = None) -> Any:
+        send_kwargs: ChannelMessageSender.SendKwargs = {"content": content}
+        if view:
+            send_kwargs["view"] = view
+
+        await self.channel.send(**send_kwargs)
+
+
+class ResponseMessageSender(MessageSenderComponent):
+    def __init__(self, ctx: TeXBotApplicationContext) -> None:
+        self.ctx: TeXBotApplicationContext = ctx
+
+    async def send(self, content: str, *, view: View | None = None) -> Any:
+        await self.ctx.respond(content=content, view=view, ephemeral=True)

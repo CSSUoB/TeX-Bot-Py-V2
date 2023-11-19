@@ -2,16 +2,17 @@
 
 import asyncio
 import datetime
-import functools
-import logging
 import re
-from collections.abc import Awaitable, Callable, Mapping
-from typing import Any, Final
+from collections.abc import Mapping
+from typing import Final
 
 import discord
 from discord.ui import View
 
 from cogs._utils import (
+    ChannelMessageSender,
+    MessageSenderComponent,
+    ResponseMessageSender,
     TeXBotApplicationContext,
     TeXBotAutocompleteContext,
     TeXBotCog,
@@ -211,8 +212,8 @@ class BaseStrikeCog(TeXBotCog):
             "with you shortly, to discuss this further."
         )
 
-    async def _confirm_perform_moderation_action(self, send_func: Callable[..., Awaitable[Any]], interaction_user: discord.User, strike_user: discord.Member, confirm_strike_message: str, actual_strike_amount: int, button_callback_channel: discord.TextChannel | discord.DMChannel) -> None:  # noqa: E501
-        await send_func(
+    async def _confirm_perform_moderation_action(self, message_sender_component: MessageSenderComponent, interaction_user: discord.User, strike_user: discord.Member, confirm_strike_message: str, actual_strike_amount: int, button_callback_channel: discord.TextChannel | discord.DMChannel) -> None:  # noqa: E501
+        await message_sender_component.send(
             content=confirm_strike_message,
             view=ConfirmStrikeMemberView()
         )
@@ -229,7 +230,7 @@ class BaseStrikeCog(TeXBotCog):
         )
 
         if button_interaction.data["custom_id"] == "no_strike_member":  # type: ignore[index, typeddict-item]
-            await send_func(
+            await message_sender_component.send(
                 f"Aborted performing {self.SUGGESTED_ACTIONS[actual_strike_amount]} action "
                 f"on {strike_user.mention}."
             )
@@ -241,12 +242,12 @@ class BaseStrikeCog(TeXBotCog):
             committee_member=interaction_user
         )
 
-        await send_func(
+        await message_sender_component.send(
             f"Successfully performed {self.SUGGESTED_ACTIONS[actual_strike_amount]} action "
             f"on {strike_user.mention}."
         )
 
-    async def _confirm_increase_strike(self, send_func: Callable[..., Awaitable[Any]], interaction_user: discord.User, strike_user: discord.User | discord.Member, member_strikes: MemberStrikes, button_callback_channel: discord.TextChannel | discord.DMChannel, *, perform_action: bool) -> None:  # noqa: E501
+    async def _confirm_increase_strike(self, message_sender_component: MessageSenderComponent, interaction_user: discord.User, strike_user: discord.User | discord.Member, member_strikes: MemberStrikes, button_callback_channel: discord.TextChannel | discord.DMChannel, *, perform_action: bool) -> None:  # noqa: E501
         if perform_action and isinstance(strike_user, discord.User):
             STRIKE_USER_TYPE_ERROR_MESSAGE: Final[str] = (
                 "Cannot perform moderation action on non-guild member."
@@ -285,7 +286,7 @@ class BaseStrikeCog(TeXBotCog):
                 )
 
         if not perform_action:
-            sent_message: discord.Message = await send_func(
+            sent_message: discord.Message = await message_sender_component.send(
                 content=(
                     f"{confirm_strike_message}\n"
                     "**Please ensure you use the `/strike` command in future!**\n"
@@ -305,7 +306,7 @@ class BaseStrikeCog(TeXBotCog):
         assert isinstance(strike_user, discord.Member)
 
         await self._confirm_perform_moderation_action(
-            send_func,
+            message_sender_component,
             interaction_user,
             strike_user,
             confirm_strike_message,
@@ -362,7 +363,7 @@ class BaseStrikeCog(TeXBotCog):
         )[0]
 
         await self._confirm_increase_strike(
-            send_func=functools.partial(ctx.respond, ephemeral=True),
+            message_sender_component=ResponseMessageSender(ctx),
             interaction_user=ctx.user,
             strike_user=strike_member,
             member_strikes=member_strikes,
@@ -577,7 +578,7 @@ class ManualModerationCog(BaseStrikeCog):
             raise StrikeTrackingError
 
         await self._confirm_increase_strike(
-            send_func=confirmation_message_channel.send,
+            message_sender_component=ChannelMessageSender(confirmation_message_channel),
             interaction_user=interaction_user,
             strike_user=strike_user,
             member_strikes=member_strikes,
