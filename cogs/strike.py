@@ -7,8 +7,10 @@ from collections.abc import Mapping
 from typing import Final
 
 import discord
+from discord.ext import commands
 from discord.ui import View
 
+from cogs._command_checks import Checks
 from cogs._utils import (
     ChannelMessageSender,
     MessageSenderComponent,
@@ -21,7 +23,10 @@ from cogs._utils import (
 )
 from config import settings
 from db.core.models import MemberStrikes
-from exceptions import CommitteeRoleDoesNotExist, GuildDoesNotExist, StrikeTrackingError
+from exceptions import (
+    GuildDoesNotExist,
+    StrikeTrackingError,
+)
 
 
 async def perform_moderation_action(strike_user: discord.Member, strikes: int, committee_member: discord.Member | discord.User) -> None:  # noqa: E501
@@ -314,41 +319,13 @@ class BaseStrikeCog(TeXBotCog):
             button_callback_channel
         )
 
-    async def _command_perform_strike(self, ctx: TeXBotApplicationContext, strike_member: discord.Member, guild: discord.Guild) -> None:  # noqa: E501
+    async def _command_perform_strike(self, ctx: TeXBotApplicationContext, strike_member: discord.Member) -> None:  # noqa: E501
         """
         Perform the actual process of giving a member an additional strike.
 
         Also calls the process of performing the appropriate moderation action,
         given the new number of strikes that the member has.
         """
-        committee_role: discord.Role | None = await self.bot.committee_role
-        if not committee_role:
-            await self.send_error(
-                ctx,
-                error_code="E1021",
-                logging_message=CommitteeRoleDoesNotExist()
-            )
-            return
-
-        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
-        if not interaction_member:
-            await self.send_error(
-                ctx,
-                message="You must be a member of the CSS Discord server to use this command."
-            )
-            return
-
-        if committee_role not in interaction_member.roles:
-            committee_role_mention: str = "@Committee"
-            if ctx.guild:
-                committee_role_mention = committee_role.mention
-
-            await self.send_error(
-                ctx,
-                message=f"Only {committee_role_mention} members can run this command."
-            )
-            return
-
         if strike_member.bot:
             await self.send_error(
                 ctx,
@@ -675,6 +652,8 @@ class StrikeCommandCog(BaseStrikeCog):
         required=True,
         parameter_name="str_strike_member_id"
     )
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
+    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
     async def strike(self, ctx: TeXBotApplicationContext, str_strike_member_id: str) -> None:
         """
         Definition & callback response of the "strike" command.
@@ -697,14 +676,8 @@ class StrikeUserCommandCog(BaseStrikeCog):
     """Cog class that defines the context menu strike command & its call-back method."""
 
     @discord.user_command(name="Strike User")  # type: ignore[no-untyped-call, misc]
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
+    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
     async def user_strike(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:
         """Call the _strike command, providing the required command arguments."""
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
-            logging.critical(guild_error)
-            await self.bot.close()
-            raise
-
-        await self._command_perform_strike(ctx, member, guild)
+        await self._command_perform_strike(ctx, member)
