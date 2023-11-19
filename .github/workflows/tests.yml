@@ -29,7 +29,7 @@ jobs:
           python-version: 3.11
 
       - name: Run mypy
-        run: poetry run mypy .
+        run: poetry run mypy .; poetry run mypy ./.github/workflows/scripts
 
   ruff:
     runs-on: ubuntu-latest
@@ -69,3 +69,15 @@ jobs:
 
       - name: Run JSON Checker
         run: IFS=$'\n' && set -f && for f in $(find . -name '*.json'); do if [ -z "$(git check-ignore $f)" ]; then python3 -mjson.tool "$f" > /dev/null || echo "INVALID $f" >&2; fi; done; unset IFS && set +f
+
+  pymarkdown:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install Python Project
+        uses: CSSUoB/action-install-python-project@v1.0.2
+        with:
+          python-version: 3.11
+
+      - name: Run PyMarkdown scan
+        run: poetry run python ./.github/workflows/scripts/remove_invalid_tables.py && poetry run pymarkdown scan . ; poetry run python ./.github/workflows/scripts/remove_invalid_tables.py --restore

@@ -36,6 +36,7 @@ django = "~4.2"  # NOTE: Django version must be fixed until django-stubs support
 matplotlib = "^3.8"
 mplcyberpunk = "^0.7"
 python-logging-discord-handler = "^0.1"
+gitpython = "^3.1"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "~1.5"  # NOTE: mypy version must be fixed until django-stubs supports the newer versions
@@ -176,7 +177,6 @@ plugins.no-trailing-spaces.strict = true
 plugins.line-length.line_length = 95
 plugins.line-length.heading_line_length = 95
 plugins.line-length.code_block_line_length = 95
-plugins.line-length.stern = true
 plugins.ol-prefix.style = "ordered"
 plugins.no-inline-html.allow_first_image_element = false
 plugins.hr-style.style = "---"

@@ -1,146 +1,168 @@
 """Removes invalid tables in MD files for correct linting."""
 
-# TODO: Add how to run this script in `CONTRIBUTING.md`
-
-import itertools
-import pickle
 import re
+import shutil
+from argparse import ArgumentParser, Namespace
+from collections.abc import MutableSequence, Sequence
 from pathlib import Path
-from re import Match
-from typing import TYPE_CHECKING, Final, TextIO
+from typing import TYPE_CHECKING, Any, Final, TextIO
+
+from git import Repo
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Sequence
+    from os import PathLike
 
 
-# TODO: Turn this into finding the project root (similar to `test_utils.py`)
-def get_readme_path() -> Path:
-    """
-    Return the directory that acts as the root of the project.
+def _get_project_root() -> Path:
+    project_root: Path = Path(__file__).resolve()
 
-    The project root is defined as the directory that contains the README.md file.
-    """
-    readme_parent_directory: Path = Path(__file__).resolve()
-    for _ in range(6):
-        readme_parent_directory = readme_parent_directory.parent
+    for _ in range(8):
+        project_root = project_root.parent
 
-        current_path: Path
-        for current_path in readme_parent_directory.iterdir():
-            if "README.md" in current_path.name:
-                return current_path
+        if any(path.name.startswith("README.md") for path in project_root.iterdir()):
+            return project_root
 
-    NO_README_PARENT_DIRECTORY_MESSAGE: Final[str] = "Could not locate README.md file."
-    raise FileNotFoundError(NO_README_PARENT_DIRECTORY_MESSAGE)
+    NO_ROOT_DIRECTORY_MESSAGE: Final[str] = "Could not locate project root directory."
+    raise FileNotFoundError(NO_ROOT_DIRECTORY_MESSAGE)
 
 
-def _get_next_invalid_table_line(file: TextIO, start_line_number: int = 1) -> int:
-    if start_line_number < 1:
-        INVALID_START_LINE_NUMBER_MESSAGE: Final[str] = (
-            f"{start_line_number.__name__!r} must be an integer greater than or equal to 1."  # type: ignore[attr-defined]
+def _remove_any_invalid_tables(original_file_path: Path) -> None:
+    table_lines: MutableSequence[int] = []
+    custom_formatted_table_lines: MutableSequence[int] = []
+
+    original_file: TextIO
+    with original_file_path.open("r") as original_file:
+        line_number: int
+        line: str
+        for line_number, line in enumerate(original_file, 1):
+            if re.match(r"\|(?:( .+)|-+)\|", line):
+                table_lines.append(line_number)
+
+                if re.match(r"\| .+<br/>\* .", line):
+                    custom_formatted_table_lines.append(line_number)
+
+    if custom_formatted_table_lines and not table_lines:
+        INCONSISTENT_TABLE_LINES_MESSAGE: Final[str] = (
+            "Found custom-formatted table lines without any normal table lines."
         )
-        raise ValueError(INVALID_START_LINE_NUMBER_MESSAGE)
+        raise RuntimeError(INCONSISTENT_TABLE_LINES_MESSAGE)
 
-    file.seek(0)
+    if not table_lines:
+        return
 
-    next_invalid_table_line_number: int
-    current_line: str
-    for next_invalid_table_line_number, current_line in enumerate(file, start_line_number):
-        if re.match(r"\| .+<br/>\* .", current_line):
-            return next_invalid_table_line_number
+    temp_file_path: Path = shutil.copy2(
+        original_file_path,
+        original_file_path.parent / f"{original_file_path.name}.original"
+    )
+    new_file_path = original_file_path
+    original_file_path = temp_file_path
+    del temp_file_path
 
-    NO_INVALID_TABLES_FOUND_MESSAGE: Final[str] = "No invalid tables found."
-    raise ValueError(NO_INVALID_TABLES_FOUND_MESSAGE)
+    with original_file_path.open("r") as original_file:
+        new_file: TextIO
+        with new_file_path.open("w") as new_file:
+            def write_table_if_not_custom_formatted(write_table_line_number: int, *, is_newline: bool = False) -> None:  # noqa: E501
+                write_table_lines: MutableSequence[str] = []
+                while write_table_line_number in table_lines or is_newline:
+                    is_newline = False
 
+                    if write_table_line_number in custom_formatted_table_lines:
+                        return
 
-def _find_boundary_line_numbers_of_table(file: TextIO, mid_table_line_number: int) -> tuple[int, int]:  # noqa: E501
-    if mid_table_line_number < 1:
-        INVALID_MID_TABLE_LINE_NUMBER_MESSAGE: Final[str] = (
-            f"{mid_table_line_number.__name__!r} must be an integer "  # type: ignore[attr-defined]
-            "greater than or equal to 1."
-        )
-        raise ValueError(INVALID_MID_TABLE_LINE_NUMBER_MESSAGE)
+                    write_table_lines.append(original_file.readline())
+                    write_table_line_number += 1
 
-    start_of_table_line_number: int = mid_table_line_number
-    end_of_table_line_number: int = mid_table_line_number
+                write_table_line: str
+                for write_table_line in write_table_lines:
+                    new_file.write(write_table_line)
 
-    if mid_table_line_number != 1:
-        file.seek(0)
-        # HACK: Fix how the file is being read in to reduce memory usage
-        backwards_file_lines: Sequence[str] = tuple(file)[:(mid_table_line_number - 1) + 1]
+            line_number = 1
+            at_end_of_original_file: bool = False
+            while not at_end_of_original_file:
+                current_position: int = original_file.tell()
+                line = original_file.readline()
+                at_end_of_original_file = not line
 
-        current_backwards_line_number: int
-        for current_backwards_line_number in range(mid_table_line_number - 1, 1, -1):
-            current_backwards_line_regex_match: Match[str] | None = re.match(
-                r"\|--+\|",
-                backwards_file_lines[current_backwards_line_number - 1]
-            )
-            if current_backwards_line_regex_match:
-                start_of_table_line_number = current_backwards_line_number - 1
-                break
-        else:
-            start_of_table_line_number = 1
+                if line:
+                    if line_number not in table_lines and line != "\n":
+                        new_file.write(line)
+                    elif line == "\n":
+                        if line_number + 1 not in table_lines:
+                            new_file.write(line)
+                        else:
+                            original_file.seek(current_position)
+                            _ = original_file.readline()
+                            original_file.seek(current_position)
+                            write_table_if_not_custom_formatted(line_number, is_newline=True)
+                    else:
+                        original_file.seek(current_position)
+                        _ = original_file.readline()
+                        original_file.seek(current_position)
+                        write_table_if_not_custom_formatted(line_number, is_newline=False)
 
-    del current_backwards_line_regex_match
-    del current_backwards_line_number
-    del backwards_file_lines
-
-    if mid_table_line_number != (len(file.readlines()) - 1) + 1:
-        file.seek(0)
-        # HACK: Fix how the file is being read in to reduce memory usage
-        forwards_file_lines: Sequence[str] = tuple(file)[(mid_table_line_number + 1) - 1:]
-
-        current_forwards_line_number: int
-        for current_forwards_line_number in range(1, (len(forwards_file_lines) - 1) + 1):
-            current_forwards_line_regex_match: Match[str] | None = re.match(
-                r"\| .+\|",
-                forwards_file_lines[current_forwards_line_number - 1]
-            )
-            if not current_forwards_line_regex_match:
-                end_of_table_line_number = (
-                    (current_forwards_line_number - 1)
-                    + mid_table_line_number
-                )
-                break
-        else:
-            end_of_table_line_number = (len(file.readlines()) - 1) + 1
-
-    return start_of_table_line_number, end_of_table_line_number
+                line_number += 1
 
 
 def remove_invalid_tables() -> None:
     """Remove all invalid tables within every markdown file in repository."""
-    # TODO: Loop through all markdown files (store in pickled dict)
-    # TODO: Loop through every table in every file
-    readme_file: TextIO
-    with get_readme_path().open("r", encoding="utf8") as readme_file:
-        first_invalid_table_line: int = _get_next_invalid_table_line(readme_file)
+    project_root: Path = _get_project_root()
 
-        start_of_table_line_number: int
-        end_of_table_line_number: int
-        start_of_table_line_number, end_of_table_line_number = _find_boundary_line_numbers_of_table(  # noqa: E501
-            readme_file,
-            first_invalid_table_line
-        )
+    file_entry: tuple[str | PathLike[str], Any]
+    for file_entry in Repo(project_root).index.entries:
+        file_path: Path = project_root / file_entry[0]
 
-        readme_lines: Sequence[str] = readme_file.readlines()
+        if not file_path.is_file() or not file_path.exists():
+            continue
 
-    with Path("original_readme.pkl").open("wb") as original_readme_file:
-        pickle.dump(readme_lines, original_readme_file)
+        original_file_path: Path = file_path.parent / f"{file_path.name}.original"
+        if original_file_path.exists():
+            ORIGINAL_FILE_ALREADY_EXISTS_MESSAGE: str = (
+                "Cannot remove custom-formatted tables from markdown files: "
+                f"{original_file_path} already exists. "
+                f"Use `python {Path(__file__).name} --restore` to first restore the files "
+                "to their original state"
+            )
+            raise FileExistsError(ORIGINAL_FILE_ALREADY_EXISTS_MESSAGE)
 
-    fixed_readme_lines: Iterable[str] = itertools.chain(
-        readme_lines[:start_of_table_line_number],
-        readme_lines[end_of_table_line_number:]
+        if file_path.suffix == ".md":
+            _remove_any_invalid_tables(file_path)
+
+
+def restore_invalid_tables() -> None:
+    """Return all markdown files to their original state before linting."""
+    project_root: Path = _get_project_root()
+
+    file_entry: tuple[str | PathLike[str], Any]
+    for file_entry in Repo(project_root).index.entries:
+        file_path: Path = project_root / file_entry[0]
+
+        if not file_path.is_file() or not file_path.exists():
+            continue
+
+        if len(file_path.suffixes) == 2 and ".md" in file_path.suffixes and ".original" in file_path.suffixes:
+            file_path.rename(file_path.parent / file_path.stem)
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Run this script as a CLI tool with argument parsing."""
+    arg_parser: ArgumentParser = ArgumentParser(
+        description="Remove or restore custom formatted tables from all markdown files"
+    )
+    arg_parser.add_argument(
+        "--restore",
+        action="store_true",
+        help="Whether to remove or restore any custom-formatted tables"
     )
 
-    with get_readme_path().open("w", encoding="utf8") as readme_file:
-        readme_file.writelines(fixed_readme_lines)
+    parsed_args: Namespace = arg_parser.parse_args(argv)
+
+    if not parsed_args.restore:
+        remove_invalid_tables()
+    else:
+        restore_invalid_tables()
+
+    return 0
 
 
-def return_invalid_tables() -> None:
-    """Return all markdown files to their original state before linting."""
-    # TODO: Return all tables in all markdown files to original (from pickled dict)
-    with Path("original_readme.pkl").open("rb") as original_readme_file:
-        original_readme_lines: Sequence[str] = pickle.load(original_readme_file)  # noqa: S301
-
-    with get_readme_path().open("w", encoding="utf8") as readme_file:
-        readme_file.writelines(original_readme_lines)
+if __name__ == "__main__":
+    raise SystemExit(main())
