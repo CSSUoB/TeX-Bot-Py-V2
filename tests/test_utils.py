@@ -117,17 +117,15 @@ class BaseTestArgumentParser:
     @staticmethod
     def _get_project_root() -> Path:
         project_root: Path = Path(__file__).resolve()
-        for _ in range(6):
+
+        for _ in range(8):
             project_root = project_root.parent
 
             if "README.md" in (path.name for path in project_root.iterdir()):
-                break
-        else:
-            # noinspection PyFinal
-            NO_ROOT_DIRECTORY_MESSAGE: Final[str] = "Could not locate project root directory."
-            raise FileNotFoundError(NO_ROOT_DIRECTORY_MESSAGE)
+                return project_root
 
-        return project_root
+        NO_ROOT_DIRECTORY_MESSAGE: Final[str] = "Could not locate project root directory."
+        raise FileNotFoundError(NO_ROOT_DIRECTORY_MESSAGE)
 
     @classmethod
     def execute_util_function(cls, util_function_name: str, *arguments: str) -> None:
