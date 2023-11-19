@@ -139,7 +139,12 @@ def restore_invalid_tables() -> None:
         if not file_path.is_file() or not file_path.exists():
             continue
 
-        if len(file_path.suffixes) == 2 and ".md" in file_path.suffixes and ".original" in file_path.suffixes:
+        file_is_temporary_original: bool = (
+                len(file_path.suffixes) == 2
+                and ".md" in file_path.suffixes
+                and ".original" in file_path.suffixes
+        )
+        if file_is_temporary_original:
             file_path.rename(file_path.parent / file_path.stem)
 
 
