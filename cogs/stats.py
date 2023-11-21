@@ -1,6 +1,5 @@
 """Contains cog classes for any stats interactions."""
 
-import logging
 import io
 import math
 import re
@@ -9,9 +8,11 @@ from typing import TYPE_CHECKING
 import discord
 import matplotlib.pyplot as plt
 import mplcyberpunk
+from discord.ext import commands
 
 import utils
-from cogs._utils import TeXBotApplicationContext, TeXBotCog
+from cogs._command_checks import Checks
+from cogs._utils import TeXBotApplicationContext, TeXBotCog, capture_guild_does_not_exist_error
 from config import settings
 from db.core.models import LeftMember
 
@@ -154,14 +155,7 @@ class StatsCommandsCog(TeXBotCog):
 
             channel_id = int(str_channel_id)
 
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
+        guild: discord.Guild = self.bot.css_guild
         channel: discord.TextChannel | None = discord.utils.get(
             guild.text_channels,
             id=channel_id
@@ -260,22 +254,8 @@ class StatsCommandsCog(TeXBotCog):
         The "server_stats" command sends a graph of the stats about messages sent in the whole
         of the CSS Discord server.
         """
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
+        guild: discord.Guild = self.bot.css_guild
         guest_role: discord.Role = await self.bot.guest_role
-        if not guest_role:
-            await self.send_error(
-                ctx,
-                error_code="E1022",
-                logging_message=GuestRoleDoesNotExist()
-            )
-            return
 
         await ctx.defer(ephemeral=True)
 
@@ -394,6 +374,7 @@ class StatsCommandsCog(TeXBotCog):
         name="self",
         description="Displays stats about the number of messages you have sent."
     )
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
     async def user_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "user_stats" command.
@@ -401,30 +382,9 @@ class StatsCommandsCog(TeXBotCog):
         The "user_stats" command sends a graph of the stats about messages sent by the given
         member.
         """
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
-        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
-        if not interaction_member:
-            await self.send_error(
-                ctx,
-                message="You must be a member of the CSS Discord server to use this command."
-            )
-            return
-
+        guild: discord.Guild = self.bot.css_guild
+        interaction_member: discord.Member = await self.bot.get_css_user(ctx.user)
         guest_role: discord.Role = await self.bot.guest_role
-        if not guest_role:
-            await self.send_error(
-                ctx,
-                error_code="E1022",
-                logging_message=GuestRoleDoesNotExist()
-            )
-            return
 
         if guest_role not in interaction_member.roles:
             await self.send_error(
@@ -504,13 +464,7 @@ class StatsCommandsCog(TeXBotCog):
         The "left_member_stats" command sends a graph of the stats about the roles that members
         had when they left the CSS Discord server.
         """
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
+        guild: discord.Guild = self.bot.css_guild
 
         await ctx.defer(ephemeral=True)
 
@@ -570,16 +524,10 @@ class StatsCommandsCog(TeXBotCog):
         )
 
     @TeXBotCog.listener()
+    @capture_guild_does_not_exist_error
     async def on_member_leave(self, member: discord.Member) -> None:
         """Update the stats of the roles that members had when they left the Discord server."""
-        try:
-            css_guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
-        if member.guild != css_guild or member.bot:
+        if member.guild != self.bot.css_guild or member.bot:
             return
 
         await LeftMember.objects.acreate(
