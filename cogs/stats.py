@@ -1,16 +1,115 @@
 """Contains cog classes for any stats interactions."""
 
 import logging
+import io
 import math
 import re
+from typing import TYPE_CHECKING
 
 import discord
+import matplotlib.pyplot as plt
+import mplcyberpunk
 
 import utils
 from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from config import settings
 from db.core.models import LeftMember
-from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
+
+if TYPE_CHECKING:
+    from collections.abc import Collection
+
+    from matplotlib.text import Text as Plot_Text
+
+
+def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str, filename: str, description: str, extra_text: str = "") -> discord.File:  # noqa: E501
+    """Generate an image of a plot bar chart from the given data & format variables."""
+    plt.style.use("cyberpunk")
+
+    max_data_value: int = max(data.values()) + 1
+
+    # NOTE: The "extra_values" dictionary represents columns of data that should be formatted differently to the standard data columns
+    extra_values: dict[str, int] = {}
+    if "Total" in data:
+        extra_values["Total"] = data.pop("Total")
+
+    if len(data) > 4:
+        data = {
+            key: value
+            for index, (key, value)
+            in enumerate(data.items())
+            if value > 0 or index <= 4
+        }
+
+    bars = plt.bar(*zip(*data.items(), strict=True))
+
+    if extra_values:
+        extra_bars = plt.bar(*zip(*extra_values.items(), strict=True))
+        mplcyberpunk.add_bar_gradient(extra_bars)
+
+    mplcyberpunk.add_bar_gradient(bars)
+
+    x_tick_labels: Collection[Plot_Text] = plt.gca().get_xticklabels()
+    count_x_tick_labels: int = len(x_tick_labels)
+
+    index: int
+    tick_label: Plot_Text
+    for index, tick_label in enumerate(x_tick_labels):
+        if tick_label.get_text() == "Total":
+            tick_label.set_fontweight("bold")
+
+        # NOTE: Shifts the y location of every other horizontal label down so that they do not overlap with one-another
+        if index % 2 == 1 and count_x_tick_labels > 4:
+            tick_label.set_y(tick_label.get_position()[1] - 0.044)
+
+    plt.yticks(range(0, max_data_value, math.ceil(max_data_value / 15)))
+
+    x_label_obj: Plot_Text = plt.xlabel(
+        x_label,
+        fontweight="bold",
+        fontsize="large",
+        wrap=True
+    )
+    x_label_obj._get_wrap_line_width = lambda: 475  # type: ignore[attr-defined] # noqa: SLF001
+
+    y_label_obj: Plot_Text = plt.ylabel(
+        y_label,
+        fontweight="bold",
+        fontsize="large",
+        wrap=True
+    )
+    y_label_obj._get_wrap_line_width = lambda: 375  # type: ignore[attr-defined] # noqa: SLF001
+
+    title_obj: Plot_Text = plt.title(title, fontsize="x-large", wrap=True)
+    title_obj._get_wrap_line_width = lambda: 500  # type: ignore[attr-defined] # noqa: SLF001
+
+    if extra_text:
+        extra_text_obj: Plot_Text = plt.text(
+            0.5,
+            -0.27,
+            extra_text,
+            ha="center",
+            transform=plt.gca().transAxes,
+            wrap=True,
+            fontstyle="italic",
+            fontsize="small"
+        )
+        extra_text_obj._get_wrap_line_width = lambda: 400  # type: ignore[attr-defined] # noqa: SLF001
+        plt.subplots_adjust(bottom=0.2)
+
+    plot_file = io.BytesIO()
+    plt.savefig(plot_file, format="png")
+    plt.close()
+    plot_file.seek(0)
+
+    discord_plot_file: discord.File = discord.File(
+        plot_file,
+        filename,
+        description=description
+    )
+
+    plot_file.close()
+
+    return discord_plot_file
 
 
 class StatsCommandsCog(TeXBotCog):
@@ -125,10 +224,10 @@ class StatsCommandsCog(TeXBotCog):
 
         await ctx.channel.send(
             f"**{ctx.user.display_name}** used `/{ctx.command}`",
-            file=utils.plot_bar_chart(
+            file=plot_bar_chart(
                 message_counts,
-                xlabel="Role Name",
-                ylabel=(
+                x_label="Role Name",
+                y_label=(
                     f"""Number of Messages Sent (in the past {
                         utils.amount_of_time_formatter(
                             settings["STATISTICS_DAYS"].days,
@@ -247,10 +346,10 @@ class StatsCommandsCog(TeXBotCog):
         await ctx.channel.send(
             f"**{ctx.user.display_name}** used `/{ctx.command}`",
             files=[
-                utils.plot_bar_chart(
+                plot_bar_chart(
                     message_counts["roles"],
-                    xlabel="Role Name",
-                    ylabel=(
+                    x_label="Role Name",
+                    y_label=(
                         f"""Number of Messages Sent (in the past {
                         utils.amount_of_time_formatter(
                             settings["STATISTICS_DAYS"].days,
@@ -270,10 +369,10 @@ class StatsCommandsCog(TeXBotCog):
                         "(except for @Member vs @Guest & @Committee vs @Committee-Elect)"
                     )
                 ),
-                utils.plot_bar_chart(
+                plot_bar_chart(
                     message_counts["channels"],
-                    xlabel="Channel Name",
-                    ylabel=(
+                    x_label="Channel Name",
+                    y_label=(
                         f"""Number of Messages Sent (in the past {
                             utils.amount_of_time_formatter(
                                 settings["STATISTICS_DAYS"].days,
@@ -373,10 +472,10 @@ class StatsCommandsCog(TeXBotCog):
 
         await ctx.channel.send(
             f"**{ctx.user.display_name}** used `/{ctx.command}`",
-            file=utils.plot_bar_chart(
+            file=plot_bar_chart(
                 message_counts,
-                xlabel="Channel Name",
-                ylabel=(
+                x_label="Channel Name",
+                y_label=(
                     f"""Number of Messages Sent (in the past {
                         utils.amount_of_time_formatter(
                             settings["STATISTICS_DAYS"].days,
@@ -450,10 +549,10 @@ class StatsCommandsCog(TeXBotCog):
 
         await ctx.channel.send(
             f"**{ctx.user.display_name}** used `/{ctx.command}`",
-            file=utils.plot_bar_chart(
+            file=plot_bar_chart(
                 left_member_counts,
-                xlabel="Role Name",
-                ylabel="Number of Members that have left the CSS Discord Server",
+                x_label="Role Name",
+                y_label="Number of Members that have left the CSS Discord Server",
                 title=(
                     "Most Common Roles that Members had when they left the CSS Discord Server"
                 ),
