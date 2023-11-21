@@ -9,20 +9,21 @@ import discord
 
 # NOTE: Preventing loading modules that would cause errors if this file has been run from the command-line without pre-initialisation
 if __name__ != "__main__":
-    import io
-    import math
-    from typing import TYPE_CHECKING, Any, Final, TypeAlias
-
-    import matplotlib.pyplot as plt
-    import mplcyberpunk
+    from typing import Any, Final, TypeAlias
 
     from config import settings
-    from exceptions import GuildDoesNotExist
-
-    if TYPE_CHECKING:
-        from collections.abc import Collection
-
-        from matplotlib.text import Text as Plot_Text
+    from exceptions import (
+        ArchivistRoleDoesNotExist,
+        CommitteeRoleDoesNotExist,
+        EveryoneRoleCouldNotBeRetrieved,
+        GeneralChannelDoesNotExist,
+        GuestRoleDoesNotExist,
+        GuildDoesNotExist,
+        MemberRoleDoesNotExist,
+        RolesChannelDoesNotExist,
+        RulesChannelDoesNotExist,
+        UserNotInCSSDiscordServer,
+    )
 
     ChannelTypes: TypeAlias = (
         discord.VoiceChannel
@@ -67,95 +68,6 @@ def generate_invite_url(discord_bot_application_id: str, discord_guild_id: int) 
 # NOTE: Preventing using modules that have not been loaded if this file has been run from the command-line
 if __name__ != "__main__":
     # noinspection SpellCheckingInspection
-    def plot_bar_chart(data: dict[str, int], xlabel: str, ylabel: str, title: str, filename: str, description: str, extra_text: str = "") -> discord.File:  # noqa: E501
-        """Generate an image of a plot bar chart from the given data & format variables."""
-        plt.style.use("cyberpunk")
-
-        max_data_value: int = max(data.values()) + 1
-
-        # NOTE: The "extra_values" dictionary represents columns of data that should be formatted differently to the standard data columns
-        extra_values: dict[str, int] = {}
-        if "Total" in data:
-            extra_values["Total"] = data.pop("Total")
-
-        if len(data) > 4:
-            data = {
-                key: value
-                for index, (key, value) in enumerate(data.items())
-                if value > 0 or index <= 4
-            }
-
-        bars = plt.bar(*zip(*data.items(), strict=True))
-
-        if extra_values:
-            extra_bars = plt.bar(*zip(*extra_values.items(), strict=True))
-            mplcyberpunk.add_bar_gradient(extra_bars)
-
-        mplcyberpunk.add_bar_gradient(bars)
-
-        xticklabels: Collection[Plot_Text] = plt.gca().get_xticklabels()
-        count_xticklabels: int = len(xticklabels)
-
-        index: int
-        tick_label: Plot_Text
-        for index, tick_label in enumerate(xticklabels):
-            if tick_label.get_text() == "Total":
-                tick_label.set_fontweight("bold")
-
-            # NOTE: Shifts the y location of every other horizontal label down so that they do not overlap with one-another
-            if index % 2 == 1 and count_xticklabels > 4:
-                tick_label.set_y(tick_label.get_position()[1] - 0.044)
-
-        plt.yticks(range(0, max_data_value, math.ceil(max_data_value / 15)))
-
-        xlabel_obj: Plot_Text = plt.xlabel(
-            xlabel,
-            fontweight="bold",
-            fontsize="large",
-            wrap=True
-        )
-        xlabel_obj._get_wrap_line_width = lambda: 475  # type: ignore[attr-defined] # noqa: SLF001
-
-        ylabel_obj: Plot_Text = plt.ylabel(
-            ylabel,
-            fontweight="bold",
-            fontsize="large",
-            wrap=True
-        )
-        ylabel_obj._get_wrap_line_width = lambda: 375  # type: ignore[attr-defined] # noqa: SLF001
-
-        title_obj: Plot_Text = plt.title(title, fontsize="x-large", wrap=True)
-        title_obj._get_wrap_line_width = lambda: 500  # type: ignore[attr-defined] # noqa: SLF001
-
-        if extra_text:
-            extra_text_obj: Plot_Text = plt.text(
-                0.5,
-                -0.27,
-                extra_text,
-                ha="center",
-                transform=plt.gca().transAxes,
-                wrap=True,
-                fontstyle="italic",
-                fontsize="small"
-            )
-            extra_text_obj._get_wrap_line_width = lambda: 400  # type: ignore[attr-defined] # noqa: SLF001
-            plt.subplots_adjust(bottom=0.2)
-
-        plot_file = io.BytesIO()
-        plt.savefig(plot_file, format="png")
-        plt.close()
-        plot_file.seek(0)
-
-        discord_plot_file: discord.File = discord.File(
-            plot_file,
-            filename,
-            description=description
-        )
-
-        plot_file.close()
-
-        return discord_plot_file
-
 
     def amount_of_time_formatter(value: float, time_scale: str) -> str:
         """
@@ -206,6 +118,8 @@ if __name__ != "__main__":
 
             This shortcut accessor provides a consistent way of accessing the CSS server object
             without having to repeatedly search for it, in the bot's list of guilds, by its ID.
+
+            Raises `GuildDoesNotExist` if the given ID does not link to a Discord server.
             """
             if not self._css_guild or not self._bot_has_guild(settings["DISCORD_GUILD_ID"]):
                 raise GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"])
@@ -213,12 +127,14 @@ if __name__ != "__main__":
             return self._css_guild
 
         @property
-        async def committee_role(self) -> discord.Role | None:
+        async def committee_role(self) -> discord.Role:
             """
             Shortcut accessor to the committee role.
 
             The committee role is the role held by elected members of the CSS committee.
             Many commands are limited to use by only committee members.
+
+            Raises `CommitteeRoleDoesNotExist` if the role does not exist.
             """
             if not self._committee_role or not self._guild_has_role(self._committee_role):
                 self._committee_role = discord.utils.get(
@@ -226,10 +142,13 @@ if __name__ != "__main__":
                     name="Committee"
                 )
 
+            if not self._committee_role:
+                raise CommitteeRoleDoesNotExist
+
             return self._committee_role
 
         @property
-        async def guest_role(self) -> discord.Role | None:
+        async def guest_role(self) -> discord.Role:
             """
             Shortcut accessor to the guest role.
 
@@ -237,6 +156,8 @@ if __name__ != "__main__":
             main channels of the CSS Discord server.
             It is given to members only after they have sent a message with a short
             introduction about themselves.
+
+            Raises `GuestRoleDoesNotExist` if the role does not exist.
             """
             if not self._guest_role or not self._guild_has_role(self._guest_role):
                 self._guest_role = discord.utils.get(
@@ -244,10 +165,13 @@ if __name__ != "__main__":
                     name="Guest"
                 )
 
+            if not self._guest_role:
+                raise GuestRoleDoesNotExist
+
             return self._guest_role
 
         @property
-        async def member_role(self) -> discord.Role | None:
+        async def member_role(self) -> discord.Role:
             """
             Shortcut accessor to the member role.
 
@@ -255,6 +179,8 @@ if __name__ != "__main__":
             verified a purchased membership to CSS.
             It provides bragging rights to other server members by showing the member's name in
             green!
+
+            Raises `MemberRoleDoesNotExist` if the role does not exist.
             """
             if not self._member_role or not self._guild_has_role(self._member_role):
                 self._member_role = discord.utils.get(self.css_guild.roles, name="Member")
@@ -263,15 +189,20 @@ if __name__ != "__main__":
                     name="Member"
                 )
 
+            if not self._member_role:
+                raise MemberRoleDoesNotExist
+
             return self._member_role
 
         @property
-        async def archivist_role(self) -> discord.Role | None:
+        async def archivist_role(self) -> discord.Role:
             """
             Shortcut accessor to the archivist role.
 
             The archivist role is the one that allows members to see channels & categories
             that are no longer in use, which are hidden to all other members.
+
+            Raises `ArchivistRoleDoesNotExist` if the role does not exist.
             """
             if not self._archivist_role or not self._guild_has_role(self._archivist_role):
                 self._archivist_role = discord.utils.get(
@@ -279,41 +210,61 @@ if __name__ != "__main__":
                     name="Archivist"
                 )
 
+            if not self._archivist_role:
+                raise ArchivistRoleDoesNotExist
+
             return self._archivist_role
 
         @property
-        async def roles_channel(self) -> discord.TextChannel | None:
+        async def roles_channel(self) -> discord.TextChannel:
             """
             Shortcut accessor to the welcome text channel.
 
             The roles text channel is the one that contains the message declaring all the
             available opt-in roles to members.
+
+            Raises `RolesChannelDoesNotExist` if the channel does not exist.
             """
             if not self._roles_channel or not self._guild_has_channel(self._roles_channel):
                 self._roles_channel = await self._fetch_text_channel("roles")
 
+            if not self._roles_channel:
+                raise RolesChannelDoesNotExist
+
             return self._roles_channel
 
         @property
-        async def general_channel(self) -> discord.TextChannel | None:
-            """Shortcut accessor to the general text channel."""
+        async def general_channel(self) -> discord.TextChannel:
+            """
+            Shortcut accessor to the general text channel.
+
+            Raises `GeneralChannelDoesNotExist` if the channel does not exist.
+            """
             if not self._general_channel or not self._guild_has_channel(self._general_channel):
                 self._general_channel = await self._fetch_text_channel("general")
+
+            if not self._general_channel:
+                raise GeneralChannelDoesNotExist
 
             return self._general_channel
 
         @property
-        async def rules_channel(self) -> discord.TextChannel | None:
+        async def rules_channel(self) -> discord.TextChannel:
             """
             Shortcut accessor to the rules text channel.
 
-            The welcome text channel is the one that contains the welcome message & rules.
+            The rules text channel is the one that contains the welcome message & rules.
+
+            Raises `RulesChannelDoesNotExist` if the channel does not exist.
             """
             if not self._rules_channel or not self._guild_has_channel(self._rules_channel):
                 self._rules_channel = (
                     self.css_guild.rules_channel
                     or await self._fetch_text_channel("welcome")
                 )
+
+            if not self._rules_channel:
+                raise RulesChannelDoesNotExist
 
             return self._rules_channel
 
@@ -341,6 +292,25 @@ if __name__ != "__main__":
 
             return text_channel
 
+        async def get_everyone_role(self) -> discord.Role:
+            """
+            Util method to retrieve the "@everyone" role from the CSS Discord server.
+
+            Raises `EveryoneRoleCouldNotBeRetrieved` if the @everyone role
+            could not be retrieved.
+            """
+            everyone_role: discord.Role | None = discord.utils.get(
+                self.css_guild.roles,
+                name="@everyone"
+            )
+            if not everyone_role:
+                raise EveryoneRoleCouldNotBeRetrieved
+            return everyone_role
+
+        async def check_user_has_committee_role(self, user: discord.Member | discord.User) -> bool:  # noqa: E501
+            """Util method to validate whether the given user has the "Committee" role."""
+            return await self.committee_role in (await self.get_css_user(user)).roles
+
         def set_css_guild(self, css_guild: discord.Guild) -> None:
             """
             Set the css_guild value that the bot will reference in the future.
@@ -355,6 +325,42 @@ if __name__ != "__main__":
 
             self._css_guild = css_guild
             self._css_guild_set = True
+
+        async def get_css_user(self, user: discord.Member | discord.User) -> discord.Member:
+            """
+            Util method to retrieve a member of the CSS Discord server from their User object.
+
+            Raises `UserNotInCSSDiscordServer` if the user is not in the CSS Discord server.
+            """
+            css_user: discord.Member | None = self.css_guild.get_member(user.id)
+            if not css_user:
+                raise UserNotInCSSDiscordServer(user_id=user.id)
+            return css_user
+
+        async def get_member_from_str_id(self, str_member_id: str) -> discord.Member:
+            """
+            Util method to attempt to retrieve a member of the CSS Discord server by an ID.
+
+            Raises `ValueError` if the provided ID does not represent any member
+            of the CSS Discord server.
+            """
+            str_member_id = str_member_id.replace("<@", "").replace(">", "")
+
+            if not re.match(r"\A\d{17,20}\Z", str_member_id):
+                INVALID_USER_ID_MESSAGE: Final[str] = (
+                    f"\"{str_member_id}\" is not a valid user ID."
+                )
+                raise ValueError(INVALID_USER_ID_MESSAGE)
+
+            user: discord.User | None = self.get_user(int(str_member_id))
+            if not user:
+                raise ValueError(UserNotInCSSDiscordServer(user_id=int(str_member_id)).message)
+            try:
+                member: discord.Member = await self.get_css_user(user)
+            except UserNotInCSSDiscordServer as e:
+                raise ValueError from e
+
+            return member
 
 
 if __name__ == "__main__":

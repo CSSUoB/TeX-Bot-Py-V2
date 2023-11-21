@@ -2,16 +2,20 @@
 
 import asyncio
 import datetime
-import functools
-import logging
 import re
-from collections.abc import Awaitable, Callable, Mapping
-from typing import Any, Final
+from collections.abc import Mapping
+from typing import Final
 
 import discord
+from discord.ext import commands
 from discord.ui import View
 
+from cogs._command_checks import Checks
 from cogs._utils import (
+    ChannelMessageSender,
+    MessageSenderComponent,
+    ResponseMessageSender,
+    TeXBotApplicationContext,
     TeXBotAutocompleteContext,
     TeXBotCog,
     capture_guild_does_not_exist_error,
@@ -19,7 +23,10 @@ from cogs._utils import (
 )
 from config import settings
 from db.core.models import MemberStrikes
-from exceptions import CommitteeRoleDoesNotExist, GuildDoesNotExist, StrikeTrackingError
+from exceptions import (
+    GuildDoesNotExist,
+    StrikeTrackingError,
+)
 
 
 async def perform_moderation_action(strike_user: discord.Member, strikes: int, committee_member: discord.Member | discord.User) -> None:  # noqa: E501
@@ -210,8 +217,8 @@ class BaseStrikeCog(TeXBotCog):
             "with you shortly, to discuss this further."
         )
 
-    async def _confirm_perform_moderation_action(self, send_func: Callable[..., Awaitable[Any]], interaction_user: discord.User, strike_user: discord.Member, confirm_strike_message: str, actual_strike_amount: int, button_callback_channel: discord.TextChannel | discord.DMChannel) -> None:  # noqa: E501
-        await send_func(
+    async def _confirm_perform_moderation_action(self, message_sender_component: MessageSenderComponent, interaction_user: discord.User, strike_user: discord.Member, confirm_strike_message: str, actual_strike_amount: int, button_callback_channel: discord.TextChannel | discord.DMChannel) -> None:  # noqa: E501
+        await message_sender_component.send(
             content=confirm_strike_message,
             view=ConfirmStrikeMemberView()
         )
@@ -228,7 +235,7 @@ class BaseStrikeCog(TeXBotCog):
         )
 
         if button_interaction.data["custom_id"] == "no_strike_member":  # type: ignore[index, typeddict-item]
-            await send_func(
+            await message_sender_component.send(
                 f"Aborted performing {self.SUGGESTED_ACTIONS[actual_strike_amount]} action "
                 f"on {strike_user.mention}."
             )
@@ -240,12 +247,12 @@ class BaseStrikeCog(TeXBotCog):
             committee_member=interaction_user
         )
 
-        await send_func(
+        await message_sender_component.send(
             f"Successfully performed {self.SUGGESTED_ACTIONS[actual_strike_amount]} action "
             f"on {strike_user.mention}."
         )
 
-    async def _confirm_increase_strike(self, send_func: Callable[..., Awaitable[Any]], interaction_user: discord.User, strike_user: discord.User | discord.Member, member_strikes: MemberStrikes, button_callback_channel: discord.TextChannel | discord.DMChannel, *, perform_action: bool) -> None:  # noqa: E501
+    async def _confirm_increase_strike(self, message_sender_component: MessageSenderComponent, interaction_user: discord.User, strike_user: discord.User | discord.Member, member_strikes: MemberStrikes, button_callback_channel: discord.TextChannel | discord.DMChannel, *, perform_action: bool) -> None:  # noqa: E501
         if perform_action and isinstance(strike_user, discord.User):
             STRIKE_USER_TYPE_ERROR_MESSAGE: Final[str] = (
                 "Cannot perform moderation action on non-guild member."
@@ -284,7 +291,7 @@ class BaseStrikeCog(TeXBotCog):
                 )
 
         if not perform_action:
-            sent_message: discord.Message = await send_func(
+            sent_message: discord.Message = await message_sender_component.send(
                 content=(
                     f"{confirm_strike_message}\n"
                     "**Please ensure you use the `/strike` command in future!**\n"
@@ -304,7 +311,7 @@ class BaseStrikeCog(TeXBotCog):
         assert isinstance(strike_user, discord.Member)
 
         await self._confirm_perform_moderation_action(
-            send_func,
+            message_sender_component,
             interaction_user,
             strike_user,
             confirm_strike_message,
@@ -312,41 +319,13 @@ class BaseStrikeCog(TeXBotCog):
             button_callback_channel
         )
 
-    async def _command_perform_strike(self, ctx: discord.ApplicationContext, strike_member: discord.Member, guild: discord.Guild) -> None:  # noqa: E501
+    async def _command_perform_strike(self, ctx: TeXBotApplicationContext, strike_member: discord.Member) -> None:  # noqa: E501
         """
         Perform the actual process of giving a member an additional strike.
 
         Also calls the process of performing the appropriate moderation action,
         given the new number of strikes that the member has.
         """
-        committee_role: discord.Role | None = await self.bot.committee_role
-        if not committee_role:
-            await self.send_error(
-                ctx,
-                error_code="E1021",
-                logging_message=CommitteeRoleDoesNotExist()
-            )
-            return
-
-        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
-        if not interaction_member:
-            await self.send_error(
-                ctx,
-                message="You must be a member of the CSS Discord server to use this command."
-            )
-            return
-
-        if committee_role not in interaction_member.roles:
-            committee_role_mention: str = "@Committee"
-            if ctx.guild:
-                committee_role_mention = committee_role.mention
-
-            await self.send_error(
-                ctx,
-                message=f"Only {committee_role_mention} members can run this command."
-            )
-            return
-
         if strike_member.bot:
             await self.send_error(
                 ctx,
@@ -361,7 +340,7 @@ class BaseStrikeCog(TeXBotCog):
         )[0]
 
         await self._confirm_increase_strike(
-            send_func=functools.partial(ctx.respond, ephemeral=True),
+            message_sender_component=ResponseMessageSender(ctx),
             interaction_user=ctx.user,
             strike_user=strike_member,
             member_strikes=member_strikes,
@@ -377,6 +356,54 @@ class ManualModerationCog(BaseStrikeCog):
     When Committee members manually apply moderation actions on users, these event listeners
     will be run to confirm the actions are tracked.
     """
+
+    async def get_confirmation_message_channel(self, user: discord.User | discord.Member) -> discord.DMChannel | discord.TextChannel:  # noqa: E501
+        """
+        Retrieve the correct channel to send the strike confirmation message to.
+
+        This is based upon the MANUAL_MODERATION_WARNING_MESSAGE_LOCATION config setting value.
+        """
+        unable_to_determine_confirmation_message_channel: bool = bool(
+            user.bot
+            and settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] == "DM"
+        )
+        if unable_to_determine_confirmation_message_channel:
+            INDETERMINABLE_CHANNEL_MESSAGE: Final[str] = (
+                "Cannot determine channel to send manual-moderation warning messages to"
+            )
+            raise StrikeTrackingError(INDETERMINABLE_CHANNEL_MESSAGE)
+
+        if settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] == "DM":
+            raw_user: discord.User | None = (
+                self.bot.get_user(user.id)
+                if isinstance(user, discord.Member)
+                else user
+            )
+            if not raw_user:
+                raise StrikeTrackingError
+
+            dm_confirmation_message_channel: discord.DMChannel = (
+                await raw_user.create_dm()
+            )
+            if not dm_confirmation_message_channel.recipient:
+                dm_confirmation_message_channel.recipient = raw_user
+
+            return dm_confirmation_message_channel
+
+        guild_confirmation_message_channel: discord.TextChannel | None = discord.utils.get(
+            self.bot.css_guild.text_channels,
+            name=settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"]
+        )
+        if not guild_confirmation_message_channel:
+            CHANNEL_DOES_NOT_EXIST_MESSAGE: Final[str] = (
+                "The channel "
+                f"""{settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"]!r} """
+                "does not exist, so cannot be used as the location "
+                "for sending manual-moderation warning messages"
+            )
+            raise StrikeTrackingError(CHANNEL_DOES_NOT_EXIST_MESSAGE)
+
+        return guild_confirmation_message_channel
 
     @capture_strike_tracking_error
     async def _confirm_manual_add_strike(self, strike_user: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501
@@ -402,42 +429,9 @@ class ManualModerationCog(BaseStrikeCog):
         if not audit_log_entry.user:
             raise StrikeTrackingError
 
-        unable_to_determine_confirmation_message_channel: bool = bool(
-            audit_log_entry.user.bot
-            and settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] == "DM"
+        confirmation_message_channel: discord.DMChannel | discord.TextChannel = await self.get_confirmation_message_channel(  # noqa: E501
+            audit_log_entry.user
         )
-        if unable_to_determine_confirmation_message_channel:
-            INDETERMINABLE_CHANNEL_MESSAGE: Final[str] = (
-                "Cannot determine channel to send manual-moderation warning messages to"
-            )
-            raise StrikeTrackingError(INDETERMINABLE_CHANNEL_MESSAGE)
-
-        confirmation_message_channel: discord.DMChannel | discord.TextChannel
-        if settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] == "DM":
-            confirmation_message_channel = await audit_log_entry.user.create_dm()  # type: ignore[misc]
-            if not confirmation_message_channel.recipient:
-                confirmation_message_channel.recipient = (
-                    self.bot.get_user(
-                        audit_log_entry.user.id
-                    )
-                    if isinstance(audit_log_entry.user, discord.Member)
-                    else audit_log_entry.user
-                )
-        else:
-            guild_confirmation_message_channel: discord.TextChannel | None = discord.utils.get(
-                css_guild.text_channels,
-                name=settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"]
-            )
-            if not guild_confirmation_message_channel:
-                CHANNEL_DOES_NOT_EXIST_MESSAGE: Final[str] = (
-                    "The channel "
-                    f"""{settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"]!r} """
-                    "does not exist, so cannot be used as the location "
-                    "for sending manual-moderation warning messages"
-                )
-                raise StrikeTrackingError(CHANNEL_DOES_NOT_EXIST_MESSAGE)
-
-            confirmation_message_channel = guild_confirmation_message_channel
 
         MODERATION_ACTIONS: Final[Mapping[discord.AuditLogAction, str]] = {
             discord.AuditLogAction.member_update: "timed-out",
@@ -576,7 +570,7 @@ class ManualModerationCog(BaseStrikeCog):
             raise StrikeTrackingError
 
         await self._confirm_increase_strike(
-            send_func=confirmation_message_channel.send,
+            message_sender_component=ChannelMessageSender(confirmation_message_channel),
             interaction_user=interaction_user,
             strike_user=strike_user,
             member_strikes=member_strikes,
@@ -604,8 +598,7 @@ class ManualModerationCog(BaseStrikeCog):
     @capture_guild_does_not_exist_error
     async def on_member_remove(self, member: discord.Member) -> None:
         """Flag manually applied kick & track strikes accordingly."""
-        css_guild: discord.Guild = self.bot.css_guild
-        if member.guild != css_guild or member.bot:
+        if member.guild != self.bot.css_guild or member.bot:
             return
 
         await self._confirm_manual_add_strike(
@@ -617,8 +610,7 @@ class ManualModerationCog(BaseStrikeCog):
     @capture_guild_does_not_exist_error
     async def on_member_ban(self, guild: discord.Guild, user: discord.User | discord.Member) -> None:  # noqa: E501
         """Flag manually applied ban & track strikes accordingly."""
-        css_guild: discord.Guild = self.bot.css_guild
-        if guild != css_guild or user.bot:
+        if guild != self.bot.css_guild or user.bot:
             return
 
         await self._confirm_manual_add_strike(
@@ -673,7 +665,9 @@ class StrikeCommandCog(BaseStrikeCog):
         required=True,
         parameter_name="str_strike_member_id"
     )
-    async def strike(self, ctx: discord.ApplicationContext, str_strike_member_id: str) -> None:
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
+    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
+    async def strike(self, ctx: TeXBotApplicationContext, str_strike_member_id: str) -> None:
         """
         Definition & callback response of the "strike" command.
 
@@ -681,47 +675,22 @@ class StrikeCommandCog(BaseStrikeCog):
         appropriate moderation action to the member, according to the new number of strikes.
         """
         try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
-        str_strike_member_id = str_strike_member_id.replace("<@", "").replace(">", "")
-
-        if not re.match(r"\A\d{17,20}\Z", str_strike_member_id):
-            await self.send_error(
-                ctx,
-                message=f"\"{str_strike_member_id}\" is not a valid user ID."
+            strike_member: discord.Member = await self.bot.get_member_from_str_id(
+                str_strike_member_id
             )
+        except ValueError as e:
+            await self.send_error(ctx, message=e.args[0])
             return
 
-        strike_member_id: int = int(str_strike_member_id)
-
-        strike_member: discord.Member | None = guild.get_member(strike_member_id)
-        if not strike_member:
-            await self.send_error(
-                ctx,
-                message=f"Member with ID \"{strike_member_id}\" does not exist."
-            )
-            return
-
-        await self._command_perform_strike(ctx, strike_member, guild)
+        await self._command_perform_strike(ctx, strike_member)
 
 
 class StrikeUserCommandCog(BaseStrikeCog):
     """Cog class that defines the context menu strike command & its call-back method."""
 
     @discord.user_command(name="Strike User")  # type: ignore[no-untyped-call, misc]
-    async def user_strike(self, ctx: discord.ApplicationContext, member: discord.Member) -> None:  # noqa: E501
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
+    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
+    async def user_strike(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:
         """Call the _strike command, providing the required command arguments."""
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
-            logging.critical(guild_error)
-            await self.bot.close()
-            raise
-
-        await self._command_perform_strike(ctx, member, guild)
+        await self._command_perform_strike(ctx, member)

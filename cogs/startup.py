@@ -52,12 +52,17 @@ class StartupCog(TeXBotCog):
                 "so error logs will not be sent to the Discord log channel."
             )
 
-        guild: discord.Guild | None = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
+        try:
+            guild: discord.Guild | None = self.bot.css_guild
+        except GuildDoesNotExist:
+            guild = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
+            if guild:
+                self.bot.set_css_guild(guild)
+
         if not guild:
             logging.critical(GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"]))
             await self.bot.close()
             return
-        self.bot.set_css_guild(guild)
 
         if not discord.utils.get(guild.roles, name="Committee"):
             logging.warning(CommitteeRoleDoesNotExist())
