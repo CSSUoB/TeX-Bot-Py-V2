@@ -35,7 +35,7 @@ Ensure that you have [Poetry](https://python-poetry.org/) installed,
 then navigate to the root folder and run the following command:
 
 ```shell
-poetry install --no-root
+poetry install --no-root --sync
 ```
 
 ## Setup
