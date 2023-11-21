@@ -43,7 +43,8 @@ class TestGenerateInviteURL:
 class TestPlotBarChart:
     """Test case to unit-test the plot_bar_chart function."""
 
-    # TODO: Move to stats_tests  # noqa: FIX002
+    # TODO(CarrotManMatt): Move to stats_tests  # noqa: FIX002
+    # https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/57
     # def test_bar_chart_generates(self) -> None:
     #     """Test that the bar chart generates successfully when valid arguments are passed."""  # noqa: ERA001, E501, W505
     #     FILENAME: Final[str] = "output_chart.png"  # noqa: ERA001
