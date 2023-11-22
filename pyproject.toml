@@ -32,18 +32,19 @@ validators = "^0.22"
 beautifulsoup4 = "^4.12"
 emoji = "^2.8"
 parsedatetime = "^2.6"
-django = "~4.2"  # NOTE: Django version must be fixed until django-stubs supports the newer versions
+django = "~4.2"
 matplotlib = "^3.8"
 mplcyberpunk = "^0.7"
 python-logging-discord-handler = "^0.1"
 gitpython = "^3.1"
 
 [tool.poetry.group.dev.dependencies]
-mypy = "~1.5"  # NOTE: mypy version must be fixed until django-stubs supports the newer versions
-django-stubs = {extras = ["compatible-mypy"], version = "4.2.4"}
+mypy = "~1.6"
+django-stubs = {extras = ["compatible-mypy"], version = "~4.2"}
 pytest = "^7.4"
 pytest-subtests = "^0.11"
-ruff = "^0.0"
+ruff = "^0.1"
+setuptools = "*"  # NOTE: Required by pycharm
 pymarkdownlnt = "^0.9"
 
 [tool.mypy]
