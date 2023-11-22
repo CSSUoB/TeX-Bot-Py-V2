@@ -8,14 +8,11 @@ import subprocess
 import sys
 from pathlib import Path
 from subprocess import CompletedProcess
-from typing import TYPE_CHECKING, Final
+from typing import Final
 
 import pytest
 
 import utils
-
-if TYPE_CHECKING:
-    import discord
 
 
 class TestGenerateInviteURL:
@@ -46,24 +43,26 @@ class TestGenerateInviteURL:
 class TestPlotBarChart:
     """Test case to unit-test the plot_bar_chart function."""
 
-    def test_bar_chart_generates(self) -> None:
-        """Test that the bar chart generates successfully when valid arguments are passed."""
-        FILENAME: Final[str] = "output_chart.png"
-        DESCRIPTION: Final[str] = "Bar chart of the counted value of different roles."
-
-        bar_chart_image: discord.File = utils.plot_bar_chart(
-            data={"role1": 5, "role2": 7},
-            xlabel="Role Name",
-            ylabel="Counted value",
-            title="Counted Value Of Each Role",
-            filename=FILENAME,
-            description=DESCRIPTION,
-            extra_text="This is extra text"
-        )
-
-        assert bar_chart_image.filename == FILENAME
-        assert bar_chart_image.description == DESCRIPTION
-        assert bool(bar_chart_image.fp.read()) is True
+    # TODO(CarrotManMatt): Move to stats_tests  # noqa: FIX002
+    # https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/57
+    # def test_bar_chart_generates(self) -> None:
+    #     """Test that the bar chart generates successfully when valid arguments are passed."""  # noqa: ERA001, E501, W505
+    #     FILENAME: Final[str] = "output_chart.png"  # noqa: ERA001
+    #     DESCRIPTION: Final[str] = "Bar chart of the counted value of different roles."  # noqa: ERA001, E501, W505
+    #
+    #     bar_chart_image: discord.File = plot_bar_chart(
+    #         data={"role1": 5, "role2": 7},  # noqa: ERA001
+    #         x_label="Role Name",  # noqa: ERA001
+    #         y_label="Counted value",  # noqa: ERA001
+    #         title="Counted Value Of Each Role",  # noqa: ERA001
+    #         filename=FILENAME,  # noqa: ERA001
+    #         description=DESCRIPTION,  # noqa: ERA001
+    #         extra_text="This is extra text"  # noqa: ERA001
+    #     )  # noqa: ERA001, RUF100
+    #
+    #     assert bar_chart_image.filename == FILENAME  # noqa: ERA001
+    #     assert bar_chart_image.description == DESCRIPTION  # noqa: ERA001
+    #     assert bool(bar_chart_image.fp.read()) is True  # noqa: ERA001
 
 
 class TestAmountOfTimeFormatter:

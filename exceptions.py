@@ -129,6 +129,35 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
         return f"{partial_message}."
 
 
+class RulesChannelDoesNotExist(TeXBotBaseError, ValueError):
+    """Exception class to raise when the channel, marked as the rules channel, is missing."""
+
+    DEFAULT_MESSAGE: str = "There is no channel marked as the rules channel."
+
+
+class UserNotInCSSDiscordServer(TeXBotBaseError, ValueError):
+    """Exception class for when no members of the CSS Discord Server have the given user ID."""
+
+    DEFAULT_MESSAGE: str = (
+        "Given user ID does not represent any member of the CSS Discord Server."
+    )
+
+    def __init__(self, message: str | None = None, user_id: int | None = None) -> None:
+        """Initialize a ValueError exception for a non-existent user ID."""
+        self.user_id: int | None = user_id
+
+        super().__init__(message)
+
+
+class EveryoneRoleCouldNotBeRetrieved(BaseErrorWithErrorCode, ValueError):
+    """Exception class for when the "@everyone" role could not be retrieved."""
+
+    DEFAULT_MESSAGE: str = (
+        "The reference to the \"@everyone\" role could not be correctly retrieved."
+    )
+    ERROR_CODE: str = "E1042"
+
+
 class InvalidMessagesJSONFile(TeXBotBaseError, ImproperlyConfigured):
     """Exception class to raise when the messages.json file has an invalid structure."""
 
