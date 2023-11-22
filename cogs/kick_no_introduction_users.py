@@ -1,14 +1,15 @@
 """Contains cog classes for any kick_no_introduction_users interactions."""
 
+import functools
 import logging
 from typing import TYPE_CHECKING
 
 import discord
 from discord.ext import tasks
 
-from cogs._utils import TeXBotCog
+from cogs._utils import ErrorCaptureDecorators, TeXBotCog, capture_guild_does_not_exist_error
 from config import settings
-from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
+from exceptions import GuestRoleDoesNotExist
 from utils import TeXBot
 
 if TYPE_CHECKING:
@@ -34,6 +35,12 @@ class KickNoIntroductionUsersTaskCog(TeXBotCog):
         self.kick_no_introduction_users.cancel()
 
     @tasks.loop(hours=24)
+    @functools.partial(
+        ErrorCaptureDecorators.capture_error_and_close,
+        error_type=GuestRoleDoesNotExist,
+        close_func=ErrorCaptureDecorators.critical_error_close_func
+    )
+    @capture_guild_does_not_exist_error
     async def kick_no_introduction_users(self) -> None:
         """
         Recurring task to kick any Discord users that have not introduced themselves.
@@ -41,18 +48,8 @@ class KickNoIntroductionUsersTaskCog(TeXBotCog):
         Other prerequisites must be met for this task to be activated, see README.md for the
         full list of conditions.
         """
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
-        guest_role: discord.Role | None = await self.bot.guest_role
-        if not guest_role:
-            logging.critical(GuestRoleDoesNotExist())
-            await self.bot.close()
-            return
+        guild: discord.Guild = self.bot.css_guild
+        guest_role: discord.Role = await self.bot.guest_role
 
         member: discord.Member
         for member in guild.members:

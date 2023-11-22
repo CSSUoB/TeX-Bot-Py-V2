@@ -13,7 +13,7 @@ from discord.ext import tasks
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from cogs._utils import TeXBotAutocompleteContext, TeXBotCog
+from cogs._utils import TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotCog
 from db.core.models import DiscordReminder
 from utils import TeXBot
 
@@ -181,7 +181,7 @@ class RemindMeCommandCog(TeXBotCog):
         description="The message you want to be reminded with.",
         required=False
     )
-    async def remind_me(self, ctx: discord.ApplicationContext, delay: str, message: str) -> None:  # noqa: E501
+    async def remind_me(self, ctx: TeXBotApplicationContext, delay: str, message: str) -> None:
         """
         Definition & callback response of the "remind_me" command.
 

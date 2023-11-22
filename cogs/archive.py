@@ -4,15 +4,11 @@ import logging
 import re
 
 import discord
+from discord.ext import commands
 
-from cogs._utils import TeXBotAutocompleteContext, TeXBotCog
-from exceptions import (
-    ArchivistRoleDoesNotExist,
-    CommitteeRoleDoesNotExist,
-    GuestRoleDoesNotExist,
-    GuildDoesNotExist,
-    MemberRoleDoesNotExist,
-)
+from cogs._command_checks import Checks
+from cogs._utils import TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotCog
+from exceptions import BaseDoesNotExistError, UserNotInCSSDiscordServer
 
 
 class ArchiveCommandCog(TeXBotCog):
@@ -30,26 +26,17 @@ class ArchiveCommandCog(TeXBotCog):
             return set()
 
         try:
-            guild: discord.Guild = ctx.bot.css_guild
-        except GuildDoesNotExist:
-            return set()
-
-        committee_role: discord.Role | None = await ctx.bot.committee_role
-        if not committee_role:
-            return set()
-
-        interaction_member: discord.Member | None = guild.get_member(ctx.interaction.user.id)
-        if not interaction_member:
-            return set()
-
-        if committee_role not in interaction_member.roles:
+            css_guild: discord.Guild = ctx.bot.css_guild
+            interaction_user: discord.Member = await ctx.bot.get_css_user(ctx.interaction.user)
+            assert await ctx.bot.check_user_has_committee_role(interaction_user)
+        except (AssertionError, BaseDoesNotExistError, UserNotInCSSDiscordServer):
             return set()
 
         return {
             discord.OptionChoice(name=category.name, value=str(category.id))
             for category
-            in guild.categories
-            if category.permissions_for(interaction_member).is_superset(
+            in css_guild.categories
+            if category.permissions_for(interaction_user).is_superset(
                 discord.Permissions(send_messages=True, view_channel=True)
             )
         }
@@ -66,83 +53,22 @@ class ArchiveCommandCog(TeXBotCog):
         required=True,
         parameter_name="str_category_id"
     )
-    async def archive(self, ctx: discord.ApplicationContext, str_category_id: str) -> None:
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
+    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
+    async def archive(self, ctx: TeXBotApplicationContext, str_category_id: str) -> None:
         """
         Definition & callback response of the "archive" command.
 
         The "archive" command hides a given category from view of casual members unless they
         have the "Archivist" role.
         """
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
-        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
-        if not interaction_member:
-            await self.send_error(
-                ctx,
-                message="You must be a member of the CSS Discord server to use this command."
-            )
-            return
-
-        committee_role: discord.Role | None = await self.bot.committee_role
-        if not committee_role:
-            await self.send_error(
-                ctx,
-                error_code="E1021",
-                logging_message=CommitteeRoleDoesNotExist()
-            )
-            return
-
-        guest_role: discord.Role | None = await self.bot.guest_role
-        if not guest_role:
-            await self.send_error(
-                ctx,
-                error_code="E1022",
-                logging_message=GuestRoleDoesNotExist()
-            )
-            return
-
-        member_role: discord.Role | None = await self.bot.member_role
-        if not member_role:
-            await self.send_error(
-                ctx,
-                error_code="E1023",
-                logging_message=MemberRoleDoesNotExist()
-            )
-            return
-
-        archivist_role: discord.Role | None = await self.bot.archivist_role
-        if not archivist_role:
-            await self.send_error(
-                ctx,
-                error_code="E1024",
-                logging_message=ArchivistRoleDoesNotExist()
-            )
-            return
-
-        if committee_role not in interaction_member.roles:
-            committee_role_mention: str = "@Committee"
-            if ctx.guild:
-                committee_role_mention = f"`{committee_role.mention}`"
-
-            await self.send_error(
-                ctx,
-                message=f"Only {committee_role_mention} members can run this command."
-            )
-            return
-
-        everyone_role: discord.Role | None = discord.utils.get(guild.roles, name="@everyone")
-        if not everyone_role:
-            await self.send_error(ctx, error_code="E1042")
-            logging.error(
-                "The reference to the \"@everyone\" role could not be correctly retrieved."
-            )
-            return
+        css_guild: discord.Guild = self.bot.css_guild
+        interaction_member: discord.Member = await self.bot.get_css_user(ctx.user)
+        committee_role: discord.Role = await self.bot.committee_role
+        guest_role: discord.Role = await self.bot.guest_role
+        member_role: discord.Role = await self.bot.member_role
+        archivist_role: discord.Role = await self.bot.archivist_role
+        everyone_role: discord.Role = await self.bot.get_everyone_role()
 
         if not re.match(r"\A\d{17,20}\Z", str_category_id):
             await self.send_error(
@@ -154,7 +80,7 @@ class ArchiveCommandCog(TeXBotCog):
         category_id: int = int(str_category_id)
 
         category: discord.CategoryChannel | None = discord.utils.get(
-            guild.categories,
+            css_guild.categories,
             id=category_id
         )
         if not category:

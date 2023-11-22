@@ -1,5 +1,6 @@
 """Contains cog classes for any make_member interactions."""
 
+import contextlib
 import logging
 import re
 from typing import Final
@@ -8,12 +9,14 @@ import aiohttp
 import bs4
 import discord
 from bs4 import BeautifulSoup
+from discord.ext import commands
 from django.core.exceptions import ValidationError
 
-from cogs._utils import TeXBotCog
+from cogs._command_checks import Checks
+from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from config import settings
 from db.core.models import UoBMadeMember
-from exceptions import GuildDoesNotExist, MemberRoleDoesNotExist
+from exceptions import CommitteeRoleDoesNotExist, GuestRoleDoesNotExist
 
 
 class MakeMemberCommandCog(TeXBotCog):
@@ -34,37 +37,16 @@ class MakeMemberCommandCog(TeXBotCog):
         min_length=7,
         parameter_name="uob_id"
     )
-    async def make_member(self, ctx: discord.ApplicationContext, uob_id: str) -> None:
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
+    async def make_member(self, ctx: TeXBotApplicationContext, uob_id: str) -> None:
         """
         Definition & callback response of the "make_member" command.
 
         The "make_member" command validates that the given member has a valid CSS membership
         then gives the member the "Member" role.
         """
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.send_error(ctx, error_code="E1011")
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
-        member_role: discord.Role | None = await self.bot.member_role
-        if not member_role:
-            await self.send_error(
-                ctx,
-                error_code="E1023",
-                logging_message=str(MemberRoleDoesNotExist())
-            )
-            return
-
-        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
-        if not interaction_member:
-            await self.send_error(
-                ctx,
-                message="You must be a member of the CSS Discord server to use this command."
-            )
-            return
+        member_role: discord.Role = await self.bot.member_role
+        interaction_member: discord.Member = await ctx.bot.get_css_user(ctx.user)
 
         if member_role in interaction_member.roles:
             await ctx.respond(
@@ -87,11 +69,10 @@ class MakeMemberCommandCog(TeXBotCog):
             hashed_uob_id=UoBMadeMember.hash_uob_id(uob_id)
         ).aexists()
         if uob_id_already_used:
+            # noinspection PyUnusedLocal
             committee_mention: str = "committee"
-
-            committee_role: discord.Role | None = await self.bot.committee_role
-            if committee_role:
-                committee_mention = committee_role.mention
+            with contextlib.suppress(CommitteeRoleDoesNotExist):
+                committee_mention = (await self.bot.roles_channel).mention
 
             await ctx.respond(
                 (
@@ -168,36 +149,11 @@ class MakeMemberCommandCog(TeXBotCog):
             )
             return
 
-        await ctx.respond("Successfully made you a member!", ephemeral=True)
-
         # NOTE: The "Member" role must be added to the user **before** the "Guest" role to ensure that the welcome message does not include the suggestion to purchase membership
         await interaction_member.add_roles(
             member_role,
             reason="TeX Bot slash-command: \"/makemember\""
         )
-
-        guest_role: discord.Role | None = await self.bot.guest_role
-        if not guest_role:
-            logging.warning(
-                "\"/makemember\" command used but the \"Guest\" role does not exist. "
-                "Some user's may now have the \"Member\" role without the \"Guest\" role. "
-                "Use the \"/ensure-members-inducted\" command to fix this issue."
-            )
-        elif guest_role not in interaction_member.roles:
-            await interaction_member.add_roles(
-                guest_role,
-                reason="TeX Bot slash-command: \"/makemember\""
-            )
-
-        applicant_role: discord.Role | None = discord.utils.get(
-            self.bot.css_guild.roles,
-            name="Applicant"
-        )
-        if applicant_role and applicant_role in interaction_member.roles:
-            await interaction_member.remove_roles(
-                applicant_role,
-                reason="TeX Bot slash-command: \"/makemember\""
-            )
 
         try:
             await UoBMadeMember.objects.acreate(uob_id=uob_id)
@@ -213,3 +169,30 @@ class MakeMemberCommandCog(TeXBotCog):
             )
             if not error_is_already_exists:
                 raise
+
+        await ctx.respond("Successfully made you a member!", ephemeral=True)
+
+        try:
+            guest_role: discord.Role = await self.bot.guest_role
+        except GuestRoleDoesNotExist:
+            logging.warning(
+                "\"/makemember\" command used but the \"Guest\" role does not exist. "
+                "Some user's may now have the \"Member\" role without the \"Guest\" role. "
+                "Use the \"/ensure-members-inducted\" command to fix this issue."
+            )
+        else:
+            if guest_role not in interaction_member.roles:
+                await interaction_member.add_roles(
+                    guest_role,
+                    reason="TeX Bot slash-command: \"/makemember\""
+                )
+
+        applicant_role: discord.Role | None = discord.utils.get(
+            self.bot.css_guild.roles,
+            name="Applicant"
+        )
+        if applicant_role and applicant_role in interaction_member.roles:
+            await interaction_member.remove_roles(
+                applicant_role,
+                reason="TeX Bot slash-command: \"/makemember\""
+            )

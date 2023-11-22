@@ -1,21 +1,33 @@
 """Utility classes used for the cogs section of this project."""
 
+import contextlib
 import functools
 import logging
 import re
 from collections.abc import Callable, Coroutine, Mapping
-from typing import TYPE_CHECKING, Any, Final, ParamSpec, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Concatenate,
+    Final,
+    ParamSpec,
+    Protocol,
+    TypedDict,
+    TypeVar,
+)
 
 import discord
 from discord import Cog
+from discord.ui import View
 
-from exceptions import GuildDoesNotExist, StrikeTrackingError
+from exceptions import (
+    BaseDoesNotExistError,
+    CommitteeRoleDoesNotExist,
+    GuildDoesNotExist,
+    StrikeTrackingError,
+    UserNotInCSSDiscordServer,
+)
 from utils import TeXBot
-
-if TYPE_CHECKING:
-    from typing import TypeAlias
-
-    MentionableMember: TypeAlias = discord.Member | discord.Role | None
 
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -33,17 +45,36 @@ class TeXBotAutocompleteContext(discord.AutocompleteContext):
     bot: TeXBot
 
 
+class TeXBotApplicationContext(discord.ApplicationContext):
+    """
+    Type-hinting class overriding ApplicationContext's reference to the Bot class.
+
+    Pycord's default ApplicationContext references the standard discord.Bot class,
+    but cogs require a reference to the TeXBot class, so this ApplicationContext subclass
+    should be used in cogs instead.
+    """
+
+    bot: TeXBot
+
+
 class TeXBotCog(Cog):
     """Base Cog subclass that stores a reference to the currently running bot."""
 
     ERROR_ACTIVITIES: Final[Mapping[str, str]] = {
-        "ping": "reply to ping",
-        "write_roles": "send messages",
+        "archive": "archive the selected category",
+        "delete_all_reminders": (
+            "delete all `DiscordReminder` objects from the backend database"
+        ),
+        "delete_all_uob_made_members": (
+            "delete all `UoBMadeMember` objects from the backend database"
+        ),
         "edit_message": "edit the message",
         "induct": "induct user",
         "silent_induct": "silently induct user",
         "non_silent_induct": "induct user and send welcome message",
+        "ensure_members_inducted": "ensure all members are inducted",
         "make_member": "make you a member",
+        "ping": "reply to ping",
         "remind_me": "remind you",
         "channel_stats": "display channel statistics",
         "server_stats": "display whole server statistics",
@@ -51,15 +82,14 @@ class TeXBotCog(Cog):
         "left_member_stats": (
             "display statistics about the members that have left the server"
         ),
-        "archive": "archive the selected category",
-        "ensure_members_inducted": "ensure all members are inducted"
+        "write_roles": "send messages"
     }
 
     def __init__(self, bot: TeXBot) -> None:
         """Initialize a new cog instance, storing a reference to the bot object."""
         self.bot: TeXBot = bot
 
-    async def send_error(self, ctx: discord.ApplicationContext, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
+    async def send_error(self, ctx: TeXBotApplicationContext, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
         """
         Construct & format an error message from the given details.
 
@@ -67,14 +97,13 @@ class TeXBotCog(Cog):
         application command context.
         """
         construct_error_message: str = ":warning:There was an error"
-        construct_logging_error_message: str = ""
 
         if error_code:
+            # noinspection PyUnusedLocal
             committee_mention: str = "committee"
 
-            committee_role: discord.Role | None = await self.bot.committee_role
-            if committee_role:
-                committee_mention = committee_role.mention
+            with contextlib.suppress(CommitteeRoleDoesNotExist):
+                committee_mention = (await self.bot.committee_role).mention
 
             construct_error_message = (
                 f"**Contact a {committee_mention} member, referencing error code: "
@@ -82,22 +111,16 @@ class TeXBotCog(Cog):
                 + construct_error_message
             )
 
-            construct_logging_error_message += error_code
-
         command_name: str = (
             ctx.command.callback.__name__
             if (hasattr(ctx.command, "callback")
-            and not ctx.command.callback.__name__.startswith("_"))
+                and not ctx.command.callback.__name__.startswith("_"))
             else ctx.command.qualified_name
         )
         if command_name in self.ERROR_ACTIVITIES:
             construct_error_message += (
                 f" when trying to {self.ERROR_ACTIVITIES[command_name]}"
             )
-
-        if construct_logging_error_message:
-            construct_logging_error_message += " "
-        construct_logging_error_message += f"({command_name})"
 
         if message:
             construct_error_message += ":"
@@ -117,9 +140,18 @@ class TeXBotCog(Cog):
         await ctx.respond(construct_error_message, ephemeral=True)
 
         if logging_message:
-            if construct_logging_error_message:
-                construct_logging_error_message += " "
-            logging.error("%s%s", construct_logging_error_message, logging_message)
+            logging.error(
+                " ".join(
+                    message_part
+                    for message_part
+                    in (
+                        error_code if error_code else "",
+                        f"({command_name})",
+                        str(logging_message)
+                    )
+                    if message_part
+                ).rstrip(": ;")
+            )
 
     @staticmethod
     async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
@@ -133,23 +165,20 @@ class TeXBotCog(Cog):
             return set()
 
         try:
-            guild: discord.Guild = ctx.bot.css_guild
-        except GuildDoesNotExist:
+            css_guild: discord.Guild = ctx.bot.css_guild
+            # noinspection PyUnusedLocal
+            channel_permissions_limiter: MentionableMember = await ctx.bot.guest_role
+        except BaseDoesNotExistError:
             return set()
 
-        channel_permissions_limiter: MentionableMember = await ctx.bot.guest_role
-        if not channel_permissions_limiter:
-            return set()
-
-        interaction_member: discord.Member | None = guild.get_member(ctx.interaction.user.id)
-        if interaction_member:
-            channel_permissions_limiter = interaction_member
+        with contextlib.suppress(BaseDoesNotExistError, UserNotInCSSDiscordServer):
+            channel_permissions_limiter = await ctx.bot.get_css_user(ctx.interaction.user)
 
         if not ctx.value or re.match(r"\A#.*\Z", ctx.value):
             return {
                 discord.OptionChoice(name=f"#{channel.name}", value=str(channel.id))
                 for channel
-                in guild.text_channels
+                in css_guild.text_channels
                 if channel.permissions_for(channel_permissions_limiter).is_superset(
                     discord.Permissions(send_messages=True, view_channel=True)
                 )
@@ -158,47 +187,102 @@ class TeXBotCog(Cog):
         return {
             discord.OptionChoice(name=channel.name, value=str(channel.id))
             for channel
-            in guild.text_channels
+            in css_guild.text_channels
             if channel.permissions_for(channel_permissions_limiter).is_superset(
                 discord.Permissions(send_messages=True, view_channel=True)
             )
         }
 
 
-def capture_error(func: Callable[P, Coroutine[Any, Any, T]], error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> Callable[P, Coroutine[Any, Any, T | None]]:  # noqa: E501
-    @functools.wraps(func)
-    async def wrapper(self: TeXBotCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:
-        if not isinstance(self, TeXBotCog):
-            INVALID_METHOD_TYPE_MESSAGE: Final[str] = (  # type: ignore[unreachable]
-                f"Parameter {self.__name__!r} of any 'capture_error' decorator "
-                f"must be an instance of {TeXBotCog.__name__!r}/one of its subclasses."
-            )
-            raise TypeError(INVALID_METHOD_TYPE_MESSAGE)
-        try:
-            return await func(self, *args, **kwargs)  # type: ignore[arg-type]
-        except error_type as error:
-            close_func(error)
-            await self.bot.close()
-            return None
-    return wrapper  # type: ignore[return-value]
+if TYPE_CHECKING:
+    from typing import TypeAlias
+
+    MentionableMember: TypeAlias = discord.Member | discord.Role
+    WrapperInputFunc: TypeAlias = Callable[  # type: ignore[valid-type, misc]
+        Concatenate[TeXBotCog, P] | P,
+        Coroutine[Any, Any, T]
+    ]
+    WrapperOutputFunc: TypeAlias = Callable[  # type: ignore[valid-type, misc]
+        Concatenate[TeXBotCog, P] | P,
+        Coroutine[Any, Any, T | None]
+    ]
+    DecoratorInputFunc: TypeAlias = Callable[
+        Concatenate[TeXBotCog, P],
+        Coroutine[Any, Any, T]
+    ]
 
 
-def guild_does_not_exist_error_close_func(error: BaseException) -> None:
-    logging.critical(str(error).rstrip(".:"))
+class ErrorCaptureDecorators:
+    @staticmethod
+    def capture_error_and_close(func: "DecoratorInputFunc[P, T]", error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> "WrapperOutputFunc[P, T]":  # noqa: E501
+        @functools.wraps(func)
+        async def wrapper(self: TeXBotCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:
+            if not isinstance(self, TeXBotCog):
+                INVALID_METHOD_TYPE_MESSAGE: Final[str] = (  # type: ignore[unreachable]
+                    f"Parameter {self.__name__!r} of any 'capture_error' decorator "
+                    f"must be an instance of {TeXBotCog.__name__!r}/one of its subclasses."
+                )
+                raise TypeError(INVALID_METHOD_TYPE_MESSAGE)
+            try:
+                return await func(self, *args, **kwargs)
+            except error_type as error:
+                close_func(error)
+                await self.bot.close()
+                return None
+        return wrapper
+
+    @staticmethod
+    def critical_error_close_func(error: BaseException) -> None:
+        logging.critical(str(error).rstrip(".:"))
+
+    @classmethod
+    def strike_tracking_error_close_func(cls, error: BaseException) -> None:
+        cls.critical_error_close_func(error)
+        logging.warning("Critical errors are likely to lead to untracked moderation actions")
 
 
-def strike_tracking_error_close_func(error: BaseException) -> None:
-    guild_does_not_exist_error_close_func(error)
-    logging.warning("Critical errors are likely to lead to untracked moderation actions")
+def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T]") -> "WrapperOutputFunc[P, T]":  # noqa: E501
+    return ErrorCaptureDecorators.capture_error_and_close(
+        func,
+        error_type=GuildDoesNotExist,
+        close_func=ErrorCaptureDecorators.critical_error_close_func
+    )
 
 
-capture_guild_does_not_exist_error: Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T | None]]] = functools.partial(  # noqa: E501
-    capture_error,
-    error_type=GuildDoesNotExist,
-    close_func=guild_does_not_exist_error_close_func
-)
-capture_strike_tracking_error: Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T | None]]] = functools.partial(  # noqa: E501
-    capture_error,
-    error_type=StrikeTrackingError,
-    close_func=strike_tracking_error_close_func
-)
+def capture_strike_tracking_error(func: "WrapperInputFunc[P, T]") -> "WrapperOutputFunc[P, T]":
+    return ErrorCaptureDecorators.capture_error_and_close(
+        func,
+        error_type=StrikeTrackingError,
+        close_func=ErrorCaptureDecorators.strike_tracking_error_close_func
+    )
+
+
+class MessageSenderComponent(Protocol):
+    async def send(self, content: str, *, view: View | None = None) -> Any:
+        raise NotImplementedError
+
+
+class ChannelMessageSender(MessageSenderComponent):
+    def __init__(self, channel: discord.DMChannel | discord.TextChannel) -> None:
+        self.channel: discord.DMChannel | discord.TextChannel = channel
+
+    class _BaseSendKwargs(TypedDict):
+        content: str
+
+    class SendKwargs(_BaseSendKwargs, total=False):
+        view: View
+
+    async def send(self, content: str, *, view: View | None = None) -> Any:
+        send_kwargs: ChannelMessageSender.SendKwargs = {"content": content}
+        if view:
+            send_kwargs["view"] = view
+
+        await self.channel.send(**send_kwargs)
+
+
+class ResponseMessageSender(MessageSenderComponent):
+    def __init__(self, ctx: TeXBotApplicationContext) -> None:
+        self.ctx: TeXBotApplicationContext = ctx
+
+    async def send(self, content: str, *, view: View | None = None) -> Any:
+        await self.ctx.respond(content=content, view=view, ephemeral=True)
