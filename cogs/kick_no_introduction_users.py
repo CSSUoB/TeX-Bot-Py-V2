@@ -48,6 +48,7 @@ class KickNoIntroductionUsersTaskCog(TeXBotCog):
         Other prerequisites must be met for this task to be activated, see README.md for the
         full list of conditions.
         """
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guild: discord.Guild = self.bot.css_guild
         guest_role: discord.Role = await self.bot.guest_role
 

@@ -45,6 +45,7 @@ class MakeMemberCommandCog(TeXBotCog):
         The "make_member" command validates that the given member has a valid CSS membership
         then gives the member the "Member" role.
         """
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         member_role: discord.Role = await self.bot.member_role
         interaction_member: discord.Member = await ctx.bot.get_css_user(ctx.user)
 
