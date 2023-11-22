@@ -1,6 +1,7 @@
 """Contains cog classes for any strike interactions."""
 
 import asyncio
+import contextlib
 import datetime
 import re
 from collections.abc import Mapping
@@ -25,6 +26,7 @@ from config import settings
 from db.core.models import MemberStrikes
 from exceptions import (
     GuildDoesNotExist,
+    RulesChannelDoesNotExist,
     StrikeTrackingError,
 )
 
@@ -184,9 +186,8 @@ class BaseStrikeCog(TeXBotCog):
 
     async def _send_strike_user_message(self, strike_user: discord.User | discord.Member, member_strikes: MemberStrikes) -> None:  # noqa: E501
         rules_channel_mention: str = "`#welcome`"
-        rules_channel: discord.TextChannel | None = await self.bot.rules_channel
-        if rules_channel:
-            rules_channel_mention = rules_channel.mention
+        with contextlib.suppress(RulesChannelDoesNotExist):
+            rules_channel_mention = (await self.bot.rules_channel).mention
 
         includes_ban_message: str = (
             (
