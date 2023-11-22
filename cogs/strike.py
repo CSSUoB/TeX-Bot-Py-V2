@@ -1,6 +1,7 @@
 """Contains cog classes for any strike interactions."""
 
 import asyncio
+import contextlib
 import datetime
 import re
 from collections.abc import Mapping
@@ -25,6 +26,7 @@ from config import settings
 from db.core.models import MemberStrikes
 from exceptions import (
     GuildDoesNotExist,
+    RulesChannelDoesNotExist,
     StrikeTrackingError,
 )
 
@@ -184,9 +186,8 @@ class BaseStrikeCog(TeXBotCog):
 
     async def _send_strike_user_message(self, strike_user: discord.User | discord.Member, member_strikes: MemberStrikes) -> None:  # noqa: E501
         rules_channel_mention: str = "`#welcome`"
-        rules_channel: discord.TextChannel | None = await self.bot.rules_channel
-        if rules_channel:
-            rules_channel_mention = rules_channel.mention
+        with contextlib.suppress(RulesChannelDoesNotExist):
+            rules_channel_mention = (await self.bot.rules_channel).mention
 
         includes_ban_message: str = (
             (
@@ -407,7 +408,9 @@ class ManualModerationCog(BaseStrikeCog):
 
     @capture_strike_tracking_error
     async def _confirm_manual_add_strike(self, strike_user: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         css_guild: discord.Guild = self.bot.css_guild
+
         try:
             # noinspection PyTypeChecker
             audit_log_entry: discord.AuditLogEntry = await anext(
@@ -582,7 +585,9 @@ class ManualModerationCog(BaseStrikeCog):
     @capture_guild_does_not_exist_error
     async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
         """Flag manually applied timeout & track strikes accordingly."""
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         css_guild: discord.Guild = self.bot.css_guild
+
         if before.guild != css_guild or after.guild != css_guild or before.bot or after.bot:
             return
 

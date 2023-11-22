@@ -39,6 +39,7 @@ class InductSendMessageCog(TeXBotCog):
         These post-induction actions are only applied to users that have just been inducted as
         a guest into the CSS Discord server.
         """
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guild: discord.Guild = self.bot.css_guild
 
         if before.guild != guild or after.guild != guild or before.bot or after.bot:
@@ -121,6 +122,7 @@ class BaseInductCog(TeXBotCog):
 
     async def _perform_induction(self, ctx: TeXBotApplicationContext, induction_member: discord.Member, *, silent: bool) -> None:  # noqa: E501
         """Perform the actual process of inducting a member by giving them the Guest role."""
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guest_role: discord.Role = await self.bot.guest_role
 
         if guest_role in induction_member.roles:
@@ -309,6 +311,7 @@ class EnsureMembersInductedCommandCog(TeXBotCog):
         The "ensure_members_inducted" command ensures that users within the CSS Discord server
         that have the "Member" role have also been given the "Guest" role.
         """
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         css_guild: discord.Guild = self.bot.css_guild
         member_role: discord.Role = await self.bot.member_role
         guest_role: discord.Role = await self.bot.guest_role
