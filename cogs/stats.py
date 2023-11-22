@@ -155,6 +155,7 @@ class StatsCommandsCog(TeXBotCog):
 
             channel_id = int(str_channel_id)
 
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guild: discord.Guild = self.bot.css_guild
         channel: discord.TextChannel | None = discord.utils.get(
             guild.text_channels,
@@ -254,6 +255,7 @@ class StatsCommandsCog(TeXBotCog):
         The "server_stats" command sends a graph of the stats about messages sent in the whole
         of the CSS Discord server.
         """
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guild: discord.Guild = self.bot.css_guild
         guest_role: discord.Role = await self.bot.guest_role
 
@@ -382,6 +384,7 @@ class StatsCommandsCog(TeXBotCog):
         The "user_stats" command sends a graph of the stats about messages sent by the given
         member.
         """
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guild: discord.Guild = self.bot.css_guild
         interaction_member: discord.Member = await self.bot.get_css_user(ctx.user)
         guest_role: discord.Role = await self.bot.guest_role
@@ -464,6 +467,7 @@ class StatsCommandsCog(TeXBotCog):
         The "left_member_stats" command sends a graph of the stats about the roles that members
         had when they left the CSS Discord server.
         """
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guild: discord.Guild = self.bot.css_guild
 
         await ctx.defer(ephemeral=True)

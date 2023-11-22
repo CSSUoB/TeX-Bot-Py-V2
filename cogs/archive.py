@@ -62,6 +62,7 @@ class ArchiveCommandCog(TeXBotCog):
         The "archive" command hides a given category from view of casual members unless they
         have the "Archivist" role.
         """
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         css_guild: discord.Guild = self.bot.css_guild
         interaction_member: discord.Member = await self.bot.get_css_user(ctx.user)
         committee_role: discord.Role = await self.bot.committee_role

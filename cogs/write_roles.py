@@ -27,6 +27,7 @@ class WriteRolesCommandCog(TeXBotCog):
         The "write_roles" command populates the "#roles" channel with the correct messages
         defined in the messages.json file.
         """
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         roles_channel: discord.TextChannel = await self.bot.roles_channel
 
         roles_message: str

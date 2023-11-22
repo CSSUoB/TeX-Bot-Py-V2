@@ -72,6 +72,7 @@ class EditMessageCommandCog(TeXBotCog):
 
         The "write_roles" command edits a message sent by TeX-Bot to the value supplied.
         """
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         css_guild: discord.Guild = self.bot.css_guild
 
         if not re.match(r"\A\d{17,20}\Z", str_channel_id):

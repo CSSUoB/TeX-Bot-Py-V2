@@ -408,7 +408,9 @@ class ManualModerationCog(BaseStrikeCog):
 
     @capture_strike_tracking_error
     async def _confirm_manual_add_strike(self, strike_user: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         css_guild: discord.Guild = self.bot.css_guild
+
         try:
             # noinspection PyTypeChecker
             audit_log_entry: discord.AuditLogEntry = await anext(
@@ -583,7 +585,9 @@ class ManualModerationCog(BaseStrikeCog):
     @capture_guild_does_not_exist_error
     async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
         """Flag manually applied timeout & track strikes accordingly."""
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         css_guild: discord.Guild = self.bot.css_guild
+
         if before.guild != css_guild or after.guild != css_guild or before.bot or after.bot:
             return
 
