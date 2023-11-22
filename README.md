@@ -35,7 +35,7 @@ Ensure that you have [Poetry](https://python-poetry.org/) installed,
 then navigate to the root folder and run the following command:
 
 ```shell
-poetry install
+poetry install --no-root --sync
 ```
 
 ## Setup
@@ -44,14 +44,10 @@ You'll need to create a Discord bot of your own in the [Discord Developer Portal
 It's also handy if you have an empty server (or "guild") for you to test in.
 
 You can retrieve the correct invite URL to use by navigating to the root folder,
-then running the following commands in order:
+then running the following command:
 
 ```shell
-poetry shell
-```
-
-```shell
-python utils.py generate_invite_url {discord_bot_application_id} {discord_guild_id}
+poetry run python utils.py generate_invite_url {discord_bot_application_id} {discord_guild_id}
 ```
 
 You'll also need to set a number of environment variables before running the bot:
