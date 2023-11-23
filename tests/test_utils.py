@@ -11,6 +11,7 @@ from subprocess import CompletedProcess
 from typing import Final
 
 import pytest
+from _pytest.capture import CaptureFixture
 
 import utils
 
@@ -40,29 +41,29 @@ class TestGenerateInviteURL:
         )
 
 
-class TestPlotBarChart:
-    """Test case to unit-test the plot_bar_chart function."""
-
-    # TODO(CarrotManMatt): Move to stats_tests  # noqa: FIX002
-    # https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/57
-    # def test_bar_chart_generates(self) -> None:
-    #     """Test that the bar chart generates successfully when valid arguments are passed."""  # noqa: ERA001, E501, W505
-    #     FILENAME: Final[str] = "output_chart.png"  # noqa: ERA001
-    #     DESCRIPTION: Final[str] = "Bar chart of the counted value of different roles."  # noqa: ERA001, E501, W505
-    #
-    #     bar_chart_image: discord.File = plot_bar_chart(
-    #         data={"role1": 5, "role2": 7},  # noqa: ERA001
-    #         x_label="Role Name",  # noqa: ERA001
-    #         y_label="Counted value",  # noqa: ERA001
-    #         title="Counted Value Of Each Role",  # noqa: ERA001
-    #         filename=FILENAME,  # noqa: ERA001
-    #         description=DESCRIPTION,  # noqa: ERA001
-    #         extra_text="This is extra text"  # noqa: ERA001
-    #     )  # noqa: ERA001, RUF100
-    #
-    #     assert bar_chart_image.filename == FILENAME  # noqa: ERA001
-    #     assert bar_chart_image.description == DESCRIPTION  # noqa: ERA001
-    #     assert bool(bar_chart_image.fp.read()) is True  # noqa: ERA001
+# TODO(CarrotManMatt): Move to stats_tests  # noqa: FIX002
+# https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/57
+# class TestPlotBarChart:
+#     """Test case to unit-test the plot_bar_chart function."""
+#
+#     def test_bar_chart_generates(self) -> None:
+#         """Test that the bar chart generates successfully when valid arguments are passed."""  # noqa: ERA001, E501, W505
+#         FILENAME: Final[str] = "output_chart.png"  # noqa: ERA001
+#         DESCRIPTION: Final[str] = "Bar chart of the counted value of different roles."  # noqa: ERA001, E501, W505
+#
+#         bar_chart_image: discord.File = plot_bar_chart(
+#             data={"role1": 5, "role2": 7},  # noqa: ERA001
+#             x_label="Role Name",  # noqa: ERA001
+#             y_label="Counted value",  # noqa: ERA001
+#             title="Counted Value Of Each Role",  # noqa: ERA001
+#             filename=FILENAME,  # noqa: ERA001
+#             description=DESCRIPTION,  # noqa: ERA001
+#             extra_text="This is extra text"  # noqa: ERA001
+#         )  # noqa: ERA001, RUF100
+#
+#         assert bar_chart_image.filename == FILENAME  # noqa: ERA001
+#         assert bar_chart_image.description == DESCRIPTION  # noqa: ERA001
+#         assert bool(bar_chart_image.fp.read()) is True  # noqa: ERA001
 
 
 # TODO(CarrotManMatt): Move to stats_tests  # noqa: FIX002
@@ -174,51 +175,81 @@ class BaseTestArgumentParser:
         )
 
 
-class TestArgumentParser(BaseTestArgumentParser):
+class TestMain(BaseTestArgumentParser):
     """Test case to unit-test the overall argument parser."""
 
+    INITIAL_EXECUTED_COMMAND: Final[str] = Path(sys.argv[0]).name
+    USAGE_MESSAGE: Final[str] = (
+        f"usage: {INITIAL_EXECUTED_COMMAND} [-h] {{generate_invite_url}}"
+    )
+
     @classmethod
-    def test_error_when_no_function(cls) -> None:
+    def test_error_when_no_function(cls, capsys: CaptureFixture[str]) -> None:
         """Test for the correct error when no function name is provided."""
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py: error: the following arguments are required: function"
+            f"{cls.INITIAL_EXECUTED_COMMAND}: error: "
+            "the following arguments are required: function"
         )
 
-        cls.execute_util_function(util_function_name="")
+        try:
+            return_code: int = utils.main([])
+        except SystemExit as e:
+            if not e.code:
+                return_code = 0
+            else:
+                return_code = int(e.code)
 
-        assert cls.parser_output_return_code != 0
-        assert not cls.parser_output_stdout
-        assert "usage: utils.py [-h] {generate_invite_url}" in cls.parser_output_stderr
-        assert EXPECTED_ERROR_MESSAGE in cls.parser_output_stderr
+        captured = capsys.readouterr()
+
+        assert return_code != 0
+        assert not captured.out
+        assert cls.USAGE_MESSAGE in captured.err
+        assert EXPECTED_ERROR_MESSAGE in captured.err
 
     @classmethod
-    def test_error_when_invalid_function(cls) -> None:
+    def test_error_when_invalid_function(cls, capsys: CaptureFixture[str]) -> None:
         """Test for the correct error when an invalid function name is provided."""
         INVALID_FUNCTION: Final[str] = "".join(
             random.choices(string.ascii_letters + string.digits, k=7)
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py: error: argument function: invalid choice: "
+            f"{cls.INITIAL_EXECUTED_COMMAND}: error: argument function: invalid choice: "
             f"'{INVALID_FUNCTION}' (choose from 'generate_invite_url')"
         )
 
-        cls.execute_util_function(util_function_name=INVALID_FUNCTION)
+        try:
+            return_code: int = utils.main([INVALID_FUNCTION])
+        except SystemExit as e:
+            if not e.code:
+                return_code = 0
+            else:
+                return_code = int(e.code)
 
-        assert cls.parser_output_return_code != 0
-        assert not cls.parser_output_stdout
-        assert "usage: utils.py [-h] {generate_invite_url}" in cls.parser_output_stderr
-        assert EXPECTED_ERROR_MESSAGE in cls.parser_output_stderr
+        captured = capsys.readouterr()
+
+        assert return_code != 0
+        assert not captured.out
+        assert cls.USAGE_MESSAGE in captured.err
+        assert EXPECTED_ERROR_MESSAGE in captured.err
 
     @classmethod
     @pytest.mark.parametrize("help_argument", ("-h", "--help"))
-    def test_help(cls, help_argument: str) -> None:
+    def test_help(cls, capsys: CaptureFixture[str], help_argument: str) -> None:
         """Test for the correct response when any of the help arguments are provided."""
-        cls.execute_util_function("", help_argument)
+        try:
+            return_code: int = utils.main([help_argument])
+        except SystemExit as e:
+            if not e.code:
+                return_code = 0
+            else:
+                return_code = int(e.code)
 
-        assert cls.parser_output_return_code == 0
-        assert not cls.parser_output_stderr
-        assert "usage: utils.py [-h] {generate_invite_url}" in cls.parser_output_stdout
-        assert "functions:" in cls.parser_output_stdout
+        captured = capsys.readouterr()
+
+        assert return_code == 0
+        assert not captured.err
+        assert cls.USAGE_MESSAGE in captured.out
+        assert "functions:" in captured.out
 
 
 class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
