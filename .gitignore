@@ -25,6 +25,7 @@ __pycache__
 
 # dot-env environment variables file
 .env
+._env
 .env.test
 
 # Other possible cache files
