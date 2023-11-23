@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 import mplcyberpunk
 from discord.ext import commands
 
-import utils
 from cogs._command_checks import Checks
 from cogs._utils import TeXBotApplicationContext, TeXBotCog, capture_guild_does_not_exist_error
 from config import settings
@@ -111,6 +110,23 @@ def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str,
     plot_file.close()
 
     return discord_plot_file
+
+
+def amount_of_time_formatter(value: float, time_scale: str) -> str:
+    """
+    Format the amount of time value according to the provided time_scale.
+
+    E.g. past "1 days" => past "day",
+    past "2.00 weeks" => past "2 weeks",
+    past "3.14159 months" => past "3.14 months"
+    """
+    if value == 1 or float(f"{value:.2f}") == 1:
+        return f"{time_scale}"
+
+    if value % 1 == 0 or float(f"{value:.2f}") % 1 == 0:
+        return f"{int(value)} {time_scale}s"
+
+    return f"{value:.2f} {time_scale}s"
 
 
 class StatsCommandsCog(TeXBotCog):
@@ -224,7 +240,7 @@ class StatsCommandsCog(TeXBotCog):
                 x_label="Role Name",
                 y_label=(
                     f"""Number of Messages Sent (in the past {
-                        utils.amount_of_time_formatter(
+                        amount_of_time_formatter(
                             settings["STATISTICS_DAYS"].days,
                             "day"
                         )
@@ -333,7 +349,7 @@ class StatsCommandsCog(TeXBotCog):
                     x_label="Role Name",
                     y_label=(
                         f"""Number of Messages Sent (in the past {
-                        utils.amount_of_time_formatter(
+                        amount_of_time_formatter(
                             settings["STATISTICS_DAYS"].days,
                             "day"
                         )
@@ -356,7 +372,7 @@ class StatsCommandsCog(TeXBotCog):
                     x_label="Channel Name",
                     y_label=(
                         f"""Number of Messages Sent (in the past {
-                            utils.amount_of_time_formatter(
+                            amount_of_time_formatter(
                                 settings["STATISTICS_DAYS"].days,
                                 "day"
                             )
@@ -440,7 +456,7 @@ class StatsCommandsCog(TeXBotCog):
                 x_label="Channel Name",
                 y_label=(
                     f"""Number of Messages Sent (in the past {
-                        utils.amount_of_time_formatter(
+                        amount_of_time_formatter(
                             settings["STATISTICS_DAYS"].days,
                             "day"
                         )
