@@ -14,6 +14,7 @@ import pytest
 from _pytest.capture import CaptureFixture
 
 import utils
+from utils import InviteURLGenerator
 
 
 class TestGenerateInviteURL:
@@ -30,7 +31,7 @@ class TestGenerateInviteURL:
             99999999999999999999
         )
 
-        invite_url: str = utils.generate_invite_url(
+        invite_url: str = InviteURLGenerator.generate_invite_url(
             DISCORD_BOT_APPLICATION_ID,
             DISCORD_GUILD_ID
         )
@@ -306,7 +307,7 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
         assert cls.parser_output_return_code == 0
         assert not cls.parser_output_stderr
-        assert cls.parser_output_stdout == utils.generate_invite_url(
+        assert cls.parser_output_stdout == InviteURLGenerator.generate_invite_url(
             DISCORD_BOT_APPLICATION_ID,
             DISCORD_GUILD_ID
         )
@@ -330,7 +331,7 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
         assert cls.parser_output_return_code == 0
         assert not cls.parser_output_stderr
-        assert cls.parser_output_stdout == utils.generate_invite_url(
+        assert cls.parser_output_stdout == InviteURLGenerator.generate_invite_url(
             DISCORD_BOT_APPLICATION_ID,
             DISCORD_GUILD_ID
         )
