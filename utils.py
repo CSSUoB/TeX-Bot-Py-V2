@@ -129,11 +129,6 @@ class InviteURLGenerator(UtilityFunction):
             )
             raise RuntimeError(FUNCTION_SUBPARSER_IS_NONE_MESSAGE)
 
-        if not re.match(r"\A\d{17,20}\Z", parsed_args.discord_bot_application_id):
-            self.function_subparser.error(
-                "discord_bot_application_id must be a valid Discord application ID (see https://support-dev.discord.com/hc/en-gb/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)"
-            )
-
         discord_guild_id: str = parsed_args.discord_guild_id or ""
         if not discord_guild_id:
             import dotenv
@@ -148,15 +143,16 @@ class InviteURLGenerator(UtilityFunction):
                     "or otherwise set the DISCORD_GUILD_ID environment variable"
                 )
 
-        if not re.match(r"\A\d{17,20}\Z", discord_guild_id):
-            self.function_subparser.error(
-                "discord_guild_id must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
+        try:
+            invite_url: str = self.generate_invite_url(
+                parsed_args.discord_bot_application_id,
+                int(discord_guild_id)
             )
+        except ValueError as e:
+            self.function_subparser.error(e.args[0])
+        else:
+            sys.stdout.write(f"{invite_url}\n")
 
-        sys.stdout.write(f"""{self.generate_invite_url(
-            parsed_args.discord_bot_application_id,
-            int(discord_guild_id)
-        )}\n""")
         return 0
 
     # noinspection PyShadowingNames
@@ -167,7 +163,22 @@ class InviteURLGenerator(UtilityFunction):
 
         This invite URL directs to the given Discord server and requests only the permissions
         required for the bot to run.
+
+        Raises ValueError if discord_bot_application_id or discord_guild_id
+        do not have valid values.
         """
+        if not re.match(r"\A\d{17,20}\Z", discord_bot_application_id):
+            INVALID_DISCORD_BOT_APPLICATION_ID_MESSAGE: Final[str] = (
+                "discord_bot_application_id must be a valid Discord application ID (see https://support-dev.discord.com/hc/en-gb/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)"
+            )
+            raise ValueError(INVALID_DISCORD_BOT_APPLICATION_ID_MESSAGE)
+
+        if not re.match(r"\A\d{17,20}\Z", str(discord_guild_id)):
+            INVALID_DISCORD_GUILD_ID_MESSAGE: Final[str] = (
+                "discord_guild_id must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
+            )
+            raise ValueError(INVALID_DISCORD_GUILD_ID_MESSAGE)
+
         return discord.utils.oauth_url(
             client_id=discord_bot_application_id,
             permissions=discord.Permissions(
@@ -192,8 +203,6 @@ class InviteURLGenerator(UtilityFunction):
 
 # NOTE: Preventing using modules that have not been loaded if this file has been run from the command-line
 if __name__ != "__main__":
-    # noinspection SpellCheckingInspection
-
     class TeXBot(discord.Bot):
         """
         Subclass of the default Bot class provided by Pycord.

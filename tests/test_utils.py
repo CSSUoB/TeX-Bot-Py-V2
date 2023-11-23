@@ -4,20 +4,19 @@ import os
 import random
 import re
 import string
-import subprocess
 import sys
+from collections.abc import Callable, Sequence
 from pathlib import Path
-from subprocess import CompletedProcess
 from typing import Final
 
 import pytest
-from _pytest.capture import CaptureFixture
+from _pytest.capture import CaptureFixture, CaptureResult
 
 import utils
 from utils import InviteURLGenerator
 
 
-class TestGenerateInviteURL:
+class TestInviteURLGenerator:
     """Test case to unit-test the low-level URL generation function."""
 
     @staticmethod
@@ -113,76 +112,27 @@ class TestGenerateInviteURL:
 class BaseTestArgumentParser:
     """Parent class to define the execution code used by all ArgumentParser test cases."""
 
-    parser_output_return_code: int
-    parser_output_stdout: str
-    parser_output_stderr: str
-
-    @staticmethod
-    def _get_project_root() -> Path:
-        project_root: Path = Path(__file__).resolve()
-
-        for _ in range(8):
-            project_root = project_root.parent
-
-            if "README.md" in (path.name for path in project_root.iterdir()):
-                return project_root
-
-        NO_ROOT_DIRECTORY_MESSAGE: Final[str] = "Could not locate project root directory."
-        raise FileNotFoundError(NO_ROOT_DIRECTORY_MESSAGE)
+    ARGUMENT_PARSER_FUNCTION: Callable[[Sequence[str] | None], int]
 
     @classmethod
-    def execute_util_function(cls, util_function_name: str, *arguments: str) -> None:
-        """
-        Execute the given utility function.
+    def execute_argument_parser_function(cls, args: Sequence[str], capsys: CaptureFixture[str]) -> tuple[int, CaptureResult[str]]:  # noqa: E501
+        """Execute the chosen argument parser function."""
+        try:
+            return_code: int = cls.ARGUMENT_PARSER_FUNCTION(args)
+        except SystemExit as e:
+            return_code = 0 if not e.code else int(e.code)
 
-        The command line outputs are stored in class variables for later access.
-        """
-        if not re.match(r"\A[a-zA-Z0-9._\-+!\"' ]*\Z", util_function_name):
-            INVALID_FUNCTION_NAME_MESSAGE: Final[str] = (
-                "util_function_name must be a valid function name for "
-                "the utils.py command-line program."
-            )
-            raise TypeError(INVALID_FUNCTION_NAME_MESSAGE)
-
-        arguments_contain_invalid_symbol: bool = any(
-            not re.match(r"\A[a-zA-Z0-9._\-+!\"' ]*\Z", argument)
-            for argument
-            in arguments
-        )
-        if arguments_contain_invalid_symbol:
-            INVALID_ARGUMENTS_MESSAGE: Final[str] = (
-                "All arguments must be valid arguments for the utils.py command-line program."
-            )
-            raise ValueError(INVALID_ARGUMENTS_MESSAGE)
-
-        subprocess_args: list[str] = [sys.executable, "-m", "utils"]
-        if util_function_name:
-            subprocess_args.append(util_function_name)
-        subprocess_args.extend(arguments)
-
-        parser_output: CompletedProcess[bytes] = subprocess.run(
-            subprocess_args,  # noqa: S603
-            cwd=cls._get_project_root(),
-            capture_output=True,
-            check=False
-        )
-
-        cls.parser_output_return_code = parser_output.returncode
-        cls.parser_output_stdout = " ".join(
-            parser_output.stdout.decode("utf-8").replace("\r\n", "").split()
-        )
-        cls.parser_output_stderr = " ".join(
-            parser_output.stderr.decode("utf-8").replace("\r\n", "").split()
-        )
+        return return_code, capsys.readouterr()
 
 
 class TestMain(BaseTestArgumentParser):
-    """Test case to unit-test the overall argument parser."""
+    """Test case to unit-test the main argument parser."""
 
     INITIAL_EXECUTED_COMMAND: Final[str] = Path(sys.argv[0]).name
     USAGE_MESSAGE: Final[str] = (
         f"usage: {INITIAL_EXECUTED_COMMAND} [-h] {{generate_invite_url}}"
     )
+    ARGUMENT_PARSER_FUNCTION: Callable[[Sequence[str] | None], int] = utils.main
 
     @classmethod
     def test_error_when_no_function(cls, capsys: CaptureFixture[str]) -> None:
@@ -192,20 +142,14 @@ class TestMain(BaseTestArgumentParser):
             "the following arguments are required: function"
         )
 
-        try:
-            return_code: int = utils.main([])
-        except SystemExit as e:
-            if not e.code:
-                return_code = 0
-            else:
-                return_code = int(e.code)
-
-        captured = capsys.readouterr()
+        return_code: int
+        capture_result: CaptureResult[str]
+        return_code, capture_result = cls.execute_argument_parser_function([], capsys)
 
         assert return_code != 0
-        assert not captured.out
-        assert cls.USAGE_MESSAGE in captured.err
-        assert EXPECTED_ERROR_MESSAGE in captured.err
+        assert not capture_result.out
+        assert cls.USAGE_MESSAGE in capture_result.err
+        assert EXPECTED_ERROR_MESSAGE in capture_result.err
 
     @classmethod
     def test_error_when_invalid_function(cls, capsys: CaptureFixture[str]) -> None:
@@ -218,39 +162,33 @@ class TestMain(BaseTestArgumentParser):
             f"'{INVALID_FUNCTION}' (choose from 'generate_invite_url')"
         )
 
-        try:
-            return_code: int = utils.main([INVALID_FUNCTION])
-        except SystemExit as e:
-            if not e.code:
-                return_code = 0
-            else:
-                return_code = int(e.code)
-
-        captured = capsys.readouterr()
+        return_code: int
+        capture_result: CaptureResult[str]
+        return_code, capture_result = cls.execute_argument_parser_function(
+            [INVALID_FUNCTION],
+            capsys
+        )
 
         assert return_code != 0
-        assert not captured.out
-        assert cls.USAGE_MESSAGE in captured.err
-        assert EXPECTED_ERROR_MESSAGE in captured.err
+        assert not capture_result.out
+        assert cls.USAGE_MESSAGE in capture_result.err
+        assert EXPECTED_ERROR_MESSAGE in capture_result.err
 
     @classmethod
     @pytest.mark.parametrize("help_argument", ("-h", "--help"))
     def test_help(cls, capsys: CaptureFixture[str], help_argument: str) -> None:
         """Test for the correct response when any of the help arguments are provided."""
-        try:
-            return_code: int = utils.main([help_argument])
-        except SystemExit as e:
-            if not e.code:
-                return_code = 0
-            else:
-                return_code = int(e.code)
-
-        captured = capsys.readouterr()
+        return_code: int
+        capture_result: CaptureResult[str]
+        return_code, capture_result = cls.execute_argument_parser_function(
+            [help_argument],
+            capsys
+        )
 
         assert return_code == 0
-        assert not captured.err
-        assert cls.USAGE_MESSAGE in captured.out
-        assert "functions:" in captured.out
+        assert not capture_result.err
+        assert cls.USAGE_MESSAGE in capture_result.out
+        assert "functions:" in capture_result.out
 
 
 class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
