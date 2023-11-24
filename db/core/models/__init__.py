@@ -111,7 +111,7 @@ class UoBMadeMember(AsyncBaseModel):
 
     def __repr__(self) -> str:
         """Generate a developer-focused representation of the member's hashed UoB ID."""
-        return f"<{self._meta.verbose_name}: \"{self.hashed_uob_id}\">"
+        return f"<{self._meta.verbose_name}: {self.hashed_uob_id!r}>"
 
     def __setattr__(self, name: str, value: Any) -> None:
         """Set the attribute name to the given value, with special cases for proxy fields."""
@@ -140,8 +140,8 @@ class UoBMadeMember(AsyncBaseModel):
         The uob_id value is hashed into the format that hashed_uob_ids are stored in the
         database when new UoBMadeMember objects are created.
         """
-        if not isinstance(uob_id, str | int) or not re.match(r"\A\d{7}\Z", str(uob_id)):
-            INVALID_UOB_ID_MESSAGE: Final[str] = f"\"{uob_id}\" is not a valid UoB Student ID."
+        if not re.match(r"\A\d{7}\Z", str(uob_id)):
+            INVALID_UOB_ID_MESSAGE: Final[str] = f"{uob_id!r} is not a valid UoB Student ID."
             raise ValueError(INVALID_UOB_ID_MESSAGE)
 
         return hashlib.sha256(str(uob_id).encode()).hexdigest()
@@ -251,8 +251,8 @@ class DiscordReminder(HashedDiscordMember):
     def __repr__(self) -> str:
         """Generate a developer-focused representation of this DiscordReminder's attributes."""
         return (
-            f"<{self._meta.verbose_name}: \"{self.hashed_member_id}\", "
-            f"\"{self.channel_id}\", \"{self.send_datetime}\">"
+            f"<{self._meta.verbose_name}: {self.hashed_member_id!r}, "
+            f"{str(self.channel_id)!r}, {str(self.send_datetime)!r}>"
         )
 
     def __str__(self) -> str:

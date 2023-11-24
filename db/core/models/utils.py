@@ -139,7 +139,7 @@ class HashedDiscordMember(AsyncBaseModel):
 
     def __repr__(self) -> str:
         """Generate a developer-focused representation of the hashed discord member's ID."""
-        return f"<{self._meta.verbose_name}: \"{self.hashed_member_id}\">"
+        return f"<{self._meta.verbose_name}: {self.hashed_member_id!r}>"
 
     def __setattr__(self, name: str, value: Any) -> None:
         """Set the attribute name to the given value, with special cases for proxy fields."""

@@ -62,7 +62,7 @@ class MakeMemberCommandCog(TeXBotCog):
         if not re.match(r"\A\d{7}\Z", uob_id):
             await self.send_error(
                 ctx,
-                message=f"\"{uob_id}\" is not a valid UoB Student ID."
+                message=f"{uob_id!r} is not a valid UoB Student ID."
             )
             return
 
