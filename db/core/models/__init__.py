@@ -116,7 +116,15 @@ class UoBMadeMember(AsyncBaseModel):
     def __setattr__(self, name: str, value: Any) -> None:
         """Set the attribute name to the given value, with special cases for proxy fields."""
         if name == "uob_id":
+            if not isinstance(value, str | int):
+                UOB_ID_INVALID_TYPE_MESSAGE: Final[str] = (
+                    "uob_id must be an instance of str or int."
+                )
+
+                raise TypeError(UOB_ID_INVALID_TYPE_MESSAGE)
+
             self.hashed_uob_id = self.hash_uob_id(value)
+
         else:
             super().__setattr__(name, value)
 
@@ -125,7 +133,7 @@ class UoBMadeMember(AsyncBaseModel):
         return f"{self.hashed_uob_id}"
 
     @staticmethod
-    def hash_uob_id(uob_id: Any) -> str:
+    def hash_uob_id(uob_id: str | int) -> str:
         """
         Hash the provided uob_id.
 

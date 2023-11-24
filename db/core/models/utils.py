@@ -144,7 +144,14 @@ class HashedDiscordMember(AsyncBaseModel):
     def __setattr__(self, name: str, value: Any) -> None:
         """Set the attribute name to the given value, with special cases for proxy fields."""
         if name == "member_id":
+            if not isinstance(value, str | int):
+                MEMBER_ID_INVALID_TYPE_MESSAGE: Final[str] = (
+                    "member_id must be an instance of str or int."
+                )
+                raise TypeError(MEMBER_ID_INVALID_TYPE_MESSAGE)
+
             self.hashed_member_id = self.hash_member_id(value)
+
         else:
             super().__setattr__(name, value)
 
@@ -153,20 +160,16 @@ class HashedDiscordMember(AsyncBaseModel):
         return f"{self.hashed_member_id}"
 
     @staticmethod
-    def hash_member_id(member_id: Any) -> str:
+    def hash_member_id(member_id: str | int) -> str:
         """
         Hash the provided member_id.
 
         The member_id value is hashed into the format that hashed_member_ids are stored in the
         database when new objects of this class are created.
         """
-        def is_valid_member_id(value: str | int) -> bool:
-            """Validate whether the provided value is a valid Discord member ID."""
-            return bool(re.match(r"\A\d{17,20}\Z", str(value)))
-
-        if not isinstance(member_id, str | int) or not is_valid_member_id(member_id):
+        if not re.match(r"\A\d{17,20}\Z", str(member_id)):
             INVALID_MEMBER_ID_MESSAGE: Final[str] = (
-                f"\"{member_id}\" is not a valid Discord member ID "
+                f"{member_id!r} is not a valid Discord member ID "
                 "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
             )
             raise ValueError(INVALID_MEMBER_ID_MESSAGE)
