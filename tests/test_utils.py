@@ -5,7 +5,8 @@ import random
 import re
 import string
 import sys
-from collections.abc import Callable, Sequence
+from argparse import Namespace
+from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import Final
 
@@ -13,7 +14,7 @@ import pytest
 from _pytest.capture import CaptureFixture, CaptureResult
 
 import utils
-from utils import InviteURLGenerator
+from utils import InviteURLGenerator, UtilityFunction, classproperty
 
 
 class TestInviteURLGenerator:
@@ -112,13 +113,33 @@ class TestInviteURLGenerator:
 class BaseTestArgumentParser:
     """Parent class to define the execution code used by all ArgumentParser test cases."""
 
-    ARGUMENT_PARSER_FUNCTION: Callable[[Sequence[str] | None], int]
+    INITIAL_EXECUTED_COMMAND: Final[str] = Path(sys.argv[0]).name
+    UTILITY_FUNCTIONS: frozenset[UtilityFunction]
+
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def USAGE_MESSAGE(cls) -> str:  # noqa: N805,N802
+        """The error message describing how the given function should be called."""  # noqa: D401
+        return cls._format_usage_message(
+            utility_function.NAME for utility_function in cls.UTILITY_FUNCTIONS
+        )
 
     @classmethod
-    def execute_argument_parser_function(cls, args: Sequence[str], capsys: CaptureFixture[str]) -> tuple[int, CaptureResult[str]]:  # noqa: E501
+    def _format_usage_message(cls, utility_function_names: Iterable[str]) -> str:
+        return f"""usage: {cls.INITIAL_EXECUTED_COMMAND} [-h]{
+            " {" if utility_function_names else ""
+        }{"|".join(utility_function_names)}{
+            "}" if utility_function_names else ""
+        }"""
+
+    @classmethod
+    def execute_argument_parser_function(cls, args: Sequence[str], capsys: CaptureFixture[str], utility_functions: Iterable[UtilityFunction] | None = None) -> tuple[int, CaptureResult[str]]:  # noqa: E501
         """Execute the chosen argument parser function."""
         try:
-            return_code: int = cls.ARGUMENT_PARSER_FUNCTION(args)
+            return_code: int = utils.main(
+                args,
+                cls.UTILITY_FUNCTIONS if utility_functions is None else utility_functions
+            )
         except SystemExit as e:
             return_code = 0 if not e.code else int(e.code)
 
@@ -128,11 +149,7 @@ class BaseTestArgumentParser:
 class TestMain(BaseTestArgumentParser):
     """Test case to unit-test the main argument parser."""
 
-    INITIAL_EXECUTED_COMMAND: Final[str] = Path(sys.argv[0]).name
-    USAGE_MESSAGE: Final[str] = (
-        f"usage: {INITIAL_EXECUTED_COMMAND} [-h] {{generate_invite_url}}"
-    )
-    ARGUMENT_PARSER_FUNCTION: Callable[[Sequence[str] | None], int] = utils.main
+    UTILITY_FUNCTIONS: frozenset[UtilityFunction] = frozenset()
 
     @classmethod
     def test_error_when_no_function(cls, capsys: CaptureFixture[str]) -> None:
@@ -159,7 +176,7 @@ class TestMain(BaseTestArgumentParser):
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
             f"{cls.INITIAL_EXECUTED_COMMAND}: error: argument function: invalid choice: "
-            f"'{INVALID_FUNCTION}' (choose from 'generate_invite_url')"
+            f"'{INVALID_FUNCTION}' (choose from )"
         )
 
         return_code: int
@@ -173,6 +190,58 @@ class TestMain(BaseTestArgumentParser):
         assert not capture_result.out
         assert cls.USAGE_MESSAGE in capture_result.err
         assert EXPECTED_ERROR_MESSAGE in capture_result.err
+
+    @classmethod
+    @pytest.mark.parametrize(
+        "help_argument",
+        ("test_successful_execution", "test_invalid_function_error_message")
+    )
+    def test_attaching_utility_function(cls, capsys: CaptureFixture[str], help_argument: str) -> None:  # noqa: E501
+        """Test for the correct error when an invalid function name is provided."""
+        class ExampleUtilityFunction(UtilityFunction):
+            NAME: str = "example_utility_function"
+            DESCRIPTION: str = "An example utility function for testing purposes"
+
+            def run(self, parsed_args: Namespace) -> int:  # noqa: ARG002
+                sys.stdout.write("Successful execution\n")
+                return 0
+
+        return_code: int
+        capture_result: CaptureResult[str]
+
+        if help_argument == "test_successful_execution":
+            return_code, capture_result = cls.execute_argument_parser_function(
+                [ExampleUtilityFunction.NAME],
+                capsys,
+                {ExampleUtilityFunction()}
+            )
+
+            assert return_code == 0
+            assert not capture_result.err
+            assert capture_result.out == "Successful execution\n"
+
+        elif help_argument == "test_invalid_function_error_message":
+            INVALID_FUNCTION: Final[str] = "".join(
+                random.choices(string.ascii_letters + string.digits, k=7)
+            )
+            EXPECTED_ERROR_MESSAGE: Final[str] = (
+                f"{cls.INITIAL_EXECUTED_COMMAND}: error: argument function: invalid choice: "
+                f"'{INVALID_FUNCTION}' (choose from {ExampleUtilityFunction.NAME!r})"
+            )
+
+            return_code, capture_result = cls.execute_argument_parser_function(
+                [INVALID_FUNCTION],
+                capsys,
+                {ExampleUtilityFunction()}
+            )
+
+            assert return_code != 0
+            assert not capture_result.out
+            assert (
+                    cls._format_usage_message({ExampleUtilityFunction.NAME})
+                    in capture_result.err
+            )
+            assert EXPECTED_ERROR_MESSAGE in capture_result.err
 
     @classmethod
     @pytest.mark.parametrize("help_argument", ("-h", "--help"))

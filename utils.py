@@ -5,7 +5,7 @@ import os
 import re
 import sys
 from argparse import ArgumentParser, Namespace
-from collections.abc import Sequence
+from collections.abc import Callable, Iterable, Sequence
 from typing import Any, Final, Protocol, TypeAlias
 
 import discord
@@ -18,6 +18,20 @@ ChannelTypes: TypeAlias = (
     | discord.CategoryChannel
     | None
 )
+
+
+class classproperty:  # noqa: N801
+    """Decorator to wrap a class method as a read-only class property."""
+
+    def __init__(self, func: Callable[[Any], Any]) -> None:
+        """Initialise the decorator around the given function."""
+        # noinspection SpellCheckingInspection
+        self.fget: Callable[[Any], Any] = func
+
+    def __get__(self, instance: Any | None, owner: type) -> Any:
+        """Retrieve the read-only property from the class/instance."""
+        return self.fget(owner)
+
 
 # NOTE: Preventing loading modules that would cause errors if this file has been run from the command-line without pre-initialisation
 if __name__ != "__main__":
@@ -483,8 +497,11 @@ def amount_of_time_formatter(value: float, time_scale: str) -> str:
     return f"{value:.2f} {time_scale}s"
 
 
-def main(argv: Sequence[str] | None = None) -> int:
+def main(argv: Sequence[str] | None = None, utility_functions: Iterable[UtilityFunction] | None = None) -> int:  # noqa: E501
     """Run this script as a CLI tool with argument parsing."""
+    if utility_functions is None:
+        utility_functions = set()
+
     arg_parser: ArgumentParser = ArgumentParser(
         description="Executes common command-line utility functions"
     )
@@ -495,8 +512,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         dest="function"
     )
 
-    utility_functions: set[UtilityFunction] = {InviteURLGenerator()}
-
     utility_function: UtilityFunction
     for utility_function in utility_functions:
         utility_function.attach_to_parser(function_subparsers)
@@ -505,12 +520,13 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     for utility_function in utility_functions:
         if parsed_args.function == utility_function.NAME:
-            utility_function.run(parsed_args)
+            return utility_function.run(parsed_args)
 
-            return 0
-
-    arg_parser.error(f"Unknown function: {parsed_args.function!r}")  # noqa: RET503
+    NO_FUNCTION_EXECUTED_MESSAGE: Final[str] = (
+        "Valid function name provided, but not executed."
+    )
+    raise RuntimeError(NO_FUNCTION_EXECUTED_MESSAGE)
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(main(utility_functions={InviteURLGenerator()}))
