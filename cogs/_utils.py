@@ -277,7 +277,7 @@ class ChannelMessageSender(MessageSenderComponent):
         if view:
             send_kwargs["view"] = view
 
-        await self.channel.send(**send_kwargs)
+        return await self.channel.send(**send_kwargs)
 
 
 class ResponseMessageSender(MessageSenderComponent):
@@ -285,4 +285,4 @@ class ResponseMessageSender(MessageSenderComponent):
         self.ctx: TeXBotApplicationContext = ctx
 
     async def send(self, content: str, *, view: View | None = None) -> Any:
-        await self.ctx.respond(content=content, view=view, ephemeral=True)
+        return await self.ctx.respond(content=content, view=view, ephemeral=True)
