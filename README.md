@@ -7,8 +7,8 @@ used for managing the [CSS Discord server](https://cssbham.com/discord).
 ![Current Version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSUoB%2FTeX-Bot-Py-V2%2Fmain%2Fpyproject.toml&query=%24.tool.poetry.version&label=TeX-Bot)
 ![Tests](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yaml/badge.svg)
 ![py-cord Version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSUoB%2FTeX-Bot-Py-V2%2Fmain%2Fpyproject.toml&query=%24.tool.poetry.dependencies%5B'py-cord-dev'%5D&label=py-cord)
-![mypy passing](https://img.shields.io/badge/mypy-checked-green&label=mypy)
-![pymarkdown passing](https://img.shields.io/badge/pymarkdown-passing-green&label=pymarkdown)
+![mypy passing](https://img.shields.io/badge/mypy-checked-#34D058&label=mypy)
+![pymarkdown passing](https://img.shields.io/badge/pymarkdown-passing-#34D058&label=pymarkdown)
 
 ## Error Codes
 
