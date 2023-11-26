@@ -3,7 +3,7 @@
 TeX-Bot, but back in Python! This is a [Discord bot](https://discord.com/build/app-developers)
 used for managing the [CSS Discord server](https://cssbham.com/discord).
 
-![Tests](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yml/badge.svg)
+![Tests](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yaml/badge.svg)
 
 ## Error Codes
 
@@ -66,7 +66,7 @@ as if it were logged in to the website as a Committee member,
 you can extract this from your web browser after logging into the CSS members page).
 
 If running the bot from the built container image, these environment variables
-can be defined in your `docker-config.yml` file. Otherwise, you can put these in a `.env` file
+can be defined in your `docker-config.yaml` file. Otherwise, you can put these in a `.env` file
 in the root folder as it uses [python-dotenv](https://saurabh-kumar.com/python-dotenv/).
 There is an `example.env` file in the repo that you can rename and populate.
 
