@@ -1,8 +1,8 @@
-from cogs._utils import TeXBotApplicationContext
 from exceptions import UserNotInCSSDiscordServer
+from utils.tex_bot_contexts import TeXBotApplicationContext
 
 
-class Checks:
+class CommandChecks:
     @staticmethod
     async def check_interaction_user_in_css_guild(ctx: TeXBotApplicationContext) -> bool:
         try:

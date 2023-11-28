@@ -6,12 +6,16 @@ import re
 import discord
 from discord.ext import commands
 
-from cogs._command_checks import Checks
-from cogs._utils import TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotCog
 from exceptions import BaseDoesNotExistError, UserNotInCSSDiscordServer
+from utils import (
+    CommandChecks,
+    TeXBotApplicationContext,
+    TeXBotAutocompleteContext,
+    TeXBotBaseCog,
+)
 
 
-class ArchiveCommandCog(TeXBotCog):
+class ArchiveCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/archive" command and its call-back method."""
 
     @staticmethod

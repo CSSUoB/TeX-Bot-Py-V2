@@ -10,14 +10,17 @@ import discord
 from discord import AuditLogAction
 from discord.ext import tasks
 
-from cogs._utils import ErrorCaptureDecorators, TeXBotCog, capture_guild_does_not_exist_error
 from config import settings
 from db.core.models import SentGetRolesReminderMember
 from exceptions import GuestRoleDoesNotExist, RolesChannelDoesNotExist
-from utils import TeXBot
+from utils import TeXBot, TeXBotBaseCog
+from utils.error_capture_decorators import (
+    ErrorCaptureDecorators,
+    capture_guild_does_not_exist_error,
+)
 
 
-class SendGetRolesRemindersTaskCog(TeXBotCog):
+class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
     """Cog class that defines the send_get_roles_reminders task."""
 
     def __init__(self, bot: TeXBot) -> None:

@@ -11,23 +11,27 @@ import discord
 from discord.ext import commands
 from discord.ui import View
 
-from cogs._command_checks import Checks
-from cogs._utils import (
-    ChannelMessageSender,
-    MessageSenderComponent,
-    ResponseMessageSender,
-    TeXBotApplicationContext,
-    TeXBotAutocompleteContext,
-    TeXBotCog,
-    capture_guild_does_not_exist_error,
-    capture_strike_tracking_error,
-)
 from config import settings
 from db.core.models import MemberStrikes
 from exceptions import (
     GuildDoesNotExist,
     RulesChannelDoesNotExist,
     StrikeTrackingError,
+)
+from utils import (
+    CommandChecks,
+    TeXBotApplicationContext,
+    TeXBotAutocompleteContext,
+    TeXBotBaseCog,
+)
+from utils.error_capture_decorators import (
+    capture_guild_does_not_exist_error,
+    capture_strike_tracking_error,
+)
+from utils.message_sender_components import (
+    ChannelMessageSender,
+    MessageSenderComponent,
+    ResponseMessageSender,
 )
 
 
@@ -174,7 +178,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
         await interaction.response.edit_message(delete_after=0)
 
 
-class BaseStrikeCog(TeXBotCog):
+class BaseStrikeCog(TeXBotBaseCog):
     """
     Base strike cog container class.
 
@@ -582,7 +586,7 @@ class ManualModerationCog(BaseStrikeCog):
             perform_action=False
         )
 
-    @TeXBotCog.listener()
+    @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
     async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
         """Flag manually applied timeout & track strikes accordingly."""
@@ -600,7 +604,7 @@ class ManualModerationCog(BaseStrikeCog):
             action=discord.AuditLogAction.member_update
         )
 
-    @TeXBotCog.listener()
+    @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
     async def on_member_remove(self, member: discord.Member) -> None:
         """Flag manually applied kick & track strikes accordingly."""
@@ -612,7 +616,7 @@ class ManualModerationCog(BaseStrikeCog):
             action=discord.AuditLogAction.kick
         )
 
-    @TeXBotCog.listener()
+    @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
     async def on_member_ban(self, guild: discord.Guild, user: discord.User | discord.Member) -> None:  # noqa: E501
         """Flag manually applied ban & track strikes accordingly."""

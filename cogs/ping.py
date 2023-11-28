@@ -4,11 +4,11 @@ import random
 
 import discord
 
-from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from config import settings
+from utils import TeXBotApplicationContext, TeXBotBaseCog
 
 
-class PingCommandCog(TeXBotCog):
+class PingCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/remindme" command and its call-back method."""
 
     @discord.slash_command(description="Replies with Pong!")  # type: ignore[no-untyped-call, misc]

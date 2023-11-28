@@ -5,12 +5,16 @@ import re
 import discord
 from discord.ext import commands
 
-from cogs._command_checks import Checks
-from cogs._utils import TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotCog
 from exceptions import BaseDoesNotExistError, UserNotInCSSDiscordServer
+from utils import (
+    CommandChecks,
+    TeXBotApplicationContext,
+    TeXBotAutocompleteContext,
+    TeXBotBaseCog,
+)
 
 
-class EditMessageCommandCog(TeXBotCog):
+class EditMessageCommandCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
     """Cog class that defines the "/editmessage" command and its call-back method."""
 
@@ -31,7 +35,7 @@ class EditMessageCommandCog(TeXBotCog):
         except (AssertionError, BaseDoesNotExistError, UserNotInCSSDiscordServer):
             return set()
 
-        return await TeXBotCog.autocomplete_get_text_channels(ctx)
+        return await TeXBotBaseCog.autocomplete_get_text_channels(ctx)
 
     # noinspection SpellCheckingInspection
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]

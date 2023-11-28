@@ -8,13 +8,6 @@ from typing import Literal
 import discord
 from discord.ext import commands
 
-from cogs._command_checks import Checks
-from cogs._utils import (
-    TeXBotApplicationContext,
-    TeXBotAutocompleteContext,
-    TeXBotCog,
-    capture_guild_does_not_exist_error,
-)
 from config import settings
 from db.core.models import IntroductionReminderOptOutMember
 from exceptions import (
@@ -25,12 +18,19 @@ from exceptions import (
     RolesChannelDoesNotExist,
     RulesChannelDoesNotExist,
 )
+from utils import (
+    CommandChecks,
+    TeXBotApplicationContext,
+    TeXBotAutocompleteContext,
+    TeXBotBaseCog,
+)
+from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 
-class InductSendMessageCog(TeXBotCog):
+class InductSendMessageCog(TeXBotBaseCog):
     """Cog class that defines the "/induct" command and its call-back method."""
 
-    @TeXBotCog.listener()
+    @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
     async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
         """
@@ -112,7 +112,7 @@ class InductSendMessageCog(TeXBotCog):
             )
 
 
-class BaseInductCog(TeXBotCog):
+class BaseInductCog(TeXBotBaseCog):
     """
     Base user-induction cog container class.
 
@@ -294,7 +294,7 @@ class InductUserCommandsCog(BaseInductCog):
         await self._perform_induction(ctx, member, silent=True)
 
 
-class EnsureMembersInductedCommandCog(TeXBotCog):
+class EnsureMembersInductedCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/ensure-members-inducted" command and call-back method."""
 
     # noinspection SpellCheckingInspection

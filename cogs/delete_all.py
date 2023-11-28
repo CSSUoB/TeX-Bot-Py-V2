@@ -4,12 +4,11 @@ import discord
 from discord.ext import commands
 from django.db.models import Model
 
-from cogs._command_checks import Checks
-from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from db.core.models import DiscordReminder, UoBMadeMember
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 
-class DeleteAllCommandsCog(TeXBotCog):
+class DeleteAllCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/delete-all" command group and command call-back methods."""
 
     delete_all: discord.SlashCommandGroup = discord.SlashCommandGroup(

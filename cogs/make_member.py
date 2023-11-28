@@ -12,14 +12,13 @@ from bs4 import BeautifulSoup
 from discord.ext import commands
 from django.core.exceptions import ValidationError
 
-from cogs._command_checks import Checks
-from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from config import settings
 from db.core.models import UoBMadeMember
 from exceptions import CommitteeRoleDoesNotExist, GuestRoleDoesNotExist
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 
-class MakeMemberCommandCog(TeXBotCog):
+class MakeMemberCommandCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
     """Cog class that defines the "/makemember" command and its call-back method."""
 

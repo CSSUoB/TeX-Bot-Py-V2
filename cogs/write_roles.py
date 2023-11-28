@@ -4,12 +4,11 @@
 import discord
 from discord.ext import commands
 
-from cogs._command_checks import Checks
-from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from config import settings
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 
-class WriteRolesCommandCog(TeXBotCog):
+class WriteRolesCommandCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
     """Cog class that defines the "/writeroles" command and its call-back method."""
 

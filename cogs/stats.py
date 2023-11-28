@@ -10,11 +10,10 @@ import matplotlib.pyplot as plt
 import mplcyberpunk
 from discord.ext import commands
 
-import utils
-from cogs._command_checks import Checks
-from cogs._utils import TeXBotApplicationContext, TeXBotCog, capture_guild_does_not_exist_error
 from config import settings
 from db.core.models import LeftMember
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 if TYPE_CHECKING:
     from collections.abc import Collection
@@ -130,7 +129,7 @@ def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str,
     return discord_plot_file
 
 
-class StatsCommandsCog(TeXBotCog):
+class StatsCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/stats" command group and its command call-back methods."""
 
     stats: discord.SlashCommandGroup = discord.SlashCommandGroup(
@@ -544,7 +543,7 @@ class StatsCommandsCog(TeXBotCog):
             )
         )
 
-    @TeXBotCog.listener()
+    @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
     async def on_member_leave(self, member: discord.Member) -> None:
         """Update the stats of the roles that members had when they left the Discord server."""
