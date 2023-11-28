@@ -466,23 +466,6 @@ class InviteURLGenerator(UtilityFunction):
         )
 
 
-def amount_of_time_formatter(value: float, time_scale: str) -> str:
-    """
-    Format the amount of time value according to the provided time_scale.
-
-    E.g. past "1 days" => past "day",
-    past "2.00 weeks" => past "2 weeks",
-    past "3.14159 months" => past "3.14 months"
-    """
-    if value == 1 or float(f"{value:.2f}") == 1:
-        return f"{time_scale}"
-
-    if value % 1 == 0 or float(f"{value:.2f}") % 1 == 0:
-        return f"{int(value)} {time_scale}s"
-
-    return f"{value:.2f} {time_scale}s"
-
-
 if __name__ == "__main__":
     arg_parser: ArgumentParser = ArgumentParser(
         description="Executes common command-line utility functions"
