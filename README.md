@@ -3,7 +3,13 @@
 TeX-Bot, but back in Python! This is a [Discord bot](https://discord.com/build/app-developers)
 used for managing the [CSS Discord server](https://cssbham.com/discord).
 
-![Tests](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yaml/badge.svg)
+[![Current Version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSUoB%2FTeX-Bot-Py-V2%2Fmain%2Fpyproject.toml&query=%24.tool.poetry.version&label=TeX-Bot)](https://github.com/CSSUoB/TeX-Bot-Py-V2/tree/main)
+[![Python Version](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/downloads/release/python-3116/)
+[![py-cord Version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSUoB%2FTeX-Bot-Py-V2%2Fmain%2Fpyproject.toml&query=%24.tool.poetry.dependencies%5B'py-cord-dev'%5D&label=py-cord)](https://pycord.dev/)
+[![Tests](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yaml/badge.svg)](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yaml)
+[![mypy passing](https://img.shields.io/badge/mypy-checked-%232EBB4E&label=mypy)](https://www.mypy-lang.org/)
+[![pymarkdown passing](https://img.shields.io/badge/pymarkdown-passing-%232EBB4E&label=pymarkdown)](https://github.com/jackdewinter/pymarkdown)
+[![ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://ruff.rs/)
 
 ## Error Codes
 
