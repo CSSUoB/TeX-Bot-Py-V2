@@ -58,49 +58,48 @@ def _remove_any_invalid_tables(original_file_path: Path) -> None:
     original_file_path = temp_file_path
     del temp_file_path
 
-    with original_file_path.open("r") as original_file:
-        new_file: TextIO
-        with new_file_path.open("w") as new_file:
-            def write_table_if_not_custom_formatted(write_table_line_number: int, *, is_newline: bool = False) -> None:  # noqa: E501
-                write_table_lines: MutableSequence[str] = []
-                while write_table_line_number in table_lines or is_newline:
-                    is_newline = False
+    new_file: TextIO
+    with original_file_path.open("r") as original_file, new_file_path.open("w") as new_file:
+        def write_table_if_not_custom_formatted(write_table_line_number: int, *, is_newline: bool = False) -> None:  # noqa: E501
+            write_table_lines: MutableSequence[str] = []
+            while write_table_line_number in table_lines or is_newline:
+                is_newline = False
 
-                    if write_table_line_number in custom_formatted_table_lines:
-                        return
+                if write_table_line_number in custom_formatted_table_lines:
+                    return
 
-                    write_table_lines.append(original_file.readline())
-                    write_table_line_number += 1
+                write_table_lines.append(original_file.readline())
+                write_table_line_number += 1
 
-                write_table_line: str
-                for write_table_line in write_table_lines:
-                    new_file.write(write_table_line)
+            write_table_line: str
+            for write_table_line in write_table_lines:
+                new_file.write(write_table_line)
 
-            line_number = 1
-            at_end_of_original_file: bool = False
-            while not at_end_of_original_file:
-                current_position: int = original_file.tell()
-                line = original_file.readline()
-                at_end_of_original_file = not line
+        line_number = 1
+        at_end_of_original_file: bool = False
+        while not at_end_of_original_file:
+            current_position: int = original_file.tell()
+            line = original_file.readline()
+            at_end_of_original_file = not line
 
-                if line:
-                    if line_number not in table_lines and line != "\n":
+            if line:
+                if line_number not in table_lines and line != "\n":
+                    new_file.write(line)
+                elif line == "\n":
+                    if line_number + 1 not in table_lines:
                         new_file.write(line)
-                    elif line == "\n":
-                        if line_number + 1 not in table_lines:
-                            new_file.write(line)
-                        else:
-                            original_file.seek(current_position)
-                            _ = original_file.readline()
-                            original_file.seek(current_position)
-                            write_table_if_not_custom_formatted(line_number, is_newline=True)
                     else:
                         original_file.seek(current_position)
                         _ = original_file.readline()
                         original_file.seek(current_position)
-                        write_table_if_not_custom_formatted(line_number, is_newline=False)
+                        write_table_if_not_custom_formatted(line_number, is_newline=True)
+                else:
+                    original_file.seek(current_position)
+                    _ = original_file.readline()
+                    original_file.seek(current_position)
+                    write_table_if_not_custom_formatted(line_number, is_newline=False)
 
-                line_number += 1
+            line_number += 1
 
 
 def remove_invalid_tables() -> None:
