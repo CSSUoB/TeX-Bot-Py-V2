@@ -154,7 +154,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     arg_parser.add_argument(
         "--restore",
         action="store_true",
-        help="Whether to remove or restore any custom-formatted tables"
+        help="Restore any custom-formatted tables from the original file"
+    )
+    arg_parser.add_argument(
+        "--remove",
+        action="store_false",
+        dest="restore",
+        help=(
+            "Override the `--restore` flag "
+            "and explicitly declare to remove any custom-formatted tables"
+        )
     )
 
     parsed_args: Namespace = arg_parser.parse_args(argv)
