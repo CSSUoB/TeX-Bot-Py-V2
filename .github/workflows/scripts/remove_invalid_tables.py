@@ -103,7 +103,7 @@ def _remove_any_invalid_tables(original_file_path: Path) -> None:
 
 
 def remove_invalid_tables() -> None:
-    """Remove all invalid tables within every markdown file in repository."""
+    """Remove all invalid tables within every markdown file in this Git repository."""
     project_root: Path = _get_project_root()
 
     file_entry: tuple[str | PathLike[str], Any]
@@ -131,10 +131,8 @@ def restore_invalid_tables() -> None:
     """Return all markdown files to their original state before linting."""
     project_root: Path = _get_project_root()
 
-    file_entry: tuple[str | PathLike[str], Any]
-    for file_entry in Repo(project_root).index.entries:
-        file_path: Path = project_root / file_entry[0]
-
+    file_path: Path
+    for file_path in project_root.rglob("*.md.original"):
         if not file_path.is_file() or not file_path.exists():
             continue
 
@@ -155,7 +153,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     arg_parser.add_argument(
         "--restore",
         action="store_true",
-        help="Whether to remove or restore any custom-formatted tables"
+        help="Restore any custom-formatted tables from the original file"
+    )
+    arg_parser.add_argument(
+        "--remove",
+        action="store_false",
+        dest="restore",
+        help=(
+            "Override the `--restore` flag "
+            "and explicitly declare to remove any custom-formatted tables"
+        )
     )
 
     parsed_args: Namespace = arg_parser.parse_args(argv)
