@@ -4,6 +4,7 @@ __all__: Sequence[str] = (
     "CommandChecks",
     "InviteURLGenerator",
     "MessageSenderComponent",
+    "SuppressTraceback",
     "TeXBot",
     "TeXBotBaseCog",
     "TeXBotApplicationContext",
@@ -20,6 +21,7 @@ from utils.generate_invite_url import InviteURLGenerator
 if __name__ != "__main__":
     from utils.command_checks import CommandChecks
     from utils.message_sender_components import MessageSenderComponent
+    from utils.suppress_traceback import SuppressTraceback
     from utils.tex_bot import TeXBot
     from utils.tex_bot_base_cog import TeXBotBaseCog
     from utils.tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext

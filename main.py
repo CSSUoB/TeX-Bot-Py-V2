@@ -6,32 +6,28 @@ then ensures the Django database is correctly migrated to the latest version and
 the asynchronous running process for the Discord bot.
 """
 
-import sys
 
 import discord
 from django.core import management
 
 import config
 from config import settings
-from utils import TeXBot
+from utils import SuppressTraceback, TeXBot
 
-# noinspection SpellCheckingInspection
-sys.tracebacklimit = 0
+with SuppressTraceback():
+    config.setup_env_variables()
+    config.setup_django()
 
-config.setup_env_variables()
-config.setup_django()
+    intents: discord.Intents = discord.Intents.default()
+    # noinspection PyDunderSlots,PyUnresolvedReferences
+    intents.members = True
 
-intents: discord.Intents = discord.Intents.default()
-# noinspection PyDunderSlots,PyUnresolvedReferences
-intents.members = True
-
-bot = TeXBot(intents=intents)
+    bot = TeXBot(intents=intents)
 
 bot.load_extension("cogs")
 
 if __name__ == "__main__":
-    management.call_command("migrate")
-
-    del sys.tracebacklimit
+    with SuppressTraceback():
+        management.call_command("migrate")
 
     bot.run(settings["DISCORD_BOT_TOKEN"])
