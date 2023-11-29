@@ -1,7 +1,6 @@
 """Contains cog classes for any delete_all interactions."""
 
 import discord
-from discord.ext import commands
 from django.db.models import Model
 
 from db.core.models import DiscordReminder, UoBMadeMember
@@ -38,8 +37,8 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
         name="reminders",
         description="Deletes all Reminders from the backend database."
     )
-    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
-    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_css_guild
     async def delete_all_reminders(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "delete_all_uob_made_members" command.
@@ -53,8 +52,8 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
         name="uob-made-members",
         description="Deletes all UoB Made Members from the backend database."
     )
-    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
-    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_css_guild
     async def delete_all_uob_made_members(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "delete_all_uob_made_members" command.

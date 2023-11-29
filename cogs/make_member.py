@@ -9,7 +9,6 @@ import aiohttp
 import bs4
 import discord
 from bs4 import BeautifulSoup
-from discord.ext import commands
 from django.core.exceptions import ValidationError
 
 from config import settings
@@ -36,7 +35,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         min_length=7,
         parameter_name="uob_id"
     )
-    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
+    @CommandChecks.check_interaction_user_in_css_guild
     async def make_member(self, ctx: TeXBotApplicationContext, uob_id: str) -> None:
         """
         Definition & callback response of the "make_member" command.

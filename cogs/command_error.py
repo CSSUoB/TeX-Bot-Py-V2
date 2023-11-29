@@ -32,10 +32,10 @@ class CommandErrorCog(TeXBotBaseCog):
             )
 
         elif isinstance(error, CheckAnyFailure):
-            if error.checks[0] == CommandChecks.check_interaction_user_in_css_guild:  # type: ignore[comparison-overlap]
+            if CommandChecks.is_interaction_user_in_css_guild_failure(error.checks[0]):
                 message = "You must be a member of the CSS Discord server to use this command."
 
-            elif error.checks[0] == CommandChecks.check_interaction_user_has_committee_role:  # type: ignore[comparison-overlap]
+            elif CommandChecks.is_interaction_user_has_committee_role_failure(error.checks[0]):
                 # noinspection PyUnusedLocal
                 committee_role_mention: str = "@Committee"
                 with contextlib.suppress(BaseDoesNotExistError):

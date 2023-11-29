@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 import discord
 import matplotlib.pyplot as plt
 import mplcyberpunk
-from discord.ext import commands
 
 from config import settings
 from db.core.models import LeftMember
@@ -147,7 +146,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         description="The channel to display the stats for.",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(
-            TeXBotCog.autocomplete_get_text_channels  # type: ignore[arg-type]
+            TeXBotBaseCog.autocomplete_get_text_channels  # type: ignore[arg-type]
         ),
         required=False,
         parameter_name="str_channel_id"
@@ -392,7 +391,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         name="self",
         description="Displays stats about the number of messages you have sent."
     )
-    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
+    @CommandChecks.check_interaction_user_in_css_guild
     async def user_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "user_stats" command.
