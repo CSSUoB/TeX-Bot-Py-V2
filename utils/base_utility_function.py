@@ -1,3 +1,5 @@
+"""Base component definition of a generic Utility Function."""
+
 import abc
 from argparse import ArgumentParser, Namespace
 from collections.abc import Sequence

@@ -1,3 +1,5 @@
+"""Custom bot implementation to override the default bot class provided by Pycord."""
+
 import re
 from typing import Any, Final, TypeAlias
 

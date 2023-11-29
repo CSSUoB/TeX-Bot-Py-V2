@@ -1,3 +1,10 @@
+"""
+Type-hinting classes that override the Pycord Context classes.
+
+These custom overriden classes contain a reference to the custom bot class TeXBot,
+rather than Pycord's default Bot class.
+"""
+
 import discord
 
 from utils.tex_bot import TeXBot

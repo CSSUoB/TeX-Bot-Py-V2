@@ -1,3 +1,5 @@
+"""Custom cog subclass that stores a reference to the custom bot class."""
+
 import contextlib
 import logging
 import re

@@ -1,3 +1,5 @@
+"""Utility function to generate the URL to invite the bot to a given Discord server."""
+
 import os
 import re
 import sys
