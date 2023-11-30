@@ -63,30 +63,30 @@ class TestGenerateInviteURL:
 #         assert bar_chart_image.description == DESCRIPTION  # noqa: ERA001
 #         assert bool(bar_chart_image.fp.read()) is True  # noqa: ERA001
 
+
 class TestAmountOfTimeFormatter:
     """Test case to unit-test the amount_of_time_formatter function."""
 
     @pytest.mark.parametrize(
         "time_value",
-        (1, 1.0, 0.999999, 1.000001)  # noqa: ERA001
-    )  # noqa: ERA001,RUF100
+        (1, 1.0, 0.999999, 1.000001)
+    )
     def test_format_unit_value(self, time_value: float) -> None:
         """Test that a value of one only includes the time_scale."""
-        TIME_SCALE: Final[str] = "day"  # noqa: ERA001
+        TIME_SCALE: Final[str] = "day"
 
         formatted_amount_of_time: str = utils.amount_of_time_formatter(time_value, TIME_SCALE)  # noqa:E501,W505,ERA001
 
-        assert formatted_amount_of_time == TIME_SCALE  # noqa: ERA001
-        assert not formatted_amount_of_time.endswith("s")  # noqa: ERA001
+        assert formatted_amount_of_time == TIME_SCALE
+        assert not formatted_amount_of_time.endswith("s")
 
-    # noinspection PyTypeChecker
     @pytest.mark.parametrize(
         "time_value",
-        (*range(2, 21), 2.00, 0, 0.0, 25.0, -0, -0.0, -25.0)  # noqa: ERA001
-    )  # noqa: ERA001,RUF100
+        (*range(2, 21), 2.00, 0, 0.0, 25.0, -0, -0.0, -25.0)
+    )
     def test_format_integer_value(self, time_value: float) -> None:
         """Test that an integer value includes the value and time_scale pluralized."""
-        TIME_SCALE: Final[str] = "day"  # noqa: ERA001
+        TIME_SCALE: Final[str] = "day"
 
         assert utils.amount_of_time_formatter(
             time_value,
@@ -96,7 +96,7 @@ class TestAmountOfTimeFormatter:
     @pytest.mark.parametrize("time_value", (3.14159, 0.005, 25.0333333))
     def test_format_float_value(self, time_value: float) -> None:
         """Test that a float value includes the rounded value and time_scale pluralized."""
-        TIME_SCALE: Final[str] = "day"  # noqa: ERA001
+        TIME_SCALE: Final[str] = "day"
 
         assert utils.amount_of_time_formatter(
             time_value,

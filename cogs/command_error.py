@@ -33,7 +33,7 @@ class CommandErrorCog(TeXBotCog):
             )
 
         elif isinstance(error, CheckAnyFailure):
-            if error.checks[0] == Checks.check_interaction_user_in_css_guild: # type: ignore[comparison-overlap]
+            if error.checks[0] == Checks.check_interaction_user_in_css_guild:  # type: ignore[comparison-overlap]
                 message = "You must be a member of the CSS Discord server to use this command."
 
             elif error.checks[0] == Checks.check_interaction_user_has_committee_role:  # type: ignore[comparison-overlap]

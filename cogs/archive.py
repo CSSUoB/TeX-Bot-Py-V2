@@ -8,7 +8,6 @@ from discord.ext import commands
 
 from cogs._command_checks import Checks
 from cogs._utils import TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotCog
-
 from exceptions import BaseDoesNotExistError, UserNotInCSSDiscordServer
 
 
