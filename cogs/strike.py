@@ -8,26 +8,29 @@ from collections.abc import Mapping
 from typing import Final
 
 import discord
-from discord.ext import commands
 from discord.ui import View
 
-from cogs._command_checks import Checks
-from cogs._utils import (
-    ChannelMessageSender,
-    MessageSenderComponent,
-    ResponseMessageSender,
-    TeXBotApplicationContext,
-    TeXBotAutocompleteContext,
-    TeXBotCog,
-    capture_guild_does_not_exist_error,
-    capture_strike_tracking_error,
-)
 from config import settings
 from db.core.models import MemberStrikes
 from exceptions import (
     GuildDoesNotExist,
     RulesChannelDoesNotExist,
     StrikeTrackingError,
+)
+from utils import (
+    CommandChecks,
+    TeXBotApplicationContext,
+    TeXBotAutocompleteContext,
+    TeXBotBaseCog,
+)
+from utils.error_capture_decorators import (
+    capture_guild_does_not_exist_error,
+    capture_strike_tracking_error,
+)
+from utils.message_sender_components import (
+    ChannelMessageSender,
+    MessageSenderComponent,
+    ResponseMessageSender,
 )
 
 
@@ -174,7 +177,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
         await interaction.response.edit_message(delete_after=0)
 
 
-class BaseStrikeCog(TeXBotCog):
+class BaseStrikeCog(TeXBotBaseCog):
     """
     Base strike cog container class.
 
@@ -185,6 +188,7 @@ class BaseStrikeCog(TeXBotCog):
     SUGGESTED_ACTIONS: Final[Mapping[int, str]] = {1: "time-out", 2: "kick", 3: "ban"}
 
     async def _send_strike_user_message(self, strike_user: discord.User | discord.Member, member_strikes: MemberStrikes) -> None:  # noqa: E501
+        # noinspection PyUnusedLocal
         rules_channel_mention: str = "`#welcome`"
         with contextlib.suppress(RulesChannelDoesNotExist):
             rules_channel_mention = (await self.bot.rules_channel).mention
@@ -581,7 +585,7 @@ class ManualModerationCog(BaseStrikeCog):
             perform_action=False
         )
 
-    @TeXBotCog.listener()
+    @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
     async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
         """Flag manually applied timeout & track strikes accordingly."""
@@ -599,7 +603,7 @@ class ManualModerationCog(BaseStrikeCog):
             action=discord.AuditLogAction.member_update
         )
 
-    @TeXBotCog.listener()
+    @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
     async def on_member_remove(self, member: discord.Member) -> None:
         """Flag manually applied kick & track strikes accordingly."""
@@ -611,7 +615,7 @@ class ManualModerationCog(BaseStrikeCog):
             action=discord.AuditLogAction.kick
         )
 
-    @TeXBotCog.listener()
+    @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
     async def on_member_ban(self, guild: discord.Guild, user: discord.User | discord.Member) -> None:  # noqa: E501
         """Flag manually applied ban & track strikes accordingly."""
@@ -670,8 +674,8 @@ class StrikeCommandCog(BaseStrikeCog):
         required=True,
         parameter_name="str_strike_member_id"
     )
-    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
-    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_css_guild
     async def strike(self, ctx: TeXBotApplicationContext, str_strike_member_id: str) -> None:
         """
         Definition & callback response of the "strike" command.
@@ -694,8 +698,8 @@ class StrikeUserCommandCog(BaseStrikeCog):
     """Cog class that defines the context menu strike command & its call-back method."""
 
     @discord.user_command(name="Strike User")  # type: ignore[no-untyped-call, misc]
-    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
-    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_css_guild
     async def user_strike(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:
         """Call the _strike command, providing the required command arguments."""
         await self._command_perform_strike(ctx, member)

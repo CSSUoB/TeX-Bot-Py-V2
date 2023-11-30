@@ -390,7 +390,7 @@ class Settings:
                     ",".join(f"{log_level_choice!r}"
                     for log_level_choice
                     in LOG_LEVEL_CHOICES[:-1])
-                } or \"{LOG_LEVEL_CHOICES[-1]}\"."""
+                } or {LOG_LEVEL_CHOICES[-1]!r}."""
                 raise ImproperlyConfigured(INVALID_LOG_LEVEL_MESSAGE)
             # noinspection SpellCheckingInspection
             logging.basicConfig(

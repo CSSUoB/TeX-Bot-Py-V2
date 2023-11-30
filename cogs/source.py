@@ -2,10 +2,10 @@
 
 import discord
 
-from cogs._utils import TeXBotApplicationContext, TeXBotCog
+from utils import TeXBotApplicationContext, TeXBotBaseCog
 
 
-class SourceCommandCog(TeXBotCog):
+class SourceCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/source" command and its call-back method."""
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]

@@ -6,19 +6,18 @@ import logging
 import discord
 from discord.ext.commands import CheckAnyFailure
 
-from cogs._command_checks import Checks
-from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from exceptions import (
     BaseDoesNotExistError,
     BaseErrorWithErrorCode,
     GuildDoesNotExist,
 )
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 
-class CommandErrorCog(TeXBotCog):
+class CommandErrorCog(TeXBotBaseCog):
     """Cog class that defines additional code to execute upon a command error."""
 
-    @TeXBotCog.listener()
+    @TeXBotBaseCog.listener()
     async def on_application_command_error(self, ctx: TeXBotApplicationContext, error: discord.ApplicationCommandError) -> None:  # noqa: E501
         """Log any major command errors in the logging channel & stderr."""
         error_code: str | None = None
@@ -33,10 +32,10 @@ class CommandErrorCog(TeXBotCog):
             )
 
         elif isinstance(error, CheckAnyFailure):
-            if error.checks[0] == Checks.check_interaction_user_in_css_guild:  # type: ignore[comparison-overlap]
+            if CommandChecks.is_interaction_user_in_css_guild_failure(error.checks[0]):
                 message = "You must be a member of the CSS Discord server to use this command."
 
-            elif error.checks[0] == Checks.check_interaction_user_has_committee_role:  # type: ignore[comparison-overlap]
+            elif CommandChecks.is_interaction_user_has_committee_role_failure(error.checks[0]):
                 # noinspection PyUnusedLocal
                 committee_role_mention: str = "@Committee"
                 with contextlib.suppress(BaseDoesNotExistError):

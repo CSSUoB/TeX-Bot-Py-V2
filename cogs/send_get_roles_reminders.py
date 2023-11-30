@@ -10,14 +10,17 @@ import discord
 from discord import AuditLogAction
 from discord.ext import tasks
 
-from cogs._utils import ErrorCaptureDecorators, TeXBotCog, capture_guild_does_not_exist_error
 from config import settings
 from db.core.models import SentGetRolesReminderMember
 from exceptions import GuestRoleDoesNotExist, RolesChannelDoesNotExist
-from utils import TeXBot
+from utils import TeXBot, TeXBotBaseCog
+from utils.error_capture_decorators import (
+    ErrorCaptureDecorators,
+    capture_guild_does_not_exist_error,
+)
 
 
-class SendGetRolesRemindersTaskCog(TeXBotCog):
+class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
     """Cog class that defines the send_get_roles_reminders task."""
 
     def __init__(self, bot: TeXBot) -> None:
@@ -132,10 +135,11 @@ class SendGetRolesRemindersTaskCog(TeXBotCog):
                 logging.error(
                     (
                         "Member with ID: %s could not be checked whether to send "
-                        "role_reminder, because their \"guest_role_received_time\" "
+                        "role_reminder, because their %s "
                         "could not be found."
                     ),
-                    member.id
+                    member.id,
+                    repr("guest_role_received_time")
                 )
                 continue
 

@@ -7,16 +7,19 @@ from typing import TYPE_CHECKING
 import discord
 from discord.ext import tasks
 
-from cogs._utils import ErrorCaptureDecorators, TeXBotCog, capture_guild_does_not_exist_error
 from config import settings
 from exceptions import GuestRoleDoesNotExist
-from utils import TeXBot
+from utils import TeXBot, TeXBotBaseCog
+from utils.error_capture_decorators import (
+    ErrorCaptureDecorators,
+    capture_guild_does_not_exist_error,
+)
 
 if TYPE_CHECKING:
     import datetime
 
 
-class KickNoIntroductionUsersTaskCog(TeXBotCog):
+class KickNoIntroductionUsersTaskCog(TeXBotBaseCog):
     """Cog class that defines the kick_no_introduction_users task."""
 
     def __init__(self, bot: TeXBot) -> None:
@@ -61,9 +64,10 @@ class KickNoIntroductionUsersTaskCog(TeXBotCog):
                 logging.error(
                     (
                         "Member with ID: %s could not be checked whether to kick, "
-                        "because their \"joined_at\" attribute was None."
+                        "because their %s attribute was None."
                     ),
-                    member.id
+                    member.id,
+                    repr("joined_at")
                 )
                 continue
 
