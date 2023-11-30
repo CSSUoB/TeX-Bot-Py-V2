@@ -33,12 +33,12 @@ from utils import TeXBot
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from utils import TeXBotBaseCog
+    from cogs._utils import TeXBotCog
 
 
 def setup(bot: TeXBot) -> None:
     """Add all the cogs to the bot, at bot startup."""
-    cogs: Iterable[type[TeXBotBaseCog]] = (
+    cogs: Iterable[type[TeXBotCog]] = (
         ArchiveCommandCog,
         CommandErrorCog,
         DeleteAllCommandsCog,
@@ -62,6 +62,6 @@ def setup(bot: TeXBot) -> None:
         StrikeUserCommandCog,
         WriteRolesCommandCog,
     )
-    Cog: type[TeXBotBaseCog]
+    Cog: type[TeXBotCog]
     for Cog in cogs:
         bot.add_cog(Cog(bot))

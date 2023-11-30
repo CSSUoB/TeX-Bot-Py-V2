@@ -4,17 +4,15 @@ import logging
 import re
 
 import discord
+from discord.ext import commands
+
+from cogs._command_checks import Checks
+from cogs._utils import TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotCog
 
 from exceptions import BaseDoesNotExistError, UserNotInCSSDiscordServer
-from utils import (
-    CommandChecks,
-    TeXBotApplicationContext,
-    TeXBotAutocompleteContext,
-    TeXBotBaseCog,
-)
 
 
-class ArchiveCommandCog(TeXBotBaseCog):
+class ArchiveCommandCog(TeXBotCog):
     """Cog class that defines the "/archive" command and its call-back method."""
 
     @staticmethod
@@ -56,8 +54,8 @@ class ArchiveCommandCog(TeXBotBaseCog):
         required=True,
         parameter_name="str_category_id"
     )
-    @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_css_guild
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
+    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
     async def archive(self, ctx: TeXBotApplicationContext, str_category_id: str) -> None:
         """
         Definition & callback response of the "archive" command.

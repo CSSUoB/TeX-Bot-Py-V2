@@ -11,20 +11,17 @@ from discord.ext import tasks
 from discord.ui import View
 from django.core.exceptions import ValidationError
 
+from cogs._utils import ErrorCaptureDecorators, TeXBotCog, capture_guild_does_not_exist_error
 from config import settings
 from db.core.models import (
     IntroductionReminderOptOutMember,
     SentOneOffIntroductionReminderMember,
 )
 from exceptions import GuestRoleDoesNotExist, UserNotInCSSDiscordServer
-from utils import TeXBot, TeXBotBaseCog
-from utils.error_capture_decorators import (
-    ErrorCaptureDecorators,
-    capture_guild_does_not_exist_error,
-)
+from utils import TeXBot
 
 
-class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
+class SendIntroductionRemindersTaskCog(TeXBotCog):
     """Cog class that defines the send_introduction_reminders task."""
 
     def __init__(self, bot: TeXBot) -> None:
@@ -45,7 +42,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         """
         self.send_introduction_reminders.cancel()
 
-    @TeXBotBaseCog.listener()
+    @TeXBotCog.listener()
     async def on_ready(self) -> None:
         """Add OptOutIntroductionRemindersView to the bot's list of permanent views."""
         self.bot.add_view(

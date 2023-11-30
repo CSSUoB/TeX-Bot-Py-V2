@@ -9,15 +9,17 @@ import aiohttp
 import bs4
 import discord
 from bs4 import BeautifulSoup
+from discord.ext import commands
 from django.core.exceptions import ValidationError
 
+from cogs._command_checks import Checks
+from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from config import settings
 from db.core.models import UoBMadeMember
 from exceptions import CommitteeRoleDoesNotExist, GuestRoleDoesNotExist
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 
-class MakeMemberCommandCog(TeXBotBaseCog):
+class MakeMemberCommandCog(TeXBotCog):
     # noinspection SpellCheckingInspection
     """Cog class that defines the "/makemember" command and its call-back method."""
 
@@ -35,7 +37,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         min_length=7,
         parameter_name="uob_id"
     )
-    @CommandChecks.check_interaction_user_in_css_guild
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
     async def make_member(self, ctx: TeXBotApplicationContext, uob_id: str) -> None:
         """
         Definition & callback response of the "make_member" command.

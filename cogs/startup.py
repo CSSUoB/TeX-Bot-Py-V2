@@ -5,6 +5,7 @@ import logging
 import discord
 from discord_logging.handler import DiscordHandler
 
+from cogs._utils import TeXBotCog
 from config import settings
 from exceptions import (
     ArchivistRoleDoesNotExist,
@@ -15,13 +16,12 @@ from exceptions import (
     MemberRoleDoesNotExist,
     RolesChannelDoesNotExist,
 )
-from utils import TeXBotBaseCog
 
 
-class StartupCog(TeXBotBaseCog):
+class StartupCog(TeXBotCog):
     """Cog class that defines additional code to execute upon startup."""
 
-    @TeXBotBaseCog.listener()
+    @TeXBotCog.listener()
     async def on_ready(self) -> None:
         """
         Populate the shortcut accessors of the bot after initialisation.

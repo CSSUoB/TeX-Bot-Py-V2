@@ -2,12 +2,14 @@
 
 
 import discord
+from discord.ext import commands
 
+from cogs._command_checks import Checks
+from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from config import settings
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 
-class WriteRolesCommandCog(TeXBotBaseCog):
+class WriteRolesCommandCog(TeXBotCog):
     # noinspection SpellCheckingInspection
     """Cog class that defines the "/writeroles" command and its call-back method."""
 
@@ -16,8 +18,8 @@ class WriteRolesCommandCog(TeXBotBaseCog):
         name="writeroles",
         description="Populates #roles with the correct messages."
     )
-    @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_css_guild
+    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
+    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
     async def write_roles(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "write_roles" command.

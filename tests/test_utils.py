@@ -12,7 +12,7 @@ from typing import Final
 
 import pytest
 
-from utils import InviteURLGenerator
+import utils
 
 
 class TestGenerateInviteURL:
@@ -29,7 +29,7 @@ class TestGenerateInviteURL:
             99999999999999999999
         )
 
-        invite_url: str = InviteURLGenerator.generate_invite_url(
+        invite_url: str = utils.generate_invite_url(
             DISCORD_BOT_APPLICATION_ID,
             DISCORD_GUILD_ID
         )
@@ -63,47 +63,45 @@ class TestGenerateInviteURL:
 #         assert bar_chart_image.description == DESCRIPTION  # noqa: ERA001
 #         assert bool(bar_chart_image.fp.read()) is True  # noqa: ERA001
 
-# TODO(CarrotManMatt): Move to stats_tests  # noqa: FIX002
-# https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/57
-# class TestAmountOfTimeFormatter:
-#     """Test case to unit-test the amount_of_time_formatter function."""
-#
-#     @pytest.mark.parametrize(
-#         "time_value",
-#         (1, 1.0, 0.999999, 1.000001)  # noqa: ERA001
-#     )  # noqa: ERA001,RUF100
-#     def test_format_unit_value(self, time_value: float) -> None:
-#         """Test that a value of one only includes the time_scale."""
-#         TIME_SCALE: Final[str] = "day"  # noqa: ERA001
-#
-#         formatted_amount_of_time: str = utils.amount_of_time_formatter(time_value, TIME_SCALE)  # noqa:E501,W505,ERA001
-#
-#         assert formatted_amount_of_time == TIME_SCALE  # noqa: ERA001
-#         assert not formatted_amount_of_time.endswith("s")  # noqa: ERA001
-#
-#     # noinspection PyTypeChecker
-#     @pytest.mark.parametrize(
-#         "time_value",
-#         (*range(2, 21), 2.00, 0, 0.0, 25.0, -0, -0.0, -25.0)  # noqa: ERA001
-#     )  # noqa: ERA001,RUF100
-#     def test_format_integer_value(self, time_value: float) -> None:
-#         """Test that an integer value includes the value and time_scale pluralized."""
-#         TIME_SCALE: Final[str] = "day"  # noqa: ERA001
-#
-#         assert utils.amount_of_time_formatter(
-#             time_value,
-#             TIME_SCALE
-#         ) == f"{int(time_value)} {TIME_SCALE}s"
-#
-#     @pytest.mark.parametrize("time_value", (3.14159, 0.005, 25.0333333))
-#     def test_format_float_value(self, time_value: float) -> None:
-#         """Test that a float value includes the rounded value and time_scale pluralized."""
-#         TIME_SCALE: Final[str] = "day"  # noqa: ERA001
-#
-#         assert utils.amount_of_time_formatter(
-#             time_value,
-#             TIME_SCALE
-#         ) == f"{time_value:.2f} {TIME_SCALE}s"
+class TestAmountOfTimeFormatter:
+    """Test case to unit-test the amount_of_time_formatter function."""
+
+    @pytest.mark.parametrize(
+        "time_value",
+        (1, 1.0, 0.999999, 1.000001)  # noqa: ERA001
+    )  # noqa: ERA001,RUF100
+    def test_format_unit_value(self, time_value: float) -> None:
+        """Test that a value of one only includes the time_scale."""
+        TIME_SCALE: Final[str] = "day"  # noqa: ERA001
+
+        formatted_amount_of_time: str = utils.amount_of_time_formatter(time_value, TIME_SCALE)  # noqa:E501,W505,ERA001
+
+        assert formatted_amount_of_time == TIME_SCALE  # noqa: ERA001
+        assert not formatted_amount_of_time.endswith("s")  # noqa: ERA001
+
+    # noinspection PyTypeChecker
+    @pytest.mark.parametrize(
+        "time_value",
+        (*range(2, 21), 2.00, 0, 0.0, 25.0, -0, -0.0, -25.0)  # noqa: ERA001
+    )  # noqa: ERA001,RUF100
+    def test_format_integer_value(self, time_value: float) -> None:
+        """Test that an integer value includes the value and time_scale pluralized."""
+        TIME_SCALE: Final[str] = "day"  # noqa: ERA001
+
+        assert utils.amount_of_time_formatter(
+            time_value,
+            TIME_SCALE
+        ) == f"{int(time_value)} {TIME_SCALE}s"
+
+    @pytest.mark.parametrize("time_value", (3.14159, 0.005, 25.0333333))
+    def test_format_float_value(self, time_value: float) -> None:
+        """Test that a float value includes the rounded value and time_scale pluralized."""
+        TIME_SCALE: Final[str] = "day"  # noqa: ERA001
+
+        assert utils.amount_of_time_formatter(
+            time_value,
+            TIME_SCALE
+        ) == f"{time_value:.2f} {TIME_SCALE}s"
 
 
 class BaseTestArgumentParser:
@@ -275,7 +273,7 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
         assert cls.parser_output_return_code == 0
         assert not cls.parser_output_stderr
-        assert cls.parser_output_stdout == InviteURLGenerator.generate_invite_url(
+        assert cls.parser_output_stdout == utils.generate_invite_url(
             DISCORD_BOT_APPLICATION_ID,
             DISCORD_GUILD_ID
         )
@@ -299,7 +297,7 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
         assert cls.parser_output_return_code == 0
         assert not cls.parser_output_stderr
-        assert cls.parser_output_stdout == InviteURLGenerator.generate_invite_url(
+        assert cls.parser_output_stdout == utils.generate_invite_url(
             DISCORD_BOT_APPLICATION_ID,
             DISCORD_GUILD_ID
         )
