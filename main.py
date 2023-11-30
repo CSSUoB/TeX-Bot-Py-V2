@@ -6,7 +6,6 @@ then ensures the Django database is correctly migrated to the latest version and
 the asynchronous running process for the Discord bot.
 """
 
-
 import discord
 from django.core import management
 
