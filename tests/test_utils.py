@@ -75,7 +75,7 @@ class TestAmountOfTimeFormatter:
         """Test that a value of one only includes the time_scale."""
         TIME_SCALE: Final[str] = "day"
 
-        formatted_amount_of_time: str = utils.amount_of_time_formatter(time_value, TIME_SCALE)  # noqa:E501,W505,ERA001
+        formatted_amount_of_time: str = utils.amount_of_time_formatter(time_value, TIME_SCALE)
 
         assert formatted_amount_of_time == TIME_SCALE
         assert not formatted_amount_of_time.endswith("s")
