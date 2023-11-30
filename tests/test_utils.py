@@ -1,4 +1,4 @@
-"""Test suite for utils.py."""
+"""Test suite for utils package."""
 
 import os
 import random
@@ -137,7 +137,7 @@ class BaseTestArgumentParser:
         if not re.match(r"\A[a-zA-Z0-9._\-+!\"' ]*\Z", util_function_name):
             INVALID_FUNCTION_NAME_MESSAGE: Final[str] = (
                 "util_function_name must be a valid function name for "
-                "the utils.py command-line program."
+                "the utils command-line program."
             )
             raise TypeError(INVALID_FUNCTION_NAME_MESSAGE)
 
@@ -148,7 +148,7 @@ class BaseTestArgumentParser:
         )
         if arguments_contain_invalid_symbol:
             INVALID_ARGUMENTS_MESSAGE: Final[str] = (
-                "All arguments must be valid arguments for the utils.py command-line program."
+                "All arguments must be valid arguments for the utils command-line program."
             )
             raise ValueError(INVALID_ARGUMENTS_MESSAGE)
 
@@ -180,14 +180,14 @@ class TestArgumentParser(BaseTestArgumentParser):
     def test_error_when_no_function(cls) -> None:
         """Test for the correct error when no function name is provided."""
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py: error: the following arguments are required: function"
+            "utils: error: the following arguments are required: function"
         )
 
         cls.execute_util_function(util_function_name="")
 
         assert cls.parser_output_return_code != 0
         assert not cls.parser_output_stdout
-        assert "usage: utils.py [-h] {generate_invite_url}" in cls.parser_output_stderr
+        assert "usage: utils [-h] {generate_invite_url}" in cls.parser_output_stderr
         assert EXPECTED_ERROR_MESSAGE in cls.parser_output_stderr
 
     @classmethod
@@ -197,7 +197,7 @@ class TestArgumentParser(BaseTestArgumentParser):
             random.choices(string.ascii_letters + string.digits, k=7)
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py: error: argument function: invalid choice: "
+            "utils: error: argument function: invalid choice: "
             f"'{INVALID_FUNCTION}' (choose from 'generate_invite_url')"
         )
 
@@ -205,7 +205,7 @@ class TestArgumentParser(BaseTestArgumentParser):
 
         assert cls.parser_output_return_code != 0
         assert not cls.parser_output_stdout
-        assert "usage: utils.py [-h] {generate_invite_url}" in cls.parser_output_stderr
+        assert "usage: utils [-h] {generate_invite_url}" in cls.parser_output_stderr
         assert EXPECTED_ERROR_MESSAGE in cls.parser_output_stderr
 
     @classmethod
@@ -216,7 +216,7 @@ class TestArgumentParser(BaseTestArgumentParser):
 
         assert cls.parser_output_return_code == 0
         assert not cls.parser_output_stderr
-        assert "usage: utils.py [-h] {generate_invite_url}" in cls.parser_output_stdout
+        assert "usage: utils [-h] {generate_invite_url}" in cls.parser_output_stdout
         assert "functions:" in cls.parser_output_stdout
 
 
@@ -307,11 +307,11 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
     def test_error_when_no_discord_bot_application_id(cls) -> None:
         """Test for the correct error when no discord_bot_application_id is provided."""
         EXPECTED_USAGE_MESSAGE: Final[str] = (
-            "usage: utils.py generate_invite_url [-h] "
+            "usage: utils generate_invite_url [-h] "
             "discord_bot_application_id [discord_guild_id]"
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py generate_invite_url: error: the following arguments are required: "
+            "utils generate_invite_url: error: the following arguments are required: "
             "discord_bot_application_id"
         )
         cls.execute_util_function(util_function_name="generate_invite_url")
@@ -325,11 +325,11 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
     def test_error_when_invalid_discord_bot_application_id(cls) -> None:
         """Test for the correct error with an invalid discord_bot_application_id."""
         EXPECTED_USAGE_MESSAGE: Final[str] = (
-            "usage: utils.py generate_invite_url [-h] "
+            "usage: utils generate_invite_url [-h] "
             "discord_bot_application_id [discord_guild_id]"
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py generate_invite_url: error: discord_bot_application_id must be "
+            "utils generate_invite_url: error: discord_bot_application_id must be "
             "a valid Discord application ID "
             "(see https://support-dev.discord.com/hc/en-gb/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)"
         )
@@ -350,11 +350,11 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
     def test_error_when_no_discord_guild_id(cls) -> None:
         """Test for the correct error when no discord_guild_id is provided."""
         EXPECTED_USAGE_MESSAGE: Final[str] = (
-            "usage: utils.py generate_invite_url [-h] "
+            "usage: utils generate_invite_url [-h] "
             "discord_bot_application_id [discord_guild_id]"
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py generate_invite_url: error: discord_guild_id must be provided as an "
+            "utils generate_invite_url: error: discord_guild_id must be provided as an "
             "argument to the generate_invite_url utility function or otherwise set "
             "the DISCORD_GUILD_ID environment variable"
         )
@@ -375,11 +375,11 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
     def test_error_when_invalid_discord_guild_id(cls) -> None:
         """Test for the correct error when an invalid discord_guild_id is provided."""
         EXPECTED_USAGE_MESSAGE: Final[str] = (
-            "usage: utils.py generate_invite_url [-h] "
+            "usage: utils generate_invite_url [-h] "
             "discord_bot_application_id [discord_guild_id]"
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py generate_invite_url: error: discord_guild_id must be "
+            "utils generate_invite_url: error: discord_guild_id must be "
             "a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
         )
 
@@ -405,7 +405,7 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
             random.randint(10000000000000000, 99999999999999999999)
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py: error: "
+            "utils: error: "
             f"unrecognized arguments: {EXTRA_ARGUMENT}"
         )
 
@@ -422,5 +422,5 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
         assert cls.parser_output_return_code != 0
         assert not cls.parser_output_stdout
-        assert "usage: utils.py [-h] {generate_invite_url}" in cls.parser_output_stderr
+        assert "usage: utils [-h] {generate_invite_url}" in cls.parser_output_stderr
         assert EXPECTED_ERROR_MESSAGE in cls.parser_output_stderr
