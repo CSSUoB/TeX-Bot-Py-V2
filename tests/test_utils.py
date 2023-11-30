@@ -153,8 +153,7 @@ class TestMain(BaseTestArgumentParser):
     def test_error_when_no_function(cls, capsys: CaptureFixture[str]) -> None:
         """Test for the correct error when no function name is provided."""
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            f"utils: error: "
-            "the following arguments are required: function"
+            "utils: error: the following arguments are required: function"
         )
 
         return_code: int
