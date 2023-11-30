@@ -15,8 +15,8 @@ __all__: Sequence[str] = (
 )
 
 from utils.base_utility_function import UtilityFunction
-from utils.generate_invite_url import InviteURLGenerator
 from utils.command_checks import CommandChecks
+from utils.generate_invite_url import InviteURLGenerator
 from utils.message_sender_components import MessageSenderComponent
 from utils.suppress_traceback import SuppressTraceback
 from utils.tex_bot import TeXBot

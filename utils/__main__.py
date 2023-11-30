@@ -1,3 +1,5 @@
+"""Command-line execution of the utils package."""
+
 from argparse import ArgumentParser, Namespace
 
 from utils import InviteURLGenerator, UtilityFunction
