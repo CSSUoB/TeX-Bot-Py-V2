@@ -81,7 +81,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         if not re.match(r"\A\d{17,20}\Z", str_channel_id):
             await self.send_error(
                 ctx,
-                message=f"\"{str_channel_id}\" is not a valid channel ID."
+                message=f"{str_channel_id!r} is not a valid channel ID."
             )
             return
 
@@ -90,7 +90,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         if not re.match(r"\A\d{17,20}\Z", str_message_id):
             await self.send_error(
                 ctx,
-                message=f"\"{str_message_id}\" is not a valid message ID."
+                message=f"{str_message_id!r} is not a valid message ID."
             )
             return
 
@@ -122,8 +122,8 @@ class EditMessageCommandCog(TeXBotBaseCog):
             await self.send_error(
                 ctx,
                 message=(
-                    f"Message with ID \"{message_id}\" cannot be edited because it belongs to "
-                    "another user."
+                    f"Message with ID {str(message_id)!r} cannot be edited "
+                    "because it belongs to another user."
                 )
             )
             return

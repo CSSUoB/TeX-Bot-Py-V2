@@ -64,9 +64,10 @@ class KickNoIntroductionUsersTaskCog(TeXBotBaseCog):
                 logging.error(
                     (
                         "Member with ID: %s could not be checked whether to kick, "
-                        "because their \"joined_at\" attribute was None."
+                        "because their %s attribute was None."
                     ),
-                    member.id
+                    member.id,
+                    repr("joined_at")
                 )
                 continue
 
