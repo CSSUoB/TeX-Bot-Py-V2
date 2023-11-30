@@ -76,12 +76,11 @@ class TestGenerateInviteURL:
 #         """Test that a value of one only includes the time_scale."""
 #         TIME_SCALE: Final[str] = "day"  # noqa: ERA001
 #
-#         formatted_amount_of_time: str = utils.amount_of_time_formatter(time_value, TIME_SCALE)  # noqa:E501,W505,ERA001
+#         formatted_amount_of_time: str = amount_of_time_formatter(time_value, TIME_SCALE)  # noqa:E501,W505,ERA001
 #
 #         assert formatted_amount_of_time == TIME_SCALE  # noqa: ERA001
 #         assert not formatted_amount_of_time.endswith("s")  # noqa: ERA001
 #
-#     # noinspection PyTypeChecker
 #     @pytest.mark.parametrize(
 #         "time_value",
 #         (*range(2, 21), 2.00, 0, 0.0, 25.0, -0, -0.0, -25.0)  # noqa: ERA001
@@ -90,7 +89,7 @@ class TestGenerateInviteURL:
 #         """Test that an integer value includes the value and time_scale pluralized."""
 #         TIME_SCALE: Final[str] = "day"  # noqa: ERA001
 #
-#         assert utils.amount_of_time_formatter(
+#         assert amount_of_time_formatter(
 #             time_value,
 #             TIME_SCALE
 #         ) == f"{int(time_value)} {TIME_SCALE}s"
@@ -100,7 +99,7 @@ class TestGenerateInviteURL:
 #         """Test that a float value includes the rounded value and time_scale pluralized."""
 #         TIME_SCALE: Final[str] = "day"  # noqa: ERA001
 #
-#         assert utils.amount_of_time_formatter(
+#         assert amount_of_time_formatter(
 #             time_value,
 #             TIME_SCALE
 #         ) == f"{time_value:.2f} {TIME_SCALE}s"

@@ -164,7 +164,7 @@ class StatsCommandsCog(TeXBotBaseCog):
             if not re.match(r"\A\d{17,20}\Z", str_channel_id):
                 await self.send_error(
                     ctx,
-                    message=f"\"{str_channel_id}\" is not a valid channel ID."
+                    message=f"{str_channel_id!r} is not a valid channel ID."
                 )
                 return
 
@@ -179,7 +179,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         if not channel:
             await self.send_error(
                 ctx,
-                message=f"Text channel with ID \"{channel_id}\" does not exist."
+                message=f"Text channel with ID {str(channel_id)!r} does not exist."
             )
             return
 
