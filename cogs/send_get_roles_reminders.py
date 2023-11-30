@@ -132,10 +132,11 @@ class SendGetRolesRemindersTaskCog(TeXBotCog):
                 logging.error(
                     (
                         "Member with ID: %s could not be checked whether to send "
-                        "role_reminder, because their \"guest_role_received_time\" "
+                        "role_reminder, because their %s "
                         "could not be found."
                     ),
-                    member.id
+                    member.id,
+                    repr("guest_role_received_time")
                 )
                 continue
 

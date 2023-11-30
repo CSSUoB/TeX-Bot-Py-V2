@@ -79,10 +79,11 @@ class SendIntroductionRemindersTaskCog(TeXBotCog):
                 logging.error(
                     (
                         "Member with ID: %s could not be checked whether to send "
-                        "introduction_reminder, because their \"joined_at\" attribute "
+                        "introduction_reminder, because their %s attribute "
                         "was None."
                     ),
-                    member.id
+                    member.id,
+                    repr("joined_at")
                 )
                 continue
 

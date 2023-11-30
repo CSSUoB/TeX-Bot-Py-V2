@@ -74,7 +74,7 @@ class ArchiveCommandCog(TeXBotCog):
         if not re.match(r"\A\d{17,20}\Z", str_category_id):
             await self.send_error(
                 ctx,
-                message=f"\"{str_category_id}\" is not a valid category ID."
+                message=f"{str_category_id!r} is not a valid category ID."
             )
             return
 
@@ -87,7 +87,7 @@ class ArchiveCommandCog(TeXBotCog):
         if not category:
             await self.send_error(
                 ctx,
-                message=f"Category with ID \"{category_id}\" does not exist."
+                message=f"Category with ID {str(category_id)!r} does not exist."
             )
             return
 

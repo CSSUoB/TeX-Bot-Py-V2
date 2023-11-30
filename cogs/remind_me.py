@@ -195,7 +195,9 @@ class RemindMeCommandCog(TeXBotCog):
         if parsed_time[1] == 0:
             await self.send_error(
                 ctx,
-                message="The value provided in the \"delay\" argument was not a time/date."
+                message=(
+                    f"""The value provided in the {"delay"!r} argument was not a time/date."""
+                )
             )
             return
 
