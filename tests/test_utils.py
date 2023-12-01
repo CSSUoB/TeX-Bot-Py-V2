@@ -8,6 +8,7 @@ import sys
 from argparse import Namespace
 from collections.abc import Iterable, Sequence
 from pathlib import Path
+from types import TracebackType
 from typing import Final
 
 import pytest
@@ -15,32 +16,6 @@ from _pytest.capture import CaptureFixture, CaptureResult
 
 import utils
 from utils import InviteURLGenerator, UtilityFunction, classproperty
-
-
-class TestInviteURLGenerator:
-    """Test case to unit-test the low-level URL generation function."""
-
-    @staticmethod
-    def test_url_generates() -> None:
-        """Test that the invite URL generates successfully when valid arguments are passed."""
-        DISCORD_BOT_APPLICATION_ID: Final[str] = "".join(
-            random.choices(string.digits, k=random.randint(17, 20))
-        )
-        DISCORD_GUILD_ID: Final[int] = random.randint(
-            10000000000000000,
-            99999999999999999999
-        )
-
-        invite_url: str = InviteURLGenerator.generate_invite_url(
-            DISCORD_BOT_APPLICATION_ID,
-            DISCORD_GUILD_ID
-        )
-
-        assert re.match(
-            f"https://discord.com/.*={DISCORD_BOT_APPLICATION_ID}.*={DISCORD_GUILD_ID}",
-            invite_url
-        )
-
 
 # TODO(CarrotManMatt): Move to stats_tests  # noqa: FIX002
 # https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/57
@@ -112,7 +87,7 @@ class TestInviteURLGenerator:
 class BaseTestArgumentParser:
     """Parent class to define the execution code used by all ArgumentParser test cases."""
 
-    UTILITY_FUNCTIONS: frozenset[UtilityFunction]
+    UTILITY_FUNCTIONS: frozenset[type[UtilityFunction]]
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
@@ -126,12 +101,14 @@ class BaseTestArgumentParser:
     def _format_usage_message(cls, utility_function_names: Iterable[str]) -> str:
         return f"""usage: utils [-h]{
             " {" if utility_function_names else ""
-        }{"|".join(utility_function_names)}{
+        }{
+            "|".join(utility_function_names)
+        }{
             "}" if utility_function_names else ""
         }"""
 
     @classmethod
-    def execute_argument_parser_function(cls, args: Sequence[str], capsys: CaptureFixture[str], utility_functions: Iterable[UtilityFunction] | None = None) -> tuple[int, CaptureResult[str]]:  # noqa: E501
+    def execute_argument_parser_function(cls, args: Sequence[str], capsys: CaptureFixture[str], utility_functions: Iterable[type[UtilityFunction]] | None = None) -> tuple[int, CaptureResult[str]]:  # noqa: E501
         """Execute the chosen argument parser function."""
         try:
             return_code: int = utils.main(
@@ -143,11 +120,68 @@ class BaseTestArgumentParser:
 
         return return_code, capsys.readouterr()
 
+    class EmptyContextManager:
+        """Empty context manager that executes no logic when entering/exiting."""
+
+        def __enter__(self) -> None:
+            """Enter the context manager and execute no additional logic."""
+
+        def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType) -> None:  # noqa: E501
+            """Exit the context manager and execute no additional logic."""
+
+    class EnvVariableDeleter(EmptyContextManager):
+        """
+        Context manager that deletes the given environment variable.
+
+        The given environment variable is removed from both
+        the system environment variables list,
+        and the .env file in this project's root directory.
+        """
+
+        @staticmethod
+        def _get_project_root() -> Path:
+            project_root: Path = Path(__file__).resolve()
+
+            for _ in range(8):
+                project_root = project_root.parent
+
+                if any(path.name.startswith("README.md") for path in project_root.iterdir()):
+                    return project_root
+
+            NO_ROOT_DIRECTORY_MESSAGE: Final[str] = "Could not locate project root directory."
+            raise FileNotFoundError(NO_ROOT_DIRECTORY_MESSAGE)
+
+        def __init__(self, env_variable_name: str) -> None:
+            """Store the current state of any instances of the stored environment variable."""
+            self.env_variable_name: str = env_variable_name
+            self.PROJECT_ROOT: Final[Path] = self._get_project_root()
+
+            self.env_file_path: Path = self.PROJECT_ROOT / Path(".env")
+            self.old_env_value: str | None = os.environ.get(self.env_variable_name)
+
+        def __enter__(self) -> None:
+            """Delete all stored instances of the stored environment variable."""
+            if self.env_file_path.is_file():
+                self.env_file_path = self.env_file_path.rename(
+                    self.PROJECT_ROOT / Path(".env.original")
+                )
+
+            if self.old_env_value is not None:
+                del os.environ[self.env_variable_name]
+
+        def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType) -> None:  # noqa: E501
+            """Restore the deleted environment variable to its previous states."""
+            if self.env_file_path.is_file():
+                self.env_file_path.rename(self.PROJECT_ROOT / Path(".env"))
+
+            if self.old_env_value is not None:
+                os.environ[self.env_variable_name] = self.old_env_value
+
 
 class TestMain(BaseTestArgumentParser):
     """Test case to unit-test the main argument parser."""
 
-    UTILITY_FUNCTIONS: frozenset[UtilityFunction] = frozenset()
+    UTILITY_FUNCTIONS: frozenset[type[UtilityFunction]] = frozenset()
 
     @classmethod
     def test_error_when_no_function(cls, capsys: CaptureFixture[str]) -> None:
@@ -199,7 +233,8 @@ class TestMain(BaseTestArgumentParser):
             NAME: str = "example_utility_function"
             DESCRIPTION: str = "An example utility function for testing purposes"
 
-            def run(self, parsed_args: Namespace) -> int:  # noqa: ARG002
+            @classmethod
+            def run(cls, parsed_args: Namespace, parser: UtilityFunction.SubParserAction) -> int:  # noqa: E501, ARG003
                 sys.stdout.write("Successful execution\n")
                 return 0
 
@@ -210,12 +245,12 @@ class TestMain(BaseTestArgumentParser):
             return_code, capture_result = cls.execute_argument_parser_function(
                 [ExampleUtilityFunction.NAME],
                 capsys,
-                {ExampleUtilityFunction()}
+                {ExampleUtilityFunction}
             )
 
             assert return_code == 0
             assert not capture_result.err
-            assert capture_result.out == "Successful execution\n"
+            assert capture_result.out.strip() == "Successful execution"
 
         elif help_argument == "test_invalid_function_error_message":
             INVALID_FUNCTION: Final[str] = "".join(
@@ -229,7 +264,7 @@ class TestMain(BaseTestArgumentParser):
             return_code, capture_result = cls.execute_argument_parser_function(
                 [INVALID_FUNCTION],
                 capsys,
-                {ExampleUtilityFunction()}
+                {ExampleUtilityFunction}
             )
 
             assert return_code != 0
@@ -257,35 +292,61 @@ class TestMain(BaseTestArgumentParser):
         assert "functions:" in capture_result.out
 
 
-class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
-    """Test case to unit-test the generate_invite_url argument parser."""
+class TestInviteURLGenerator(BaseTestArgumentParser):
+    """
+    Test case to unit-test the generate_invite_url utility function component.
+
+    Includes tests for both the argument parser & low-level URL generation function.
+    """
+
+    UTILITY_FUNCTIONS: frozenset[type[UtilityFunction]] = frozenset({InviteURLGenerator})
+
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def USAGE_MESSAGE(cls) -> str:  # noqa: N805,N802
+        """The error message describing how the given function should be called."""  # noqa: D401
+        return (
+            "usage: utils generate_invite_url [-h] "
+            "discord_bot_application_id [discord_guild_id]"
+        )
 
     @classmethod
-    def execute_util_function(cls, util_function_name: str, *arguments: str, delete_env_guild_id: bool = True) -> None:  # noqa: E501
+    def execute_argument_parser_function(cls, args: Sequence[str], capsys: CaptureFixture[str], utility_functions: Iterable[type[UtilityFunction]] | None = None, *, delete_env_guild_id: bool = True) -> tuple[int, CaptureResult[str]]:  # noqa: E501
         """
         Execute the given utility function.
 
         The command line outputs are stored in class variables for later access.
         """
-        PROJECT_ROOT: Final[Path] = cls._get_project_root()
-        env_file_path: Path = PROJECT_ROOT / Path(".env")
-        if env_file_path.is_file():
-            env_file_path = env_file_path.rename(PROJECT_ROOT / Path("._env"))
+        env_guild_id_deleter: BaseTestArgumentParser.EmptyContextManager = (
+            cls.EnvVariableDeleter(env_variable_name="GUILD_ID")
+            if delete_env_guild_id
+            else cls.EmptyContextManager()
+        )
 
-        old_env_discord_guild_id: str | None = os.environ.get("DISCORD_GUILD_ID")
-        if delete_env_guild_id and old_env_discord_guild_id is not None:
-            del os.environ["DISCORD_GUILD_ID"]
+        with env_guild_id_deleter:
+            return super().execute_argument_parser_function(args, capsys, utility_functions)
 
-        super().execute_util_function(util_function_name, *arguments)
+    @staticmethod
+    def test_low_level_url_generates() -> None:
+        """Test that the invite URL generates successfully when valid arguments are passed."""
+        DISCORD_BOT_APPLICATION_ID: Final[str] = "".join(
+            random.choices(string.digits, k=random.randint(17, 20))
+        )
+        DISCORD_GUILD_ID: Final[int] = random.randint(
+            10000000000000000, 99999999999999999999
+        )
 
-        if delete_env_guild_id and old_env_discord_guild_id is not None:
-            os.environ["DISCORD_GUILD_ID"] = old_env_discord_guild_id
+        invite_url: str = InviteURLGenerator.generate_invite_url(
+            DISCORD_BOT_APPLICATION_ID, DISCORD_GUILD_ID
+        )
 
-        if env_file_path.is_file():
-            env_file_path.rename(PROJECT_ROOT / Path(".env"))
+        assert re.match(
+            f"https://discord.com/.*={DISCORD_BOT_APPLICATION_ID}.*={DISCORD_GUILD_ID}",
+            invite_url
+        )
 
     @classmethod
-    def test_url_generates_without_discord_guild_id_environment_variable(cls) -> None:
+    def test_parser_generates_url_with_discord_guild_id_as_environment_variable(cls, capsys: CaptureFixture[str]) -> None:  # noqa: E501
         """Test for the correct response when discord_guild_id is given as an env variable."""
         DISCORD_BOT_APPLICATION_ID: Final[str] = str(
             random.randint(10000000000000000, 99999999999999999999)
@@ -298,9 +359,11 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
         old_env_discord_guild_id: str = os.environ.get("DISCORD_GUILD_ID", "")
         os.environ["DISCORD_GUILD_ID"] = str(DISCORD_GUILD_ID)
 
-        cls.execute_util_function(
-            "generate_invite_url",
-            DISCORD_BOT_APPLICATION_ID,
+        return_code: int
+        capture_result: CaptureResult[str]
+        return_code, capture_result = cls.execute_argument_parser_function(
+            ["generate_invite_url", str(DISCORD_BOT_APPLICATION_ID)],
+            capsys,
             delete_env_guild_id=False
         )
 
@@ -309,15 +372,15 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
         else:
             del os.environ["DISCORD_GUILD_ID"]
 
-        assert cls.parser_output_return_code == 0
-        assert not cls.parser_output_stderr
-        assert cls.parser_output_stdout == InviteURLGenerator.generate_invite_url(
+        assert return_code == 0
+        assert not capture_result.err
+        assert capture_result.out.strip() == InviteURLGenerator.generate_invite_url(
             DISCORD_BOT_APPLICATION_ID,
             DISCORD_GUILD_ID
         )
 
     @classmethod
-    def test_url_generates_with_discord_guild_id_environment_variable(cls) -> None:
+    def test_parser_generates_url_with_discord_guild_id_as_argument(cls, capsys: CaptureFixture[str]) -> None:  # noqa: E501
         """Test for the correct response when discord_guild_id is provided as an argument."""
         DISCORD_BOT_APPLICATION_ID: Final[str] = str(
             random.randint(10000000000000000, 99999999999999999999)
@@ -327,116 +390,115 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
             99999999999999999999
         )
 
-        cls.execute_util_function(
-            "generate_invite_url",
-            DISCORD_BOT_APPLICATION_ID,
-            str(DISCORD_GUILD_ID)
+        return_code: int
+        capture_result: CaptureResult[str]
+        return_code, capture_result = cls.execute_argument_parser_function(
+            ["generate_invite_url", DISCORD_BOT_APPLICATION_ID, str(DISCORD_GUILD_ID)],
+            capsys
         )
 
-        assert cls.parser_output_return_code == 0
-        assert not cls.parser_output_stderr
-        assert cls.parser_output_stdout == InviteURLGenerator.generate_invite_url(
+        assert return_code == 0
+        assert not capture_result.err
+        assert capture_result.out.strip() == InviteURLGenerator.generate_invite_url(
             DISCORD_BOT_APPLICATION_ID,
             DISCORD_GUILD_ID
         )
 
     @classmethod
-    def test_error_when_no_discord_bot_application_id(cls) -> None:
+    def test_parser_error_when_no_discord_bot_application_id(cls, capsys: CaptureFixture[str]) -> None:  # noqa: E501
         """Test for the correct error when no discord_bot_application_id is provided."""
-        EXPECTED_USAGE_MESSAGE: Final[str] = (
-            "usage: utils generate_invite_url [-h] "
-            "discord_bot_application_id [discord_guild_id]"
-        )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
             "utils generate_invite_url: error: the following arguments are required: "
             "discord_bot_application_id"
         )
-        cls.execute_util_function(util_function_name="generate_invite_url")
 
-        assert cls.parser_output_return_code != 0
-        assert not cls.parser_output_stdout
-        assert EXPECTED_USAGE_MESSAGE in cls.parser_output_stderr
-        assert EXPECTED_ERROR_MESSAGE in cls.parser_output_stderr
+        return_code: int
+        capture_result: CaptureResult[str]
+        return_code, capture_result = cls.execute_argument_parser_function(
+            ["generate_invite_url"],
+            capsys
+        )
+
+        assert return_code != 0
+        assert not capture_result.out
+        assert cls.USAGE_MESSAGE in " ".join(capture_result.err.replace("\n", "").split())
+        assert EXPECTED_ERROR_MESSAGE in capture_result.err
 
     @classmethod
-    def test_error_when_invalid_discord_bot_application_id(cls) -> None:
+    def test_parser_error_when_invalid_discord_bot_application_id(cls, capsys: CaptureFixture[str]) -> None:  # noqa: E501
         """Test for the correct error with an invalid discord_bot_application_id."""
-        EXPECTED_USAGE_MESSAGE: Final[str] = (
-            "usage: utils generate_invite_url [-h] "
-            "discord_bot_application_id [discord_guild_id]"
-        )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
             "utils generate_invite_url: error: discord_bot_application_id must be "
             "a valid Discord application ID "
             "(see https://support-dev.discord.com/hc/en-gb/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)"
         )
 
-        cls.execute_util_function(
-            "generate_invite_url",
-            "".join(
-                random.choices(string.ascii_letters + string.digits, k=7)
-            )
+        return_code: int
+        capture_result: CaptureResult[str]
+        return_code, capture_result = cls.execute_argument_parser_function(
+            [
+                "generate_invite_url",
+                "".join(random.choices(string.ascii_letters + string.digits, k=7))
+            ],
+            capsys
         )
 
-        assert cls.parser_output_return_code != 0
-        assert not cls.parser_output_stdout
-        assert EXPECTED_USAGE_MESSAGE in cls.parser_output_stderr
-        assert EXPECTED_ERROR_MESSAGE in cls.parser_output_stderr
+        assert return_code != 0
+        assert not capture_result.out
+        assert cls.USAGE_MESSAGE in " ".join(capture_result.err.replace("\n", "").split())
+        assert EXPECTED_ERROR_MESSAGE in capture_result.err
 
     @classmethod
-    def test_error_when_no_discord_guild_id(cls) -> None:
+    def test_parser_error_when_no_discord_guild_id(cls, capsys: CaptureFixture[str]) -> None:
         """Test for the correct error when no discord_guild_id is provided."""
-        EXPECTED_USAGE_MESSAGE: Final[str] = (
-            "usage: utils generate_invite_url [-h] "
-            "discord_bot_application_id [discord_guild_id]"
-        )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
             "utils generate_invite_url: error: discord_guild_id must be provided as an "
             "argument to the generate_invite_url utility function or otherwise set "
             "the DISCORD_GUILD_ID environment variable"
         )
 
-        cls.execute_util_function(
-            "generate_invite_url",
-            "".join(
-                random.choices(string.digits, k=random.randint(17, 20))
-            )
+        return_code: int
+        capture_result: CaptureResult[str]
+        return_code, capture_result = cls.execute_argument_parser_function(
+            [
+                "generate_invite_url",
+                "".join(random.choices(string.digits, k=random.randint(17, 20)))
+            ],
+            capsys,
+            delete_env_guild_id=True
         )
 
-        assert cls.parser_output_return_code != 0
-        assert not cls.parser_output_stdout
-        assert EXPECTED_USAGE_MESSAGE in cls.parser_output_stderr
-        assert EXPECTED_ERROR_MESSAGE in cls.parser_output_stderr
+        assert return_code != 0
+        assert not capture_result.out
+        assert cls.USAGE_MESSAGE in " ".join(capture_result.err.replace("\n", "").split())
+        assert EXPECTED_ERROR_MESSAGE in capture_result.err
 
     @classmethod
-    def test_error_when_invalid_discord_guild_id(cls) -> None:
+    def test_parser_error_when_invalid_discord_guild_id(cls, capsys: CaptureFixture[str]) -> None:  # noqa: E501
         """Test for the correct error when an invalid discord_guild_id is provided."""
-        EXPECTED_USAGE_MESSAGE: Final[str] = (
-            "usage: utils generate_invite_url [-h] "
-            "discord_bot_application_id [discord_guild_id]"
-        )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
             "utils generate_invite_url: error: discord_guild_id must be "
             "a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
         )
 
-        cls.execute_util_function(
-            "generate_invite_url",
-            str(
-                random.randint(10000000000000000, 99999999999999999999)
-            ),
-            "".join(
-                random.choices(string.ascii_letters + string.digits, k=7)
-            )
+        return_code: int
+        capture_result: CaptureResult[str]
+        return_code, capture_result = cls.execute_argument_parser_function(
+            [
+                "generate_invite_url",
+                str(random.randint(10000000000000000, 99999999999999999999)),
+                "".join(random.choices(string.ascii_letters + string.digits, k=7))
+            ],
+            capsys
         )
 
-        assert cls.parser_output_return_code != 0
-        assert not cls.parser_output_stdout
-        assert EXPECTED_USAGE_MESSAGE in cls.parser_output_stderr
-        assert EXPECTED_ERROR_MESSAGE in cls.parser_output_stderr
+        assert return_code != 0
+        assert not capture_result.out
+        assert cls.USAGE_MESSAGE in " ".join(capture_result.err.replace("\n", "").split())
+        assert EXPECTED_ERROR_MESSAGE in capture_result.err
 
     @classmethod
-    def test_error_when_too_many_arguments(cls) -> None:
+    def test_parser_error_when_too_many_arguments(cls, capsys: CaptureFixture[str]) -> None:
         """Test for the correct error when too many arguments are provided."""
         EXTRA_ARGUMENT: Final[str] = str(
             random.randint(10000000000000000, 99999999999999999999)
@@ -446,18 +508,35 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
             f"unrecognized arguments: {EXTRA_ARGUMENT}"
         )
 
-        cls.execute_util_function(
-            "generate_invite_url",
-            str(
-                random.randint(10000000000000000, 99999999999999999999)
-            ),
-            str(
-                random.randint(10000000000000000, 99999999999999999999)
-            ),
-            EXTRA_ARGUMENT
+        return_code: int
+        capture_result: CaptureResult[str]
+        return_code, capture_result = cls.execute_argument_parser_function(
+            [
+                "generate_invite_url",
+                str(random.randint(10000000000000000, 99999999999999999999)),
+                str(random.randint(10000000000000000, 99999999999999999999)),
+                EXTRA_ARGUMENT
+            ],
+            capsys
         )
 
-        assert cls.parser_output_return_code != 0
-        assert not cls.parser_output_stdout
-        assert "usage: utils [-h] {generate_invite_url}" in cls.parser_output_stderr
-        assert EXPECTED_ERROR_MESSAGE in cls.parser_output_stderr
+        assert return_code != 0
+        assert not capture_result.out
+        assert super().USAGE_MESSAGE in capture_result.err
+        assert EXPECTED_ERROR_MESSAGE in capture_result.err
+
+    @classmethod
+    @pytest.mark.parametrize("help_argument", ("-h", "--help"))
+    def test_parser_help(cls, capsys: CaptureFixture[str], help_argument: str) -> None:
+        """Test for the correct response when any of the help arguments are provided."""
+        return_code: int
+        capture_result: CaptureResult[str]
+        return_code, capture_result = cls.execute_argument_parser_function(
+            ["generate_invite_url", help_argument],
+            capsys
+        )
+
+        assert return_code == 0
+        assert not capture_result.err
+        assert cls.USAGE_MESSAGE in " ".join(capture_result.out.replace("\n", "").split())
+        assert "positional arguments:" in capture_result.out
