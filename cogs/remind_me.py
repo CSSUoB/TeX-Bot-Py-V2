@@ -13,16 +13,15 @@ from discord.ext import tasks
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from cogs._utils import TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotCog
 from db.core.models import DiscordReminder
-from utils import TeXBot
+from utils import TeXBot, TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotBaseCog
 
 if TYPE_CHECKING:
     import time
     from collections.abc import Iterator
 
 
-class RemindMeCommandCog(TeXBotCog):
+class RemindMeCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/remindme" command and its call-back method."""
 
     @staticmethod
@@ -157,7 +156,7 @@ class RemindMeCommandCog(TeXBotCog):
                 for year in range(current_year, current_year + 40):
                     delay_choices.add(f"{year}")
 
-        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?(?P<partial_year>\d{1,3})\Z", ctx.value):  # noqa: E501, SIM102
+        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?(?P<partial_year>\d{1,3})\Z", ctx.value):  # noqa: E501
             if 1 <= int(match.group("date")) <= 31 and 1 <= int(match.group("month")) <= 12:
                 for year in range(current_year, current_year + 40):
                     delay_choices.add(f"{year}"[len(match.group("partial_year")):])
@@ -195,7 +194,9 @@ class RemindMeCommandCog(TeXBotCog):
         if parsed_time[1] == 0:
             await self.command_send_error(
                 ctx,
-                message="The value provided in the \"delay\" argument was not a time/date."
+                message=(
+                    f"""The value provided in the {"delay"!r} argument was not a time/date."""
+                )
             )
             return
 
@@ -247,7 +248,7 @@ class RemindMeCommandCog(TeXBotCog):
         await reminder.adelete()
 
 
-class ClearRemindersBacklogTaskCog(TeXBotCog):
+class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
     """Cog class that defines the clear_reminders_backlog task."""
 
     def __init__(self, bot: TeXBot) -> None:
@@ -324,9 +325,9 @@ class ClearRemindersBacklogTaskCog(TeXBotCog):
                     return
 
                 await channel.send(
-                    "**Sorry it's a bit late!"
-                    " (I'm just catching up with some reminders I missed!)**"
-                    f"\n\n{reminder.get_formatted_message(user_mention)}"
+                    "**Sorry it's a bit late! "
+                    "(I'm just catching up with some reminders I missed!)**\n\n"
+                    f"{reminder.get_formatted_message(user_mention)}"
                 )
 
                 await reminder.adelete()

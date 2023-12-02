@@ -5,7 +5,6 @@ import logging
 import discord
 from discord_logging.handler import DiscordHandler
 
-from cogs._utils import TeXBotCog
 from config import settings
 from exceptions import (
     ArchivistRoleDoesNotExist,
@@ -16,12 +15,13 @@ from exceptions import (
     MemberRoleDoesNotExist,
     RolesChannelDoesNotExist,
 )
+from utils import TeXBotBaseCog
 
 
-class StartupCog(TeXBotCog):
+class StartupCog(TeXBotBaseCog):
     """Cog class that defines additional code to execute upon startup."""
 
-    @TeXBotCog.listener()
+    @TeXBotBaseCog.listener()
     async def on_ready(self) -> None:
         """
         Populate the shortcut accessors of the bot after initialisation.
@@ -48,16 +48,21 @@ class StartupCog(TeXBotCog):
 
         else:
             logging.warning(
-                "DISCORD_LOG_CHANNEL_WEBHOOK_URL was not set,"
-                " so error logs will not be sent to the Discord log channel."
+                "DISCORD_LOG_CHANNEL_WEBHOOK_URL was not set, "
+                "so error logs will not be sent to the Discord log channel."
             )
 
-        guild: discord.Guild | None = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
+        try:
+            guild: discord.Guild | None = self.bot.css_guild
+        except GuildDoesNotExist:
+            guild = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
+            if guild:
+                self.bot.set_css_guild(guild)
+
         if not guild:
             logging.critical(GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"]))
             await self.bot.close()
             return
-        self.bot.set_css_guild(guild)
 
         if not discord.utils.get(guild.roles, name="Committee"):
             logging.warning(CommitteeRoleDoesNotExist())
@@ -87,8 +92,8 @@ class StartupCog(TeXBotCog):
             if not manual_moderation_warning_message_location_exists:
                 logging.critical(
                     (
-                        "The channel %s does not exist, so cannot be used as the location"
-                        " for sending manual-moderation warning messages"
+                        "The channel %s does not exist, so cannot be used as the location "
+                        "for sending manual-moderation warning messages"
                     ),
                     repr(settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"])
                 )
@@ -99,10 +104,10 @@ class StartupCog(TeXBotCog):
                 if manual_moderation_warning_message_location_similar_to_dm:
                     logging.info(
                         (
-                            "If you meant to set the location"
-                            " for sending manual-moderation warning messages to be"
-                            " the DMs of the committee member that applied"
-                            " the manual moderation action, use the value of %s"
+                            "If you meant to set the location "
+                            "for sending manual-moderation warning messages to be "
+                            "the DMs of the committee member that applied "
+                            "the manual moderation action, use the value of %s"
                         ),
                         repr("DM")
                     )

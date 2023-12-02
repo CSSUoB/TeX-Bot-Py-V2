@@ -1,15 +1,13 @@
 """Contains cog classes for any write_roles interactions."""
 
-import logging
 
 import discord
 
-from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from config import settings
-from exceptions import CommitteeRoleDoesNotExist, GuildDoesNotExist, RolesChannelDoesNotExist
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 
-class WriteRolesCommandCog(TeXBotCog):
+class WriteRolesCommandCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
     """Cog class that defines the "/writeroles" command and its call-back method."""
 
@@ -18,6 +16,8 @@ class WriteRolesCommandCog(TeXBotCog):
         name="writeroles",
         description="Populates #roles with the correct messages."
     )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_css_guild
     async def write_roles(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "write_roles" command.
@@ -25,50 +25,8 @@ class WriteRolesCommandCog(TeXBotCog):
         The "write_roles" command populates the "#roles" channel with the correct messages
         defined in the messages.json file.
         """
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.command_send_error(ctx, error_code="E1011")
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
-        committee_role: discord.Role = await self.bot.committee_role
-        if not committee_role:
-            await self.command_send_error(
-                ctx,
-                error_code="E1021",
-                logging_message=str(CommitteeRoleDoesNotExist())
-            )
-            return
-
-        roles_channel: discord.TextChannel | None = await self.bot.roles_channel
-        if not roles_channel:
-            await self.command_send_error(
-                ctx,
-                error_code="E1031",
-                logging_message=str(RolesChannelDoesNotExist())
-            )
-            return
-
-        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
-        if not interaction_member:
-            await self.command_send_error(
-                ctx,
-                message="You must be a member of the CSS Discord server to use this command."
-            )
-            return
-
-        if committee_role not in interaction_member.roles:
-            committee_role_mention: str = "@Committee"
-            if ctx.guild:
-                committee_role_mention = committee_role.mention
-
-            await self.command_send_error(
-                ctx,
-                message=f"Only {committee_role_mention} members can run this command."
-            )
-            return
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        roles_channel: discord.TextChannel = await self.bot.roles_channel
 
         roles_message: str
         for roles_message in settings["ROLES_MESSAGES"]:

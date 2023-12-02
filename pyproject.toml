@@ -32,17 +32,20 @@ validators = "^0.22"
 beautifulsoup4 = "^4.12"
 emoji = "^2.8"
 parsedatetime = "^2.6"
-django = "~4.2"  # NOTE: Django version must be fixed until django-stubs supports the newer versions
+django = "~4.2"
 matplotlib = "^3.8"
 mplcyberpunk = "^0.7"
 python-logging-discord-handler = "^0.1"
+gitpython = "^3.1"
 
 [tool.poetry.group.dev.dependencies]
-mypy = "~1.5"  # NOTE: mypy version must be fixed until django-stubs supports the newer versions
-django-stubs = {extras = ["compatible-mypy"], version = "4.2.4"}
+mypy = "~1.6"
+django-stubs = {extras = ["compatible-mypy"], version = "~4.2"}
 pytest = "^7.4"
 pytest-subtests = "^0.11"
-ruff = "^0.0"
+ruff = "^0.1"
+setuptools = "*"  # NOTE: Required by pycharm
+pymarkdownlnt = "^0.9"
 
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]
@@ -163,3 +166,20 @@ max-branches = 19
 
 [tool.ruff.pyupgrade]
 keep-runtime-typing = true
+
+[tool.pymarkdown]
+mode.strict-config = true
+extensions.front-matter.enabled = true
+plugins.heading-style.style = "atx"
+plugins.ul-style.style = "asterisk"
+plugins.ul-start-left.enabled = true
+plugins.ul-indent.indent = 4
+plugins.no-trailing-spaces.strict = true
+plugins.line-length.line_length = 95
+plugins.line-length.heading_line_length = 95
+plugins.line-length.code_block_line_length = 95
+plugins.ol-prefix.style = "ordered"
+plugins.no-inline-html.allow_first_image_element = false
+plugins.hr-style.style = "---"
+plugins.code-block-style.style = "fenced"
+plugins.code-fence-style.style = "backtick"

@@ -4,14 +4,17 @@ import logging
 import re
 
 import discord
-from discord.ext import commands
 
-from cogs._command_checks import Checks
-from cogs._utils import TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotCog
 from exceptions import BaseDoesNotExistError, UserNotInCSSDiscordServer
+from utils import (
+    CommandChecks,
+    TeXBotApplicationContext,
+    TeXBotAutocompleteContext,
+    TeXBotBaseCog,
+)
 
 
-class ArchiveCommandCog(TeXBotCog):
+class ArchiveCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/archive" command and its call-back method."""
 
     @staticmethod
@@ -53,8 +56,8 @@ class ArchiveCommandCog(TeXBotCog):
         required=True,
         parameter_name="str_category_id"
     )
-    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
-    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_css_guild
     async def archive(self, ctx: TeXBotApplicationContext, str_category_id: str) -> None:
         """
         Definition & callback response of the "archive" command.
@@ -62,6 +65,7 @@ class ArchiveCommandCog(TeXBotCog):
         The "archive" command hides a given category from view of casual members unless they
         have the "Archivist" role.
         """
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         css_guild: discord.Guild = self.bot.css_guild
         interaction_member: discord.Member = await self.bot.get_css_user(ctx.user)
         committee_role: discord.Role = await self.bot.committee_role
@@ -73,7 +77,7 @@ class ArchiveCommandCog(TeXBotCog):
         if not re.match(r"\A\d{17,20}\Z", str_category_id):
             await self.command_send_error(
                 ctx,
-                message=f"\"{str_category_id}\" is not a valid category ID."
+                message=f"{str_category_id!r} is not a valid category ID."
             )
             return
 
@@ -86,15 +90,15 @@ class ArchiveCommandCog(TeXBotCog):
         if not category:
             await self.command_send_error(
                 ctx,
-                message=f"Category with ID \"{category_id}\" does not exist."
+                message=f"Category with ID {str(category_id)!r} does not exist."
             )
             return
 
         if "archive" in category.name:
             await ctx.respond(
                 (
-                    ":information_source: No changes made. Category has already been archived."
-                    " :information_source:"
+                    ":information_source: No changes made. "
+                    "Category has already been archived. :information_source:"
                 ),
                 ephemeral=True
             )
@@ -191,8 +195,8 @@ class ArchiveCommandCog(TeXBotCog):
                 )
                 logging.error(
                     (
-                        "Bot did not have access to the channels in the selected category:"
-                        " %s."
+                        "Bot did not have access to the channels in the selected category: "
+                        "%s."
                     ),
                     category.name
                 )

@@ -6,15 +6,7 @@ import re
 from typing import Literal
 
 import discord
-from discord.ext import commands
 
-from cogs._command_checks import Checks
-from cogs._utils import (
-    TeXBotApplicationContext,
-    TeXBotAutocompleteContext,
-    TeXBotCog,
-    capture_guild_does_not_exist_error,
-)
 from config import settings
 from db.core.models import IntroductionReminderOptOutMember
 from exceptions import (
@@ -24,14 +16,20 @@ from exceptions import (
     MemberRoleDoesNotExist,
     RolesChannelDoesNotExist,
     RulesChannelDoesNotExist,
-    UserNotInCSSDiscordServer,
 )
+from utils import (
+    CommandChecks,
+    TeXBotApplicationContext,
+    TeXBotAutocompleteContext,
+    TeXBotBaseCog,
+)
+from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 
-class InductSendMessageCog(TeXBotCog):
+class InductSendMessageCog(TeXBotBaseCog):
     """Cog class that defines the "/induct" command and its call-back method."""
 
-    @TeXBotCog.listener()
+    @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
     async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
         """
@@ -40,6 +38,7 @@ class InductSendMessageCog(TeXBotCog):
         These post-induction actions are only applied to users that have just been inducted as
         a guest into the CSS Discord server.
         """
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guild: discord.Guild = self.bot.css_guild
 
         if before.guild != guild or after.guild != guild or before.bot or after.bot:
@@ -91,28 +90,28 @@ class InductSendMessageCog(TeXBotCog):
                 user_type = "member"
 
         await after.send(
-            f"**Congrats on joining the CSS Discord server as a {user_type}!**"
-            " You now have access to contribute to all the public channels."
-            "\n\nSome things to do to get started:"
-            f"\n1. Check out our rules in {rules_channel_mention}"
-            f"\n2. Head to {roles_channel_mention} and click on the icons to get"
-            " optional roles like pronouns and year groups"
-            "\n3. Change your nickname to whatever you wish others to refer to you as"
-            " (You can do this by right-clicking your name in the members list"
-            " to the right & selecting \"Edit Server Profile\")"
+            f"**Congrats on joining the CSS Discord server as a {user_type}!** "
+            "You now have access to contribute to all the public channels.\n\n"
+            "Some things to do to get started:\n"
+            f"1. Check out our rules in {rules_channel_mention}\n"
+            f"2. Head to {roles_channel_mention} and click on the icons to get "
+            "optional roles like pronouns and year groups\n"
+            "3. Change your nickname to whatever you wish others to refer to you as "
+            "(You can do this by right-clicking your name in the members list "
+            "to the right & selecting \"Edit Server Profile\")."
         )
         if user_type != "member":
             await after.send(
-                "You can also get yourself an annual membership to CSS for only £5!"
-                " Just head to https://cssbham.com/join."
-                " You'll get awesome perks like a free T-shirt:shirt:,"
-                " access to member only events:calendar_spiral:"
-                " & a cool green name on the CSS Discord server:green_square:!"
-                " Checkout all the perks at https://cssbham.com/membership."
+                "You can also get yourself an annual membership to CSS for only £5! "
+                "Just head to https://cssbham.com/join. "
+                "You'll get awesome perks like a free T-shirt:shirt:, "
+                "access to member only events:calendar_spiral: "
+                "& a cool green name on the CSS Discord server:green_square:! "
+                "Checkout all the perks at https://cssbham.com/membership."
             )
 
 
-class BaseInductCog(TeXBotCog):
+class BaseInductCog(TeXBotBaseCog):
     """
     Base user-induction cog container class.
 
@@ -122,13 +121,14 @@ class BaseInductCog(TeXBotCog):
 
     async def _perform_induction(self, ctx: TeXBotApplicationContext, induction_member: discord.Member, *, silent: bool) -> None:  # noqa: E501
         """Perform the actual process of inducting a member by giving them the Guest role."""
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guest_role: discord.Role = await self.bot.guest_role
 
         if guest_role in induction_member.roles:
             await ctx.respond(
                 (
-                    ":information_source: No changes made. User has already been inducted."
-                    " :information_source:"
+                    ":information_source: No changes made. User has already been inducted. "
+                    ":information_source:"
                 ),
                 ephemeral=True
             )
@@ -242,8 +242,8 @@ class InductCommandCog(BaseInductCog):
         default=False,
         required=False
     )
-    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
-    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_css_guild
     async def induct(self, ctx: TeXBotApplicationContext, str_induct_member_id: str, *, silent: bool) -> None:  # noqa: E501
         """
         Definition & callback response of the "induct" command.
@@ -251,27 +251,12 @@ class InductCommandCog(BaseInductCog):
         The "induct" command inducts a given member into the CSS Discord server by giving them
         the "Guest" role.
         """
-        str_induct_member_id = str_induct_member_id.replace("<@", "").replace(">", "")
-
-        if not re.match(r"\A\d{17,20}\Z", str_induct_member_id):
-            await self.command_send_error(
-                ctx,
-                message=f"\"{str_induct_member_id}\" is not a valid user ID."
+        try:
+            induct_member: discord.Member = await self.bot.get_member_from_str_id(
+                str_induct_member_id
             )
-            return
-
-        induct_user: discord.User | None = self.bot.get_user(int(str_induct_member_id))
-        if induct_user:
-            try:
-                induct_member: discord.Member = await self.bot.get_css_user(induct_user)
-            except UserNotInCSSDiscordServer:
-                induct_user = None
-
-        if not induct_user:
-            await self.command_send_error(
-                ctx,
-                message=f"Member with ID \"{str_induct_member_id}\" does not exist."
-            )
+        except ValueError as e:
+            await self.command_send_error(ctx, message=e.args[0])
             return
 
         # noinspection PyUnboundLocalVariable
@@ -282,8 +267,8 @@ class InductUserCommandsCog(BaseInductCog):
     """Cog class that defines the context menu induction commands & their call-back methods."""
 
     @discord.user_command(name="Induct User")  # type: ignore[no-untyped-call, misc]
-    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
-    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_css_guild
     async def non_silent_induct(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:  # noqa: E501
         """
         Definition & callback response of the "non_silent_induct" user-context-command.
@@ -295,8 +280,8 @@ class InductUserCommandsCog(BaseInductCog):
         await self._perform_induction(ctx, member, silent=False)
 
     @discord.user_command(name="Silently Induct User")  # type: ignore[no-untyped-call, misc]
-    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
-    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_css_guild
     async def silent_induct(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:  # noqa: E501
         """
         Definition & callback response of the "silent_induct" user-context-command.
@@ -308,7 +293,7 @@ class InductUserCommandsCog(BaseInductCog):
         await self._perform_induction(ctx, member, silent=True)
 
 
-class EnsureMembersInductedCommandCog(TeXBotCog):
+class EnsureMembersInductedCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/ensure-members-inducted" command and call-back method."""
 
     # noinspection SpellCheckingInspection
@@ -316,8 +301,8 @@ class EnsureMembersInductedCommandCog(TeXBotCog):
         name="ensure-members-inducted",
         description="Ensures all users with the @Member role also have the @Guest role."
     )
-    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
-    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_css_guild
     async def ensure_members_inducted(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "ensure_members_inducted" command.
@@ -325,6 +310,7 @@ class EnsureMembersInductedCommandCog(TeXBotCog):
         The "ensure_members_inducted" command ensures that users within the CSS Discord server
         that have the "Member" role have also been given the "Guest" role.
         """
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         css_guild: discord.Guild = self.bot.css_guild
         member_role: discord.Role = await self.bot.member_role
         guest_role: discord.Role = await self.bot.guest_role

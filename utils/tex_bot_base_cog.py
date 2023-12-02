@@ -1,11 +1,10 @@
-"""Utility classes used for the cogs section of this project."""
+"""Custom cog subclass that stores a reference to the custom bot class."""
 
 import contextlib
-import functools
 import logging
 import re
-from collections.abc import Callable, Coroutine, Mapping
-from typing import TYPE_CHECKING, Any, Final, ParamSpec, TypeVar
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Final
 
 import discord
 from discord import Cog
@@ -13,46 +12,18 @@ from discord import Cog
 from exceptions import (
     BaseDoesNotExistError,
     CommitteeRoleDoesNotExist,
-    GuildDoesNotExist,
-    StrikeTrackingError,
     UserNotInCSSDiscordServer,
 )
-from utils import TeXBot
+from utils.tex_bot import TeXBot
+from utils.tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 if TYPE_CHECKING:
     from typing import TypeAlias
 
     MentionableMember: TypeAlias = discord.Member | discord.Role
 
-P = ParamSpec("P")
-T = TypeVar("T")
 
-
-class TeXBotAutocompleteContext(discord.AutocompleteContext):
-    """
-    Type-hinting class overriding AutocompleteContext's reference to the Bot class.
-
-    Pycord's default AutocompleteContext references the standard discord.Bot class,
-    but cogs require a reference to the TeXBot class, so this AutocompleteContext subclass
-    should be used in cogs instead.
-    """
-
-    bot: TeXBot
-
-
-class TeXBotApplicationContext(discord.ApplicationContext):
-    """
-    Type-hinting class overriding ApplicationContext's reference to the Bot class.
-
-    Pycord's default ApplicationContext references the standard discord.Bot class,
-    but cogs require a reference to the TeXBot class, so this ApplicationContext subclass
-    should be used in cogs instead.
-    """
-
-    bot: TeXBot
-
-
-class TeXBotCog(Cog):
+class TeXBotBaseCog(Cog):
     """Base Cog subclass that stores a reference to the currently running bot."""
 
     ERROR_ACTIVITIES: Final[Mapping[str, str]] = {
@@ -69,6 +40,7 @@ class TeXBotCog(Cog):
         "non_silent_induct": "induct user and send welcome message",
         "ensure_members_inducted": "ensure all members are inducted",
         "make_member": "make you a member",
+        "opt_out_introduction_reminders": "opt-in/out of introduction reminders",
         "ping": "reply to ping",
         "remind_me": "remind you",
         "channel_stats": "display channel statistics",
@@ -77,8 +49,7 @@ class TeXBotCog(Cog):
         "left_member_stats": (
             "display statistics about the members that have left the server"
         ),
-        "write_roles": "send messages",
-        "opt_out_introduction_reminders": "opt-in/out of introduction reminders"
+        "write_roles": "send messages"
     }
 
     def __init__(self, bot: TeXBot) -> None:
@@ -145,7 +116,9 @@ class TeXBotCog(Cog):
 
         if message:
             message = re.sub(
-                r"<([@&#]?|(@[&#])?)\d+>", lambda match: f"`{match.group(0)}`", message.strip()
+                r"<([@&#]?|(@[&#])?)\d+>",
+                lambda match: f"`{match.group(0)}`",
+                message.strip()
             )
             construct_error_message += f"\n`{message}`"
 
@@ -204,45 +177,3 @@ class TeXBotCog(Cog):
                 discord.Permissions(send_messages=True, view_channel=True)
             )
         }
-
-
-class ErrorCaptureDecorators:
-    @staticmethod
-    def capture_error_and_close(func: Callable[P, Coroutine[Any, Any, T]], error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> Callable[P, Coroutine[Any, Any, T | None]]:  # noqa: E501
-        @functools.wraps(func)
-        async def wrapper(self: TeXBotCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:
-            if not isinstance(self, TeXBotCog):
-                INVALID_METHOD_TYPE_MESSAGE: Final[str] = (  # type: ignore[unreachable]
-                    f"Parameter {self.__name__!r} of any 'capture_error' decorator"
-                    f" must be an instance of {TeXBotCog.__name__!r}/one of its subclasses."
-                )
-                raise TypeError(INVALID_METHOD_TYPE_MESSAGE)
-            try:
-                return await func(self, *args, **kwargs)  # type: ignore[arg-type]
-            except error_type as error:
-                close_func(error)
-                await self.bot.close()
-                return None
-        return wrapper  # type: ignore[return-value]
-
-    @staticmethod
-    def critical_error_close_func(error: BaseException) -> None:
-        logging.critical(str(error).rstrip(".:"))
-
-    @classmethod
-    def strike_tracking_error_close_func(cls, error: BaseException) -> None:
-        cls.critical_error_close_func(error)
-        logging.warning("Critical errors are likely to lead to untracked moderation actions")
-
-
-# TODO: define as new functions rather than partials, for easier typing
-capture_guild_does_not_exist_error: Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T | None]]] = functools.partial(  # noqa: E501
-    ErrorCaptureDecorators.capture_error_and_close,  # type: ignore[arg-type]
-    error_type=GuildDoesNotExist,
-    close_func=ErrorCaptureDecorators.critical_error_close_func
-)
-capture_strike_tracking_error: Callable[[Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T | None]]] = functools.partial(  # noqa: E501
-    ErrorCaptureDecorators.capture_error_and_close,  # type: ignore[arg-type]
-    error_type=StrikeTrackingError,
-    close_func=ErrorCaptureDecorators.strike_tracking_error_close_func
-)

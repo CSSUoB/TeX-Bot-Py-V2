@@ -1,19 +1,134 @@
 """Contains cog classes for any stats interactions."""
 
-import logging
+import io
 import math
 import re
+from typing import TYPE_CHECKING
 
 import discord
+import matplotlib.pyplot as plt
+import mplcyberpunk
 
-import utils
-from cogs._utils import TeXBotApplicationContext, TeXBotCog
 from config import settings
 from db.core.models import LeftMember
-from exceptions import GuestRoleDoesNotExist, GuildDoesNotExist
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils.error_capture_decorators import capture_guild_does_not_exist_error
+
+if TYPE_CHECKING:
+    from collections.abc import Collection
+
+    from matplotlib.text import Text as Plot_Text
 
 
-class StatsCommandsCog(TeXBotCog):
+def amount_of_time_formatter(value: float, time_scale: str) -> str:
+    """
+    Format the amount of time value according to the provided time_scale.
+
+    E.g. past "1 days" => past "day",
+    past "2.00 weeks" => past "2 weeks",
+    past "3.14159 months" => past "3.14 months"
+    """
+    if value == 1 or float(f"{value:.2f}") == 1:
+        return f"{time_scale}"
+
+    if value % 1 == 0 or float(f"{value:.2f}") % 1 == 0:
+        return f"{int(value)} {time_scale}s"
+
+    return f"{value:.2f} {time_scale}s"
+
+
+def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str, filename: str, description: str, extra_text: str = "") -> discord.File:  # noqa: E501
+    """Generate an image of a plot bar chart from the given data & format variables."""
+    plt.style.use("cyberpunk")
+
+    max_data_value: int = max(data.values()) + 1
+
+    # NOTE: The "extra_values" dictionary represents columns of data that should be formatted differently to the standard data columns
+    extra_values: dict[str, int] = {}
+    if "Total" in data:
+        extra_values["Total"] = data.pop("Total")
+
+    if len(data) > 4:
+        data = {
+            key: value
+            for index, (key, value)
+            in enumerate(data.items())
+            if value > 0 or index <= 4
+        }
+
+    bars = plt.bar(*zip(*data.items(), strict=True))
+
+    if extra_values:
+        extra_bars = plt.bar(*zip(*extra_values.items(), strict=True))
+        mplcyberpunk.add_bar_gradient(extra_bars)
+
+    mplcyberpunk.add_bar_gradient(bars)
+
+    x_tick_labels: Collection[Plot_Text] = plt.gca().get_xticklabels()
+    count_x_tick_labels: int = len(x_tick_labels)
+
+    index: int
+    tick_label: Plot_Text
+    for index, tick_label in enumerate(x_tick_labels):
+        if tick_label.get_text() == "Total":
+            tick_label.set_fontweight("bold")
+
+        # NOTE: Shifts the y location of every other horizontal label down so that they do not overlap with one-another
+        if index % 2 == 1 and count_x_tick_labels > 4:
+            tick_label.set_y(tick_label.get_position()[1] - 0.044)
+
+    plt.yticks(range(0, max_data_value, math.ceil(max_data_value / 15)))
+
+    x_label_obj: Plot_Text = plt.xlabel(
+        x_label,
+        fontweight="bold",
+        fontsize="large",
+        wrap=True
+    )
+    x_label_obj._get_wrap_line_width = lambda: 475  # type: ignore[attr-defined] # noqa: SLF001
+
+    y_label_obj: Plot_Text = plt.ylabel(
+        y_label,
+        fontweight="bold",
+        fontsize="large",
+        wrap=True
+    )
+    y_label_obj._get_wrap_line_width = lambda: 375  # type: ignore[attr-defined] # noqa: SLF001
+
+    title_obj: Plot_Text = plt.title(title, fontsize="x-large", wrap=True)
+    title_obj._get_wrap_line_width = lambda: 500  # type: ignore[attr-defined] # noqa: SLF001
+
+    if extra_text:
+        extra_text_obj: Plot_Text = plt.text(
+            0.5,
+            -0.27,
+            extra_text,
+            ha="center",
+            transform=plt.gca().transAxes,
+            wrap=True,
+            fontstyle="italic",
+            fontsize="small"
+        )
+        extra_text_obj._get_wrap_line_width = lambda: 400  # type: ignore[attr-defined] # noqa: SLF001
+        plt.subplots_adjust(bottom=0.2)
+
+    plot_file = io.BytesIO()
+    plt.savefig(plot_file, format="png")
+    plt.close()
+    plot_file.seek(0)
+
+    discord_plot_file: discord.File = discord.File(
+        plot_file,
+        filename,
+        description=description
+    )
+
+    plot_file.close()
+
+    return discord_plot_file
+
+
+class StatsCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/stats" command group and its command call-back methods."""
 
     stats: discord.SlashCommandGroup = discord.SlashCommandGroup(
@@ -31,7 +146,7 @@ class StatsCommandsCog(TeXBotCog):
         description="The channel to display the stats for.",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(
-            TeXBotCog.autocomplete_get_text_channels  # type: ignore[arg-type]
+            TeXBotBaseCog.autocomplete_get_text_channels  # type: ignore[arg-type]
         ),
         required=False,
         parameter_name="str_channel_id"
@@ -49,20 +164,14 @@ class StatsCommandsCog(TeXBotCog):
             if not re.match(r"\A\d{17,20}\Z", str_channel_id):
                 await self.command_send_error(
                     ctx,
-                    message=f"\"{str_channel_id}\" is not a valid channel ID."
+                    message=f"{str_channel_id!r} is not a valid channel ID."
                 )
                 return
 
             channel_id = int(str_channel_id)
 
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.command_send_error(ctx, error_code="E1011")
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        guild: discord.Guild = self.bot.css_guild
         channel: discord.TextChannel | None = discord.utils.get(
             guild.text_channels,
             id=channel_id
@@ -70,7 +179,7 @@ class StatsCommandsCog(TeXBotCog):
         if not channel:
             await self.command_send_error(
                 ctx,
-                message=f"Text channel with ID \"{channel_id}\" does not exist."
+                message=f"Text channel with ID {str(channel_id)!r} does not exist."
             )
             return
 
@@ -125,12 +234,12 @@ class StatsCommandsCog(TeXBotCog):
 
         await ctx.channel.send(
             f"**{ctx.user.display_name}** used `/{ctx.command}`",
-            file=utils.plot_bar_chart(
+            file=plot_bar_chart(
                 message_counts,
-                xlabel="Role Name",
-                ylabel=(
+                x_label="Role Name",
+                y_label=(
                     f"""Number of Messages Sent (in the past {
-                        utils.amount_of_time_formatter(
+                        amount_of_time_formatter(
                             settings["STATISTICS_DAYS"].days,
                             "day"
                         )
@@ -139,13 +248,13 @@ class StatsCommandsCog(TeXBotCog):
                 title=f"Most Active Roles in #{channel.name}",
                 filename=f"{channel.name}_channel_stats.png",
                 description=(
-                    "Bar chart of the number of messages"
-                    f" sent by different roles in {channel.mention}."
+                    "Bar chart of the number of messages "
+                    f"sent by different roles in {channel.mention}."
                 ),
                 extra_text=(
-                    "Messages sent by members with multiple roles are counted once"
-                    " for each role"
-                    " (except for @Member vs @Guest & @Committee vs @Committee-Elect)"
+                    "Messages sent by members with multiple roles are counted once "
+                    "for each role "
+                    "(except for @Member vs @Guest & @Committee vs @Committee-Elect)"
                 )
             )
         )
@@ -161,22 +270,9 @@ class StatsCommandsCog(TeXBotCog):
         The "server_stats" command sends a graph of the stats about messages sent in the whole
         of the CSS Discord server.
         """
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.command_send_error(ctx, error_code="E1011")
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        guild: discord.Guild = self.bot.css_guild
         guest_role: discord.Role = await self.bot.guest_role
-        if not guest_role:
-            await self.command_send_error(
-                ctx,
-                error_code="E1022",
-                logging_message=GuestRoleDoesNotExist()
-            )
-            return
 
         await ctx.defer(ephemeral=True)
 
@@ -247,12 +343,12 @@ class StatsCommandsCog(TeXBotCog):
         await ctx.channel.send(
             f"**{ctx.user.display_name}** used `/{ctx.command}`",
             files=[
-                utils.plot_bar_chart(
+                plot_bar_chart(
                     message_counts["roles"],
-                    xlabel="Role Name",
-                    ylabel=(
+                    x_label="Role Name",
+                    y_label=(
                         f"""Number of Messages Sent (in the past {
-                        utils.amount_of_time_formatter(
+                        amount_of_time_formatter(
                             settings["STATISTICS_DAYS"].days,
                             "day"
                         )
@@ -261,21 +357,21 @@ class StatsCommandsCog(TeXBotCog):
                     title="Most Active Roles in the CSS Discord Server",
                     filename="roles_server_stats.png",
                     description=(
-                        "Bar chart of the number of messages sent by different roles"
-                        " in the CSS Discord server."
+                        "Bar chart of the number of messages sent by different roles "
+                        "in the CSS Discord server."
                     ),
                     extra_text=(
-                        "Messages sent by members with multiple roles are counted once"
-                        " for each role"
-                        " (except for @Member vs @Guest & @Committee vs @Committee-Elect)"
+                        "Messages sent by members with multiple roles are counted once "
+                        "for each role "
+                        "(except for @Member vs @Guest & @Committee vs @Committee-Elect)"
                     )
                 ),
-                utils.plot_bar_chart(
+                plot_bar_chart(
                     message_counts["channels"],
-                    xlabel="Channel Name",
-                    ylabel=(
+                    x_label="Channel Name",
+                    y_label=(
                         f"""Number of Messages Sent (in the past {
-                            utils.amount_of_time_formatter(
+                            amount_of_time_formatter(
                                 settings["STATISTICS_DAYS"].days,
                                 "day"
                             )
@@ -284,8 +380,8 @@ class StatsCommandsCog(TeXBotCog):
                     title="Most Active Channels in the CSS Discord Server",
                     filename="channels_server_stats.png",
                     description=(
-                        "Bar chart of the number of messages sent in different text channels"
-                        " in the CSS Discord server."
+                        "Bar chart of the number of messages sent in different text channels "
+                        "in the CSS Discord server."
                     )
                 ),
             ]
@@ -295,6 +391,7 @@ class StatsCommandsCog(TeXBotCog):
         name="self",
         description="Displays stats about the number of messages you have sent."
     )
+    @CommandChecks.check_interaction_user_in_css_guild
     async def user_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "user_stats" command.
@@ -302,37 +399,17 @@ class StatsCommandsCog(TeXBotCog):
         The "user_stats" command sends a graph of the stats about messages sent by the given
         member.
         """
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.command_send_error(ctx, error_code="E1011")
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
-        interaction_member: discord.Member | None = guild.get_member(ctx.user.id)
-        if not interaction_member:
-            await self.command_send_error(
-                ctx,
-                message="You must be a member of the CSS Discord server to use this command."
-            )
-            return
-
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        guild: discord.Guild = self.bot.css_guild
+        interaction_member: discord.Member = await self.bot.get_css_user(ctx.user)
         guest_role: discord.Role = await self.bot.guest_role
-        if not guest_role:
-            await self.command_send_error(
-                ctx,
-                error_code="E1022",
-                logging_message=GuestRoleDoesNotExist()
-            )
-            return
 
         if guest_role not in interaction_member.roles:
             await self.command_send_error(
                 ctx,
                 message=(
-                    "You must be inducted as guest member of the CSS Discord server"
-                    " to use this command."
+                    "You must be inducted as guest member of the CSS Discord server "
+                    "to use this command."
                 )
             )
             return
@@ -373,12 +450,12 @@ class StatsCommandsCog(TeXBotCog):
 
         await ctx.channel.send(
             f"**{ctx.user.display_name}** used `/{ctx.command}`",
-            file=utils.plot_bar_chart(
+            file=plot_bar_chart(
                 message_counts,
-                xlabel="Channel Name",
-                ylabel=(
+                x_label="Channel Name",
+                y_label=(
                     f"""Number of Messages Sent (in the past {
-                        utils.amount_of_time_formatter(
+                        amount_of_time_formatter(
                             settings["STATISTICS_DAYS"].days,
                             "day"
                         )
@@ -387,8 +464,8 @@ class StatsCommandsCog(TeXBotCog):
                 title="Your Most Active Channels in the CSS Discord Server",
                 filename=f"{ctx.user}_stats.png",
                 description=(
-                    f"Bar chart of the number of messages sent by {ctx.user}"
-                    " in different channels in the CSS Discord server."
+                    f"Bar chart of the number of messages sent by {ctx.user} "
+                    "in different channels in the CSS Discord server."
                 )
             )
         )
@@ -405,13 +482,8 @@ class StatsCommandsCog(TeXBotCog):
         The "left_member_stats" command sends a graph of the stats about the roles that members
         had when they left the CSS Discord server.
         """
-        try:
-            guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            await self.command_send_error(ctx, error_code="E1011")
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        guild: discord.Guild = self.bot.css_guild
 
         await ctx.defer(ephemeral=True)
 
@@ -450,37 +522,31 @@ class StatsCommandsCog(TeXBotCog):
 
         await ctx.channel.send(
             f"**{ctx.user.display_name}** used `/{ctx.command}`",
-            file=utils.plot_bar_chart(
+            file=plot_bar_chart(
                 left_member_counts,
-                xlabel="Role Name",
-                ylabel="Number of Members that have left the CSS Discord Server",
+                x_label="Role Name",
+                y_label="Number of Members that have left the CSS Discord Server",
                 title=(
                     "Most Common Roles that Members had when they left the CSS Discord Server"
                 ),
                 filename="left_members_stats.png",
                 description=(
-                    "Bar chart of the number of members with different roles"
-                    " that have left the CSS Discord server."
+                    "Bar chart of the number of members with different roles "
+                    "that have left the CSS Discord server."
                 ),
                 extra_text=(
-                    "Members that left with multiple roles"
-                    " are counted once for each role"
-                    " (except for @Member vs @Guest & @Committee vs @Committee-Elect)"
+                    "Members that left with multiple roles "
+                    "are counted once for each role "
+                    "(except for @Member vs @Guest & @Committee vs @Committee-Elect)"
                 )
             )
         )
 
-    @TeXBotCog.listener()
+    @TeXBotBaseCog.listener()
+    @capture_guild_does_not_exist_error
     async def on_member_leave(self, member: discord.Member) -> None:
         """Update the stats of the roles that members had when they left the Discord server."""
-        try:
-            css_guild: discord.Guild = self.bot.css_guild
-        except GuildDoesNotExist as guild_error:
-            logging.critical(guild_error)
-            await self.bot.close()
-            return
-
-        if member.guild != css_guild or member.bot:
+        if member.guild != self.bot.css_guild or member.bot:
             return
 
         await LeftMember.objects.acreate(

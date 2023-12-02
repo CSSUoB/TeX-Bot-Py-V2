@@ -7,16 +7,19 @@ from typing import TYPE_CHECKING
 import discord
 from discord.ext import tasks
 
-from cogs._utils import ErrorCaptureDecorators, TeXBotCog, capture_guild_does_not_exist_error
 from config import settings
 from exceptions import GuestRoleDoesNotExist
-from utils import TeXBot
+from utils import TeXBot, TeXBotBaseCog
+from utils.error_capture_decorators import (
+    ErrorCaptureDecorators,
+    capture_guild_does_not_exist_error,
+)
 
 if TYPE_CHECKING:
     import datetime
 
 
-class KickNoIntroductionUsersTaskCog(TeXBotCog):
+class KickNoIntroductionUsersTaskCog(TeXBotBaseCog):
     """Cog class that defines the kick_no_introduction_users task."""
 
     def __init__(self, bot: TeXBot) -> None:
@@ -36,7 +39,7 @@ class KickNoIntroductionUsersTaskCog(TeXBotCog):
 
     @tasks.loop(hours=24)
     @functools.partial(
-        ErrorCaptureDecorators.capture_error_and_close,  # type: ignore[arg-type]
+        ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExist,
         close_func=ErrorCaptureDecorators.critical_error_close_func
     )
@@ -48,6 +51,7 @@ class KickNoIntroductionUsersTaskCog(TeXBotCog):
         Other prerequisites must be met for this task to be activated, see README.md for the
         full list of conditions.
         """
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guild: discord.Guild = self.bot.css_guild
         guest_role: discord.Role = await self.bot.guest_role
 
@@ -59,10 +63,11 @@ class KickNoIntroductionUsersTaskCog(TeXBotCog):
             if not member.joined_at:
                 logging.error(
                     (
-                        "Member with ID: %s could not be checked whether to kick,"
-                        " because their \"joined_at\" attribute was None."
+                        "Member with ID: %s could not be checked whether to kick, "
+                        "because their %s attribute was None."
                     ),
-                    member.id
+                    member.id,
+                    repr("joined_at")
                 )
                 continue
 
@@ -75,8 +80,8 @@ class KickNoIntroductionUsersTaskCog(TeXBotCog):
                 try:
                     await member.kick(
                         reason=(
-                            "Member was in server without introduction sent"
-                            f" for longer than {kick_no_introduction_members_delay}"
+                            "Member was in server without introduction sent "
+                            f"for longer than {kick_no_introduction_members_delay}"
                         )
                     )
                 except discord.Forbidden as kick_error:
