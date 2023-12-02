@@ -160,6 +160,12 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             super().__init__(timeout=None)
 
         async def send_error(self, interaction: discord.Interaction, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
+            """
+            Construct & format an error message from the given details.
+
+            The constructed error message is then sent as the response
+            to the given interaction.
+            """
             await TeXBotBaseCog.send_error(
                 self.bot,
                 interaction,
