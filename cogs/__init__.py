@@ -17,7 +17,7 @@ from cogs.induct import (
     InductSendMessageCog,
     InductUserCommandsCog,
 )
-from cogs.kick_no_introduction_users import KickNoIntroductionUsersTaskCog
+from cogs.kick_no_introduction_discord_members import KickNoIntroductionDiscordMembersTaskCog
 from cogs.make_member import MakeMemberCommandCog
 from cogs.ping import PingCommandCog
 from cogs.remind_me import ClearRemindersBacklogTaskCog, RemindMeCommandCog
@@ -47,7 +47,7 @@ def setup(bot: TeXBot) -> None:
         InductCommandCog,
         InductSendMessageCog,
         InductUserCommandsCog,
-        KickNoIntroductionUsersTaskCog,
+        KickNoIntroductionDiscordMembersTaskCog,
         MakeMemberCommandCog,
         PingCommandCog,
         ClearRemindersBacklogTaskCog,

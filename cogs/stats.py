@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import mplcyberpunk
 
 from config import settings
-from db.core.models import LeftMember
+from db.core.models import LeftDiscordMember
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
@@ -488,7 +488,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         await ctx.defer(ephemeral=True)
 
         left_member_counts: dict[str, int] = {
-            "Total": await LeftMember.objects.acount()
+            "Total": await LeftDiscordMember.objects.acount()
         }
 
         role_name: str
@@ -496,8 +496,8 @@ class StatsCommandsCog(TeXBotBaseCog):
             if discord.utils.get(guild.roles, name=role_name):
                 left_member_counts[f"@{role_name}"] = 0
 
-        left_member: LeftMember
-        async for left_member in LeftMember.objects.all():
+        left_member: LeftDiscordMember
+        async for left_member in LeftDiscordMember.objects.all():
             for left_member_role in left_member.roles:
                 if left_member_role not in left_member_counts:
                     continue

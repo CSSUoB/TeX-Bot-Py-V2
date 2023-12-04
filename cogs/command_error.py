@@ -33,7 +33,10 @@ class CommandErrorCog(TeXBotBaseCog):
 
         elif isinstance(error, CheckAnyFailure):
             if CommandChecks.is_interaction_user_in_css_guild_failure(error.checks[0]):
-                message = "You must be a member of the CSS Discord server to use this command."
+                message = (
+                    f"You must be a member of the {self.bot.group_name} Discord guild "
+                    "to use this command."
+                )
 
             elif CommandChecks.is_interaction_user_has_committee_role_failure(error.checks[0]):
                 # noinspection PyUnusedLocal

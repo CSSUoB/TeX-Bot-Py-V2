@@ -52,7 +52,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             self.OptOutIntroductionRemindersView(self.bot)
         )
 
-    @tasks.loop(**settings["INTRODUCTION_REMINDER_INTERVAL"])
+    @tasks.loop(**settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"])
     @functools.partial(
         ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExist,
@@ -102,7 +102,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     settings["SEND_INTRODUCTION_REMINDERS"] == "interval"
             )
             member_recently_joined: bool = (discord.utils.utcnow() - member.joined_at) <= max(
-                settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] / 3,
+                settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] / 3,
                 datetime.timedelta(days=1)
             )
             member_opted_out_from_reminders: bool = await IntroductionReminderOptOutMember.objects.filter(  # noqa: E501

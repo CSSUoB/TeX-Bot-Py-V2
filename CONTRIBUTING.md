@@ -88,15 +88,15 @@ please look at the documentation within the files themselves*
 * `cogs/delete_all.py`: cogs for delete_all interactions
 * `cogs/edit_message.py`: cogs for edit_message interactions
 * `cogs/induct.py`: cogs for induct interactions
-* `cogs/kick_no_introduction_users.py`: cogs related to kicking users that have not
-introduced themselves
-* `cogs/make_member.py`: cogs related to making members
+* `cogs/kick_no_introduction_discord_members.py`: cogs related to kicking Discord members
+that have not introduced themselves
+* `cogs/make_member.py`: cogs related to making guests into members
 * `cogs/ping.py`: cogs for pinging interactions
 * `cogs/remind_me.py`: cogs for remind_me interactions
-* `cogs/send_get_roles_reminders.py`: cogs relating to sending reminders to users
+* `cogs/send_get_roles_reminders.py`: cogs relating to sending reminders to Discord members
 about opt-in roles
-* `cogs/send_introduction_reminders.py`: cogs relating to sending reminders to users about
-introducing themselves
+* `cogs/send_introduction_reminders.py`: cogs relating to sending reminders to Discord members
+about introducing themselves
 * `cogs/source.py`: cogs for source interactions
 * `cogs/startup.py`: cogs for startup
 * `cogs/stats.py`: cogs for stats interactions

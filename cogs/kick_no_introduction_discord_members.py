@@ -19,13 +19,13 @@ if TYPE_CHECKING:
     import datetime
 
 
-class KickNoIntroductionUsersTaskCog(TeXBotBaseCog):
-    """Cog class that defines the kick_no_introduction_users task."""
+class KickNoIntroductionDiscordMembersTaskCog(TeXBotBaseCog):
+    """Cog class that defines the kick_no_introduction_discord_members task."""
 
     def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
         if settings["SEND_GET_ROLES_REMINDERS"]:
-            self.kick_no_introduction_users.start()
+            self.kick_no_introduction_discord_members.start()
 
         super().__init__(bot)
 
@@ -35,7 +35,7 @@ class KickNoIntroductionUsersTaskCog(TeXBotBaseCog):
 
         This may be run dynamically or when the bot closes.
         """
-        self.kick_no_introduction_users.cancel()
+        self.kick_no_introduction_discord_members.cancel()
 
     @tasks.loop(hours=24)
     @functools.partial(
@@ -44,7 +44,7 @@ class KickNoIntroductionUsersTaskCog(TeXBotBaseCog):
         close_func=ErrorCaptureDecorators.critical_error_close_func
     )
     @capture_guild_does_not_exist_error
-    async def kick_no_introduction_users(self) -> None:
+    async def kick_no_introduction_discord_members(self) -> None:
         """
         Recurring task to kick any Discord users that have not introduced themselves.
 
@@ -71,17 +71,17 @@ class KickNoIntroductionUsersTaskCog(TeXBotBaseCog):
                 )
                 continue
 
-            kick_no_introduction_members_delay: datetime.timedelta = settings[
-                "KICK_NO_INTRODUCTION_MEMBERS_DELAY"
+            kick_no_introduction_discord_members_delay: datetime.timedelta = settings[
+                "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"
             ]
             time_since_joining: datetime.timedelta = discord.utils.utcnow() - member.joined_at
 
-            if time_since_joining > kick_no_introduction_members_delay:
+            if time_since_joining > kick_no_introduction_discord_members_delay:
                 try:
                     await member.kick(
                         reason=(
                             "Member was in server without introduction sent "
-                            f"for longer than {kick_no_introduction_members_delay}"
+                            f"for longer than {kick_no_introduction_discord_members_delay}"
                         )
                     )
                 except discord.Forbidden as kick_error:
@@ -91,7 +91,7 @@ class KickNoIntroductionUsersTaskCog(TeXBotBaseCog):
                         kick_error.text
                     )
 
-    @kick_no_introduction_users.before_loop
+    @kick_no_introduction_discord_members.before_loop
     async def before_tasks(self) -> None:
         """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
         await self.bot.wait_until_ready()

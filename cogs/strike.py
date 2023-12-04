@@ -11,7 +11,7 @@ import discord
 from discord.ui import View
 
 from config import settings
-from db.core.models import MemberStrikes
+from db.core.models import DiscordMemberStrikes
 from exceptions import (
     GuildDoesNotExist,
     RulesChannelDoesNotExist,

@@ -3,7 +3,7 @@
 import discord
 from django.db.models import Model
 
-from db.core.models import DiscordReminder, UoBMadeMember
+from db.core.models import DiscordReminder, GroupMadeMember
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 
@@ -27,7 +27,7 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
                 if delete_model == DiscordReminder
                 else
                     "UoB Made Members"
-                    if delete_model == UoBMadeMember
+                    if delete_model == GroupMadeMember
                     else "objects"
             } deleted successfully.""",
             ephemeral=True
@@ -61,4 +61,4 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
         The "delete_all_uob_made_members" uses the _delete_all() function to delete all
          UoBMadeMember instance objects stored in the database.
         """
-        await self._delete_all(ctx, delete_model=UoBMadeMember)
+        await self._delete_all(ctx, delete_model=GroupMadeMember)

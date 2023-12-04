@@ -59,13 +59,13 @@ Users of the bot may encounter error codes when attempting to execute slash-comm
 the list of error code descriptions is given here:
 
 * `E1011` - The value for the environment variable `DISCORD_GUILD_ID` is an ID
-that references a Discord server that does not exist
+that references a Discord guild that does not exist
 * `E1021` - Your Discord guild does not contain a role with the name "@Committee"
 (required for the `/writeroles`, `/editmessage`, `/induct`, `/strike`, `/archive`,
 `/delete-all` & `/ensure-members-inducted` commands)
 * `E1022` - Your Discord guild does not contain a role with the name "@Guest"
 (required for the `/induct`, `/stats`, `/archive` & `/ensure-members-inducted` commands and
-the `kick_no_introduction_members` & `introduction_reminder` tasks)
+the `kick_no_introduction_discord_members` & `introduction_reminder` tasks)
 * `E1023` - Your Discord guild does not contain a role with the name "@Member"
 (required for the `/makemember` & `/ensure-members-inducted` command)
 * `E1024` - Your Discord guild does not contain a role with the name "@Archivist"
@@ -164,19 +164,19 @@ poetry run python -m utils generate_invite_url {discord_bot_application_id} {dis
 
 You'll also need to set a number of environment variables before running the bot:
 
-* `MEMBERS_PAGE_URL`: The URL of the CSS members page (currently found on
-the Guild of Students website, make sure it's sorted by group).
-* `MEMBERS_PAGE_COOKIE`: The CSS members page session cookie
 * `DISCORD_BOT_TOKEN`: The Discord token for the bot you created.
 (The token is available on your bot page in the [Developer Portal](https://discord.com/developers/applications).)
 * `DISCORD_GUILD_ID`: The ID of your Discord guild.
 * `DISCORD_LOG_CHANNEL_ID`: The ID of the text channel in your Discord guild
 where error logs should be sent.
 (This is optional, and if it is not provided, error logs will be sent to the console only.)
+* `MEMBERS_LIST_URL`: The URL to retrieve the list of IDs of people
+that have purchased a membership to your community group.
 (The CSS' members list is currently found on the Guild of Students website.
 If your members list is also found on the Guild of Students website,
 ensure the URL includes the "sort by groups" option,
 so that all members are visible without pagination.)
+* `MEMBERS_LIST_URL_SESSION_COOKIE`: The members list URL session cookie.
 (If your group's members list is stored at a URL that requires authentication,
 this session cookie should authenticate the bot to view your group's members list,
 as if it were logged in to the website as a Committee member.

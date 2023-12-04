@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from django.core.exceptions import ValidationError
 
 from config import settings
-from db.core.models import UoBMadeMember
+from db.core.models import GroupMadeMember
 from exceptions import CommitteeRoleDoesNotExist, GuestRoleDoesNotExist
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
@@ -27,16 +27,16 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         description="Gives you the Member role when supplied with an appropriate Student ID."
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
-        name="studentid",
-        description="Your UoB Student ID",
+        name="studentid",  # TODO: Rename
+        description="Your UoB Student ID",  # TODO: Rename
         input_type=str,
         required=True,
         max_length=7,
         min_length=7,
-        parameter_name="uob_id"
+        parameter_name="group_id"
     )
     @CommandChecks.check_interaction_user_in_css_guild
-    async def make_member(self, ctx: TeXBotApplicationContext, uob_id: str) -> None:
+    async def make_member(self, ctx: TeXBotApplicationContext, group_id: str) -> None:
         """
         Definition & callback response of the "make_member" command.
 
@@ -57,17 +57,17 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             )
             return
 
-        if not re.match(r"\A\d{7}\Z", uob_id):
+        if not re.match(r"\A\d{7}\Z", group_id):
             await self.send_error(
                 ctx,
-                message=f"{uob_id!r} is not a valid UoB Student ID."
+                message=f"{group_id!r} is not a valid {self.bot.group_id_type} ID."
             )
             return
 
-        uob_id_already_used: bool = await UoBMadeMember.objects.filter(
-            hashed_uob_id=UoBMadeMember.hash_uob_id(uob_id)
+        group_id_is_already_used: bool = await GroupMadeMember.objects.filter(
+            hashed_group_id=GroupMadeMember.hash_group_id(group_id, self.bot.group_id_type)
         ).aexists()
-        if uob_id_already_used:
+        if group_id_is_already_used:
             # noinspection PyUnusedLocal
             committee_mention: str = "committee"
             with contextlib.suppress(CommitteeRoleDoesNotExist):
@@ -90,9 +90,11 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             "Pragma": "no-cache",
             "Expires": "0"
         }
-        request_cookies: dict[str, str] = {".ASPXAUTH": settings["MEMBERS_PAGE_COOKIE"]}
+        request_cookies: dict[str, str] = {
+            ".ASPXAUTH": settings["MEMBERS_LIST_URL_SESSION_COOKIE"]
+        }
         async with aiohttp.ClientSession(headers=request_headers, cookies=request_cookies) as http_session:  # noqa: E501, SIM117
-            async with http_session.get(url=settings["MEMBERS_PAGE_URL"]) as http_response:
+            async with http_session.get(url=settings["MEMBERS_LIST_URL"]) as http_response:
                 response_html: str = await http_response.text()
 
         MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
@@ -131,19 +133,19 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 error_code="E1041",
                 logging_message=OSError(
                     "The guild member IDs could not be retrieved from "
-                    "the MEMBERS_PAGE_URL."
+                    "the MEMBERS_LIST_URL."
                 )
             )
             return
 
-        if uob_id not in guild_member_ids:
+        if group_id not in guild_member_ids:
             await self.send_error(
                 ctx,
                 message=(
-                    "You must be a member of The Computer Science Society "
+                    "You must be a member of The Computer Science Society "  # TODO: Fix full name
                     "to use this command.\n"
-                    "The provided student ID must match the UoB student ID "
-                    "that you purchased your CSS membership with."
+                    "The provided student ID must match the UoB student ID "  # TODO: Fix ID type names
+                    f"that you purchased your {self.bot.group_name} membership with."
                 )
             )
             return
@@ -155,15 +157,15 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         )
 
         try:
-            await UoBMadeMember.objects.acreate(uob_id=uob_id)
-        except ValidationError as create_uob_made_member_error:
+            await GroupMadeMember.objects.acreate(group_id=group_id)
+        except ValidationError as create_group_made_member_error:
             error_is_already_exists: bool = (
-                "hashed_uob_id" in create_uob_made_member_error.message_dict
+                "hashed_group_id" in create_group_made_member_error.message_dict
                 and any(
                     "already exists"
                     in error
                     for error
-                    in create_uob_made_member_error.message_dict["hashed_uob_id"]
+                    in create_group_made_member_error.message_dict["hashed_group_id"]
                 )
             )
             if not error_is_already_exists:
