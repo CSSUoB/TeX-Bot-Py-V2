@@ -8,6 +8,7 @@ __all__: Sequence[str] = [
     "ResponseMessageSender"
 ]
 
+import abc
 from typing import Any, TypedDict
 
 import discord
@@ -16,16 +17,16 @@ from discord.ui import View
 from utils.tex_bot_contexts import TeXBotApplicationContext
 
 
-class MessageSenderComponent(Protocol):
+class MessageSenderComponent(abc.ABC):
     """
     Abstract protocol definition of a sending component.
 
     Defines the way to send a provided message content & optional view to the defined endpoint.
     """
 
+    @abc.abstractmethod
     async def send(self, content: str, *, view: View | None = None) -> Any:
         """Send the provided message content & optional view to the defined endpoint."""
-        raise NotImplementedError
 
 
 class ChannelMessageSender(MessageSenderComponent):

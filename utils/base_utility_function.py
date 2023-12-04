@@ -37,7 +37,6 @@ class UtilityFunction(abc.ABC):
                        exit_on_error: bool = ...,
                        **kwargs: Any) -> ArgumentParser:
             """Create a new subparser from this SubParserAction."""
-            raise NotImplementedError
 
     NAME: str
     DESCRIPTION: str
@@ -57,4 +56,3 @@ class UtilityFunction(abc.ABC):
     @abc.abstractmethod
     def run(self, parsed_args: Namespace) -> int:
         """Execute the logic that this util function provides."""
-        raise NotImplementedError
