@@ -193,7 +193,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     interaction.user
                 )
             except UserNotInCSSDiscordServer:
-                raise NotImplementedError from None
+                raise NotImplementedError from None  # TODO: Send error message to button interaction
 
             button_will_make_opt_out: bool = (
                     button.style == discord.ButtonStyle.red

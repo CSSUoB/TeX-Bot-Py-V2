@@ -27,16 +27,21 @@ class AsyncBaseModel(models.Model):
 
         abstract = True
 
-    def save(self, *args: Any, **kwargs: Any) -> None:
+    def save(self, *, force_insert: bool = False, force_update: bool = False, using: str | None = None, update_fields: Iterable[str] | None = None) -> None:  # type: ignore[override] # noqa: E501
         """
         Save the current instance to the database, only after the model has been cleaned.
 
         Cleaning the model ensures all data in the database is valid, even if the data was not
         added via a ModelForm (E.g. data is added using the ORM API).
+
+        The 'force_insert' and 'force_update' parameters can be used
+        to insist that the "save" must be an SQL insert or update
+        (or equivalent for non-SQL backends), respectively.
+        Normally, they should not be set.
         """
         self.full_clean()
 
-        super().save(*args, **kwargs)
+        return super().save(force_insert, force_update, using, update_fields)
 
     def __init__(self, **kwargs: object) -> None:
         """Initialize a new model instance, capturing any proxy field values."""
@@ -53,12 +58,17 @@ class AsyncBaseModel(models.Model):
         for field_name, value in proxy_fields.items():
             setattr(self, field_name, value)
 
-    def update(self, *, commit: bool = True, using: str | None = None, **kwargs: Any) -> None:
+    def update(self, *, commit: bool = True, force_insert: bool = False, force_update: bool = False, using: str | None = None, update_fields: Iterable[str] | None = None, **kwargs: object) -> None:  # noqa: E501
         """
         Change an in-memory object's values, then save it to the database.
 
         This simplifies the two steps into a single operation
         (based on Django's Queryset.bulk_update method).
+
+        The 'force_insert' and 'force_update' parameters can be used
+        to insist that the "save" must be an SQL insert or update
+        (or equivalent for non-SQL backends), respectively.
+        Normally, they should not be set.
         """
         unexpected_kwargs: set[str] = set()
 
@@ -82,19 +92,38 @@ class AsyncBaseModel(models.Model):
             setattr(self, field_name, value)
 
         if commit:
-            self.save(using)
+            return self.save(
+                force_insert=force_insert,
+                force_update=force_update,
+                using=using,
+                update_fields=update_fields
+            )
+
+        return None
 
     update.alters_data: bool = True  # type: ignore[attr-defined, misc]
 
     # noinspection SpellCheckingInspection
-    async def aupdate(self, *, commit: bool = True, using: str | None = None, **kwargs: Any) -> None:  # noqa: E501
+    async def aupdate(self, *, commit: bool = True, force_insert: bool = False, force_update: bool = False, using: str | None = None, update_fields: Iterable[str] | None = None, **kwargs: object) -> None:  # noqa: E501
         """
         Asyncronously change an in-memory object's values, then save it to the database.
 
         This simplifies the two steps into a single operation
         (based on Django's Queryset.bulk_update method).
+
+        The 'force_insert' and 'force_update' parameters can be used
+        to insist that the "save" must be an SQL insert or update
+        (or equivalent for non-SQL backends), respectively.
+        Normally, they should not be set.
         """
-        await sync_to_async(self.update)(commit=commit, using=using, **kwargs)
+        await sync_to_async(self.update)(
+            commit=commit,
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
+            **kwargs
+        )
 
     aupdate.alters_data: bool = True  # type: ignore[attr-defined, misc]
 
