@@ -185,6 +185,7 @@ class BaseStrikeCog(TeXBotCog):
     SUGGESTED_ACTIONS: Final[Mapping[int, str]] = {1: "time-out", 2: "kick", 3: "ban"}
 
     async def _send_strike_user_message(self, strike_user: discord.User | discord.Member, member_strikes: MemberStrikes) -> None:  # noqa: E501
+        # noinspection PyUnusedLocal
         rules_channel_mention: str = "`#welcome`"
         with contextlib.suppress(RulesChannelDoesNotExist):
             rules_channel_mention = (await self.bot.rules_channel).mention
