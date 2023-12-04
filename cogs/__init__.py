@@ -5,6 +5,34 @@ Cogs are attachable modules that are loaded onto the discord.Bot instance. There
 cogs for each activity.
 """
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = [
+    "ArchiveCommandCog",
+    "CommandErrorCog",
+    "DeleteAllCommandsCog",
+    "EditMessageCommandCog",
+    "EnsureMembersInductedCommandCog",
+    "InductCommandCog",
+    "InductSendMessageCog",
+    "InductUserCommandsCog",
+    "KickNoIntroductionDiscordMembersTaskCog",
+    "MakeMemberCommandCog",
+    "PingCommandCog",
+    "ClearRemindersBacklogTaskCog",
+    "RemindMeCommandCog",
+    "SendGetRolesRemindersTaskCog",
+    "SendIntroductionRemindersTaskCog",
+    "SourceCommandCog",
+    "StartupCog",
+    "StatsCommandsCog",
+    "ManualModerationCog",
+    "StrikeCommandCog",
+    "StrikeUserCommandCog",
+    "WriteRolesCommandCog",
+    "setup"
+]
+
 from typing import TYPE_CHECKING
 
 from cogs.archive import ArchiveCommandCog

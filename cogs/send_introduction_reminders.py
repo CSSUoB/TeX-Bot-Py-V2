@@ -1,5 +1,9 @@
 """Contains cog classes for any send_introduction_reminders interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["SendIntroductionRemindersTaskCog"]
+
 import datetime
 import functools
 import logging

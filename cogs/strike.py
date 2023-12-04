@@ -1,5 +1,18 @@
 """Contains cog classes for any strike interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = [
+    "perform_moderation_action",
+    "ConfirmStrikeMemberView",
+    "ConfirmManualModerationView",
+    "ConfirmStrikesOutOfSyncWithBanView",
+    "BaseStrikeCog",
+    "ManualModerationCog",
+    "StrikeCommandCog",
+    "StrikeUserCommandCog"
+]
+
 import asyncio
 import contextlib
 import datetime

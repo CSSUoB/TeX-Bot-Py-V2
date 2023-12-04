@@ -1,5 +1,9 @@
 """Contains cog classes for any send_get_roles_reminders interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["SendGetRolesRemindersTaskCog"]
+
 import contextlib
 import datetime
 import functools

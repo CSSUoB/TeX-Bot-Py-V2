@@ -4,6 +4,10 @@ Context manager to suppress the traceback output when an exception is raised.
 The previous traceback limit is returned when exiting the context manager.
 """
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["SuppressTraceback"]
+
 import sys
 from types import TracebackType
 

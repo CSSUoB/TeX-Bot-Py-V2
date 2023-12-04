@@ -4,6 +4,14 @@ Common decorator utilities to capture & suppress errors.
 Capturing errors is necessary in contexts where exceptions are not already suppressed.
 """
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = [
+    "ErrorCaptureDecorators",
+    "capture_guild_does_not_exist_error",
+    "capture_strike_tracking_error"
+]
+
 import functools
 import logging
 from collections.abc import Callable, Coroutine

@@ -1,6 +1,14 @@
 """Class definitions of components that send provided message content to a defined endpoint."""
 
-from typing import Any, Protocol, TypedDict
+from collections.abc import Sequence
+
+__all__: Sequence[str] = [
+    "MessageSenderComponent",
+    "ChannelMessageSender",
+    "ResponseMessageSender"
+]
+
+from typing import Any, TypedDict
 
 import discord
 from discord.ui import View

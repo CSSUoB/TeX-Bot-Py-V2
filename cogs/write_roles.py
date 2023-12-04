@@ -1,5 +1,8 @@
 """Contains cog classes for any write_roles interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["WriteRolesCommandCog"]
 
 import discord
 

@@ -5,6 +5,10 @@ It loads the settings values from the .env file/the environment variables,
 then ensures the Django database is correctly migrated to the latest version and finally begins
 the asynchronous running process for the Discord bot.
 """
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["bot"]
+
 
 import discord
 from django.core import management

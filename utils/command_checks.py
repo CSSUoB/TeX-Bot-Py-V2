@@ -1,5 +1,9 @@
 """Command check decorators to ensure given predicates before executing a command."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["CommandChecks"]
+
 from collections.abc import Callable
 
 from discord.ext import commands

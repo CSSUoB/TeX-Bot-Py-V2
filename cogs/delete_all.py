@@ -1,5 +1,9 @@
 """Contains cog classes for any delete_all interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["DeleteAllCommandsCog"]
+
 import discord
 from django.db.models import Model
 

@@ -1,5 +1,9 @@
 """Command-line execution of the utils package."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["utility_functions"]
+
 from argparse import ArgumentParser, Namespace
 
 from utils import InviteURLGenerator, UtilityFunction

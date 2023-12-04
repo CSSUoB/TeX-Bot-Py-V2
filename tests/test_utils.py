@@ -1,5 +1,9 @@
 """Test suite for utils package."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = []
+
 import os
 import random
 import re

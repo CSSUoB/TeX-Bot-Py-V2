@@ -1,4 +1,8 @@
-"""Contains cog classes for any kick_no_introduction_users interactions."""
+"""Contains cog classes for any kick_no_introduction_discord_members interactions."""
+
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["KickNoIntroductionDiscordMembersTaskCog"]
 
 import functools
 import logging

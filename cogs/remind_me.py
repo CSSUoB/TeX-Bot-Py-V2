@@ -1,5 +1,9 @@
 """Contains cog classes for any remind_me interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["RemindMeCommandCog", "ClearRemindersBacklogTaskCog"]
+
 import datetime
 import functools
 import itertools

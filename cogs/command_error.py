@@ -1,5 +1,9 @@
 """Contains cog classes for any command_error interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["CommandErrorCog"]
+
 import contextlib
 import logging
 

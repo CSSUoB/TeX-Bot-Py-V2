@@ -5,6 +5,10 @@ These custom overriden classes contain a reference to the custom bot class TeXBo
 rather than Pycord's default Bot class.
 """
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["TeXBotAutocompleteContext", "TeXBotApplicationContext"]
+
 import discord
 
 from utils.tex_bot import TeXBot

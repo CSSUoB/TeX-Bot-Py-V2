@@ -1,5 +1,9 @@
 """Custom bot implementation to override the default bot class provided by Pycord."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["TeXBot"]
+
 import re
 from typing import Any, Final, TypeAlias
 

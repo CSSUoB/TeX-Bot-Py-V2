@@ -1,5 +1,9 @@
 """Contains cog classes for any edit_message interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["EditMessageCommandCog"]
+
 import re
 
 import discord

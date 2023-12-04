@@ -1,5 +1,9 @@
 """Contains cog classes for any archival interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["ArchiveCommandCog"]
+
 import logging
 import re
 

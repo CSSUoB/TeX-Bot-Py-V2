@@ -1,8 +1,11 @@
 """Base component definition of a generic Utility Function."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["UtilityFunction"]
+
 import abc
 from argparse import ArgumentParser, Namespace
-from collections.abc import Sequence
 from typing import Any, Protocol
 
 

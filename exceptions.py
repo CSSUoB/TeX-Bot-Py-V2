@@ -1,5 +1,30 @@
 """Custom exception classes that could be raised within the cogs modules."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = [
+    "ImproperlyConfigured",
+    "TeXBotBaseError",
+    "BaseErrorWithErrorCode",
+    "BaseDoesNotExistError",
+    "RulesChannelDoesNotExist",
+    "UserNotInCSSDiscordServer",
+    "EveryoneRoleCouldNotBeRetrieved",
+    "InvalidMessagesJSONFile",
+    "MessagesJSONFileMissingKey",
+    "MessagesJSONFileValueError",
+    "StrikeTrackingError",
+    "GuildDoesNotExist",
+    "RoleDoesNotExist",
+    "CommitteeRoleDoesNotExist",
+    "GuestRoleDoesNotExist",
+    "MemberRoleDoesNotExist",
+    "ArchivistRoleDoesNotExist",
+    "ChannelDoesNotExist",
+    "RolesChannelDoesNotExist",
+    "GeneralChannelDoesNotExist"
+]
+
 import abc
 from collections.abc import Collection
 from typing import Any, Final

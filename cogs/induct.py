@@ -1,5 +1,15 @@
 """Contains cog classes for any induction interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = [
+    "InductSendMessageCog",
+    "BaseInductCog",
+    "InductCommandCog",
+    "InductUserCommandsCog",
+    "EnsureMembersInductedCommandCog"
+]
+
 import contextlib
 import random
 import re

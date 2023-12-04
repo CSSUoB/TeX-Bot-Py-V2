@@ -1,5 +1,9 @@
 """Contains cog classes for any startup interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["StartupCog"]
+
 import logging
 
 import discord

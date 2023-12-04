@@ -1,5 +1,9 @@
 """Contains cog classes for any make_member interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["MakeMemberCommandCog"]
+
 import contextlib
 import logging
 import re

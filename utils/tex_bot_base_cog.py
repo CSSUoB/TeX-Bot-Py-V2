@@ -1,5 +1,9 @@
 """Custom cog subclass that stores a reference to the custom bot class."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["TeXBotBaseCog"]
+
 import contextlib
 import logging
 import re

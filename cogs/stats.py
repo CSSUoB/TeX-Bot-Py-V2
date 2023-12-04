@@ -1,5 +1,9 @@
 """Contains cog classes for any stats interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ["amount_of_time_formatter", "plot_bar_chart", "StatsCommandsCog"]
+
 import io
 import math
 import re
