@@ -1,4 +1,4 @@
-FROM python:3.11.3 as builder
+FROM python:3.11 as builder
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100 \
@@ -15,7 +15,7 @@ COPY poetry.lock pyproject.toml README.md ./
 
 RUN --mount=type=cache,target=$POETRY_CACHE_DIR poetry install --without dev --no-root --no-interaction
 
-FROM python:3.11.3-slim as runtime
+FROM python:3.11-slim as runtime
 
 ENV LANG=C.UTF-8
 
