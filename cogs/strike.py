@@ -200,7 +200,7 @@ class BaseStrikeCog(TeXBotBaseCog):
 
     SUGGESTED_ACTIONS: Final[Mapping[int, str]] = {1: "time-out", 2: "kick", 3: "ban"}
 
-    async def _send_strike_user_message(self, strike_user: discord.User | discord.Member, member_strikes: MemberStrikes) -> None:  # noqa: E501
+    async def _send_strike_user_message(self, strike_user: discord.User | discord.Member, member_strikes: DiscordMemberStrikes) -> None:  # noqa: E501
         # noinspection PyUnusedLocal
         rules_channel_mention: str = "`#welcome`"
         with contextlib.suppress(RulesChannelDoesNotExist):
@@ -270,7 +270,7 @@ class BaseStrikeCog(TeXBotBaseCog):
             f"on {strike_user.mention}."
         )
 
-    async def _confirm_increase_strike(self, message_sender_component: MessageSenderComponent, interaction_user: discord.User, strike_user: discord.User | discord.Member, member_strikes: MemberStrikes, button_callback_channel: discord.TextChannel | discord.DMChannel, *, perform_action: bool) -> None:  # noqa: E501
+    async def _confirm_increase_strike(self, message_sender_component: MessageSenderComponent, interaction_user: discord.User, strike_user: discord.User | discord.Member, member_strikes: DiscordMemberStrikes, button_callback_channel: discord.TextChannel | discord.DMChannel, *, perform_action: bool) -> None:  # noqa: E501
         if perform_action and isinstance(strike_user, discord.User):
             STRIKE_USER_TYPE_ERROR_MESSAGE: Final[str] = (
                 "Cannot perform moderation action on non-guild member."
@@ -351,9 +351,9 @@ class BaseStrikeCog(TeXBotBaseCog):
             )
             return
 
-        member_strikes: MemberStrikes = (
-            await MemberStrikes.objects.aget_or_create(
-                hashed_member_id=MemberStrikes.hash_member_id(strike_member.id)
+        member_strikes: DiscordMemberStrikes = (
+            await DiscordMemberStrikes.objects.aget_or_create(
+                hashed_member_id=DiscordMemberStrikes.hash_member_id(strike_member.id)
             )
         )[0]
 
@@ -459,9 +459,9 @@ class ManualModerationCog(BaseStrikeCog):
             discord.AuditLogAction.ban: "banned"
         }
 
-        member_strikes: MemberStrikes = (
-            await MemberStrikes.objects.aget_or_create(
-                hashed_member_id=MemberStrikes.hash_member_id(strike_user.id)
+        member_strikes: DiscordMemberStrikes = (
+            await DiscordMemberStrikes.objects.aget_or_create(
+                hashed_member_id=DiscordMemberStrikes.hash_member_id(strike_user.id)
             )
         )[0]
 

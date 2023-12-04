@@ -553,6 +553,6 @@ class StatsCommandsCog(TeXBotBaseCog):
         if member.guild != self.bot.css_guild or member.bot:
             return
 
-        await LeftMember.objects.acreate(
+        await LeftDiscordMember.objects.acreate(
             roles={f"@{role.name}" for role in member.roles if role.name != "@everyone"}
         )
