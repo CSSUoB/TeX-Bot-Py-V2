@@ -101,7 +101,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             async with http_session.get(url=settings["MEMBERS_LIST_URL"]) as http_response:
                 response_html: str = await http_response.text()
 
-        MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
+        MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(  # TODO: Make abstract protocol (JSON retriever Vs HTML parser)
             {
                 "ctl00_Main_rptGroups_ctl05_gvMemberships",
                 "ctl00_Main_rptGroups_ctl03_gvMemberships"

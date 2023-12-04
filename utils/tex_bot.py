@@ -217,6 +217,14 @@ class TeXBot(discord.Bot):
 
     @property
     def group_name(self) -> str:
+        """
+        The name of your community group.
+
+        This is substituted into many error/welcome messages sent into your Discord guild,
+        by the bot.
+        The group name is either retrieved from the provided environment variable,
+        or automatically identified from the name of your group's Discord guild.
+        """
         group_name: Final[str | None] = settings["_GROUP_NAME"]
         return (
             group_name

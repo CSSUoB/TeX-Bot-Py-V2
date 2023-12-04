@@ -169,7 +169,8 @@ You'll also need to set a number of environment variables before running the bot
 * `DISCORD_GUILD_ID`: The ID of your Discord guild.
 * `DISCORD_LOG_CHANNEL_WEBHOOK_URL`: The webhook URL of the Discord text channel
 where error logs should be sent.
-(This is optional, and if it is not provided, error logs will be sent to the console only.)
+(This is optional. Error logs will always be sent to the console,
+this setting allows them to also be sent to a Discord log channel)
 * `MEMBERS_LIST_URL`: The URL to retrieve the list of IDs of people
 that have purchased a membership to your community group.
 (The CSS' members list is currently found on the Guild of Students website.
@@ -192,6 +193,20 @@ There is an `example.env` file in the repo that you can rename and populate.
 There are also many other configurations that can be changed
 in order to alter the behaviour of the bot.
 These are all listed in the `example.env` file, along with the behaviours that will change.
+
+Any variables, in the `example.env` file,
+marked with `# !!REQUIRED!!` must be set before running the bot.
+All other variables are optional and their default values are shown as the example value
+for each variable in the `example.env` file.
+
+### Running The Bot
+
+Once everything is set up, you should be able to execute the following command
+to automatically run the bot & connect it to your Discord guild:
+
+```shell
+poetry run python -m main
+```
 
 ## Contributing
 
