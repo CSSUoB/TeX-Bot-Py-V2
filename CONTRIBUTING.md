@@ -76,13 +76,13 @@ to interact with storing information longer-term (between individual command eve
 Cogs are attachable modules that are loaded onto the `discord.Bot` instance.
 They combine related listeners and commands (each as individual methods) into one class.
 There are separate cog files for each activity,
-and one \_\_init\_\_ file which instantiates them all:
+and one `__init__.py` file which instantiates them all:
 
 <!--- pyml disable-next-line no-emphasis-as-heading-->
-*For more information about what these Cogs do,
-please look at the annotations within the files themselves*
+*For more information about the purpose of each cog,
+please look at the documentation within the files themselves*
 
-* `cogs/__init__.py`: instantiates all the Cog classes within this directory
+* `cogs/__init__.py`: instantiates all the cog classes within this directory
 * `cogs/archive.py`: cogs for archival interactions
 * `cogs/command_error.py`: cogs for command_error interactions
 * `cogs/delete_all.py`: cogs for delete_all interactions
@@ -107,19 +107,80 @@ introducing themselves
 After you have found an issue which needs solving, it's time to start working on a fix!
 However, there are a few guidelines we would like you to follow first.
 
+### Running tests
+
+To ensure your changes adhere to the required functionality of this project,
+a test suite has been provided in [the `tests` directory](tests).
+The test suite uses [Pytest](https://pytest.org), and can be run with the following command:
+
+```shell
+poetry run pytest
+```
+
+Pycharm & VS Code also provide GUI interfaces to run the Pytest test suite.
+
 ### Code Style
 
 In general, follow the formatting in the file you are editing.
-You should also run the development tools [ruff](https://ruff.rs) &
-[PyMarkdown](https://github.com/jackdewinter/pymarkdown) code linting
-and [mypy](https://www.mypy-lang.org/) type checking which you can configure your IDE to use.
+You should also run the static analysis linting/type checking tools to validate your code.
 
-#### Markdown Linting Issues
+#### ruff
+
+[ruff](https://ruff.rs) is a [static analysis code linter](https://en.wikipedia.org/wiki/Lint_(software)),
+which will alert you to possible formatting mistakes in your Python code.
+It can be run with the following command:
+
+```shell
+poetry run ruff check .
+```
+
+There are many additional flags to provide more advanced linting help (E.g. `--fix`).
+See [ruff's documentation](https://docs.astral.sh/ruff/configuration/#command-line-interface)
+for additional configuration options.
+
+#### mypy
+
+[mypy](https://www.mypy-lang.org/) is a [static type checker](https://realpython.com/python-type-checking/#static-type-checking),
+which will alert you to possible [typing](https://realpython.com/python-type-checking/#type-systems)
+errors in your Python code.
+It can be run with the following command:
+
+```shell
+poetry run mypy .
+```
+
+Although there is [a PyCharm plugin](https://github.com/leinardi/mypy-pycharm#mypy-pycharm)
+to provide GUI control & inline warnings for [mypy](https://www.mypy-lang.org/),
+it has been rather temperamental recently.
+So it is suggested to avoid using it,
+and run [mypy](https://www.mypy-lang.org/) from the command-line instead.
+
+#### PyMarkdown
+
+[PyMarkdown](https://github.com/jackdewinter/pymarkdown) is a static analysis
+[MarkDown](https://www.markdownguide.org/getting-started/#what-is-markdown) [linter](https://en.wikipedia.org/wiki/Lint_(software)),
+which will alert you to possible formatting mistakes
+in your [MarkDown](https://www.markdownguide.org/getting-started/#what-is-markdown) files.
+It can be run with the following command:
+
+```shell
+poetry run python ./.github/workflows/scripts/remove_invalid_tables.py && \
+poetry run pymarkdown scan . ; \
+poetry run python ./.github/workflows/scripts/remove_invalid_tables.py --restore
+```
+
+This command includes the removal of custom-formatted tables,
+as discussed in [the "Markdown Linting Issues" section](#markdown-linting-issues).
+**This command will not run on Windows PowerShell!
+(Use CommandPrompt instead.)**
+
+##### Markdown Linting Issues
 
 The tools [ruff](https://ruff.rs) & [mypy](https://www.mypy-lang.org/) can be run as normal
 from the command line (as long as you are [within the poetry environment](https://python-poetry.org/docs/basic-usage/#activating-the-virtual-environment)),
-however, [PyMarkdown](https://github.com/jackdewinter/pymarkdown) **cannot** be run as shown
-in its own documentation. This is because some markdown files contain custom-formatted tables
+however, [PyMarkdown](https://github.com/jackdewinter/pymarkdown) will **incorrectly** throw errors
+if run according to its own documentation.
+This is because some markdown files contain custom-formatted tables
 that [PyMarkdown](https://github.com/jackdewinter/pymarkdown) cannot parse.
 
 Therefore, you *must* run this utility script before calling [PyMarkdown](https://github.com/jackdewinter/pymarkdown)
@@ -129,7 +190,7 @@ to remove any custom-formatted tables from files:
 poetry run python ./.github/workflows/scripts/remove_invalid_tables.py
 ```
 
-The below command will restore all markdown files back to their originals:
+The below command will restore all markdown files back to their original states:
 
 ```shell
 poetry run python ./.github/workflows/scripts/remove_invalid_tables.py --restore
