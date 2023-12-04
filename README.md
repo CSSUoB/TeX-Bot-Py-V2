@@ -167,7 +167,7 @@ You'll also need to set a number of environment variables before running the bot
 * `DISCORD_BOT_TOKEN`: The Discord token for the bot you created.
 (The token is available on your bot page in the [Developer Portal](https://discord.com/developers/applications).)
 * `DISCORD_GUILD_ID`: The ID of your Discord guild.
-* `DISCORD_LOG_CHANNEL_ID`: The ID of the text channel in your Discord guild
+* `DISCORD_LOG_CHANNEL_WEBHOOK_URL`: The webhook URL of the Discord text channel
 where error logs should be sent.
 (This is optional, and if it is not provided, error logs will be sent to the console only.)
 * `MEMBERS_LIST_URL`: The URL to retrieve the list of IDs of people

@@ -276,7 +276,7 @@ class Settings:
 
         members_list_url: str = os.getenv("MEMBERS_LIST_URL", "")
         members_list_url_is_valid: bool = bool(
-            self._settings["MEMBERS_LIST_URL"]
+            members_list_url
             and validators.url(members_list_url)
         )
         if not members_list_url_is_valid:
@@ -354,7 +354,7 @@ class Settings:
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
             str(os.getenv("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY", "5d"))
         )
-        if self._settings["KICK_NO_INTRODUCTION_MEMBERS"]:
+        if self._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"]:
             if not raw_kick_no_introduction_discord_members_delay:
                 INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE: Final[str] = (
                     "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must contain the delay "
@@ -450,7 +450,7 @@ class Settings:
 
         moderation_document_url: str = os.getenv("MODERATION_DOCUMENT_URL", "")
         moderation_document_url_is_valid: bool = bool(
-            self._settings["MODERATION_DOCUMENT_URL"]
+            moderation_document_url
             and validators.url(moderation_document_url)
         )
         if not moderation_document_url_is_valid:
