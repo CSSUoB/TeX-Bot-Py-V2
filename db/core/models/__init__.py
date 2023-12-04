@@ -130,7 +130,7 @@ class GroupMadeMember(AsyncBaseModel):
         """Generate a developer-focused representation of the member's hashed Group ID."""
         return f"<{self._meta.verbose_name}: {self.hashed_group_id!r}>"
 
-    def __setattr__(self, name: str, value: Any) -> None:
+    def __setattr__(self, name: str, value: object) -> None:
         """Set the attribute name to the given value, with special cases for proxy fields."""
         if name == "group_id":
             if not isinstance(value, str | int):

@@ -38,18 +38,18 @@ class AsyncBaseModel(models.Model):
 
         super().save(*args, **kwargs)
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, **kwargs: object) -> None:
         """Initialize a new model instance, capturing any proxy field values."""
-        proxy_fields: dict[str, Any] = {
+        proxy_fields: dict[str, object] = {
             field_name: kwargs.pop(field_name)
             for field_name
             in set(kwargs.keys()) & self.get_proxy_field_names()
         }
 
-        super().__init__(*args, **kwargs)
+        super().__init__(**kwargs)
 
         field_name: str
-        value: Any
+        value: object
         for field_name, value in proxy_fields.items():
             setattr(self, field_name, value)
 
@@ -77,7 +77,7 @@ class AsyncBaseModel(models.Model):
             )
             raise TypeError(UNEXPECTED_KWARGS_MESSAGE)
 
-        value: Any
+        value: object
         for field_name, value in kwargs.items():
             setattr(self, field_name, value)
 
@@ -145,7 +145,7 @@ class HashedDiscordMember(AsyncBaseModel):
         """Generate a developer-focused representation of the hashed discord member's ID."""
         return f"<{self._meta.verbose_name}: {self.hashed_member_id!r}>"
 
-    def __setattr__(self, name: str, value: Any) -> None:
+    def __setattr__(self, name: str, value: object) -> None:
         """Set the attribute name to the given value, with special cases for proxy fields."""
         if name == "member_id":
             if not isinstance(value, str | int):

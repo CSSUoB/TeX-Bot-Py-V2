@@ -27,7 +27,7 @@ __all__: Sequence[str] = [
 
 import abc
 from collections.abc import Collection
-from typing import Any, Final
+from typing import Final
 
 
 class ImproperlyConfigured(Exception):
