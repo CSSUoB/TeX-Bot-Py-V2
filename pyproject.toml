@@ -47,6 +47,13 @@ ruff = "^0.1"
 setuptools = "*"  # NOTE: Required by pycharm
 pymarkdownlnt = "^0.9"
 
+
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:'audioop':DeprecationWarning"
+]
+
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]
 exclude = "db/settings\\.py$"
