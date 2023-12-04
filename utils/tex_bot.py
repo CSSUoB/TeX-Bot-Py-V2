@@ -215,6 +215,31 @@ class TeXBot(discord.Bot):
 
         return self._rules_channel
 
+    @property
+    def group_name(self) -> str:
+        group_name: Final[str | None] = settings["_GROUP_NAME"]
+        return (
+            group_name
+            if group_name
+            else (
+                "CSS"
+                if self.css_guild.name.lower() == "computer science society"
+                else self.css_guild.name
+            )
+        )
+
+    @property
+    def group_id_type(self) -> str:
+        return (
+            "UoB Student"
+            if (
+                self.group_name.lower() in ("css", "computer science society")
+                or "uob" in self.group_name.lower()
+                or "birmingham" in self.group_name.lower()
+            )
+            else "community group"
+        )
+
     def _bot_has_guild(self, guild_id: int) -> bool:
         return bool(discord.utils.get(self.guilds, id=guild_id))
 

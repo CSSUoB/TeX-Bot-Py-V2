@@ -129,6 +129,40 @@ class BaseInductCog(TeXBotBaseCog):
     child user-induction cog container classes.
     """
 
+    async def get_random_welcome_message(self, induction_member: discord.User | discord.Member | None = None) -> str:  # noqa: E501
+        random_welcome_message: str = random.choice(settings["WELCOME_MESSAGES"])
+
+        if "<User>" in random_welcome_message:
+            if not induction_member:
+                return await self.get_random_welcome_message(induction_member)
+
+            random_welcome_message.replace("<User>", induction_member.mention)
+
+        if "<Committee>" in random_welcome_message:
+            try:
+                committee_role_mention: str = (await self.bot.committee_role).mention
+            except CommitteeRoleDoesNotExist:
+                return await self.get_random_welcome_message(induction_member)
+            else:
+                random_welcome_message = random_welcome_message.replace(
+                    "<Committee>",
+                    committee_role_mention
+                )
+
+        if "<Purchase_Membership_URL>" in random_welcome_message:
+            if not settings["PURCHASE_MEMBERSHIP_URL"]:
+                return await self.get_random_welcome_message(induction_member)
+
+            random_welcome_message.replace(
+                "<Purchase_Membership_URL>",
+                settings["PURCHASE_MEMBERSHIP_URL"]
+            )
+
+        if "<Purchase_Membership_URL>" in random_welcome_message:
+            random_welcome_message.replace("<Group_Name>", self.bot.group_name)
+
+        return random_welcome_message.strip()
+
     async def _perform_induction(self, ctx: TeXBotApplicationContext, induction_member: discord.Member, *, silent: bool) -> None:  # noqa: E501
         """Perform the actual process of inducting a member by giving them the Guest role."""
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
@@ -159,19 +193,10 @@ class BaseInductCog(TeXBotBaseCog):
             with contextlib.suppress(RolesChannelDoesNotExist):
                 roles_channel_mention = (await self.bot.roles_channel).mention
 
-            # noinspection PyUnusedLocal
-            committee_role_mention: str = "@Committee"
-            with contextlib.suppress(CommitteeRoleDoesNotExist):
-                committee_role_mention = (await self.bot.committee_role).mention
-
             await general_channel.send(
-                f"""{
-                    random.choice(settings["WELCOME_MESSAGES"]).replace(
-                        "<User>",
-                        induction_member.mention
-                    ).replace("<@Committee>", committee_role_mention).strip()
-                } :tada:\nRemember to grab your roles in {roles_channel_mention}"""
-                f""" and say hello to everyone here! :wave:"""
+                f"{self.get_random_welcome_message(induction_member)} :tada:\n"
+                f"Remember to grab your roles in {roles_channel_mention} "
+                "and say hello to everyone here! :wave:"
             )
 
         await induction_member.add_roles(

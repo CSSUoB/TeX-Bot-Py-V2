@@ -33,6 +33,8 @@ class WriteRolesCommandCog(TeXBotBaseCog):
 
         roles_message: str
         for roles_message in settings["ROLES_MESSAGES"]:
-            await roles_channel.send(roles_message)
+            await roles_channel.send(
+                roles_message.replace("<Group_Name>", self.bot.group_name)
+            )
 
         await ctx.respond("All messages sent successfully.", ephemeral=True)
