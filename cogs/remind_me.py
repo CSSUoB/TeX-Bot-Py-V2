@@ -13,16 +13,15 @@ from discord.ext import tasks
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from cogs._utils import TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotCog
 from db.core.models import DiscordReminder
-from utils import TeXBot
+from utils import TeXBot, TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotBaseCog
 
 if TYPE_CHECKING:
     import time
     from collections.abc import Iterator
 
 
-class RemindMeCommandCog(TeXBotCog):
+class RemindMeCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/remindme" command and its call-back method."""
 
     @staticmethod
@@ -249,7 +248,7 @@ class RemindMeCommandCog(TeXBotCog):
         await reminder.adelete()
 
 
-class ClearRemindersBacklogTaskCog(TeXBotCog):
+class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
     """Cog class that defines the clear_reminders_backlog task."""
 
     def __init__(self, bot: TeXBot) -> None:

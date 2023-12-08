@@ -3,14 +3,17 @@
 import re
 
 import discord
-from discord.ext import commands
 
-from cogs._command_checks import Checks
-from cogs._utils import TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotCog
 from exceptions import BaseDoesNotExistError, UserNotInCSSDiscordServer
+from utils import (
+    CommandChecks,
+    TeXBotApplicationContext,
+    TeXBotAutocompleteContext,
+    TeXBotBaseCog,
+)
 
 
-class EditMessageCommandCog(TeXBotCog):
+class EditMessageCommandCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
     """Cog class that defines the "/editmessage" command and its call-back method."""
 
@@ -31,7 +34,7 @@ class EditMessageCommandCog(TeXBotCog):
         except (AssertionError, BaseDoesNotExistError, UserNotInCSSDiscordServer):
             return set()
 
-        return await TeXBotCog.autocomplete_get_text_channels(ctx)
+        return await TeXBotBaseCog.autocomplete_get_text_channels(ctx)
 
     # noinspection SpellCheckingInspection
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -64,8 +67,8 @@ class EditMessageCommandCog(TeXBotCog):
         min_length=1,
         parameter_name="new_message_content"
     )
-    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
-    @commands.check_any(commands.check(Checks.check_interaction_user_has_committee_role))  # type: ignore[arg-type]
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_css_guild
     async def edit_message(self, ctx: TeXBotApplicationContext, str_channel_id: str, str_message_id: str, new_message_content: str) -> None:  # noqa: E501
         """
         Definition & callback response of the "edit_message" command.

@@ -1,4 +1,4 @@
-"""Test suite for utils.py."""
+"""Test suite for utils package."""
 
 import os
 import random
@@ -12,7 +12,7 @@ from typing import Final
 
 import pytest
 
-import utils
+from utils import InviteURLGenerator
 
 
 class TestGenerateInviteURL:
@@ -29,7 +29,7 @@ class TestGenerateInviteURL:
             99999999999999999999
         )
 
-        invite_url: str = utils.generate_invite_url(
+        invite_url: str = InviteURLGenerator.generate_invite_url(
             DISCORD_BOT_APPLICATION_ID,
             DISCORD_GUILD_ID
         )
@@ -64,45 +64,46 @@ class TestGenerateInviteURL:
 #         assert bar_chart_image.description == DESCRIPTION  # noqa: ERA001
 #         assert bool(bar_chart_image.fp.read()) is True  # noqa: ERA001
 
-
-class TestAmountOfTimeFormatter:
-    """Test case to unit-test the amount_of_time_formatter function."""
-
-    @pytest.mark.parametrize(
-        "time_value",
-        (1, 1.0, 0.999999, 1.000001)
-    )
-    def test_format_unit_value(self, time_value: float) -> None:
-        """Test that a value of one only includes the time_scale."""
-        TIME_SCALE: Final[str] = "day"
-
-        formatted_amount_of_time: str = utils.amount_of_time_formatter(time_value, TIME_SCALE)
-
-        assert formatted_amount_of_time == TIME_SCALE
-        assert not formatted_amount_of_time.endswith("s")
-
-    @pytest.mark.parametrize(
-        "time_value",
-        (*range(2, 21), 2.00, 0, 0.0, 25.0, -0, -0.0, -25.0)
-    )
-    def test_format_integer_value(self, time_value: float) -> None:
-        """Test that an integer value includes the value and time_scale pluralized."""
-        TIME_SCALE: Final[str] = "day"
-
-        assert utils.amount_of_time_formatter(
-            time_value,
-            TIME_SCALE
-        ) == f"{int(time_value)} {TIME_SCALE}s"
-
-    @pytest.mark.parametrize("time_value", (3.14159, 0.005, 25.0333333))
-    def test_format_float_value(self, time_value: float) -> None:
-        """Test that a float value includes the rounded value and time_scale pluralized."""
-        TIME_SCALE: Final[str] = "day"
-
-        assert utils.amount_of_time_formatter(
-            time_value,
-            TIME_SCALE
-        ) == f"{time_value:.2f} {TIME_SCALE}s"
+# TODO(CarrotManMatt): Move to stats_tests  # noqa: FIX002
+# https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/57
+# class TestAmountOfTimeFormatter:
+#     """Test case to unit-test the amount_of_time_formatter function."""
+#
+#     @pytest.mark.parametrize(
+#         "time_value",
+#         (1, 1.0, 0.999999, 1.000001)  # noqa: ERA001
+#     )  # noqa: ERA001,RUF100
+#     def test_format_unit_value(self, time_value: float) -> None:
+#         """Test that a value of one only includes the time_scale."""
+#         TIME_SCALE: Final[str] = "day"  # noqa: ERA001
+#
+#         formatted_amount_of_time: str = amount_of_time_formatter(time_value, TIME_SCALE)  # noqa:E501,W505,ERA001
+#
+#         assert formatted_amount_of_time == TIME_SCALE  # noqa: ERA001
+#         assert not formatted_amount_of_time.endswith("s")  # noqa: ERA001
+#
+#     @pytest.mark.parametrize(
+#         "time_value",
+#         (*range(2, 21), 2.00, 0, 0.0, 25.0, -0, -0.0, -25.0)  # noqa: ERA001
+#     )  # noqa: ERA001,RUF100
+#     def test_format_integer_value(self, time_value: float) -> None:
+#         """Test that an integer value includes the value and time_scale pluralized."""
+#         TIME_SCALE: Final[str] = "day"  # noqa: ERA001
+#
+#         assert amount_of_time_formatter(
+#             time_value,
+#             TIME_SCALE
+#         ) == f"{int(time_value)} {TIME_SCALE}s"
+#
+#     @pytest.mark.parametrize("time_value", (3.14159, 0.005, 25.0333333))
+#     def test_format_float_value(self, time_value: float) -> None:
+#         """Test that a float value includes the rounded value and time_scale pluralized."""
+#         TIME_SCALE: Final[str] = "day"  # noqa: ERA001
+#
+#         assert amount_of_time_formatter(
+#             time_value,
+#             TIME_SCALE
+#         ) == f"{time_value:.2f} {TIME_SCALE}s"
 
 
 class BaseTestArgumentParser:
@@ -137,7 +138,7 @@ class BaseTestArgumentParser:
         if not re.match(r"\A[a-zA-Z0-9._\-+!\"' ]*\Z", util_function_name):
             INVALID_FUNCTION_NAME_MESSAGE: Final[str] = (
                 "util_function_name must be a valid function name for "
-                "the utils.py command-line program."
+                "the utils command-line program."
             )
             raise TypeError(INVALID_FUNCTION_NAME_MESSAGE)
 
@@ -148,7 +149,7 @@ class BaseTestArgumentParser:
         )
         if arguments_contain_invalid_symbol:
             INVALID_ARGUMENTS_MESSAGE: Final[str] = (
-                "All arguments must be valid arguments for the utils.py command-line program."
+                "All arguments must be valid arguments for the utils command-line program."
             )
             raise ValueError(INVALID_ARGUMENTS_MESSAGE)
 
@@ -180,14 +181,14 @@ class TestArgumentParser(BaseTestArgumentParser):
     def test_error_when_no_function(cls) -> None:
         """Test for the correct error when no function name is provided."""
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py: error: the following arguments are required: function"
+            "utils: error: the following arguments are required: function"
         )
 
         cls.execute_util_function(util_function_name="")
 
         assert cls.parser_output_return_code != 0
         assert not cls.parser_output_stdout
-        assert "usage: utils.py [-h] {generate_invite_url}" in cls.parser_output_stderr
+        assert "usage: utils [-h] {generate_invite_url}" in cls.parser_output_stderr
         assert EXPECTED_ERROR_MESSAGE in cls.parser_output_stderr
 
     @classmethod
@@ -197,7 +198,7 @@ class TestArgumentParser(BaseTestArgumentParser):
             random.choices(string.ascii_letters + string.digits, k=7)
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py: error: argument function: invalid choice: "
+            "utils: error: argument function: invalid choice: "
             f"'{INVALID_FUNCTION}' (choose from 'generate_invite_url')"
         )
 
@@ -205,7 +206,7 @@ class TestArgumentParser(BaseTestArgumentParser):
 
         assert cls.parser_output_return_code != 0
         assert not cls.parser_output_stdout
-        assert "usage: utils.py [-h] {generate_invite_url}" in cls.parser_output_stderr
+        assert "usage: utils [-h] {generate_invite_url}" in cls.parser_output_stderr
         assert EXPECTED_ERROR_MESSAGE in cls.parser_output_stderr
 
     @classmethod
@@ -216,7 +217,7 @@ class TestArgumentParser(BaseTestArgumentParser):
 
         assert cls.parser_output_return_code == 0
         assert not cls.parser_output_stderr
-        assert "usage: utils.py [-h] {generate_invite_url}" in cls.parser_output_stdout
+        assert "usage: utils [-h] {generate_invite_url}" in cls.parser_output_stdout
         assert "functions:" in cls.parser_output_stdout
 
 
@@ -274,7 +275,7 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
         assert cls.parser_output_return_code == 0
         assert not cls.parser_output_stderr
-        assert cls.parser_output_stdout == utils.generate_invite_url(
+        assert cls.parser_output_stdout == InviteURLGenerator.generate_invite_url(
             DISCORD_BOT_APPLICATION_ID,
             DISCORD_GUILD_ID
         )
@@ -298,7 +299,7 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
         assert cls.parser_output_return_code == 0
         assert not cls.parser_output_stderr
-        assert cls.parser_output_stdout == utils.generate_invite_url(
+        assert cls.parser_output_stdout == InviteURLGenerator.generate_invite_url(
             DISCORD_BOT_APPLICATION_ID,
             DISCORD_GUILD_ID
         )
@@ -307,11 +308,11 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
     def test_error_when_no_discord_bot_application_id(cls) -> None:
         """Test for the correct error when no discord_bot_application_id is provided."""
         EXPECTED_USAGE_MESSAGE: Final[str] = (
-            "usage: utils.py generate_invite_url [-h] "
+            "usage: utils generate_invite_url [-h] "
             "discord_bot_application_id [discord_guild_id]"
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py generate_invite_url: error: the following arguments are required: "
+            "utils generate_invite_url: error: the following arguments are required: "
             "discord_bot_application_id"
         )
         cls.execute_util_function(util_function_name="generate_invite_url")
@@ -325,11 +326,11 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
     def test_error_when_invalid_discord_bot_application_id(cls) -> None:
         """Test for the correct error with an invalid discord_bot_application_id."""
         EXPECTED_USAGE_MESSAGE: Final[str] = (
-            "usage: utils.py generate_invite_url [-h] "
+            "usage: utils generate_invite_url [-h] "
             "discord_bot_application_id [discord_guild_id]"
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py generate_invite_url: error: discord_bot_application_id must be "
+            "utils generate_invite_url: error: discord_bot_application_id must be "
             "a valid Discord application ID "
             "(see https://support-dev.discord.com/hc/en-gb/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)"
         )
@@ -350,11 +351,11 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
     def test_error_when_no_discord_guild_id(cls) -> None:
         """Test for the correct error when no discord_guild_id is provided."""
         EXPECTED_USAGE_MESSAGE: Final[str] = (
-            "usage: utils.py generate_invite_url [-h] "
+            "usage: utils generate_invite_url [-h] "
             "discord_bot_application_id [discord_guild_id]"
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py generate_invite_url: error: discord_guild_id must be provided as an "
+            "utils generate_invite_url: error: discord_guild_id must be provided as an "
             "argument to the generate_invite_url utility function or otherwise set "
             "the DISCORD_GUILD_ID environment variable"
         )
@@ -375,11 +376,11 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
     def test_error_when_invalid_discord_guild_id(cls) -> None:
         """Test for the correct error when an invalid discord_guild_id is provided."""
         EXPECTED_USAGE_MESSAGE: Final[str] = (
-            "usage: utils.py generate_invite_url [-h] "
+            "usage: utils generate_invite_url [-h] "
             "discord_bot_application_id [discord_guild_id]"
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py generate_invite_url: error: discord_guild_id must be "
+            "utils generate_invite_url: error: discord_guild_id must be "
             "a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
         )
 
@@ -405,7 +406,7 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
             random.randint(10000000000000000, 99999999999999999999)
         )
         EXPECTED_ERROR_MESSAGE: Final[str] = (
-            "utils.py: error: "
+            "utils: error: "
             f"unrecognized arguments: {EXTRA_ARGUMENT}"
         )
 
@@ -422,5 +423,5 @@ class TestGenerateInviteURLArgumentParser(BaseTestArgumentParser):
 
         assert cls.parser_output_return_code != 0
         assert not cls.parser_output_stdout
-        assert "usage: utils.py [-h] {generate_invite_url}" in cls.parser_output_stderr
+        assert "usage: utils [-h] {generate_invite_url}" in cls.parser_output_stderr
         assert EXPECTED_ERROR_MESSAGE in cls.parser_output_stderr

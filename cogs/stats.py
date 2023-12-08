@@ -8,18 +8,33 @@ from typing import TYPE_CHECKING
 import discord
 import matplotlib.pyplot as plt
 import mplcyberpunk
-from discord.ext import commands
 
-import utils
-from cogs._command_checks import Checks
-from cogs._utils import TeXBotApplicationContext, TeXBotCog, capture_guild_does_not_exist_error
 from config import settings
 from db.core.models import LeftMember
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 if TYPE_CHECKING:
     from collections.abc import Collection
 
     from matplotlib.text import Text as Plot_Text
+
+
+def amount_of_time_formatter(value: float, time_scale: str) -> str:
+    """
+    Format the amount of time value according to the provided time_scale.
+
+    E.g. past "1 days" => past "day",
+    past "2.00 weeks" => past "2 weeks",
+    past "3.14159 months" => past "3.14 months"
+    """
+    if value == 1 or float(f"{value:.2f}") == 1:
+        return f"{time_scale}"
+
+    if value % 1 == 0 or float(f"{value:.2f}") % 1 == 0:
+        return f"{int(value)} {time_scale}s"
+
+    return f"{value:.2f} {time_scale}s"
 
 
 def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str, filename: str, description: str, extra_text: str = "") -> discord.File:  # noqa: E501
@@ -113,7 +128,7 @@ def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str,
     return discord_plot_file
 
 
-class StatsCommandsCog(TeXBotCog):
+class StatsCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/stats" command group and its command call-back methods."""
 
     stats: discord.SlashCommandGroup = discord.SlashCommandGroup(
@@ -131,7 +146,7 @@ class StatsCommandsCog(TeXBotCog):
         description="The channel to display the stats for.",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(
-            TeXBotCog.autocomplete_get_text_channels  # type: ignore[arg-type]
+            TeXBotBaseCog.autocomplete_get_text_channels  # type: ignore[arg-type]
         ),
         required=False,
         parameter_name="str_channel_id"
@@ -224,7 +239,7 @@ class StatsCommandsCog(TeXBotCog):
                 x_label="Role Name",
                 y_label=(
                     f"""Number of Messages Sent (in the past {
-                        utils.amount_of_time_formatter(
+                        amount_of_time_formatter(
                             settings["STATISTICS_DAYS"].days,
                             "day"
                         )
@@ -333,7 +348,7 @@ class StatsCommandsCog(TeXBotCog):
                     x_label="Role Name",
                     y_label=(
                         f"""Number of Messages Sent (in the past {
-                        utils.amount_of_time_formatter(
+                        amount_of_time_formatter(
                             settings["STATISTICS_DAYS"].days,
                             "day"
                         )
@@ -356,7 +371,7 @@ class StatsCommandsCog(TeXBotCog):
                     x_label="Channel Name",
                     y_label=(
                         f"""Number of Messages Sent (in the past {
-                            utils.amount_of_time_formatter(
+                            amount_of_time_formatter(
                                 settings["STATISTICS_DAYS"].days,
                                 "day"
                             )
@@ -376,7 +391,7 @@ class StatsCommandsCog(TeXBotCog):
         name="self",
         description="Displays stats about the number of messages you have sent."
     )
-    @commands.check_any(commands.check(Checks.check_interaction_user_in_css_guild))  # type: ignore[arg-type]
+    @CommandChecks.check_interaction_user_in_css_guild
     async def user_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "user_stats" command.
@@ -440,7 +455,7 @@ class StatsCommandsCog(TeXBotCog):
                 x_label="Channel Name",
                 y_label=(
                     f"""Number of Messages Sent (in the past {
-                        utils.amount_of_time_formatter(
+                        amount_of_time_formatter(
                             settings["STATISTICS_DAYS"].days,
                             "day"
                         )
@@ -527,7 +542,7 @@ class StatsCommandsCog(TeXBotCog):
             )
         )
 
-    @TeXBotCog.listener()
+    @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
     async def on_member_leave(self, member: discord.Member) -> None:
         """Update the stats of the roles that members had when they left the Discord server."""
