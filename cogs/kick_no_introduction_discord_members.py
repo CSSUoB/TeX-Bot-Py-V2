@@ -50,13 +50,13 @@ class KickNoIntroductionDiscordMembersTaskCog(TeXBotBaseCog):
     @capture_guild_does_not_exist_error
     async def kick_no_introduction_discord_members(self) -> None:
         """
-        Recurring task to kick any Discord users that have not introduced themselves.
+        Recurring task to kick any Discord members that have not introduced themselves.
 
         Other prerequisites must be met for this task to be activated, see README.md for the
         full list of conditions.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        guild: discord.Guild = self.bot.css_guild
+        guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
         member: discord.Member

@@ -20,7 +20,7 @@ class WriteRolesCommandCog(TeXBotBaseCog):
         description="Populates #roles with the correct messages."
     )
     @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_css_guild
+    @CommandChecks.check_interaction_user_in_main_guild
     async def write_roles(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "write_roles" command.

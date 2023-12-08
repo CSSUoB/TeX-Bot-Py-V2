@@ -84,7 +84,7 @@ class ErrorCaptureDecorators:
 
 def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T]") -> "WrapperOutputFunc[P, T]":  # noqa: E501
     """
-    Decorator to send an error message to the user when a GuildDoesNotExist is raised.
+    Decorator to send an error message to the Discord user when a GuildDoesNotExist is raised.
 
     The raised exception is then suppressed.
     """  # noqa: D401

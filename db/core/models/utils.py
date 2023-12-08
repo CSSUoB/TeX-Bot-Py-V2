@@ -141,9 +141,9 @@ class AsyncBaseModel(models.Model):
 
 class HashedDiscordMember(AsyncBaseModel):
     """
-    Abstract base model to represent a Discord server member.
+    Abstract base model to represent a Discord guild member.
 
-    The Discord server member is identified by their hashed Discord member ID.
+    The Discord guild member is identified by their hashed Discord member ID.
     This base model is inherited by any other model that wishes to store that a Discord member
     had an event happen to them.
 

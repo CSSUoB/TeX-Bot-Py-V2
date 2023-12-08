@@ -8,7 +8,7 @@ __all__: Sequence[str] = [
     "BaseErrorWithErrorCode",
     "BaseDoesNotExistError",
     "RulesChannelDoesNotExist",
-    "UserNotInCSSDiscordServer",
+    "DiscordMemberNotInMainGuild",
     "EveryoneRoleCouldNotBeRetrieved",
     "InvalidMessagesJSONFile",
     "MessagesJSONFileMissingKey",
@@ -160,7 +160,7 @@ class RulesChannelDoesNotExist(TeXBotBaseError, ValueError):
     DEFAULT_MESSAGE: str = "There is no channel marked as the rules channel."
 
 
-class UserNotInCSSDiscordServer(TeXBotBaseError, ValueError):
+class DiscordMemberNotInMainGuild(TeXBotBaseError, ValueError):
     """Exception class for when no members of your Discord guild have the given user ID."""
 
     DEFAULT_MESSAGE: str = (

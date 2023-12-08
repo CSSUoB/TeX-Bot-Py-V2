@@ -21,8 +21,10 @@ Featured in the [CSS Discord guild](https://cssbham.com/discord).
 Confusingly, Discord uses the term "guild" to refer to a Discord "server", when communicating
 with developers.
 Therefore, the same terminology ("guild") will be used across all documentation
-in this repository.
 in this project.
+
+The term "main guild" is used throughout the code in this repository
+to refer specifically to your community group's main Discord guild.
 
 ### "User", "Member" & "Guest"
 

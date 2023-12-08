@@ -46,10 +46,10 @@ class InductSendMessageCog(TeXBotBaseCog):
         Send a welcome message to this member's DMs & remove introduction reminder flags.
 
         These post-induction actions are only applied to users that have just been inducted as
-        a guest into the CSS Discord server.
+        a guest into your group's Discord guild.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        guild: discord.Guild = self.bot.css_guild
+        guild: discord.Guild = self.bot.main_guild
 
         if before.guild != guild or after.guild != guild or before.bot or after.bot:
             return
@@ -76,8 +76,10 @@ class InductSendMessageCog(TeXBotBaseCog):
         async for message in after.history():
             message_is_introduction_reminder: bool = (
                 (
-                    "joined the CSS Discord server but have not yet introduced"
-                ) in message.content and message.author.bot
+                    "joined the " in message.content
+                ) and (
+                    " Discord guild but have not yet introduced" in message.content
+                ) and message.author.bot
             )
             if message_is_introduction_reminder:
                 await message.delete(
@@ -100,8 +102,9 @@ class InductSendMessageCog(TeXBotBaseCog):
                 user_type = "member"
 
         await after.send(
-            f"**Congrats on joining the CSS Discord server as a {user_type}!** "
-            "You now have access to contribute to all the public channels.\n\n"
+            f"**Congrats on joining the {self.bot.group_name} Discord server "
+            f"as a {user_type}!** "
+            "You now have access to communicate in all the public channels.\n\n"
             "Some things to do to get started:\n"
             f"1. Check out our rules in {rules_channel_mention}\n"
             f"2. Head to {roles_channel_mention} and click on the icons to get "
@@ -112,12 +115,14 @@ class InductSendMessageCog(TeXBotBaseCog):
         )
         if user_type != "member":
             await after.send(
-                "You can also get yourself an annual membership to CSS for only £5! "
                 "Just head to https://cssbham.com/join. "
+                f"You can also get yourself an annual membership to {self.bot.group_name} "
+                f"for only £5! "
                 "You'll get awesome perks like a free T-shirt:shirt:, "
                 "access to member only events:calendar_spiral: "
-                "& a cool green name on the CSS Discord server:green_square:! "
                 "Checkout all the perks at https://cssbham.com/membership."
+                "& a cool green name "
+                f"on the {self.bot.group_name} Discord server:green_square:! "
             )
 
 
@@ -205,7 +210,7 @@ class BaseInductCog(TeXBotBaseCog):
         )
 
         applicant_role: discord.Role | None = discord.utils.get(
-            self.bot.css_guild.roles,
+            self.bot.main_guild.roles,
             name="Applicant"
         )
 
@@ -230,7 +235,7 @@ class InductCommandCog(BaseInductCog):
         that have a member input-type.
         """
         try:
-            guild: discord.Guild = ctx.bot.css_guild
+            guild: discord.Guild = ctx.bot.main_guild
         except GuildDoesNotExist:
             return set()
 
@@ -278,13 +283,13 @@ class InductCommandCog(BaseInductCog):
         required=False
     )
     @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_css_guild
+    @CommandChecks.check_interaction_user_in_main_guild
     async def induct(self, ctx: TeXBotApplicationContext, str_induct_member_id: str, *, silent: bool) -> None:  # noqa: E501
         """
         Definition & callback response of the "induct" command.
 
-        The "induct" command inducts a given member into the CSS Discord server by giving them
-        the "Guest" role.
+        The "induct" command inducts a given member into your group's Discord guild
+        by giving them the "Guest" role.
         """
         try:
             induct_member: discord.Member = await self.bot.get_member_from_str_id(
@@ -303,26 +308,27 @@ class InductUserCommandsCog(BaseInductCog):
 
     @discord.user_command(name="Induct User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_css_guild
+    @CommandChecks.check_interaction_user_in_main_guild
     async def non_silent_induct(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:  # noqa: E501
         """
         Definition & callback response of the "non_silent_induct" user-context-command.
 
         The "non_silent_induct" command executes the same process as the
-        "induct" slash-command, and thus inducts a given member into the CSS Discord server by
-        giving them the "Guest" role, only without broadcasting a welcome message.
+        "induct" slash-command, and thus inducts a given member
+        into your group's Discord guild by giving them the "Guest" role,
+        only without broadcasting a welcome message.
         """
         await self._perform_induction(ctx, member, silent=False)
 
     @discord.user_command(name="Silently Induct User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_css_guild
+    @CommandChecks.check_interaction_user_in_main_guild
     async def silent_induct(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:  # noqa: E501
         """
         Definition & callback response of the "silent_induct" user-context-command.
 
         The "silent_induct" command executes the same process as the "induct" slash-command,
-        and thus inducts a given member into the CSS Discord server by giving them the
+        and thus inducts a given member into your group's Discord guild by giving them the
         "Guest" role.
         """
         await self._perform_induction(ctx, member, silent=True)
@@ -337,16 +343,17 @@ class EnsureMembersInductedCommandCog(TeXBotBaseCog):
         description="Ensures all users with the @Member role also have the @Guest role."
     )
     @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_css_guild
+    @CommandChecks.check_interaction_user_in_main_guild
     async def ensure_members_inducted(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "ensure_members_inducted" command.
 
-        The "ensure_members_inducted" command ensures that users within the CSS Discord server
-        that have the "Member" role have also been given the "Guest" role.
+        The "ensure_members_inducted" command ensures that users
+        within your group's Discord guild that have the "Member" role
+        have also been given the "Guest" role.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        css_guild: discord.Guild = self.bot.css_guild
+        main_guild: discord.Guild = self.bot.main_guild
         member_role: discord.Role = await self.bot.member_role
         guest_role: discord.Role = await self.bot.guest_role
 
@@ -355,7 +362,7 @@ class EnsureMembersInductedCommandCog(TeXBotBaseCog):
         changes_made: bool = False
 
         member: discord.Member
-        for member in css_guild.members:
+        for member in main_guild.members:
             if guest_role in member.roles:
                 continue
 

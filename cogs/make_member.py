@@ -39,17 +39,18 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         min_length=7,
         parameter_name="group_id"
     )
-    @CommandChecks.check_interaction_user_in_css_guild
+    @CommandChecks.check_interaction_user_in_main_guild
     async def make_member(self, ctx: TeXBotApplicationContext, group_id: str) -> None:
         """
         Definition & callback response of the "make_member" command.
 
-        The "make_member" command validates that the given member has a valid CSS membership
+        The "make_member" command validates that the given member
+        has purchased a valid membership to your community group,
         then gives the member the "Member" role.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         member_role: discord.Role = await self.bot.member_role
-        interaction_member: discord.Member = await ctx.bot.get_css_user(ctx.user)
+        interaction_member: discord.Member = await ctx.bot.get_main_guild_member(ctx.user)
 
         if member_role in interaction_member.roles:
             await ctx.respond(
@@ -146,7 +147,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             await self.send_error(
                 ctx,
                 message=(
-                    "You must be a member of The Computer Science Society "  # TODO: Fix full name
+                    f"You must be a member of {self.bot.group_full_name} "
                     "to use this command.\n"
                     "The provided student ID must match the UoB student ID "  # TODO: Fix ID type names
                     f"that you purchased your {self.bot.group_name} membership with."
@@ -193,7 +194,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 )
 
         applicant_role: discord.Role | None = discord.utils.get(
-            self.bot.css_guild.roles,
+            self.bot.main_guild.roles,
             name="Applicant"
         )
         if applicant_role and applicant_role in interaction_member.roles:

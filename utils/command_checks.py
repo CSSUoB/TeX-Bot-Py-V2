@@ -12,7 +12,7 @@ from discord.ext.commands import CheckFailure
 # noinspection PyProtectedMember
 from discord.ext.commands.core import T
 
-from exceptions import UserNotInCSSDiscordServer
+from exceptions import DiscordMemberNotInMainGuild
 from utils.tex_bot_contexts import TeXBotApplicationContext
 
 
@@ -20,16 +20,16 @@ class CommandChecks:
     """Command check decorators to ensure given predicates before executing a command."""
 
     @staticmethod
-    async def _check_interaction_user_in_css_guild(ctx: TeXBotApplicationContext) -> bool:
+    async def _check_interaction_user_in_main_guild(ctx: TeXBotApplicationContext) -> bool:
         try:
-            await ctx.bot.get_css_user(ctx.user)
-        except UserNotInCSSDiscordServer:
+            await ctx.bot.get_main_guild_member(ctx.user)
+        except DiscordMemberNotInMainGuild:
             return False
         return True
 
-    check_interaction_user_in_css_guild: Callable[[T], T]
+    check_interaction_user_in_main_guild: Callable[[T], T]
     """
-    Command check decorator to ensure the interaction user is within the CSS Discord server.
+    Decorator to ensure the interaction user of a command is within your group's Discord guild.
 
     If this check does not pass, the decorated command will not be executed.
     Instead an error message will be sent to the user.
@@ -48,9 +48,9 @@ class CommandChecks:
     """
 
     @classmethod
-    def is_interaction_user_in_css_guild_failure(cls, check: CheckFailure) -> bool:
-        """Whether check failed due to the interaction user not being in the Discord server."""
-        return bool(check.__name__ == cls._check_interaction_user_in_css_guild.__name__)  # type: ignore[attr-defined]
+    def is_interaction_user_in_main_guild_failure(cls, check: CheckFailure) -> bool:
+        """Whether check failed due to the interaction user not being in your Discord guild."""
+        return bool(check.__name__ == cls._check_interaction_user_in_main_guild.__name__)  # type: ignore[attr-defined]
 
     @classmethod
     def is_interaction_user_has_committee_role_failure(cls, check: CheckFailure) -> bool:
@@ -59,8 +59,8 @@ class CommandChecks:
 
 
 # noinspection PyProtectedMember
-CommandChecks.check_interaction_user_in_css_guild = commands.check_any(
-    commands.check(CommandChecks._check_interaction_user_in_css_guild)  # type: ignore[arg-type] # noqa: SLF001
+CommandChecks.check_interaction_user_in_main_guild = commands.check_any(
+    commands.check(CommandChecks._check_interaction_user_in_main_guild)  # type: ignore[arg-type] # noqa: SLF001
 )
 # noinspection PyProtectedMember
 CommandChecks.check_interaction_user_has_committee_role = commands.check_any(
