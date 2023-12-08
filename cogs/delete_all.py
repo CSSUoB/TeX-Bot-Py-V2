@@ -5,9 +5,9 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ["DeleteAllCommandsCog"]
 
 import discord
-from django.db.models import Model
 
 from db.core.models import DiscordReminder, GroupMadeMember
+from db.core.models.utils import AsyncBaseModel
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 
@@ -20,20 +20,19 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
     )
 
     @staticmethod
-    async def _delete_all(ctx: TeXBotApplicationContext, delete_model: type[Model]) -> None:
+    async def _delete_all(ctx: TeXBotApplicationContext, delete_model: type[AsyncBaseModel]) -> None:  # noqa: E501
         """Perform the actual deletion process of all instances of the given model class."""
         # noinspection PyProtectedMember
         await delete_model._default_manager.all().adelete()  # noqa: SLF001
 
+        delete_model_instances_name_plural: str = (
+            delete_model.INSTANCES_NAME_PLURAL
+            if hasattr(delete_model, "INSTANCES_NAME_PLURAL")
+            else "objects"
+        )
+
         await ctx.respond(
-            f"""All {
-                "Reminders"
-                if delete_model == DiscordReminder
-                else
-                    "UoB Made Members"
-                    if delete_model == GroupMadeMember
-                    else "objects"
-            } deleted successfully.""",
+            f"All {delete_model_instances_name_plural} deleted successfully.",
             ephemeral=True
         )
 

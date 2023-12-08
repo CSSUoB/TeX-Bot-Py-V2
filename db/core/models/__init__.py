@@ -33,6 +33,8 @@ class IntroductionReminderOptOutMember(HashedDiscordMember):
     The Discord member is identified by their hashed Discord member ID.
     """
 
+    INSTANCES_NAME_PLURAL: str = "Introduction Reminder Opt-Out Member objects"
+
     class Meta:
         """Metadata options about this model."""
 
@@ -55,6 +57,8 @@ class SentOneOffIntroductionReminderMember(HashedDiscordMember):
     when SEND_INTRODUCTION_REMINDERS is set to "Once".
     The Discord member is identified by their hashed Discord member ID.
     """
+
+    INSTANCES_NAME_PLURAL: str = "Sent One Off Introduction Reminder Member objects"
 
     class Meta:
         """Metadata options about this model."""
@@ -81,6 +85,8 @@ class SentGetRolesReminderMember(HashedDiscordMember):
     opt-in roles multiple times, even if they have still not yet got their opt-in roles.
     """
 
+    INSTANCES_NAME_PLURAL: str = "Sent Get Roles Reminder Member objects"
+
     class Meta:
         """Metadata options about this model."""
 
@@ -105,6 +111,8 @@ class GroupMadeMember(AsyncBaseModel):
     Storing the successfully made members prevents multiple people from getting the Member role
     using the same purchased group membership.
     """
+
+    INSTANCES_NAME_PLURAL: str = "Group Made Members"
 
     hashed_group_id = models.CharField(
         "Hashed Group ID",
@@ -179,6 +187,8 @@ class GroupMadeMember(AsyncBaseModel):
 
 class DiscordReminder(HashedDiscordMember):
     """Represents a reminder that a Discord member has requested to be sent to them."""
+
+    INSTANCES_NAME_PLURAL: str = "Reminders"
 
     hashed_member_id = models.CharField(
         "Hashed Discord Member ID",
@@ -322,6 +332,8 @@ class LeftDiscordMember(AsyncBaseModel):
     Discord members when they left your group's Discord guild.
     """
 
+    INSTANCES_NAME_PLURAL: str = "Left Discord Member objects"
+
     _roles = models.JSONField("List of roles a Discord Member had")
 
     @property
@@ -383,6 +395,8 @@ class DiscordMemberStrikes(HashedDiscordMember):
     to be given with increasing severity (as outlined in your group's Discord guild
     moderation document (https://docs.google.com/document/d/1wAskMt0U75dTLrTeb-ZbW4vn1qmSvp1LehjyUAJ74dU/edit).
     """
+
+    INSTANCES_NAME_PLURAL: str = "Discord Member's Strikes"
 
     strikes = models.PositiveIntegerField(
         "Number of strikes",

@@ -22,6 +22,8 @@ class AsyncBaseModel(models.Model):
     database (see https://docs.djangoproject.com/en/stable/topics/db/models/#abstract-base-classes).
     """
 
+    INSTANCES_NAME_PLURAL: str
+
     class Meta:
         """Metadata options about this model."""
 
