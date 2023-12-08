@@ -22,12 +22,13 @@ Confusingly, Discord uses the term "guild" to refer to a Discord "server", when 
 with developers.
 Therefore, the same terminology ("guild") will be used across all documentation
 in this repository.
+in this project.
 
 ### "User", "Member" & "Guest"
 
 There may be confusion between the terms "user" and "member".
 
-In the context of Discord itself, a "user" is a Discord account
+In the context of Discord itself, a "user" object represents a Discord account
 not connected to any specific guild.
 Therefore, it can be messaged via DM or be retrieved via its snowflake ID,
 but not much else can be done with it.
@@ -35,7 +36,7 @@ but not much else can be done with it.
 & [Pycord's docs](https://docs.pycord.dev/en/stable/api/models.html#users)
 for more information.)
 
-In contrast, a Discord "member" is a "user" attached to a specific guild.
+In contrast, a Discord "member" object is a "user" attached to a specific guild.
 Therefore, it can have roles, be banned & have many other actions applied to it.
 (See [the Discord developer docs](https://discord.com/developers/docs/resources/guild#guild-member-object)
 & [Pycord's docs](https://docs.pycord.dev/en/stable/api/models.html#discord.Member)
@@ -74,10 +75,27 @@ the `kick_no_introduction_discord_members` & `introduction_reminder` tasks)
 (required for the `/writeroles` command)
 * `E1032` - Your Discord guild does not contain a text channel with the name "#general"
 (required for the `/induct` command)
-* `E1041` - The community group member IDs could not be retrieved from the MEMBERS_LIST_URL
+* `E1041` - The community group member IDs could not be retrieved from the `MEMBERS_LIST_URL`
 (If your community group is a Guild of Students society,
 the community group member IDs will be a list of UoB IDs)
 * `E1042` - The reference to the `@everyone` role could not be correctly retrieved
+
+## Logging Error Levels
+
+When the bot logs an error, an associated log-level is used.
+Below are the explanations of what effects/causes each log-level represents.
+
+* `WARNING` - An error occurred that did **not result in any failure
+to complete the current request/interaction**.
+However, some minor data loss/inconsistencies may have occurred.
+These may require a committee member to make some manual fixes or raise an issue about a bug.
+* `ERROR` - The current **request/interaction could *not* be completed**, due to a major error.
+The problem that caused the error should be addressed immediately,
+or otherwise the bot should be manually shut down to prevent further errors.
+* `CRITICAL` - An **unrecoverable error occurred**.
+This level of error will cause the bot to shut down,
+as the bot has identified that the problem can only be solved
+by fixing one or more of the configuration environment variables.
 
 ## Repeated Tasks Conditions
 
@@ -98,22 +116,25 @@ that can be used to configure the conditions to suit your needs.
 ## Production Deployment
 
 The only supported way to deploy TeXBot in production
-is by using our pre-built docker container.
-It is built automatically when new changes are made to [the 'main' branch](https://github.com/CSSUoB/TeX-Bot-JS/tree/main),
-and can be pulled from the GitHub Container Registry with this identifier: `ghcr.io/CSSUoB/texbot-py-v2:latest`.
-An introduction to docker-compose deployment can be found [here](https://docs.docker.com/get-started/08_using_compose/).
+is by using our pre-built [docker container](https://www.docker.com/resources/what-container/).
+It is [built automatically](.github/workflows/update-container-image.yaml)
+when new changes are made to [the 'main' branch](https://github.com/CSSUoB/TeX-Bot-JS/tree/main),
+and can be pulled from the [GitHub Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
+with this identifier: `ghcr.io/CSSUoB/texbot-py-v2:latest`.
+An introduction on how to use a docker-compose deployment can be found [here](https://docs.docker.com/get-started/08_using_compose/).
 
-Before running the container, some environment variables will need to be set.
+Before running the container, some [environment variables](https://en.wikipedia.org/wiki/Environment_variable)
+will need to be set.
 These can be defined in your `docker-config.yaml` file.
-The required environment variables are explained
-within [the **Setting Environment Variables** section](#setting-environment-variables).
+The required [environment variables](https://en.wikipedia.org/wiki/Environment_variable)
+are explained within [the **Setting Environment Variables** section](#setting-environment-variables).
 
 ## Local Deployment
 
 ### Installing Dependencies
 
 Ensure that you have [Poetry](https://python-poetry.org/) installed.
-Then install all the required dependencies, by navigating to the root folder
+Then install all the required dependencies, by navigating to the repository's root folder
 and running the following command:
 
 ```shell
@@ -144,9 +165,9 @@ poetry shell
 If you do not want to activate the virtual environment,
 every command can be run prepended with `poetry run`,
 to run the subsequent command within the Poetry context.
-(Every command within the documentation within this repository
+(Every command within the documentation within this project
 will include the `poetry run` prefix for convenience.
-It can be excluded if you have already activated the virtual environment.)
+**It can be excluded if you have already activated the virtual environment.**)
 
 ### Creating Your Bot
 
@@ -162,15 +183,16 @@ poetry run python -m utils generate_invite_url {discord_bot_application_id} {dis
 
 ### Setting Environment Variables
 
-You'll also need to set a number of environment variables before running the bot:
+You'll also need to set a number of [environment variables](https://en.wikipedia.org/wiki/Environment_variable)
+before running the bot:
 
 * `DISCORD_BOT_TOKEN`: The Discord token for the bot you created.
 (The token is available on your bot page in the [Developer Portal](https://discord.com/developers/applications).)
 * `DISCORD_GUILD_ID`: The ID of your Discord guild.
-* `DISCORD_LOG_CHANNEL_WEBHOOK_URL`: The webhook URL of the Discord text channel
-where error logs should be sent.
+* `DISCORD_LOG_CHANNEL_WEBHOOK_URL`: The [webhook URL](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks) 
+of the Discord text channel where error logs should be sent.
 (This is optional. Error logs will always be sent to the console,
-this setting allows them to also be sent to a Discord log channel)
+this setting allows them to also be sent to a Discord log channel.)
 * `MEMBERS_LIST_URL`: The URL to retrieve the list of IDs of people
 that have purchased a membership to your community group.
 (The CSS' members list is currently found on the Guild of Students website.
@@ -187,7 +209,7 @@ It will probably be listed as a cookie named `.ASPXAUTH`.)
 
 You can put these in a `.env` file in the root folder,
 as [python-dotenv](https://saurabh-kumar.com/python-dotenv/)
-is used to collect all environment variables.
+is used to collect all [environment variables](https://en.wikipedia.org/wiki/Environment_variable).
 There is an `example.env` file in the repo that you can rename and populate.
 
 There are also many other configurations that can be changed
@@ -218,10 +240,3 @@ please raise an issue.
 Before making contributions, it is highly suggested to read [CONTRIBUTING.md](CONTRIBUTING.md).
 This will ensure your code meets the standard required for this project
 and gives you the greatest chances of your contributions being merged.
-
-Please ensure your new code adheres to [mypy](https://www.mypy-lang.org/)'s type checking
-<!--- pyml disable-next-line line-length-->
-and [ruff](https://ruff.rs/) & [PyMarkdown](https://github.com/jackdewinter/pymarkdown)'s linting
-so that the repo has a consistent style.
-By also running [pytest](https://pytest.org)'s test suite you can ensure
-your contributions provide valid functionality.
