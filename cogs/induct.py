@@ -135,6 +135,7 @@ class BaseInductCog(TeXBotBaseCog):
     """
 
     async def get_random_welcome_message(self, induction_member: discord.User | discord.Member | None = None) -> str:  # noqa: E501
+        """Get & format a random welcome message."""
         random_welcome_message: str = random.choice(settings["WELCOME_MESSAGES"])
 
         if "<User>" in random_welcome_message:

@@ -393,7 +393,7 @@ class DiscordMemberStrikes(HashedDiscordMember):
 
     Storing the number of strikes a Discord member has allows future moderation actions
     to be given with increasing severity (as outlined in your group's Discord guild
-    moderation document (https://docs.google.com/document/d/1wAskMt0U75dTLrTeb-ZbW4vn1qmSvp1LehjyUAJ74dU/edit).
+    moderation document).
     """
 
     INSTANCES_NAME_PLURAL: str = "Discord Member's Strikes"
