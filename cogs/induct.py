@@ -114,15 +114,17 @@ class InductSendMessageCog(TeXBotBaseCog):
             "to the right & selecting \"Edit Server Profile\")."
         )
         if user_type != "member":
+            # TODO @CarrotManMatt: Remove environment variables that are only used in messages. Messages will be extracted into the external JSON file.  # noqa: FIX002
+            # https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/90
             await after.send(
-                "Just head to https://cssbham.com/join. "
                 f"You can also get yourself an annual membership to {self.bot.group_name} "
                 f"for only £5! "
+                f"""Just head to {settings["PURCHASE_MEMBERSHIP_URL"]}. """
                 "You'll get awesome perks like a free T-shirt:shirt:, "
                 "access to member only events:calendar_spiral: "
-                "Checkout all the perks at https://cssbham.com/membership."
                 "& a cool green name "
                 f"on the {self.bot.group_name} Discord server:green_square:! "
+                f"""Checkout all the perks at {settings["MEMBERSHIP_PERKS_URL"]}"""
             )
 
 

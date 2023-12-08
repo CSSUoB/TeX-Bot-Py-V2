@@ -264,6 +264,23 @@ class TeXBot(discord.Bot):
             else "community group"
         )
 
+    @property
+    def group_moderation_contact(self) -> str:
+        """
+        The name of the moderation group that Discord member bans will be reported to.
+
+        This is used in the ban message sent to the user that committed the violation.
+        """
+        return (
+            "the Guild of Students"
+            if (
+                self.group_name.lower() in ("css", "computer science society")
+                or "uob" in self.group_name.lower()
+                or "birmingham" in self.group_name.lower()
+            )
+            else "our community moderators"
+        )
+
     def _bot_has_guild(self, guild_id: int) -> bool:
         return bool(discord.utils.get(self.guilds, id=guild_id))
 

@@ -210,6 +210,7 @@ class BaseStrikeCog(TeXBotBaseCog):
             (
                 "\nBecause you now have been given 3 strikes, you have been banned from "
                 f"the {self.bot.group_name} Discord server "
+                f"and we have contacted {self.bot.group_moderation_contact} for "
                 "further action & advice."
             )
             if member_strikes.strikes >= 3

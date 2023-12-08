@@ -25,14 +25,41 @@ class MakeMemberCommandCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
     """Cog class that defines the "/makemember" command and its call-back method."""
 
+    GROUP_ID_ARGUMENT_DESCRIPTIVE_NAME: Final[str] = (
+        f"""{
+            "Student"
+            if (
+                settings["_GROUP_NAME"].lower() in ("css", "computer science society")
+                or "uob" in settings["_GROUP_NAME"].lower()
+            )
+            else "Group"
+        } ID"""
+    )
+    GROUP_ID_ARGUMENT_NAME: Final[str] = GROUP_ID_ARGUMENT_DESCRIPTIVE_NAME.lower().replace(
+        " ",
+        ""
+    )
+
     # noinspection SpellCheckingInspection
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="makemember",
-        description="Gives you the Member role when supplied with an appropriate Student ID."
+        description=(
+            "Gives you the Member role "
+            f"when supplied with an appropriate {GROUP_ID_ARGUMENT_DESCRIPTIVE_NAME}."
+        )
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
-        name="studentid",  # TODO: Rename
-        description="Your UoB Student ID",  # TODO: Rename
+        name=GROUP_ID_ARGUMENT_NAME,
+        description=(
+            f"""Your UoB Student {
+                "UoB Student"
+                if (
+                    settings["_GROUP_NAME"].lower() in ("css", "computer science society")
+                    or "uob" in settings["_GROUP_NAME"].lower()
+                )
+                else "Group"
+            } ID"""
+        ),
         input_type=str,
         required=True,
         max_length=7,
@@ -149,7 +176,8 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 message=(
                     f"You must be a member of {self.bot.group_full_name} "
                     "to use this command.\n"
-                    "The provided student ID must match the UoB student ID "  # TODO: Fix ID type names
+                    f"The provided {self.GROUP_ID_ARGUMENT_NAME} must match "
+                    f"the {self.bot.group_id_type} ID "
                     f"that you purchased your {self.bot.group_name} membership with."
                 )
             )

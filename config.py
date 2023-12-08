@@ -203,6 +203,18 @@ class Settings:
             raise ImproperlyConfigured(INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE)
         self._settings["PURCHASE_MEMBERSHIP_URL"] = purchase_membership_url
 
+        membership_perks_url: str = os.getenv("MEMBERSHIP_PERKS_URL", "")
+        membership_perks_url_is_valid: bool = bool(
+            not membership_perks_url
+            or validators.url(membership_perks_url)
+        )
+        if not membership_perks_url_is_valid:
+            INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (
+                "MEMBERSHIP_PERKS_URL must be a valid URL."
+            )
+            raise ImproperlyConfigured(INVALID_MEMBERSHIP_PERKS_URL_MESSAGE)
+        self._settings["MEMBERSHIP_PERKS_URL"] = membership_perks_url
+
         try:
             ping_command_easter_egg_probability: float = 100 * float(
                 os.getenv("PING_COMMAND_EASTER_EGG_PROBABILITY", "0.01")
