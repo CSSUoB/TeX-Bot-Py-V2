@@ -3,6 +3,7 @@
 import datetime
 import functools
 import logging
+from typing import Final
 
 import discord
 import emoji
@@ -190,7 +191,6 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             This function is attached as a button's callback, so will run whenever the button
             is pressed.
             """
-
             button_will_make_opt_out: bool = (
                     button.style == discord.ButtonStyle.red
                     or str(button.emoji) == emoji.emojize(":no_good:", language="alias")
@@ -209,7 +209,8 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 or (not button_will_make_opt_out and not _button_will_make_opt_in)
             )
             if incompatible_buttons:
-                raise ValueError("Conflicting buttons pressed")
+                INCOMPATIBLE_BUTTONS_MESSAGE: Final[str] = "Conflicting buttons pressed"
+                raise ValueError(INCOMPATIBLE_BUTTONS_MESSAGE)
 
             if not interaction.user:
                 await self.send_error(interaction)

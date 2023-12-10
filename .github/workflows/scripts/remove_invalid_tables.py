@@ -12,7 +12,7 @@ from git import Repo
 if TYPE_CHECKING:
     from os import PathLike
 
-# TODO(CarrotManMatt): Move to independent repo  # noqa: FIX002, TD003
+# TODO(CarrotManMatt): Move to independent repo  # noqa: FIX002, TD003, RUF100
 
 
 def _get_project_root() -> Path:
