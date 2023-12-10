@@ -72,7 +72,8 @@ that may be raised when certain errors occur
 * [`cogs/`](cogs):
 contains all the [cogs](https://guide.pycord.dev/popular-topics/cogs) within this project,
 see [below](#cogs) for more information
-* [`utils/`](utils): contains common utility classes & functions used by the top-level modules & cogs
+* [`utils/`](utils): contains common utility classes & functions
+used by the top-level modules & cogs
 * [`db/core/models/`](db/core/models): contains all the [database ORM models](https://docs.djangoproject.com/en/stable/topics/db/models/)
 to interact with storing information longer-term (between individual command events)
 * [`tests/`](tests): contains the complete test suite for this project,

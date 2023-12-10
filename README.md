@@ -191,7 +191,7 @@ before running the bot:
 * `DISCORD_BOT_TOKEN`: The Discord token for the bot you created.
 (The token is available on your bot page in the [Developer Portal](https://discord.com/developers/applications).)
 * `DISCORD_GUILD_ID`: The ID of your Discord guild.
-* `DISCORD_LOG_CHANNEL_WEBHOOK_URL`: The [webhook URL](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks) 
+* `DISCORD_LOG_CHANNEL_WEBHOOK_URL`: The [webhook URL](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks)
 of the Discord text channel where error logs should be sent.
 (This is optional. Error logs will always be sent to the console,
 this setting allows them to also be sent to a Discord log channel.)
