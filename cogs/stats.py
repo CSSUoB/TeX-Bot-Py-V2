@@ -89,7 +89,7 @@ def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str,
         fontsize="large",
         wrap=True
     )
-    x_label_obj._get_wrap_line_width = lambda: 475  # type: ignore[attr-defined] # noqa: SLF001
+    x_label_obj._get_wrap_line_width = lambda: 475  # type: ignore[attr-defined]
 
     y_label_obj: Plot_Text = plt.ylabel(
         y_label,
@@ -97,10 +97,10 @@ def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str,
         fontsize="large",
         wrap=True
     )
-    y_label_obj._get_wrap_line_width = lambda: 375  # type: ignore[attr-defined] # noqa: SLF001
+    y_label_obj._get_wrap_line_width = lambda: 375  # type: ignore[attr-defined]
 
     title_obj: Plot_Text = plt.title(title, fontsize="x-large", wrap=True)
-    title_obj._get_wrap_line_width = lambda: 500  # type: ignore[attr-defined] # noqa: SLF001
+    title_obj._get_wrap_line_width = lambda: 500  # type: ignore[attr-defined]
 
     if extra_text:
         extra_text_obj: Plot_Text = plt.text(
@@ -113,7 +113,7 @@ def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str,
             fontstyle="italic",
             fontsize="small"
         )
-        extra_text_obj._get_wrap_line_width = lambda: 400  # type: ignore[attr-defined] # noqa: SLF001
+        extra_text_obj._get_wrap_line_width = lambda: 400  # type: ignore[attr-defined]
         plt.subplots_adjust(bottom=0.2)
 
     plot_file = io.BytesIO()

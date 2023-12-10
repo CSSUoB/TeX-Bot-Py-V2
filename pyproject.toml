@@ -154,10 +154,43 @@ task-tags = [
     "NOTE",
     "ISSUE"
 ]
+# TODO(CarrotManMatt): When extracting raw message strings into the translations JSON file, this allowed-confusable-characters list should be removed
+# https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/90
+allowed-confusables = [
+    "ᴀ",
+    "ʙ",
+    "ᴄ",
+    "ᴅ",
+    "ᴇ",
+    "ғ",
+    "ɢ",
+    "ʜ",
+    "ɪ",
+    "ᴊ",
+    "ᴋ",
+    "ʟ",
+    "ᴍ",
+    "ɴ",
+    "ᴏ",
+    "ᴘ",
+    "ǫ",
+    "ʀ",
+    "s",
+    "ᴛ",
+    "ᴜ",
+    "ᴠ",
+    "ᴡ",
+    "x",
+    "ʏ",
+    "ᴢ"
+]
 extend-exclude = ["db/**/migrations/", ".idea", ".pytest_cache", "__pycache__"]
 
 [tool.ruff.flake8-pytest-style]
 parametrize-values-type = "tuple"
+
+[tool.ruff.flake8-self]
+extend-ignore-names = ["_base_manager", "_default_manager",  "_meta", "_get_wrap_line_width"]
 
 [tool.ruff.mccabe]
 max-complexity = 18

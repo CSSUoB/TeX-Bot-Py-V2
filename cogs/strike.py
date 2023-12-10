@@ -315,7 +315,7 @@ class BaseStrikeCog(TeXBotBaseCog):
                 content=(
                     f"{confirm_strike_message}\n"
                     "**Please ensure you use the `/strike` command in future!**\n"
-                    "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"  # noqa: RUF001
+                    "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
                     f"""{
                         discord.utils.format_dt(
                             discord.utils.utcnow() + datetime.timedelta(minutes=2),
@@ -506,7 +506,7 @@ class ManualModerationCog(BaseStrikeCog):
                 aborted_out_of_sync_ban_message: discord.Message = await confirmation_message_channel.send(  # noqa: E501
                     f"Aborted performing ban action upon {strike_user.mention}. "
                     "(This manual moderation action has not been tracked.)\n"
-                    "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"  # noqa: RUF001
+                    "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
                     f"""{
                         discord.utils.format_dt(
                             discord.utils.utcnow() + datetime.timedelta(minutes=2),
@@ -529,7 +529,7 @@ class ManualModerationCog(BaseStrikeCog):
             success_out_of_sync_ban_message: discord.Message = await confirmation_message_channel.send(  # noqa: E501
                 f"Successfully banned {strike_user.mention}.\n"
                 "**Please ensure you use the `/strike` command in future!**"
-                "\nᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"  # noqa: RUF001
+                "\nᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
                 f"""{
                     discord.utils.format_dt(
                         discord.utils.utcnow() + datetime.timedelta(minutes=2),
@@ -575,7 +575,7 @@ class ManualModerationCog(BaseStrikeCog):
                 f"Aborted increasing {strike_user.mention}'s strikes "
                 "& sending moderation alert message. "
                 "(This manual moderation action has not been tracked.)\n"
-                "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"  # noqa: RUF001
+                "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
                 f"""{
                     discord.utils.format_dt(
                         discord.utils.utcnow() + datetime.timedelta(minutes=2),

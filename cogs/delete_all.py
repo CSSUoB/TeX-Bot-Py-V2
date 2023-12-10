@@ -23,7 +23,7 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
     async def _delete_all(ctx: TeXBotApplicationContext, delete_model: type[AsyncBaseModel]) -> None:  # noqa: E501
         """Perform the actual deletion process of all instances of the given model class."""
         # noinspection PyProtectedMember
-        await delete_model._default_manager.all().adelete()  # noqa: SLF001
+        await delete_model._default_manager.all().adelete()
 
         delete_model_instances_name_plural: str = (
             delete_model.INSTANCES_NAME_PLURAL
