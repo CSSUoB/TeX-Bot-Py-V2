@@ -21,6 +21,7 @@ class InviteURLGenerator(UtilityFunction):
     NAME: str = "generate_invite_url"
     DESCRIPTION: str = "Generate the URL to invite the bot to a given Discord server"
 
+    @classmethod
     def attach_to_parser(self, parser: SubParserAction) -> None:
         """
         Add a subparser to the provided argument parser.
@@ -28,17 +29,17 @@ class InviteURLGenerator(UtilityFunction):
         This allows the subparser to retrieve arguments specific to this utility function.
         """
         super().attach_to_parser(parser)
-        if not self.function_subparser:
-            FUNCTION_SUBPARSER_IS_NONE_MESSAGE: Final[str] = (
-                f"""{"self.function_subparser"!r} is None."""
+        if parser not in cls._function_subparsers:
+            FUNCTION_SUBPARSER_DOES_NOT_EXIST_MESSAGE: Final[str] = (
+                f"""{"self.function_subparser"!r} does not exist."""
             )
-            raise RuntimeError(FUNCTION_SUBPARSER_IS_NONE_MESSAGE)
+            raise RuntimeError(FUNCTION_SUBPARSER_DOES_NOT_EXIST_MESSAGE)
 
-        self.function_subparser.add_argument(
+        cls._function_subparsers[parser].add_argument(
             "discord_bot_application_id",
             help="Must be a valid Discord application ID (see https://support-dev.discord.com/hc/en-gb/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)"
         )
-        self.function_subparser.add_argument(
+        cls._function_subparsers[parser].add_argument(
             "discord_guild_id",
             nargs="?",
             help=(
@@ -48,16 +49,17 @@ class InviteURLGenerator(UtilityFunction):
             )
         )
 
-    def run(self, parsed_args: Namespace) -> int:
+    @classmethod
+    def run(cls, parsed_args: Namespace, parser: UtilityFunction.SubParserAction) -> int:
         """Execute the logic that this util function provides."""
-        if not self.function_subparser:
-            FUNCTION_SUBPARSER_IS_NONE_MESSAGE: Final[str] = (
-                f"""{"self.function_subparser"!r} is None."""
+        if parser not in cls._function_subparsers:
+            FUNCTION_SUBPARSER_DOES_NOT_EXIST_MESSAGE: Final[str] = (
+                f"""{"self.function_subparser"!r} does not exist."""
             )
-            raise RuntimeError(FUNCTION_SUBPARSER_IS_NONE_MESSAGE)
+            raise RuntimeError(FUNCTION_SUBPARSER_DOES_NOT_EXIST_MESSAGE)
 
         if not re.match(r"\A\d{17,20}\Z", parsed_args.discord_bot_application_id):
-            self.function_subparser.error(
+            cls._function_subparsers[parser].error(
                 "discord_bot_application_id must be a valid Discord application ID (see https://support-dev.discord.com/hc/en-gb/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)"
             )
 
@@ -69,18 +71,18 @@ class InviteURLGenerator(UtilityFunction):
             discord_guild_id = os.getenv("DISCORD_GUILD_ID", "")
 
             if not discord_guild_id:
-                self.function_subparser.error(
+                cls._function_subparsers[parser].error(
                     "discord_guild_id must be provided as an argument "
                     "to the generate_invite_url utility function "
                     "or otherwise set the DISCORD_GUILD_ID environment variable"
                 )
 
         if not re.match(r"\A\d{17,20}\Z", discord_guild_id):
-            self.function_subparser.error(
+            cls._function_subparsers[parser].error(
                 "discord_guild_id must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
             )
 
-        sys.stdout.write(f"""{self.generate_invite_url(
+        sys.stdout.write(f"""{cls.generate_invite_url(
             parsed_args.discord_bot_application_id,
             int(discord_guild_id)
         )}\n""")

@@ -1,6 +1,7 @@
 """Base component definition of a generic Utility Function."""
 
 import abc
+import logging
 from argparse import ArgumentParser, Namespace
 from typing import TYPE_CHECKING
 
@@ -18,20 +19,27 @@ class UtilityFunction(abc.ABC):
 
     NAME: str
     DESCRIPTION: str
+    _function_subparsers: ClassVar[dict[SubParserAction, ArgumentParser]] = {}
 
-    def __init__(self) -> None:
-        """Initialise the function_subparser attribute to None."""
-        self.function_subparser: ArgumentParser | None = None
-
-    def attach_to_parser(self, parser: SubParserAction) -> None:
+    @classmethod
+    def attach_to_parser(cls, parser: SubParserAction) -> None:
         """
         Add a subparser to the provided argument parser.
 
         This allows the subparser to retrieve arguments specific to this utility function.
         """
-        self.function_subparser = parser.add_parser(self.NAME, description=self.DESCRIPTION)
+        if parser in cls._function_subparsers:
+            logging.warning(
+                "This UtilityFunction has already been attached to the given parser."
+            )
+        else:
+            cls._function_subparsers[parser] = parser.add_parser(
+                cls.NAME,
+                description=cls.DESCRIPTION
+            )
 
+    @classmethod
     @abc.abstractmethod
-    def run(self, parsed_args: Namespace) -> int:
+    def run(cls, parsed_args: Namespace, parser: SubParserAction) -> int:
         """Execute the logic that this util function provides."""
         raise NotImplementedError
