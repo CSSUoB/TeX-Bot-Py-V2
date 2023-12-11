@@ -4,11 +4,15 @@ import os
 import re
 import sys
 from argparse import Namespace
-from typing import Final
+from typing import Final, TYPE_CHECKING
 
 import discord
 
 from utils.base_utility_function import UtilityFunction
+
+if TYPE_CHECKING:
+    # noinspection PyProtectedMember
+    from argparse import _SubParserAction as SubParserAction
 
 
 class InviteURLGenerator(UtilityFunction):
@@ -17,7 +21,7 @@ class InviteURLGenerator(UtilityFunction):
     NAME: str = "generate_invite_url"
     DESCRIPTION: str = "Generate the URL to invite the bot to a given Discord server"
 
-    def attach_to_parser(self, parser: UtilityFunction.SubParserAction) -> None:
+    def attach_to_parser(self, parser: SubParserAction) -> None:
         """
         Add a subparser to the provided argument parser.
 

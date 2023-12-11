@@ -1,14 +1,19 @@
 """Command-line execution of the utils package."""
 
 from argparse import ArgumentParser, Namespace
+from typing import TYPE_CHECKING
 
 from utils import InviteURLGenerator, UtilityFunction
+
+if TYPE_CHECKING:
+    # noinspection PyProtectedMember
+    from argparse import _SubParserAction as SubParserAction
 
 arg_parser: ArgumentParser = ArgumentParser(
     prog="utils",
     description="Executes common command-line utility functions"
 )
-function_subparsers: UtilityFunction.SubParserAction = arg_parser.add_subparsers(  # type: ignore[assignment]
+function_subparsers: SubParserAction = arg_parser.add_subparsers(  # type: ignore[assignment]
     title="functions",
     required=True,
     help="Utility function to execute",
