@@ -20,6 +20,7 @@ with SuppressTraceback():
     intents: discord.Intents = discord.Intents.default()
     # noinspection PyDunderSlots,PyUnresolvedReferences
     intents.members = True
+    intents.message_content = True
 
     bot = TeXBot(intents=intents)
 
