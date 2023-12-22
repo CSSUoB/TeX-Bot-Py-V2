@@ -9,6 +9,7 @@ from typing import Final
 
 import aiohttp
 import discord
+from discord import Webhook
 from discord.ui import View
 
 from config import settings
