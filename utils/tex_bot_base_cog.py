@@ -97,8 +97,8 @@ class TeXBotBaseCog(Cog):
                 committee_mention = (await bot.committee_role).mention
 
             construct_error_message = (
-                f"**Contact a {committee_mention} member, referencing error code:"
-                f" {error_code}**\n"
+                f"**Contact a {committee_mention} member, referencing error code: "
+                f"{error_code}**\n"
                 + construct_error_message
             )
 
