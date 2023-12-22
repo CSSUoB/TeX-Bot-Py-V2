@@ -13,13 +13,17 @@ from argparse import Namespace
 from collections.abc import Iterable, Sequence
 from pathlib import Path
 from types import TracebackType
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import pytest
 from _pytest.capture import CaptureFixture, CaptureResult
 
 import utils
 from utils import InviteURLGenerator, UtilityFunction, classproperty
+
+if TYPE_CHECKING:
+    # noinspection PyProtectedMember
+    from argparse import _SubParserAction as SubParserAction  # type: ignore[attr-defined]
 
 # TODO(CarrotManMatt): Move to stats_tests  # noqa: FIX002
 # https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/57
@@ -238,7 +242,7 @@ class TestMain(BaseTestArgumentParser):
             DESCRIPTION: str = "An example utility function for testing purposes"
 
             @classmethod
-            def run(cls, parsed_args: Namespace, parser: UtilityFunction.SubParserAction) -> int:  # noqa: E501, ARG003
+            def run(cls, parsed_args: Namespace, parser: "SubParserAction") -> int:  # noqa: ARG003
                 sys.stdout.write("Successful execution\n")
                 return 0
 
