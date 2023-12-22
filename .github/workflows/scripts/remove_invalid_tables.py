@@ -12,6 +12,8 @@ from git import Repo
 if TYPE_CHECKING:
     from os import PathLike
 
+# TODO(CarrotManMatt): Move to independent repo  # noqa: FIX002, TD003
+
 
 def _get_project_root() -> Path:
     project_root: Path = Path(__file__).resolve()
