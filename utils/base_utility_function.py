@@ -3,7 +3,7 @@
 import abc
 import logging
 from argparse import ArgumentParser, Namespace
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar, Final, Self
 
 if TYPE_CHECKING:
     # noinspection PyProtectedMember
@@ -20,6 +20,14 @@ class UtilityFunction(abc.ABC):
     NAME: str
     DESCRIPTION: str
     _function_subparsers: ClassVar[dict[SubParserAction, ArgumentParser]] = {}
+
+    # noinspection PyTypeChecker,PyTypeHints
+    def __new__(cls, *_args: object, **_kwargs: object) -> Self:
+        """Instance objects of UtilityFunctions cannot be instantiated."""
+        CANNOT_INSTANTIATE_INSTANCE_MESSAGE: Final[str] = (
+            f"Cannot instantiate {cls.__name__} object instance."
+        )
+        raise RuntimeError(CANNOT_INSTANTIATE_INSTANCE_MESSAGE)
 
     @classmethod
     def attach_to_parser(cls, parser: SubParserAction) -> None:
