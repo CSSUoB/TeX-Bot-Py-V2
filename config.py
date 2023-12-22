@@ -7,7 +7,7 @@ These values are used to configure the functionality of the bot at run-time.
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = [
+__all__: Sequence[str] = (
     "TRUE_VALUES",
     "FALSE_VALUES",
     "VALID_SEND_INTRODUCTION_REMINDERS_VALUES",
@@ -16,7 +16,7 @@ __all__: Sequence[str] = [
     "settings",
     "setup_env_variables",
     "setup_django"
-]
+)
 
 import json
 import logging

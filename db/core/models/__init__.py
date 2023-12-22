@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = [
+__all__: Sequence[str] = (
     "IntroductionReminderOptOutMember",
     "SentOneOffIntroductionReminderMember",
     "SentGetRolesReminderMember",
@@ -10,7 +10,7 @@ __all__: Sequence[str] = [
     "DiscordReminder",
     "LeftDiscordMember",
     "DiscordMemberStrikes"
-]
+)
 
 import hashlib
 import re

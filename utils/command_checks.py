@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ["CommandChecks"]
+__all__: Sequence[str] = ("CommandChecks",)
 
 from collections.abc import Callable
 

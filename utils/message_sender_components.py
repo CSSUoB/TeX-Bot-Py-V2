@@ -2,11 +2,11 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = [
+__all__: Sequence[str] = (
     "MessageSenderComponent",
     "ChannelMessageSender",
     "ResponseMessageSender"
-]
+)
 
 import abc
 from typing import Any, TypedDict

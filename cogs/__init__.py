@@ -7,7 +7,7 @@ cogs for each activity.
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = [
+__all__: Sequence[str] = (
     "ArchiveCommandCog",
     "CommandErrorCog",
     "DeleteAllCommandsCog",
@@ -31,7 +31,7 @@ __all__: Sequence[str] = [
     "StrikeUserCommandCog",
     "WriteRolesCommandCog",
     "setup"
-]
+)
 
 from typing import TYPE_CHECKING
 

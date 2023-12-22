@@ -2,13 +2,13 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = [
+__all__: Sequence[str] = (
     "InductSendMessageCog",
     "BaseInductCog",
     "InductCommandCog",
     "InductUserCommandsCog",
     "EnsureMembersInductedCommandCog"
-]
+)
 
 import contextlib
 import random

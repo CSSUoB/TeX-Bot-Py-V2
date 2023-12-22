@@ -8,7 +8,7 @@ the asynchronous running process for the Discord bot.
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ["bot"]
+__all__: Sequence[str] = ("bot",)
 
 
 import discord

@@ -7,7 +7,7 @@ rather than Pycord's default Bot class.
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ["TeXBotAutocompleteContext", "TeXBotApplicationContext"]
+__all__: Sequence[str] = ("TeXBotAutocompleteContext", "TeXBotApplicationContext")
 
 import discord
 

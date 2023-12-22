@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = [
+__all__: Sequence[str] = (
     "perform_moderation_action",
     "ConfirmStrikeMemberView",
     "ConfirmManualModerationView",
@@ -11,7 +11,7 @@ __all__: Sequence[str] = [
     "ManualModerationCog",
     "StrikeCommandCog",
     "StrikeUserCommandCog"
-]
+)
 
 import asyncio
 import contextlib
@@ -433,6 +433,7 @@ class ManualModerationCog(BaseStrikeCog):
     async def _confirm_manual_add_strike(self, strike_user: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
+        committee_role: discord.Role = await self.bot.committee_role
 
         try:
             # noinspection PyTypeChecker
@@ -460,8 +461,8 @@ class ManualModerationCog(BaseStrikeCog):
         if applied_action_user == self.bot.user:
             return
 
-        confirmation_message_channel: discord.DMChannel | discord.TextChannel = await self.get_confirmation_message_channel(  # noqa: E501
-            applied_action_user
+        confirmation_message_channel: discord.DMChannel | discord.TextChannel = (
+            await self.get_confirmation_message_channel(applied_action_user)
         )
 
         MODERATION_ACTIONS: Final[Mapping[discord.AuditLogAction, str]] = {

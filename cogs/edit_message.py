@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ["EditMessageCommandCog"]
+__all__: Sequence[str] = ("EditMessageCommandCog",)
 
 import re
 

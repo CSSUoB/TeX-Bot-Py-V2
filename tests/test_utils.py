@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = []
+__all__: Sequence[str] = ()
 
 import os
 import random

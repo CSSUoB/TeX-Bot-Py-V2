@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ["RemindMeCommandCog", "ClearRemindersBacklogTaskCog"]
+__all__: Sequence[str] = ("RemindMeCommandCog", "ClearRemindersBacklogTaskCog")
 
 import datetime
 import functools
@@ -190,6 +190,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
 
         The "remind_me" command responds with the given message after the specified time.
         """
+        # noinspection PyTypeChecker
         parsed_time: tuple[time.struct_time, int] = parsedatetime.Calendar().parseDT(
             delay,
             tzinfo=timezone.get_current_timezone()

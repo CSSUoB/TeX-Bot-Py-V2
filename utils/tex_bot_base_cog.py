@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ["TeXBotBaseCog"]
+__all__: Sequence[str] = ("TeXBotBaseCog",)
 
 import contextlib
 import logging

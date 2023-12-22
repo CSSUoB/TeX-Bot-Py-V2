@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ["WriteRolesCommandCog"]
+__all__: Sequence[str] = ("WriteRolesCommandCog",)
 
 import discord
 

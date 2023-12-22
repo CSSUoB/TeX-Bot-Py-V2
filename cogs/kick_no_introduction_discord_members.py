@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ["KickNoIntroductionDiscordMembersTaskCog"]
+__all__: Sequence[str] = ("KickNoIntroductionDiscordMembersTaskCog",)
 
 import functools
 import logging

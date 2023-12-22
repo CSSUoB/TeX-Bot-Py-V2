@@ -3,7 +3,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ["InviteURLGenerator"]
+__all__: Sequence[str] = ("InviteURLGenerator",)
 
 import os
 import re

@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ["UtilityFunction"]
+__all__: Sequence[str] = ("UtilityFunction",)
 
 import abc
 import logging

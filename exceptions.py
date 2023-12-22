@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = [
+__all__: Sequence[str] = (
     "ImproperlyConfigured",
     "TeXBotBaseError",
     "BaseErrorWithErrorCode",
@@ -23,7 +23,7 @@ __all__: Sequence[str] = [
     "ChannelDoesNotExist",
     "RolesChannelDoesNotExist",
     "GeneralChannelDoesNotExist"
-]
+)
 
 import abc
 from collections.abc import Collection

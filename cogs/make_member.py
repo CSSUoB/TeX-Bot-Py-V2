@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ["MakeMemberCommandCog"]
+__all__: Sequence[str] = ("MakeMemberCommandCog",)
 
 import contextlib
 import logging

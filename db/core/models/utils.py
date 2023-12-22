@@ -2,7 +2,7 @@
 
 from collections.abc import Iterable, Sequence
 
-__all__: Sequence[str] = ["AsyncBaseModel", "HashedDiscordMember"]
+__all__: Sequence[str] = ("AsyncBaseModel", "HashedDiscordMember")
 
 import hashlib
 import re
