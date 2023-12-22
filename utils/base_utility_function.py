@@ -3,8 +3,11 @@
 import abc
 import logging
 from argparse import ArgumentParser, Namespace
-from collections.abc import Sequence
-from typing import Any, ClassVar, Protocol
+from typing import TYPE_CHECKING, ClassVar, Final, Self
+
+if TYPE_CHECKING:
+    # noinspection PyProtectedMember
+    from argparse import _SubParserAction as SubParserAction  # type: ignore[attr-defined]
 
 
 class UtilityFunction(abc.ABC):
@@ -14,35 +17,20 @@ class UtilityFunction(abc.ABC):
     Subclasses declare the actual execution logic of each utility function.
     """
 
-    class SubParserAction(Protocol):
-        """One possible action for a given subparser argument."""
-
-        def add_parser(self,  # noqa: PLR0913
-                       name: str,
-                       *,
-                       help: str | None = ...,  # noqa: A002
-                       aliases: Sequence[str] = ...,
-                       prog: str | None = ...,
-                       usage: str | None = ...,
-                       description: str | None = ...,
-                       epilog: str | None = ...,
-                       prefix_chars: str = ...,
-                       fromfile_prefix_chars: str | None = ...,
-                       argument_default: Any = ...,
-                       conflict_handler: str = ...,
-                       add_help: bool = ...,
-                       allow_abbrev: bool = ...,
-                       exit_on_error: bool = ...,
-                       **kwargs: Any) -> ArgumentParser:
-            """Create a new subparser from this SubParserAction."""
-            raise NotImplementedError
-
     NAME: str
     DESCRIPTION: str
-    _function_subparsers: ClassVar[dict[SubParserAction, ArgumentParser]] = {}
+    _function_subparsers: ClassVar[dict["SubParserAction", ArgumentParser]] = {}
+
+    # noinspection PyTypeChecker,PyTypeHints
+    def __new__(cls, *_args: object, **_kwargs: object) -> Self:
+        """Instance objects of UtilityFunctions cannot be instantiated."""
+        CANNOT_INSTANTIATE_INSTANCE_MESSAGE: Final[str] = (
+            f"Cannot instantiate {cls.__name__} object instance."
+        )
+        raise RuntimeError(CANNOT_INSTANTIATE_INSTANCE_MESSAGE)
 
     @classmethod
-    def attach_to_parser(cls, parser: SubParserAction) -> None:
+    def attach_to_parser(cls, parser: "SubParserAction") -> None:
         """
         Add a subparser to the provided argument parser.
 
@@ -60,6 +48,6 @@ class UtilityFunction(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def run(cls, parsed_args: Namespace, parser: SubParserAction) -> int:
+    def run(cls, parsed_args: Namespace, parser: "SubParserAction") -> int:
         """Execute the logic that this util function provides."""
         raise NotImplementedError

@@ -4,11 +4,15 @@ import os
 import re
 import sys
 from argparse import Namespace
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import discord
 
 from utils.base_utility_function import UtilityFunction
+
+if TYPE_CHECKING:
+    # noinspection PyProtectedMember
+    from argparse import _SubParserAction as SubParserAction  # type: ignore[attr-defined]
 
 
 class InviteURLGenerator(UtilityFunction):
@@ -18,13 +22,14 @@ class InviteURLGenerator(UtilityFunction):
     DESCRIPTION: str = "Generate the URL to invite the bot to a given Discord server"
 
     @classmethod
-    def attach_to_parser(cls, parser: UtilityFunction.SubParserAction) -> None:
+    def attach_to_parser(cls, parser: "SubParserAction") -> None:
         """
         Add a subparser to the provided argument parser.
 
         This allows the subparser to retrieve arguments specific to this utility function.
         """
         super().attach_to_parser(parser)
+
         if parser not in cls._function_subparsers:
             FUNCTION_SUBPARSER_DOES_NOT_EXIST_MESSAGE: Final[str] = (
                 f"""{"self.function_subparser"!r} does not exist."""
@@ -46,7 +51,7 @@ class InviteURLGenerator(UtilityFunction):
         )
 
     @classmethod
-    def run(cls, parsed_args: Namespace, parser: UtilityFunction.SubParserAction) -> int:
+    def run(cls, parsed_args: Namespace, parser: "SubParserAction") -> int:
         """Execute the logic that this util function provides."""
         if parser not in cls._function_subparsers:
             FUNCTION_SUBPARSER_DOES_NOT_EXIST_MESSAGE: Final[str] = (

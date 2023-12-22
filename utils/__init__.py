@@ -18,7 +18,7 @@ __all__: Sequence[str] = (
 
 from argparse import ArgumentParser, Namespace
 from collections.abc import Iterable
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 from utils.base_utility_function import UtilityFunction
 from utils.class_property import classproperty
@@ -30,6 +30,10 @@ from utils.tex_bot import TeXBot
 from utils.tex_bot_base_cog import TeXBotBaseCog
 from utils.tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
 
+if TYPE_CHECKING:
+    # noinspection PyProtectedMember
+    from argparse import _SubParserAction as SubParserAction  # type: ignore[attr-defined]
+
 
 def main(argv: Sequence[str] | None = None, utility_functions: Iterable[type[UtilityFunction]] | None = None) -> int:  # noqa: E501
     """Run this script as a CLI tool with argument parsing."""
@@ -39,7 +43,7 @@ def main(argv: Sequence[str] | None = None, utility_functions: Iterable[type[Uti
         prog="utils",
         description="Executes common command-line utility functions"
     )
-    function_subparsers: UtilityFunction.SubParserAction = arg_parser.add_subparsers(  # type: ignore[assignment]
+    function_subparsers: SubParserAction = arg_parser.add_subparsers(
         title="functions",
         required=True,
         help="Utility function to execute",
