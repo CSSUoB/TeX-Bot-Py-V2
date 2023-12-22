@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ["TeXBot",]
+__all__: Sequence[str] = ("TeXBot",)
 
 import re
 from typing import Any, Final, TypeAlias
