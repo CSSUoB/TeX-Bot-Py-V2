@@ -7,7 +7,6 @@ the asynchronous running process for the Discord bot.
 """
 
 import discord
-from django.core import management
 
 import config
 from config import settings
@@ -26,7 +25,4 @@ with SuppressTraceback():
 bot.load_extension("cogs")
 
 if __name__ == "__main__":
-    with SuppressTraceback():
-        management.call_command("migrate")
-
     bot.run(settings["DISCORD_BOT_TOKEN"])

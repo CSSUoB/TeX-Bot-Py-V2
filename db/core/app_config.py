@@ -1,4 +1,4 @@
-"""Configurations to make core app ready to import into settings.py."""
+"""Configurations to make core app ready to import into _settings.py."""
 
 from django.apps import AppConfig
 
