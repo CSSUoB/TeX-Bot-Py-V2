@@ -73,7 +73,7 @@ class TestBaseTeXBotError:
     )
     def test_repr_with_attributes(self, test_attributes_base_texbot_error_subclass: _AttributesBaseTeXBotErrorSubclass) -> None:
         assert (
-            f"{test_attributes_base_texbot_error_subclass.test_attribute=}"
+            f"test_attribute={test_attributes_base_texbot_error_subclass.test_attribute!r}"
             in repr(test_attributes_base_texbot_error_subclass)
         )
 
