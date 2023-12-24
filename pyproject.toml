@@ -37,6 +37,7 @@ matplotlib = "^3.8"
 mplcyberpunk = "^0.7"
 python-logging-discord-handler = "^0.1"
 gitpython = "^3.1"
+classproperties = {git = "https://github.com/hottwaj/classproperties.git"}
 
 [tool.poetry.group.dev.dependencies]
 mypy = "~1.6"

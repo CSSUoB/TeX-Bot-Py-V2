@@ -1,18 +1,23 @@
 """Custom exception classes that could be raised within the cogs modules."""
 
 import abc
-from collections.abc import Collection
 from typing import Any, Final
 
+from classproperties import classproperty
 
-class ImproperlyConfigured(Exception):
+
+class ImproperlyConfiguredError(Exception):
     """Exception class to raise when environment variables are not correctly provided."""
 
 
-class TeXBotBaseError(BaseException, abc.ABC):
+class BaseTeXBotError(BaseException, abc.ABC):
     """Base exception parent class."""
 
-    DEFAULT_MESSAGE: str
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    @abc.abstractmethod
+    def DEFAULT_MESSAGE(self) -> str:  # noqa: N805,N802
+        """"""
 
     def __init__(self, message: str | None = None) -> None:
         """Initialize a new exception with the given error message."""
@@ -32,94 +37,122 @@ class TeXBotBaseError(BaseException, abc.ABC):
         return formatted
 
 
-class BaseErrorWithErrorCode(TeXBotBaseError, abc.ABC):
+class BaseErrorWithErrorCode(BaseTeXBotError, abc.ABC):
     """Base class for exception errors that have an error code."""
 
-    ERROR_CODE: str
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    @abc.abstractmethod
+    def ERROR_CODE(self) -> str:  # noqa: N805,N802
+        """"""
 
 
 class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
     """Exception class to raise when a required Discord entity is missing."""
 
-    @staticmethod
-    def format_does_not_exist_with_dependencies(value: str, does_not_exist_type: str, dependant_commands: Collection[str], dependant_tasks: Collection[str], dependant_events: Collection[str]) -> str:  # noqa: C901, E501, PLR0912
-        """Format a string, stating that the given Discord entity does not exist."""
-        if not dependant_commands and not dependant_tasks and not dependant_events:
-            EMPTY_ARGS_MESSAGE: Final[str] = (
-                "The arguments \"dependant_commands\" & \"dependant_tasks\" "
-                "cannot all be empty."
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEPENDANT_COMMANDS(self) -> frozenset[str]:  # noqa: N805,N802
+        return frozenset()  # TODO: mention empty meaning all/none in docstring
+
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEPENDANT_TASKS(self) -> frozenset[str]:  # noqa: N805,N802
+        return frozenset()  # TODO: mention empty meaning all/none in docstring
+
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEPENDANT_EVENTS(self) -> frozenset[str]:  # noqa: N805,N802
+        return frozenset()  # TODO: mention empty meaning all/none in docstring
+
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    @abc.abstractmethod
+    def DOES_NOT_EXIST_TYPE(self) -> str:  # noqa: N805,N802
+        """"""
+
+    @classmethod
+    def get_formatted_message(cls, non_existent_object_identifier: str) -> str:  # noqa: C901, E501, PLR0912
+        """
+        Format the exception message with the dependants that require the non-existent object.
+
+        The message will also state that the given Discord entity does not exist.
+        """
+        if not cls.DEPENDANT_COMMANDS and not cls.DEPENDANT_TASKS and not cls.DEPENDANT_EVENTS:
+            NO_DEPENDANTS_MESSAGE: Final[str] = (
+                "Cannot get formatted message when non-existent object has no dependants."
             )
-            raise ValueError(EMPTY_ARGS_MESSAGE)
+            raise ValueError(NO_DEPENDANTS_MESSAGE)
 
         formatted_dependant_commands: str = ""
 
-        if dependant_commands:
-            if len(dependant_commands) == 1:
+        if cls.DEPENDANT_COMMANDS:
+            if len(cls.DEPENDANT_COMMANDS) == 1:
                 formatted_dependant_commands += (
-                    f"\"/{next(iter(dependant_commands))}\" command"
+                    f"\"/{next(cls.DEPENDANT_COMMANDS)}\" command"
                 )
             else:
                 index: int
                 dependant_command: str
-                for index, dependant_command in enumerate(dependant_commands):
+                for index, dependant_command in enumerate(cls.DEPENDANT_COMMANDS):
                     formatted_dependant_commands += f"\"/{dependant_command}\""
 
-                    if index < len(dependant_commands) - 2:
+                    if index < len(cls.DEPENDANT_COMMANDS) - 2:
                         formatted_dependant_commands += ", "
-                    elif index == len(dependant_commands) - 2:
+                    elif index == len(cls.DEPENDANT_COMMANDS) - 2:
                         formatted_dependant_commands += " & "
 
                 formatted_dependant_commands += " commands"
 
-        if does_not_exist_type == "channel":
-            value = f"#{value}"
+        if cls.DOES_NOT_EXIST_TYPE.strip().lower() == "channel":
+            non_existent_object_identifier = f"#{non_existent_object_identifier}"
 
         partial_message: str = (
-            f"\"{value}\" {does_not_exist_type} must exist "
+            f"\"{non_existent_object_identifier}\" {cls.DOES_NOT_EXIST_TYPE} must exist "
             f"in order to use the {formatted_dependant_commands}"
         )
 
-        if dependant_tasks:
+        if cls.DEPENDANT_TASKS:
             formatted_dependant_tasks: str = ""
 
-            if dependant_commands:
-                if not dependant_events:
+            if cls.DEPENDANT_COMMANDS:
+                if not cls.DEPENDANT_EVENTS:
                     partial_message += " and the "
                 else:
                     partial_message += ", the "
 
-            if len(dependant_tasks) == 1:
-                formatted_dependant_tasks += f"\"{next(iter(dependant_tasks))}\" task"
+            if len(cls.DEPENDANT_TASKS) == 1:
+                formatted_dependant_tasks += f"\"{next(cls.DEPENDANT_TASKS)}\" task"
             else:
                 dependant_task: str
-                for index, dependant_task in enumerate(dependant_tasks):
+                for index, dependant_task in enumerate(cls.DEPENDANT_TASKS):
                     formatted_dependant_tasks += f"\"{dependant_task}\""
 
-                    if index < len(dependant_tasks) - 2:
+                    if index < len(cls.DEPENDANT_TASKS) - 2:
                         formatted_dependant_tasks += ", "
-                    elif index == len(dependant_tasks) - 2:
+                    elif index == len(cls.DEPENDANT_TASKS) - 2:
                         formatted_dependant_tasks += " & "
 
                 formatted_dependant_tasks += " tasks"
 
             partial_message += formatted_dependant_tasks
 
-        if dependant_events:
+        if cls.DEPENDANT_EVENTS:
             formatted_dependant_events: str = ""
 
-            if dependant_commands or dependant_tasks:
+            if cls.DEPENDANT_COMMANDS or cls.DEPENDANT_TASKS:
                 partial_message += " and the "
 
-            if len(dependant_events) == 1:
-                formatted_dependant_events += f"\"{next(iter(dependant_events))}\" event"
+            if len(cls.DEPENDANT_EVENTS) == 1:
+                formatted_dependant_events += f"\"{next(iter(cls.DEPENDANT_EVENTS))}\" event"
             else:
                 dependant_event: str
-                for index, dependant_event in enumerate(dependant_events):
+                for index, dependant_event in enumerate(cls.DEPENDANT_EVENTS):
                     formatted_dependant_events += f"\"{dependant_event}\""
 
-                    if index < len(dependant_events) - 2:
+                    if index < len(cls.DEPENDANT_EVENTS) - 2:
                         formatted_dependant_events += ", "
-                    elif index == len(dependant_events) - 2:
+                    elif index == len(cls.DEPENDANT_EVENTS) - 2:
                         formatted_dependant_events += " & "
 
                 formatted_dependant_events += " events"
@@ -129,18 +162,24 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
         return f"{partial_message}."
 
 
-class RulesChannelDoesNotExist(TeXBotBaseError, ValueError):
+class RulesChannelDoesNotExist(BaseTeXBotError, ValueError):
     """Exception class to raise when the channel, marked as the rules channel, is missing."""
 
-    DEFAULT_MESSAGE: str = "There is no channel marked as the rules channel."
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEFAULT_MESSAGE(self) -> str:  # noqa: N805,N802
+        """"""
+        return "There is no channel marked as the rules channel."
 
 
-class UserNotInCSSDiscordServer(TeXBotBaseError, ValueError):
+class UserNotInCSSDiscordServer(BaseTeXBotError, ValueError):
     """Exception class for when no members of the CSS Discord Server have the given user ID."""
 
-    DEFAULT_MESSAGE: str = (
-        "Given user ID does not represent any member of the CSS Discord Server."
-    )
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEFAULT_MESSAGE(self) -> str:  # noqa: N805,N802
+        """"""
+        return "Given user ID does not represent any member of the CSS Discord Server."
 
     def __init__(self, message: str | None = None, user_id: int | None = None) -> None:
         """Initialize a ValueError exception for a non-existent user ID."""
@@ -152,16 +191,27 @@ class UserNotInCSSDiscordServer(TeXBotBaseError, ValueError):
 class EveryoneRoleCouldNotBeRetrieved(BaseErrorWithErrorCode, ValueError):
     """Exception class for when the "@everyone" role could not be retrieved."""
 
-    DEFAULT_MESSAGE: str = (
-        "The reference to the \"@everyone\" role could not be correctly retrieved."
-    )
-    ERROR_CODE: str = "E1042"
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEFAULT_MESSAGE(self) -> str:  # noqa: N805,N802
+        """"""
+        return "The reference to the \"@everyone\" role could not be correctly retrieved."
+
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def ERROR_CODE(self) -> str:  # noqa: N805,N802
+        """"""
+        return "E1042"
 
 
-class InvalidMessagesJSONFile(TeXBotBaseError, ImproperlyConfigured):
+class InvalidMessagesJSONFile(BaseTeXBotError, ImproperlyConfiguredError):
     """Exception class to raise when the messages.json file has an invalid structure."""
 
-    DEFAULT_MESSAGE: str = "The messages JSON file has an invalid structure at the given key."
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEFAULT_MESSAGE(self) -> str:  # noqa: N805,N802
+        """"""
+        return "The messages JSON file has an invalid structure at the given key."
 
     def __init__(self, message: str | None = None, dict_key: str | None = None) -> None:
         """Initialize an ImproperlyConfigured exception for an invalid messages.json file."""
@@ -173,7 +223,11 @@ class InvalidMessagesJSONFile(TeXBotBaseError, ImproperlyConfigured):
 class MessagesJSONFileMissingKey(InvalidMessagesJSONFile):
     """Exception class to raise when a key in the messages.json file is missing."""
 
-    DEFAULT_MESSAGE: str = "The messages JSON file is missing a required key."
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEFAULT_MESSAGE(self) -> str:  # noqa: N805,N802
+        """"""
+        return "The messages JSON file is missing a required key."
 
     def __init__(self, message: str | None = None, missing_key: str | None = None) -> None:
         """Initialize a new InvalidMessagesJSONFile exception for a missing key."""
@@ -183,7 +237,11 @@ class MessagesJSONFileMissingKey(InvalidMessagesJSONFile):
 class MessagesJSONFileValueError(InvalidMessagesJSONFile):
     """Exception class to raise when a key in the messages.json file has an invalid value."""
 
-    DEFAULT_MESSAGE: str = "The messages JSON file has an invalid value."
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEFAULT_MESSAGE(self) -> str:  # noqa: N805,N802
+        """"""
+        return "The messages JSON file has an invalid value."
 
     def __init__(self, message: str | None = None, dict_key: str | None = None, invalid_value: Any | None = None) -> None:  # noqa: E501
         """Initialize a new InvalidMessagesJSONFile exception for a key's invalid value."""
@@ -192,7 +250,7 @@ class MessagesJSONFileValueError(InvalidMessagesJSONFile):
         super().__init__(message, dict_key)
 
 
-class StrikeTrackingError(TeXBotBaseError, RuntimeError):
+class StrikeTrackingError(BaseTeXBotError, RuntimeError):
     """
     Exception class to raise when any error occurs while tracking moderation actions.
 
@@ -200,19 +258,30 @@ class StrikeTrackingError(TeXBotBaseError, RuntimeError):
     and not tracked correctly.
     """
 
-    DEFAULT_MESSAGE: str = (
-        "An error occurred while trying to track manually applied moderation actions."
-    )
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEFAULT_MESSAGE(self) -> str:  # noqa: N805,N802
+        """"""
+        return "An error occurred while trying to track manually applied moderation actions."
 
 
 class GuildDoesNotExist(BaseDoesNotExistError):
     """Exception class to raise when a required Discord guild is missing."""
 
-    DEFAULT_MESSAGE: str = (
-        "Server with given ID does not exist "
-        "or is not accessible to the bot."
-    )
-    ERROR_CODE: str = "E1011"
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEFAULT_MESSAGE(self) -> str:  # noqa: N805,N802
+        return "Server with given ID does not exist or is not accessible to the bot."
+
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def ERROR_CODE(self) -> str:  # noqa: N805,N802
+        return "E1011"
+
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DOES_NOT_EXIST_TYPE(self) -> str:  # noqa: N805,N802
+        return "guild"
 
     def __init__(self, message: str | None = None, guild_id: int | None = None) -> None:
         """Initialize a new DoesNotExist exception for a guild not existing."""
@@ -227,38 +296,29 @@ class GuildDoesNotExist(BaseDoesNotExistError):
         super().__init__(message)
 
 
-class RoleDoesNotExist(BaseDoesNotExistError):
+class RoleDoesNotExist(BaseDoesNotExistError, abc.ABC):
     """Exception class to raise when a required Discord role is missing."""
 
-    DEFAULT_MESSAGE: str = "Role with given name does not exist."
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEFAULT_MESSAGE(self) -> str:  # noqa: N805,N802
+        return f"Role with name \"{self.ROLE_NAME}\" does not exist."
 
-    def __init__(self, message: str | None = None, role_name: str | None = None, dependant_commands: Collection[str] | None = None, dependant_tasks: Collection[str] | None = None, dependant_events: Collection[str] | None = None) -> None:  # noqa: E501
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DOES_NOT_EXIST_TYPE(self) -> str:  # noqa: N805,N802
+        return "role"
+
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    @abc.abstractmethod
+    def ROLE_NAME(self) -> str:  # noqa: N805,N802
+        """"""
+
+    def __init__(self, message: str | None = None) -> None:  # noqa: E501
         """Initialize a new DoesNotExist exception for a role not existing."""
-        self.role_name: str | None = role_name
-
-        self.dependant_commands: set[str] = set()
-        if dependant_commands:
-            self.dependant_commands = set(dependant_commands)
-
-        self.dependant_tasks: set[str] = set()
-        if dependant_tasks:
-            self.dependant_tasks = set(dependant_tasks)
-
-        self.dependant_events: set[str] = set()
-        if dependant_events:
-            self.dependant_events = set(dependant_events)
-
-        if self.role_name and not message:
-            if self.dependant_commands or self.dependant_tasks or self.dependant_events:
-                message = self.format_does_not_exist_with_dependencies(
-                    self.role_name,
-                    "role",
-                    self.dependant_commands,
-                    self.dependant_tasks,
-                    self.dependant_events
-                )
-            else:
-                message = f"Role with name \"{self.role_name}\" does not exist."
+        if not message and (self.DEPENDANT_COMMANDS or self.DEPENDANT_TASKS or self.DEPENDANT_EVENTS):
+            message = self.get_formatted_message(non_existent_object_identifier=self.ROLE_NAME)
 
         super().__init__(message)
 
@@ -266,15 +326,17 @@ class RoleDoesNotExist(BaseDoesNotExistError):
 class CommitteeRoleDoesNotExist(RoleDoesNotExist):
     """Exception class to raise when the "Committee" Discord role is missing."""
 
-    ERROR_CODE: str = "E1021"
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def ERROR_CODE(self) -> str:  # noqa: N805,N802
+        return "E1021"
 
-    def __init__(self, message: str | None = None) -> None:
-        """Initialize a new RoleDoesNotExist exception with role_name=Committee."""
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEPENDANT_COMMANDS(self) -> frozenset[str]:  # noqa: N805,N802
         # noinspection SpellCheckingInspection
-        super().__init__(
-            message,
-            role_name="Committee",
-            dependant_commands={
+        return frozenset(
+            {
                 "writeroles",
                 "editmessage",
                 "induct",
@@ -285,84 +347,109 @@ class CommitteeRoleDoesNotExist(RoleDoesNotExist):
             }
         )
 
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def ROLE_NAME(self) -> str:  # noqa: N805,N802
+        return "Committee"
+
 
 class GuestRoleDoesNotExist(RoleDoesNotExist):
     """Exception class to raise when the "Guest" Discord role is missing."""
 
-    ERROR_CODE: str = "E1022"
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def ERROR_CODE(self) -> str:  # noqa: N805,N802
+        return "E1022"
 
-    def __init__(self, message: str | None = None) -> None:
-        """Initialize a new RoleDoesNotExist exception with role_name=Guest."""
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEPENDANT_COMMANDS(self) -> frozenset[str]:  # noqa: N805,N802
         # noinspection SpellCheckingInspection
-        super().__init__(
-            message,
-            role_name="Guest",
-            dependant_commands={"induct", "stats", "archive", "ensure-members-inducted"},
-            dependant_tasks={
+        return frozenset({"induct", "stats", "archive", "ensure-members-inducted"})
+
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEPENDANT_TASKS(self) -> frozenset[str]:  # noqa: N805,N802
+        # noinspection SpellCheckingInspection
+        return frozenset(
+            {
                 "kick_no_introduction_members",
                 "introduction_reminder",
                 "get_roles_reminder"
             }
         )
 
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def ROLE_NAME(self) -> str:  # noqa: N805,N802
+        return "Guest"
+
 
 class MemberRoleDoesNotExist(RoleDoesNotExist):
     """Exception class to raise when the "Member" Discord role is missing."""
 
-    ERROR_CODE: str = "E1023"
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def ERROR_CODE(self) -> str:  # noqa: N805,N802
+        return "E1023"
 
-    def __init__(self, message: str | None = None) -> None:
-        """Initialize a new RoleDoesNotExist exception with role_name=Member."""
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEPENDANT_COMMANDS(self) -> frozenset[str]:  # noqa: N805,N802
         # noinspection SpellCheckingInspection
-        super().__init__(
-            message,
-            role_name="Member",
-            dependant_commands={"makemember", "ensure-members-inducted"}
-        )
+        return frozenset({"makemember", "ensure-members-inducted"})
+
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def ROLE_NAME(self) -> str:  # noqa: N805,N802
+        return "Member"
 
 
 class ArchivistRoleDoesNotExist(RoleDoesNotExist):
     """Exception class to raise when the "Archivist" Discord role is missing."""
 
-    ERROR_CODE: str = "E1024"
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def ERROR_CODE(self) -> str:  # noqa: N805,N802
+        return "E1024"
 
-    def __init__(self, message: str | None = None) -> None:
-        """Initialize a new RoleDoesNotExist exception with role_name=Archivist."""
-        super().__init__(message, role_name="Archivist", dependant_commands={"archive"})
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEPENDANT_COMMANDS(self) -> frozenset[str]:  # noqa: N805,N802
+        # noinspection SpellCheckingInspection
+        return frozenset({"archive"})
+
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def ROLE_NAME(self) -> str:  # noqa: N805,N802
+        return "Archivist"
 
 
 class ChannelDoesNotExist(BaseDoesNotExistError):
     """Exception class to raise when a required Discord channel is missing."""
 
-    DEFAULT_MESSAGE: str = "Channel with given name does not exist."
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEFAULT_MESSAGE(self) -> str:  # noqa: N805,N802
+        return f"Channel with name \"{self.CHANNEL_NAME}\" does not exist."
 
-    def __init__(self, message: str | None = None, channel_name: str | None = None, dependant_commands: Collection[str] | None = None, dependant_tasks: Collection[str] | None = None, dependant_events: Collection[str] | None = None) -> None:  # noqa: E501
-        """Initialize a new DoesNotExist exception for a channel not existing."""
-        self.channel_name: str | None = channel_name
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DOES_NOT_EXIST_TYPE(self) -> str:  # noqa: N805,N802
+        return "channel"
 
-        self.dependant_commands: set[str] = set()
-        if dependant_commands:
-            self.dependant_commands = set(dependant_commands)
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    @abc.abstractmethod
+    def CHANNEL_NAME(self) -> str:  # noqa: N805,N802
+        """"""
 
-        self.dependant_tasks: set[str] = set()
-        if dependant_tasks:
-            self.dependant_tasks = set(dependant_tasks)
-
-        self.dependant_events: set[str] = set()
-        if dependant_events:
-            self.dependant_events = set(dependant_events)
-
-        if self.channel_name and not message:
-            if self.dependant_commands or self.dependant_tasks or self.dependant_events:
-                message = self.format_does_not_exist_with_dependencies(
-                    self.channel_name,
-                    "channel",
-                    self.dependant_commands,
-                    self.dependant_tasks,
-                    self.dependant_events
-                )
-            else:
-                message = f"Channel with name \"{self.channel_name}\" does not exist."
+    def __init__(self, message: str | None = None) -> None:  # noqa: E501
+        """Initialize a new DoesNotExist exception for a role not existing."""
+        if not message and (self.DEPENDANT_COMMANDS or self.DEPENDANT_TASKS or self.DEPENDANT_EVENTS):
+            message = self.get_formatted_message(
+                non_existent_object_identifier=self.CHANNEL_NAME
+            )
 
         super().__init__(message)
 
@@ -370,20 +457,38 @@ class ChannelDoesNotExist(BaseDoesNotExistError):
 class RolesChannelDoesNotExist(ChannelDoesNotExist):
     """Exception class to raise when the "Roles" Discord channel is missing."""
 
-    ERROR_CODE: str = "E1031"
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def ERROR_CODE(self) -> str:  # noqa: N805,N802
+        return "E1031"
 
-    def __init__(self, message: str | None = None) -> None:
-        """Initialize a new ChannelDoesNotExist exception with channel_name=roles."""
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEPENDANT_COMMANDS(self) -> frozenset[str]:  # noqa: N805,N802
         # noinspection SpellCheckingInspection
-        super().__init__(message, channel_name="roles", dependant_commands={"writeroles"})
+        return frozenset({"writeroles"})
+
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def CHANNEL_NAME(self) -> str:  # noqa: N805,N802
+        return "roles"
 
 
 class GeneralChannelDoesNotExist(ChannelDoesNotExist):
     """Exception class to raise when the "General" Discord channel is missing."""
 
-    ERROR_CODE: str = "E1032"
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def ERROR_CODE(self) -> str:  # noqa: N805,N802
+        return "E1032"
 
-    def __init__(self, message: str | None = None) -> None:
-        """Initialize a new ChannelDoesNotExist exception with channel_name=general."""
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEPENDANT_COMMANDS(self) -> frozenset[str]:  # noqa: N805,N802
         # noinspection SpellCheckingInspection
-        super().__init__(message, channel_name="general", dependant_commands={"induct"})
+        return frozenset({"induct"})
+
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def CHANNEL_NAME(self) -> str:  # noqa: N805,N802
+        return "general"

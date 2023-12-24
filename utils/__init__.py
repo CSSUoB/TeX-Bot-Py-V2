@@ -3,7 +3,6 @@
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
-    "classproperty",
     "CommandChecks",
     "InviteURLGenerator",
     "main",
@@ -21,7 +20,6 @@ from collections.abc import Iterable
 from typing import TYPE_CHECKING, Final
 
 from utils.base_utility_function import UtilityFunction
-from utils.class_property import classproperty
 from utils.command_checks import CommandChecks
 from utils.generate_invite_url import InviteURLGenerator
 from utils.message_sender_components import MessageSenderComponent
