@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Final
 import pytest
 from _pytest.capture import CaptureFixture, CaptureResult
 
-from test_utils._testing_utils import BaseTestArgumentParser
+from tests.test_utils._testing_utils import BaseTestArgumentParser
 from utils import UtilityFunction
 
 if TYPE_CHECKING:

@@ -7,9 +7,10 @@ from typing import TYPE_CHECKING, Final
 
 import pytest
 from _pytest.capture import CaptureFixture, CaptureResult
+from classproperties import classproperty
 
 from test_utils._testing_utils import BaseTestArgumentParser
-from utils import InviteURLGenerator, UtilityFunction, classproperty
+from utils import InviteURLGenerator, UtilityFunction
 
 if TYPE_CHECKING:
     # noinspection PyProtectedMember

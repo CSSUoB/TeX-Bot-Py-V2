@@ -13,9 +13,7 @@ from config import settings
 from utils import SuppressTraceback, TeXBot
 
 with SuppressTraceback():
-    config.setup_env_variables()
-    config.setup_django()
-
+    config.run_setup()
     intents: discord.Intents = discord.Intents.default()
     # noinspection PyDunderSlots,PyUnresolvedReferences
     intents.members = True
