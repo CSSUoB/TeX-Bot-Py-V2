@@ -29,10 +29,18 @@ class BaseTeXBotError(BaseException, abc.ABC):
         """Generate a developer-focused representation of the exception's attributes."""
         formatted: str = self.message
 
-        attributes: set[str] = set(self.__dict__.keys())
-        attributes.discard("message")
+        attributes: dict[str, object] = self.__dict__
+        attributes.pop("message")
         if attributes:
-            formatted += f""" ({", ".join({f"{attribute=}" for attribute in attributes})})"""
+            formatted += f""" ({
+                ", ".join(
+                    {
+                        f"{attribute_name}={attribute_value!r}"
+                        for attribute_name, attribute_value
+                        in attributes.items()
+                    }
+                )
+            })"""
 
         return formatted
 
