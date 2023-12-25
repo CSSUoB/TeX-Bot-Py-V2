@@ -97,7 +97,7 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
         if cls.DEPENDANT_COMMANDS:
             if len(cls.DEPENDANT_COMMANDS) == 1:
                 formatted_dependant_commands += (
-                    f"\"/{next(cls.DEPENDANT_COMMANDS)}\" command"
+                    f"\"/{next(iter(cls.DEPENDANT_COMMANDS))}\" command"
                 )
             else:
                 index: int
@@ -130,7 +130,7 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
                     partial_message += ", the "
 
             if len(cls.DEPENDANT_TASKS) == 1:
-                formatted_dependant_tasks += f"\"{next(cls.DEPENDANT_TASKS)}\" task"
+                formatted_dependant_tasks += f"\"{next(iter(cls.DEPENDANT_TASKS))}\" task"
             else:
                 dependant_task: str
                 for index, dependant_task in enumerate(cls.DEPENDANT_TASKS):
@@ -296,10 +296,7 @@ class GuildDoesNotExistError(BaseDoesNotExistError):
         self.guild_id: int | None = guild_id
 
         if guild_id and not message:
-            message = (
-                f"Server with ID \"{self.guild_id}\" does not exist "
-                "or is not accessible to the bot."
-            )
+            message = self.DEFAULT_MESSAGE.replace("given ID", f"ID \"{self.guild_id}\"")
 
         super().__init__(message)
 
@@ -331,7 +328,7 @@ class RoleDoesNotExistError(BaseDoesNotExistError, abc.ABC):
         super().__init__(message)
 
 
-class CommitteeRoleDoesNotExist(RoleDoesNotExist):
+class CommitteeRoleDoesNotExistError(RoleDoesNotExistError):
     """Exception class to raise when the "Committee" Discord role is missing."""
 
     # noinspection PyMethodParameters,PyPep8Naming
