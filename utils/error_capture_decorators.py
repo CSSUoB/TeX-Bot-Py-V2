@@ -9,7 +9,7 @@ import logging
 from collections.abc import Callable, Coroutine
 from typing import TYPE_CHECKING, Any, Final, ParamSpec, TypeVar
 
-from exceptions import GuildDoesNotExist, StrikeTrackingError
+from exceptions import GuildDoesNotExistError, StrikeTrackingError
 from utils.tex_bot_base_cog import TeXBotBaseCog
 
 P = ParamSpec("P")
@@ -82,7 +82,7 @@ def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T]") -> "Wrapp
     """  # noqa: D401
     return ErrorCaptureDecorators.capture_error_and_close(
         func,
-        error_type=GuildDoesNotExist,
+        error_type=GuildDoesNotExistError,
         close_func=ErrorCaptureDecorators.critical_error_close_func
     )
 

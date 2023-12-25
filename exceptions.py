@@ -170,7 +170,7 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
         return f"{partial_message}."
 
 
-class RulesChannelDoesNotExist(BaseTeXBotError, ValueError):
+class RulesChannelDoesNotExistError(BaseTeXBotError, ValueError):
     """Exception class to raise when the channel, marked as the rules channel, is missing."""
 
     # noinspection PyMethodParameters,PyPep8Naming
@@ -180,7 +180,7 @@ class RulesChannelDoesNotExist(BaseTeXBotError, ValueError):
         return "There is no channel marked as the rules channel."
 
 
-class UserNotInCSSDiscordServer(BaseTeXBotError, ValueError):
+class UserNotInCSSDiscordServerError(BaseTeXBotError, ValueError):
     """Exception class for when no members of the CSS Discord Server have the given user ID."""
 
     # noinspection PyMethodParameters,PyPep8Naming
@@ -196,7 +196,7 @@ class UserNotInCSSDiscordServer(BaseTeXBotError, ValueError):
         super().__init__(message)
 
 
-class EveryoneRoleCouldNotBeRetrieved(BaseErrorWithErrorCode, ValueError):
+class EveryoneRoleCouldNotBeRetrievedError(BaseErrorWithErrorCode, ValueError):
     """Exception class for when the "@everyone" role could not be retrieved."""
 
     # noinspection PyMethodParameters,PyPep8Naming
@@ -212,7 +212,7 @@ class EveryoneRoleCouldNotBeRetrieved(BaseErrorWithErrorCode, ValueError):
         return "E1042"
 
 
-class InvalidMessagesJSONFile(BaseTeXBotError, ImproperlyConfiguredError):
+class InvalidMessagesJSONFileError(BaseTeXBotError, ImproperlyConfiguredError):
     """Exception class to raise when the messages.json file has an invalid structure."""
 
     # noinspection PyMethodParameters,PyPep8Naming
@@ -228,7 +228,7 @@ class InvalidMessagesJSONFile(BaseTeXBotError, ImproperlyConfiguredError):
         super().__init__(message)
 
 
-class MessagesJSONFileMissingKey(InvalidMessagesJSONFile):
+class MessagesJSONFileMissingKeyError(InvalidMessagesJSONFileError):
     """Exception class to raise when a key in the messages.json file is missing."""
 
     # noinspection PyMethodParameters,PyPep8Naming
@@ -242,7 +242,7 @@ class MessagesJSONFileMissingKey(InvalidMessagesJSONFile):
         super().__init__(message, dict_key=missing_key)
 
 
-class MessagesJSONFileValueError(InvalidMessagesJSONFile):
+class MessagesJSONFileValueError(InvalidMessagesJSONFileError):
     """Exception class to raise when a key in the messages.json file has an invalid value."""
 
     # noinspection PyMethodParameters,PyPep8Naming
@@ -273,7 +273,7 @@ class StrikeTrackingError(BaseTeXBotError, RuntimeError):
         return "An error occurred while trying to track manually applied moderation actions."
 
 
-class GuildDoesNotExist(BaseDoesNotExistError):
+class GuildDoesNotExistError(BaseDoesNotExistError):
     """Exception class to raise when a required Discord guild is missing."""
 
     # noinspection PyMethodParameters,PyPep8Naming
@@ -304,7 +304,7 @@ class GuildDoesNotExist(BaseDoesNotExistError):
         super().__init__(message)
 
 
-class RoleDoesNotExist(BaseDoesNotExistError, abc.ABC):
+class RoleDoesNotExistError(BaseDoesNotExistError, abc.ABC):
     """Exception class to raise when a required Discord role is missing."""
 
     # noinspection PyMethodParameters,PyPep8Naming
@@ -361,7 +361,7 @@ class CommitteeRoleDoesNotExist(RoleDoesNotExist):
         return "Committee"
 
 
-class GuestRoleDoesNotExist(RoleDoesNotExist):
+class GuestRoleDoesNotExistError(RoleDoesNotExistError):
     """Exception class to raise when the "Guest" Discord role is missing."""
 
     # noinspection PyMethodParameters,PyPep8Naming
@@ -393,7 +393,7 @@ class GuestRoleDoesNotExist(RoleDoesNotExist):
         return "Guest"
 
 
-class MemberRoleDoesNotExist(RoleDoesNotExist):
+class MemberRoleDoesNotExistError(RoleDoesNotExistError):
     """Exception class to raise when the "Member" Discord role is missing."""
 
     # noinspection PyMethodParameters,PyPep8Naming
@@ -413,7 +413,7 @@ class MemberRoleDoesNotExist(RoleDoesNotExist):
         return "Member"
 
 
-class ArchivistRoleDoesNotExist(RoleDoesNotExist):
+class ArchivistRoleDoesNotExistError(RoleDoesNotExistError):
     """Exception class to raise when the "Archivist" Discord role is missing."""
 
     # noinspection PyMethodParameters,PyPep8Naming
@@ -433,7 +433,7 @@ class ArchivistRoleDoesNotExist(RoleDoesNotExist):
         return "Archivist"
 
 
-class ChannelDoesNotExist(BaseDoesNotExistError):
+class ChannelDoesNotExistError(BaseDoesNotExistError):
     """Exception class to raise when a required Discord channel is missing."""
 
     # noinspection PyMethodParameters,PyPep8Naming
@@ -462,7 +462,7 @@ class ChannelDoesNotExist(BaseDoesNotExistError):
         super().__init__(message)
 
 
-class RolesChannelDoesNotExist(ChannelDoesNotExist):
+class RolesChannelDoesNotExistError(ChannelDoesNotExistError):
     """Exception class to raise when the "Roles" Discord channel is missing."""
 
     # noinspection PyMethodParameters,PyPep8Naming
@@ -482,7 +482,7 @@ class RolesChannelDoesNotExist(ChannelDoesNotExist):
         return "roles"
 
 
-class GeneralChannelDoesNotExist(ChannelDoesNotExist):
+class GeneralChannelDoesNotExistError(ChannelDoesNotExistError):
     """Exception class to raise when the "General" Discord channel is missing."""
 
     # noinspection PyMethodParameters,PyPep8Naming

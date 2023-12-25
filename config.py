@@ -22,7 +22,7 @@ from django.core import management
 
 from exceptions import (
     ImproperlyConfiguredError,
-    MessagesJSONFileMissingKey,
+    MessagesJSONFileMissingKeyError,
     MessagesJSONFileValueError,
 )
 
@@ -255,7 +255,7 @@ class Settings:
         )
 
         if "welcome_messages" not in messages_dict:
-            raise MessagesJSONFileMissingKey(missing_key="welcome_messages")
+            raise MessagesJSONFileMissingKeyError(missing_key="welcome_messages")
 
         WELCOME_MESSAGES_KEY_IS_VALID: Final[bool] = bool(
             isinstance(messages_dict["welcome_messages"], Iterable)
@@ -275,7 +275,7 @@ class Settings:
         )
 
         if "roles_messages" not in messages_dict:
-            raise MessagesJSONFileMissingKey(missing_key="roles_messages")
+            raise MessagesJSONFileMissingKeyError(missing_key="roles_messages")
 
         ROLES_MESSAGES_KEY_IS_VALID: Final[bool] = (
             isinstance(messages_dict["roles_messages"], Iterable)

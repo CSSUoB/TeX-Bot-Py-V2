@@ -16,7 +16,7 @@ from db.core.models import (
     IntroductionReminderOptOutMember,
     SentOneOffIntroductionReminderMember,
 )
-from exceptions import GuestRoleDoesNotExist, UserNotInCSSDiscordServer
+from exceptions import GuestRoleDoesNotExistError, UserNotInCSSDiscordServerError
 from utils import TeXBot, TeXBotBaseCog
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
@@ -55,7 +55,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
     @tasks.loop(**settings["INTRODUCTION_REMINDER_INTERVAL"])
     @functools.partial(
         ErrorCaptureDecorators.capture_error_and_close,
-        error_type=GuestRoleDoesNotExist,
+        error_type=GuestRoleDoesNotExistError,
         close_func=ErrorCaptureDecorators.critical_error_close_func
     )
     @capture_guild_does_not_exist_error
@@ -188,7 +188,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 interaction_member: discord.Member = await self.bot.get_css_user(
                     interaction.user
                 )
-            except UserNotInCSSDiscordServer:
+            except UserNotInCSSDiscordServerError:
                 raise NotImplementedError from None
 
             button_will_make_opt_out: bool = (

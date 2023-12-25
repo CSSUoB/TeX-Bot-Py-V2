@@ -7,16 +7,16 @@ import discord
 
 from config import settings
 from exceptions import (
-    ArchivistRoleDoesNotExist,
-    CommitteeRoleDoesNotExist,
-    EveryoneRoleCouldNotBeRetrieved,
-    GeneralChannelDoesNotExist,
-    GuestRoleDoesNotExist,
-    GuildDoesNotExist,
-    MemberRoleDoesNotExist,
-    RolesChannelDoesNotExist,
-    RulesChannelDoesNotExist,
-    UserNotInCSSDiscordServer,
+    ArchivistRoleDoesNotExistError,
+    CommitteeRoleDoesNotExistError,
+    EveryoneRoleCouldNotBeRetrievedError,
+    GeneralChannelDoesNotExistError,
+    GuestRoleDoesNotExistError,
+    GuildDoesNotExistError,
+    MemberRoleDoesNotExistError,
+    RolesChannelDoesNotExistError,
+    RulesChannelDoesNotExistError,
+    UserNotInCSSDiscordServerError,
 )
 
 ChannelTypes: TypeAlias = (
@@ -65,7 +65,7 @@ class TeXBot(discord.Bot):
         Raises `GuildDoesNotExist` if the given ID does not link to a Discord server.
         """
         if not self._css_guild or not self._bot_has_guild(settings["DISCORD_GUILD_ID"]):
-            raise GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"])
+            raise GuildDoesNotExistError(guild_id=settings["DISCORD_GUILD_ID"])
 
         return self._css_guild
 
@@ -86,7 +86,7 @@ class TeXBot(discord.Bot):
             )
 
         if not self._committee_role:
-            raise CommitteeRoleDoesNotExist
+            raise CommitteeRoleDoesNotExistError
 
         return self._committee_role
 
@@ -109,7 +109,7 @@ class TeXBot(discord.Bot):
             )
 
         if not self._guest_role:
-            raise GuestRoleDoesNotExist
+            raise GuestRoleDoesNotExistError
 
         return self._guest_role
 
@@ -133,7 +133,7 @@ class TeXBot(discord.Bot):
             )
 
         if not self._member_role:
-            raise MemberRoleDoesNotExist
+            raise MemberRoleDoesNotExistError
 
         return self._member_role
 
@@ -154,7 +154,7 @@ class TeXBot(discord.Bot):
             )
 
         if not self._archivist_role:
-            raise ArchivistRoleDoesNotExist
+            raise ArchivistRoleDoesNotExistError
 
         return self._archivist_role
 
@@ -172,7 +172,7 @@ class TeXBot(discord.Bot):
             self._roles_channel = await self._fetch_text_channel("roles")
 
         if not self._roles_channel:
-            raise RolesChannelDoesNotExist
+            raise RolesChannelDoesNotExistError
 
         return self._roles_channel
 
@@ -187,7 +187,7 @@ class TeXBot(discord.Bot):
             self._general_channel = await self._fetch_text_channel("general")
 
         if not self._general_channel:
-            raise GeneralChannelDoesNotExist
+            raise GeneralChannelDoesNotExistError
 
         return self._general_channel
 
@@ -207,7 +207,7 @@ class TeXBot(discord.Bot):
             )
 
         if not self._rules_channel:
-            raise RulesChannelDoesNotExist
+            raise RulesChannelDoesNotExistError
 
         return self._rules_channel
 
@@ -247,7 +247,7 @@ class TeXBot(discord.Bot):
             name="@everyone"
         )
         if not everyone_role:
-            raise EveryoneRoleCouldNotBeRetrieved
+            raise EveryoneRoleCouldNotBeRetrievedError
         return everyone_role
 
     async def check_user_has_committee_role(self, user: discord.Member | discord.User) -> bool:
@@ -277,7 +277,7 @@ class TeXBot(discord.Bot):
         """
         css_user: discord.Member | None = self.css_guild.get_member(user.id)
         if not css_user:
-            raise UserNotInCSSDiscordServer(user_id=user.id)
+            raise UserNotInCSSDiscordServerError(user_id=user.id)
         return css_user
 
     async def get_member_from_str_id(self, str_member_id: str) -> discord.Member:
@@ -297,10 +297,10 @@ class TeXBot(discord.Bot):
 
         user: discord.User | None = self.get_user(int(str_member_id))
         if not user:
-            raise ValueError(UserNotInCSSDiscordServer(user_id=int(str_member_id)).message)
+            raise ValueError(UserNotInCSSDiscordServerError(user_id=int(str_member_id)).message)
         try:
             member: discord.Member = await self.get_css_user(user)
-        except UserNotInCSSDiscordServer as e:
+        except UserNotInCSSDiscordServerError as e:
             raise ValueError from e
 
         return member

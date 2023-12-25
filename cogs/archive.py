@@ -5,7 +5,7 @@ import re
 
 import discord
 
-from exceptions import BaseDoesNotExistError, UserNotInCSSDiscordServer
+from exceptions import BaseDoesNotExistError, UserNotInCSSDiscordServerError
 from utils import (
     CommandChecks,
     TeXBotApplicationContext,
@@ -32,7 +32,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
             css_guild: discord.Guild = ctx.bot.css_guild
             interaction_user: discord.Member = await ctx.bot.get_css_user(ctx.interaction.user)
             assert await ctx.bot.check_user_has_committee_role(interaction_user)
-        except (AssertionError, BaseDoesNotExistError, UserNotInCSSDiscordServer):
+        except (AssertionError, BaseDoesNotExistError, UserNotInCSSDiscordServerError):
             return set()
 
         return {

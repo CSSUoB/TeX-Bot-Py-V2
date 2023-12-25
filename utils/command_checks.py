@@ -8,7 +8,7 @@ from discord.ext.commands import CheckFailure
 # noinspection PyProtectedMember
 from discord.ext.commands.core import T
 
-from exceptions import UserNotInCSSDiscordServer
+from exceptions import UserNotInCSSDiscordServerError
 from utils.tex_bot_contexts import TeXBotApplicationContext
 
 
@@ -19,7 +19,7 @@ class CommandChecks:
     async def _check_interaction_user_in_css_guild(ctx: TeXBotApplicationContext) -> bool:
         try:
             await ctx.bot.get_css_user(ctx.user)
-        except UserNotInCSSDiscordServer:
+        except UserNotInCSSDiscordServerError:
             return False
         return True
 

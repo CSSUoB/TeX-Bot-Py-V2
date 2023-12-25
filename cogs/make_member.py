@@ -13,7 +13,7 @@ from django.core.exceptions import ValidationError
 
 from config import settings
 from db.core.models import UoBMadeMember
-from exceptions import CommitteeRoleDoesNotExist, GuestRoleDoesNotExist
+from exceptions import CommitteeRoleDoesNotExistError, GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 
@@ -70,7 +70,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         if uob_id_already_used:
             # noinspection PyUnusedLocal
             committee_mention: str = "committee"
-            with contextlib.suppress(CommitteeRoleDoesNotExist):
+            with contextlib.suppress(CommitteeRoleDoesNotExistError):
                 committee_mention = (await self.bot.roles_channel).mention
 
             await ctx.respond(
@@ -173,7 +173,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 
         try:
             guest_role: discord.Role = await self.bot.guest_role
-        except GuestRoleDoesNotExist:
+        except GuestRoleDoesNotExistError:
             logging.warning(
                 "\"/makemember\" command used but the \"Guest\" role does not exist. "
                 "Some user's may now have the \"Member\" role without the \"Guest\" role. "

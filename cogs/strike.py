@@ -15,8 +15,8 @@ from discord.ui import View
 from config import settings
 from db.core.models import MemberStrikes
 from exceptions import (
-    GuildDoesNotExist,
-    RulesChannelDoesNotExist,
+    GuildDoesNotExistError,
+    RulesChannelDoesNotExistError,
     StrikeTrackingError,
 )
 from utils import (
@@ -192,7 +192,7 @@ class BaseStrikeCog(TeXBotBaseCog):
     async def _send_strike_user_message(self, strike_user: discord.User | discord.Member, member_strikes: MemberStrikes) -> None:  # noqa: E501
         # noinspection PyUnusedLocal
         rules_channel_mention: str = "`#welcome`"
-        with contextlib.suppress(RulesChannelDoesNotExist):
+        with contextlib.suppress(RulesChannelDoesNotExistError):
             rules_channel_mention = (await self.bot.rules_channel).mention
 
         includes_ban_message: str = (
@@ -675,7 +675,7 @@ class StrikeCommandCog(BaseStrikeCog):
         """
         try:
             guild: discord.Guild = ctx.bot.css_guild
-        except GuildDoesNotExist:
+        except GuildDoesNotExistError:
             return set()
 
         members: set[discord.Member] = {member for member in guild.members if not member.bot}
