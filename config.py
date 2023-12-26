@@ -572,6 +572,7 @@ class Settings:
         self._setup_statistics_days()
         self._setup_statistics_roles()
         self._setup_moderation_document_url()
+        self._setup_manual_moderation_warning_message_location()
 
         self._is_env_variables_setup = True
 
