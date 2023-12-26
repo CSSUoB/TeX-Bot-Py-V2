@@ -7,7 +7,7 @@ import pytest
 from config import Settings, settings
 
 if TYPE_CHECKING:
-    from _pytest.capture import CaptureFixture, CaptureResult
+    from _pytest.logging import LogCaptureFixture
 
 
 class TestSettings:
@@ -153,23 +153,15 @@ class TestSettings:
             }
         )
 
-    def test_cannot_setup_multiple_times(self, capsys: "CaptureFixture[str]") -> None:
+    def test_cannot_setup_multiple_times(self, caplog: "LogCaptureFixture") -> None:
         SETTINGS_INSTANCE: Final[Settings] = self.replace_setup_methods(
             Settings(),
             ignore_methods=("_setup_env_variables",)
         )
         SETTINGS_INSTANCE._setup_env_variables()
 
-        BEFORE_CAPTURE_RESULT: Final["CaptureResult[str]"] = capsys.readouterr()
-
-        assert not BEFORE_CAPTURE_RESULT.err
-        assert not BEFORE_CAPTURE_RESULT.out
+        assert not caplog.text
 
         SETTINGS_INSTANCE._setup_env_variables()
 
-        AFTER_CAPTURE_RESULT: Final["CaptureResult[str]"] = capsys.readouterr()
-
-        assert (
-            ("already" in AFTER_CAPTURE_RESULT.err or "already" in AFTER_CAPTURE_RESULT.out)
-            and ("set up" in AFTER_CAPTURE_RESULT.err or "set up" in AFTER_CAPTURE_RESULT.out)
-        )
+        assert "already" in caplog.text and "set up" in caplog.text
