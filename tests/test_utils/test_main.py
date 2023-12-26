@@ -5,12 +5,12 @@ from argparse import Namespace
 from typing import TYPE_CHECKING, Final
 
 import pytest
-from _pytest.capture import CaptureFixture, CaptureResult
 
 from tests.test_utils._testing_utils import BaseTestArgumentParser
 from utils import UtilityFunction
 
 if TYPE_CHECKING:
+    from _pytest.capture import CaptureFixture, CaptureResult
     # noinspection PyProtectedMember
     from argparse import _SubParserAction as SubParserAction  # type: ignore[attr-defined]
 
@@ -21,7 +21,7 @@ class TestMain(BaseTestArgumentParser):
     UTILITY_FUNCTIONS: frozenset[type[UtilityFunction]] = frozenset()
 
     @classmethod
-    def test_error_when_no_function(cls, capsys: CaptureFixture[str]) -> None:
+    def test_error_when_no_function(cls, capsys: "CaptureFixture[str]") -> None:
         """Test for the correct error when no function name is provided."""
         EXPECTED_ERROR_MESSAGE: Final[str] = (
             "utils: error: the following arguments are required: function"
@@ -37,7 +37,7 @@ class TestMain(BaseTestArgumentParser):
         assert EXPECTED_ERROR_MESSAGE in capture_result.err
 
     @classmethod
-    def test_error_when_invalid_function(cls, capsys: CaptureFixture[str]) -> None:
+    def test_error_when_invalid_function(cls, capsys: "CaptureFixture[str]") -> None:
         """Test for the correct error when an invalid function name is provided."""
         INVALID_FUNCTION: Final[str] = "".join(
             random.choices(string.ascii_letters + string.digits, k=7)
@@ -64,7 +64,7 @@ class TestMain(BaseTestArgumentParser):
         "help_argument",
         ("test_successful_execution", "test_invalid_function_error_message")
     )
-    def test_attaching_utility_function(cls, capsys: CaptureFixture[str], help_argument: str) -> None:  # noqa: E501
+    def test_attaching_utility_function(cls, capsys: "CaptureFixture[str]", help_argument: str) -> None:  # noqa: E501
         """Test for the correct error when an invalid function name is provided."""
         class ExampleUtilityFunction(UtilityFunction):
             NAME: str = "example_utility_function"
@@ -114,7 +114,7 @@ class TestMain(BaseTestArgumentParser):
 
     @classmethod
     @pytest.mark.parametrize("help_argument", ("-h", "--help"))
-    def test_help(cls, capsys: CaptureFixture[str], help_argument: str) -> None:
+    def test_help(cls, capsys: "CaptureFixture[str]", help_argument: str) -> None:
         """Test for the correct response when any of the help arguments are provided."""
         return_code: int
         capture_result: CaptureResult[str]

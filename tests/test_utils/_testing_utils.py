@@ -4,13 +4,13 @@ from pathlib import Path
 from types import TracebackType
 from typing import TYPE_CHECKING, Final
 
-from _pytest.capture import CaptureFixture, CaptureResult
 from classproperties import classproperty
 
 import utils
 from utils import UtilityFunction
 
 if TYPE_CHECKING:
+    from _pytest.capture import CaptureFixture, CaptureResult
     # noinspection PyProtectedMember
     from argparse import _SubParserAction as SubParserAction  # type: ignore[attr-defined]
 
@@ -39,7 +39,7 @@ class BaseTestArgumentParser:  # TODO: make ABC
         }"""
 
     @classmethod
-    def execute_argument_parser_function(cls, args: Sequence[str], capsys: CaptureFixture[str], utility_functions: Iterable[type[UtilityFunction]] | None = None) -> tuple[int, CaptureResult[str]]:  # noqa: E501
+    def execute_argument_parser_function(cls, args: Sequence[str], capsys: "CaptureFixture[str]", utility_functions: Iterable[type[UtilityFunction]] | None = None) -> tuple[int, "CaptureResult[str]"]:  # noqa: E501
         """Execute the chosen argument parser function."""
         try:
             return_code: int = utils.main(
@@ -57,7 +57,7 @@ class BaseTestArgumentParser:  # TODO: make ABC
         def __enter__(self) -> None:
             """Enter the context manager and execute no additional logic."""
 
-        def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType) -> None:  # noqa: E501
+        def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None) -> None:  # noqa: E501
             """Exit the context manager and execute no additional logic."""
 
     class EnvVariableDeleter(EmptyContextManager):

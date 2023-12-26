@@ -1,10 +1,13 @@
 import functools
 from collections.abc import Iterable, Callable
-from typing import Final
+from typing import Final, TYPE_CHECKING
 
 import pytest
 
 from config import Settings, settings
+
+if TYPE_CHECKING:
+    from _pytest.capture import CaptureFixture, CaptureResult
 
 
 class TestSettings:
@@ -148,4 +151,25 @@ class TestSettings:
                     and setup_method_name != "_setup_env_variables"
                 )
             }
+        )
+
+    def test_cannot_setup_multiple_times(self, capsys: "CaptureFixture[str]") -> None:
+        SETTINGS_INSTANCE: Final[Settings] = self.replace_setup_methods(
+            Settings(),
+            ignore_methods=("_setup_env_variables",)
+        )
+        SETTINGS_INSTANCE._setup_env_variables()
+
+        BEFORE_CAPTURE_RESULT: Final["CaptureResult[str]"] = capsys.readouterr()
+
+        assert not BEFORE_CAPTURE_RESULT.err
+        assert not BEFORE_CAPTURE_RESULT.out
+
+        SETTINGS_INSTANCE._setup_env_variables()
+
+        AFTER_CAPTURE_RESULT: Final["CaptureResult[str]"] = capsys.readouterr()
+
+        assert (
+            ("already" in AFTER_CAPTURE_RESULT.err or "already" in AFTER_CAPTURE_RESULT.out)
+            and ("set up" in AFTER_CAPTURE_RESULT.err or "set up" in AFTER_CAPTURE_RESULT.out)
         )

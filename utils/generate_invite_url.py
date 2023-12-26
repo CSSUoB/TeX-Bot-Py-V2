@@ -64,12 +64,12 @@ class InviteURLGenerator(UtilityFunction):
                 "discord_bot_application_id must be a valid Discord application ID (see https://support-dev.discord.com/hc/en-gb/articles/360028717192-Where-can-I-find-my-Application-Team-Server-ID-)"
             )
 
-        discord_guild_id: str = parsed_args.discord_guild_id or ""
+        discord_guild_id: str | None = parsed_args.discord_guild_id or None
         if not discord_guild_id:
             import dotenv
 
             dotenv.load_dotenv()
-            discord_guild_id = os.getenv("DISCORD_GUILD_ID", "")
+            discord_guild_id = os.getenv("DISCORD_GUILD_ID")
 
             if not discord_guild_id:
                 cls._function_subparsers[parser].error(
@@ -78,7 +78,7 @@ class InviteURLGenerator(UtilityFunction):
                     "or otherwise set the DISCORD_GUILD_ID environment variable"
                 )
 
-        if not re.match(r"\A\d{17,20}\Z", discord_guild_id):
+        if not discord_guild_id or not re.match(r"\A\d{17,20}\Z", discord_guild_id):
             cls._function_subparsers[parser].error(
                 "discord_guild_id must be a valid Discord guild ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
             )
