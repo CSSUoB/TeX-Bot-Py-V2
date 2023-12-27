@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, Final
 import pytest
 from classproperties import classproperty
 
-from _testing_utils import EnvVariableDeleter
-from test_utils._testing_utils import BaseTestArgumentParser, EmptyContextManager
+from tests._testing_utils import EnvVariableDeleter
+from tests.test_utils._testing_utils import BaseTestArgumentParser, EmptyContextManager
 from utils import InviteURLGenerator, UtilityFunction
 
 if TYPE_CHECKING:

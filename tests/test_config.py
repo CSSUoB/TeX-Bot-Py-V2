@@ -7,7 +7,7 @@ from typing import Final, TYPE_CHECKING
 import pytest
 
 import config
-from _testing_utils import EnvVariableDeleter
+from tests._testing_utils import EnvVariableDeleter
 from config import Settings, settings
 from exceptions import ImproperlyConfiguredError
 
