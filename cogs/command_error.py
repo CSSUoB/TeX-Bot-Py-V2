@@ -2,6 +2,7 @@
 
 import contextlib
 import logging
+from logging import Logger
 
 import discord
 from discord.ext.commands import CheckAnyFailure
@@ -12,6 +13,9 @@ from exceptions import (
     GuildDoesNotExistError,
 )
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+
+
+logger: Logger = logging.getLogger("texbot")
 
 
 class CommandErrorCog(TeXBotBaseCog):
@@ -56,7 +60,7 @@ class CommandErrorCog(TeXBotBaseCog):
                     and not ctx.command.callback.__name__.startswith("_"))
                 else ctx.command.qualified_name
             )
-            logging.critical(
+            logger.critical(
                 " ".join(
                     message_part
                     for message_part

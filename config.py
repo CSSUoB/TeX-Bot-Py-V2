@@ -5,6 +5,7 @@ Settings values are imported from the .env file or the current environment varia
 These values are used to configure the functionality of the bot at run-time.
 """
 
+import abc
 import functools
 import json
 import logging
@@ -14,8 +15,8 @@ from collections.abc import Sequence, Mapping, Iterable
 from datetime import timedelta
 from pathlib import Path
 from re import Match
-from typing import Any, ClassVar, Final, Self, final, IO
 from typing import Any, ClassVar, Final, final, IO
+from logging import Logger
 
 import dotenv
 import validators
@@ -60,6 +61,9 @@ LOG_LEVEL_CHOICES: Final[Sequence[str]] = (
     "ERROR",
     "CRITICAL"
 )
+
+
+logger: Logger = logging.getLogger("texbot")
 
 
 class Settings(abc.ABC):
@@ -124,11 +128,15 @@ class Settings(abc.ABC):
                 } or {LOG_LEVEL_CHOICES[-1]!r}."""
             raise ImproperlyConfiguredError(INVALID_LOG_LEVEL_MESSAGE)
 
+        logger.setLevel(getattr(logging, raw_console_log_level))
+
+        console_logging_handler: logging.StreamHandler = logging.StreamHandler()
         # noinspection SpellCheckingInspection
-        logging.basicConfig(
-            level=getattr(logging, raw_console_log_level),
-            format="%(levelname)s: %(message)s"
+        console_logging_handler.setFormatter(
+            logging.Formatter("{asctime} - {name} - {levelname}", style="{")
         )
+
+        logger.addHandler(console_logging_handler)
 
     @classmethod
     def _setup_discord_bot_token(cls) -> None:
@@ -555,8 +563,8 @@ class Settings(abc.ABC):
         Environment values are loaded from the .env file/the current environment variables and
         are only stored after the input values have been validated.
         """
-            logging.warning("Environment variables have already been set up.")
         if cls._is_env_variables_setup:
+            logger.warning("Environment variables have already been set up.")
             return
 
         dotenv.load_dotenv()
@@ -607,6 +615,6 @@ def run_setup() -> None:
     # noinspection PyProtectedMember
     settings._setup_env_variables()  # noqa: SLF001
 
-    logging.debug("Begin database setup")
+    logger.debug("Begin database setup")
     management.call_command("migrate")
-    logging.debug("Database setup completed")
+    logger.debug("Database setup completed")

@@ -4,6 +4,7 @@ import contextlib
 import datetime
 import functools
 import logging
+from logging import Logger
 from typing import Final
 
 import discord
@@ -18,6 +19,8 @@ from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
     capture_guild_does_not_exist_error,
 )
+
+logger: Logger = logging.getLogger("texbot")
 
 
 class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
@@ -132,7 +135,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                     )
                 )
             except StopIteration:
-                logging.error(
+                logger.error(
                     (
                         "Member with ID: %s could not be checked whether to send "
                         "role_reminder, because their %s "

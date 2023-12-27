@@ -6,6 +6,7 @@ Capturing errors is necessary in contexts where exceptions are not already suppr
 
 import functools
 import logging
+from logging import Logger
 from collections.abc import Callable, Coroutine
 from typing import TYPE_CHECKING, Any, Final, ParamSpec, TypeVar
 
@@ -30,6 +31,9 @@ if TYPE_CHECKING:
         Concatenate[TeXBotBaseCog, P],
         Coroutine[Any, Any, T]
     ]
+
+
+logger: Logger = logging.getLogger("texbot")
 
 
 class ErrorCaptureDecorators:
@@ -65,13 +69,13 @@ class ErrorCaptureDecorators:
     @staticmethod
     def critical_error_close_func(error: BaseException) -> None:
         """Component function to send logging messages when a critical error is encountered."""
-        logging.critical(str(error).rstrip(".:"))
+        logger.critical(str(error).rstrip(".:"))
 
     @classmethod
     def strike_tracking_error_close_func(cls, error: BaseException) -> None:
         """Component function to send logging messages when a StrikeTrackingError is raised."""
         cls.critical_error_close_func(error)
-        logging.warning("Critical errors are likely to lead to untracked moderation actions")
+        logger.warning("Critical errors are likely to lead to untracked moderation actions")
 
 
 def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T]") -> "WrapperOutputFunc[P, T]":  # noqa: E501

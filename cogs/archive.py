@@ -1,6 +1,7 @@
 """Contains cog classes for any archival interactions."""
 
 import logging
+from logging import Logger
 import re
 
 import discord
@@ -12,6 +13,8 @@ from utils import (
     TeXBotAutocompleteContext,
     TeXBotBaseCog,
 )
+
+logger: Logger = logging.getLogger("texbot")
 
 
 class ArchiveCommandCog(TeXBotBaseCog):
@@ -180,7 +183,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
                         ctx,
                         message=f"Channel {channel.mention} had invalid permissions"
                     )
-                    logging.error(
+                    logger.error(
                         "Channel %s had invalid permissions, so could not be archived.",
                         channel.name
                     )
@@ -193,7 +196,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
                         "Bot does not have access to the channels in the selected category."
                     )
                 )
-                logging.error(
+                logger.error(
                     (
                         "Bot did not have access to the channels in the selected category: "
                         "%s."

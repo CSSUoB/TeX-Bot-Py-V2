@@ -4,6 +4,7 @@ import datetime
 import functools
 import itertools
 import logging
+from logging import Logger
 import re
 from typing import TYPE_CHECKING, Final
 
@@ -19,6 +20,8 @@ from utils import TeXBot, TeXBotApplicationContext, TeXBotAutocompleteContext, T
 if TYPE_CHECKING:
     import time
     from collections.abc import Iterator
+
+logger: Logger = logging.getLogger("texbot")
 
 
 class RemindMeCommandCog(TeXBotBaseCog):
@@ -186,6 +189,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
 
         The "remind_me" command responds with the given message after the specified time.
         """
+        # noinspection PyTypeChecker
         parsed_time: tuple[time.struct_time, int] = parsedatetime.Calendar().parseDT(
             delay,
             tzinfo=timezone.get_current_timezone()
@@ -222,7 +226,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
             )
             if not error_is_already_exists:
                 await self.send_error(ctx, message="An unrecoverable error occurred.")
-                logging.critical(
+                logger.critical(
                     "Error when creating DiscordReminder object: %s",
                     create_discord_reminder_error
                 )
@@ -295,7 +299,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                 )
 
                 if not user:
-                    logging.warning(
+                    logger.warning(
                         "User with hashed user ID: %s no longer exists.",
                         reminder.hashed_member_id
                     )
@@ -316,7 +320,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                     user_mention = user.mention
 
                 elif channel.type != discord.ChannelType.private:
-                    logging.critical(
+                    logger.critical(
                         ValueError(
                             "Reminder's channel_id must refer to a valid text channel/DM."
                         )

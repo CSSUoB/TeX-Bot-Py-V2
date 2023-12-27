@@ -2,6 +2,7 @@
 
 import contextlib
 import logging
+from logging import Logger
 import re
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Final
@@ -21,6 +22,9 @@ if TYPE_CHECKING:
     from typing import TypeAlias
 
     MentionableMember: TypeAlias = discord.Member | discord.Role
+
+
+logger: Logger = logging.getLogger("texbot")
 
 
 class TeXBotBaseCog(Cog):
@@ -106,7 +110,7 @@ class TeXBotBaseCog(Cog):
         await ctx.respond(construct_error_message, ephemeral=True)
 
         if logging_message:
-            logging.error(
+            logger.error(
                 " ".join(
                     message_part
                     for message_part

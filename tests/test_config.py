@@ -1,4 +1,6 @@
 import functools
+import logging
+import os
 from collections.abc import Iterable, Callable
 from typing import Final, TYPE_CHECKING
 
@@ -55,11 +57,12 @@ class TestSettings:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_ITEM_NAME", ("item_1",))
     def test_get_invalid_settings_key_message(self, TEST_ITEM_NAME: str) -> None:
-        assert TEST_ITEM_NAME in Settings.get_invalid_settings_key_message(TEST_ITEM_NAME)
-        assert (
-                "not a valid settings key"
-                in Settings.get_invalid_settings_key_message(TEST_ITEM_NAME)
+        INVALID_SETTINGS_KEY_MESSAGE: Final[str] = settings.get_invalid_settings_key_message(
+            TEST_ITEM_NAME
         )
+
+        assert TEST_ITEM_NAME in INVALID_SETTINGS_KEY_MESSAGE
+        assert "not a valid settings key" in INVALID_SETTINGS_KEY_MESSAGE
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_ITEM_NAME", ("ITEM_1",))

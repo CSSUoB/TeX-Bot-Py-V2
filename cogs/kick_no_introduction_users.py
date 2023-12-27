@@ -2,6 +2,7 @@
 
 import functools
 import logging
+from logging import Logger
 from typing import TYPE_CHECKING
 
 import discord
@@ -17,6 +18,8 @@ from utils.error_capture_decorators import (
 
 if TYPE_CHECKING:
     import datetime
+
+logger: Logger = logging.getLogger("texbot")
 
 
 class KickNoIntroductionUsersTaskCog(TeXBotBaseCog):
@@ -61,7 +64,7 @@ class KickNoIntroductionUsersTaskCog(TeXBotBaseCog):
                 continue
 
             if not member.joined_at:
-                logging.error(
+                logger.error(
                     (
                         "Member with ID: %s could not be checked whether to kick, "
                         "because their %s attribute was None."
@@ -85,7 +88,7 @@ class KickNoIntroductionUsersTaskCog(TeXBotBaseCog):
                         )
                     )
                 except discord.Forbidden as kick_error:
-                    logging.error(
+                    logger.error(
                         "Member with ID: %s could not be kicked due to %s",
                         member.id,
                         kick_error.text
