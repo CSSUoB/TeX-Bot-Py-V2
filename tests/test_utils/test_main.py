@@ -1,3 +1,5 @@
+"""Automated test suite for the main entrypoint script to run TeXBot."""
+
 import random
 import string
 import sys
@@ -5,20 +7,26 @@ from argparse import Namespace
 from typing import TYPE_CHECKING, Final
 
 import pytest
+from classproperties import classproperty
 
 from tests.test_utils._testing_utils import BaseTestArgumentParser
 from utils import UtilityFunction
 
 if TYPE_CHECKING:
-    from _pytest.capture import CaptureFixture, CaptureResult
     # noinspection PyProtectedMember
     from argparse import _SubParserAction as SubParserAction  # type: ignore[attr-defined]
+
+    from _pytest.capture import CaptureFixture, CaptureResult
 
 
 class TestMain(BaseTestArgumentParser):
     """Test case to unit-test the main argument parser."""
 
-    UTILITY_FUNCTIONS: frozenset[type[UtilityFunction]] = frozenset()
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def UTILITY_FUNCTIONS(self) -> frozenset[type[UtilityFunction]]:  # noqa: N802
+        """The set of utility function components associated with this specific test case."""  # noqa: D401
+        return frozenset()
 
     @classmethod
     def test_error_when_no_function(cls, capsys: "CaptureFixture[str]") -> None:

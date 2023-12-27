@@ -1,3 +1,5 @@
+"""Automated test suite for the `stats.py` cog."""
+
 from typing import Final
 
 import discord

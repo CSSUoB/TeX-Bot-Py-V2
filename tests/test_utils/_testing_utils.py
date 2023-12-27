@@ -1,3 +1,4 @@
+import abc
 from collections.abc import Iterable, Sequence
 from types import TracebackType
 from typing import TYPE_CHECKING
@@ -9,8 +10,6 @@ from utils import UtilityFunction
 
 if TYPE_CHECKING:
     from _pytest.capture import CaptureFixture, CaptureResult
-    # noinspection PyProtectedMember
-    from argparse import _SubParserAction as SubParserAction  # type: ignore[attr-defined]
 
 
 class EmptyContextManager:
@@ -23,10 +22,14 @@ class EmptyContextManager:
         """Exit the context manager and execute no additional logic."""
 
 
-class BaseTestArgumentParser:  # TODO: make ABC
+class BaseTestArgumentParser(abc.ABC):
     """Parent class to define the execution code used by all ArgumentParser test cases."""
 
-    UTILITY_FUNCTIONS: frozenset[type[UtilityFunction]]  # TODO: Make abstract classproperty
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    @abc.abstractmethod
+    def UTILITY_FUNCTIONS(self) -> frozenset[type[UtilityFunction]]:  # noqa: N802
+        """The set of utility function components associated with this specific test case."""  # noqa: D401
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
@@ -36,8 +39,8 @@ class BaseTestArgumentParser:  # TODO: make ABC
             utility_function.NAME for utility_function in cls.UTILITY_FUNCTIONS
         )
 
-    @classmethod
-    def _format_usage_message(cls, utility_function_names: Iterable[str]) -> str:
+    @staticmethod
+    def _format_usage_message(utility_function_names: Iterable[str]) -> str:
         return f"""usage: utils [-h]{
             " {" if utility_function_names else ""
         }{

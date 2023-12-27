@@ -1,3 +1,9 @@
+"""
+Automated unit-test suite for the InviteURLGenerator utility function component.
+
+Includes tests for both the argument parser & low-level URL generation function.
+"""
+
 import os
 import random
 import re
@@ -14,18 +20,20 @@ from utils import InviteURLGenerator, UtilityFunction
 
 if TYPE_CHECKING:
     from _pytest.capture import CaptureFixture, CaptureResult
-    # noinspection PyProtectedMember
-    from argparse import _SubParserAction as SubParserAction  # type: ignore[attr-defined]
 
 
 class TestInviteURLGenerator(BaseTestArgumentParser):
     """
-    Test case to unit-test the generate_invite_url utility function component.
+    Test case to unit-test the InviteURLGenerator utility function component.
 
     Includes tests for both the argument parser & low-level URL generation function.
     """
 
-    UTILITY_FUNCTIONS: frozenset[type[UtilityFunction]] = frozenset({InviteURLGenerator})
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def UTILITY_FUNCTIONS(self) -> frozenset[type[UtilityFunction]]:  # noqa: N802
+        """The set of utility function components associated with this specific test case."""  # noqa: D401
+        return frozenset({InviteURLGenerator})
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty

@@ -2,9 +2,9 @@
 
 import contextlib
 import logging
-from logging import Logger
 import re
 from collections.abc import Mapping
+from logging import Logger
 from typing import TYPE_CHECKING, Final
 
 import discord

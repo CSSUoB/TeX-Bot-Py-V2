@@ -4,8 +4,8 @@ import datetime
 import functools
 import itertools
 import logging
-from logging import Logger
 import re
+from logging import Logger
 from typing import TYPE_CHECKING, Final
 
 import discord

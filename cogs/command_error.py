@@ -14,7 +14,6 @@ from exceptions import (
 )
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
-
 logger: Logger = logging.getLogger("texbot")
 
 

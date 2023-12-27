@@ -2,8 +2,8 @@
 
 import contextlib
 import logging
-from logging import Logger
 import re
+from logging import Logger
 from typing import Final
 
 import aiohttp
@@ -16,7 +16,6 @@ from config import settings
 from db.core.models import UoBMadeMember
 from exceptions import CommitteeRoleDoesNotExistError, GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
-
 
 logger: Logger = logging.getLogger("texbot")
 

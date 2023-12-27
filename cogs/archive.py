@@ -1,8 +1,8 @@
 """Contains cog classes for any archival interactions."""
 
 import logging
-from logging import Logger
 import re
+from logging import Logger
 
 import discord
 

@@ -297,7 +297,10 @@ class TeXBot(discord.Bot):
 
         user: discord.User | None = self.get_user(int(str_member_id))
         if not user:
-            raise ValueError(UserNotInCSSDiscordServerError(user_id=int(str_member_id)).message)
+            raise ValueError(
+                UserNotInCSSDiscordServerError(user_id=int(str_member_id)).message
+            )
+
         try:
             member: discord.Member = await self.get_css_user(user)
         except UserNotInCSSDiscordServerError as e:

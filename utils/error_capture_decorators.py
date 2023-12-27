@@ -6,8 +6,8 @@ Capturing errors is necessary in contexts where exceptions are not already suppr
 
 import functools
 import logging
-from logging import Logger
 from collections.abc import Callable, Coroutine
+from logging import Logger
 from typing import TYPE_CHECKING, Any, Final, ParamSpec, TypeVar
 
 from exceptions import GuildDoesNotExistError, StrikeTrackingError

@@ -2,8 +2,8 @@
 
 import abc
 import logging
-from logging import Logger
 from argparse import ArgumentParser, Namespace
+from logging import Logger
 from typing import TYPE_CHECKING, ClassVar, Final, Self
 
 if TYPE_CHECKING:

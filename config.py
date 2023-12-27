@@ -11,12 +11,12 @@ import json
 import logging
 import os
 import re
-from collections.abc import Sequence, Mapping, Iterable
+from collections.abc import Iterable, Mapping, Sequence
 from datetime import timedelta
+from logging import Logger
 from pathlib import Path
 from re import Match
-from typing import Any, ClassVar, Final, final, IO
-from logging import Logger
+from typing import IO, Any, ClassVar, Final, final
 
 import dotenv
 import validators
@@ -78,6 +78,7 @@ class Settings(abc.ABC):
 
     @classmethod
     def get_invalid_settings_key_message(cls, item: str) -> str:
+        """Return the message to state that the given settings key is invalid."""
         return f"{item!r} is not a valid settings key."
 
     def __getattr__(self, item: str) -> Any:
@@ -86,7 +87,7 @@ class Settings(abc.ABC):
             f"{type(self).__name__!r} object has no attribute {item!r}"
         )
 
-        if "_pytest" in item or item in ("__bases__", "__test__"):  # HACK: Overriding __getattr__() leads to many edge-case issues where external libraries will attempt to call getattr() with peculiar values
+        if "_pytest" in item or item in ("__bases__", "__test__"):  # HACK: Overriding __getattr__() leads to many edge-case issues where external libraries will attempt to call getattr() with peculiar values # noqa: FIX004
             raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
         if not self._is_env_variables_setup:
@@ -130,7 +131,7 @@ class Settings(abc.ABC):
 
         logger.setLevel(getattr(logging, raw_console_log_level))
 
-        console_logging_handler: logging.StreamHandler = logging.StreamHandler()
+        console_logging_handler: logging.Handler = logging.StreamHandler()
         # noinspection SpellCheckingInspection
         console_logging_handler.setFormatter(
             logging.Formatter("{asctime} - {name} - {levelname}", style="{")
@@ -198,7 +199,7 @@ class Settings(abc.ABC):
             )
             raise ImproperlyConfiguredError(INVALID_DISCORD_GUILD_ID_MESSAGE)
 
-        cls._settings["DISCORD_GUILD_ID"] = int(raw_discord_guild_id)
+        cls._settings["DISCORD_GUILD_ID"] = int(raw_discord_guild_id)  # type: ignore[arg-type]
 
     @classmethod
     def _setup_ping_command_easter_egg_probability(cls) -> None:
@@ -228,6 +229,11 @@ class Settings(abc.ABC):
     @staticmethod
     @functools.lru_cache(maxsize=5)
     def _get_messages_dict(messages_file_path: Path | None) -> Mapping[str, object]:
+        JSON_DECODING_ERROR_MESSAGE: Final[str] = (
+            "Messages JSON file must contain a JSON string that can be decoded "
+            "into a Python dict object."
+        )
+
         if not messages_file_path:
             messages_file_path = Path("messages.json")
 
@@ -237,17 +243,18 @@ class Settings(abc.ABC):
             )
             raise ImproperlyConfiguredError(MESSAGES_FILE_PATH_DOES_NOT_EXIST_MESSAGE)
 
-        messages_file: IO
+        messages_file: IO[str]
         with messages_file_path.open(encoding="utf8") as messages_file:
             e: json.JSONDecodeError
             try:
-                return json.load(messages_file)
+                messages_dict: object = json.load(messages_file)
             except json.JSONDecodeError as e:
-                JSON_DECODING_ERROR_MESSAGE: Final[str] = (
-                    "Messages JSON file must contain a JSON string that can be decoded "
-                    "into a Python dict object."
-                )
                 raise ImproperlyConfiguredError(JSON_DECODING_ERROR_MESSAGE) from e
+
+        if not isinstance(messages_dict, Mapping):
+            raise ImproperlyConfiguredError(JSON_DECODING_ERROR_MESSAGE)
+
+        return messages_dict
 
     @classmethod
     def _setup_welcome_messages(cls) -> None:
@@ -268,7 +275,7 @@ class Settings(abc.ABC):
                 invalid_value=messages_dict["welcome_messages"]
             )
 
-        cls._settings["WELCOME_MESSAGES"] = set(messages_dict["welcome_messages"])  # type: ignore[arg-type]
+        cls._settings["WELCOME_MESSAGES"] = set(messages_dict["welcome_messages"])  # type: ignore[call-overload]
 
     @classmethod
     def _setup_roles_messages(cls) -> None:
@@ -288,7 +295,7 @@ class Settings(abc.ABC):
                 dict_key="roles_messages",
                 invalid_value=messages_dict["roles_messages"]
             )
-        cls._settings["ROLES_MESSAGES"] = set(messages_dict["roles_messages"])  # type: ignore[arg-type]
+        cls._settings["ROLES_MESSAGES"] = set(messages_dict["roles_messages"])  # type: ignore[call-overload]
 
     @classmethod
     def _setup_members_page_url(cls) -> None:
@@ -556,7 +563,7 @@ class Settings(abc.ABC):
         )
 
     @classmethod
-    def _setup_env_variables(cls) -> None:  # noqa: C901, PLR0912
+    def _setup_env_variables(cls) -> None:
         """
         Load environment values into the settings dictionary.
 
