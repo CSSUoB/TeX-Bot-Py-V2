@@ -181,3 +181,59 @@ class TestSettings:
         RuntimeSettings._setup_env_variables()
 
         assert "already" in caplog.text and "set up" in caplog.text
+
+
+class TestSetupLogging:
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize("TEST_LOG_LEVEL", ("DEBUG",))
+    def test_setup_logging_successful(self, TEST_LOG_LEVEL: str) -> None:
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("CONSOLE_LOG_LEVEL"):
+            os.environ["CONSOLE_LOG_LEVEL"] = TEST_LOG_LEVEL
+
+            RuntimeSettings._setup_logging()
+
+        assert "texbot" in set(logging.root.manager.loggerDict)
+        assert (
+            logging.getLogger("texbot").getEffectiveLevel()
+            == getattr(logging, TEST_LOG_LEVEL)
+        )
+
+    def test_default_log_level(self, caplog: "LogCaptureFixture") -> None:
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("CONSOLE_LOG_LEVEL"):
+            RuntimeSettings._setup_logging()
+
+        assert "texbot" in set(logging.root.manager.loggerDict)
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize("INVALID_LOG_LEVEL", ("INVALID_LOG_LEVEL",))
+    def test_invalid_log_level_env_variable(self, INVALID_LOG_LEVEL: str) -> None:
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("CONSOLE_LOG_LEVEL"):
+            os.environ["CONSOLE_LOG_LEVEL"] = INVALID_LOG_LEVEL
+
+            with pytest.raises(ImproperlyConfiguredError, match="LOG_LEVEL must be one of"):
+                RuntimeSettings._setup_logging()
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize("LOWERCASE_LOG_LEVEL", ("info",))
+    def test_valid_lowercase_log_level_env_variable(self, LOWERCASE_LOG_LEVEL: str) -> None:
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("CONSOLE_LOG_LEVEL"):
+            os.environ["CONSOLE_LOG_LEVEL"] = LOWERCASE_LOG_LEVEL
+
+            RuntimeSettings._setup_logging()
+
+
+class TestSetupDiscordBotToken:
+    def test_missing_discord_bot_token(self) -> None:
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("DISCORD_BOT_TOKEN"):
+            with pytest.raises(ImproperlyConfiguredError, match=r"DISCORD_BOT_TOKEN.*valid.*Discord bot token"):  # noqa: E501
+                RuntimeSettings._setup_discord_bot_token()
