@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING, Final
 import pytest
 from classproperties import classproperty
 
-from test_utils._testing_utils import BaseTestArgumentParser
+from _testing_utils import EnvVariableDeleter
+from test_utils._testing_utils import BaseTestArgumentParser, EmptyContextManager
 from utils import InviteURLGenerator, UtilityFunction
 
 if TYPE_CHECKING:
@@ -42,10 +43,10 @@ class TestInviteURLGenerator(BaseTestArgumentParser):
 
         The command line outputs are stored in class variables for later access.
         """
-        env_guild_id_deleter: BaseTestArgumentParser.EmptyContextManager = (
-            cls.EnvVariableDeleter(env_variable_name="DISCORD_GUILD_ID")
+        env_guild_id_deleter: EnvVariableDeleter | EmptyContextManager = (
+            EnvVariableDeleter(env_variable_name="DISCORD_GUILD_ID")
             if delete_env_guild_id
-            else cls.EmptyContextManager()
+            else EmptyContextManager()
         )
 
         with env_guild_id_deleter:
