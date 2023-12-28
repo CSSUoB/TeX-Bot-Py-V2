@@ -105,7 +105,7 @@ class GroupMadeMember(AsyncBaseModel):
     Represents a Discord member that has successfully been given the Member role.
 
     The group member is identified by their hashed group ID.
-    If your group stores your members list on the Guild of students website,
+    If your group stores your members-list on the Guild of students website,
     the hashed group IDs will be hashed UoB IDs.
 
     Storing the successfully made members prevents multiple people from getting the Member role

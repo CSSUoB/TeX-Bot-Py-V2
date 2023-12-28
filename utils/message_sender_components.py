@@ -43,13 +43,13 @@ class ChannelMessageSender(MessageSenderComponent):
     async def send(self, content: str, *, view: View | None = None) -> Any:
         """Send the provided message content & optional view to the saved channel."""
         class _BaseChannelSendKwargs(TypedDict):
-            """Type hint definition for the required kwargs to the channel send function."""
+            """Type-hint-definition for the required kwargs to the channel-send-function."""
 
             content: str
 
         class ChannelSendKwargs(_BaseChannelSendKwargs, total=False):
             """
-            Type hint definition for all kwargs to the channel send function.
+            Type-hint-definition for all kwargs to the channel-send-function.
 
             Includes both required & optional kwargs.
             """

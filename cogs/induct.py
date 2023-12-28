@@ -110,7 +110,7 @@ class InductSendMessageCog(TeXBotBaseCog):
             f"2. Head to {roles_channel_mention} and click on the icons to get "
             "optional roles like pronouns and year groups\n"
             "3. Change your nickname to whatever you wish others to refer to you as "
-            "(You can do this by right-clicking your name in the members list "
+            "(You can do this by right-clicking your name in the members-list "
             "to the right & selecting \"Edit Server Profile\")."
         )
         if user_type != "member":

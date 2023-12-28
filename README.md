@@ -156,7 +156,7 @@ but are not required in the [pyproject.toml](pyproject.toml)
 
 ### Activating The Poetry Environment
 
-In order to use the installed dependencies,
+To use the installed dependencies,
 the environment they were installed within must be activated.
 The easiest way to do this (as described by [Poetry's guide](https://python-poetry.org/docs/basic-usage/#activating-the-virtual-environment))
 is with the below command:
@@ -198,16 +198,16 @@ of the Discord text channel where error logs should be sent.
 this setting allows them to also be sent to a Discord log channel.)
 * `MEMBERS_LIST_URL`: The URL to retrieve the list of IDs of people
 that have purchased a membership to your community group.
-(The CSS' members list is currently found on the Guild of Students website.
-If your members list is also found on the Guild of Students website,
+(The CSS' members-list is currently found on the Guild of Students website.
+If your members-list is also found on the Guild of Students website,
 ensure the URL includes the "sort by groups" option,
 so that all members are visible without pagination.)
-* `MEMBERS_LIST_URL_SESSION_COOKIE`: The members list URL session cookie.
-(If your group's members list is stored at a URL that requires authentication,
-this session cookie should authenticate the bot to view your group's members list,
+* `MEMBERS_LIST_URL_SESSION_COOKIE`: The members-list URL session cookie.
+(If your group's members-list is stored at a URL that requires authentication,
+this session cookie should authenticate the bot to view your group's members-list,
 as if it were logged in to the website as a Committee member.
 This can be extracted from your web-browser,
-after logging in to view your members list yourself.
+after logging in to view your members-list yourself.
 It will probably be listed as a cookie named `.ASPXAUTH`.)
 
 You can put these in a `.env` file in the root folder,

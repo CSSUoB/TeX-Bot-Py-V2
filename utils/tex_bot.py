@@ -240,7 +240,7 @@ class TeXBot(discord.Bot):
 
     @property
     def group_full_name(self) -> str:
-        """The full capitalized name of your community group."""
+        """The full capitalised name of your community group."""
         return (
             "The Computer Science Society"
             if self.group_name.lower() in ("css", "computer science society")
@@ -250,9 +250,9 @@ class TeXBot(discord.Bot):
     @property
     def group_id_type(self) -> str:
         """
-        The type of IDs that are inputted by users to become members.
+        The type of IDs that users input to become members.
 
-        This ID type that is retrieved from your members list.
+        This ID type that is retrieved from your members-list.
         """
         return (
             "UoB Student"

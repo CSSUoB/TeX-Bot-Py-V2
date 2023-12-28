@@ -222,10 +222,10 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 return
 
             try:
-                interaction_member: discord.Member = await self.bot.get_css_user(
+                interaction_member: discord.Member = await self.bot.get_main_guild_member(
                     interaction.user
                 )
-            except UserNotInCSSDiscordServer:
+            except DiscordMemberNotInMainGuild:
                 await self.send_error(
                     interaction,
                     message=(
