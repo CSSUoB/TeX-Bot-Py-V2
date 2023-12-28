@@ -13,9 +13,8 @@ __all__: Sequence[str] = (
     "VALID_SEND_INTRODUCTION_REMINDERS_VALUES",
     "DEFAULT_STATISTICS_ROLES",
     "LOG_LEVEL_CHOICES",
+    "run_setup",
     "settings",
-    "setup_env_variables",
-    "setup_django"
 )
 
 import abc
@@ -220,10 +219,12 @@ class Settings(abc.ABC):
 
         GROUP_NAME_IS_VALID: Final[bool] = bool(
             not raw_group_name
-            or re.match(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", group_name)
+            or re.match(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", raw_group_name)
         )
         if not GROUP_NAME_IS_VALID:
-            INVALID_GROUP_NAME_MESSAGE: Final[str] = ("GROUP_NAME must not contain any invalid characters.")
+            INVALID_GROUP_NAME_MESSAGE: Final[str] = (
+                "GROUP_NAME must not contain any invalid characters."
+            )
             raise ImproperlyConfiguredError(INVALID_GROUP_NAME_MESSAGE)
 
         cls._settings["_GROUP_NAME"] = raw_group_name
@@ -513,7 +514,7 @@ class Settings(abc.ABC):
                 )
 
         cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
-            RAW_TIMEDELTA_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY
+            raw_timedelta_kick_no_introduction_discord_members_delay
         )
 
     @classmethod
@@ -649,18 +650,18 @@ class Settings(abc.ABC):
         cls._setup_logging()
         cls._setup_discord_bot_token()
         cls._setup_discord_log_channel_webhook_url()
-        cls._setup_guild_id()
+        cls._setup_discord_guild_id()
         cls._setup_ping_command_easter_egg_probability()
         cls._setup_welcome_messages()
         cls._setup_roles_messages()
-        cls._setup_members_page_url()
-        cls._setup_members_page_cookie()
+        cls._setup_members_list_url()
+        cls._setup_members_list_url_session_cookie()
         cls._setup_send_introduction_reminders()
-        cls._setup_introduction_reminder_interval()
-        cls._setup_kick_no_introduction_members()
-        cls._setup_kick_no_introduction_members_delay()
+        cls._setup_send_introduction_reminders_interval()
+        cls._setup_kick_no_introduction_discord_members()
+        cls._setup_kick_no_introduction_discord_members_delay()
         cls._setup_send_get_roles_reminders()
-        cls._setup_get_roles_reminders_interval()
+        cls._setup_send_get_roles_reminders_interval()
         cls._setup_statistics_days()
         cls._setup_statistics_roles()
         cls._setup_moderation_document_url()

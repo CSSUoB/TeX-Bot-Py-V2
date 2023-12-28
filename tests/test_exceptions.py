@@ -9,13 +9,13 @@ from exceptions import (
     BaseDoesNotExistError,
     BaseTeXBotError,
     ChannelDoesNotExistError,
+    DiscordMemberNotInMainGuildError,
     GuildDoesNotExistError,
     ImproperlyConfiguredError,
     InvalidMessagesJSONFileError,
     MessagesJSONFileMissingKeyError,
     MessagesJSONFileValueError,
     RoleDoesNotExistError,
-    UserNotInCSSDiscordServerError,
 )
 
 if TYPE_CHECKING:
@@ -537,8 +537,8 @@ class TestRulesChannelDoesNotExist:
     """
 
 
-class TestUserNotInCSSDiscordServerError:
-    """Test case to unit-test the `UserNotInCSSDiscordServerError` exception."""
+class TestDiscordMemberNotInMainGuildError:
+    """Test case to unit-test the `DiscordMemberNotInMainGuildError` exception."""
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_USER_ID", (99999,))
@@ -546,7 +546,7 @@ class TestUserNotInCSSDiscordServerError:
         """Test that the exception message contains the given Discord user ID."""
         assert (
             f"user_id={TEST_USER_ID!r}"
-            in repr(UserNotInCSSDiscordServerError(user_id=TEST_USER_ID))
+            in repr(DiscordMemberNotInMainGuildError(user_id=TEST_USER_ID))
         )
 
 
