@@ -45,7 +45,7 @@ class AsyncBaseModel(models.Model):
 
         return super().save(force_insert, force_update, using, update_fields)
 
-    def __init__(self, **kwargs: object) -> None:
+    def __init__(self, *args: object, **kwargs: object) -> None:
         """Initialize a new model instance, capturing any proxy field values."""
         proxy_fields: dict[str, object] = {
             field_name: kwargs.pop(field_name)
@@ -53,7 +53,7 @@ class AsyncBaseModel(models.Model):
             in set(kwargs.keys()) & self.get_proxy_field_names()
         }
 
-        super().__init__(**kwargs)
+        super().__init__(*args, **kwargs)
 
         field_name: str
         value: object
