@@ -1,4 +1,9 @@
-"""Utility function to generate the URL to invite the bot to a given Discord server."""
+"""Utility function to generate the URL to invite the bot to a given Discord guild."""
+
+
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ("InviteURLGenerator",)
 
 import os
 import re
@@ -16,10 +21,10 @@ if TYPE_CHECKING:
 
 
 class InviteURLGenerator(UtilityFunction):
-    """Utility function to generate the URL to invite the bot to a given Discord server."""
+    """Utility function to generate the URL to invite the bot to a given Discord guild."""
 
     NAME: str = "generate_invite_url"
-    DESCRIPTION: str = "Generate the URL to invite the bot to a given Discord server"
+    DESCRIPTION: str = "Generate the URL to invite the bot to a given Discord guild"
 
     @classmethod
     def attach_to_parser(cls, parser: "SubParserAction") -> None:
@@ -95,7 +100,7 @@ class InviteURLGenerator(UtilityFunction):
         """
         Generate the correct OAuth invite URL for the bot.
 
-        This invite URL directs to the given Discord server and requests only the permissions
+        This invite URL directs to the given Discord guild and requests only the permissions
         required for the bot to run.
         """
         return discord.utils.oauth_url(

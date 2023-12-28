@@ -4,6 +4,14 @@ Common decorator utilities to capture & suppress errors.
 Capturing errors is necessary in contexts where exceptions are not already suppressed.
 """
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = (
+    "ErrorCaptureDecorators",
+    "capture_guild_does_not_exist_error",
+    "capture_strike_tracking_error"
+)
+
 import functools
 import logging
 from collections.abc import Callable, Coroutine
@@ -76,7 +84,7 @@ class ErrorCaptureDecorators:
 
 def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T]") -> "WrapperOutputFunc[P, T]":  # noqa: E501
     """
-    Decorator to send an error message to the user when a GuildDoesNotExist is raised.
+    Decorator to send an error message to the Discord user when a GuildDoesNotExist is raised.
 
     The raised exception is then suppressed.
     """  # noqa: D401

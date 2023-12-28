@@ -1,8 +1,33 @@
 """Custom exception classes that could be raised within the cogs modules."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = (
+    "ImproperlyConfigured",
+    "TeXBotBaseError",
+    "BaseErrorWithErrorCode",
+    "BaseDoesNotExistError",
+    "RulesChannelDoesNotExist",
+    "DiscordMemberNotInMainGuild",
+    "EveryoneRoleCouldNotBeRetrieved",
+    "InvalidMessagesJSONFile",
+    "MessagesJSONFileMissingKey",
+    "MessagesJSONFileValueError",
+    "StrikeTrackingError",
+    "GuildDoesNotExist",
+    "RoleDoesNotExist",
+    "CommitteeRoleDoesNotExist",
+    "GuestRoleDoesNotExist",
+    "MemberRoleDoesNotExist",
+    "ArchivistRoleDoesNotExist",
+    "ChannelDoesNotExist",
+    "RolesChannelDoesNotExist",
+    "GeneralChannelDoesNotExist"
+)
+
 import abc
 from collections.abc import Collection
-from typing import Any, Final
+from typing import Final
 
 
 class ImproperlyConfigured(Exception):
@@ -135,11 +160,11 @@ class RulesChannelDoesNotExist(TeXBotBaseError, ValueError):
     DEFAULT_MESSAGE: str = "There is no channel marked as the rules channel."
 
 
-class UserNotInCSSDiscordServer(TeXBotBaseError, ValueError):
-    """Exception class for when no members of the CSS Discord Server have the given user ID."""
+class DiscordMemberNotInMainGuild(TeXBotBaseError, ValueError):
+    """Exception class for when no members of your Discord guild have the given user ID."""
 
     DEFAULT_MESSAGE: str = (
-        "Given user ID does not represent any member of the CSS Discord Server."
+        "Given user ID does not represent any member of your group's Discord guild."
     )
 
     def __init__(self, message: str | None = None, user_id: int | None = None) -> None:
@@ -185,9 +210,9 @@ class MessagesJSONFileValueError(InvalidMessagesJSONFile):
 
     DEFAULT_MESSAGE: str = "The messages JSON file has an invalid value."
 
-    def __init__(self, message: str | None = None, dict_key: str | None = None, invalid_value: Any | None = None) -> None:  # noqa: E501
+    def __init__(self, message: str | None = None, dict_key: str | None = None, invalid_value: object | None = None) -> None:  # noqa: E501
         """Initialize a new InvalidMessagesJSONFile exception for a key's invalid value."""
-        self.invalid_value: Any | None = invalid_value
+        self.invalid_value: object | None = invalid_value
 
         super().__init__(message, dict_key)
 
@@ -299,7 +324,7 @@ class GuestRoleDoesNotExist(RoleDoesNotExist):
             role_name="Guest",
             dependant_commands={"induct", "stats", "archive", "ensure-members-inducted"},
             dependant_tasks={
-                "kick_no_introduction_members",
+                "kick_no_introduction_discord_members",
                 "introduction_reminder",
                 "get_roles_reminder"
             }

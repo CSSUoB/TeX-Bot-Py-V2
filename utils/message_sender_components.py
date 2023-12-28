@@ -1,6 +1,15 @@
 """Class definitions of components that send provided message content to a defined endpoint."""
 
-from typing import Any, Protocol, TypedDict
+from collections.abc import Sequence
+
+__all__: Sequence[str] = (
+    "MessageSenderComponent",
+    "ChannelMessageSender",
+    "ResponseMessageSender"
+)
+
+import abc
+from typing import Any, TypedDict
 
 import discord
 from discord.ui import View
@@ -8,16 +17,16 @@ from discord.ui import View
 from utils.tex_bot_contexts import TeXBotApplicationContext
 
 
-class MessageSenderComponent(Protocol):
+class MessageSenderComponent(abc.ABC):
     """
     Abstract protocol definition of a sending component.
 
     Defines the way to send a provided message content & optional view to the defined endpoint.
     """
 
+    @abc.abstractmethod
     async def send(self, content: str, *, view: View | None = None) -> Any:
         """Send the provided message content & optional view to the defined endpoint."""
-        raise NotImplementedError
 
 
 class ChannelMessageSender(MessageSenderComponent):
@@ -34,13 +43,13 @@ class ChannelMessageSender(MessageSenderComponent):
     async def send(self, content: str, *, view: View | None = None) -> Any:
         """Send the provided message content & optional view to the saved channel."""
         class _BaseChannelSendKwargs(TypedDict):
-            """Type hint definition for the required kwargs to the channel send function."""
+            """Type-hint-definition for the required kwargs to the channel-send-function."""
 
             content: str
 
         class ChannelSendKwargs(_BaseChannelSendKwargs, total=False):
             """
-            Type hint definition for all kwargs to the channel send function.
+            Type-hint-definition for all kwargs to the channel-send-function.
 
             Includes both required & optional kwargs.
             """

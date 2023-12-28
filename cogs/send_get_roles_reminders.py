@@ -1,5 +1,9 @@
 """Contains cog classes for any send_get_roles_reminders interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ("SendGetRolesRemindersTaskCog",)
+
 import contextlib
 import datetime
 import functools
@@ -38,7 +42,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         """
         self.send_get_roles_reminders.cancel()
 
-    @tasks.loop(**settings["GET_ROLES_REMINDER_INTERVAL"])
+    @tasks.loop(**settings["SEND_GET_ROLES_REMINDERS_INTERVAL"])
     @functools.partial(
         ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExist,
@@ -56,7 +60,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         reminders are sent.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        guild: discord.Guild = self.bot.css_guild
+        guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
         # noinspection PyUnusedLocal
@@ -150,8 +154,8 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 continue
 
             await member.send(
-                "Hey! It seems like you joined the CSS Discord server and have been "
-                "given the `@Guest` role but have not yet nabbed yourself any "
+                f"Hey! It seems like you joined the {self.bot.group_name} Discord server "
+                "and have been given the `@Guest` role but have not yet nabbed yourself any "
                 f"opt-in roles.\nYou can head to {roles_channel_mention} "
                 "and click on the icons to get optional roles like pronouns "
                 "and year group identifiers."

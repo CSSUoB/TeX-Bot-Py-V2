@@ -1,5 +1,9 @@
 """Custom cog subclass that stores a reference to the custom bot class."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ("TeXBotBaseCog",)
+
 import contextlib
 import logging
 import re
@@ -12,7 +16,7 @@ from discord import Cog
 from exceptions import (
     BaseDoesNotExistError,
     CommitteeRoleDoesNotExist,
-    UserNotInCSSDiscordServer,
+    DiscordMemberNotInMainGuild,
 )
 from utils.tex_bot import TeXBot
 from utils.tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
@@ -31,8 +35,8 @@ class TeXBotBaseCog(Cog):
         "delete_all_reminders": (
             "delete all `DiscordReminder` objects from the backend database"
         ),
-        "delete_all_uob_made_members": (
-            "delete all `UoBMadeMember` objects from the backend database"
+        "delete_all_group_made_members": (
+            "delete all `GroupMadeMember` objects from the backend database"
         ),
         "edit_message": "edit the message",
         "induct": "induct user",
@@ -150,20 +154,22 @@ class TeXBotBaseCog(Cog):
             return set()
 
         try:
-            css_guild: discord.Guild = ctx.bot.css_guild
+            main_guild: discord.Guild = ctx.bot.main_guild
             # noinspection PyUnusedLocal
             channel_permissions_limiter: MentionableMember = await ctx.bot.guest_role
         except BaseDoesNotExistError:
             return set()
 
-        with contextlib.suppress(BaseDoesNotExistError, UserNotInCSSDiscordServer):
-            channel_permissions_limiter = await ctx.bot.get_css_user(ctx.interaction.user)
+        with contextlib.suppress(BaseDoesNotExistError, DiscordMemberNotInMainGuild):
+            channel_permissions_limiter = await ctx.bot.get_main_guild_member(
+                ctx.interaction.user
+            )
 
         if not ctx.value or re.match(r"\A#.*\Z", ctx.value):
             return {
                 discord.OptionChoice(name=f"#{channel.name}", value=str(channel.id))
                 for channel
-                in css_guild.text_channels
+                in main_guild.text_channels
                 if channel.permissions_for(channel_permissions_limiter).is_superset(
                     discord.Permissions(send_messages=True, view_channel=True)
                 )
@@ -172,7 +178,7 @@ class TeXBotBaseCog(Cog):
         return {
             discord.OptionChoice(name=channel.name, value=str(channel.id))
             for channel
-            in css_guild.text_channels
+            in main_guild.text_channels
             if channel.permissions_for(channel_permissions_limiter).is_superset(
                 discord.Permissions(send_messages=True, view_channel=True)
             )

@@ -1,5 +1,9 @@
 """Contains cog classes for any send_introduction_reminders interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ("SendIntroductionRemindersTaskCog",)
+
 import datetime
 import functools
 import logging
@@ -17,7 +21,7 @@ from db.core.models import (
     IntroductionReminderOptOutMember,
     SentOneOffIntroductionReminderMember,
 )
-from exceptions import GuestRoleDoesNotExist, UserNotInCSSDiscordServer
+from exceptions import DiscordMemberNotInMainGuild, GuestRoleDoesNotExist
 from utils import TeXBot, TeXBotBaseCog
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
@@ -53,7 +57,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             self.OptOutIntroductionRemindersView(self.bot)
         )
 
-    @tasks.loop(**settings["INTRODUCTION_REMINDER_INTERVAL"])
+    @tasks.loop(**settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"])
     @functools.partial(
         ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExist,
@@ -65,13 +69,13 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         Recurring task to send an introduction reminder message to Discord members' DMs.
 
         The introduction reminder suggests that the Discord member should send a message to
-        introduce themselves to the CSS Discord server.
+        introduce themselves to your group's Discord guild.
 
         See README.md for the full list of conditions for when these
         reminders are sent.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        guild: discord.Guild = self.bot.css_guild
+        guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
         member: discord.Member
@@ -103,7 +107,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     settings["SEND_INTRODUCTION_REMINDERS"] == "interval"
             )
             member_recently_joined: bool = (discord.utils.utcnow() - member.joined_at) <= max(
-                settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] / 3,
+                settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] / 3,
                 datetime.timedelta(days=1)
             )
             member_opted_out_from_reminders: bool = await IntroductionReminderOptOutMember.objects.filter(  # noqa: E501
@@ -129,9 +133,10 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
                 await member.send(
                     content=(
-                        "Hey! It seems like you joined the CSS Discord server "
-                        "but have not yet introduced yourself.\nYou will only get access "
-                        "to the rest of the server after sending "
+                        "Hey! It seems like you joined "
+                        f"the {self.bot.group_name} Discord server "
+                        "but have not yet introduced yourself.\n"
+                        "You will only get access to the rest of the server after sending "
                         "an introduction message."
                     ),
                     view=(
@@ -148,10 +153,10 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         A discord.View containing a button to opt-in/out of introduction reminders.
 
         This discord.View contains a single button that can change the state of whether the
-        member will be sent reminders to send an introduction message in the
-        CSS Discord server.
+        member will be sent reminders to send an introduction message in
+        your group's Discord guild.
         The view object will be sent to the member's DMs, after a delay period after
-        joining the CSS Discord server.
+        joining your group's Discord guild.
         """
 
         def __init__(self, bot: TeXBot) -> None:
@@ -217,14 +222,14 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 return
 
             try:
-                interaction_member: discord.Member = await self.bot.get_css_user(
+                interaction_member: discord.Member = await self.bot.get_main_guild_member(
                     interaction.user
                 )
-            except UserNotInCSSDiscordServer:
+            except DiscordMemberNotInMainGuild:
                 await self.send_error(
                     interaction,
                     message=(
-                        "You must be a member of the CSS Discord server "
+                        f"You must be a member of the {self.bot.group_name} Discord server "
                         f"""to opt{
                             "-out of" if button_will_make_opt_out else " back in to"
                         } introduction reminders."""

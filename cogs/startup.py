@@ -1,5 +1,9 @@
 """Contains cog classes for any startup interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ("StartupCog",)
+
 import logging
 
 import discord
@@ -53,39 +57,39 @@ class StartupCog(TeXBotBaseCog):
             )
 
         try:
-            guild: discord.Guild | None = self.bot.css_guild
+            main_guild: discord.Guild | None = self.bot.main_guild
         except GuildDoesNotExist:
-            guild = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
-            if guild:
-                self.bot.set_css_guild(guild)
+            main_guild = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
+            if main_guild:
+                self.bot.set_main_guild(main_guild)
 
-        if not guild:
+        if not main_guild:
             logging.critical(GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"]))
             await self.bot.close()
             return
 
-        if not discord.utils.get(guild.roles, name="Committee"):
+        if not discord.utils.get(main_guild.roles, name="Committee"):
             logging.warning(CommitteeRoleDoesNotExist())
 
-        if not discord.utils.get(guild.roles, name="Guest"):
+        if not discord.utils.get(main_guild.roles, name="Guest"):
             logging.warning(GuestRoleDoesNotExist())
 
-        if not discord.utils.get(guild.roles, name="Member"):
+        if not discord.utils.get(main_guild.roles, name="Member"):
             logging.warning(MemberRoleDoesNotExist())
 
-        if not discord.utils.get(guild.roles, name="Archivist"):
+        if not discord.utils.get(main_guild.roles, name="Archivist"):
             logging.warning(ArchivistRoleDoesNotExist())
 
-        if not discord.utils.get(guild.text_channels, name="roles"):
+        if not discord.utils.get(main_guild.text_channels, name="roles"):
             logging.warning(RolesChannelDoesNotExist())
 
-        if not discord.utils.get(guild.text_channels, name="general"):
+        if not discord.utils.get(main_guild.text_channels, name="general"):
             logging.warning(GeneralChannelDoesNotExist())
 
         if settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] != "DM":
             manual_moderation_warning_message_location_exists: bool = bool(
                 discord.utils.get(
-                    guild.text_channels,
+                    main_guild.text_channels,
                     name=settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"]
                 )
             )
