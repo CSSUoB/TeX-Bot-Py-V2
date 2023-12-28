@@ -10,6 +10,7 @@ especially if you have never contributed before.
 * [Using the Issue Tracker](#using-the-issue-tracker)
 * [Repository Structure](#repository-structure)
 * [Making Your First Contribution](#making-your-first-contribution)
+* [License](#license)
 * [Guidance](#guidance)
 
 ## Getting Started
