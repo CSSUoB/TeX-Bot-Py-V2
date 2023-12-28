@@ -34,6 +34,7 @@ the `kick_no_introduction_members` & `introduction_reminder` tasks)
 (required for the `/induct` command)
 * `E1041` - The guild member IDs could not be retrieved from the MEMBERS_PAGE_URL
 * `E1042` - The reference to the `@everyone` role could not be correctly retrieved
+* `E1043` - A button callback interaction did not contain the related user
 
 ## Dependencies
 

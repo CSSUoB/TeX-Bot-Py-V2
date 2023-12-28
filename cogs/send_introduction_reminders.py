@@ -3,6 +3,7 @@
 import datetime
 import functools
 import logging
+from typing import Final
 
 import discord
 import emoji
@@ -159,6 +160,22 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
             super().__init__(timeout=None)
 
+        async def send_error(self, interaction: discord.Interaction, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
+            """
+            Construct & format an error message from the given details.
+
+            The constructed error message is then sent as the response
+            to the given interaction.
+            """
+            await TeXBotBaseCog.send_error(
+                self.bot,
+                interaction,
+                interaction_name="opt_out_introduction_reminders",
+                error_code=error_code,
+                message=message,
+                logging_message=logging_message
+            )
+
         @ui.button(
             label="Opt-out of introduction reminders",
             custom_id="opt_out_introduction_reminders_button",
@@ -174,14 +191,29 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             This function is attached as a button's callback, so will run whenever the button
             is pressed.
             """
+            button_will_make_opt_out: bool = (
+                    button.style == discord.ButtonStyle.red
+                    or str(button.emoji) == emoji.emojize(":no_good:", language="alias")
+                    or bool(button.label and "Opt-out" in button.label)
+            )
+
+            _button_will_make_opt_in: bool = (
+                    button.style == discord.ButtonStyle.green
+                    or str(button.emoji) == emoji.emojize(
+                        ":raised_hand:",
+                        language="alias"
+                    )
+                    or bool(button.label and "Opt back in" in button.label))
+            incompatible_buttons: bool = (
+                (button_will_make_opt_out and _button_will_make_opt_in)
+                or (not button_will_make_opt_out and not _button_will_make_opt_in)
+            )
+            if incompatible_buttons:
+                INCOMPATIBLE_BUTTONS_MESSAGE: Final[str] = "Conflicting buttons pressed"
+                raise ValueError(INCOMPATIBLE_BUTTONS_MESSAGE)
+
             if not interaction.user:
-                await interaction.response.send_message(
-                    (
-                        ":warning:There was an error when trying to opt-in/out of "
-                        "introduction reminders.:warning:"
-                    ),
-                    ephemeral=True
-                )
+                await self.send_error(interaction)
                 return
 
             try:
@@ -189,33 +221,18 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     interaction.user
                 )
             except UserNotInCSSDiscordServer:
-                raise NotImplementedError from None
-
-            button_will_make_opt_out: bool = (
-                    button.style == discord.ButtonStyle.red
-                    or str(button.emoji) == emoji.emojize(":no_good:", language="alias")
-                    or bool(button.label and "Opt-out" in button.label)
-            )
-            button_will_make_opt_in: bool = (
-                    button.style == discord.ButtonStyle.green
-                    or str(button.emoji) == emoji.emojize(
-                        ":raised_hand:",
-                        language="alias"
+                await self.send_error(
+                    interaction,
+                    message=(
+                        "You must be a member of the CSS Discord server "
+                        f"""to opt{
+                            "-out of" if button_will_make_opt_out else " back in to"
+                        } introduction reminders."""
                     )
-                    or bool(button.label and "Opt back in" in button.label))
+                )
+                return
 
             if button_will_make_opt_out:
-                if not interaction_member:
-                    await interaction.response.send_message(
-                        (
-                            ":warning:There was an error when trying to opt-out of "
-                            "introduction reminders.:warning:\n`You must be a member of "
-                            "the CSS Discord server to opt-out of introduction reminders.`"
-                        ),
-                        ephemeral=True
-                    )
-                    return
-
                 try:
                     await IntroductionReminderOptOutMember.objects.acreate(
                         member_id=interaction_member.id
@@ -242,19 +259,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
                 await interaction.response.edit_message(view=self)
 
-            elif button_will_make_opt_in:
-                if not interaction_member:
-                    await interaction.response.send_message(
-                        (
-                            ":warning:There was an error when trying to opt back in "
-                            "to introduction reminders.:warning:\n`You must be a member of "
-                            "the CSS Discord server to opt back in to "
-                            "introduction reminders.`"
-                        ),
-                        ephemeral=True
-                    )
-                    return
-
+            else:
                 try:
                     introduction_reminder_opt_out_member: IntroductionReminderOptOutMember = await IntroductionReminderOptOutMember.objects.aget(  # noqa: E501
                         hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(
