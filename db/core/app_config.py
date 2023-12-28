@@ -1,5 +1,9 @@
 """Configurations to make core app ready to import into _settings.py."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ("CoreConfig",)
+
 from django.apps import AppConfig
 
 

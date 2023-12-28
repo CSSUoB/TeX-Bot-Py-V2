@@ -6,11 +6,12 @@ especially if you have never contributed before.
 
 ## Quick Links
 
-* [Getting started](#Getting-Started)
-* [Using the issue tracker](#Using-the-Issue-Tracker)
-* [Project structure](#Project-Structure)
-* [Making your first contribution](#Making-Your-First-Contribution)
-* [Guidance](#Guidance)
+* [Getting Started](#getting-started)
+* [Using the Issue Tracker](#using-the-issue-tracker)
+* [Repository Structure](#repository-structure)
+* [Making Your First Contribution](#making-your-first-contribution)
+* [License](#license)
+* [Guidance](#guidance)
 
 ## Getting Started
 
@@ -36,10 +37,17 @@ We recommend also reading the following if you're unsure or not confident:
 * [How To Make A Pull Request](https://makeapullrequest.com/)
 * [Contributing To An Open Source Project For The First Time](https://www.firsttimersonly.com/)
 
+This bot is written in [Python](https://www.python.org/) using [Pycord](https://pycord.dev)
+and uses Discord's [slash-commands](https://support.discord.com/hc/en-gb/articles/1500000368501-Slash-Commands-FAQ)
+& [user-commands](https://guide.pycord.dev/interactions/application-commands/context-menus).
+We would recommend being somewhat familiar with the [Pycord library](https://docs.pycord.dev/en/stable/),
+[Python language](https://docs.python.org/3/reference/index) & [project terminology](README.md#terminology)
+before contributing.
+
 ## Using the Issue Tracker
 
-We use GitHub issues to track bugs and feature requests. If you find an issue with the bot,
-the best place to report it is through the issue tracker.
+We use [GitHub issues](https://docs.github.com/en/issues) to track bugs and feature requests.
+If you find an issue with the bot, the best place to report it is through the issue tracker.
 If you are looking for issues to contribute code to,
 it's a good idea to look at the [issues labelled "good-first-issue"](https://github.com/CSSUoB/TeX-Bot-Py-V2/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Agood-first-issue)!
 
@@ -48,78 +56,162 @@ If you are submitting a bug report, please include the steps to reproduce the bu
 and the environment it is in. If you are submitting a feature request,
 please include the steps to implement the feature.
 
-## Project Structure
-
-This bot is written in Python using [Pycord](https://pycord.dev)
-and uses [Discord's slash commands](https://support.discord.com/hc/en-gb/articles/1500000368501-Slash-Commands-FAQ).
-We would recommend being somewhat familiar with the library and language terminology
-before contributing.
+## Repository Structure
 
 ### Top level files
 
-* `main.py`: is the main entrypoint to instantiate the bot object & run it
-* `exceptions.py`: contains common exception super-classes that may be raised
-when certain errors occur
-* `config.py`: retrieves the environment variables & populates the correct values
-into the `settings` attribute
-* `utils.py`: contains common utility classes & functions used by the top-level modules
+* [`main.py`](main.py): is the main entrypoint to instantiate the [`Bot` object](https://docs.pycord.dev/en/stable/api/clients.html#discord.Bot)
+& run it
+* [`exceptions.py`](exceptions.py):
+contains common [exception](https://docs.python.org/3/tutorial/errors) subclasses
+that may be raised when certain errors occur
+* [`config.py`](config.py): retrieves the [environment variables](README.md#setting-environment-variables)
+& populates the correct values into the `settings` object
 
 ### Other significant directories
 
-* `db/core/models/`: contains all the database ORM models
+* [`cogs/`](cogs):
+contains all the [cogs](https://guide.pycord.dev/popular-topics/cogs) within this project,
+see [below](#cogs) for more information
+* [`utils/`](utils): contains common utility classes & functions
+used by the top-level modules & cogs
+* [`db/core/models/`](db/core/models): contains all the [database ORM models](https://docs.djangoproject.com/en/stable/topics/db/models/)
 to interact with storing information longer-term (between individual command events)
-* `tests/`: contains the complete test suite for TeX-Bot-Py-V2, based on the pytest framework
-* `cogs/`: contains all the cogs for TeX-Bot-Py-V2, see below for more information
+* [`tests/`](tests): contains the complete test suite for this project,
+based on the [Pytest framework](https://pytest.org)
 
 ### Cogs
 
-Cogs are attachable modules that are loaded onto the `discord.Bot` instance.
-They combine related listeners and commands (each as individual methods) into one class.
+[Cogs](https://guide.pycord.dev/popular-topics/cogs) are attachable modules
+that are loaded onto the [`Bot` instance](https://docs.pycord.dev/en/stable/api/clients.html#discord.Bot).
+They combine related [listeners](https://guide.pycord.dev/getting-started/more-features#event-handlers)
+and [commands](https://guide.pycord.dev/category/application-commands)
+(each as individual methods) into one class.
 There are separate cog files for each activity,
-and one \_\_init\_\_ file which instantiates them all:
+and one [`__init__.py`](cogs/__init__.py) file which instantiates them all:
 
 <!--- pyml disable-next-line no-emphasis-as-heading-->
-*For more information about what these Cogs do,
-please look at the annotations within the files themselves*
+*For more information about the purpose of each cog,
+please look at the documentation within the files themselves*
 
-* `cogs/__init__.py`: instantiates all the Cog classes within this directory
-* `cogs/archive.py`: cogs for archival interactions
-* `cogs/command_error.py`: cogs for command_error interactions
-* `cogs/delete_all.py`: cogs for delete_all interactions
-* `cogs/edit_message.py`: cogs for edit_message interactions
-* `cogs/induct.py`: cogs for induct interactions
-* `cogs/kick_no_introduction_users.py`: cogs related to kicking users that have not
-introduced themselves
-* `cogs/make_member.py`: cogs related to making members
-* `cogs/ping.py`: cogs for pinging interactions
-* `cogs/remind_me.py`: cogs for remind_me interactions
-* `cogs/send_get_roles_reminders.py`: cogs relating to sending reminders to users
-about opt-in roles
-* `cogs/send_introduction_reminders.py`: cogs relating to sending reminders to users about
-introducing themselves
-* `cogs/source.py`: cogs for source interactions
-* `cogs/startup.py`: cogs for startup
-* `cogs/stats.py`: cogs for stats interactions
-* `cogs/write_roles.py`: cogs relating to writing roles
+* [`cogs/__init__.py`](cogs/__init__.py): instantiates all the cog classes
+within this directory
+* [`cogs/archive.py`](cogs/archive.py): cogs for archiving categories of channels
+within your group's Discord guild
+* [`cogs/command_error.py`](cogs/command_error.py): cogs for sending error messages
+when commands fail to complete/execute
+* [`cogs/delete_all.py`](cogs/delete_all.py): cogs for deleting all permanent data
+stored in a specific object's table in the database
+* [`cogs/edit_message.py`](cogs/edit_message.py): cogs for editing messages
+that were previously sent by the bot
+* [`cogs/induct.py`](cogs/induct.py): cogs for inducting people into your group's Discord guild
+* [`cogs/kick_no_introduction_discord_members.py`](cogs/kick_no_introduction_discord_members.py):
+cogs related to kicking Discord members that have not introduced themselves
+(See [Repeated Tasks Conditions](README.md#repeated-tasks-conditions)
+for which conditions are required to be met, to execute this task.)
+* [`cogs/make_member.py`](cogs/make_member.py): cogs related to making guests into members
+* [`cogs/ping.py`](cogs/ping.py):
+cog to request a [ping](https://en.wikipedia.org/wiki/Ping-pong_scheme#Internet) response
+* [`cogs/remind_me.py`](cogs/remind_me.py): cogs to ask the bot to send a reminder message
+at a later date
+* [`cogs/send_get_roles_reminders.py`](cogs/send_get_roles_reminders.py):
+cogs relating to sending reminders, to Discord members, about opt-in roles
+(See [Repeated Tasks Conditions](README.md#repeated-tasks-conditions)
+for which conditions are required to be met, to execute this task.)
+* [`cogs/send_introduction_reminders.py`](cogs/send_introduction_reminders.py):
+cogs relating to sending reminders, to Discord members, about introducing themselves
+(See [Repeated Tasks Conditions](README.md#repeated-tasks-conditions)
+for which conditions are required to be met, to execute this task.)
+* [`cogs/source.py`](cogs/source.py): cogs for displaying information
+about the source-code of this project
+* [`cogs/startup.py`](cogs/startup.py): cogs for startup & bot initialisation
+* [`cogs/stats.py`](cogs/stats.py): cogs for displaying stats about your group's Discord guild,
+as well as its channels & Discord members
+* [`cogs/strike.py`](cogs/strike.py): cogs for applying moderation actions to Discord members
+* [`cogs/write_roles.py`](cogs/write_roles.py): cogs relating to sending the message
+that contains all the opt-in roles, into the "#roles" channel
 
 ## Making Your First Contribution
 
 After you have found an issue which needs solving, it's time to start working on a fix!
 However, there are a few guidelines we would like you to follow first.
 
+### Running tests
+
+To ensure your changes adhere to the required functionality of this project,
+a test suite has been provided in [the `tests` directory](tests).
+The test suite uses [Pytest](https://pytest.org), and can be run with the following command:
+
+```shell
+poetry run pytest
+```
+
+Pycharm & VS Code also provide GUI interfaces to run the Pytest test suite.
+
 ### Code Style
 
 In general, follow the formatting in the file you are editing.
-You should also run the development tools [ruff](https://ruff.rs) &
-[PyMarkdown](https://github.com/jackdewinter/pymarkdown) code linting
-and [mypy](https://www.mypy-lang.org/) type checking which you can configure your IDE to use.
+You should also run the [static analysis linting](https://en.wikipedia.org/wiki/Lint_(software))
+/[type checking](https://realpython.com/python-type-checking/#static-type-checking) tools
+to validate your code.
 
-#### Markdown Linting Issues
+#### ruff
+
+[ruff](https://ruff.rs) is a [static analysis code linter](https://en.wikipedia.org/wiki/Lint_(software)),
+which will alert you to possible formatting mistakes in your Python code.
+It can be run with the following command:
+
+```shell
+poetry run ruff check .
+```
+
+There are many additional flags to provide more advanced linting help (E.g. `--fix`).
+See [ruff's documentation](https://docs.astral.sh/ruff/configuration/#command-line-interface)
+for additional configuration options.
+
+#### mypy
+
+[mypy](https://www.mypy-lang.org/) is a [static type checker](https://realpython.com/python-type-checking/#static-type-checking),
+which will alert you to possible [typing](https://realpython.com/python-type-checking/#type-systems)
+errors in your Python code.
+It can be run with the following command:
+
+```shell
+poetry run mypy .
+```
+
+Although there is [a PyCharm plugin](https://github.com/leinardi/mypy-pycharm#mypy-pycharm)
+to provide GUI control & inline warnings for [mypy](https://www.mypy-lang.org/),
+it has been rather temperamental recently.
+So it is suggested to avoid using it,
+and run [mypy](https://www.mypy-lang.org/) from the command-line instead.
+
+#### PyMarkdown
+
+[PyMarkdown](https://github.com/jackdewinter/pymarkdown) is a static analysis
+[MarkDown](https://www.markdownguide.org/getting-started/#what-is-markdown) [linter](https://en.wikipedia.org/wiki/Lint_(software)),
+which will alert you to possible formatting mistakes
+in your [MarkDown](https://www.markdownguide.org/getting-started/#what-is-markdown) files.
+It can be run with the following command:
+
+```shell
+poetry run python ./.github/workflows/scripts/remove_invalid_tables.py && \
+poetry run pymarkdown scan . ; \
+poetry run python ./.github/workflows/scripts/remove_invalid_tables.py --restore
+```
+
+This command includes the removal of custom-formatted tables,
+as discussed in [the "Markdown Linting Issues" section](#markdown-linting-issues).
+**This command will not run on Windows PowerShell!
+(Use CommandPrompt instead.)**
+
+##### Markdown Linting Issues
 
 The tools [ruff](https://ruff.rs) & [mypy](https://www.mypy-lang.org/) can be run as normal
 from the command line (as long as you are [within the poetry environment](https://python-poetry.org/docs/basic-usage/#activating-the-virtual-environment)),
-however, [PyMarkdown](https://github.com/jackdewinter/pymarkdown) **cannot** be run as shown
-in its own documentation. This is because some markdown files contain custom-formatted tables
+however, [PyMarkdown](https://github.com/jackdewinter/pymarkdown) will **incorrectly** throw errors
+if run according to its own documentation.
+This is because some markdown files contain custom-formatted tables
 that [PyMarkdown](https://github.com/jackdewinter/pymarkdown) cannot parse.
 
 Therefore, you *must* run this utility script before calling [PyMarkdown](https://github.com/jackdewinter/pymarkdown)
@@ -129,7 +221,7 @@ to remove any custom-formatted tables from files:
 poetry run python ./.github/workflows/scripts/remove_invalid_tables.py
 ```
 
-The below command will restore all markdown files back to their originals:
+The below command will restore all markdown files back to their original states:
 
 ```shell
 poetry run python ./.github/workflows/scripts/remove_invalid_tables.py --restore

@@ -1,12 +1,16 @@
 """Contains cog classes for any archival interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ("ArchiveCommandCog",)
+
 import logging
 import re
 from logging import Logger
 
 import discord
 
-from exceptions import BaseDoesNotExistError, UserNotInCSSDiscordServerError
+from exceptions import BaseDoesNotExistError, DiscordMemberNotInMainGuildError
 from utils import (
     CommandChecks,
     TeXBotApplicationContext,
@@ -32,16 +36,18 @@ class ArchiveCommandCog(TeXBotBaseCog):
             return set()
 
         try:
-            css_guild: discord.Guild = ctx.bot.css_guild
-            interaction_user: discord.Member = await ctx.bot.get_css_user(ctx.interaction.user)
+            main_guild: discord.Guild = ctx.bot.main_guild
+            interaction_user: discord.Member = await ctx.bot.get_main_guild_member(
+                ctx.interaction.user
+            )
             assert await ctx.bot.check_user_has_committee_role(interaction_user)
-        except (AssertionError, BaseDoesNotExistError, UserNotInCSSDiscordServerError):
+        except (AssertionError, BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
             return set()
 
         return {
             discord.OptionChoice(name=category.name, value=str(category.id))
             for category
-            in css_guild.categories
+            in main_guild.categories
             if category.permissions_for(interaction_user).is_superset(
                 discord.Permissions(send_messages=True, view_channel=True)
             )
@@ -60,7 +66,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         parameter_name="str_category_id"
     )
     @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_css_guild
+    @CommandChecks.check_interaction_user_in_main_guild
     async def archive(self, ctx: TeXBotApplicationContext, str_category_id: str) -> None:
         """
         Definition & callback response of the "archive" command.
@@ -69,8 +75,8 @@ class ArchiveCommandCog(TeXBotBaseCog):
         have the "Archivist" role.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        css_guild: discord.Guild = self.bot.css_guild
-        interaction_member: discord.Member = await self.bot.get_css_user(ctx.user)
+        main_guild: discord.Guild = self.bot.main_guild
+        interaction_member: discord.Member = await self.bot.get_main_guild_member(ctx.user)
         committee_role: discord.Role = await self.bot.committee_role
         guest_role: discord.Role = await self.bot.guest_role
         member_role: discord.Role = await self.bot.member_role
@@ -78,7 +84,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         everyone_role: discord.Role = await self.bot.get_everyone_role()
 
         if not re.match(r"\A\d{17,20}\Z", str_category_id):
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"{str_category_id!r} is not a valid category ID."
             )
@@ -87,11 +93,11 @@ class ArchiveCommandCog(TeXBotBaseCog):
         category_id: int = int(str_category_id)
 
         category: discord.CategoryChannel | None = discord.utils.get(
-            css_guild.categories,
+            main_guild.categories,
             id=category_id
         )
         if not category:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"Category with ID {str(category_id)!r} does not exist."
             )
@@ -179,7 +185,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
                     )
 
                 else:
-                    await self.send_error(
+                    await self.command_send_error(
                         ctx,
                         message=f"Channel {channel.mention} had invalid permissions"
                     )
@@ -190,7 +196,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
                     return
 
             except discord.Forbidden:
-                await self.send_error(
+                await self.command_send_error(
                     ctx,
                     message=(
                         "Bot does not have access to the channels in the selected category."

@@ -1,5 +1,9 @@
 """Contains cog classes for any command_error interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ("CommandErrorCog",)
+
 import contextlib
 import logging
 from logging import Logger
@@ -35,8 +39,11 @@ class CommandErrorCog(TeXBotBaseCog):
             )
 
         elif isinstance(error, CheckAnyFailure):
-            if CommandChecks.is_interaction_user_in_css_guild_failure(error.checks[0]):
-                message = "You must be a member of the CSS Discord server to use this command."
+            if CommandChecks.is_interaction_user_in_main_guild_failure(error.checks[0]):
+                message = (
+                    f"You must be a member of the {self.bot.group_name} Discord guild "
+                    "to use this command."
+                )
 
             elif CommandChecks.is_interaction_user_has_committee_role_failure(error.checks[0]):
                 # noinspection PyUnusedLocal
@@ -45,7 +52,7 @@ class CommandErrorCog(TeXBotBaseCog):
                     committee_role_mention = (await self.bot.committee_role).mention
                 message = f"Only {committee_role_mention} members can run this command."
 
-        await self.send_error(
+        await self.command_send_error(
             ctx,
             error_code=error_code,
             message=message,

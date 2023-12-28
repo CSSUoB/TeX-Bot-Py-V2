@@ -1,9 +1,14 @@
 """Contains cog classes for any send_introduction_reminders interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ("SendIntroductionRemindersTaskCog",)
+
 import datetime
 import functools
 import logging
 from logging import Logger
+from typing import Final
 
 import discord
 import emoji
@@ -17,7 +22,7 @@ from db.core.models import (
     IntroductionReminderOptOutMember,
     SentOneOffIntroductionReminderMember,
 )
-from exceptions import GuestRoleDoesNotExistError, UserNotInCSSDiscordServerError
+from exceptions import GuestRoleDoesNotExistError, DiscordMemberNotInMainGuildError
 from utils import TeXBot, TeXBotBaseCog
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
@@ -55,7 +60,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             self.OptOutIntroductionRemindersView(self.bot)
         )
 
-    @tasks.loop(**settings["INTRODUCTION_REMINDER_INTERVAL"])
+    @tasks.loop(**settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"])
     @functools.partial(
         ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExistError,
@@ -67,13 +72,13 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         Recurring task to send an introduction reminder message to Discord members' DMs.
 
         The introduction reminder suggests that the Discord member should send a message to
-        introduce themselves to the CSS Discord server.
+        introduce themselves to your group's Discord guild.
 
         See README.md for the full list of conditions for when these
         reminders are sent.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        guild: discord.Guild = self.bot.css_guild
+        guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
         member: discord.Member
@@ -105,7 +110,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     settings["SEND_INTRODUCTION_REMINDERS"] == "interval"
             )
             member_recently_joined: bool = (discord.utils.utcnow() - member.joined_at) <= max(
-                settings["KICK_NO_INTRODUCTION_MEMBERS_DELAY"] / 3,
+                settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] / 3,
                 datetime.timedelta(days=1)
             )
             member_opted_out_from_reminders: bool = await IntroductionReminderOptOutMember.objects.filter(  # noqa: E501
@@ -131,9 +136,10 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
                 await member.send(
                     content=(
-                        "Hey! It seems like you joined the CSS Discord server "
-                        "but have not yet introduced yourself.\nYou will only get access "
-                        "to the rest of the server after sending "
+                        "Hey! It seems like you joined "
+                        f"the {self.bot.group_name} Discord server "
+                        "but have not yet introduced yourself.\n"
+                        "You will only get access to the rest of the server after sending "
                         "an introduction message."
                     ),
                     view=(
@@ -150,10 +156,10 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         A discord.View containing a button to opt-in/out of introduction reminders.
 
         This discord.View contains a single button that can change the state of whether the
-        member will be sent reminders to send an introduction message in the
-        CSS Discord server.
+        member will be sent reminders to send an introduction message in
+        your group's Discord guild.
         The view object will be sent to the member's DMs, after a delay period after
-        joining the CSS Discord server.
+        joining your group's Discord guild.
         """
 
         def __init__(self, bot: TeXBot) -> None:
@@ -161,6 +167,22 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             self.bot: TeXBot = bot
 
             super().__init__(timeout=None)
+
+        async def send_error(self, interaction: discord.Interaction, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
+            """
+            Construct & format an error message from the given details.
+
+            The constructed error message is then sent as the response
+            to the given interaction.
+            """
+            await TeXBotBaseCog.send_error(
+                self.bot,
+                interaction,
+                interaction_name="opt_out_introduction_reminders",
+                error_code=error_code,
+                message=message,
+                logging_message=logging_message
+            )
 
         @ui.button(
             label="Opt-out of introduction reminders",
@@ -177,48 +199,48 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             This function is attached as a button's callback, so will run whenever the button
             is pressed.
             """
-            if not interaction.user:
-                await interaction.response.send_message(
-                    (
-                        ":warning:There was an error when trying to opt-in/out of "
-                        "introduction reminders.:warning:"
-                    ),
-                    ephemeral=True
-                )
-                return
-
-            try:
-                interaction_member: discord.Member = await self.bot.get_css_user(
-                    interaction.user
-                )
-            except UserNotInCSSDiscordServerError:
-                raise NotImplementedError from None
-
-            button_will_make_opt_out: bool = (
+            BUTTON_WILL_MAKE_OPT_OUT: Final[bool] = bool(
                     button.style == discord.ButtonStyle.red
                     or str(button.emoji) == emoji.emojize(":no_good:", language="alias")
-                    or bool(button.label and "Opt-out" in button.label)
+                    or (button.label and "Opt-out" in button.label)
             )
-            button_will_make_opt_in: bool = (
+
+            _BUTTON_WILL_MAKE_OPT_IN: Final[bool] = bool(
                     button.style == discord.ButtonStyle.green
                     or str(button.emoji) == emoji.emojize(
                         ":raised_hand:",
                         language="alias"
                     )
-                    or bool(button.label and "Opt back in" in button.label))
+                    or button.label and "Opt back in" in button.label)
+            INCOMPATIBLE_BUTTONS: Final[bool] = bool(
+                (BUTTON_WILL_MAKE_OPT_OUT and _BUTTON_WILL_MAKE_OPT_IN)
+                or (not BUTTON_WILL_MAKE_OPT_OUT and not _BUTTON_WILL_MAKE_OPT_IN)
+            )
+            if INCOMPATIBLE_BUTTONS:
+                INCOMPATIBLE_BUTTONS_MESSAGE: Final[str] = "Conflicting buttons pressed"
+                raise ValueError(INCOMPATIBLE_BUTTONS_MESSAGE)
 
-            if button_will_make_opt_out:
-                if not interaction_member:
-                    await interaction.response.send_message(
-                        (
-                            ":warning:There was an error when trying to opt-out of "
-                            "introduction reminders.:warning:\n`You must be a member of "
-                            "the CSS Discord server to opt-out of introduction reminders.`"
-                        ),
-                        ephemeral=True
+            if not interaction.user:
+                await self.send_error(interaction)
+                return
+
+            try:
+                interaction_member: discord.Member = await self.bot.get_main_guild_member(
+                    interaction.user
+                )
+            except DiscordMemberNotInMainGuildError:
+                await self.send_error(
+                    interaction,
+                    message=(
+                        f"You must be a member of the {self.bot.group_name} Discord server "
+                        f"""to opt{
+                            "-out of" if BUTTON_WILL_MAKE_OPT_OUT else " back in to"
+                        } introduction reminders."""
                     )
-                    return
+                )
+                return
 
+            if BUTTON_WILL_MAKE_OPT_OUT:
                 try:
                     await IntroductionReminderOptOutMember.objects.acreate(
                         member_id=interaction_member.id
@@ -245,19 +267,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
                 await interaction.response.edit_message(view=self)
 
-            elif button_will_make_opt_in:
-                if not interaction_member:
-                    await interaction.response.send_message(
-                        (
-                            ":warning:There was an error when trying to opt back in "
-                            "to introduction reminders.:warning:\n`You must be a member of "
-                            "the CSS Discord server to opt back in to "
-                            "introduction reminders.`"
-                        ),
-                        ephemeral=True
-                    )
-                    return
-
+            else:
                 try:
                     introduction_reminder_opt_out_member: IntroductionReminderOptOutMember = await IntroductionReminderOptOutMember.objects.aget(  # noqa: E501
                         hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(

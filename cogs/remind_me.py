@@ -1,5 +1,9 @@
 """Contains cog classes for any remind_me interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ("RemindMeCommandCog", "ClearRemindersBacklogTaskCog")
+
 import datetime
 import functools
 import itertools
@@ -196,7 +200,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
         )
 
         if parsed_time[1] == 0:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=(
                     f"""The value provided in the {"delay"!r} argument was not a time/date."""
@@ -225,7 +229,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                 )
             )
             if not error_is_already_exists:
-                await self.send_error(ctx, message="An unrecoverable error occurred.")
+                await self.command_send_error(ctx, message="An unrecoverable error occurred.")
                 logger.critical(
                     "Error when creating DiscordReminder object: %s",
                     create_discord_reminder_error
@@ -233,7 +237,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                 await self.bot.close()
                 return
 
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message="You already have a reminder with that message in this channel!"
             )

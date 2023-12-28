@@ -1,7 +1,32 @@
 """Custom exception classes that could be raised within the cogs modules."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = (
+    "ImproperlyConfiguredError",
+    "BaseTeXBotError",
+    "BaseErrorWithErrorCode",
+    "BaseDoesNotExistError",
+    "RulesChannelDoesNotExistError",
+    "DiscordMemberNotInMainGuildError",
+    "EveryoneRoleCouldNotBeRetrievedError",
+    "InvalidMessagesJSONFileError",
+    "MessagesJSONFileMissingKeyError",
+    "MessagesJSONFileValueError",
+    "StrikeTrackingError",
+    "GuildDoesNotExistError",
+    "RoleDoesNotExistError",
+    "CommitteeRoleDoesNotExistError",
+    "GuestRoleDoesNotExistError",
+    "MemberRoleDoesNotExistError",
+    "ArchivistRoleDoesNotExistError",
+    "ChannelDoesNotExistError",
+    "RolesChannelDoesNotExistError",
+    "GeneralChannelDoesNotExistError"
+)
+
 import abc
-from typing import Any, Final
+from typing import Final
 
 from classproperties import classproperty
 
@@ -198,14 +223,14 @@ class RulesChannelDoesNotExistError(BaseTeXBotError, ValueError):
         return "There is no channel marked as the rules channel."
 
 
-class UserNotInCSSDiscordServerError(BaseTeXBotError, ValueError):
-    """Exception class for when no members of the CSS Discord Server have the given user ID."""
+class DiscordMemberNotInMainGuildError(BaseTeXBotError, ValueError):
+    """Exception class for when no members of your Discord guild have the given user ID."""
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     def DEFAULT_MESSAGE(self) -> str:  # noqa: N802
         """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
-        return "Given user ID does not represent any member of the CSS Discord Server."
+        return "Given user ID does not represent any member of your group's Discord guild."
 
     def __init__(self, message: str | None = None, user_id: int | None = None) -> None:
         """Initialize a ValueError exception for a non-existent user ID."""
@@ -269,9 +294,9 @@ class MessagesJSONFileValueError(InvalidMessagesJSONFileError):
         """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
         return "The messages JSON file has an invalid value."
 
-    def __init__(self, message: str | None = None, dict_key: str | None = None, invalid_value: Any | None = None) -> None:  # noqa: E501
+    def __init__(self, message: str | None = None, dict_key: str | None = None, invalid_value: object | None = None) -> None:  # noqa: E501
         """Initialize a new InvalidMessagesJSONFile exception for a key's invalid value."""
-        self.invalid_value: Any | None = invalid_value
+        self.invalid_value: object | None = invalid_value
 
         super().__init__(message, dict_key)
 
@@ -426,7 +451,7 @@ class GuestRoleDoesNotExistError(RoleDoesNotExistError):
         # noinspection SpellCheckingInspection
         return frozenset(
             {
-                "kick_no_introduction_members",
+                "kick_no_introduction_discord_members",
                 "introduction_reminder",
                 "get_roles_reminder"
             }

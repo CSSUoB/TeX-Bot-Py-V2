@@ -1,5 +1,9 @@
 """Base component definition of a generic Utility Function."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ("UtilityFunction",)
+
 import abc
 import logging
 from argparse import ArgumentParser, Namespace
@@ -53,4 +57,3 @@ class UtilityFunction(abc.ABC):
     @abc.abstractmethod
     def run(cls, parsed_args: Namespace, parser: "SubParserAction") -> int:
         """Execute the logic that this util function provides."""
-        raise NotImplementedError

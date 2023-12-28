@@ -143,8 +143,14 @@ def restore_invalid_tables() -> None:
                 and ".md" in file_path.suffixes
                 and ".original" in file_path.suffixes
         )
-        if file_is_temporary_original:
-            file_path.rename(file_path.parent / file_path.stem)
+        if not file_is_temporary_original:
+            continue
+
+        correct_original_file_path: Path = file_path.parent / file_path.stem
+        if correct_original_file_path.exists():
+            correct_original_file_path.unlink()
+
+        file_path.rename(file_path.parent / file_path.stem)
 
 
 def main(argv: Sequence[str] | None = None) -> int:

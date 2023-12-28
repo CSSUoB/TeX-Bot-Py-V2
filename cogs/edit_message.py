@@ -1,10 +1,14 @@
 """Contains cog classes for any edit_message interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ("EditMessageCommandCog",)
+
 import re
 
 import discord
 
-from exceptions import BaseDoesNotExistError, UserNotInCSSDiscordServerError
+from exceptions import BaseDoesNotExistError, DiscordMemberNotInMainGuildError
 from utils import (
     CommandChecks,
     TeXBotApplicationContext,
@@ -29,9 +33,11 @@ class EditMessageCommandCog(TeXBotBaseCog):
             return set()
 
         try:
-            interaction_user: discord.Member = await ctx.bot.get_css_user(ctx.interaction.user)
+            interaction_user: discord.Member = await ctx.bot.get_main_guild_member(
+                ctx.interaction.user
+            )
             assert await ctx.bot.check_user_has_committee_role(interaction_user)
-        except (AssertionError, BaseDoesNotExistError, UserNotInCSSDiscordServerError):
+        except (AssertionError, BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
             return set()
 
         return await TeXBotBaseCog.autocomplete_get_text_channels(ctx)
@@ -68,7 +74,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         parameter_name="new_message_content"
     )
     @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_css_guild
+    @CommandChecks.check_interaction_user_in_main_guild
     async def edit_message(self, ctx: TeXBotApplicationContext, str_channel_id: str, str_message_id: str, new_message_content: str) -> None:  # noqa: E501
         """
         Definition & callback response of the "edit_message" command.
@@ -76,10 +82,10 @@ class EditMessageCommandCog(TeXBotBaseCog):
         The "write_roles" command edits a message sent by TeX-Bot to the value supplied.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        css_guild: discord.Guild = self.bot.css_guild
+        main_guild: discord.Guild = self.bot.main_guild
 
         if not re.match(r"\A\d{17,20}\Z", str_channel_id):
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"{str_channel_id!r} is not a valid channel ID."
             )
@@ -88,7 +94,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         channel_id: int = int(str_channel_id)
 
         if not re.match(r"\A\d{17,20}\Z", str_message_id):
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"{str_message_id!r} is not a valid message ID."
             )
@@ -97,11 +103,11 @@ class EditMessageCommandCog(TeXBotBaseCog):
         message_id: int = int(str_message_id)
 
         channel: discord.TextChannel | None = discord.utils.get(
-            css_guild.text_channels,
+            main_guild.text_channels,
             id=channel_id
         )
         if not channel:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"Text channel with ID \"{channel_id}\" does not exist."
             )
@@ -110,7 +116,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         try:
             message: discord.Message = await channel.fetch_message(message_id)
         except discord.NotFound:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"Message with ID \"{message_id}\" does not exist."
             )
@@ -119,7 +125,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         try:
             await message.edit(content=new_message_content)
         except discord.Forbidden:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=(
                     f"Message with ID {str(message_id)!r} cannot be edited "
