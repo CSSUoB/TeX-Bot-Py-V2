@@ -3,6 +3,8 @@
 import functools
 import logging
 import os
+import random
+import string
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Final
 
@@ -282,7 +284,7 @@ class TestSetupLogging:
             == getattr(logging, TEST_LOG_LEVEL)
         )
 
-    def test_default_log_level(self) -> None:
+    def test_default_console_log_level(self) -> None:
         """Test that a default value is used when no `CONSOLE_LOG_LEVEL` is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -293,7 +295,7 @@ class TestSetupLogging:
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("INVALID_LOG_LEVEL", ("INVALID_LOG_LEVEL",))
-    def test_invalid_log_level_env_variable(self, INVALID_LOG_LEVEL: str) -> None:  # noqa: N803
+    def test_invalid_console_log_level(self, INVALID_LOG_LEVEL: str) -> None:  # noqa: N803
         """Test that an error is raised when an invalid `CONSOLE_LOG_LEVEL` is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -305,7 +307,7 @@ class TestSetupLogging:
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("LOWERCASE_LOG_LEVEL", ("info",))
-    def test_valid_lowercase_log_level_env_variable(self, LOWERCASE_LOG_LEVEL: str) -> None:  # noqa: N803
+    def test_valid_lowercase_console_log_level(self, LOWERCASE_LOG_LEVEL: str) -> None:  # noqa: N803
         """Test that the provided `CONSOLE_LOG_LEVEL` is fixed & used if it is in lowercase."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -318,10 +320,62 @@ class TestSetupLogging:
 class TestSetupDiscordBotToken:
     """Test case to unit-test the `_setup_discord_bot_token()` function."""
 
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_DISCORD_BOT_TOKEN",
+        (
+            f"""{
+                "".join(
+                    random.choices(
+                        string.ascii_letters + string.digits,
+                        k=random.randint(24, 26)
+                    )
+                )
+            }."""
+            f"""{"".join(random.choices(string.ascii_letters + string.digits, k=6))}."""
+            f"""{
+                "".join(
+                    random.choices(
+                        string.ascii_letters + string.digits + "_-",
+                        k=random.randint(27, 38)
+                    )
+                )
+            }""",
+        )
+    )
+    def test_setup_discord_bot_token_successful(self, TEST_DISCORD_BOT_TOKEN: str) -> None:  # noqa: N803
+        """Test that the given `DISCORD_BOT_TOKEN` is used when a valid one is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("DISCORD_BOT_TOKEN"):
+            os.environ["DISCORD_BOT_TOKEN"] = TEST_DISCORD_BOT_TOKEN
+
+            RuntimeSettings._setup_discord_bot_token()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["DISCORD_BOT_TOKEN"] == TEST_DISCORD_BOT_TOKEN
+
     def test_missing_discord_bot_token(self) -> None:
         """Test that an error is raised when no `DISCORD_BOT_TOKEN` is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
         with EnvVariableDeleter("DISCORD_BOT_TOKEN"):  # noqa: SIM117
             with pytest.raises(ImproperlyConfiguredError, match=r"DISCORD_BOT_TOKEN.*valid.*Discord bot token"):  # noqa: E501
+                RuntimeSettings._setup_discord_bot_token()  # noqa: SLF001
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize("INVALID_DISCORD_BOT_TOKEN", ("INVALID_DISCORD_BOT_TOKEN",))
+    def test_invalid_console_log_level(self, INVALID_DISCORD_BOT_TOKEN: str) -> None:  # noqa: N803
+        """Test that an error is raised when an invalid `DISCORD_BOT_TOKEN` is provided."""
+        INVALID_SETTINGS_KEY_MESSAGE: Final[str] = (
+            "DISCORD_BOT_TOKEN must be a valid Discord bot token"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("DISCORD_BOT_TOKEN"):
+            os.environ["DISCORD_BOT_TOKEN"] = INVALID_DISCORD_BOT_TOKEN
+
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_SETTINGS_KEY_MESSAGE):
                 RuntimeSettings._setup_discord_bot_token()  # noqa: SLF001
