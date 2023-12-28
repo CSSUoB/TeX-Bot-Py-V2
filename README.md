@@ -235,10 +235,14 @@ poetry run python -m main
 
 ## Contributing
 
-Contributions are welcome. If you want to contribute, please raise a PR, and we'll review,
-test and (likely) merge it. Please comment on issues you'd like to work on for assignment
-to prevent duplication of work. If you find any bugs/problems or have any feature suggestion,
-please raise an issue.
+Contributions are welcome.
+If you want to contribute, please [create](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request)
+a [PR](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests),
+and we'll review, test and (likely) merge it.
+Please comment on any [issues](https://github.com/CSSUoB/TeX-Bot-Py-V2/issues)
+you'd like to work on, to prevent duplication of work.
+If you find any bugs/problems or have any feature suggestions, please [create](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue)
+an [issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/about-issues).
 
 Before making contributions, it is highly suggested to read [CONTRIBUTING.md](CONTRIBUTING.md).
 This will ensure your code meets the standard required for this project
