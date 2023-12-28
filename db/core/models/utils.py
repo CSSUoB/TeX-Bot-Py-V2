@@ -12,7 +12,6 @@ from asgiref.sync import sync_to_async
 from django.core.exceptions import FieldDoesNotExist
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models.base import
 
 
 class AsyncBaseModel(models.Model):
