@@ -187,7 +187,7 @@ class BaseInductCog(TeXBotBaseCog):
             return
 
         if induction_member.bot:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message="Member cannot be inducted because they are a bot."
             )
@@ -299,7 +299,7 @@ class InductCommandCog(BaseInductCog):
                 str_induct_member_id
             )
         except ValueError as e:
-            await self.send_error(ctx, message=e.args[0])
+            await self.command_send_error(ctx, message=e.args[0])
             return
 
         # noinspection PyUnboundLocalVariable

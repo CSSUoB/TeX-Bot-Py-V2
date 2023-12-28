@@ -90,7 +90,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             return
 
         if not re.match(r"\A\d{7}\Z", group_id):
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=f"{group_id!r} is not a valid {self.bot.group_id_type} ID."
             )
@@ -160,7 +160,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         guild_member_ids.discard(" ")
 
         if not guild_member_ids:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 error_code="E1041",
                 logging_message=OSError(
@@ -171,7 +171,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             return
 
         if group_id not in guild_member_ids:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message=(
                     f"You must be a member of {self.bot.group_full_name} "

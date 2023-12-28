@@ -81,6 +81,7 @@ the `kick_no_introduction_discord_members` & `introduction_reminder` tasks)
 (If your community group is a Guild of Students society,
 the community group member IDs will be a list of UoB IDs)
 * `E1042` - The reference to the `@everyone` role could not be correctly retrieved
+* `E1043` - A button callback interaction did not contain the related user
 
 ## Logging Error Levels
 

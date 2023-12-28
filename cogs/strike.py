@@ -349,7 +349,7 @@ class BaseStrikeCog(TeXBotBaseCog):
         given the new number of strikes that the member has.
         """
         if strike_member.bot:
-            await self.send_error(
+            await self.command_send_error(
                 ctx,
                 message="Member cannot be given an additional strike because they are a bot."
             )
@@ -737,7 +737,7 @@ class StrikeCommandCog(BaseStrikeCog):
                 str_strike_member_id
             )
         except ValueError as e:
-            await self.send_error(ctx, message=e.args[0])
+            await self.command_send_error(ctx, message=e.args[0])
             return
 
         await self._command_perform_strike(ctx, strike_member)
