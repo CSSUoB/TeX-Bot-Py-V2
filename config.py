@@ -31,6 +31,7 @@ from re import Match
 from typing import IO, Any, ClassVar, Final, final
 
 import dotenv
+import git
 import validators
 from django.core import management
 
@@ -287,15 +288,28 @@ class Settings(abc.ABC):
         )
 
     @staticmethod
+    def _get_default_messages_json_file_path() -> Path:
+        PROJECT_ROOT: Final[str | git.PathLike | None] = (
+            git.Repo(".", search_parent_directories=True).working_tree_dir
+        )
+        if PROJECT_ROOT is None:
+            NO_ROOT_DIRECTORY_MESSAGE: Final[str] = "Could not locate project root directory."
+            raise FileNotFoundError(NO_ROOT_DIRECTORY_MESSAGE)
+
+        return PROJECT_ROOT / Path("messages.json")
+
+    @classmethod
     @functools.lru_cache(maxsize=5)
-    def _get_messages_dict(raw_messages_file_path: str | None) -> Mapping[str, object]:
+    def _get_messages_dict(cls, raw_messages_file_path: str | None) -> Mapping[str, object]:
         JSON_DECODING_ERROR_MESSAGE: Final[str] = (
             "Messages JSON file must contain a JSON string that can be decoded "
             "into a Python dict object."
         )
 
         messages_file_path: Path = (
-            Path(raw_messages_file_path) if raw_messages_file_path else Path("messages.json")
+            Path(raw_messages_file_path)
+            if raw_messages_file_path
+            else cls._get_default_messages_json_file_path()
         )
 
         if not messages_file_path.is_file():
@@ -466,7 +480,7 @@ class Settings(abc.ABC):
                 INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_MESSAGE
             )
 
-        cls._settings["KICK_NO_INTRODUCTION_MEMBERS"] = (
+        cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = (
             raw_kick_no_introduction_discord_members in TRUE_VALUES
         )
 
@@ -622,7 +636,7 @@ class Settings(abc.ABC):
             "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION",
             "DM"
         )
-        if not cls._settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"]:
+        if not raw_manual_moderation_warning_message_location:
             MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE: Final[str] = (
                 "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION must be a valid name "
                 "of a channel in your group's Discord guild."

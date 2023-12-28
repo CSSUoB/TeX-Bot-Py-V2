@@ -24,7 +24,7 @@ class TestMain(BaseTestArgumentParser):
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def UTILITY_FUNCTIONS(self) -> frozenset[type[UtilityFunction]]:  # noqa: N802
+    def UTILITY_FUNCTIONS(cls) -> frozenset[type[UtilityFunction]]:  # noqa: N802,N805
         """The set of utility function components associated with this specific test case."""  # noqa: D401
         return frozenset()
 

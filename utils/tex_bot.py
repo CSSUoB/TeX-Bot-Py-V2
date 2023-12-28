@@ -12,7 +12,8 @@ import discord
 from config import settings
 from exceptions import (
     ArchivistRoleDoesNotExistError,
-    CommitteeRoleDoesNotExistError, DiscordMemberNotInMainGuildError,
+    CommitteeRoleDoesNotExistError,
+    DiscordMemberNotInMainGuildError,
     EveryoneRoleCouldNotBeRetrievedError,
     GeneralChannelDoesNotExistError,
     GuestRoleDoesNotExistError,
@@ -226,10 +227,10 @@ class TeXBot(discord.Bot):
         The group name is either retrieved from the provided environment variable,
         or automatically identified from the name of your group's Discord guild.
         """
-        group_name: Final[str | None] = settings["_GROUP_NAME"]
+        GROUP_NAME: Final[str | None] = settings["_GROUP_NAME"]
         return (
-            group_name
-            if group_name
+            GROUP_NAME
+            if GROUP_NAME
             else (
                 "CSS"
                 if self.main_guild.name.lower() == "computer science society"

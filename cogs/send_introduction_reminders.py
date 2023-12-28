@@ -22,7 +22,7 @@ from db.core.models import (
     IntroductionReminderOptOutMember,
     SentOneOffIntroductionReminderMember,
 )
-from exceptions import GuestRoleDoesNotExistError, DiscordMemberNotInMainGuildError
+from exceptions import DiscordMemberNotInMainGuildError, GuestRoleDoesNotExistError
 from utils import TeXBot, TeXBotBaseCog
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,

@@ -17,14 +17,16 @@ from config import settings
 # Build paths inside the project like this: BASE_DIR / "subdir".
 BASE_DIR = Path(__file__).resolve().parent
 
-# NOTE: settings.py is called when setting up the mypy_django_plugin. When mypy runs no config settings variables are set, so they should not be accessed
-IMPORTED_BY_MYPY: Final[bool] = any(
-    "mypy_django_plugin" in frame.filename
+# NOTE: settings.py is called when setting up the mypy_django_plugin & when running Pytest. When mypy/Pytest runs no config settings variables are set, so they should not be accessed
+IMPORTED_BY_MYPY_OR_PYTEST: Final[bool] = any(
+    "mypy_django_plugin" in frame.filename or "pytest" in frame.filename
     for frame
     in inspect.stack()[1:]
     if not frame.filename.startswith("<")
 )
-if not IMPORTED_BY_MYPY:
+if IMPORTED_BY_MYPY_OR_PYTEST:
+    SECRET_KEY = "unsecure-secret-key"  # noqa: S105
+else:
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY = settings.DISCORD_BOT_TOKEN
 

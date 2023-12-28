@@ -52,7 +52,7 @@ class TestBaseTeXBotError:
 
         # noinspection PyMethodParameters,PyPep8Naming
         @classproperty
-        def DEFAULT_MESSAGE(self) -> str:  # noqa: N802
+        def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802,N805
             """The message to be displayed alongside this exception class if not provided."""  # noqa: D401
             return "Error 1 occurred"
 
@@ -143,19 +143,19 @@ class TestBaseDoesNotExistError:
 
         # noinspection PyMethodParameters,PyPep8Naming
         @classproperty
-        def DEFAULT_MESSAGE(self) -> str:  # noqa: N802
+        def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802,N805
             """The message to be displayed alongside this exception class if not provided."""  # noqa: D401
             return "Error 1 occurred"
 
         # noinspection PyMethodParameters,PyPep8Naming
         @classproperty
-        def ERROR_CODE(self) -> str:  # noqa: N802
+        def ERROR_CODE(cls) -> str:  # noqa: N802,N805
             """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
             return "E1"
 
         # noinspection PyMethodParameters,PyPep8Naming
         @classproperty
-        def DOES_NOT_EXIST_TYPE(self) -> str:  # noqa: N802
+        def DOES_NOT_EXIST_TYPE(cls) -> str:  # noqa: N802,N805
             """The name of the Discord entity that this `DoesNotExistError` is attached to."""  # noqa: D401
             return "object_type"
 
@@ -169,7 +169,7 @@ class TestBaseDoesNotExistError:
 
         # noinspection PyMethodParameters,PyPep8Naming
         @classproperty
-        def DEPENDENT_COMMANDS(self) -> frozenset[str]:  # noqa: N802
+        def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802,N805
             """
             The set of names of bot commands that require this Discord entity.
 
@@ -188,7 +188,7 @@ class TestBaseDoesNotExistError:
 
         # noinspection PyMethodParameters,PyPep8Naming
         @classproperty
-        def DEPENDENT_COMMANDS(self) -> frozenset[str]:  # noqa: N802
+        def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802,N805
             """
             The set of names of bot commands that require this Discord entity.
 
@@ -207,7 +207,7 @@ class TestBaseDoesNotExistError:
 
         # noinspection PyMethodParameters,PyPep8Naming
         @classproperty
-        def DEPENDENT_TASKS(self) -> frozenset[str]:  # noqa: N802
+        def DEPENDENT_TASKS(cls) -> frozenset[str]:  # noqa: N802,N805
             """
             The set of names of bot tasks that require this Discord entity.
 
@@ -226,7 +226,7 @@ class TestBaseDoesNotExistError:
 
         # noinspection PyMethodParameters,PyPep8Naming
         @classproperty
-        def DEPENDENT_TASKS(self) -> frozenset[str]:  # noqa: N802
+        def DEPENDENT_TASKS(cls) -> frozenset[str]:  # noqa: N802,N805
             """
             The set of names of bot tasks that require this Discord entity.
 
@@ -245,7 +245,7 @@ class TestBaseDoesNotExistError:
 
         # noinspection PyMethodParameters,PyPep8Naming
         @classproperty
-        def DEPENDENT_EVENTS(self) -> frozenset[str]:  # noqa: N802
+        def DEPENDENT_EVENTS(cls) -> frozenset[str]:  # noqa: N802,N805
             """
             The set of names of bot events that require this Discord entity.
 
@@ -264,7 +264,7 @@ class TestBaseDoesNotExistError:
 
         # noinspection PyMethodParameters,PyPep8Naming
         @classproperty
-        def DEPENDENT_EVENTS(self) -> frozenset[str]:  # noqa: N802
+        def DEPENDENT_EVENTS(cls) -> frozenset[str]:  # noqa: N802,N805
             """
             The set of names of bot events that require this Discord entity.
 
@@ -283,7 +283,7 @@ class TestBaseDoesNotExistError:
 
         # noinspection PyMethodParameters,PyPep8Naming
         @classproperty
-        def DEPENDENT_COMMANDS(self) -> frozenset[str]:  # noqa: N802
+        def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802,N805
             """
             The set of names of bot commands that require this Discord entity.
 
@@ -294,7 +294,7 @@ class TestBaseDoesNotExistError:
 
         # noinspection PyMethodParameters,PyPep8Naming
         @classproperty
-        def DOES_NOT_EXIST_TYPE(self) -> str:  # noqa: N802
+        def DOES_NOT_EXIST_TYPE(cls) -> str:  # noqa: N802,N805
             """The name of the Discord entity that this `DoesNotExistError` is attached to."""  # noqa: D401
             return "channel"
 
@@ -654,13 +654,13 @@ class TestRoleDoesNotExistError:
 
         # noinspection PyMethodParameters,PyPep8Naming
         @classproperty
-        def ERROR_CODE(self) -> str:  # noqa: N802
+        def ERROR_CODE(cls) -> str:  # noqa: N802,N805
             """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
             return "E1"
 
         # noinspection PyMethodParameters,PyPep8Naming
         @classproperty
-        def DEPENDENT_COMMANDS(self) -> frozenset[str]:  # noqa: N802
+        def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802,N805
             """
             The set of names of bot commands that require this Discord entity.
 
@@ -671,7 +671,7 @@ class TestRoleDoesNotExistError:
 
         # noinspection PyMethodParameters,PyPep8Naming
         @classproperty
-        def ROLE_NAME(self) -> str:  # noqa: N802
+        def ROLE_NAME(cls) -> str:  # noqa: N802,N805
             """The name of the Discord role that does not exist."""  # noqa: D401
             return "role_name_1"
 
@@ -745,13 +745,13 @@ class TestChannelDoesNotExistError:
 
         # noinspection PyMethodParameters,PyPep8Naming
         @classproperty
-        def ERROR_CODE(self) -> str:  # noqa: N802
+        def ERROR_CODE(cls) -> str:  # noqa: N802,N805
             """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
             return "E1"
 
         # noinspection PyMethodParameters,PyPep8Naming
         @classproperty
-        def DEPENDENT_COMMANDS(self) -> frozenset[str]:  # noqa: N802
+        def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802,N805
             """
             The set of names of bot commands that require this Discord entity.
 
@@ -762,7 +762,7 @@ class TestChannelDoesNotExistError:
 
         # noinspection PyMethodParameters,PyPep8Naming
         @classproperty
-        def CHANNEL_NAME(self) -> str:  # noqa: N802
+        def CHANNEL_NAME(cls) -> str:  # noqa: N802,N805
             """The name of the Discord channel that does not exist."""  # noqa: D401
             return "channel_name_1"
 
