@@ -32,7 +32,7 @@ class CommandErrorCog(TeXBotBaseCog):
         if isinstance(error, discord.ApplicationCommandInvokeError):
             message = None
             logging_message = (
-                None if isinstance(error.original, GuildDoesNotExist) else error.original  # type: ignore[unreachable]
+                None if isinstance(error.original, GuildDoesNotExist) else error.original
             )
 
             if isinstance(error.original, Forbidden):
