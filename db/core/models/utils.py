@@ -172,6 +172,10 @@ class HashedDiscordMember(AsyncBaseModel):
 
         abstract: bool = True
 
+    def __str__(self) -> str:
+        """Generate the string representation of a generic HashedDiscordMember."""
+        return f"{self.hashed_member_id}"
+
     def __repr__(self) -> str:
         """Generate a developer-focused representation of the hashed discord member's ID."""
         return f"<{self._meta.verbose_name}: {self.hashed_member_id!r}>"
@@ -189,10 +193,6 @@ class HashedDiscordMember(AsyncBaseModel):
 
         else:
             super().__setattr__(name, value)
-
-    def __str__(self) -> str:
-        """Generate the string representation of a generic HashedDiscordMember."""
-        return f"{self.hashed_member_id}"
 
     @staticmethod
     def hash_member_id(member_id: str | int) -> str:
