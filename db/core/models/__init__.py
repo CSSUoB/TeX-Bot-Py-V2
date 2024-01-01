@@ -114,8 +114,8 @@ class GroupMadeMember(AsyncBaseModel):
 
     INSTANCES_NAME_PLURAL: str = "Group Made Members"
 
-    hashed_group_id = models.CharField(
-        "Hashed Group ID",
+    hashed_group_member_id = models.CharField(
+        "Hashed Group Member ID",
         unique=True,
         null=False,
         blank=False,
@@ -123,7 +123,7 @@ class GroupMadeMember(AsyncBaseModel):
         validators=[
             RegexValidator(
                 r"\A[A-Fa-f\d]{64}\Z",
-                "hashed_group_id must be a valid sha256 hex-digest."
+                "hashed_group_member_id must be a valid sha256 hex-digest."
             )
         ]
     )
@@ -136,42 +136,43 @@ class GroupMadeMember(AsyncBaseModel):
 
     def __repr__(self) -> str:
         """Generate a developer-focused representation of the member's hashed Group ID."""
-        return f"<{self._meta.verbose_name}: {self.hashed_group_id!r}>"
+        return f"<{self._meta.verbose_name}: {self.hashed_group_member_id!r}>"
 
     def __setattr__(self, name: str, value: object) -> None:
         """Set the attribute name to the given value, with special cases for proxy fields."""
-        if name == "group_id":
+        if name == "group_member_id":
             if not isinstance(value, str | int):
-                INVALID_GROUP_ID_TYPE_MESSAGE: Final[str] = (
-                    "group_id must be an instance of str or int."
+                INVALID_GROUP_MEMBER_ID_TYPE_MESSAGE: Final[str] = (
+                    "group_member_id must be an instance of str or int."
                 )
 
-                raise TypeError(INVALID_GROUP_ID_TYPE_MESSAGE)
+                raise TypeError(INVALID_GROUP_MEMBER_ID_TYPE_MESSAGE)
 
-            self.hashed_group_id = self.hash_group_id(value)
+            self.hashed_group_member_id = self.hash_group_member_id(value)
 
         else:
             super().__setattr__(name, value)
 
     def __str__(self) -> str:
         """Generate the string representation of this GroupMadeMember."""
-        return f"{self.hashed_group_id}"
+        return f"{self.hashed_group_member_id}"
 
     @staticmethod
-    def hash_group_id(group_id: str | int, group_id_type: str = "community group") -> str:
+    def hash_group_member_id(group_member_id: str | int, group_member_id_type: str = "community group") -> str:  # noqa: E501
         """
-        Hash the provided group_id.
+        Hash the provided group_member_id.
 
-        The group_id value is hashed into the format that hashed_group_ids are stored in the
-        database when new GroupMadeMember objects are created.
+        The group_member_id value is hashed into the format
+        that hashed_group_member_ids are stored in the database
+        when new GroupMadeMember objects are created.
         """
-        if not re.match(r"\A\d{7}\Z", str(group_id)):
-            INVALID_GROUP_ID_MESSAGE: Final[str] = (
-                f"{group_id!r} is not a valid {group_id_type} ID."
+        if not re.match(r"\A\d{7}\Z", str(group_member_id)):
+            INVALID_GROUP_MEMBER_ID_MESSAGE: Final[str] = (
+                f"{group_member_id!r} is not a valid {group_member_id_type} ID."
             )
-            raise ValueError(INVALID_GROUP_ID_MESSAGE)
+            raise ValueError(INVALID_GROUP_MEMBER_ID_MESSAGE)
 
-        return hashlib.sha256(str(group_id).encode()).hexdigest()
+        return hashlib.sha256(str(group_member_id).encode()).hexdigest()
 
     @classmethod
     def get_proxy_field_names(cls) -> set[str]:
@@ -182,7 +183,7 @@ class GroupMadeMember(AsyncBaseModel):
         however, they can be used as a reference to a real attribute when saving objects to the
         database.
         """
-        return super().get_proxy_field_names() | {"group_id"}
+        return super().get_proxy_field_names() | {"group_member_id"}
 
 
 class DiscordReminder(HashedDiscordMember):
