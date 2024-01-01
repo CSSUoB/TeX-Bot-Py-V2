@@ -25,19 +25,21 @@ class MakeMemberCommandCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
     """Cog class that defines the "/makemember" command and its call-back method."""
 
-    GROUP_ID_ARGUMENT_DESCRIPTIVE_NAME: Final[str] = (
+    GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: Final[str] = (
         f"""{
             "Student"
             if (
                 settings["_GROUP_NAME"].lower() in ("css", "computer science society")
                 or "uob" in settings["_GROUP_NAME"].lower()
             )
-            else "Group"
+            else "Member"
         } ID"""
     )
-    GROUP_ID_ARGUMENT_NAME: Final[str] = GROUP_ID_ARGUMENT_DESCRIPTIVE_NAME.lower().replace(
-        " ",
-        ""
+    GROUP_MEMBER_ID_ARGUMENT_NAME: Final[str] = (
+        GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME.lower().replace(
+            " ",
+            ""
+        )
     )
 
     # noinspection SpellCheckingInspection
@@ -45,11 +47,11 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         name="makemember",
         description=(
             "Gives you the Member role "
-            f"when supplied with an appropriate {GROUP_ID_ARGUMENT_DESCRIPTIVE_NAME}."
+            f"when supplied with an appropriate {GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME}."
         )
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
-        name=GROUP_ID_ARGUMENT_NAME,
+        name=GROUP_MEMBER_ID_ARGUMENT_NAME,
         description=(
             f"""Your UoB Student {
                 "UoB Student"
@@ -57,17 +59,17 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                     settings["_GROUP_NAME"].lower() in ("css", "computer science society")
                     or "uob" in settings["_GROUP_NAME"].lower()
                 )
-                else "Group"
+                else "Member"
             } ID"""
         ),
         input_type=str,
         required=True,
         max_length=7,
         min_length=7,
-        parameter_name="group_id"
+        parameter_name="group_member_id"
     )
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_member(self, ctx: TeXBotApplicationContext, group_id: str) -> None:
+    async def make_member(self, ctx: TeXBotApplicationContext, group_member_id: str) -> None:
         """
         Definition & callback response of the "make_member" command.
 
@@ -89,17 +91,22 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             )
             return
 
-        if not re.match(r"\A\d{7}\Z", group_id):
+        if not re.match(r"\A\d{7}\Z", group_member_id):
             await self.command_send_error(
                 ctx,
-                message=f"{group_id!r} is not a valid {self.bot.group_id_type} ID."
+                message=(
+                    f"{group_member_id!r} is not a valid {self.bot.group_member_id_type} ID."
+                )
             )
             return
 
-        group_id_is_already_used: bool = await GroupMadeMember.objects.filter(
-            hashed_group_id=GroupMadeMember.hash_group_id(group_id, self.bot.group_id_type)
+        GROUP_MEMBER_ID_IS_ALREADY_USED: Final[bool] = await GroupMadeMember.objects.filter(
+            hashed_group_member_id=GroupMadeMember.hash_group_member_id(
+                group_member_id,
+                self.bot.group_member_id_type
+            )
         ).aexists()
-        if group_id_is_already_used:
+        if GROUP_MEMBER_ID_IS_ALREADY_USED:
             # noinspection PyUnusedLocal
             committee_mention: str = "committee"
             with contextlib.suppress(CommitteeRoleDoesNotExist):
@@ -170,14 +177,14 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             )
             return
 
-        if group_id not in guild_member_ids:
+        if group_member_id not in guild_member_ids:
             await self.command_send_error(
                 ctx,
                 message=(
                     f"You must be a member of {self.bot.group_full_name} "
                     "to use this command.\n"
-                    f"The provided {self.GROUP_ID_ARGUMENT_NAME} must match "
-                    f"the {self.bot.group_id_type} ID "
+                    f"The provided {self.GROUP_MEMBER_ID_ARGUMENT_NAME} must match "
+                    f"the {self.bot.group_member_id_type} ID "
                     f"that you purchased your {self.bot.group_name} membership with."
                 )
             )
@@ -190,15 +197,15 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         )
 
         try:
-            await GroupMadeMember.objects.acreate(group_id=group_id)
+            await GroupMadeMember.objects.acreate(group_member_id=group_member_id)
         except ValidationError as create_group_made_member_error:
             error_is_already_exists: bool = (
-                "hashed_group_id" in create_group_made_member_error.message_dict
+                "hashed_group_member_id" in create_group_made_member_error.message_dict
                 and any(
                     "already exists"
                     in error
                     for error
-                    in create_group_made_member_error.message_dict["hashed_group_id"]
+                    in create_group_made_member_error.message_dict["hashed_group_member_id"]
                 )
             )
             if not error_is_already_exists:

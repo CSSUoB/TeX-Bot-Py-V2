@@ -248,7 +248,7 @@ class TeXBot(discord.Bot):
         )
 
     @property
-    def group_id_type(self) -> str:
+    def group_member_id_type(self) -> str:
         """
         The type of IDs that users input to become members.
 
