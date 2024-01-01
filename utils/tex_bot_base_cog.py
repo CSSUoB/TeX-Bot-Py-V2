@@ -67,7 +67,7 @@ class TeXBotBaseCog(Cog):
         The constructed error message is then sent as the response to the given
         application command context.
         """
-        command_name: str = (
+        COMMAND_NAME: Final[str] = (
             ctx.command.callback.__name__
             if (
                 hasattr(ctx.command, "callback")
@@ -78,7 +78,7 @@ class TeXBotBaseCog(Cog):
         await self.send_error(
             self.bot,
             ctx.interaction,
-            interaction_name=command_name,
+            interaction_name=COMMAND_NAME,
             error_code=error_code,
             message=message,
             logging_message=logging_message
