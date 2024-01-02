@@ -218,34 +218,59 @@ class TeXBot(discord.Bot):
         return self._rules_channel
 
     @property
-    def group_name(self) -> str:
+    def group_full_name(self) -> str:
         """
-        The name of your community group.
+        The full name of your community group.
 
         This is substituted into many error/welcome messages sent into your Discord guild,
         by the bot.
-        The group name is either retrieved from the provided environment variable,
+        The group-full-name is either retrieved from the provided environment variable,
         or automatically identified from the name of your group's Discord guild.
         """
-        group_name: Final[str | None] = settings["_GROUP_NAME"]
+        GROUP_FULL_NAME: Final[str | None] = settings["_GROUP_FULL_NAME"]
         return (
-            group_name
-            if group_name
+            GROUP_FULL_NAME
+            if GROUP_FULL_NAME
             else (
-                "CSS"
-                if self.main_guild.name.lower() == "computer science society"
+                "The Computer Science Society"
+                if (
+                    "computer science society" in self.main_guild.name.lower()
+                    or "css" in self.main_guild.name.lower()
+                )
                 else self.main_guild.name
             )
         )
 
     @property
-    def group_full_name(self) -> str:
-        """The full capitalised name of your community group."""
+    def group_short_name(self) -> str:
+        """
+        The short colloquial name of your community group.
+
+        This defaults to `TeXBot.group_full_name`,
+        if no group-short-name is provided/could not be determined.
+        """
+        GROUP_SHORT_NAME: Final[str | None] = settings["_GROUP_SHORT_NAME"]
         return (
-            "The Computer Science Society"
-            if self.group_name.lower() in ("css", "computer science society")
-            else self.group_name
-        )
+            GROUP_SHORT_NAME
+            if GROUP_SHORT_NAME
+            else (
+                "CSS"
+                if (
+                    "computer science society" in self.group_full_name.lower()
+                    or "css" in self.group_full_name.lower()
+                )
+                else self.group_full_name
+            )
+        ).replace(
+            "the",
+            ""
+        ).replace(
+            "THE",
+            ""
+        ).replace(
+            "The",
+            ""
+        ).strip()
 
     @property
     def group_member_id_type(self) -> str:
@@ -257,9 +282,15 @@ class TeXBot(discord.Bot):
         return (
             "UoB Student"
             if (
-                self.group_name.lower() in ("css", "computer science society")
-                or "uob" in self.group_name.lower()
-                or "birmingham" in self.group_name.lower()
+                "computer science society" in self.group_full_name.lower()
+                or "css" in self.group_full_name.lower()
+                or "uob" in self.group_full_name.lower()
+                or "university of birmingham" in self.group_full_name.lower()
+                or "uob" in self.group_full_name.lower()
+                or (
+                    "bham" in self.group_full_name.lower()
+                    and "uni" in self.group_full_name.lower()
+                )
             )
             else "community group"
         )
@@ -274,9 +305,15 @@ class TeXBot(discord.Bot):
         return (
             "the Guild of Students"
             if (
-                self.group_name.lower() in ("css", "computer science society")
-                or "uob" in self.group_name.lower()
-                or "birmingham" in self.group_name.lower()
+                "computer science society" in self.group_full_name.lower()
+                or "css" in self.group_full_name.lower()
+                or "uob" in self.group_full_name.lower()
+                or "university of birmingham" in self.group_full_name.lower()
+                or "uob" in self.group_full_name.lower()
+                or (
+                    "bham" in self.group_full_name.lower()
+                    and "uni" in self.group_full_name.lower()
+                )
             )
             else "our community moderators"
         )

@@ -7,7 +7,7 @@ __all__: Sequence[str] = ("amount_of_time_formatter", "plot_bar_chart", "StatsCo
 import io
 import math
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 import discord
 import matplotlib.pyplot as plt
@@ -135,15 +135,30 @@ def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str,
 class StatsCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/stats" command group and its command call-back methods."""
 
+    _DISCORD_SERVER_NAME: Final[str] = f"""{
+        "the " if (
+            (
+                settings["_GROUP_SHORT_NAME"]
+            ).replace("the", "").replace("THE", "").replace("The", "").strip()
+        )
+        else ""
+    }{
+        (
+            (
+                settings["_GROUP_SHORT_NAME"]
+            ).replace("the", "").replace("THE", "").replace("The", "").strip()
+        )
+        if (
+            (
+                settings["_GROUP_SHORT_NAME"]
+            ).replace("the", "").replace("THE", "").replace("The", "").strip()
+        )
+        else "our community group's"
+    } Discord server"""
+
     stats: discord.SlashCommandGroup = discord.SlashCommandGroup(
         "stats",
-        (
-            f"""Various statistics about {
-                "the " if settings["_GROUP_NAME"] else ""
-            }{
-                settings["_GROUP_NAME"] if settings["_GROUP_NAME"] else "our community group's"
-            } Discord server"""
-        )
+        f"Various statistics about {_DISCORD_SERVER_NAME}"
     )
 
     # noinspection SpellCheckingInspection
@@ -271,13 +286,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
     @stats.command(
         name="server",
-        description=(
-            f"""Displays the stats for the whole of {
-                "the " if settings["_GROUP_NAME"] else ""
-            }{
-                settings["_GROUP_NAME"] if settings["_GROUP_NAME"] else "our community group's"
-            } Discord server"""
-        )
+        description=f"Displays the stats for the whole of {_DISCORD_SERVER_NAME}"
     )
     async def server_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
@@ -370,11 +379,13 @@ class StatsCommandsCog(TeXBotBaseCog):
                         )
                         })"""
                     ),
-                    title=f"Most Active Roles in the {self.bot.group_name} Discord Server",
+                    title=(
+                        f"Most Active Roles in the {self.bot.group_short_name} Discord Server"
+                    ),
                     filename="roles_server_stats.png",
                     description=(
                         "Bar chart of the number of messages sent by different roles "
-                        f"in the {self.bot.group_name} Discord server."
+                        f"in the {self.bot.group_short_name} Discord server."
                     ),
                     extra_text=(
                         "Messages sent by members with multiple roles are counted once "
@@ -393,11 +404,14 @@ class StatsCommandsCog(TeXBotBaseCog):
                             )
                         })"""
                     ),
-                    title=f"Most Active Channels in the {self.bot.group_name} Discord Server",
+                    title=(
+                        "Most Active Channels "
+                        f"in the {self.bot.group_short_name} Discord Server"
+                    ),
                     filename="channels_server_stats.png",
                     description=(
                         "Bar chart of the number of messages sent in different text channels "
-                        f"in the {self.bot.group_name} Discord server."
+                        f"in the {self.bot.group_short_name} Discord server."
                     )
                 ),
             ]
@@ -425,7 +439,7 @@ class StatsCommandsCog(TeXBotBaseCog):
                 ctx,
                 message=(
                     "You must be inducted as a guest member "
-                    f"of the {self.bot.group_name} Discord server to use this command."
+                    f"of the {self.bot.group_short_name} Discord server to use this command."
                 )
             )
             return
@@ -477,11 +491,14 @@ class StatsCommandsCog(TeXBotBaseCog):
                         )
                     })"""
                 ),
-                title=f"Your Most Active Channels in the {self.bot.group_name} Discord Server",
+                title=(
+                    "Your Most Active Channels "
+                    f"in the {self.bot.group_short_name} Discord Server"
+                ),
                 filename=f"{ctx.user}_stats.png",
                 description=(
                     f"Bar chart of the number of messages sent by {ctx.user} "
-                    f"in different channels in the {self.bot.group_name} Discord server."
+                    f"in different channels in the {self.bot.group_short_name} Discord server."
                 )
             )
         )
@@ -489,13 +506,7 @@ class StatsCommandsCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
     @stats.command(
         name="leftmembers",
-        description=(
-            f"""Displays the stats about members that have left {
-                "the " if settings["_GROUP_NAME"] else ""
-            }{
-                settings["_GROUP_NAME"] if settings["_GROUP_NAME"] else "our community group's"
-            } Discord server"""
-        )
+        description=f"Displays the stats about members that have left {_DISCORD_SERVER_NAME}"
     )
     async def left_member_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
@@ -549,16 +560,16 @@ class StatsCommandsCog(TeXBotBaseCog):
                 x_label="Role Name",
                 y_label=(
                     "Number of Members that have left "
-                    f"the {self.bot.group_name} Discord Server"
+                    f"the {self.bot.group_short_name} Discord Server"
                 ),
                 title=(
                     "Most Common Roles that Members had when they left "
-                    f"the {self.bot.group_name} Discord Server"
+                    f"the {self.bot.group_short_name} Discord Server"
                 ),
                 filename="left_members_stats.png",
                 description=(
                     "Bar chart of the number of members with different roles "
-                    f"that have left the {self.bot.group_name} Discord server."
+                    f"that have left the {self.bot.group_short_name} Discord server."
                 ),
                 extra_text=(
                     "Members that left with multiple roles "
