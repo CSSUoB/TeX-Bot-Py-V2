@@ -8,6 +8,7 @@ import contextlib
 import logging
 
 import discord
+from discord import Forbidden
 from discord.ext.commands import CheckAnyFailure
 
 from exceptions import (
@@ -28,12 +29,17 @@ class CommandErrorCog(TeXBotBaseCog):
         message: str | None = "Please contact a committee member."
         logging_message: str | BaseException | None = None
 
-        if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(error.original, BaseErrorWithErrorCode):  # noqa: E501
+        if isinstance(error, discord.ApplicationCommandInvokeError):
             message = None
-            error_code = error.original.ERROR_CODE
             logging_message = (
-                None if isinstance(error.original, GuildDoesNotExist) else error.original  # type: ignore[unreachable]
+                None if isinstance(error.original, GuildDoesNotExist) else error.original
             )
+
+            if isinstance(error.original, Forbidden):
+                error_code = "E1044"
+
+            elif isinstance(error.original, BaseErrorWithErrorCode):
+                error_code = error.original.ERROR_CODE
 
         elif isinstance(error, CheckAnyFailure):
             if CommandChecks.is_interaction_user_in_main_guild_failure(error.checks[0]):
