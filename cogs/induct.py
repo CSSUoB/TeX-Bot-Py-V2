@@ -102,7 +102,7 @@ class InductSendMessageCog(TeXBotBaseCog):
                 user_type = "member"
 
         await after.send(
-            f"**Congrats on joining the {self.bot.group_name} Discord server "
+            f"**Congrats on joining the {self.bot.group_short_name} Discord server "
             f"as a {user_type}!** "
             "You now have access to communicate in all the public channels.\n\n"
             "Some things to do to get started:\n"
@@ -117,14 +117,13 @@ class InductSendMessageCog(TeXBotBaseCog):
             # TODO @CarrotManMatt: Remove environment variables that are only used in messages. Messages will be extracted into the external JSON file.  # noqa: FIX002
             # https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/90
             await after.send(
-                f"You can also get yourself an annual membership to {self.bot.group_name} "
-                f"for only £5! "
+                f"You can also get yourself an annual membership "
+                f"to {self.bot.group_full_name} for only £5! "
                 f"""Just head to {settings["PURCHASE_MEMBERSHIP_URL"]}. """
                 "You'll get awesome perks like a free T-shirt:shirt:, "
                 "access to member only events:calendar_spiral: "
-                "& a cool green name "
-                f"on the {self.bot.group_name} Discord server:green_square:! "
-                f"""Checkout all the perks at {settings["MEMBERSHIP_PERKS_URL"]}"""
+                f"& a cool green name on the {self.bot.group_short_name} Discord server"
+                f":green_square:! Checkout all the perks at {settings["MEMBERSHIP_PERKS_URL"]}"
             )
 
 
@@ -167,7 +166,7 @@ class BaseInductCog(TeXBotBaseCog):
             )
 
         if "<Purchase_Membership_URL>" in random_welcome_message:
-            random_welcome_message.replace("<Group_Name>", self.bot.group_name)
+            random_welcome_message.replace("<Group_Name>", self.bot.group_short_name)
 
         return random_welcome_message.strip()
 

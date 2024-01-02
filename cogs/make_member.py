@@ -29,8 +29,18 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         f"""{
             "Student"
             if (
-                settings["_GROUP_NAME"].lower() in ("css", "computer science society")
-                or "uob" in settings["_GROUP_NAME"].lower()
+                settings["_GROUP_FULL_NAME"]
+                and (
+                    "computer science society" in settings["_GROUP_FULL_NAME"]
+                    or "css" in settings["_GROUP_FULL_NAME"]
+                    or "uob" in settings["_GROUP_FULL_NAME"]
+                    or "university of birmingham" in settings["_GROUP_FULL_NAME"]
+                    or "uob" in settings["_GROUP_FULL_NAME"]
+                    or (
+                        "bham" in settings["_GROUP_FULL_NAME"]
+                        and "uni" in settings["_GROUP_FULL_NAME"]
+                    )
+                )
             )
             else "Member"
         } ID"""
@@ -56,8 +66,18 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             f"""Your UoB Student {
                 "UoB Student"
                 if (
-                    settings["_GROUP_NAME"].lower() in ("css", "computer science society")
-                    or "uob" in settings["_GROUP_NAME"].lower()
+                    settings["_GROUP_FULL_NAME"]
+                    and (
+                        "computer science society" in settings["_GROUP_FULL_NAME"]
+                        or "css" in settings["_GROUP_FULL_NAME"]
+                        or "uob" in settings["_GROUP_FULL_NAME"]
+                        or "university of birmingham" in settings["_GROUP_FULL_NAME"]
+                        or "uob" in settings["_GROUP_FULL_NAME"]
+                        or (
+                            "bham" in settings["_GROUP_FULL_NAME"]
+                            and "uni" in settings["_GROUP_FULL_NAME"]
+                        )
+                    )
                 )
                 else "Member"
             } ID"""
@@ -185,7 +205,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                     "to use this command.\n"
                     f"The provided {self.GROUP_MEMBER_ID_ARGUMENT_NAME} must match "
                     f"the {self.bot.group_member_id_type} ID "
-                    f"that you purchased your {self.bot.group_name} membership with."
+                    f"that you purchased your {self.bot.group_short_name} membership with."
                 )
             )
             return

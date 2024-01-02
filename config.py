@@ -179,17 +179,29 @@ class Settings:
             raise ImproperlyConfigured(INVALID_WEBHOOK_URL_MESSAGE)
         self._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = discord_log_channel_webhook_url
 
-        group_name: str = os.getenv("GROUP_NAME", "")
-        group_name_is_valid: bool = bool(
-            not group_name
-            or re.match(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", group_name)
+        group_full_name: str = os.getenv("GROUP_NAME", "")
+        group_full_name_is_valid: bool = bool(
+            not group_full_name
+            or re.match(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", group_full_name)
         )
-        if not group_name_is_valid:
-            INVALID_GROUP_NAME: Final[str] = (
+        if not group_full_name_is_valid:
+            INVALID_GROUP_FULL_NAME: Final[str] = (
                 "GROUP_NAME must not contain any invalid characters."
             )
-            raise ImproperlyConfigured(INVALID_GROUP_NAME)
-        self._settings["_GROUP_NAME"] = group_name
+            raise ImproperlyConfigured(INVALID_GROUP_FULL_NAME)
+        self._settings["_GROUP_FULL_NAME"] = group_full_name
+
+        group_short_name: str = os.getenv("GROUP_SHORT_NAME", "")
+        group_short_name_is_valid: bool = bool(
+            not group_short_name
+            or re.match(r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", group_short_name)
+        )
+        if not group_short_name_is_valid:
+            INVALID_GROUP_SHORT_NAME: Final[str] = (
+                "GROUP_SHORT_NAME must not contain any invalid characters."
+            )
+            raise ImproperlyConfigured(INVALID_GROUP_SHORT_NAME)
+        self._settings["_GROUP_SHORT_NAME"] = group_short_name
 
         purchase_membership_url: str = os.getenv("PURCHASE_MEMBERSHIP_URL", "")
         purchase_membership_url_is_valid: bool = bool(

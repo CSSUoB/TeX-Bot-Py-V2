@@ -154,7 +154,8 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 continue
 
             await member.send(
-                f"Hey! It seems like you joined the {self.bot.group_name} Discord server "
+                "Hey! It seems like you joined "
+                f"the {self.bot.group_short_name} Discord server "
                 "and have been given the `@Guest` role but have not yet nabbed yourself any "
                 f"opt-in roles.\nYou can head to {roles_channel_mention} "
                 "and click on the icons to get optional roles like pronouns "
