@@ -227,10 +227,9 @@ class TeXBot(discord.Bot):
         The group-full-name is either retrieved from the provided environment variable,
         or automatically identified from the name of your group's Discord guild.
         """
-        GROUP_FULL_NAME: Final[str | None] = settings["_GROUP_FULL_NAME"]
-        return (
-            GROUP_FULL_NAME
-            if GROUP_FULL_NAME
+        return (  # type: ignore[no-any-return]
+            settings["_GROUP_FULL_NAME"]
+            if settings["_GROUP_FULL_NAME"]
             else (
                 "The Computer Science Society"
                 if (
@@ -249,10 +248,9 @@ class TeXBot(discord.Bot):
         This defaults to `TeXBot.group_full_name`,
         if no group-short-name is provided/could not be determined.
         """
-        GROUP_SHORT_NAME: Final[str | None] = settings["_GROUP_SHORT_NAME"]
-        return (
-            GROUP_SHORT_NAME
-            if GROUP_SHORT_NAME
+        return (  # type: ignore[no-any-return]
+            settings["_GROUP_SHORT_NAME"]
+            if settings["_GROUP_SHORT_NAME"]
             else (
                 "CSS"
                 if (

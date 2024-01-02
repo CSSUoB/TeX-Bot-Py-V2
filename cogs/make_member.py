@@ -29,7 +29,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         f"""{
             "Student"
             if (
-                "_GROUP_FULL_NAME" in settings
+                settings["_GROUP_FULL_NAME"]
                 and (
                     "computer science society" in settings["_GROUP_FULL_NAME"]
                     or "css" in settings["_GROUP_FULL_NAME"]
@@ -66,7 +66,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             f"""Your UoB Student {
                 "UoB Student"
                 if (
-                    "_GROUP_FULL_NAME" in settings
+                    settings["_GROUP_FULL_NAME"]
                     and (
                         "computer science society" in settings["_GROUP_FULL_NAME"]
                         or "css" in settings["_GROUP_FULL_NAME"]
