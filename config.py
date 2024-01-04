@@ -149,7 +149,7 @@ class Settings:
                 "DISCORD_BOT_TOKEN must be a valid Discord bot token "
                 "(see https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)."
             )
-            raise ImproperlyConfigured(INVALID_BOT_TOKEN_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_BOT_TOKEN_MESSAGE)
         self._settings["DISCORD_BOT_TOKEN"] = discord_bot_token
 
         discord_guild_id: str = os.getenv("DISCORD_GUILD_ID", "")
@@ -158,7 +158,7 @@ class Settings:
                 "DISCORD_GUILD_ID must be a valid Discord guild ID "
                 "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)."
             )
-            raise ImproperlyConfigured(INVALID_GUILD_ID_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_GUILD_ID_MESSAGE)
         self._settings["DISCORD_GUILD_ID"] = int(discord_guild_id)
 
         discord_log_channel_webhook_url: str = os.getenv("DISCORD_LOG_CHANNEL_WEBHOOK_URL", "")
@@ -176,7 +176,7 @@ class Settings:
                 "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL "
                 "that points to a discord channel where logs should be displayed."
             )
-            raise ImproperlyConfigured(INVALID_WEBHOOK_URL_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_WEBHOOK_URL_MESSAGE)
         self._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = discord_log_channel_webhook_url
 
         group_full_name: str = os.getenv("GROUP_NAME", "")
@@ -188,7 +188,7 @@ class Settings:
             INVALID_GROUP_FULL_NAME: Final[str] = (
                 "GROUP_NAME must not contain any invalid characters."
             )
-            raise ImproperlyConfigured(INVALID_GROUP_FULL_NAME)
+            raise ImproperlyConfiguredError(INVALID_GROUP_FULL_NAME)
         self._settings["_GROUP_FULL_NAME"] = group_full_name
 
         group_short_name: str = os.getenv("GROUP_SHORT_NAME", "")
@@ -200,7 +200,7 @@ class Settings:
             INVALID_GROUP_SHORT_NAME: Final[str] = (
                 "GROUP_SHORT_NAME must not contain any invalid characters."
             )
-            raise ImproperlyConfigured(INVALID_GROUP_SHORT_NAME)
+            raise ImproperlyConfiguredError(INVALID_GROUP_SHORT_NAME)
         self._settings["_GROUP_SHORT_NAME"] = group_short_name
 
         purchase_membership_url: str = os.getenv("PURCHASE_MEMBERSHIP_URL", "")
@@ -212,7 +212,7 @@ class Settings:
             INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE: Final[str] = (
                 "PURCHASE_MEMBERSHIP_URL must be a valid URL."
             )
-            raise ImproperlyConfigured(INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE)
         self._settings["PURCHASE_MEMBERSHIP_URL"] = purchase_membership_url
 
         membership_perks_url: str = os.getenv("MEMBERSHIP_PERKS_URL", "")
@@ -224,7 +224,7 @@ class Settings:
             INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (
                 "MEMBERSHIP_PERKS_URL must be a valid URL."
             )
-            raise ImproperlyConfigured(INVALID_MEMBERSHIP_PERKS_URL_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_MEMBERSHIP_PERKS_URL_MESSAGE)
         self._settings["MEMBERSHIP_PERKS_URL"] = membership_perks_url
 
         try:
@@ -235,7 +235,7 @@ class Settings:
             PROBABILITY_IS_NOT_FLOAT_MESSAGE: Final[str] = (
                 "PING_COMMAND_EASTER_EGG_PROBABILITY must be a float."
             )
-            raise ImproperlyConfigured(
+            raise ImproperlyConfiguredError(
                 PROBABILITY_IS_NOT_FLOAT_MESSAGE
             ) from ping_command_easter_egg_probability_error
         if not 100 >= ping_command_easter_egg_probability >= 0:
@@ -243,7 +243,7 @@ class Settings:
                 "PING_COMMAND_EASTER_EGG_PROBABILITY must be a value "
                 "between & including 1 & 0."
             )
-            raise ImproperlyConfigured(PROBABILITY_IS_NOT_IN_RANGE_MESSAGE)
+            raise ImproperlyConfiguredError(PROBABILITY_IS_NOT_IN_RANGE_MESSAGE)
         self._settings["PING_COMMAND_EASTER_EGG_PROBABILITY"] = (
             ping_command_easter_egg_probability
         )
@@ -253,12 +253,12 @@ class Settings:
             NO_FILE_PATH_MESSAGE: Final[str] = (
                 "MESSAGES_FILE_PATH must be a path to a file that exists."
             )
-            raise ImproperlyConfigured(NO_FILE_PATH_MESSAGE)
+            raise ImproperlyConfiguredError(NO_FILE_PATH_MESSAGE)
         if messages_file_path.suffix != ".json":
             NOT_JSON_FILE_MESSAGE: Final[str] = (
                 "MESSAGES_FILE_PATH must be a path to a JSON file."
             )
-            raise ImproperlyConfigured(NOT_JSON_FILE_MESSAGE)
+            raise ImproperlyConfiguredError(NOT_JSON_FILE_MESSAGE)
 
         with messages_file_path.open(encoding="utf8") as messages_file:
             try:
@@ -268,12 +268,12 @@ class Settings:
                     "Messages JSON file must contain a JSON string that can be decoded "
                     "into a Python dict object."
                 )
-                raise ImproperlyConfigured(
+                raise ImproperlyConfiguredError(
                     JSON_DECODING_ERROR_MESSAGE
                 ) from messages_file_error
 
         if "welcome_messages" not in messages_dict:
-            raise MessagesJSONFileMissingKey(missing_key="welcome_messages")
+            raise MessagesJSONFileMissingKeyError(missing_key="welcome_messages")
         welcome_messages_key_is_valid: bool = bool(
             isinstance(messages_dict["welcome_messages"], list)
             and messages_dict["welcome_messages"]
@@ -286,7 +286,7 @@ class Settings:
         self._settings["WELCOME_MESSAGES"] = messages_dict["welcome_messages"]
 
         if "roles_messages" not in messages_dict:
-            raise MessagesJSONFileMissingKey(missing_key="roles_messages")
+            raise MessagesJSONFileMissingKeyError(missing_key="roles_messages")
         roles_messages_key_is_valid: bool = bool(
             isinstance(messages_dict["roles_messages"], list)
             and messages_dict["roles_messages"]
@@ -307,7 +307,7 @@ class Settings:
             INVALID_MEMBERS_LIST_URL_MESSAGE: Final[str] = (
                 "MEMBERS_LIST_URL must be a valid URL."
             )
-            raise ImproperlyConfigured(INVALID_MEMBERS_LIST_URL_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_URL_MESSAGE)
         self._settings["MEMBERS_LIST_URL"] = members_list_url
 
         members_list_url_session_cookie: str = os.getenv("MEMBERS_LIST_URL_SESSION_COOKIE", "")
@@ -319,7 +319,7 @@ class Settings:
             INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
                 "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
             )
-            raise ImproperlyConfigured(INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE)
         self._settings["MEMBERS_LIST_URL_SESSION_COOKIE"] = members_list_url_session_cookie
 
         send_introduction_reminders: str = str(
@@ -330,7 +330,7 @@ class Settings:
                 "SEND_INTRODUCTION_REMINDERS must be one of: "
                 "\"Once\", \"Interval\" or \"False\"."
             )
-            raise ImproperlyConfigured(INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE)
         if send_introduction_reminders in ("once", "interval"):
             self._settings["SEND_INTRODUCTION_REMINDERS"] = send_introduction_reminders
         elif send_introduction_reminders in TRUE_VALUES:
@@ -348,7 +348,7 @@ class Settings:
                     "SEND_INTRODUCTION_REMINDERS_INTERVAL must contain the interval "
                     "in any combination of seconds, minutes or hours."
                 )
-                raise ImproperlyConfigured(
+                raise ImproperlyConfiguredError(
                     INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE
                 )
             self._settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = {
@@ -367,7 +367,7 @@ class Settings:
             INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_MESSAGE: Final[str] = (
                 "KICK_NO_INTRODUCTION_DISCORD_MEMBERS must be a boolean value."
             )
-            raise ImproperlyConfigured(
+            raise ImproperlyConfiguredError(
                 INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_MESSAGE
             )
         self._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = (
@@ -384,7 +384,7 @@ class Settings:
                     "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must contain the delay "
                     "in any combination of seconds, minutes, hours, days or weeks."
                 )
-                raise ImproperlyConfigured(
+                raise ImproperlyConfiguredError(
                     INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE
                 )
             kick_no_introduction_discord_members_delay: timedelta = timedelta(
@@ -400,7 +400,7 @@ class Settings:
                     "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY "
                     "must be greater than 1 day."
                 )
-                raise ImproperlyConfigured(
+                raise ImproperlyConfiguredError(
                     TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE
                 )
             self._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
@@ -416,7 +416,7 @@ class Settings:
             INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE: Final[str] = (
                 "SEND_GET_ROLES_REMINDERS must be a boolean value."
             )
-            raise ImproperlyConfigured(INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE)
         self._settings["SEND_GET_ROLES_REMINDERS"] = (
                 send_get_roles_reminders in TRUE_VALUES
         )
@@ -431,7 +431,7 @@ class Settings:
                     "SEND_GET_ROLES_REMINDERS_INTERVAL must contain the interval "
                     "in any combination of seconds, minutes or hours."
                 )
-                raise ImproperlyConfigured(
+                raise ImproperlyConfiguredError(
                     INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE
                 )
             self._settings["SEND_GET_ROLES_REMINDERS_INTERVAL"] = {
@@ -449,7 +449,7 @@ class Settings:
             INVALID_STATISTICS_DAYS_MESSAGE: Final[str] = (
                 "STATISTICS_DAYS must contain the statistics period in days."
             )
-            raise ImproperlyConfigured(
+            raise ImproperlyConfiguredError(
                 INVALID_STATISTICS_DAYS_MESSAGE
             ) from statistics_days_error
         self._settings["STATISTICS_DAYS"] = timedelta(days=statistics_days)
@@ -465,7 +465,7 @@ class Settings:
                 for log_level_choice
                 in LOG_LEVEL_CHOICES[:-1])
             } or {LOG_LEVEL_CHOICES[-1]!r}."""
-            raise ImproperlyConfigured(INVALID_LOG_LEVEL_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_LOG_LEVEL_MESSAGE)
         # noinspection SpellCheckingInspection
         logging.basicConfig(
             level=getattr(logging, console_log_level),
@@ -481,7 +481,7 @@ class Settings:
             INVALID_MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
                 "MODERATION_DOCUMENT_URL must be a valid URL."
             )
-            raise ImproperlyConfigured(INVALID_MODERATION_DOCUMENT_URL_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_MODERATION_DOCUMENT_URL_MESSAGE)
         self._settings["MODERATION_DOCUMENT_URL"] = moderation_document_url
 
         manual_moderation_warning_message_location: str = os.getenv(
@@ -493,7 +493,7 @@ class Settings:
                 "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION must be a valid name "
                 "of a channel in the your group's Discord guild."
             )
-            raise ImproperlyConfigured(
+            raise ImproperlyConfiguredError(
                 INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE
             )
         self._settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] = (

@@ -31,7 +31,6 @@ from typing import Final
 from classproperties import classproperty
 
 
-
 class ImproperlyConfiguredError(Exception):
     """Exception class to raise when environment variables are not correctly provided."""
 
