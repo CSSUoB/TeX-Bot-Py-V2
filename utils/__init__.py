@@ -3,7 +3,6 @@
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
-    "classproperty",
     "CommandChecks",
     "InviteURLGenerator",
     "main",
@@ -21,7 +20,6 @@ from collections.abc import Iterable
 from typing import TYPE_CHECKING, Final
 
 from utils.base_utility_function import UtilityFunction
-from utils.class_property import classproperty
 from utils.command_checks import CommandChecks
 from utils.generate_invite_url import InviteURLGenerator
 from utils.message_sender_components import MessageSenderComponent
@@ -32,7 +30,7 @@ from utils.tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteC
 
 if TYPE_CHECKING:
     # noinspection PyProtectedMember
-    from argparse import _SubParserAction as SubParserAction  # type: ignore[attr-defined]
+    from argparse import _SubParsersAction as SubParsersAction
 
 
 def main(argv: Sequence[str] | None = None, utility_functions: Iterable[type[UtilityFunction]] | None = None) -> int:  # noqa: E501
@@ -43,7 +41,7 @@ def main(argv: Sequence[str] | None = None, utility_functions: Iterable[type[Uti
         prog="utils",
         description="Executes common command-line utility functions"
     )
-    function_subparsers: SubParserAction = arg_parser.add_subparsers(
+    function_subparsers: SubParsersAction[ArgumentParser] = arg_parser.add_subparsers(
         title="functions",
         required=True,
         help="Utility function to execute",

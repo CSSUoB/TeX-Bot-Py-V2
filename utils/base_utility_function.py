@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, ClassVar, Final, Self
 
 if TYPE_CHECKING:
     # noinspection PyProtectedMember
-    from argparse import _SubParserAction as SubParserAction  # type: ignore[attr-defined]
+    from argparse import _SubParsersAction as SubParsersAction
 
 
 class UtilityFunction(abc.ABC):
@@ -23,7 +23,7 @@ class UtilityFunction(abc.ABC):
 
     NAME: str
     DESCRIPTION: str
-    _function_subparsers: ClassVar[dict["SubParserAction", ArgumentParser]] = {}
+    _function_subparsers: ClassVar[dict["SubParsersAction[ArgumentParser]", ArgumentParser]] = {}  # noqa: E501
 
     # noinspection PyTypeChecker,PyTypeHints
     def __new__(cls, *_args: object, **_kwargs: object) -> Self:
@@ -34,7 +34,7 @@ class UtilityFunction(abc.ABC):
         raise RuntimeError(CANNOT_INSTANTIATE_INSTANCE_MESSAGE)
 
     @classmethod
-    def attach_to_parser(cls, parser: "SubParserAction") -> None:
+    def attach_to_parser(cls, parser: "SubParsersAction[ArgumentParser]") -> None:
         """
         Add a subparser to the provided argument parser.
 
@@ -52,5 +52,5 @@ class UtilityFunction(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def run(cls, parsed_args: Namespace, parser: "SubParserAction") -> int:
+    def run(cls, parsed_args: Namespace, parser: "SubParsersAction[ArgumentParser]") -> int:
         """Execute the logic that this util function provides."""

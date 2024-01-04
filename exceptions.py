@@ -28,7 +28,8 @@ __all__: Sequence[str] = (
 import abc
 from typing import Final
 
-from utils import classproperty
+from classproperties import classproperty
+
 
 
 class ImproperlyConfiguredError(Exception):
