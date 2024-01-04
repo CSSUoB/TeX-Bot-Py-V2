@@ -1148,7 +1148,7 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "py-cord"
-version = "2.4.1.dev213+g8af8454a"
+version = "0.0.0"
 description = "A Python wrapper for the Discord API"
 optional = false
 python-versions = ">=3.8"
@@ -1166,7 +1166,7 @@ voice = ["PyNaCl (>=1.3.0,<1.6)"]
 [package.source]
 type = "git"
 url = "https://github.com/Pycord-Development/pycord.git"
-reference = "8af8454"
+reference = "8af8454a5befbdd6589d24016dcc7bfee252de0b"
 resolved_reference = "8af8454a5befbdd6589d24016dcc7bfee252de0b"
 
 [[package]]
@@ -1656,4 +1656,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "44759ce5c34316df41c5d889268c39b255de917aa44674a52330b9ea2460ae04"
+content-hash = "79b6f98f0676d682c951c42a1b6a170b0da02f9cfe9d2e96b2ff7c7d8ab8fba9"
