@@ -215,20 +215,34 @@ class Settings(abc.ABC):
         cls._settings["DISCORD_GUILD_ID"] = int(raw_discord_guild_id)  # type: ignore[arg-type]
 
     @classmethod
-    def _setup_group_name(cls) -> None:
-        raw_group_name: str | None = os.getenv("GROUP_NAME")
+    def _setup_group_full_name(cls) -> None:
+        raw_group_full_name: str | None = os.getenv("GROUP_NAME")
 
-        GROUP_NAME_IS_VALID: Final[bool] = bool(
-            not raw_group_name
-            or re.match(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", raw_group_name)
+        GROUP_FULL_NAME_IS_VALID: Final[bool] = bool(
+            not raw_group_full_name
+            or re.match(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", raw_group_full_name)
         )
-        if not GROUP_NAME_IS_VALID:
-            INVALID_GROUP_NAME_MESSAGE: Final[str] = (
+        if not GROUP_FULL_NAME_IS_VALID:
+            INVALID_GROUP_FULL_NAME: Final[str] = (
                 "GROUP_NAME must not contain any invalid characters."
             )
-            raise ImproperlyConfiguredError(INVALID_GROUP_NAME_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_GROUP_FULL_NAME)
+        cls._settings["_GROUP_FULL_NAME"] = raw_group_full_name
 
-        cls._settings["_GROUP_NAME"] = raw_group_name
+    @classmethod
+    def _setup_group_short_name(cls) -> None:
+        raw_group_short_name: str | None = os.getenv("GROUP_SHORT_NAME")
+
+        GROUP_SHORT_NAME_IS_VALID: Final[bool] = bool(
+            not raw_group_short_name
+            or re.match(r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", raw_group_short_name)
+        )
+        if not GROUP_SHORT_NAME_IS_VALID:
+            INVALID_GROUP_SHORT_NAME: Final[str] = (
+                "GROUP_SHORT_NAME must not contain any invalid characters."
+            )
+            raise ImproperlyConfiguredError(INVALID_GROUP_SHORT_NAME)
+        cls._settings["_GROUP_SHORT_NAME"] = raw_group_short_name
 
     @classmethod
     def _setup_purchase_membership_url(cls) -> None:

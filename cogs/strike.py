@@ -211,7 +211,7 @@ class BaseStrikeCog(TeXBotBaseCog):
         includes_ban_message: str = (
             (
                 "\nBecause you now have been given 3 strikes, you have been banned from "
-                f"the {self.bot.group_name} Discord server "
+                f"the {self.bot.group_short_name} Discord server "
                 f"and we have contacted {self.bot.group_moderation_contact} for "
                 "further action & advice."
             )
@@ -227,12 +227,12 @@ class BaseStrikeCog(TeXBotBaseCog):
 
         await strike_user.send(
             "Hi, a recent incident occurred in which you may have broken one or more of "
-            f"the {self.bot.group_name} Discord server's rules.\n"
+            f"the {self.bot.group_short_name} Discord server's rules.\n"
             "We have increased the number of strikes associated with your account "
             f"to {actual_strike_amount} and "
             "the corresponding moderation action will soon be applied to you. "
             "To find what moderation action corresponds to which strike level, "
-            f"you can view the {self.bot.group_name} Discord server moderation document "
+            f"you can view the {self.bot.group_short_name} Discord server moderation document "
             f"[here](<{settings.MODERATION_DOCUMENT_URL}>)\nPlease ensure you have read "
             f"the rules in {rules_channel_mention} so that your future behaviour adheres "
             f"to them.{includes_ban_message}\n\nA committee member will be in contact "

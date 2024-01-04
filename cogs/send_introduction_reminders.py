@@ -137,7 +137,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 await member.send(
                     content=(
                         "Hey! It seems like you joined "
-                        f"the {self.bot.group_name} Discord server "
+                        f"the {self.bot.group_short_name} Discord server "
                         "but have not yet introduced yourself.\n"
                         "You will only get access to the rest of the server after sending "
                         "an introduction message."
@@ -232,7 +232,8 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 await self.send_error(
                     interaction,
                     message=(
-                        f"You must be a member of the {self.bot.group_name} Discord server "
+                        f"You must be a member "
+                        f"of the {self.bot.group_short_name} Discord server "
                         f"""to opt{
                             "-out of" if BUTTON_WILL_MAKE_OPT_OUT else " back in to"
                         } introduction reminders."""

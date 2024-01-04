@@ -19,32 +19,31 @@ classifiers = [
     "Private :: Do Not Upload",
     "Natural Language :: English",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Typing :: Typed",
     "Topic :: Internet"
 ]
 
 [tool.poetry.dependencies]
-python = "^3.11"  # NOTE: The Python version cannot be updated to 3.12, because it is not currently supported by Pycord
-py-cord-dev = "2.5.0rc5"  # NOTE: Pycord has temporarily lost the ability to create new releases on the main pypi page so the development version is used. This has been tested to be stable
+python = "^3.12"  # NOTE: The Python version cannot be updated to 3.12, because it is not currently supported by Pycord
+py-cord = {git = "https://github.com/Pycord-Development/pycord.git", branch = "master", rev = "8af8454a5befbdd6589d24016dcc7bfee252de0b"}  # NOTE: Pycord has temporarily lost the ability to create new releases on their main pypi page so we use their git version, pinned to a specific commit hash. Pycord has been tested to be stable, up to the pinned commit
 python-dotenv = "^1.0"
 validators = "^0.22"
 beautifulsoup4 = "^4.12"
-emoji = "^2.8"
+emoji = "^2.9"
 parsedatetime = "^2.6"
 django = "~4.2"
 matplotlib = "^3.8"
 mplcyberpunk = "^0.7"
 python-logging-discord-handler = "^0.1"
 gitpython = "^3.1"
-classproperties = {git = "https://github.com/hottwaj/classproperties.git"}
+setuptools = "^69.0"
 
 [tool.poetry.group.dev.dependencies]
-mypy = "~1.6"
+mypy = "~1.7"
 django-stubs = {extras = ["compatible-mypy"], version = "~4.2"}
 pytest = "^7.4"
 ruff = "^0.1"
-setuptools = "*"  # NOTE: Required by pycharm
 pymarkdownlnt = "^0.9"
 
 
