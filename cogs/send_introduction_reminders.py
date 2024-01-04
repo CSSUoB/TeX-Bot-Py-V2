@@ -57,7 +57,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             self.OptOutIntroductionRemindersView(self.bot)
         )
 
-    @tasks.loop(**settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"])
+    @tasks.loop(**settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"])  # type: ignore[misc]
     @functools.partial(
         ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExist,
@@ -181,7 +181,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 logging_message=logging_message
             )
 
-        @ui.button(
+        @ui.button(  # type: ignore[misc]
             label="Opt-out of introduction reminders",
             custom_id="opt_out_introduction_reminders_button",
             style=discord.ButtonStyle.red,

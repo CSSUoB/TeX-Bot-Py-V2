@@ -30,7 +30,7 @@ from utils.tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteC
 
 if TYPE_CHECKING:
     # noinspection PyProtectedMember
-    from argparse import _SubParserAction as SubParserAction  # type: ignore[attr-defined]
+    from argparse import _SubParsersAction as SubParsersAction
 
 
 def main(argv: Sequence[str] | None = None, utility_functions: Iterable[type[UtilityFunction]] | None = None) -> int:  # noqa: E501
@@ -41,7 +41,7 @@ def main(argv: Sequence[str] | None = None, utility_functions: Iterable[type[Uti
         prog="utils",
         description="Executes common command-line utility functions"
     )
-    function_subparsers: SubParserAction = arg_parser.add_subparsers(
+    function_subparsers: SubParsersAction[ArgumentParser] = arg_parser.add_subparsers(
         title="functions",
         required=True,
         help="Utility function to execute",

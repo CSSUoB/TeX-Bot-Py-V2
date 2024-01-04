@@ -42,6 +42,7 @@ classproperties = {git = "https://github.com/hottwaj/classproperties.git"}
 [tool.poetry.group.dev.dependencies]
 mypy = "~1.7"
 django-stubs = {extras = ["compatible-mypy"], version = "~4.2"}
+types-beautifulsoup4 = "^4.12.0"
 pytest = "^7.4"
 ruff = "^0.1"
 setuptools = "*"  # NOTE: Required by pycharm
@@ -63,14 +64,27 @@ disallow_untyped_calls = true
 disallow_untyped_defs = true
 check_untyped_defs = true
 disallow_any_generics = true
+disallow_any_unimported = true
+disallow_any_decorated = true
+disallow_any_explicit = true
+disallow_subclassing_any = true
 disallow_untyped_decorators = true
+disallow_incomplete_defs = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_return_any = true
 no_implicit_reexport = true
 strict_equality = true
-ignore_missing_imports = true
 warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = [
+    "mplcyberpunk",
+    "discord_logging.handler",
+    "parsedatetime",
+    "validators"
+]
+ignore_missing_imports = true
 
 [tool.django-stubs]
 django_settings_module = "db.settings"

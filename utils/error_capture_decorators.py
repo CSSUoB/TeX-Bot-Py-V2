@@ -15,7 +15,7 @@ __all__: Sequence[str] = (
 import functools
 import logging
 from collections.abc import Callable, Coroutine
-from typing import TYPE_CHECKING, Any, Final, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, Final, ParamSpec, TypeVar
 
 from exceptions import GuildDoesNotExist, StrikeTrackingError
 from utils.tex_bot_base_cog import TeXBotBaseCog
@@ -26,18 +26,14 @@ T = TypeVar("T")
 if TYPE_CHECKING:
     from typing import Concatenate, TypeAlias
 
-    WrapperInputFunc: TypeAlias = Callable[  # type: ignore[valid-type, misc]
-        Concatenate[TeXBotBaseCog, P] | P,
-        Coroutine[Any, Any, T]
-    ]
-    WrapperOutputFunc: TypeAlias = Callable[  # type: ignore[valid-type, misc]
-        Concatenate[TeXBotBaseCog, P] | P,
-        Coroutine[Any, Any, T | None]
-    ]
-    DecoratorInputFunc: TypeAlias = Callable[
-        Concatenate[TeXBotBaseCog, P],
-        Coroutine[Any, Any, T]
-    ]
+    WrapperInputFunc: TypeAlias = (
+        Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T]]
+        | Callable[P, Coroutine[object, object, T]]
+    )
+    WrapperOutputFunc: TypeAlias = Callable[P, Coroutine[object, object, T | None]]
+    DecoratorInputFunc: TypeAlias = (
+        Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T]]
+    )
 
 
 class ErrorCaptureDecorators:
@@ -68,7 +64,7 @@ class ErrorCaptureDecorators:
                 close_func(error)
                 await self.bot.close()
                 return None
-        return wrapper
+        return wrapper  # type: ignore[return-value]
 
     @staticmethod
     def critical_error_close_func(error: BaseException) -> None:
@@ -89,7 +85,7 @@ def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T]") -> "Wrapp
     The raised exception is then suppressed.
     """  # noqa: D401
     return ErrorCaptureDecorators.capture_error_and_close(
-        func,
+        func,  # type: ignore[arg-type]
         error_type=GuildDoesNotExist,
         close_func=ErrorCaptureDecorators.critical_error_close_func
     )
@@ -102,7 +98,7 @@ def capture_strike_tracking_error(func: "WrapperInputFunc[P, T]") -> "WrapperOut
     The raised exception is then suppressed.
     """  # noqa: D401
     return ErrorCaptureDecorators.capture_error_and_close(
-        func,
+        func,  # type: ignore[arg-type]
         error_type=StrikeTrackingError,
         close_func=ErrorCaptureDecorators.strike_tracking_error_close_func
     )

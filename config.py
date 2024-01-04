@@ -99,7 +99,7 @@ class Settings:
         self._is_django_setup: bool = False
         self._settings: dict[str, object] = {}
 
-    def __getattr__(self, item: str) -> Any:
+    def __getattr__(self, item: str) -> Any:  # type: ignore[misc]
         """Retrieve settings value by attribute lookup."""
         self._setup_env_variables()
 
@@ -115,7 +115,7 @@ class Settings:
         )
         raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
-    def __getitem__(self, item: str) -> Any:
+    def __getitem__(self, item: str) -> Any:  # type: ignore[misc]
         """Retrieve settings value by key lookup."""
         try:
             return getattr(self, item)

@@ -41,7 +41,7 @@ class KickNoIntroductionDiscordMembersTaskCog(TeXBotBaseCog):
         """
         self.kick_no_introduction_discord_members.cancel()
 
-    @tasks.loop(hours=24)
+    @tasks.loop(hours=24)  # type: ignore[misc]
     @functools.partial(
         ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExist,
