@@ -20,11 +20,11 @@ __all__: Sequence[str] = (
 
 import json
 import logging
-from logging import Logger
 import os
 import re
 from collections.abc import Callable
 from datetime import timedelta
+from logging import Logger
 from pathlib import Path
 from re import Match
 from typing import Any, Final
