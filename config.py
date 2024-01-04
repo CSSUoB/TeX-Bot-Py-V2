@@ -20,6 +20,7 @@ __all__: Sequence[str] = (
 
 import json
 import logging
+from logging import Logger
 import os
 import re
 from collections.abc import Callable
@@ -71,6 +72,8 @@ LOG_LEVEL_CHOICES: Final[Sequence[str]] = (
     "ERROR",
     "CRITICAL"
 )
+
+logger: Logger = logging.getLogger("texbot")
 
 
 class Settings:
@@ -459,18 +462,22 @@ class Settings:
         ) or DEFAULT_STATISTICS_ROLES
 
         console_log_level: str = str(os.getenv("CONSOLE_LOG_LEVEL", "INFO")).upper()
+
         if console_log_level not in LOG_LEVEL_CHOICES:
-            INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"""LOG_LEVEL must be one of {
-                ",".join(f"{log_level_choice!r}"
-                for log_level_choice
-                in LOG_LEVEL_CHOICES[:-1])
-            } or {LOG_LEVEL_CHOICES[-1]!r}."""
+            INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"""LOG_LEVEL must be one of {",".join(
+                f"{log_level_choice!r}" for log_level_choice in LOG_LEVEL_CHOICES[:-1]
+            )} or {LOG_LEVEL_CHOICES[-1]!r}."""
             raise ImproperlyConfigured(INVALID_LOG_LEVEL_MESSAGE)
+
+        logger.setLevel(getattr(logging, console_log_level))
+
+        console_logging_handler: logging.Handler = logging.StreamHandler()
         # noinspection SpellCheckingInspection
-        logging.basicConfig(
-            level=getattr(logging, console_log_level),
-            format="%(levelname)s: %(message)s"
+        console_logging_handler.setFormatter(
+            logging.Formatter("{asctime} - {name} - {levelname}", style="{")
         )
+
+        logger.addHandler(console_logging_handler)
 
         moderation_document_url: str = os.getenv("MODERATION_DOCUMENT_URL", "")
         moderation_document_url_is_valid: bool = bool(
