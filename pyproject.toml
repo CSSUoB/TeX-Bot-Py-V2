@@ -38,6 +38,7 @@ mplcyberpunk = "^0.7"
 python-logging-discord-handler = "^0.1"
 gitpython = "^3.1"
 classproperties = {git = "https://github.com/hottwaj/classproperties.git"}
+setuptools = "^69.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "~1.7"
@@ -45,7 +46,6 @@ django-stubs = {extras = ["compatible-mypy"], version = "~4.2"}
 types-beautifulsoup4 = "^4.12.0"
 pytest = "^7.4"
 ruff = "^0.1"
-setuptools = "*"  # NOTE: Required by pycharm
 pymarkdownlnt = "^0.9"
 
 
