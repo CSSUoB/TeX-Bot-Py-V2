@@ -1148,7 +1148,7 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "py-cord"
-version = "0.0.0"
+version = "2.4.1.dev213+g8af8454a"
 description = "A Python wrapper for the Discord API"
 optional = false
 python-versions = ">=3.8"
@@ -1656,4 +1656,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "5b8df52576d0e6e4a4856e8e689fb811e7d5946d123a77d3b027ab9dea9c469b"
+content-hash = "44759ce5c34316df41c5d889268c39b255de917aa44674a52330b9ea2460ae04"
