@@ -1,4 +1,4 @@
-"""Configurations to make core app ready to import into _settings.py."""
+"""Configurations to make core app ready to import into settings.py."""
 
 from collections.abc import Sequence
 
