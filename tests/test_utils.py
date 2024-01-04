@@ -24,6 +24,7 @@ from utils import InviteURLGenerator, UtilityFunction
 
 if TYPE_CHECKING:
     from argparse import ArgumentParser
+
     # noinspection PyProtectedMember
     from argparse import _SubParsersAction as SubParsersAction
 
