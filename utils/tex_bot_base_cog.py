@@ -15,8 +15,8 @@ from discord import Cog
 
 from exceptions import (
     BaseDoesNotExistError,
-    CommitteeRoleDoesNotExist,
-    DiscordMemberNotInMainGuild,
+    CommitteeRoleDoesNotExistError,
+    DiscordMemberNotInMainGuildError,
 )
 from utils.tex_bot import TeXBot
 from utils.tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
@@ -97,7 +97,7 @@ class TeXBotBaseCog(Cog):
             # noinspection PyUnusedLocal
             committee_mention: str = "committee"
 
-            with contextlib.suppress(CommitteeRoleDoesNotExist):
+            with contextlib.suppress(CommitteeRoleDoesNotExistError):
                 committee_mention = (await bot.committee_role).mention
 
             construct_error_message = (
@@ -160,7 +160,7 @@ class TeXBotBaseCog(Cog):
         except BaseDoesNotExistError:
             return set()
 
-        with contextlib.suppress(BaseDoesNotExistError, DiscordMemberNotInMainGuild):
+        with contextlib.suppress(BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
             channel_permissions_limiter = await ctx.bot.get_main_guild_member(
                 ctx.interaction.user
             )

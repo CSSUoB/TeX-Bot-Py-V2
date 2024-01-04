@@ -16,7 +16,7 @@ from discord.ext import tasks
 
 from config import settings
 from db.core.models import SentGetRolesReminderMember
-from exceptions import GuestRoleDoesNotExist, RolesChannelDoesNotExist
+from exceptions import GuestRoleDoesNotExistError, RolesChannelDoesNotExistError
 from utils import TeXBot, TeXBotBaseCog
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
@@ -45,7 +45,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
     @tasks.loop(**settings["SEND_GET_ROLES_REMINDERS_INTERVAL"])
     @functools.partial(
         ErrorCaptureDecorators.capture_error_and_close,
-        error_type=GuestRoleDoesNotExist,
+        error_type=GuestRoleDoesNotExistError,
         close_func=ErrorCaptureDecorators.critical_error_close_func
     )
     @capture_guild_does_not_exist_error
@@ -65,7 +65,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
 
         # noinspection PyUnusedLocal
         roles_channel_mention: str = "#roles"
-        with contextlib.suppress(RolesChannelDoesNotExist):
+        with contextlib.suppress(RolesChannelDoesNotExistError):
             roles_channel_mention = (await self.bot.roles_channel).mention
 
         # noinspection SpellCheckingInspection

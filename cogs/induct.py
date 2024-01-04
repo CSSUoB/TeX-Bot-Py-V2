@@ -20,12 +20,12 @@ import discord
 from config import settings
 from db.core.models import IntroductionReminderOptOutMember
 from exceptions import (
-    CommitteeRoleDoesNotExist,
-    GuestRoleDoesNotExist,
-    GuildDoesNotExist,
-    MemberRoleDoesNotExist,
-    RolesChannelDoesNotExist,
-    RulesChannelDoesNotExist,
+    CommitteeRoleDoesNotExistError,
+    GuestRoleDoesNotExistError,
+    GuildDoesNotExistError,
+    MemberRoleDoesNotExistError,
+    RolesChannelDoesNotExistError,
+    RulesChannelDoesNotExistError,
 )
 from utils import (
     CommandChecks,
@@ -56,7 +56,7 @@ class InductSendMessageCog(TeXBotBaseCog):
 
         try:
             guest_role: discord.Role = await self.bot.guest_role
-        except GuestRoleDoesNotExist:
+        except GuestRoleDoesNotExistError:
             return
 
         if guest_role in before.roles or guest_role not in after.roles:
@@ -88,16 +88,16 @@ class InductSendMessageCog(TeXBotBaseCog):
 
         # noinspection PyUnusedLocal
         rules_channel_mention: str = "`#welcome`"
-        with contextlib.suppress(RulesChannelDoesNotExist):
+        with contextlib.suppress(RulesChannelDoesNotExistError):
             rules_channel_mention = (await self.bot.rules_channel).mention
 
         # noinspection PyUnusedLocal
         roles_channel_mention: str = "#roles"
-        with contextlib.suppress(RolesChannelDoesNotExist):
+        with contextlib.suppress(RolesChannelDoesNotExistError):
             roles_channel_mention = (await self.bot.roles_channel).mention
 
         user_type: Literal["guest", "member"] = "guest"
-        with contextlib.suppress(MemberRoleDoesNotExist):
+        with contextlib.suppress(MemberRoleDoesNotExistError):
             if await self.bot.member_role in after.roles:
                 user_type = "member"
 
@@ -148,7 +148,7 @@ class BaseInductCog(TeXBotBaseCog):
         if "<Committee>" in random_welcome_message:
             try:
                 committee_role_mention: str = (await self.bot.committee_role).mention
-            except CommitteeRoleDoesNotExist:
+            except CommitteeRoleDoesNotExistError:
                 return await self.get_random_welcome_message(induction_member)
             else:
                 random_welcome_message = random_welcome_message.replace(
@@ -197,7 +197,7 @@ class BaseInductCog(TeXBotBaseCog):
 
             # noinspection PyUnusedLocal
             roles_channel_mention: str = "#roles"
-            with contextlib.suppress(RolesChannelDoesNotExist):
+            with contextlib.suppress(RolesChannelDoesNotExistError):
                 roles_channel_mention = (await self.bot.roles_channel).mention
 
             await general_channel.send(
@@ -238,14 +238,14 @@ class InductCommandCog(BaseInductCog):
         """
         try:
             guild: discord.Guild = ctx.bot.main_guild
-        except GuildDoesNotExist:
+        except GuildDoesNotExistError:
             return set()
 
         members: set[discord.Member] = {member for member in guild.members if not member.bot}
 
         try:
             guest_role: discord.Role = await ctx.bot.guest_role
-        except GuestRoleDoesNotExist:
+        except GuestRoleDoesNotExistError:
             return set()
         else:
             members = {member for member in members if guest_role not in member.roles}

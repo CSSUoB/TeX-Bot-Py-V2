@@ -17,7 +17,7 @@ from django.core.exceptions import ValidationError
 
 from config import settings
 from db.core.models import GroupMadeMember
-from exceptions import CommitteeRoleDoesNotExist, GuestRoleDoesNotExist
+from exceptions import CommitteeRoleDoesNotExistError, GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 
@@ -129,7 +129,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         if GROUP_MEMBER_ID_IS_ALREADY_USED:
             # noinspection PyUnusedLocal
             committee_mention: str = "committee"
-            with contextlib.suppress(CommitteeRoleDoesNotExist):
+            with contextlib.suppress(CommitteeRoleDoesNotExistError):
                 committee_mention = (await self.bot.roles_channel).mention
 
             await ctx.respond(
@@ -235,7 +235,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 
         try:
             guest_role: discord.Role = await self.bot.guest_role
-        except GuestRoleDoesNotExist:
+        except GuestRoleDoesNotExistError:
             logging.warning(
                 "\"/makemember\" command used but the \"Guest\" role does not exist. "
                 "Some user's may now have the \"Member\" role without the \"Guest\" role. "

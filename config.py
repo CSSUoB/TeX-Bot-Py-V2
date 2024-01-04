@@ -33,8 +33,8 @@ import dotenv
 import validators
 
 from exceptions import (
-    ImproperlyConfigured,
-    MessagesJSONFileMissingKey,
+    ImproperlyConfiguredError,
+    MessagesJSONFileMissingKeyError,
     MessagesJSONFileValueError,
 )
 

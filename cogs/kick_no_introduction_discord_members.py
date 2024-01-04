@@ -12,7 +12,7 @@ import discord
 from discord.ext import tasks
 
 from config import settings
-from exceptions import GuestRoleDoesNotExist
+from exceptions import GuestRoleDoesNotExistError
 from utils import TeXBot, TeXBotBaseCog
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
@@ -44,7 +44,7 @@ class KickNoIntroductionDiscordMembersTaskCog(TeXBotBaseCog):
     @tasks.loop(hours=24)
     @functools.partial(
         ErrorCaptureDecorators.capture_error_and_close,
-        error_type=GuestRoleDoesNotExist,
+        error_type=GuestRoleDoesNotExistError,
         close_func=ErrorCaptureDecorators.critical_error_close_func
     )
     @capture_guild_does_not_exist_error
