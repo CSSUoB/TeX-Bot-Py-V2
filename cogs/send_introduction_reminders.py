@@ -200,9 +200,9 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             is pressed.
             """
             BUTTON_WILL_MAKE_OPT_OUT: Final[bool] = bool(
-                    button.style == discord.ButtonStyle.red
-                    or str(button.emoji) == emoji.emojize(":no_good:", language="alias")
-                    or (button.label and "Opt-out" in button.label)
+                button.style == discord.ButtonStyle.red
+                or str(button.emoji) == emoji.emojize(":no_good:", language="alias")
+                or (button.label and "Opt-out" in button.label)
             )
 
             _BUTTON_WILL_MAKE_OPT_IN: Final[bool] = bool(
