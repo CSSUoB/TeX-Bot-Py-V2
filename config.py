@@ -25,6 +25,7 @@ import os
 import re
 from collections.abc import Iterable, Mapping
 from datetime import timedelta
+from logging import Logger
 from pathlib import Path
 from re import Match
 from typing import IO, Any, ClassVar, Final, final
@@ -73,6 +74,8 @@ LOG_LEVEL_CHOICES: Final[Sequence[str]] = (
     "ERROR",
     "CRITICAL"
 )
+
+logger: Logger = logging.getLogger("texbot")
 
 
 class Settings(abc.ABC):
@@ -138,11 +141,15 @@ class Settings(abc.ABC):
                 } or {LOG_LEVEL_CHOICES[-1]!r}."""
             raise ImproperlyConfigured(INVALID_LOG_LEVEL_MESSAGE)
 
+        logger.setLevel(getattr(logging, console_log_level))
+
+        console_logging_handler: logging.Handler = logging.StreamHandler()
         # noinspection SpellCheckingInspection
-        logging.basicConfig(
-            level=getattr(logging, raw_console_log_level),
-            format="%(levelname)s: %(message)s"
+        console_logging_handler.setFormatter(
+            logging.Formatter("{asctime} - {name} - {levelname}", style="{")
         )
+
+        logger.addHandler(console_logging_handler)
 
     @classmethod
     def _setup_discord_bot_token(cls) -> None:
