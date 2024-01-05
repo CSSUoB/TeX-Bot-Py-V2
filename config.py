@@ -227,6 +227,7 @@ class Settings(abc.ABC):
                 "GROUP_NAME must not contain any invalid characters."
             )
             raise ImproperlyConfiguredError(INVALID_GROUP_FULL_NAME)
+
         cls._settings["_GROUP_FULL_NAME"] = raw_group_full_name
 
     @classmethod
@@ -242,6 +243,7 @@ class Settings(abc.ABC):
                 "GROUP_SHORT_NAME must not contain any invalid characters."
             )
             raise ImproperlyConfiguredError(INVALID_GROUP_SHORT_NAME)
+
         cls._settings["_GROUP_SHORT_NAME"] = raw_group_short_name
 
     @classmethod
@@ -679,7 +681,8 @@ class Settings(abc.ABC):
         cls._setup_discord_bot_token()
         cls._setup_discord_log_channel_webhook_url()
         cls._setup_discord_guild_id()
-        cls._setup_group_name()
+        cls._setup_group_full_name()
+        cls._setup_group_short_name()
         cls._setup_ping_command_easter_egg_probability()
         cls._setup_welcome_messages()
         cls._setup_roles_messages()
