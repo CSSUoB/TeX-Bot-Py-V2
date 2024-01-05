@@ -199,24 +199,24 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             This function is attached as a button's callback, so will run whenever the button
             is pressed.
             """
-            button_will_make_opt_out: bool = (
-                    button.style == discord.ButtonStyle.red
-                    or str(button.emoji) == emoji.emojize(":no_good:", language="alias")
-                    or bool(button.label and "Opt-out" in button.label)
+            BUTTON_WILL_MAKE_OPT_OUT: Final[bool] = bool(
+                button.style == discord.ButtonStyle.red
+                or str(button.emoji) == emoji.emojize(":no_good:", language="alias")
+                or (button.label and "Opt-out" in button.label)
             )
 
-            _button_will_make_opt_in: bool = (
+            _BUTTON_WILL_MAKE_OPT_IN: Final[bool] = bool(
                     button.style == discord.ButtonStyle.green
                     or str(button.emoji) == emoji.emojize(
                         ":raised_hand:",
                         language="alias"
                     )
-                    or bool(button.label and "Opt back in" in button.label))
-            incompatible_buttons: bool = (
-                (button_will_make_opt_out and _button_will_make_opt_in)
-                or (not button_will_make_opt_out and not _button_will_make_opt_in)
+                    or button.label and "Opt back in" in button.label)
+            INCOMPATIBLE_BUTTONS: Final[bool] = bool(
+                (BUTTON_WILL_MAKE_OPT_OUT and _BUTTON_WILL_MAKE_OPT_IN)
+                or (not BUTTON_WILL_MAKE_OPT_OUT and not _BUTTON_WILL_MAKE_OPT_IN)
             )
-            if incompatible_buttons:
+            if INCOMPATIBLE_BUTTONS:
                 INCOMPATIBLE_BUTTONS_MESSAGE: Final[str] = "Conflicting buttons pressed"
                 raise ValueError(INCOMPATIBLE_BUTTONS_MESSAGE)
 
@@ -235,13 +235,13 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                         f"You must be a member "
                         f"of the {self.bot.group_short_name} Discord server "
                         f"""to opt{
-                            "-out of" if button_will_make_opt_out else " back in to"
+                            "-out of" if BUTTON_WILL_MAKE_OPT_OUT else " back in to"
                         } introduction reminders."""
                     )
                 )
                 return
 
-            if button_will_make_opt_out:
+            if BUTTON_WILL_MAKE_OPT_OUT:
                 try:
                     await IntroductionReminderOptOutMember.objects.acreate(
                         member_id=interaction_member.id
