@@ -7,11 +7,14 @@ __all__: Sequence[str] = ("UtilityFunction",)
 import abc
 import logging
 from argparse import ArgumentParser, Namespace
+from logging import Logger
 from typing import TYPE_CHECKING, ClassVar, Final, Self
 
 if TYPE_CHECKING:
     # noinspection PyProtectedMember
     from argparse import _SubParsersAction as SubParsersAction
+
+logger: Logger = logging.getLogger("texbot")
 
 
 class UtilityFunction(abc.ABC):
@@ -41,7 +44,7 @@ class UtilityFunction(abc.ABC):
         This allows the subparser to retrieve arguments specific to this utility function.
         """
         if parser in cls._function_subparsers:
-            logging.warning(
+            logger.warning(
                 "This UtilityFunction has already been attached to the given parser."
             )
         else:

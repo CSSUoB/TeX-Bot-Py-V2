@@ -7,6 +7,7 @@ __all__: Sequence[str] = ("MakeMemberCommandCog",)
 import contextlib
 import logging
 import re
+from logging import Logger
 from typing import Final
 
 import aiohttp
@@ -20,6 +21,7 @@ from db.core.models import GroupMadeMember
 from exceptions import CommitteeRoleDoesNotExistError, GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
+logger: Logger = logging.getLogger("texbot")
 
 class MakeMemberCommandCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
@@ -238,7 +240,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         try:
             guest_role: discord.Role = await self.bot.guest_role
         except GuestRoleDoesNotExistError:
-            logging.warning(
+            logger.warning(
                 "\"/makemember\" command used but the \"Guest\" role does not exist. "
                 "Some user's may now have the \"Member\" role without the \"Guest\" role. "
                 "Use the \"/ensure-members-inducted\" command to fix this issue."

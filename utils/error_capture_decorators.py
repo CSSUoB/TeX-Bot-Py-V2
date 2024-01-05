@@ -15,6 +15,7 @@ __all__: Sequence[str] = (
 import functools
 import logging
 from collections.abc import Callable, Coroutine
+from logging import Logger
 from typing import TYPE_CHECKING, Final, ParamSpec, TypeVar
 
 from exceptions import GuildDoesNotExistError, StrikeTrackingError
@@ -34,6 +35,9 @@ if TYPE_CHECKING:
     DecoratorInputFunc: TypeAlias = (
         Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T]]
     )
+
+
+logger: Logger = logging.getLogger("texbot")
 
 
 class ErrorCaptureDecorators:
@@ -69,13 +73,13 @@ class ErrorCaptureDecorators:
     @staticmethod
     def critical_error_close_func(error: BaseException) -> None:
         """Component function to send logging messages when a critical error is encountered."""
-        logging.critical(str(error).rstrip(".:"))
+        logger.critical(str(error).rstrip(".:"))
 
     @classmethod
     def strike_tracking_error_close_func(cls, error: BaseException) -> None:
         """Component function to send logging messages when a StrikeTrackingError is raised."""
         cls.critical_error_close_func(error)
-        logging.warning("Critical errors are likely to lead to untracked moderation actions")
+        logger.warning("Critical errors are likely to lead to untracked moderation actions")
 
 
 def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T]") -> "WrapperOutputFunc[P, T]":  # noqa: E501
