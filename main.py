@@ -12,16 +12,13 @@ __all__: Sequence[str] = ("bot",)
 
 
 import discord
-from django.core import management
 
 import config
 from config import settings
 from utils import SuppressTraceback, TeXBot
 
 with SuppressTraceback():
-    config.setup_env_variables()
-    config.setup_django()
-
+    config.run_setup()
     intents: discord.Intents = discord.Intents.default()
     # noinspection PyDunderSlots,PyUnresolvedReferences
     intents.members = True
@@ -31,7 +28,4 @@ with SuppressTraceback():
 bot.load_extension("cogs")
 
 if __name__ == "__main__":
-    with SuppressTraceback():
-        management.call_command("migrate")
-
     bot.run(settings["DISCORD_BOT_TOKEN"])

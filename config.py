@@ -13,25 +13,27 @@ __all__: Sequence[str] = (
     "VALID_SEND_INTRODUCTION_REMINDERS_VALUES",
     "DEFAULT_STATISTICS_ROLES",
     "LOG_LEVEL_CHOICES",
+    "run_setup",
     "settings",
-    "setup_env_variables",
-    "setup_django"
 )
 
+import abc
+import functools
 import json
 import logging
 import os
 import re
-from collections.abc import Callable
+from collections.abc import Iterable, Mapping
 from datetime import timedelta
 from logging import Logger
 from pathlib import Path
 from re import Match
-from typing import Any, Final
+from typing import IO, Any, ClassVar, Final, final
 
-import django
 import dotenv
+import git
 import validators
+from django.core import management
 
 from exceptions import (
     ImproperlyConfigured,
@@ -76,400 +78,70 @@ LOG_LEVEL_CHOICES: Final[Sequence[str]] = (
 logger: Logger = logging.getLogger("texbot")
 
 
-class Settings:
+class Settings(abc.ABC):
     """
     Settings class that provides access to all settings values.
 
     Settings values can be accessed via key (like a dictionary) or via class attribute.
     """
 
-    _instance: "Settings | None" = None
+    _is_env_variables_setup: ClassVar[bool]
+    _settings: ClassVar[dict[str, object]]
 
-    def __new__(cls, *args: object, **kwargs: object) -> "Settings":
-        """
-        Return the singleton settings container instance.
-
-        If no singleton instance exists, a new one is created, then stored as a class variable.
-        """
-        if not cls._instance:
-            cls._instance = super().__new__(cls, *args, **kwargs)
-
-        return cls._instance
-
-    def __init__(self) -> None:
-        """Instantiate a new settings container with False is_setup flags."""
-        self._is_env_variables_setup: bool = False
-        self._is_django_setup: bool = False
-        self._settings: dict[str, object] = {}
+    @classmethod
+    def get_invalid_settings_key_message(cls, item: str) -> str:
+        """Return the message to state that the given settings key is invalid."""
+        return f"{item!r} is not a valid settings key."
 
     def __getattr__(self, item: str) -> Any:
         """Retrieve settings value by attribute lookup."""
-        self._setup_env_variables()
+        MISSING_ATTRIBUTE_MESSAGE: Final[str] = (
+            f"{type(self).__name__!r} object has no attribute {item!r}"
+        )
+
+        if "_pytest" in item or item in ("__bases__", "__test__"):  # HACK: Overriding __getattr__() leads to many edge-case issues where external libraries will attempt to call getattr() with peculiar values # noqa: FIX004
+            raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
+
+        if not self._is_env_variables_setup:
+            self._setup_env_variables()
 
         if item in self._settings:
             return self._settings[item]
 
         if re.match(r"\A[A-Z](?:[A-Z_]*[A-Z])?\Z", item):
-            INVALID_SETTINGS_KEY_MESSAGE: Final[str] = f"{item!r} is not a valid settings key."
+            INVALID_SETTINGS_KEY_MESSAGE: Final[str] = self.get_invalid_settings_key_message(
+                item
+            )
             raise AttributeError(INVALID_SETTINGS_KEY_MESSAGE)
 
-        MISSING_ATTRIBUTE_MESSAGE: Final[str] = (
-            f"{type(self).__name__!r} object has no attribute {item!r}"
-        )
         raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
     def __getitem__(self, item: str) -> Any:
         """Retrieve settings value by key lookup."""
+        e: AttributeError
         try:
             return getattr(self, item)
-        except AttributeError:
-            raise KeyError(item) from None
+        except AttributeError as e:
+            key_error_message: str = item
 
-    def _setup_env_variables(self) -> None:  # noqa: C901, PLR0912
-        """
-        Load environment values into the settings dictionary.
+            if self.get_invalid_settings_key_message(item) in str(e):
+                key_error_message = str(e)
 
-        Environment values are loaded from the .env file/the current environment variables and
-        are only stored after the input values have been validated.
-        """
-        if self._is_env_variables_setup:
-            return
+            raise KeyError(key_error_message) from None
 
-        dotenv.load_dotenv()
+    @staticmethod
+    def _setup_logging() -> None:
+        raw_console_log_level: str = str(os.getenv("CONSOLE_LOG_LEVEL", "INFO")).upper()
 
-        discord_bot_token: str = os.getenv("DISCORD_BOT_TOKEN", "")
-        discord_bot_token_is_valid: bool = bool(
-            bool(discord_bot_token)
-            and bool(
-                re.match(
-                    r"\A([A-Za-z0-9]{24,26})\.([A-Za-z0-9]{6})\.([A-Za-z0-9_-]{27,38})\Z",
-                    discord_bot_token
-                )
-            )
-        )
-        if not discord_bot_token_is_valid:
-            INVALID_BOT_TOKEN_MESSAGE: Final[str] = (
-                "DISCORD_BOT_TOKEN must be a valid Discord bot token "
-                "(see https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)."
-            )
-            raise ImproperlyConfigured(INVALID_BOT_TOKEN_MESSAGE)
-        self._settings["DISCORD_BOT_TOKEN"] = discord_bot_token
-
-        discord_guild_id: str = os.getenv("DISCORD_GUILD_ID", "")
-        if not discord_guild_id or not re.match(r"\A\d{17,20}\Z", discord_guild_id):
-            INVALID_GUILD_ID_MESSAGE: Final[str] = (
-                "DISCORD_GUILD_ID must be a valid Discord guild ID "
-                "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)."
-            )
-            raise ImproperlyConfigured(INVALID_GUILD_ID_MESSAGE)
-        self._settings["DISCORD_GUILD_ID"] = int(discord_guild_id)
-
-        discord_log_channel_webhook_url: str = os.getenv("DISCORD_LOG_CHANNEL_WEBHOOK_URL", "")
-        discord_log_channel_webhook_url_is_valid: bool = bool(
-            not discord_log_channel_webhook_url
-            or (
-                validators.url(discord_log_channel_webhook_url)
-                and discord_log_channel_webhook_url.startswith(
-                    "https://discord.com/api/webhooks/"
-                )
-            )
-        )
-        if not discord_log_channel_webhook_url_is_valid:
-            INVALID_WEBHOOK_URL_MESSAGE: Final[str] = (
-                "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL "
-                "that points to a discord channel where logs should be displayed."
-            )
-            raise ImproperlyConfigured(INVALID_WEBHOOK_URL_MESSAGE)
-        self._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = discord_log_channel_webhook_url
-
-        group_full_name: str = os.getenv("GROUP_NAME", "")
-        group_full_name_is_valid: bool = bool(
-            not group_full_name
-            or re.match(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", group_full_name)
-        )
-        if not group_full_name_is_valid:
-            INVALID_GROUP_FULL_NAME: Final[str] = (
-                "GROUP_NAME must not contain any invalid characters."
-            )
-            raise ImproperlyConfigured(INVALID_GROUP_FULL_NAME)
-        self._settings["_GROUP_FULL_NAME"] = group_full_name
-
-        group_short_name: str = os.getenv("GROUP_SHORT_NAME", "")
-        group_short_name_is_valid: bool = bool(
-            not group_short_name
-            or re.match(r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", group_short_name)
-        )
-        if not group_short_name_is_valid:
-            INVALID_GROUP_SHORT_NAME: Final[str] = (
-                "GROUP_SHORT_NAME must not contain any invalid characters."
-            )
-            raise ImproperlyConfigured(INVALID_GROUP_SHORT_NAME)
-        self._settings["_GROUP_SHORT_NAME"] = group_short_name
-
-        purchase_membership_url: str = os.getenv("PURCHASE_MEMBERSHIP_URL", "")
-        purchase_membership_url_is_valid: bool = bool(
-            not purchase_membership_url
-            or validators.url(purchase_membership_url)
-        )
-        if not purchase_membership_url_is_valid:
-            INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE: Final[str] = (
-                "PURCHASE_MEMBERSHIP_URL must be a valid URL."
-            )
-            raise ImproperlyConfigured(INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE)
-        self._settings["PURCHASE_MEMBERSHIP_URL"] = purchase_membership_url
-
-        membership_perks_url: str = os.getenv("MEMBERSHIP_PERKS_URL", "")
-        membership_perks_url_is_valid: bool = bool(
-            not membership_perks_url
-            or validators.url(membership_perks_url)
-        )
-        if not membership_perks_url_is_valid:
-            INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (
-                "MEMBERSHIP_PERKS_URL must be a valid URL."
-            )
-            raise ImproperlyConfigured(INVALID_MEMBERSHIP_PERKS_URL_MESSAGE)
-        self._settings["MEMBERSHIP_PERKS_URL"] = membership_perks_url
-
-        try:
-            ping_command_easter_egg_probability: float = 100 * float(
-                os.getenv("PING_COMMAND_EASTER_EGG_PROBABILITY", "0.01")
-            )
-        except ValueError as ping_command_easter_egg_probability_error:
-            PROBABILITY_IS_NOT_FLOAT_MESSAGE: Final[str] = (
-                "PING_COMMAND_EASTER_EGG_PROBABILITY must be a float."
-            )
-            raise ImproperlyConfigured(
-                PROBABILITY_IS_NOT_FLOAT_MESSAGE
-            ) from ping_command_easter_egg_probability_error
-        if not 100 >= ping_command_easter_egg_probability >= 0:
-            PROBABILITY_IS_NOT_IN_RANGE_MESSAGE: Final[str] = (
-                "PING_COMMAND_EASTER_EGG_PROBABILITY must be a value "
-                "between & including 1 & 0."
-            )
-            raise ImproperlyConfigured(PROBABILITY_IS_NOT_IN_RANGE_MESSAGE)
-        self._settings["PING_COMMAND_EASTER_EGG_PROBABILITY"] = (
-            ping_command_easter_egg_probability
-        )
-
-        messages_file_path: Path = Path(os.getenv("MESSAGES_FILE_PATH", "messages.json"))
-        if not messages_file_path.is_file():
-            NO_FILE_PATH_MESSAGE: Final[str] = (
-                "MESSAGES_FILE_PATH must be a path to a file that exists."
-            )
-            raise ImproperlyConfigured(NO_FILE_PATH_MESSAGE)
-        if messages_file_path.suffix != ".json":
-            NOT_JSON_FILE_MESSAGE: Final[str] = (
-                "MESSAGES_FILE_PATH must be a path to a JSON file."
-            )
-            raise ImproperlyConfigured(NOT_JSON_FILE_MESSAGE)
-
-        with messages_file_path.open(encoding="utf8") as messages_file:
-            try:
-                messages_dict: dict[object, object] = json.load(messages_file)
-            except json.JSONDecodeError as messages_file_error:
-                JSON_DECODING_ERROR_MESSAGE: Final[str] = (
-                    "Messages JSON file must contain a JSON string that can be decoded "
-                    "into a Python dict object."
-                )
-                raise ImproperlyConfigured(
-                    JSON_DECODING_ERROR_MESSAGE
-                ) from messages_file_error
-
-        if "welcome_messages" not in messages_dict:
-            raise MessagesJSONFileMissingKey(missing_key="welcome_messages")
-        welcome_messages_key_is_valid: bool = bool(
-            isinstance(messages_dict["welcome_messages"], list)
-            and messages_dict["welcome_messages"]
-        )
-        if not welcome_messages_key_is_valid:
-            raise MessagesJSONFileValueError(
-                dict_key="welcome_messages",
-                invalid_value=messages_dict["welcome_messages"]
-            )
-        self._settings["WELCOME_MESSAGES"] = messages_dict["welcome_messages"]
-
-        if "roles_messages" not in messages_dict:
-            raise MessagesJSONFileMissingKey(missing_key="roles_messages")
-        roles_messages_key_is_valid: bool = bool(
-            isinstance(messages_dict["roles_messages"], list)
-            and messages_dict["roles_messages"]
-        )
-        if not roles_messages_key_is_valid:
-            raise MessagesJSONFileValueError(
-                dict_key="roles_messages",
-                invalid_value=messages_dict["roles_messages"]
-            )
-        self._settings["ROLES_MESSAGES"] = messages_dict["roles_messages"]
-
-        members_list_url: str = os.getenv("MEMBERS_LIST_URL", "")
-        members_list_url_is_valid: bool = bool(
-            members_list_url
-            and validators.url(members_list_url)
-        )
-        if not members_list_url_is_valid:
-            INVALID_MEMBERS_LIST_URL_MESSAGE: Final[str] = (
-                "MEMBERS_LIST_URL must be a valid URL."
-            )
-            raise ImproperlyConfigured(INVALID_MEMBERS_LIST_URL_MESSAGE)
-        self._settings["MEMBERS_LIST_URL"] = members_list_url
-
-        members_list_url_session_cookie: str = os.getenv("MEMBERS_LIST_URL_SESSION_COOKIE", "")
-        members_list_url_session_cookie_is_valid: bool = bool(
-            members_list_url_session_cookie
-            and re.match(r"\A[A-Fa-f\d]{128,256}\Z", members_list_url_session_cookie)
-        )
-        if not members_list_url_session_cookie_is_valid:
-            INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
-                "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
-            )
-            raise ImproperlyConfigured(INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE)
-        self._settings["MEMBERS_LIST_URL_SESSION_COOKIE"] = members_list_url_session_cookie
-
-        send_introduction_reminders: str = str(
-            os.getenv("SEND_INTRODUCTION_REMINDERS", "Once")
-        ).lower()
-        if send_introduction_reminders not in VALID_SEND_INTRODUCTION_REMINDERS_VALUES:
-            INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE: Final[str] = (
-                "SEND_INTRODUCTION_REMINDERS must be one of: "
-                "\"Once\", \"Interval\" or \"False\"."
-            )
-            raise ImproperlyConfigured(INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE)
-        if send_introduction_reminders in ("once", "interval"):
-            self._settings["SEND_INTRODUCTION_REMINDERS"] = send_introduction_reminders
-        elif send_introduction_reminders in TRUE_VALUES:
-            self._settings["SEND_INTRODUCTION_REMINDERS"] = "once"
-        else:
-            self._settings["SEND_INTRODUCTION_REMINDERS"] = False
-
-        raw_send_introduction_reminders_interval: Match[str] | None = re.match(
-            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            str(os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h"))
-        )
-        if self._settings["SEND_INTRODUCTION_REMINDERS"]:
-            if not raw_send_introduction_reminders_interval:
-                INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
-                    "SEND_INTRODUCTION_REMINDERS_INTERVAL must contain the interval "
-                    "in any combination of seconds, minutes or hours."
-                )
-                raise ImproperlyConfigured(
-                    INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE
-                )
-            self._settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = {
-                key: float(value)
-                for key, value
-                in raw_send_introduction_reminders_interval.groupdict().items()
-                if value
-            }
-        else:
-            self._settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = {"hours": 6}
-
-        kick_no_introduction_discord_members: str = str(
-            os.getenv("KICK_NO_INTRODUCTION_DISCORD_MEMBERS", "False")
-        ).lower()
-        if kick_no_introduction_discord_members not in TRUE_VALUES | FALSE_VALUES:
-            INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_MESSAGE: Final[str] = (
-                "KICK_NO_INTRODUCTION_DISCORD_MEMBERS must be a boolean value."
-            )
-            raise ImproperlyConfigured(
-                INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_MESSAGE
-            )
-        self._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = (
-            kick_no_introduction_discord_members in TRUE_VALUES
-        )
-
-        raw_kick_no_introduction_discord_members_delay: Match[str] | None = re.match(
-            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            str(os.getenv("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY", "5d"))
-        )
-        if self._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"]:
-            if not raw_kick_no_introduction_discord_members_delay:
-                INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE: Final[str] = (
-                    "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must contain the delay "
-                    "in any combination of seconds, minutes, hours, days or weeks."
-                )
-                raise ImproperlyConfigured(
-                    INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE
-                )
-            kick_no_introduction_discord_members_delay: timedelta = timedelta(
-                **{
-                    key: float(value)
-                    for key, value
-                    in raw_kick_no_introduction_discord_members_delay.groupdict().items()
-                    if value
-                }
-            )
-            if kick_no_introduction_discord_members_delay <= timedelta(days=1):
-                TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE: Final[str] = (
-                    "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY "
-                    "must be greater than 1 day."
-                )
-                raise ImproperlyConfigured(
-                    TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE
-                )
-            self._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
-                kick_no_introduction_discord_members_delay
-            )
-        else:
-            self._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = timedelta()
-
-        send_get_roles_reminders: str = str(
-            os.getenv("SEND_GET_ROLES_REMINDERS", "True")
-        ).lower()
-        if send_get_roles_reminders not in TRUE_VALUES | FALSE_VALUES:
-            INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE: Final[str] = (
-                "SEND_GET_ROLES_REMINDERS must be a boolean value."
-            )
-            raise ImproperlyConfigured(INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE)
-        self._settings["SEND_GET_ROLES_REMINDERS"] = (
-                send_get_roles_reminders in TRUE_VALUES
-        )
-
-        raw_send_get_roles_reminders_interval: Match[str] | None = re.match(
-            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            str(os.getenv("SEND_GET_ROLES_REMINDERS_INTERVAL", "24h"))
-        )
-        if self._settings["SEND_GET_ROLES_REMINDERS"]:
-            if not raw_send_get_roles_reminders_interval:
-                INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
-                    "SEND_GET_ROLES_REMINDERS_INTERVAL must contain the interval "
-                    "in any combination of seconds, minutes or hours."
-                )
-                raise ImproperlyConfigured(
-                    INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE
-                )
-            self._settings["SEND_GET_ROLES_REMINDERS_INTERVAL"] = {
-                key: float(value)
-                for key, value
-                in raw_send_get_roles_reminders_interval.groupdict().items()
-                if value
-            }
-        else:
-            self._settings["SEND_GET_ROLES_REMINDERS_INTERVAL"] = {"hours": 24}
-
-        try:
-            statistics_days: float = float(os.getenv("STATISTICS_DAYS", "30"))
-        except ValueError as statistics_days_error:
-            INVALID_STATISTICS_DAYS_MESSAGE: Final[str] = (
-                "STATISTICS_DAYS must contain the statistics period in days."
-            )
-            raise ImproperlyConfigured(
-                INVALID_STATISTICS_DAYS_MESSAGE
-            ) from statistics_days_error
-        self._settings["STATISTICS_DAYS"] = timedelta(days=statistics_days)
-
-        self._settings["STATISTICS_ROLES"] = set(
-            filter(None, os.getenv("STATISTICS_ROLES", "").split(","))
-        ) or DEFAULT_STATISTICS_ROLES
-
-        console_log_level: str = str(os.getenv("CONSOLE_LOG_LEVEL", "INFO")).upper()
-
-        if console_log_level not in LOG_LEVEL_CHOICES:
-            INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"""LOG_LEVEL must be one of {",".join(
-                f"{log_level_choice!r}" for log_level_choice in LOG_LEVEL_CHOICES[:-1]
-            )} or {LOG_LEVEL_CHOICES[-1]!r}."""
+        if raw_console_log_level not in LOG_LEVEL_CHOICES:
+            INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"""LOG_LEVEL must be one of {
+                ",".join(f"{log_level_choice!r}"
+                    for log_level_choice
+                    in LOG_LEVEL_CHOICES[:-1])
+                } or {LOG_LEVEL_CHOICES[-1]!r}."""
             raise ImproperlyConfigured(INVALID_LOG_LEVEL_MESSAGE)
 
-        logger.setLevel(getattr(logging, console_log_level))
+        logger.setLevel(getattr(logging, raw_console_log_level))
 
         console_logging_handler: logging.Handler = logging.StreamHandler()
         # noinspection SpellCheckingInspection
@@ -479,52 +151,579 @@ class Settings:
 
         logger.addHandler(console_logging_handler)
 
-        moderation_document_url: str = os.getenv("MODERATION_DOCUMENT_URL", "")
-        moderation_document_url_is_valid: bool = bool(
-            moderation_document_url
-            and validators.url(moderation_document_url)
+    @classmethod
+    def _setup_discord_bot_token(cls) -> None:
+        raw_discord_bot_token: str | None = os.getenv("DISCORD_BOT_TOKEN")
+
+        DISCORD_BOT_TOKEN_IS_VALID: Final[bool] = bool(
+            raw_discord_bot_token
+            and re.match(
+                r"\A([A-Za-z0-9]{24,26})\.([A-Za-z0-9]{6})\.([A-Za-z0-9_-]{27,38})\Z",
+                raw_discord_bot_token
+            )
         )
-        if not moderation_document_url_is_valid:
-            INVALID_MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
+        if not DISCORD_BOT_TOKEN_IS_VALID:
+            INVALID_DISCORD_BOT_TOKEN_MESSAGE: Final[str] = (
+                "DISCORD_BOT_TOKEN must be a valid Discord bot token "
+                "(see https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)."
+            )
+            raise ImproperlyConfigured(INVALID_DISCORD_BOT_TOKEN_MESSAGE)
+
+        cls._settings["DISCORD_BOT_TOKEN"] = raw_discord_bot_token
+
+    @classmethod
+    def _setup_discord_log_channel_webhook_url(cls) -> None:
+        raw_discord_log_channel_webhook_url: str = os.getenv(
+           "DISCORD_LOG_CHANNEL_WEBHOOK_URL",
+           ""
+        )
+
+        DISCORD_LOG_CHANNEL_WEBHOOK_URL_IS_VALID: Final[bool] = bool(
+            not raw_discord_log_channel_webhook_url
+            or (
+                validators.url(raw_discord_log_channel_webhook_url)
+                and raw_discord_log_channel_webhook_url.startswith(
+                    "https://discord.com/api/webhooks/"
+                )
+            )
+        )
+        if not DISCORD_LOG_CHANNEL_WEBHOOK_URL_IS_VALID:
+            INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE: Final[str] = (
+                "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL "
+                "that points to a discord channel where logs should be displayed."
+            )
+            raise ImproperlyConfigured(INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE)
+
+        cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = raw_discord_log_channel_webhook_url
+
+    @classmethod
+    def _setup_discord_guild_id(cls) -> None:
+        raw_discord_guild_id: str | None = os.getenv("DISCORD_GUILD_ID")
+
+        DISCORD_GUILD_ID_IS_VALID: Final[bool] = bool(
+            raw_discord_guild_id
+            and re.match(r"\A\d{17,20}\Z", raw_discord_guild_id)
+        )
+        if not DISCORD_GUILD_ID_IS_VALID:
+            INVALID_DISCORD_GUILD_ID_MESSAGE: Final[str] = (
+                "DISCORD_GUILD_ID must be a valid Discord guild ID "
+                "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)."
+            )
+            raise ImproperlyConfigured(INVALID_DISCORD_GUILD_ID_MESSAGE)
+
+        cls._settings["DISCORD_GUILD_ID"] = int(raw_discord_guild_id)  # type: ignore[arg-type]
+
+    @classmethod
+    def _setup_group_full_name(cls) -> None:
+        raw_group_full_name: str | None = os.getenv("GROUP_NAME")
+
+        GROUP_FULL_NAME_IS_VALID: Final[bool] = bool(
+            not raw_group_full_name
+            or re.match(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", raw_group_full_name)
+        )
+        if not GROUP_FULL_NAME_IS_VALID:
+            INVALID_GROUP_FULL_NAME: Final[str] = (
+                "GROUP_NAME must not contain any invalid characters."
+            )
+            raise ImproperlyConfigured(INVALID_GROUP_FULL_NAME)
+        cls._settings["_GROUP_FULL_NAME"] = raw_group_full_name
+
+    @classmethod
+    def _setup_group_short_name(cls) -> None:
+        raw_group_short_name: str | None = os.getenv("GROUP_SHORT_NAME")
+
+        GROUP_SHORT_NAME_IS_VALID: Final[bool] = bool(
+            not raw_group_short_name
+            or re.match(r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", raw_group_short_name)
+        )
+        if not GROUP_SHORT_NAME_IS_VALID:
+            INVALID_GROUP_SHORT_NAME: Final[str] = (
+                "GROUP_SHORT_NAME must not contain any invalid characters."
+            )
+            raise ImproperlyConfigured(INVALID_GROUP_SHORT_NAME)
+        cls._settings["_GROUP_SHORT_NAME"] = raw_group_short_name
+
+    @classmethod
+    def _setup_purchase_membership_url(cls) -> None:
+        raw_purchase_membership_url: str | None = os.getenv("PURCHASE_MEMBERSHIP_URL")
+
+        PURCHASE_MEMBERSHIP_URL_IS_VALID: Final[bool] = bool(
+            not raw_purchase_membership_url
+            or validators.url(raw_purchase_membership_url)
+        )
+        if not PURCHASE_MEMBERSHIP_URL_IS_VALID:
+            INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE: Final[str] = (
+                "PURCHASE_MEMBERSHIP_URL must be a valid URL."
+            )
+            raise ImproperlyConfigured(INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE)
+
+        cls._settings["PURCHASE_MEMBERSHIP_URL"] = raw_purchase_membership_url
+
+    @classmethod
+    def _setup_membership_perks_url(cls) -> None:
+        raw_membership_perks_url: str | None = os.getenv("MEMBERSHIP_PERKS_URL")
+
+        MEMBERSHIP_PERKS_URL_IS_VALID: Final[bool] = bool(
+            not raw_membership_perks_url
+            or validators.url(raw_membership_perks_url)
+        )
+        if not MEMBERSHIP_PERKS_URL_IS_VALID:
+            INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (
+                "MEMBERSHIP_PERKS_URL must be a valid URL."
+            )
+            raise ImproperlyConfigured(INVALID_MEMBERSHIP_PERKS_URL_MESSAGE)
+
+        cls._settings["MEMBERSHIP_PERKS_URL"] = raw_membership_perks_url
+
+    @classmethod
+    def _setup_ping_command_easter_egg_probability(cls) -> None:
+        INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE: Final[str] = (
+            "PING_COMMAND_EASTER_EGG_PROBABILITY must be a float between & including 1 & 0."
+        )
+
+        e: ValueError
+        try:
+            raw_ping_command_easter_egg_probability: float = 100 * float(
+                os.getenv("PING_COMMAND_EASTER_EGG_PROBABILITY", "0.01")
+            )
+        except ValueError as e:
+            raise (
+                ImproperlyConfigured(INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE)
+            ) from e
+
+        if not 0 <= raw_ping_command_easter_egg_probability <= 100:
+            raise ImproperlyConfigured(
+                INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE
+            )
+
+        cls._settings["PING_COMMAND_EASTER_EGG_PROBABILITY"] = (
+            raw_ping_command_easter_egg_probability
+        )
+
+    @staticmethod
+    def _get_default_messages_json_file_path() -> Path:
+        PROJECT_ROOT: Final[str | git.PathLike | None] = (
+            git.Repo(".", search_parent_directories=True).working_tree_dir
+        )
+        if PROJECT_ROOT is None:
+            NO_ROOT_DIRECTORY_MESSAGE: Final[str] = "Could not locate project root directory."
+            raise FileNotFoundError(NO_ROOT_DIRECTORY_MESSAGE)
+
+        return PROJECT_ROOT / Path("messages.json")
+
+    @classmethod
+    @functools.lru_cache(maxsize=5)
+    def _get_messages_dict(cls, raw_messages_file_path: str | None) -> Mapping[str, object]:
+        JSON_DECODING_ERROR_MESSAGE: Final[str] = (
+            "Messages JSON file must contain a JSON string that can be decoded "
+            "into a Python dict object."
+        )
+
+        messages_file_path: Path = (
+            Path(raw_messages_file_path)
+            if raw_messages_file_path
+            else cls._get_default_messages_json_file_path()
+        )
+
+        if not messages_file_path.is_file():
+            MESSAGES_FILE_PATH_DOES_NOT_EXIST_MESSAGE: Final[str] = (
+                "MESSAGES_FILE_PATH must be a path to a file that exists."
+            )
+            raise ImproperlyConfigured(MESSAGES_FILE_PATH_DOES_NOT_EXIST_MESSAGE)
+
+        messages_file: IO[str]
+        with messages_file_path.open(encoding="utf8") as messages_file:
+            e: json.JSONDecodeError
+            try:
+                messages_dict: object = json.load(messages_file)
+            except json.JSONDecodeError as e:
+                raise ImproperlyConfigured(JSON_DECODING_ERROR_MESSAGE) from e
+
+        if not isinstance(messages_dict, Mapping):
+            raise ImproperlyConfigured(JSON_DECODING_ERROR_MESSAGE)
+
+        return messages_dict
+
+    @classmethod
+    def _setup_welcome_messages(cls) -> None:
+        messages_dict: Mapping[str, object] = cls._get_messages_dict(
+            os.getenv("MESSAGES_FILE_PATH")
+        )
+
+        if "welcome_messages" not in messages_dict:
+            raise MessagesJSONFileMissingKey(missing_key="welcome_messages")
+
+        WELCOME_MESSAGES_KEY_IS_VALID: Final[bool] = bool(
+            isinstance(messages_dict["welcome_messages"], Iterable)
+            and messages_dict["welcome_messages"]
+        )
+        if not WELCOME_MESSAGES_KEY_IS_VALID:
+            raise MessagesJSONFileValueError(
+                dict_key="welcome_messages",
+                invalid_value=messages_dict["welcome_messages"]
+            )
+
+        cls._settings["WELCOME_MESSAGES"] = set(messages_dict["welcome_messages"])  # type: ignore[call-overload]
+
+    @classmethod
+    def _setup_roles_messages(cls) -> None:
+        messages_dict: Mapping[str, object] = cls._get_messages_dict(
+            os.getenv("MESSAGES_FILE_PATH")
+        )
+
+        if "roles_messages" not in messages_dict:
+            raise MessagesJSONFileMissingKey(missing_key="roles_messages")
+
+        ROLES_MESSAGES_KEY_IS_VALID: Final[bool] = (
+            isinstance(messages_dict["roles_messages"], Iterable)
+            and bool(messages_dict["roles_messages"])
+        )
+        if not ROLES_MESSAGES_KEY_IS_VALID:
+            raise MessagesJSONFileValueError(
+                dict_key="roles_messages",
+                invalid_value=messages_dict["roles_messages"]
+            )
+        cls._settings["ROLES_MESSAGES"] = set(messages_dict["roles_messages"])  # type: ignore[call-overload]
+
+    @classmethod
+    def _setup_members_list_url(cls) -> None:
+        raw_members_list_url: str | None = os.getenv("MEMBERS_LIST_URL")
+
+        MEMBERS_LIST_URL_IS_VALID: Final[bool] = bool(
+            raw_members_list_url
+            and validators.url(raw_members_list_url)
+        )
+        if not MEMBERS_LIST_URL_IS_VALID:
+            INVALID_MEMBERS_LIST_URL_MESSAGE: Final[str] = (
+                "MEMBERS_LIST_URL must be a valid URL."
+            )
+            raise ImproperlyConfigured(INVALID_MEMBERS_LIST_URL_MESSAGE)
+
+        cls._settings["MEMBERS_LIST_URL"] = raw_members_list_url
+
+    @classmethod
+    def _setup_members_list_url_session_cookie(cls) -> None:
+        raw_members_list_url_session_cookie: str | None = os.getenv(
+            "MEMBERS_LIST_URL_SESSION_COOKIE"
+        )
+
+        MEMBERS_LIST_URL_SESSION_COOKIE_IS_VALID: Final[bool] = bool(
+            raw_members_list_url_session_cookie
+            and re.match(r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_url_session_cookie)
+        )
+        if not MEMBERS_LIST_URL_SESSION_COOKIE_IS_VALID:
+            INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
+                "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
+            )
+            raise ImproperlyConfigured(INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE)
+
+        cls._settings["MEMBERS_LIST_URL_SESSION_COOKIE"] = raw_members_list_url_session_cookie
+
+    @classmethod
+    def _setup_send_introduction_reminders(cls) -> None:
+        raw_send_introduction_reminders: str | bool = str(
+            os.getenv("SEND_INTRODUCTION_REMINDERS", "Once")
+        ).lower()
+
+        if raw_send_introduction_reminders not in VALID_SEND_INTRODUCTION_REMINDERS_VALUES:
+            INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE: Final[str] = (
+                "SEND_INTRODUCTION_REMINDERS must be one of: "
+                "\"Once\", \"Interval\" or \"False\"."
+            )
+            raise ImproperlyConfigured(INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE)
+
+        if raw_send_introduction_reminders in TRUE_VALUES:
+            raw_send_introduction_reminders = "once"
+
+        elif raw_send_introduction_reminders not in ("once", "interval"):
+            raw_send_introduction_reminders = False
+
+        cls._settings["SEND_INTRODUCTION_REMINDERS"] = raw_send_introduction_reminders
+
+    @classmethod
+    def _setup_send_introduction_reminders_interval(cls) -> None:
+        if "SEND_INTRODUCTION_REMINDERS" not in cls._settings:
+            INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+                "Invalid setup order: SEND_INTRODUCTION_REMINDERS must be set up "
+                "before SEND_INTRODUCTION_REMINDERS_INTERVAL can be set up."
+            )
+            raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
+
+        raw_send_introduction_reminders_interval: Match[str] | None = re.match(
+            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
+            str(os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h"))
+        )
+
+        raw_timedelta_details_send_introduction_reminders_interval: Mapping[str, float] = {
+            "hours": 6
+        }
+
+        if cls._settings["SEND_INTRODUCTION_REMINDERS"]:
+            if not raw_send_introduction_reminders_interval:
+                INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
+                    "SEND_INTRODUCTION_REMINDERS_INTERVAL must contain the interval "
+                    "in any combination of seconds, minutes or hours."
+                )
+                raise ImproperlyConfigured(
+                    INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE
+                )
+
+            raw_timedelta_details_send_introduction_reminders_interval = {
+                key: float(value)
+                for key, value
+                in raw_send_introduction_reminders_interval.groupdict().items()
+                if value
+            }
+
+        cls._settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
+            raw_timedelta_details_send_introduction_reminders_interval
+        )
+
+    @classmethod
+    def _setup_kick_no_introduction_discord_members(cls) -> None:
+        raw_kick_no_introduction_discord_members: str = str(
+            os.getenv("KICK_NO_INTRODUCTION_DISCORD_MEMBERS", "False")
+        ).lower()
+
+        if raw_kick_no_introduction_discord_members not in TRUE_VALUES | FALSE_VALUES:
+            INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_MESSAGE: Final[str] = (
+                "KICK_NO_INTRODUCTION_DISCORD_MEMBERS must be a boolean value."
+            )
+            raise ImproperlyConfigured(
+                INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_MESSAGE
+            )
+
+        cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = (
+            raw_kick_no_introduction_discord_members in TRUE_VALUES
+        )
+
+    @classmethod
+    def _setup_kick_no_introduction_discord_members_delay(cls) -> None:
+        if "KICK_NO_INTRODUCTION_DISCORD_MEMBERS" not in cls._settings:
+            INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+                "Invalid setup order: KICK_NO_INTRODUCTION_DISCORD_MEMBERS must be set up "
+                "before KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY can be set up."
+            )
+            raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
+
+        raw_kick_no_introduction_discord_members_delay: Match[str] | None = re.match(
+            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
+            str(os.getenv("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY", "5d"))
+        )
+
+        raw_timedelta_kick_no_introduction_discord_members_delay: timedelta = timedelta()
+
+        if cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"]:
+            if not raw_kick_no_introduction_discord_members_delay:
+                INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE: Final[str] = (
+                    "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must contain the delay "
+                    "in any combination of seconds, minutes, hours, days or weeks."
+                )
+                raise ImproperlyConfigured(
+                    INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE
+                )
+
+            raw_timedelta_kick_no_introduction_discord_members_delay = timedelta(
+                **{
+                    key: float(value)
+                    for key, value
+                    in raw_kick_no_introduction_discord_members_delay.groupdict().items()
+                    if value
+                }
+            )
+
+            if raw_timedelta_kick_no_introduction_discord_members_delay <= timedelta(days=1):
+                TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE: Final[str] = (
+                    "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must be greater than 1 day."
+                )
+                raise ImproperlyConfigured(
+                    TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE
+                )
+
+        cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
+            raw_timedelta_kick_no_introduction_discord_members_delay
+        )
+
+    @classmethod
+    def _setup_send_get_roles_reminders(cls) -> None:
+        raw_send_get_roles_reminders: str = str(
+            os.getenv("SEND_GET_ROLES_REMINDERS", "True")
+        ).lower()
+
+        if raw_send_get_roles_reminders not in TRUE_VALUES | FALSE_VALUES:
+            INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE: Final[str] = (
+                "SEND_GET_ROLES_REMINDERS must be a boolean value."
+            )
+            raise ImproperlyConfigured(INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE)
+
+        cls._settings["SEND_GET_ROLES_REMINDERS"] = (
+            raw_send_get_roles_reminders in TRUE_VALUES
+        )
+
+    @classmethod
+    def _setup_send_get_roles_reminders_interval(cls) -> None:
+        if "SEND_GET_ROLES_REMINDERS" not in cls._settings:
+            INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+                "Invalid setup order: SEND_GET_ROLES_REMINDERS must be set up "
+                "before SEND_GET_ROLES_REMINDERS_INTERVAL can be set up."
+            )
+            raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
+
+        raw_send_get_roles_reminders_interval: Match[str] | None = re.match(
+            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
+            str(os.getenv("SEND_GET_ROLES_REMINDERS_INTERVAL", "24h"))
+        )
+
+        raw_timedelta_details_send_get_roles_reminders_interval: Mapping[str, float] = {
+            "hours": 24
+        }
+
+        if cls._settings["SEND_GET_ROLES_REMINDERS"]:
+            if not raw_send_get_roles_reminders_interval:
+                INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
+                    "SEND_GET_ROLES_REMINDERS_INTERVAL must contain the interval "
+                    "in any combination of seconds, minutes or hours."
+                )
+                raise ImproperlyConfigured(
+                    INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE
+                )
+
+            raw_timedelta_details_send_get_roles_reminders_interval = {
+                key: float(value)
+                for key, value
+                in raw_send_get_roles_reminders_interval.groupdict().items()
+                if value
+            }
+
+        cls._settings["SEND_GET_ROLES_REMINDERS_INTERVAL"] = (
+            raw_timedelta_details_send_get_roles_reminders_interval
+        )
+
+    @classmethod
+    def _setup_statistics_days(cls) -> None:
+        e: ValueError
+        try:
+            raw_statistics_days: float = float(os.getenv("STATISTICS_DAYS", "30"))
+        except ValueError as e:
+            INVALID_STATISTICS_DAYS_MESSAGE: Final[str] = (
+                "STATISTICS_DAYS must contain the statistics period in days."
+            )
+            raise ImproperlyConfigured(INVALID_STATISTICS_DAYS_MESSAGE) from e
+
+        cls._settings["STATISTICS_DAYS"] = timedelta(days=raw_statistics_days)
+
+    @classmethod
+    def _setup_statistics_roles(cls) -> None:
+        raw_statistics_roles: str | None = os.getenv("STATISTICS_ROLES")
+
+        if not raw_statistics_roles:
+            cls._settings["STATISTICS_ROLES"] = DEFAULT_STATISTICS_ROLES
+
+        else:
+            cls._settings["STATISTICS_ROLES"] = {
+                raw_statistics_role
+                for raw_statistics_role
+                in raw_statistics_roles.split(",")
+                if raw_statistics_role
+            }
+
+    @classmethod
+    def _setup_moderation_document_url(cls) -> None:
+        raw_moderation_document_url: str | None = os.getenv("MODERATION_DOCUMENT_URL")
+
+        MODERATION_DOCUMENT_URL_IS_VALID: Final[bool] = bool(
+            raw_moderation_document_url
+            and validators.url(raw_moderation_document_url)
+        )
+        if not MODERATION_DOCUMENT_URL_IS_VALID:
+            MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
                 "MODERATION_DOCUMENT_URL must be a valid URL."
             )
-            raise ImproperlyConfigured(INVALID_MODERATION_DOCUMENT_URL_MESSAGE)
-        self._settings["MODERATION_DOCUMENT_URL"] = moderation_document_url
+            raise ImproperlyConfigured(MODERATION_DOCUMENT_URL_MESSAGE)
 
-        manual_moderation_warning_message_location: str = os.getenv(
+        cls._settings["MODERATION_DOCUMENT_URL"] = raw_moderation_document_url
+
+    @classmethod
+    def _setup_manual_moderation_warning_message_location(cls) -> None:
+        raw_manual_moderation_warning_message_location: str = os.getenv(
             "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION",
             "DM"
         )
-        if not manual_moderation_warning_message_location:
-            INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE: Final[str] = (
+        if not raw_manual_moderation_warning_message_location:
+            MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE: Final[str] = (
                 "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION must be a valid name "
-                "of a channel in the your group's Discord guild."
+                "of a channel in your group's Discord guild."
             )
-            raise ImproperlyConfigured(
-                INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE
-            )
-        self._settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] = (
-            manual_moderation_warning_message_location
+            raise ImproperlyConfigured(MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE)
+
+        cls._settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] = (
+            raw_manual_moderation_warning_message_location
         )
 
-        self._is_env_variables_setup = True
-
-    def _setup_django(self) -> None:
+    @classmethod
+    def _setup_env_variables(cls) -> None:
         """
-        Load the correct settings module into the Django process.
+        Load environment values into the settings dictionary.
 
-        Model instances & database data cannot be accessed by cogs until
-        Django's settings module has been loaded.
+        Environment values are loaded from the .env file/the current environment variables and
+        are only stored after the input values have been validated.
         """
-        if not self._is_django_setup:
-            os.environ["DJANGO_SETTINGS_MODULE"] = "db.settings"
-            django.setup()
+        if cls._is_env_variables_setup:
+            logging.warning("Environment variables have already been set up.")
+            return
 
-            self._is_django_setup = True
+        dotenv.load_dotenv()
+
+        cls._setup_logging()
+        cls._setup_discord_bot_token()
+        cls._setup_discord_log_channel_webhook_url()
+        cls._setup_discord_guild_id()
+        cls._setup_group_full_name()
+        cls._setup_group_short_name()
+        cls._setup_ping_command_easter_egg_probability()
+        cls._setup_welcome_messages()
+        cls._setup_roles_messages()
+        cls._setup_members_list_url()
+        cls._setup_members_list_url_session_cookie()
+        cls._setup_membership_perks_url()
+        cls._setup_purchase_membership_url()
+        cls._setup_send_introduction_reminders()
+        cls._setup_send_introduction_reminders_interval()
+        cls._setup_kick_no_introduction_discord_members()
+        cls._setup_kick_no_introduction_discord_members_delay()
+        cls._setup_send_get_roles_reminders()
+        cls._setup_send_get_roles_reminders_interval()
+        cls._setup_statistics_days()
+        cls._setup_statistics_roles()
+        cls._setup_moderation_document_url()
+        cls._setup_manual_moderation_warning_message_location()
+
+        cls._is_env_variables_setup = True
 
 
-settings: Settings = Settings()
-# noinspection PyProtectedMember
-setup_env_variables: Callable[[], None] = settings._setup_env_variables  # noqa: SLF001
-# noinspection PyProtectedMember
-setup_django: Callable[[], None] = settings._setup_django  # noqa: SLF001
+def _settings_class_factory() -> type[Settings]:
+    @final
+    class RuntimeSettings(Settings):
+        """
+        Settings class that provides access to all settings values.
+
+        Settings values can be accessed via key (like a dictionary) or via class attribute.
+        """
+
+        _is_env_variables_setup: ClassVar[bool] = False
+        _settings: ClassVar[dict[str, object]] = {}
+
+    return RuntimeSettings
+
+
+settings: Final[Settings] = _settings_class_factory()()
+
+
+def run_setup() -> None:
+    """Execute the setup functions required, before other modules can be run."""
+    # noinspection PyProtectedMember
+    settings._setup_env_variables()  # noqa: SLF001
+
+    logging.debug("Begin database setup")
+    management.call_command("migrate")
+    logging.debug("Database setup completed")
