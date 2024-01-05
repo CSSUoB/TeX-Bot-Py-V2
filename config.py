@@ -141,7 +141,7 @@ class Settings(abc.ABC):
                 } or {LOG_LEVEL_CHOICES[-1]!r}."""
             raise ImproperlyConfigured(INVALID_LOG_LEVEL_MESSAGE)
 
-        logger.setLevel(getattr(logging, console_log_level))
+        logger.setLevel(getattr(logging, raw_console_log_level))
 
         console_logging_handler: logging.Handler = logging.StreamHandler()
         # noinspection SpellCheckingInspection
