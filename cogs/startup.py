@@ -5,6 +5,7 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("StartupCog",)
 
 import logging
+from logging import Logger
 
 import discord
 from discord_logging.handler import DiscordHandler
@@ -20,6 +21,8 @@ from exceptions import (
     RolesChannelDoesNotExist,
 )
 from utils import TeXBotBaseCog
+
+logger: Logger = logging.getLogger("texbot")
 
 
 class StartupCog(TeXBotBaseCog):
@@ -45,13 +48,13 @@ class StartupCog(TeXBotBaseCog):
             discord_logging_handler.setLevel(logging.WARNING)
             # noinspection SpellCheckingInspection
             discord_logging_handler.setFormatter(
-                logging.Formatter("%(levelname)s | %(message)s")
+                logging.Formatter("{levelname} | {message}", style="{")
             )
 
-            logging.getLogger("").addHandler(discord_logging_handler)
+            logger.addHandler(discord_logging_handler)
 
         else:
-            logging.warning(
+            logger.warning(
                 "DISCORD_LOG_CHANNEL_WEBHOOK_URL was not set, "
                 "so error logs will not be sent to the Discord log channel."
             )
@@ -64,27 +67,27 @@ class StartupCog(TeXBotBaseCog):
                 self.bot.set_main_guild(main_guild)
 
         if not main_guild:
-            logging.critical(GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"]))
+            logger.critical(GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"]))
             await self.bot.close()
             return
 
         if not discord.utils.get(main_guild.roles, name="Committee"):
-            logging.warning(CommitteeRoleDoesNotExist())
+            logger.warning(CommitteeRoleDoesNotExist())
 
         if not discord.utils.get(main_guild.roles, name="Guest"):
-            logging.warning(GuestRoleDoesNotExist())
+            logger.warning(GuestRoleDoesNotExist())
 
         if not discord.utils.get(main_guild.roles, name="Member"):
-            logging.warning(MemberRoleDoesNotExist())
+            logger.warning(MemberRoleDoesNotExist())
 
         if not discord.utils.get(main_guild.roles, name="Archivist"):
-            logging.warning(ArchivistRoleDoesNotExist())
+            logger.warning(ArchivistRoleDoesNotExist())
 
         if not discord.utils.get(main_guild.text_channels, name="roles"):
-            logging.warning(RolesChannelDoesNotExist())
+            logger.warning(RolesChannelDoesNotExist())
 
         if not discord.utils.get(main_guild.text_channels, name="general"):
-            logging.warning(GeneralChannelDoesNotExist())
+            logger.warning(GeneralChannelDoesNotExist())
 
         if settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] != "DM":
             manual_moderation_warning_message_location_exists: bool = bool(
@@ -94,7 +97,7 @@ class StartupCog(TeXBotBaseCog):
                 )
             )
             if not manual_moderation_warning_message_location_exists:
-                logging.critical(
+                logger.critical(
                     (
                         "The channel %s does not exist, so cannot be used as the location "
                         "for sending manual-moderation warning messages"
@@ -106,7 +109,7 @@ class StartupCog(TeXBotBaseCog):
                     in ("dm", "dms")
                 )
                 if manual_moderation_warning_message_location_similar_to_dm:
-                    logging.info(
+                    logger.info(
                         (
                             "If you meant to set the location "
                             "for sending manual-moderation warning messages to be "
@@ -118,4 +121,4 @@ class StartupCog(TeXBotBaseCog):
                 await self.bot.close()
                 return
 
-        logging.info("Ready! Logged in as %s", self.bot.user)
+        logger.info("Ready! Logged in as %s", self.bot.user)
