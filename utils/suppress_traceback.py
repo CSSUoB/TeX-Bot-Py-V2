@@ -35,10 +35,15 @@ class SuppressTraceback:
         # noinspection SpellCheckingInspection
         sys.tracebacklimit = 0
 
-    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType) -> None:  # noqa: E501
+    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None) -> None:  # noqa: E501
         """Exit the context manager, reverting the limit of traceback output."""
-        if self.previous_traceback_limit is None:
-            del sys.tracebacklimit
-        else:
-            # noinspection SpellCheckingInspection
-            sys.tracebacklimit = self.previous_traceback_limit
+        if exc_type is not None or exc_val is not None or exc_tb is not None:
+            return
+
+        # noinspection SpellCheckingInspection
+        if hasattr(sys, "tracebacklimit"):
+            if self.previous_traceback_limit is None:
+                del sys.tracebacklimit
+            else:
+                # noinspection SpellCheckingInspection
+                sys.tracebacklimit = self.previous_traceback_limit
