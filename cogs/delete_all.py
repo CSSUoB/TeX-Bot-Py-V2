@@ -44,16 +44,16 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def delete_all_reminders(self, ctx: TeXBotApplicationContext) -> None:
         """
-        Definition & callback response of the "delete_all_group_made_members" command.
+        Definition & callback response of the "delete_all_reminders" command.
 
-        The "delete_all_group_made_members" uses the _delete_all() function to delete all
-        UoBMadeMember instance objects stored in the database.
+        The "delete_all_reminders" command uses the _delete_all() function
+        to delete all `DiscordReminder` instance objects stored in the database.
         """
         await self._delete_all(ctx, delete_model=DiscordReminder)
 
     @delete_all.command(
         name="group-made-members",
-        description="Deletes all UoB Made Members from the backend database."
+        description="Deletes all Group Made Members from the backend database."
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -61,7 +61,7 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
         """
         Definition & callback response of the "delete_all_group_made_members" command.
 
-        The "delete_all_group_made_members" uses the _delete_all() function to delete all
-         UoBMadeMember instance objects stored in the database.
+        The "delete_all_group_made_members" command uses the _delete_all() function
+        to delete all `GroupMadeMember` instance objects stored in the database.
         """
         await self._delete_all(ctx, delete_model=GroupMadeMember)
