@@ -15,8 +15,8 @@ __all__: Sequence[str] = (
 import functools
 import logging
 from collections.abc import Callable, Coroutine
-from typing import TYPE_CHECKING, Final, ParamSpec, TypeVar
 from logging import Logger
+from typing import TYPE_CHECKING, Final, ParamSpec, TypeVar
 
 from exceptions import GuildDoesNotExist, StrikeTrackingError
 from utils.tex_bot_base_cog import TeXBotBaseCog
