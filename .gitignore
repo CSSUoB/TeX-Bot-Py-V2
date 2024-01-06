@@ -121,3 +121,4 @@ cython_debug/
 local/
 *.sqlite3
 *.db
+local_stubs/

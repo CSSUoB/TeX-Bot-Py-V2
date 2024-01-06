@@ -166,7 +166,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         )
         table_id: str
         for table_id in MEMBER_HTML_TABLE_IDS:
-            parsed_html: bs4.Tag | None = BeautifulSoup(
+            parsed_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
                 response_html,
                 "html.parser"
             ).find(
@@ -174,15 +174,17 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 {"id": table_id}
             )
 
-            if parsed_html:
-                guild_member_ids.update(
-                    row.contents[2].text
-                    for row
-                    in parsed_html.find_all(
-                        "tr",
-                        {"class": ["msl_row", "msl_altrow"]}
-                    )
+            if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
+                continue
+
+            guild_member_ids.update(
+                row.contents[2].text
+                for row
+                in parsed_html.find_all(
+                    "tr",
+                    {"class": ["msl_row", "msl_altrow"]}
                 )
+            )
 
         guild_member_ids.discard("")
         guild_member_ids.discard("\n")
