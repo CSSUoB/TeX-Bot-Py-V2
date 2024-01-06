@@ -1,9 +1,9 @@
 """Automated test suite for the `stats.py` cog."""
 
-from typing import Final
-
-import discord
-import pytest
+# from typing import Final
+#
+# import discord
+# import pytest
 
 # from cogs.stats import amount_of_time_formatter, plot_bar_chart
 

@@ -13,8 +13,10 @@ from tests.test_utils._testing_utils import BaseTestArgumentParser
 from utils import UtilityFunction
 
 if TYPE_CHECKING:
+    from argparse import ArgumentParser
+
     # noinspection PyProtectedMember
-    from argparse import ArgumentParser, _SubParsersAction as SubParsersAction
+    from argparse import _SubParsersAction as SubParsersAction
 
     from _pytest.capture import CaptureFixture, CaptureResult
 
