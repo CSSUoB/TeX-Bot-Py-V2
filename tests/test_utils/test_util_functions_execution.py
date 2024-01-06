@@ -14,7 +14,7 @@ from utils import UtilityFunction
 
 if TYPE_CHECKING:
     # noinspection PyProtectedMember
-    from argparse import _SubParserAction as SubParserAction  # type: ignore[attr-defined]
+    from argparse import ArgumentParser, _SubParsersAction as SubParsersAction
 
     from _pytest.capture import CaptureFixture, CaptureResult
 
@@ -79,7 +79,7 @@ class TestUtilFunctionsExecution(BaseTestArgumentParser):
             DESCRIPTION: str = "An example utility function for testing purposes"
 
             @classmethod
-            def run(cls, parsed_args: Namespace, parser: "SubParserAction") -> int:  # noqa: ARG003
+            def run(cls, parsed_args: Namespace, parser: "SubParsersAction[ArgumentParser]") -> int:  # noqa: ARG003,E501
                 sys.stdout.write("Successful execution\n")
                 return 0
 
