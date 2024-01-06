@@ -465,7 +465,7 @@ class GuestRoleDoesNotExistError(RoleDoesNotExistError):
 
 class MemberRoleDoesNotExistError(RoleDoesNotExistError):
     """Exception class to raise when the "Member" Discord role is missing."""
-    
+
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     def ERROR_CODE(cls) -> str:  # noqa: N802,N805
