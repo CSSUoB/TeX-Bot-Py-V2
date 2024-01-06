@@ -18,7 +18,7 @@ from django.core.exceptions import ValidationError
 
 from config import settings
 from db.core.models import GroupMadeMember
-from exceptions import CommitteeRoleDoesNotExist, GuestRoleDoesNotExist
+from exceptions import CommitteeRoleDoesNotExistError, GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 logger: Logger = logging.getLogger("texbot")
@@ -131,7 +131,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         if GROUP_MEMBER_ID_IS_ALREADY_USED:
             # noinspection PyUnusedLocal
             committee_mention: str = "committee"
-            with contextlib.suppress(CommitteeRoleDoesNotExist):
+            with contextlib.suppress(CommitteeRoleDoesNotExistError):
                 committee_mention = (await self.bot.roles_channel).mention
 
             await ctx.respond(
@@ -166,7 +166,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         )
         table_id: str
         for table_id in MEMBER_HTML_TABLE_IDS:
-            parsed_html: bs4.Tag | None = BeautifulSoup(
+            parsed_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
                 response_html,
                 "html.parser"
             ).find(
@@ -174,15 +174,17 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 {"id": table_id}
             )
 
-            if parsed_html:
-                guild_member_ids.update(
-                    row.contents[2].text
-                    for row
-                    in parsed_html.find_all(
-                        "tr",
-                        {"class": ["msl_row", "msl_altrow"]}
-                    )
+            if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
+                continue
+
+            guild_member_ids.update(
+                row.contents[2].text
+                for row
+                in parsed_html.find_all(
+                    "tr",
+                    {"class": ["msl_row", "msl_altrow"]}
                 )
+            )
 
         guild_member_ids.discard("")
         guild_member_ids.discard("\n")
@@ -237,7 +239,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 
         try:
             guest_role: discord.Role = await self.bot.guest_role
-        except GuestRoleDoesNotExist:
+        except GuestRoleDoesNotExistError:
             logger.warning(
                 "\"/makemember\" command used but the \"Guest\" role does not exist. "
                 "Some user's may now have the \"Member\" role without the \"Guest\" role. "

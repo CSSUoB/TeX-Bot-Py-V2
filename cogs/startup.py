@@ -12,13 +12,13 @@ from discord_logging.handler import DiscordHandler
 
 from config import settings
 from exceptions import (
-    ArchivistRoleDoesNotExist,
-    CommitteeRoleDoesNotExist,
-    GeneralChannelDoesNotExist,
-    GuestRoleDoesNotExist,
-    GuildDoesNotExist,
-    MemberRoleDoesNotExist,
-    RolesChannelDoesNotExist,
+    ArchivistRoleDoesNotExistError,
+    CommitteeRoleDoesNotExistError,
+    GeneralChannelDoesNotExistError,
+    GuestRoleDoesNotExistError,
+    GuildDoesNotExistError,
+    MemberRoleDoesNotExistError,
+    RolesChannelDoesNotExistError,
 )
 from utils import TeXBotBaseCog
 
@@ -36,7 +36,7 @@ class StartupCog(TeXBotBaseCog):
         Shortcut accessors should only be populated once the bot is ready to make API requests.
         """
         if settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
-            discord_logging_handler: DiscordHandler = DiscordHandler(
+            discord_logging_handler: logging.Handler = DiscordHandler(
                 self.bot.user.name if self.bot.user else "TeXBot",
                 settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
                 avatar_url=(
@@ -61,33 +61,33 @@ class StartupCog(TeXBotBaseCog):
 
         try:
             main_guild: discord.Guild | None = self.bot.main_guild
-        except GuildDoesNotExist:
+        except GuildDoesNotExistError:
             main_guild = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
             if main_guild:
                 self.bot.set_main_guild(main_guild)
 
         if not main_guild:
-            logger.critical(GuildDoesNotExist(guild_id=settings["DISCORD_GUILD_ID"]))
+            logger.critical(GuildDoesNotExistError(guild_id=settings["DISCORD_GUILD_ID"]))
             await self.bot.close()
             return
 
         if not discord.utils.get(main_guild.roles, name="Committee"):
-            logger.warning(CommitteeRoleDoesNotExist())
+            logger.warning(CommitteeRoleDoesNotExistError())
 
         if not discord.utils.get(main_guild.roles, name="Guest"):
-            logger.warning(GuestRoleDoesNotExist())
+            logger.warning(GuestRoleDoesNotExistError())
 
         if not discord.utils.get(main_guild.roles, name="Member"):
-            logger.warning(MemberRoleDoesNotExist())
+            logger.warning(MemberRoleDoesNotExistError())
 
         if not discord.utils.get(main_guild.roles, name="Archivist"):
-            logger.warning(ArchivistRoleDoesNotExist())
+            logger.warning(ArchivistRoleDoesNotExistError())
 
         if not discord.utils.get(main_guild.text_channels, name="roles"):
-            logger.warning(RolesChannelDoesNotExist())
+            logger.warning(RolesChannelDoesNotExistError())
 
         if not discord.utils.get(main_guild.text_channels, name="general"):
-            logger.warning(GeneralChannelDoesNotExist())
+            logger.warning(GeneralChannelDoesNotExistError())
 
         if settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] != "DM":
             manual_moderation_warning_message_location_exists: bool = bool(

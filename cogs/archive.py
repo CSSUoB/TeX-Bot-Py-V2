@@ -10,7 +10,7 @@ from logging import Logger
 
 import discord
 
-from exceptions import BaseDoesNotExistError, DiscordMemberNotInMainGuild
+from exceptions import BaseDoesNotExistError, DiscordMemberNotInMainGuildError
 from utils import (
     CommandChecks,
     TeXBotApplicationContext,
@@ -41,7 +41,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
                 ctx.interaction.user
             )
             assert await ctx.bot.check_user_has_committee_role(interaction_user)
-        except (AssertionError, BaseDoesNotExistError, DiscordMemberNotInMainGuild):
+        except (AssertionError, BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
             return set()
 
         return {

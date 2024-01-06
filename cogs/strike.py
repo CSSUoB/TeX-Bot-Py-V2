@@ -28,8 +28,8 @@ from discord.ui import View
 from config import settings
 from db.core.models import DiscordMemberStrikes
 from exceptions import (
-    GuildDoesNotExist,
-    RulesChannelDoesNotExist,
+    GuildDoesNotExistError,
+    RulesChannelDoesNotExistError,
     StrikeTrackingError,
 )
 from utils import (
@@ -83,7 +83,7 @@ async def perform_moderation_action(strike_user: discord.Member, strikes: int, c
 class ConfirmStrikeMemberView(View):
     """A discord.View containing two buttons to confirm giving the member a strike."""
 
-    @discord.ui.button(
+    @discord.ui.button(  # type: ignore[misc]
         label="Yes",
         style=discord.ButtonStyle.red,
         custom_id="yes_strike_member"
@@ -99,7 +99,7 @@ class ConfirmStrikeMemberView(View):
         """
         await interaction.response.edit_message(delete_after=0)
 
-    @discord.ui.button(
+    @discord.ui.button(  # type: ignore[misc]
         label="No",
         style=discord.ButtonStyle.grey,
         custom_id="no_strike_member"
@@ -119,7 +119,7 @@ class ConfirmStrikeMemberView(View):
 class ConfirmManualModerationView(View):
     """A discord.View to confirm manually applying a moderation action."""
 
-    @discord.ui.button(
+    @discord.ui.button(  # type: ignore[misc]
         label="Yes",
         style=discord.ButtonStyle.red,
         custom_id="yes_manual_moderation_action"
@@ -136,7 +136,7 @@ class ConfirmManualModerationView(View):
         """
         await interaction.response.edit_message(delete_after=0)
 
-    @discord.ui.button(
+    @discord.ui.button(  # type: ignore[misc]
         label="No",
         style=discord.ButtonStyle.grey,
         custom_id="no_manual_moderation_action"
@@ -157,7 +157,7 @@ class ConfirmManualModerationView(View):
 class ConfirmStrikesOutOfSyncWithBanView(View):
     """A discord.View containing two buttons to confirm banning a member with > 3 strikes."""
 
-    @discord.ui.button(
+    @discord.ui.button(  # type: ignore[misc]
         label="Yes",
         style=discord.ButtonStyle.red,
         custom_id="yes_out_of_sync_ban_member"
@@ -174,7 +174,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
         """
         await interaction.response.edit_message(delete_after=0)
 
-    @discord.ui.button(
+    @discord.ui.button(  # type: ignore[misc]
         label="No",
         style=discord.ButtonStyle.grey,
         custom_id="no_out_of_sync_ban_member"
@@ -205,7 +205,7 @@ class BaseStrikeCog(TeXBotBaseCog):
     async def _send_strike_user_message(self, strike_user: discord.User | discord.Member, member_strikes: DiscordMemberStrikes) -> None:  # noqa: E501
         # noinspection PyUnusedLocal
         rules_channel_mention: str = "`#welcome`"
-        with contextlib.suppress(RulesChannelDoesNotExist):
+        with contextlib.suppress(RulesChannelDoesNotExistError):
             rules_channel_mention = (await self.bot.rules_channel).mention
 
         includes_ban_message: str = (
@@ -313,7 +313,7 @@ class BaseStrikeCog(TeXBotBaseCog):
                 )
 
         if not perform_action:
-            sent_message: discord.Message = await message_sender_component.send(
+            await message_sender_component.send(
                 content=(
                     f"{confirm_strike_message}\n"
                     "**Please ensure you use the `/strike` command in future!**\n"
@@ -327,7 +327,7 @@ class BaseStrikeCog(TeXBotBaseCog):
                 )
             )
             await asyncio.sleep(118)
-            await sent_message.delete()
+            await message_sender_component.delete()
             return
 
         assert isinstance(strike_user, discord.Member)
@@ -647,6 +647,7 @@ class ManualModerationCog(BaseStrikeCog):
         if not after.timed_out or before.timed_out == after.timed_out:
             return
 
+        # noinspection PyArgumentList
         await self._confirm_manual_add_strike(
             strike_user=after,
             action=discord.AuditLogAction.member_update
@@ -659,6 +660,7 @@ class ManualModerationCog(BaseStrikeCog):
         if member.guild != self.bot.main_guild or member.bot:
             return
 
+        # noinspection PyArgumentList
         await self._confirm_manual_add_strike(
             strike_user=member,
             action=discord.AuditLogAction.kick
@@ -671,6 +673,7 @@ class ManualModerationCog(BaseStrikeCog):
         if guild != self.bot.main_guild or user.bot:
             return
 
+        # noinspection PyArgumentList
         await self._confirm_manual_add_strike(
             strike_user=user,
             action=discord.AuditLogAction.ban
@@ -690,7 +693,7 @@ class StrikeCommandCog(BaseStrikeCog):
         """
         try:
             guild: discord.Guild = ctx.bot.main_guild
-        except GuildDoesNotExist:
+        except GuildDoesNotExistError:
             return set()
 
         members: set[discord.Member] = {member for member in guild.members if not member.bot}
