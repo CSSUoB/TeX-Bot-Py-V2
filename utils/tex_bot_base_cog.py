@@ -9,7 +9,7 @@ import logging
 import re
 from collections.abc import Mapping
 from logging import Logger
-from typing import TYPE_CHECKING, Final
+from typing import Final
 
 import discord
 from discord import Cog
@@ -22,10 +22,7 @@ from exceptions import (
 from utils.tex_bot import TeXBot
 from utils.tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
 
-if TYPE_CHECKING:
-    from typing import TypeAlias
-
-    MentionableMember: TypeAlias = discord.Member | discord.Role
+type MentionableMember = discord.Member | discord.Role
 
 
 logger: Logger = logging.getLogger("texbot")

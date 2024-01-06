@@ -5,7 +5,7 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("TeXBot",)
 
 import re
-from typing import Any, Final, TypeAlias
+from typing import Final
 
 import discord
 
@@ -23,7 +23,7 @@ from exceptions import (
     RulesChannelDoesNotExist,
 )
 
-ChannelTypes: TypeAlias = (
+type ChannelTypes = (
     discord.VoiceChannel
     | discord.StageChannel
     | discord.TextChannel
@@ -42,7 +42,7 @@ class TeXBot(discord.Bot):
     if these objects do not exist.
     """
 
-    def __init__(self, *args: Any, **options: Any) -> None:
+    def __init__(self, *args: object, **options: object) -> None:
         """Initialize a new discord.Bot subclass with empty shortcut accessors."""
         self._main_guild: discord.Guild | None = None
         self._committee_role: discord.Role | None = None
