@@ -367,7 +367,6 @@ class RoleDoesNotExistError(BaseDoesNotExistError, abc.ABC):
     @abc.abstractmethod
     def ROLE_NAME(cls) -> str:  # noqa: N802,N805
         """The name of the Discord role that does not exist."""  # noqa: D401
-
     def __init__(self, message: str | None = None) -> None:
         """Initialize a new DoesNotExist exception for a role not existing."""
         HAS_DEPENDANTS: Final[bool] = bool(
@@ -466,7 +465,7 @@ class GuestRoleDoesNotExistError(RoleDoesNotExistError):
 
 class MemberRoleDoesNotExistError(RoleDoesNotExistError):
     """Exception class to raise when the "Member" Discord role is missing."""
-
+    
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     def ERROR_CODE(cls) -> str:  # noqa: N802,N805
