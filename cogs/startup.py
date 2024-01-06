@@ -36,7 +36,7 @@ class StartupCog(TeXBotBaseCog):
         Shortcut accessors should only be populated once the bot is ready to make API requests.
         """
         if settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
-            discord_logging_handler: DiscordHandler = DiscordHandler(
+            discord_logging_handler: logging.Handler = DiscordHandler(
                 self.bot.user.name if self.bot.user else "TeXBot",
                 settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
                 avatar_url=(

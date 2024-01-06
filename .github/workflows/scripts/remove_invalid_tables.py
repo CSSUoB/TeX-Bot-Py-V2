@@ -5,7 +5,7 @@ import shutil
 from argparse import ArgumentParser, Namespace
 from collections.abc import MutableSequence, Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Final, TextIO
+from typing import TYPE_CHECKING, Final, TextIO
 
 from git import Repo
 
@@ -108,7 +108,7 @@ def remove_invalid_tables() -> None:
     """Remove all invalid tables within every markdown file in this Git repository."""
     project_root: Path = _get_project_root()
 
-    file_entry: tuple[str | PathLike[str], Any]
+    file_entry: tuple[str | PathLike[str], object]
     for file_entry in Repo(project_root).index.entries:
         file_path: Path = project_root / file_entry[0]
 

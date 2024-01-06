@@ -10,7 +10,7 @@ from logging import Logger
 
 import discord
 from discord import Forbidden
-from discord.ext.commands import CheckAnyFailure
+from discord.ext.commands.errors import CheckAnyFailure
 
 from exceptions import (
     BaseDoesNotExistError,

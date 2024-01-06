@@ -95,7 +95,7 @@ class Settings(abc.ABC):
         """Return the message to state that the given settings key is invalid."""
         return f"{item!r} is not a valid settings key."
 
-    def __getattr__(self, item: str) -> Any:
+    def __getattr__(self, item: str) -> Any:  # type: ignore[misc]
         """Retrieve settings value by attribute lookup."""
         MISSING_ATTRIBUTE_MESSAGE: Final[str] = (
             f"{type(self).__name__!r} object has no attribute {item!r}"
@@ -118,7 +118,7 @@ class Settings(abc.ABC):
 
         raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
-    def __getitem__(self, item: str) -> Any:
+    def __getitem__(self, item: str) -> Any:  # type: ignore[misc]
         """Retrieve settings value by key lookup."""
         e: AttributeError
         try:
