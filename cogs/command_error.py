@@ -15,7 +15,7 @@ from discord.ext.commands.errors import CheckAnyFailure
 from exceptions import (
     BaseDoesNotExistError,
     BaseErrorWithErrorCode,
-    GuildDoesNotExist,
+    GuildDoesNotExistError,
 )
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
@@ -35,7 +35,7 @@ class CommandErrorCog(TeXBotBaseCog):
         if isinstance(error, discord.ApplicationCommandInvokeError):
             message = None
             logging_message = (
-                None if isinstance(error.original, GuildDoesNotExist) else error.original
+                None if isinstance(error.original, GuildDoesNotExistError) else error.original
             )
 
             if isinstance(error.original, Forbidden):
@@ -65,7 +65,7 @@ class CommandErrorCog(TeXBotBaseCog):
             logging_message=logging_message
         )
 
-        if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(error.original, GuildDoesNotExist):  # noqa: E501
+        if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(error.original, GuildDoesNotExistError):  # noqa: E501
             command_name: str = (
                 ctx.command.callback.__name__
                 if (hasattr(ctx.command, "callback")

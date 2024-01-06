@@ -12,7 +12,7 @@ from discord.ext.commands import CheckFailure
 # noinspection PyProtectedMember
 from discord.ext.commands.core import T
 
-from exceptions import DiscordMemberNotInMainGuild
+from exceptions import DiscordMemberNotInMainGuildError
 from utils.tex_bot_contexts import TeXBotApplicationContext
 
 
@@ -23,7 +23,7 @@ class CommandChecks:
     async def _check_interaction_user_in_main_guild(ctx: TeXBotApplicationContext) -> bool:
         try:
             await ctx.bot.get_main_guild_member(ctx.user)
-        except DiscordMemberNotInMainGuild:
+        except DiscordMemberNotInMainGuildError:
             return False
         return True
 
