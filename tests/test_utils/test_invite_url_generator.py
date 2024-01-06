@@ -1,7 +1,7 @@
 """
 Automated unit-test suite for the InviteURLGenerator utility function component.
 
-Includes tests for both the argument parser & low-level URL generation function.
+Includes tests for both the argument parser & low-level invite URL generation function.
 """
 
 import os

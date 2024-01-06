@@ -4,6 +4,7 @@ import functools
 import logging
 import os
 import random
+import re
 import string
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Final
@@ -320,28 +321,35 @@ class TestSetupLogging:
 class TestSetupDiscordBotToken:
     """Test case to unit-test the `_setup_discord_bot_token()` function."""
 
-    # noinspection PyPep8Naming
-    @pytest.mark.parametrize(
-        "TEST_DISCORD_BOT_TOKEN",
-        (
-            f"""{
+    @staticmethod
+    def get_multiple_random_test_discord_bot_token(*, count: int = 5) -> Iterable[str]:
+        """Return `count` number of random test `DISCORD_BOT_TOKEN` values."""
+        return (
+            f"{
                 "".join(
                     random.choices(
                         string.ascii_letters + string.digits,
                         k=random.randint(24, 26)
                     )
                 )
-            }."""
-            f"""{"".join(random.choices(string.ascii_letters + string.digits, k=6))}."""
-            f"""{
+            }.{
+                "".join(random.choices(string.ascii_letters + string.digits, k=6))
+            }.{
                 "".join(
                     random.choices(
                         string.ascii_letters + string.digits + "_-",
                         k=random.randint(27, 38)
                     )
                 )
-            }""",
+            }"
+            for _
+            in range(count)
         )
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_DISCORD_BOT_TOKEN",
+        get_multiple_random_test_discord_bot_token()
     )
     def test_setup_discord_bot_token_successful(self, TEST_DISCORD_BOT_TOKEN: str) -> None:  # noqa: N803
         """Test that the given `DISCORD_BOT_TOKEN` is used when a valid one is provided."""
@@ -365,8 +373,103 @@ class TestSetupDiscordBotToken:
                 RuntimeSettings._setup_discord_bot_token()  # noqa: SLF001
 
     # noinspection PyPep8Naming
-    @pytest.mark.parametrize("INVALID_DISCORD_BOT_TOKEN", ("INVALID_DISCORD_BOT_TOKEN",))
-    def test_invalid_console_log_level(self, INVALID_DISCORD_BOT_TOKEN: str) -> None:  # noqa: N803
+    @pytest.mark.parametrize(
+        "INVALID_DISCORD_BOT_TOKEN",
+        (
+            "INVALID_DISCORD_BOT_TOKEN",
+            re.sub(
+                r"\A[A-Za-z0-9]{24,26}\.",
+                f"{"".join(random.choices(string.ascii_letters + string.digits, k=2))}.",
+                string=next(iter(get_multiple_random_test_discord_bot_token(count=1))),
+                count=1
+            ),
+            re.sub(
+                r"\A[A-Za-z0-9]{24,26}\.",
+                f"{"".join(random.choices(string.ascii_letters + string.digits, k=50))}.",
+                string=next(iter(get_multiple_random_test_discord_bot_token(count=1))),
+                count=1
+            ),
+            re.sub(
+                r"\A[A-Za-z0-9]{24,26}\.",
+                (
+                    f"{
+                        "".join(random.choices(string.ascii_letters + string.digits, k=12))
+                    }>{
+                        "".join(random.choices(string.ascii_letters + string.digits, k=12))
+                    }."
+                ),
+                string=next(iter(get_multiple_random_test_discord_bot_token(count=1))),
+                count=1
+            ),
+            re.sub(
+                r"\.[A-Za-z0-9]{6}\.",
+                f".{"".join(random.choices(string.ascii_letters + string.digits, k=2))}.",
+                string=next(iter(get_multiple_random_test_discord_bot_token(count=1))),
+                count=1
+            ),
+            re.sub(
+                r"\.[A-Za-z0-9]{6}\.",
+                (
+                    f".{"".join(random.choices(string.ascii_letters + string.digits, k=50))}."
+                ),
+                string=next(iter(get_multiple_random_test_discord_bot_token(count=1))),
+                count=1
+            ),
+            re.sub(
+                r"\.[A-Za-z0-9]{6}\.",
+                (
+                    f".{
+                        "".join(random.choices(string.ascii_letters + string.digits, k=3))
+                    }>{
+                        "".join(random.choices(string.ascii_letters + string.digits, k=2))
+                    }."
+                ),
+                string=next(iter(get_multiple_random_test_discord_bot_token(count=1))),
+                count=1
+            ),
+            re.sub(
+                r"\.[A-Za-z0-9_-]{27,38}\Z",
+                (
+                    f".{
+                        "".join(
+                            random.choices(string.ascii_letters + string.digits + "_-", k=2)
+                        )
+                    }"
+                ),
+                string=next(iter(get_multiple_random_test_discord_bot_token(count=1))),
+                count=1
+            ),
+            re.sub(
+                r"\.[A-Za-z0-9_-]{27,38}\Z",
+                (
+                    f".{
+                        "".join(
+                            random.choices(string.ascii_letters + string.digits + "_-", k=50)
+                        )
+                    }"
+                ),
+                string=next(iter(get_multiple_random_test_discord_bot_token(count=1))),
+                count=1
+            ),
+            re.sub(
+                r"\.[A-Za-z0-9_-]{27,38}\Z",
+                (
+                    f".{
+                        "".join(
+                            random.choices(string.ascii_letters + string.digits + "_-", k=16)
+                        )
+                    }>{
+                        "".join(
+                            random.choices(string.ascii_letters + string.digits + "_-", k=16)
+                        )
+                    }"
+                ),
+                string=next(iter(get_multiple_random_test_discord_bot_token(count=1))),
+                count=1
+            )
+        )
+    )
+    def test_invalid_discord_bot_token(self, INVALID_DISCORD_BOT_TOKEN: str) -> None:  # noqa: N803
         """Test that an error is raised when an invalid `DISCORD_BOT_TOKEN` is provided."""
         INVALID_SETTINGS_KEY_MESSAGE: Final[str] = (
             "DISCORD_BOT_TOKEN must be a valid Discord bot token"
@@ -379,3 +482,40 @@ class TestSetupDiscordBotToken:
 
             with pytest.raises(ImproperlyConfiguredError, match=INVALID_SETTINGS_KEY_MESSAGE):
                 RuntimeSettings._setup_discord_bot_token()  # noqa: SLF001
+
+
+class TestSetupDiscordLogChannelWebhookURL:
+    """Test case to unit-test the `_setup_discord_log_channel_webhook_url()` function."""
+
+    @staticmethod
+    def get_multiple_random_test_discord_log_channel_webhook_url(count: int = 5) -> Iterable[str]:  # noqa: E501
+        """Return `count` number of random test `DISCORD_LOG_CHANNEL_WEBHOOK_URL` values."""
+        return (
+            f"https://discord.com/api/webhooks/{
+                "".join(random.choices(string.digits, k=random.randint(17, 20)))
+            }/{
+                "".join(
+                    random.choices(
+                        string.ascii_letters + string.digits,
+                        k=random.randint(60, 90)
+                    )
+                )
+            }{
+                random.choice(("", "/"))
+            }"
+            for _
+            in range(count)
+        )
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL",
+        get_multiple_random_test_discord_log_channel_webhook_url()
+    )
+    def test_setup_discord_bot_token_successful(self, TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str) -> None:  # noqa: N803,E501
+        """
+        Test that the given `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is used when provided.
+
+        In this test, the provided `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is valid
+        and so must be saved successfully.
+        """

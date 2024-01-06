@@ -24,6 +24,7 @@ classifiers = [
     "Topic :: Internet"
 ]
 
+
 [tool.poetry.dependencies]
 python = "^3.12"  # NOTE: The Python version cannot be updated to 3.12, because it is not currently supported by Pycord
 py-cord = {git = "https://github.com/Pycord-Development/pycord.git", branch = "master", rev = "8af8454a5befbdd6589d24016dcc7bfee252de0b"}  # NOTE: Pycord has temporarily lost the ability to create new releases on their main pypi page so we use their git version, pinned to a specific commit hash. Pycord has been tested to be stable, up to the pinned commit
@@ -54,6 +55,7 @@ filterwarnings = [
     "ignore:'audioop':DeprecationWarning"
 ]
 
+
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]
 exclude = "db/_settings\\.py$"
@@ -72,8 +74,10 @@ strict_equality = true
 ignore_missing_imports = true
 warn_unreachable = true
 
+
 [tool.django-stubs]
 django_settings_module = "db._settings"
+
 
 [tool.ruff]
 select = [
@@ -206,6 +210,7 @@ max-branches = 19
 
 [tool.ruff.pyupgrade]
 keep-runtime-typing = true
+
 
 [tool.pymarkdown]
 mode.strict-config = true

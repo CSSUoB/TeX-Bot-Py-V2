@@ -1,4 +1,4 @@
-"""Automated test suite for the main entrypoint script to run TeXBot."""
+"""Automated test suite for the main entrypoint script to execute given util-functions."""
 
 import random
 import string
@@ -19,8 +19,8 @@ if TYPE_CHECKING:
     from _pytest.capture import CaptureFixture, CaptureResult
 
 
-class TestMain(BaseTestArgumentParser):
-    """Test case to unit-test the main argument parser."""
+class TestUtilFunctionsExecution(BaseTestArgumentParser):
+    """Test case to unit-test the main util-function execution class."""
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
