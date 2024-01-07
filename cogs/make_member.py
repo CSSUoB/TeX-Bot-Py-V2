@@ -23,61 +23,63 @@ from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 logger: Logger = logging.getLogger("texbot")
 
+_GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: Final[str] = (
+    f"""{
+        "Student"
+        if (
+            settings["_GROUP_FULL_NAME"]
+            and (
+                "computer science society" in settings["_GROUP_FULL_NAME"].lower()
+                or "css" in settings["_GROUP_FULL_NAME"].lower()
+                or "uob" in settings["_GROUP_FULL_NAME"].lower()
+                or "university of birmingham" in settings["_GROUP_FULL_NAME"].lower()
+                or "uob" in settings["_GROUP_FULL_NAME"].lower()
+                or (
+                    "bham" in settings["_GROUP_FULL_NAME"].lower()
+                    and "uni" in settings["_GROUP_FULL_NAME"].lower()
+                )
+            )
+        )
+        else "Member"
+    } ID"""
+)
+
+_GROUP_MEMBER_ID_ARGUMENT_NAME: Final[str] = (
+    _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME.lower().replace(
+        " ",
+        ""
+    )
+)
+
+
 class MakeMemberCommandCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
     """Cog class that defines the "/makemember" command and its call-back method."""
-
-    GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: Final[str] = (
-        f"""{
-            "Student"
-            if (
-                settings["_GROUP_FULL_NAME"]
-                and (
-                    "computer science society" in settings["_GROUP_FULL_NAME"]
-                    or "css" in settings["_GROUP_FULL_NAME"]
-                    or "uob" in settings["_GROUP_FULL_NAME"]
-                    or "university of birmingham" in settings["_GROUP_FULL_NAME"]
-                    or "uob" in settings["_GROUP_FULL_NAME"]
-                    or (
-                        "bham" in settings["_GROUP_FULL_NAME"]
-                        and "uni" in settings["_GROUP_FULL_NAME"]
-                    )
-                )
-            )
-            else "Member"
-        } ID"""
-    )
-    GROUP_MEMBER_ID_ARGUMENT_NAME: Final[str] = (
-        GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME.lower().replace(
-            " ",
-            ""
-        )
-    )
 
     # noinspection SpellCheckingInspection
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="makemember",
         description=(
             "Gives you the Member role "
-            f"when supplied with an appropriate {GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME}."
+            f"when supplied with an appropriate {_GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME}."
         )
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
-        name=GROUP_MEMBER_ID_ARGUMENT_NAME,
+        name=_GROUP_MEMBER_ID_ARGUMENT_NAME,
         description=(
             f"""Your UoB Student {
                 "UoB Student"
                 if (
                     settings["_GROUP_FULL_NAME"]
                     and (
-                        "computer science society" in settings["_GROUP_FULL_NAME"]
-                        or "css" in settings["_GROUP_FULL_NAME"]
-                        or "uob" in settings["_GROUP_FULL_NAME"]
-                        or "university of birmingham" in settings["_GROUP_FULL_NAME"]
-                        or "uob" in settings["_GROUP_FULL_NAME"]
+                        "computer science society" in settings["_GROUP_FULL_NAME"].lower()
+                        or "css" in settings["_GROUP_FULL_NAME"].lower()
+                        or "uob" in settings["_GROUP_FULL_NAME"].lower()
+                        or "university of birmingham" in settings["_GROUP_FULL_NAME"].lower()
+                        or "uob" in settings["_GROUP_FULL_NAME"].lower()
                         or (
-                            "bham" in settings["_GROUP_FULL_NAME"]
-                            and "uni" in settings["_GROUP_FULL_NAME"]
+                            "bham" in settings["_GROUP_FULL_NAME"].lower()
+                            and "uni" in settings["_GROUP_FULL_NAME"].lower()
                         )
                     )
                 )
@@ -207,7 +209,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 message=(
                     f"You must be a member of {self.bot.group_full_name} "
                     "to use this command.\n"
-                    f"The provided {self.GROUP_MEMBER_ID_ARGUMENT_NAME} must match "
+                    f"The provided {_GROUP_MEMBER_ID_ARGUMENT_NAME} must match "
                     f"the {self.bot.group_member_id_type} ID "
                     f"that you purchased your {self.bot.group_short_name} membership with."
                 )

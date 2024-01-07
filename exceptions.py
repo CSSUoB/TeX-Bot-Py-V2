@@ -367,6 +367,7 @@ class RoleDoesNotExistError(BaseDoesNotExistError, abc.ABC):
     @abc.abstractmethod
     def ROLE_NAME(cls) -> str:  # noqa: N802,N805
         """The name of the Discord role that does not exist."""  # noqa: D401
+
     def __init__(self, message: str | None = None) -> None:
         """Initialize a new DoesNotExist exception for a role not existing."""
         HAS_DEPENDANTS: Final[bool] = bool(
