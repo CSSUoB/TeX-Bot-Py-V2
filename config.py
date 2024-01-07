@@ -110,7 +110,7 @@ class Settings(abc.ABC):
         if item in self._settings:
             return self._settings[item]
 
-        if re.match(r"\A[A-Z](?:[A-Z_]*[A-Z])?\Z", item):
+        if re.match(r"\A(?!_)(?:(?!_{2,})[A-Z_])+(?<!_)\Z", item):
             INVALID_SETTINGS_KEY_MESSAGE: Final[str] = self.get_invalid_settings_key_message(
                 item
             )
@@ -194,7 +194,7 @@ class Settings(abc.ABC):
             or (
                 raw_discord_log_channel_webhook_url.strip()
                 and re.match(
-                    r"\Ahttps://discord.com/api/webhooks/\d{17,20}/[a-zA-Z0-9]{60,90}/?\Z",
+                    r"\Ahttps://discord.com/api/webhooks/\d{17,20}/[a-zA-Z\d]{60,90}/?\Z",
                     raw_discord_log_channel_webhook_url.strip()
                 )
                 and validators.url(raw_discord_log_channel_webhook_url.strip())
@@ -239,7 +239,13 @@ class Settings(abc.ABC):
             raw_group_full_name is None
             or (
                 raw_group_full_name.strip()
-                and re.match(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", raw_group_full_name.strip())  # TODO: Better name regex
+                and re.match(
+                    (
+                        r"\A(?![ &!?:,.%-])(?:(?![ '&:,.#%\"-]{2,})[A-Za-z0-9 '&!?:,.#%\"-])*"
+                        r"(?<![ &-])\Z"
+                    ),
+                    raw_group_full_name.strip()
+                )
             )
         )
         if not GROUP_FULL_NAME_IS_VALID:
@@ -262,7 +268,10 @@ class Settings(abc.ABC):
             raw_group_short_name is None
             or (
                 raw_group_short_name.strip()
-                and re.match(r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", raw_group_short_name.strip())  # TODO: Better name regex
+                and re.match(
+                    r"\A(?![&!?:,.%-])(?:(?!['&:,.#%\"-]{2,})[A-Za-z0-9'&!?:,.#%\"-])*(?<![&-])\Z",
+                    raw_group_short_name.strip()
+                )
             )
         )
         if not GROUP_SHORT_NAME_IS_VALID:
