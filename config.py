@@ -528,17 +528,23 @@ class Settings(abc.ABC):
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        raw_send_introduction_reminders_interval: Match[str] | None = re.match(
-            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            str(os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h"))  # TODO: Use None & strip
+        raw_send_introduction_reminders_interval: str | None = (
+            os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL")
         )
 
-        raw_timedelta_details_send_introduction_reminders_interval: Mapping[str, float] = {
-            "hours": 6
-        }
+        send_introduction_reminders_interval: Match[str] | None = re.match(
+            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
+            "6h"
+            if raw_send_introduction_reminders_interval is None
+            else (
+                raw_send_introduction_reminders_interval.lower().strip()
+                if raw_send_introduction_reminders_interval.lower().strip()
+                else raw_send_introduction_reminders_interval
+            )
+        )
 
-        if cls._settings["SEND_INTRODUCTION_REMINDERS"]:
-            if not raw_send_introduction_reminders_interval:
+        if send_introduction_reminders_interval is None:
+            if cls._settings["SEND_INTRODUCTION_REMINDERS"]:
                 INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
                     "SEND_INTRODUCTION_REMINDERS_INTERVAL must contain the interval "
                     "in any combination of seconds, minutes or hours."
@@ -547,24 +553,27 @@ class Settings(abc.ABC):
                     INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE
                 )
 
-            raw_timedelta_details_send_introduction_reminders_interval = {
+            cls._settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = {"hours": 6}
+
+        else:
+            cls._settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = {
                 key: float(value)
                 for key, value
-                in raw_send_introduction_reminders_interval.groupdict().items()
+                in send_introduction_reminders_interval.groupdict().items()
                 if value
             }
 
-        cls._settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
-            raw_timedelta_details_send_introduction_reminders_interval
-        )
-
     @classmethod
     def _setup_kick_no_introduction_discord_members(cls) -> None:
-        raw_kick_no_introduction_discord_members: str = str(
-            os.getenv("KICK_NO_INTRODUCTION_DISCORD_MEMBERS", "False")  # TODO: Use None & strip
-        ).lower()
+        raw_kick_no_introduction_discord_members: str | None = (
+            os.getenv("KICK_NO_INTRODUCTION_DISCORD_MEMBERS")
+        )
 
-        if raw_kick_no_introduction_discord_members not in TRUE_VALUES | FALSE_VALUES:
+        KICK_NO_INTRODUCTION_DISCORD_MEMBERS_IS_VALID: Final[bool] = bool(
+            raw_kick_no_introduction_discord_members is None
+            or raw_kick_no_introduction_discord_members in TRUE_VALUES | FALSE_VALUES
+        )
+        if not KICK_NO_INTRODUCTION_DISCORD_MEMBERS_IS_VALID:
             INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_MESSAGE: Final[str] = (
                 "KICK_NO_INTRODUCTION_DISCORD_MEMBERS must be a boolean value."
             )
@@ -573,7 +582,9 @@ class Settings(abc.ABC):
             )
 
         cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = (
-            raw_kick_no_introduction_discord_members in TRUE_VALUES
+            False
+            if raw_kick_no_introduction_discord_members is None
+            else raw_kick_no_introduction_discord_members in TRUE_VALUES
         )
 
     @classmethod
@@ -585,15 +596,23 @@ class Settings(abc.ABC):
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        raw_kick_no_introduction_discord_members_delay: Match[str] | None = re.match(
-            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            str(os.getenv("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY", "5d"))  # TODO: Use None & strip
+        raw_kick_no_introduction_discord_members_delay: str | None = (
+            os.getenv("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY")
         )
 
-        raw_timedelta_kick_no_introduction_discord_members_delay: timedelta = timedelta()
+        kick_no_introduction_discord_members_delay: Match[str] | None = re.match(
+            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
+            "5d"
+            if raw_kick_no_introduction_discord_members_delay is None
+            else (
+                raw_kick_no_introduction_discord_members_delay.lower().strip()
+                if raw_kick_no_introduction_discord_members_delay.lower().strip()
+                else raw_kick_no_introduction_discord_members_delay
+            )
+        )
 
-        if cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"]:
-            if not raw_kick_no_introduction_discord_members_delay:
+        if kick_no_introduction_discord_members_delay is None:
+            if cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"]:
                 INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE: Final[str] = (
                     "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must contain the delay "
                     "in any combination of seconds, minutes, hours, days or weeks."
@@ -602,16 +621,19 @@ class Settings(abc.ABC):
                     INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE
                 )
 
-            raw_timedelta_kick_no_introduction_discord_members_delay = timedelta(
+            cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = timedelta()
+
+        else:
+            timedelta_kick_no_introduction_discord_members_delay: timedelta = timedelta(
                 **{
                     key: float(value)
                     for key, value
-                    in raw_kick_no_introduction_discord_members_delay.groupdict().items()
+                    in kick_no_introduction_discord_members_delay.groupdict().items()
                     if value
                 }
             )
 
-            if raw_timedelta_kick_no_introduction_discord_members_delay <= timedelta(days=1):
+            if timedelta_kick_no_introduction_discord_members_delay <= timedelta(days=1):
                 TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE: Final[str] = (
                     "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must be greater than 1 day."
                 )
@@ -619,24 +641,32 @@ class Settings(abc.ABC):
                     TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE
                 )
 
-        cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
-            raw_timedelta_kick_no_introduction_discord_members_delay
-        )
+            cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
+                timedelta_kick_no_introduction_discord_members_delay
+            )
 
     @classmethod
     def _setup_send_get_roles_reminders(cls) -> None:
-        raw_send_get_roles_reminders: str = str(
-            os.getenv("SEND_GET_ROLES_REMINDERS", "True")  # TODO: Use None & strip
-        ).lower()
+        raw_send_get_roles_reminders: str | None = (
+            os.getenv("SEND_GET_ROLES_REMINDERS")
+        )
 
-        if raw_send_get_roles_reminders not in TRUE_VALUES | FALSE_VALUES:
+        SEND_GET_ROLES_REMINDERS_IS_VALID: Final[bool] = bool(
+            raw_send_get_roles_reminders is None
+            or raw_send_get_roles_reminders in TRUE_VALUES | FALSE_VALUES
+        )
+        if not SEND_GET_ROLES_REMINDERS_IS_VALID:
             INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE: Final[str] = (
                 "SEND_GET_ROLES_REMINDERS must be a boolean value."
             )
-            raise ImproperlyConfiguredError(INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE)
+            raise ImproperlyConfiguredError(
+                INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE
+            )
 
         cls._settings["SEND_GET_ROLES_REMINDERS"] = (
-            raw_send_get_roles_reminders in TRUE_VALUES
+            True
+            if raw_send_get_roles_reminders is None
+            else raw_send_get_roles_reminders in TRUE_VALUES
         )
 
     @classmethod
@@ -648,17 +678,23 @@ class Settings(abc.ABC):
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        raw_send_get_roles_reminders_interval: Match[str] | None = re.match(
-            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            str(os.getenv("SEND_GET_ROLES_REMINDERS_INTERVAL", "24h"))  # TODO: Use None & strip
+        raw_send_get_roles_reminders_interval: str | None = (
+            os.getenv("SEND_GET_ROLES_REMINDERS_INTERVAL")
         )
 
-        raw_timedelta_details_send_get_roles_reminders_interval: Mapping[str, float] = {
-            "hours": 24
-        }
+        send_get_roles_reminders_interval: Match[str] | None = re.match(
+            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
+            "24h"
+            if raw_send_get_roles_reminders_interval is None
+            else (
+                raw_send_get_roles_reminders_interval.lower().strip()
+                if raw_send_get_roles_reminders_interval.lower().strip()
+                else raw_send_get_roles_reminders_interval
+            )
+        )
 
-        if cls._settings["SEND_GET_ROLES_REMINDERS"]:
-            if not raw_send_get_roles_reminders_interval:
+        if send_get_roles_reminders_interval is None:
+            if cls._settings["SEND_GET_ROLES_REMINDERS"]:
                 INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
                     "SEND_GET_ROLES_REMINDERS_INTERVAL must contain the interval "
                     "in any combination of seconds, minutes or hours."
@@ -667,51 +703,55 @@ class Settings(abc.ABC):
                     INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE
                 )
 
-            raw_timedelta_details_send_get_roles_reminders_interval = {
+            cls._settings["SEND_GET_ROLES_REMINDERS_INTERVAL"] = {"hours": 24}
+
+        else:
+            cls._settings["SEND_GET_ROLES_REMINDERS_INTERVAL"] = {
                 key: float(value)
                 for key, value
-                in raw_send_get_roles_reminders_interval.groupdict().items()
+                in send_get_roles_reminders_interval.groupdict().items()
                 if value
             }
 
-        cls._settings["SEND_GET_ROLES_REMINDERS_INTERVAL"] = (
-            raw_timedelta_details_send_get_roles_reminders_interval
-        )
-
     @classmethod
     def _setup_statistics_days(cls) -> None:
+        raw_statistics_days: str | None = os.getenv("STATISTICS_DAYS")
+
         e: ValueError
         try:
-            raw_statistics_days: float = float(os.getenv("STATISTICS_DAYS", "30"))  # TODO: Use None & strip
+            statistics_days: float = (
+                30 if raw_statistics_days is None else float(raw_statistics_days)
+            )
         except ValueError as e:
             INVALID_STATISTICS_DAYS_MESSAGE: Final[str] = (
                 "STATISTICS_DAYS must contain the statistics period in days."
             )
             raise ImproperlyConfiguredError(INVALID_STATISTICS_DAYS_MESSAGE) from e
 
-        cls._settings["STATISTICS_DAYS"] = timedelta(days=raw_statistics_days)
+        cls._settings["STATISTICS_DAYS"] = timedelta(days=statistics_days)
 
     @classmethod
     def _setup_statistics_roles(cls) -> None:
-        raw_statistics_roles: str | None = os.getenv("STATISTICS_ROLES")  # TODO: Use None & strip
+        raw_statistics_roles: str | None = os.getenv("STATISTICS_ROLES")
 
-        if not raw_statistics_roles:
+        if raw_statistics_roles is None:
             cls._settings["STATISTICS_ROLES"] = DEFAULT_STATISTICS_ROLES
 
         else:
             cls._settings["STATISTICS_ROLES"] = {
-                raw_statistics_role
+                raw_statistics_role.strip()
                 for raw_statistics_role
-                in raw_statistics_roles.split(",")
-                if raw_statistics_role
+                in raw_statistics_roles.strip().split(",")
+                if raw_statistics_role.strip()
             }
 
     @classmethod
     def _setup_moderation_document_url(cls) -> None:
-        raw_moderation_document_url: str | None = os.getenv("MODERATION_DOCUMENT_URL")  # TODO: Use None & strip
+        raw_moderation_document_url: str | None = os.getenv("MODERATION_DOCUMENT_URL")
 
         MODERATION_DOCUMENT_URL_IS_VALID: Final[bool] = bool(
-            raw_moderation_document_url
+            raw_moderation_document_url is not None
+            and raw_moderation_document_url.strip()
             and validators.url(raw_moderation_document_url)
         )
         if not MODERATION_DOCUMENT_URL_IS_VALID:
@@ -720,15 +760,19 @@ class Settings(abc.ABC):
             )
             raise ImproperlyConfiguredError(MODERATION_DOCUMENT_URL_MESSAGE)
 
-        cls._settings["MODERATION_DOCUMENT_URL"] = raw_moderation_document_url
+        cls._settings["MODERATION_DOCUMENT_URL"] = raw_moderation_document_url.strip()  # type: ignore[union-attr]
 
     @classmethod
     def _setup_manual_moderation_warning_message_location(cls) -> None:
-        raw_manual_moderation_warning_message_location: str = os.getenv(  # TODO: Use None & strip
-            "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION",
-            "DM"
+        raw_manual_moderation_warning_message_location: str | None = (
+            os.getenv("MANUAL_MODERATION_WARNING_MESSAGE_LOCATION")
         )
-        if not raw_manual_moderation_warning_message_location:
+
+        MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_IS_VALID: Final[bool] = bool(
+            raw_manual_moderation_warning_message_location is not None
+            and raw_manual_moderation_warning_message_location.strip()
+        )
+        if not MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_IS_VALID:
             MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE: Final[str] = (
                 "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION must be a valid name "
                 "of a channel in your group's Discord guild."
@@ -736,7 +780,13 @@ class Settings(abc.ABC):
             raise ImproperlyConfiguredError(MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE)
 
         cls._settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] = (
-            raw_manual_moderation_warning_message_location
+            "DM"
+            if raw_manual_moderation_warning_message_location is None
+            else (
+                raw_manual_moderation_warning_message_location.upper().strip()
+                if raw_manual_moderation_warning_message_location.upper().strip()
+                else raw_manual_moderation_warning_message_location
+            )
         )
 
     @classmethod
