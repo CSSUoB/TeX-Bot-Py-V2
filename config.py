@@ -33,6 +33,7 @@ from typing import IO, Any, ClassVar, Final, final
 
 import dotenv
 import git
+import regex
 import validators
 from django.core import management
 
@@ -235,17 +236,24 @@ class Settings(abc.ABC):
     def _setup_group_full_name(cls) -> None:
         raw_group_full_name: str | None = os.getenv("GROUP_NAME")
 
+        if raw_group_full_name is not None:
+            raw_group_full_name = raw_group_full_name.translate(
+                {
+                    ord(unicode_char): ascii_char
+                    for unicode_char, ascii_char
+                    in zip("‘’´“”–-", "''`\"\"--", strict=True)  # noqa: RUF001
+                }
+            )
+
         GROUP_FULL_NAME_IS_VALID: Final[bool] = bool(
             raw_group_full_name is None
             or (
                 raw_group_full_name.strip()
-                and re.match(
-                    (
-                        r"\A(?![ &!?:,.%-])(?:(?![ '&:,.#%\"-]{2,})[A-Za-z0-9 '&!?:,.#%\"-])*"
-                        r"(?<![ &-])\Z"
-                    ),
+                and regex.match(  # NOTE: The `regex` package is used here instead of python's in-built `re` package, because the `regex` package supports matching Unicode character classes (E.g. `\p{L}`)
+                    r"\A(?![ &!?:,.%-])(?:(?!['()&:,.#%\"-]{2,}| {2,})[\p{L}\p{M}0-9 '()&!?:,.#%\"-])*(?<![ &,-])\Z",  # noqa: E501
                     raw_group_full_name.strip()
                 )
+                and regex.search(r"\p{L}", raw_group_full_name.strip())  # NOTE: The `regex` package is used here instead of python's in-built `re` package, because the `regex` package supports matching Unicode character classes (E.g. `\p{L}`)
             )
         )
         if not GROUP_FULL_NAME_IS_VALID:
@@ -264,14 +272,24 @@ class Settings(abc.ABC):
     def _setup_group_short_name(cls) -> None:
         raw_group_short_name: str | None = os.getenv("GROUP_SHORT_NAME")
 
+        if raw_group_short_name is not None:
+            raw_group_short_name = raw_group_short_name.translate(
+                {
+                    ord(unicode_char): ascii_char
+                    for unicode_char, ascii_char
+                    in zip("‘’´“”–-", "''`\"\"--", strict=True)  # noqa: RUF001
+                }
+            )
+
         GROUP_SHORT_NAME_IS_VALID: Final[bool] = bool(
             raw_group_short_name is None
             or (
                 raw_group_short_name.strip()
-                and re.match(
-                    r"\A(?![&!?:,.%-])(?:(?!['&:,.#%\"-]{2,})[A-Za-z0-9'&!?:,.#%\"-])*(?<![&-])\Z",
+                and regex.match(  # NOTE: The `regex` package is used here instead of python's in-built `re` package, because the `regex` package supports matching Unicode character classes (E.g. `\p{L}`)
+                    r"\A(?![&!?:,.%-])(?:(?!['()&:,.#%\"-]{2,})[\p{L}\p{M}0-9'()&!?:,.#%\"-])*(?<![&,-])\Z",
                     raw_group_short_name.strip()
                 )
+                and regex.search(r"\p{L}", raw_group_short_name.strip())  # NOTE: The `regex` package is used here instead of python's in-built `re` package, because the `regex` package supports matching Unicode character classes (E.g. `\p{L}`)
             )
         )
         if not GROUP_SHORT_NAME_IS_VALID:
@@ -543,12 +561,14 @@ class Settings(abc.ABC):
 
         send_introduction_reminders_interval: Match[str] | None = re.match(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            "6h"
-            if raw_send_introduction_reminders_interval is None
-            else (
-                raw_send_introduction_reminders_interval.lower().strip()
-                if raw_send_introduction_reminders_interval.lower().strip()
-                else raw_send_introduction_reminders_interval
+            (
+                "6h"
+                if raw_send_introduction_reminders_interval is None
+                else (
+                    raw_send_introduction_reminders_interval.lower().strip()
+                    if raw_send_introduction_reminders_interval.lower().strip()
+                    else raw_send_introduction_reminders_interval
+                )
             )
         )
 
@@ -611,12 +631,14 @@ class Settings(abc.ABC):
 
         kick_no_introduction_discord_members_delay: Match[str] | None = re.match(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            "5d"
-            if raw_kick_no_introduction_discord_members_delay is None
-            else (
-                raw_kick_no_introduction_discord_members_delay.lower().strip()
-                if raw_kick_no_introduction_discord_members_delay.lower().strip()
-                else raw_kick_no_introduction_discord_members_delay
+            (
+                "5d"
+                if raw_kick_no_introduction_discord_members_delay is None
+                else (
+                    raw_kick_no_introduction_discord_members_delay.lower().strip()
+                    if raw_kick_no_introduction_discord_members_delay.lower().strip()
+                    else raw_kick_no_introduction_discord_members_delay
+                )
             )
         )
 
@@ -693,12 +715,14 @@ class Settings(abc.ABC):
 
         send_get_roles_reminders_interval: Match[str] | None = re.match(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            "24h"
-            if raw_send_get_roles_reminders_interval is None
-            else (
-                raw_send_get_roles_reminders_interval.lower().strip()
-                if raw_send_get_roles_reminders_interval.lower().strip()
-                else raw_send_get_roles_reminders_interval
+            (
+                "24h"
+                if raw_send_get_roles_reminders_interval is None
+                else (
+                    raw_send_get_roles_reminders_interval.lower().strip()
+                    if raw_send_get_roles_reminders_interval.lower().strip()
+                    else raw_send_get_roles_reminders_interval
+                )
             )
         )
 

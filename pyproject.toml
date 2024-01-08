@@ -36,6 +36,7 @@ parsedatetime = "^2.6"
 django = "~4.2"
 matplotlib = "^3.8"
 mplcyberpunk = "^0.7"
+regex = "^2023.12"
 python-logging-discord-handler = "^0.1"
 gitpython = "^3.1"
 classproperties = {git = "https://github.com/hottwaj/classproperties.git"}
@@ -44,7 +45,8 @@ setuptools = "^69.0"
 [tool.poetry.group.dev.dependencies]
 mypy = "~1.7"
 django-stubs = {extras = ["compatible-mypy"], version = "~4.2"}
-types-beautifulsoup4 = "^4.12.0"
+types-beautifulsoup4 = "^4.12"
+types-regex = "^2023.12"
 pytest = "^7.4"
 ruff = "^0.1"
 pymarkdownlnt = "^0.9"

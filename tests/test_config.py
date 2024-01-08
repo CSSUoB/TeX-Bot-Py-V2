@@ -1,6 +1,7 @@
 """Automated test suite for the `Settings` class & related functions within `config.py`."""
 
 import functools
+import itertools
 import logging
 import os
 import random
@@ -105,7 +106,7 @@ class TestSettings:
             assert getattr(RuntimeSettings(), MISSING_ITEM_NAME)
 
     # noinspection PyPep8Naming
-    @pytest.mark.parametrize("INVALID_ITEM_NAME", ("item_1",))
+    @pytest.mark.parametrize("INVALID_ITEM_NAME", ("item_1", "ITEM__1", "!ITEM_1"))
     def test_getattr_invalid_name(self, INVALID_ITEM_NAME: str) -> None:  # noqa: N803
         """Test that requesting an invalid settings variable by attr-lookup raises an error."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
@@ -170,7 +171,7 @@ class TestSettings:
             assert RuntimeSettings()[MISSING_ITEM_NAME]
 
     # noinspection PyPep8Naming
-    @pytest.mark.parametrize("INVALID_ITEM_NAME", ("item_1",))
+    @pytest.mark.parametrize("INVALID_ITEM_NAME", ("item_1", "ITEM__1", "!ITEM_1"))
     def test_getitem_invalid_name(self, INVALID_ITEM_NAME: str) -> None:  # noqa: N803
         """Test that requesting an invalid settings variable by key-lookup raises an error."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
@@ -295,7 +296,15 @@ class TestSetupLogging:
         assert "texbot" in set(logging.root.manager.loggerDict)
 
     # noinspection PyPep8Naming
-    @pytest.mark.parametrize("INVALID_LOG_LEVEL", ("INVALID_LOG_LEVEL",))
+    @pytest.mark.parametrize(
+        "INVALID_LOG_LEVEL",
+        (
+            "INVALID_LOG_LEVEL",
+            "".join(
+                random.choices(string.ascii_letters + string.digits + string.punctuation, k=18)
+            )
+        )
+    )
     def test_invalid_console_log_level(self, INVALID_LOG_LEVEL: str) -> None:  # noqa: N803
         """Test that an error is raised when an invalid `CONSOLE_LOG_LEVEL` is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
@@ -349,7 +358,10 @@ class TestSetupDiscordBotToken:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_DISCORD_BOT_TOKEN",
-        get_multiple_random_test_discord_bot_token()
+        itertools.chain(
+            get_multiple_random_test_discord_bot_token(),
+            (f"    {next(iter(get_multiple_random_test_discord_bot_token(count=1)))}   ",)
+        )
     )
     def test_setup_discord_bot_token_successful(self, TEST_DISCORD_BOT_TOKEN: str) -> None:  # noqa: N803
         """Test that the given `DISCORD_BOT_TOKEN` is used when a valid one is provided."""
@@ -362,7 +374,7 @@ class TestSetupDiscordBotToken:
 
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
-        assert RuntimeSettings()["DISCORD_BOT_TOKEN"] == TEST_DISCORD_BOT_TOKEN
+        assert RuntimeSettings()["DISCORD_BOT_TOKEN"] == TEST_DISCORD_BOT_TOKEN.strip()
 
     def test_missing_discord_bot_token(self) -> None:
         """Test that an error is raised when no `DISCORD_BOT_TOKEN` is provided."""
@@ -377,6 +389,9 @@ class TestSetupDiscordBotToken:
         "INVALID_DISCORD_BOT_TOKEN",
         (
             "INVALID_DISCORD_BOT_TOKEN",
+            "".join(
+                random.choices(string.ascii_letters + string.digits + string.punctuation, k=18)
+            ),
             re.sub(
                 r"\A[A-Za-z0-9]{24,26}\.",
                 f"{"".join(random.choices(string.ascii_letters + string.digits, k=2))}.",
@@ -471,7 +486,7 @@ class TestSetupDiscordBotToken:
     )
     def test_invalid_discord_bot_token(self, INVALID_DISCORD_BOT_TOKEN: str) -> None:  # noqa: N803
         """Test that an error is raised when an invalid `DISCORD_BOT_TOKEN` is provided."""
-        INVALID_SETTINGS_KEY_MESSAGE: Final[str] = (
+        INVALID_DISCORD_BOT_TOKEN_MESSAGE: Final[str] = (
             "DISCORD_BOT_TOKEN must be a valid Discord bot token"
         )
 
@@ -480,7 +495,7 @@ class TestSetupDiscordBotToken:
         with EnvVariableDeleter("DISCORD_BOT_TOKEN"):
             os.environ["DISCORD_BOT_TOKEN"] = INVALID_DISCORD_BOT_TOKEN
 
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_SETTINGS_KEY_MESSAGE):
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_DISCORD_BOT_TOKEN_MESSAGE):  # noqa: E501
                 RuntimeSettings._setup_discord_bot_token()  # noqa: SLF001
 
 
@@ -488,7 +503,7 @@ class TestSetupDiscordLogChannelWebhookURL:
     """Test case to unit-test the `_setup_discord_log_channel_webhook_url()` function."""
 
     @staticmethod
-    def get_multiple_random_test_discord_log_channel_webhook_url(count: int = 5) -> Iterable[str]:  # noqa: E501
+    def get_multiple_random_test_discord_log_channel_webhook_url(count: int = 5, *, with_trailing_slash: bool | None = None) -> Iterable[str]:  # noqa: E501
         """Return `count` number of random test `DISCORD_LOG_CHANNEL_WEBHOOK_URL` values."""
         return (
             f"https://discord.com/api/webhooks/{
@@ -501,7 +516,11 @@ class TestSetupDiscordLogChannelWebhookURL:
                     )
                 )
             }{
-                random.choice(("", "/"))
+                (
+                    "/"
+                    if with_trailing_slash
+                    else (random.choice(("", "/")) if with_trailing_slash is None else "")
+                )
             }"
             for _
             in range(count)
@@ -510,12 +529,420 @@ class TestSetupDiscordLogChannelWebhookURL:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL",
-        get_multiple_random_test_discord_log_channel_webhook_url()
+        itertools.chain(
+            get_multiple_random_test_discord_log_channel_webhook_url(
+                with_trailing_slash=False
+            ),
+            get_multiple_random_test_discord_log_channel_webhook_url(
+                count=1,
+                with_trailing_slash=True
+            ),
+            (
+                (
+                    f"    {
+                        next(
+                            iter(
+                                get_multiple_random_test_discord_log_channel_webhook_url(
+                                    count=1
+                                )
+                            )
+                        )
+                    }   "
+                ),
+            )
+        )
     )
-    def test_setup_discord_bot_token_successful(self, TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str) -> None:  # noqa: N803,E501
+    def test_setup_discord_log_channel_webhook_url_successful(self, TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str) -> None:  # noqa: N803,E501
         """
         Test that the given `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is used when provided.
 
         In this test, the provided `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is valid
         and so must be saved successfully.
         """
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("DISCORD_LOG_CHANNEL_WEBHOOK_URL"):
+            os.environ["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = (
+                TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL
+            )
+
+            RuntimeSettings._setup_discord_log_channel_webhook_url()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] == (
+            TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL.strip()
+        )
+
+    def test_missing_discord_log_channel_webhook_url(self) -> None:
+        """Test that no error occurs when no `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("DISCORD_LOG_CHANNEL_WEBHOOK_URL"):
+            try:
+                RuntimeSettings._setup_discord_log_channel_webhook_url()  # noqa: SLF001
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert not RuntimeSettings()["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL",
+        (
+            "INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL",
+            "".join(
+                random.choices(string.ascii_letters + string.digits + string.punctuation, k=18)
+            ),
+            re.sub(
+                r"/\d{17,20}/",
+                f"/{"".join(random.choices(string.digits, k=2))}/",
+                string=(
+                    next(
+                        iter(get_multiple_random_test_discord_log_channel_webhook_url(count=1))
+                    )
+                ),
+                count=1
+            ),
+            re.sub(
+                r"/\d{17,20}/",
+                f"/{"".join(random.choices(string.digits, k=50))}/",
+                string=(
+                    next(
+                        iter(get_multiple_random_test_discord_log_channel_webhook_url(count=1))
+                    )
+                ),
+                count=1
+            ),
+            re.sub(
+                r"/\d{17,20}/",
+                (
+                    f"/{
+                        "".join(random.choices(string.ascii_letters + string.digits, k=9))
+                    }>{
+                        "".join(random.choices(string.ascii_letters + string.digits, k=9))
+                    }/"
+                ),
+                string=(
+                    next(
+                        iter(get_multiple_random_test_discord_log_channel_webhook_url(count=1))
+                    )
+                ),
+                count=1
+            ),
+            re.sub(
+                r"/[a-zA-Z\d]{60,90}",
+                f"/{"".join(random.choices(string.ascii_letters + string.digits, k=2))}",
+                string=(
+                    next(
+                        iter(get_multiple_random_test_discord_log_channel_webhook_url(count=1))
+                    )
+                ),
+                count=1
+            ),
+            re.sub(
+                r"/[a-zA-Z\d]{60,90}",
+                (
+                    f"/{"".join(random.choices(string.ascii_letters + string.digits, k=150))}"
+                ),
+                string=(
+                    next(
+                        iter(get_multiple_random_test_discord_log_channel_webhook_url(count=1))
+                    )
+                ),
+                count=1
+            ),
+            re.sub(
+                r"/[a-zA-Z\d]{60,90}",
+                (
+                    f"/{
+                        "".join(random.choices(string.ascii_letters + string.digits, k=37))
+                    }>{
+                        "".join(random.choices(string.ascii_letters + string.digits, k=37))
+                    }"
+                ),
+                string=(
+                    next(
+                        iter(get_multiple_random_test_discord_log_channel_webhook_url(count=1))
+                    )
+                ),
+                count=1
+            )
+        )
+    )
+    def test_invalid_discord_log_channel_webhook_url(self, INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str) -> None:  # noqa: N803,E501
+        """Test that an error occurs when `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is invalid."""
+        INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE: Final[str] = (
+            "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("DISCORD_LOG_CHANNEL_WEBHOOK_URL"):
+            os.environ["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = (
+                INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL
+            )
+
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE):  # noqa: E501
+                RuntimeSettings._setup_discord_log_channel_webhook_url()  # noqa: SLF001
+
+
+class TestSetupDiscordGuildID:
+    """Test case to unit-test the `_setup_discord_guild_id()` function."""
+
+    @staticmethod
+    def get_multiple_random_test_discord_guild_id(count: int = 5) -> Iterable[str]:
+        """Return `count` number of random test `DISCORD_GUILD_ID` values."""
+        return (
+            "".join(random.choices(string.digits, k=random.randint(17, 20)))
+            for _
+            in range(count)
+        )
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_DISCORD_GUILD_ID",
+        itertools.chain(
+            get_multiple_random_test_discord_guild_id(),
+            (f"    {next(iter(get_multiple_random_test_discord_guild_id(count=1)))}   ",)
+        )
+    )
+    def test_setup_discord_guild_id_successful(self, TEST_DISCORD_GUILD_ID: str) -> None:  # noqa: N803
+        """Test that the given `DISCORD_GUILD_ID` is used when a valid one is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("DISCORD_GUILD_ID"):
+            os.environ["DISCORD_GUILD_ID"] = TEST_DISCORD_GUILD_ID
+
+            RuntimeSettings._setup_discord_guild_id()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["DISCORD_GUILD_ID"] == int(TEST_DISCORD_GUILD_ID.strip())
+
+    def test_missing_discord_guild_id(self) -> None:
+        """Test that an error is raised when no `DISCORD_GUILD_ID` is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("DISCORD_GUILD_ID"):  # noqa: SIM117
+            with pytest.raises(ImproperlyConfiguredError, match=r"DISCORD_GUILD_ID.*valid.*Discord guild ID"):  # noqa: E501
+                RuntimeSettings._setup_discord_guild_id()  # noqa: SLF001
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_DISCORD_GUILD_ID",
+        (
+            "INVALID_DISCORD_GUILD_ID",
+            "".join(
+                random.choices(string.ascii_letters + string.digits + string.punctuation, k=18)
+            ),
+            "".join(random.choices(string.digits, k=2)),
+            "".join(random.choices(string.digits, k=50))
+        )
+    )
+    def test_invalid_discord_bot_token(self, INVALID_DISCORD_GUILD_ID: str) -> None:  # noqa: N803
+        """Test that an error is raised when an invalid `DISCORD_GUILD_ID` is provided."""
+        INVALID_DISCORD_GUILD_ID_MESSAGE: Final[str] = (
+            "DISCORD_GUILD_ID must be a valid Discord guild ID"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("DISCORD_GUILD_ID"):
+            os.environ["DISCORD_GUILD_ID"] = INVALID_DISCORD_GUILD_ID
+
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_DISCORD_GUILD_ID_MESSAGE):  # noqa: E501
+                RuntimeSettings._setup_discord_guild_id()  # noqa: SLF001
+
+
+class TestSetupGroupFullName:
+    """Test case to unit-test the `_setup_group_full_name()` function."""
+
+    # noinspection PyPep8Naming,SpellCheckingInspection
+    @pytest.mark.parametrize(
+        "TEST_GROUP_FULL_NAME",
+        (
+            "Computer Science Society",
+            "Arts & Crafts Soc",
+            "3Bugs Fringe Theatre Society",
+            "Bahá’í",  # noqa: RUF001
+            "Burn FM.com",
+            "Dental Society (BUDSS)",
+            "Devil\'s Advocate Society",
+            "KASE: Knowledge And Skills Exchange",
+            "Law for Non-Law",
+            "   Computer Science Society    ",
+            "Computer Science Society?",
+            "Computer Science Society!",
+            "(Computer Science Society)"
+        )
+    )
+    def test_setup_group_full_name_successful(self, TEST_GROUP_FULL_NAME: str) -> None:  # noqa: N803
+        """Test that the given `GROUP_NAME` is used when a valid one is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("GROUP_NAME"):
+            os.environ["GROUP_NAME"] = TEST_GROUP_FULL_NAME
+
+            RuntimeSettings._setup_group_full_name()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["_GROUP_FULL_NAME"] == TEST_GROUP_FULL_NAME.strip().translate(
+            {
+                ord(unicode_char): ascii_char
+                for unicode_char, ascii_char
+                in zip("‘’´“”–-", "''`\"\"--", strict=True)  # noqa: RUF001
+            }
+        )
+
+    def test_missing_group_full_name(self) -> None:
+        """Test that no error occurs when no `GROUP_NAME` is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("GROUP_NAME"):
+            try:
+                RuntimeSettings._setup_group_full_name()  # noqa: SLF001
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert not RuntimeSettings()["_GROUP_FULL_NAME"]
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_GROUP_FULL_NAME",
+        (
+            "Computer  Science  Society",
+            "Computer Science..Society",
+            "Computer Science--Society",
+            "Computer Science&&Society",
+            "Computer Science%%Society",
+            "Computer Science$Society",
+            "Computer Science£Society",
+            "Computer Science*Society",
+            "Computer Science Society&",
+            "Computer Science Society-",
+            "Computer Science Society,",
+            "!Computer Science Society",
+            "?Computer Science Society",
+            "&Computer Science Society",
+            ":Computer Science Society",
+            ",Computer Science Society",
+            ".Computer Science Society",
+            "%Computer Science Society",
+            "-Computer Science Society",
+            "".join(random.choices(string.digits, k=30))
+        )
+    )
+    def test_invalid_group_full_name(self, INVALID_GROUP_FULL_NAME: str) -> None:  # noqa: N803
+        """Test that an error is raised when an invalid `GROUP_NAME` is provided."""
+        INVALID_GROUP_NAME_MESSAGE: Final[str] = (
+            "GROUP_NAME must not contain any invalid characters"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("GROUP_NAME"):
+            os.environ["GROUP_NAME"] = INVALID_GROUP_FULL_NAME
+
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_GROUP_NAME_MESSAGE):
+                RuntimeSettings._setup_group_full_name()  # noqa: SLF001
+
+
+class TestSetupGroupShortName:
+    """Test case to unit-test the `_setup_group_short_name()` function."""
+
+    # noinspection PyPep8Naming,SpellCheckingInspection
+    @pytest.mark.parametrize(
+        "TEST_GROUP_SHORT_NAME",
+        (
+            "CSS",
+            "ArtSoc",
+            "3Bugs",
+            "Bahá’í",  # noqa: RUF001
+            "BurnFM.com",
+            "L4N-L",
+            "   CSS    ",
+            "CSS?",
+            "CSS!",
+            "(CSS)"
+        )
+    )
+    def test_setup_group_short_name_successful(self, TEST_GROUP_SHORT_NAME: str) -> None:  # noqa: N803
+        """Test that the given `GROUP_SHORT_NAME` is used when a valid one is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("GROUP_SHORT_NAME"):
+            os.environ["GROUP_SHORT_NAME"] = TEST_GROUP_SHORT_NAME
+
+            RuntimeSettings._setup_group_short_name()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["_GROUP_SHORT_NAME"] == (
+            TEST_GROUP_SHORT_NAME.strip().translate(
+                {
+                    ord(unicode_char): ascii_char
+                    for unicode_char, ascii_char
+                    in zip("‘’´“”–-", "''`\"\"--", strict=True)  # noqa: RUF001
+                }
+            )
+        )
+
+    def test_missing_group_short_name(self) -> None:
+        """Test that no error occurs when no `GROUP_SHORT_NAME` is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("GROUP_SHORT_NAME"):
+            try:
+                RuntimeSettings._setup_group_short_name()  # noqa: SLF001
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert not RuntimeSettings()["_GROUP_SHORT_NAME"]
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_GROUP_SHORT_NAME",
+        (
+            "C S S",
+            "CS..S",
+            "CS--S",
+            "CS&&S",
+            "CS%%S",
+            "CS$S",
+            "CS£S",
+            "CSS&",
+            "CS*S",
+            "CSS-",
+            "CSS,",
+            "!CSS",
+            "?CSS",
+            "&CSS",
+            ":CSS",
+            ",CSS",
+            ".CSS",
+            "%CSS",
+            "-CSS",
+            "".join(random.choices(string.digits, k=30))
+        )
+    )
+    def test_invalid_group_short_name(self, INVALID_GROUP_SHORT_NAME: str) -> None:  # noqa: N803
+        """Test that an error is raised when an invalid `GROUP_SHORT_NAME` is provided."""
+        INVALID_GROUP_SHORT_NAME_MESSAGE: Final[str] = (
+            "GROUP_SHORT_NAME must not contain any invalid characters"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("GROUP_SHORT_NAME"):
+            os.environ["GROUP_SHORT_NAME"] = INVALID_GROUP_SHORT_NAME
+
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_GROUP_SHORT_NAME_MESSAGE):  # noqa: E501
+                RuntimeSettings._setup_group_short_name()  # noqa: SLF001
