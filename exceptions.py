@@ -284,6 +284,14 @@ class MessagesJSONFileMissingKeyError(InvalidMessagesJSONFileError):
         """Initialize a new InvalidMessagesJSONFile exception for a missing key."""
         super().__init__(message, dict_key=missing_key)
 
+    @property
+    def missing_key(self) -> str | None:
+        return self.dict_key
+
+    @missing_key.setter
+    def missing_key(self, value: str | None) -> None:
+        self.dict_key = value
+
 
 class MessagesJSONFileValueError(InvalidMessagesJSONFileError):
     """Exception class to raise when a key in the messages.json file has an invalid value."""

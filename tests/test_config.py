@@ -17,10 +17,12 @@ import pytest
 
 import config
 from config import Settings, settings
-from exceptions import ImproperlyConfiguredError
+from exceptions import ImproperlyConfiguredError, MessagesJSONFileMissingKeyError, MessagesJSONFileValueError
 from tests._testing_utils import EnvVariableDeleter, FileTemporaryDeleter
 
 if TYPE_CHECKING:
+    # noinspection PyProtectedMember
+    from _pytest._code import ExceptionInfo
     from _pytest.logging import LogCaptureFixture
 
 
@@ -753,7 +755,7 @@ class TestSetupDiscordGuildID:
             "".join(random.choices(string.digits, k=50))
         )
     )
-    def test_invalid_discord_bot_token(self, INVALID_DISCORD_GUILD_ID: str) -> None:  # noqa: N803
+    def test_invalid_discord_guild_id(self, INVALID_DISCORD_GUILD_ID: str) -> None:  # noqa: N803
         """Test that an error is raised when an invalid `DISCORD_GUILD_ID` is provided."""
         INVALID_DISCORD_GUILD_ID_MESSAGE: Final[str] = (
             "DISCORD_GUILD_ID must be a valid Discord guild ID"
@@ -1022,6 +1024,65 @@ class TestSetupPurchaseMembershipURL:
                 RuntimeSettings._setup_purchase_membership_url()  # noqa: SLF001
 
 
+class TestSetupMembershipPerksURL:
+    """Test case to unit-test the `_setup_membership_perks_url()` function."""
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_MEMBERSHIP_PERKS_URL",
+        ("https://google.com", "www.google.com/", "    https://google.com   ")
+    )
+    def test_setup_membership_perks_url_successful(self, TEST_MEMBERSHIP_PERKS_URL: str) -> None:  # noqa: N803,E501
+        """Test that the given valid `MEMBERSHIP_PERKS_URL` is used when one is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("MEMBERSHIP_PERKS_URL"):
+            os.environ["MEMBERSHIP_PERKS_URL"] = TEST_MEMBERSHIP_PERKS_URL
+
+            RuntimeSettings._setup_membership_perks_url()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["MEMBERSHIP_PERKS_URL"] == (
+            f"https://{TEST_MEMBERSHIP_PERKS_URL.strip()}"
+            if "://" not in TEST_MEMBERSHIP_PERKS_URL.strip()
+            else TEST_MEMBERSHIP_PERKS_URL.strip()
+        )
+
+    def test_missing_membership_perks_url(self) -> None:
+        """Test that no error occurs when no `MEMBERSHIP_PERKS_URL` is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("MEMBERSHIP_PERKS_URL"):
+            try:
+                RuntimeSettings._setup_membership_perks_url()  # noqa: SLF001
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert not RuntimeSettings()["MEMBERSHIP_PERKS_URL"]
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_MEMBERSHIP_PERKS_URL",
+        ("INVALID_MEMBERSHIP_PERKS_URL", "www.google..com/", "", "  ")
+    )
+    def test_invalid_membership_perks_url(self, INVALID_MEMBERSHIP_PERKS_URL: str) -> None:  # noqa: N803
+        """Test that an error occurs when the provided `MEMBERSHIP_PERKS_URL` is invalid."""
+        INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (
+            "MEMBERSHIP_PERKS_URL must be a valid URL"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("MEMBERSHIP_PERKS_URL"):
+            os.environ["MEMBERSHIP_PERKS_URL"] = INVALID_MEMBERSHIP_PERKS_URL
+
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MEMBERSHIP_PERKS_URL_MESSAGE):  # noqa: E501
+                RuntimeSettings._setup_membership_perks_url()  # noqa: SLF001
+
+
 class TestSetupPingCommandEasterEggProbability:
     """Test case to unit-test the `_setup_ping_command_easter_egg_probability()` function."""
 
@@ -1112,27 +1173,28 @@ class TestSetupMessagesFile:
             with pytest.raises(ImproperlyConfiguredError, match=INVALID_MESSAGES_FILE_PATH_MESSAGE):  # noqa: E501
                 Settings._get_messages_dict(RAW_INVALID_MESSAGES_FILE_PATH)  # noqa: SLF001
 
-    def test_get_messages_dict_with_no_messages_file_path(self) -> None:
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"welcome_messages": ["Welcome!"]},))
+    def test_get_messages_dict_with_no_messages_file_path(self, TEST_MESSAGES_DICT: Mapping[str, object]) -> None:  # noqa: N803,E501
         """Test that the default value is used when no `messages_file_path` is provided."""
         DEFAULT_MESSAGES_FILE_PATH: Path = Settings._get_default_messages_json_file_path()  # noqa: SLF001
-        MESSAGES_DICT: Mapping[str, object] = {"welcome_messages": ["Welcome!"]}
 
         with FileTemporaryDeleter(DEFAULT_MESSAGES_FILE_PATH):
             default_messages_file: TextIO
             with DEFAULT_MESSAGES_FILE_PATH.open("w") as default_messages_file:
-                json.dump(MESSAGES_DICT, fp=default_messages_file)
+                json.dump(TEST_MESSAGES_DICT, fp=default_messages_file)
 
-            assert Settings._get_messages_dict(raw_messages_file_path=None) == MESSAGES_DICT  # noqa: SLF001
+            assert Settings._get_messages_dict(raw_messages_file_path=None) == TEST_MESSAGES_DICT  # noqa: SLF001
 
             DEFAULT_MESSAGES_FILE_PATH.unlink()
 
-    def test_get_messages_dict_successful(self) -> None:
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"welcome_messages": ["Welcome!"]},))
+    def test_get_messages_dict_successful(self, TEST_MESSAGES_DICT: Mapping[str, object]) -> None:  # noqa: N803,E501
         """Test that the given path is used when a `messages_file_path` is provided."""
-        MESSAGES_DICT: Mapping[str, object] = {"welcome_messages": ["Welcome!"]}
-
         temporary_messages_file: IO[str]
         with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
-            json.dump(MESSAGES_DICT, fp=temporary_messages_file)
+            json.dump(TEST_MESSAGES_DICT, fp=temporary_messages_file)
 
             temporary_messages_file.close()
 
@@ -1140,74 +1202,248 @@ class TestSetupMessagesFile:
                 Settings._get_messages_dict(  # noqa: SLF001
                     raw_messages_file_path=temporary_messages_file.name
                 )
-                == MESSAGES_DICT
+                == TEST_MESSAGES_DICT
             )
 
             assert (
                 Settings._get_messages_dict(  # noqa: SLF001
                     raw_messages_file_path=f"  {temporary_messages_file.name}   "
                 )
-                == MESSAGES_DICT
+                == TEST_MESSAGES_DICT
             )
 
-
-class TestSetupMembershipPerksURL:
-    """Test case to unit-test the `_setup_membership_perks_url()` function."""
-
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
-        "TEST_MEMBERSHIP_PERKS_URL",
-        ("https://google.com", "www.google.com/", "    https://google.com   ")
+        "INVALID_MESSAGES_JSON", (
+            "{\"welcome_messages\": [\"Welcome!\"}",
+            "[]",
+            "[\"Welcome!\"]",
+            "\"Welcome!\"",
+            "99",
+            "null",
+            "true",
+            "false"
+        )
     )
-    def test_setup_membership_perks_url_successful(self, TEST_MEMBERSHIP_PERKS_URL: str) -> None:  # noqa: N803,E501
-        """Test that the given valid `MEMBERSHIP_PERKS_URL` is used when one is provided."""
+    def test_get_messages_dict_with_invalid_json(self, INVALID_MESSAGES_JSON: str) -> None:  # noqa: N803,E501
+        """Test that an error is raised when the messages-file contains invalid JSON."""
+        temporary_messages_file: IO[str]
+        with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
+            temporary_messages_file.write(INVALID_MESSAGES_JSON)
+
+            temporary_messages_file.close()
+
+            INVALID_MESSAGES_JSON_MESSAGE: Final[str] = (
+                "Messages JSON file must contain a JSON string"
+            )
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MESSAGES_JSON_MESSAGE):  # noqa: E501
+                Settings._get_messages_dict(  # noqa: SLF001
+                    raw_messages_file_path=temporary_messages_file.name
+                )
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"welcome_messages": ["Welcome!"]},))
+    def test_setup_welcome_messages_successful_with_messages_file_path(self, TEST_MESSAGES_DICT: Mapping[str, Iterable[str]]) -> None:  # noqa: N803,E501
+        """Test that correct welcome messages are loaded when `MESSAGES_FILE_PATH` is valid."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
-        with EnvVariableDeleter("MEMBERSHIP_PERKS_URL"):
-            os.environ["MEMBERSHIP_PERKS_URL"] = TEST_MEMBERSHIP_PERKS_URL
+        temporary_messages_file: IO[str]
+        with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
+            json.dump(TEST_MESSAGES_DICT, fp=temporary_messages_file)
 
-            RuntimeSettings._setup_membership_perks_url()  # noqa: SLF001
+            temporary_messages_file.close()
+
+            with EnvVariableDeleter("MESSAGES_FILE_PATH"):
+                os.environ["MESSAGES_FILE_PATH"] = temporary_messages_file.name
+
+                RuntimeSettings._setup_welcome_messages()  # noqa: SLF001
 
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
-        assert RuntimeSettings()["MEMBERSHIP_PERKS_URL"] == (
-            f"https://{TEST_MEMBERSHIP_PERKS_URL.strip()}"
-            if "://" not in TEST_MEMBERSHIP_PERKS_URL.strip()
-            else TEST_MEMBERSHIP_PERKS_URL.strip()
+        assert RuntimeSettings()["WELCOME_MESSAGES"] == set(
+            TEST_MESSAGES_DICT["welcome_messages"]
         )
 
-    def test_missing_membership_perks_url(self) -> None:
-        """Test that no error occurs when no `MEMBERSHIP_PERKS_URL` is provided."""
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"welcome_messages": ["Welcome!"]},))
+    def test_setup_welcome_messages_successful_with_no_messages_file_path(self, TEST_MESSAGES_DICT: Mapping[str, Iterable[str]]) -> None:  # noqa: N803,E501
+        """Test that correct welcome messages are loaded when no `MESSAGES_FILE_PATH` given."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
-        with EnvVariableDeleter("MEMBERSHIP_PERKS_URL"):
-            try:
-                RuntimeSettings._setup_membership_perks_url()  # noqa: SLF001
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+        DEFAULT_MESSAGES_FILE_PATH: Path = Settings._get_default_messages_json_file_path()  # noqa: SLF001
+
+        with FileTemporaryDeleter(DEFAULT_MESSAGES_FILE_PATH):
+            default_messages_file: TextIO
+            with DEFAULT_MESSAGES_FILE_PATH.open("w") as default_messages_file:
+                json.dump(TEST_MESSAGES_DICT, fp=default_messages_file)
+
+            with EnvVariableDeleter("MESSAGES_FILE_PATH"):
+                RuntimeSettings._setup_welcome_messages()
+
+            DEFAULT_MESSAGES_FILE_PATH.unlink()
 
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
-        assert not RuntimeSettings()["MEMBERSHIP_PERKS_URL"]
+        assert RuntimeSettings()["WELCOME_MESSAGES"] == set(
+            TEST_MESSAGES_DICT["welcome_messages"]
+        )
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize("NO_WELCOME_MESSAGES_DICT", ({"other_messages": ["Welcome!"]},))
+    def test_welcome_messages_key_not_in_messages_json(self, NO_WELCOME_MESSAGES_DICT: Mapping[str, Iterable[str]]) -> None:  # noqa: E501
+        """Test that error is raised when messages-file not contain `welcome_messages` key."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        temporary_messages_file: IO[str]
+        with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
+            json.dump(NO_WELCOME_MESSAGES_DICT, fp=temporary_messages_file)
+
+            temporary_messages_file.close()
+
+            with EnvVariableDeleter("MESSAGES_FILE_PATH"):
+                os.environ["MESSAGES_FILE_PATH"] = temporary_messages_file.name
+
+                exc_info: "ExceptionInfo[MessagesJSONFileMissingKeyError]"
+                with pytest.raises(MessagesJSONFileMissingKeyError) as exc_info:
+                    RuntimeSettings._setup_welcome_messages()  # noqa: SLF001
+
+        assert exc_info.value.missing_key == "welcome_messages"
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
-        "INVALID_MEMBERSHIP_PERKS_URL",
-        ("INVALID_MEMBERSHIP_PERKS_URL", "www.google..com/", "", "  ")
-    )
-    def test_invalid_membership_perks_url(self, INVALID_MEMBERSHIP_PERKS_URL: str) -> None:  # noqa: N803
-        """Test that an error occurs when the provided `MEMBERSHIP_PERKS_URL` is invalid."""
-        INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (
-            "MEMBERSHIP_PERKS_URL must be a valid URL"
+        "INVALID_WELCOME_MESSAGES_DICT",
+        (
+            {"welcome_messages": {}},
+            {"welcome_messages": []},
+            {"welcome_messages": ""},
+            {"welcome_messages": 99},
+            {"welcome_messages": None},
+            {"welcome_messages": True},
+            {"welcome_messages": False}
         )
-
+    )
+    def test_invalid_welcome_messages(self, INVALID_WELCOME_MESSAGES_DICT: Mapping[str, object]) -> None:  # noqa: E501
+        """Test that error is raised when the `welcome_messages` is not a valid value."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
-        with EnvVariableDeleter("MEMBERSHIP_PERKS_URL"):
-            os.environ["MEMBERSHIP_PERKS_URL"] = INVALID_MEMBERSHIP_PERKS_URL
+        temporary_messages_file: IO[str]
+        with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
+            json.dump(INVALID_WELCOME_MESSAGES_DICT, fp=temporary_messages_file)
 
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MEMBERSHIP_PERKS_URL_MESSAGE):  # noqa: E501
-                RuntimeSettings._setup_membership_perks_url()  # noqa: SLF001
+            temporary_messages_file.close()
+
+            with EnvVariableDeleter("MESSAGES_FILE_PATH"):
+                os.environ["MESSAGES_FILE_PATH"] = temporary_messages_file.name
+
+                exc_info: "ExceptionInfo[MessagesJSONFileValueError]"
+                with pytest.raises(MessagesJSONFileValueError) as exc_info:
+                    RuntimeSettings._setup_welcome_messages()  # noqa: SLF001
+
+        assert exc_info.value.dict_key == "welcome_messages"
+        assert exc_info.value.invalid_value == INVALID_WELCOME_MESSAGES_DICT[
+            "welcome_messages"
+        ]
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"roles_messages": ["Gaming"]},))
+    def test_setup_roles_messages_successful_with_messages_file_path(self, TEST_MESSAGES_DICT: Mapping[str, Iterable[str]]) -> None:  # noqa: N803,E501
+        """Test that correct roles messages are loaded when `MESSAGES_FILE_PATH` is valid."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        temporary_messages_file: IO[str]
+        with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
+            json.dump(TEST_MESSAGES_DICT, fp=temporary_messages_file)
+
+            temporary_messages_file.close()
+
+            with EnvVariableDeleter("MESSAGES_FILE_PATH"):
+                os.environ["MESSAGES_FILE_PATH"] = temporary_messages_file.name
+
+                RuntimeSettings._setup_roles_messages()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["ROLES_MESSAGES"] == set(
+            TEST_MESSAGES_DICT["roles_messages"]
+        )
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"roles_messages": ["Gaming"]},))
+    def test_setup_roles_messages_successful_with_no_messages_file_path(self, TEST_MESSAGES_DICT: Mapping[str, Iterable[str]]) -> None:  # noqa: N803,E501
+        """Test that correct roles messages are loaded when no `MESSAGES_FILE_PATH` given."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        DEFAULT_MESSAGES_FILE_PATH: Path = Settings._get_default_messages_json_file_path()  # noqa: SLF001
+
+        with FileTemporaryDeleter(DEFAULT_MESSAGES_FILE_PATH):
+            default_messages_file: TextIO
+            with DEFAULT_MESSAGES_FILE_PATH.open("w") as default_messages_file:
+                json.dump(TEST_MESSAGES_DICT, fp=default_messages_file)
+
+            with EnvVariableDeleter("MESSAGES_FILE_PATH"):
+                RuntimeSettings._setup_roles_messages()
+
+            DEFAULT_MESSAGES_FILE_PATH.unlink()
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["ROLES_MESSAGES"] == set(
+            TEST_MESSAGES_DICT["roles_messages"]
+        )
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize("NO_ROLES_MESSAGES_DICT", ({"other_messages": ["Gaming"]},))
+    def test_roles_messages_key_not_in_messages_json(self, NO_ROLES_MESSAGES_DICT: Mapping[str, Iterable[str]]) -> None:  # noqa: E501
+        """Test that error is raised when messages-file not contain `roles_messages` key."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        temporary_messages_file: IO[str]
+        with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
+            json.dump(NO_ROLES_MESSAGES_DICT, fp=temporary_messages_file)
+
+            temporary_messages_file.close()
+
+            with EnvVariableDeleter("MESSAGES_FILE_PATH"):
+                os.environ["MESSAGES_FILE_PATH"] = temporary_messages_file.name
+
+                exc_info: "ExceptionInfo[MessagesJSONFileMissingKeyError]"
+                with pytest.raises(MessagesJSONFileMissingKeyError) as exc_info:
+                    RuntimeSettings._setup_roles_messages()  # noqa: SLF001
+
+        assert exc_info.value.missing_key == "roles_messages"
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_ROLES_MESSAGES_DICT",
+        (
+            {"roles_messages": {}},
+            {"roles_messages": []},
+            {"roles_messages": ""},
+            {"roles_messages": 99},
+            {"roles_messages": None},
+            {"roles_messages": True},
+            {"roles_messages": False}
+        )
+    )
+    def test_invalid_roles_messages(self, INVALID_ROLES_MESSAGES_DICT: Mapping[str, object]) -> None:
+        """Test that error is raised when the `roles_messages` is not a valid value."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        temporary_messages_file: IO[str]
+        with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
+            json.dump(INVALID_ROLES_MESSAGES_DICT, fp=temporary_messages_file)
+
+            temporary_messages_file.close()
+
+            with EnvVariableDeleter("MESSAGES_FILE_PATH"):
+                os.environ["MESSAGES_FILE_PATH"] = temporary_messages_file.name
+
+                exc_info: "ExceptionInfo[MessagesJSONFileValueError]"
+                with pytest.raises(MessagesJSONFileValueError) as exc_info:
+                    RuntimeSettings._setup_roles_messages()  # noqa: SLF001
+
+        assert exc_info.value.dict_key == "roles_messages"
+        assert exc_info.value.invalid_value == INVALID_ROLES_MESSAGES_DICT["roles_messages"]
 
 
 class TestSetupMembersListURL:
@@ -1248,7 +1484,7 @@ class TestSetupMembersListURL:
         "INVALID_MEMBERS_LIST_URL",
         ("INVALID_MEMBERS_LIST_URL", "www.google..com/", "", "  ")
     )
-    def test_invalid_membership_perks_url(self, INVALID_MEMBERS_LIST_URL: str) -> None:  # noqa: N803
+    def test_invalid_members_list_url(self, INVALID_MEMBERS_LIST_URL: str) -> None:  # noqa: N803
         """Test that an error occurs when the provided `MEMBERS_LIST_URL` is invalid."""
         INVALID_MEMBERS_LIST_URL_MESSAGE: Final[str] = (
             "MEMBERS_LIST_URL must be a valid URL"
@@ -1261,6 +1497,82 @@ class TestSetupMembersListURL:
 
             with pytest.raises(ImproperlyConfiguredError, match=INVALID_MEMBERS_LIST_URL_MESSAGE):  # noqa: E501
                 RuntimeSettings._setup_members_list_url()  # noqa: SLF001
+
+
+class TestSetupMembersListURLSessionCookie:
+    """Test case to unit-test the `_setup_members_list_url_session_cookie()` function."""
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_MEMBERS_LIST_URL_SESSION_COOKIE",
+        (
+            "".join(random.choices(string.hexdigits, k=random.randint(128, 256))),
+            f"  {"".join(random.choices(string.hexdigits, k=random.randint(128, 256)))}   "
+        )
+    )
+    def test_setup_members_list_url_session_cookie_successful(self, TEST_MEMBERS_LIST_URL_SESSION_COOKIE: str) -> None:  # noqa: N803,E501
+        """
+        Test that the given `TEST_MEMBERS_LIST_URL_SESSION_COOKIE` is used when provided.
+
+        In this test, the provided `TEST_MEMBERS_LIST_URL_SESSION_COOKIE` is valid
+        and so must be saved successfully.
+        """
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("MEMBERS_LIST_URL_SESSION_COOKIE"):
+            os.environ["MEMBERS_LIST_URL_SESSION_COOKIE"] = (
+                TEST_MEMBERS_LIST_URL_SESSION_COOKIE
+            )
+
+            RuntimeSettings._setup_members_list_url_session_cookie()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["MEMBERS_LIST_URL_SESSION_COOKIE"] == (
+            TEST_MEMBERS_LIST_URL_SESSION_COOKIE.strip()
+        )
+
+    def test_missing_members_list_url_session_cookie(self) -> None:
+        """Test that an error is raised when no `MEMBERS_LIST_URL_SESSION_COOKIE` is given."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("MEMBERS_LIST_URL_SESSION_COOKIE"):  # noqa: SIM117
+            with pytest.raises(ImproperlyConfiguredError, match=r"MEMBERS_LIST_URL_SESSION_COOKIE.*valid.*\.ASPXAUTH cookie"):  # noqa: E501
+                RuntimeSettings._setup_members_list_url_session_cookie()  # noqa: SLF001
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_MEMBERS_LIST_URL_SESSION_COOKIE",
+        (
+            "INVALID_MEMBERS_LIST_URL_SESSION_COOKIE",
+            "",
+            "  ",
+            "".join(random.choices(string.hexdigits, k=5)),
+            "".join(random.choices(string.hexdigits, k=500)),
+            (
+                f"{
+                    "".join(random.choices(string.hexdigits, k=64))
+                }>{
+                    "".join(random.choices(string.hexdigits, k=64))
+                }"
+            )
+        )
+    )
+    def test_invalid_members_list_url_session_cookie(self, INVALID_MEMBERS_LIST_URL_SESSION_COOKIE: str) -> None:  # noqa: N803
+        """Test that an error occurs when `MEMBERS_LIST_URL_SESSION_COOKIE` is invalid."""
+        INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
+            "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("MEMBERS_LIST_URL_SESSION_COOKIE"):
+            os.environ["MEMBERS_LIST_URL_SESSION_COOKIE"] = (
+                INVALID_MEMBERS_LIST_URL_SESSION_COOKIE
+            )
+
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE):  # noqa: E501
+                RuntimeSettings._setup_members_list_url_session_cookie()  # noqa: SLF001
 
 
 class TestSetupModerationDocumentURL:
