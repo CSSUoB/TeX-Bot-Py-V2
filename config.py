@@ -308,11 +308,18 @@ class Settings(abc.ABC):
     def _setup_purchase_membership_url(cls) -> None:
         raw_purchase_membership_url: str | None = os.getenv("PURCHASE_MEMBERSHIP_URL")
 
+        RAW_PURCHASE_MEMBERSHIP_URL_HAS_NO_SCHEME: Final[bool] = bool(
+            raw_purchase_membership_url is not None
+            and "://" not in raw_purchase_membership_url.strip()
+        )
+        if RAW_PURCHASE_MEMBERSHIP_URL_HAS_NO_SCHEME:
+            raw_purchase_membership_url = f"https://{raw_purchase_membership_url.strip()}"  # type: ignore[union-attr]
+
         PURCHASE_MEMBERSHIP_URL_IS_VALID: Final[bool] = bool(
             raw_purchase_membership_url is None
             or (
                 raw_purchase_membership_url.strip()
-                and validators.url(raw_purchase_membership_url)
+                and validators.url(raw_purchase_membership_url.strip())
             )
         )
         if not PURCHASE_MEMBERSHIP_URL_IS_VALID:
@@ -331,11 +338,18 @@ class Settings(abc.ABC):
     def _setup_membership_perks_url(cls) -> None:
         raw_membership_perks_url: str | None = os.getenv("MEMBERSHIP_PERKS_URL")
 
+        RAW_MEMBERSHIP_PERKS_URL_HAS_NO_SCHEME: Final[bool] = bool(
+            raw_membership_perks_url is not None
+            and "://" not in raw_membership_perks_url.strip()
+        )
+        if RAW_MEMBERSHIP_PERKS_URL_HAS_NO_SCHEME:
+            raw_membership_perks_url = f"https://{raw_membership_perks_url.strip()}"  # type: ignore[union-attr]
+
         MEMBERSHIP_PERKS_URL_IS_VALID: Final[bool] = bool(
             raw_membership_perks_url is None
             or (
                 raw_membership_perks_url.strip()
-                and validators.url(raw_membership_perks_url)
+                and validators.url(raw_membership_perks_url.strip())
             )
         )
         if not MEMBERSHIP_PERKS_URL_IS_VALID:
@@ -477,6 +491,12 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_members_list_url(cls) -> None:
         raw_members_list_url: str | None = os.getenv("MEMBERS_LIST_URL")
+
+        RAW_MEMBERS_LIST_URL_HAS_NO_SCHEME: Final[bool] = bool(
+            raw_members_list_url is not None and "://" not in raw_members_list_url.strip()
+        )
+        if RAW_MEMBERS_LIST_URL_HAS_NO_SCHEME:
+            raw_members_list_url = f"https://{raw_members_list_url.strip()}"  # type: ignore[union-attr]
 
         MEMBERS_LIST_URL_IS_VALID: Final[bool] = bool(
             raw_members_list_url is not None
@@ -782,10 +802,17 @@ class Settings(abc.ABC):
     def _setup_moderation_document_url(cls) -> None:
         raw_moderation_document_url: str | None = os.getenv("MODERATION_DOCUMENT_URL")
 
+        RAW_MODERATION_DOCUMENT_URL_HAS_NO_SCHEME: Final[bool] = bool(
+            raw_moderation_document_url is not None
+            and "://" not in raw_moderation_document_url.strip()
+        )
+        if RAW_MODERATION_DOCUMENT_URL_HAS_NO_SCHEME:
+            raw_moderation_document_url = f"https://{raw_moderation_document_url.strip()}"  # type: ignore[union-attr]
+
         MODERATION_DOCUMENT_URL_IS_VALID: Final[bool] = bool(
             raw_moderation_document_url is not None
             and raw_moderation_document_url.strip()
-            and validators.url(raw_moderation_document_url)
+            and validators.url(raw_moderation_document_url.strip())
         )
         if not MODERATION_DOCUMENT_URL_IS_VALID:
             MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (

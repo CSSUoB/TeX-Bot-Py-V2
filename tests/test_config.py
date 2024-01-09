@@ -300,6 +300,8 @@ class TestSetupLogging:
         "INVALID_LOG_LEVEL",
         (
             "INVALID_LOG_LEVEL",
+            "",
+            "  ",
             "".join(
                 random.choices(string.ascii_letters + string.digits + string.punctuation, k=18)
             )
@@ -389,6 +391,8 @@ class TestSetupDiscordBotToken:
         "INVALID_DISCORD_BOT_TOKEN",
         (
             "INVALID_DISCORD_BOT_TOKEN",
+            "",
+            "  ",
             "".join(
                 random.choices(string.ascii_letters + string.digits + string.punctuation, k=18)
             ),
@@ -593,6 +597,8 @@ class TestSetupDiscordLogChannelWebhookURL:
         "INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL",
         (
             "INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL",
+            "",
+            "  ",
             "".join(
                 random.choices(string.ascii_letters + string.digits + string.punctuation, k=18)
             ),
@@ -735,6 +741,8 @@ class TestSetupDiscordGuildID:
         "INVALID_DISCORD_GUILD_ID",
         (
             "INVALID_DISCORD_GUILD_ID",
+            "",
+            "  ",
             "".join(
                 random.choices(string.ascii_letters + string.digits + string.punctuation, k=18)
             ),
@@ -835,6 +843,8 @@ class TestSetupGroupFullName:
             ".Computer Science Society",
             "%Computer Science Society",
             "-Computer Science Society",
+            "",
+            "  ",
             "".join(random.choices(string.digits, k=30))
         )
     )
@@ -930,6 +940,8 @@ class TestSetupGroupShortName:
             ".CSS",
             "%CSS",
             "-CSS",
+            "",
+            "  ",
             "".join(random.choices(string.digits, k=30))
         )
     )
@@ -946,3 +958,301 @@ class TestSetupGroupShortName:
 
             with pytest.raises(ImproperlyConfiguredError, match=INVALID_GROUP_SHORT_NAME_MESSAGE):  # noqa: E501
                 RuntimeSettings._setup_group_short_name()  # noqa: SLF001
+
+
+class TestSetupPurchaseMembershipURL:
+    """Test case to unit-test the `_setup_purchase_membership_url()` function."""
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_PURCHASE_MEMBERSHIP_URL",
+        ("https://google.com", "www.google.com/", "    https://google.com   ")
+    )
+    def test_setup_purchase_membership_url_successful(self, TEST_PURCHASE_MEMBERSHIP_URL: str) -> None:  # noqa: N803,E501
+        """Test that the given valid `PURCHASE_MEMBERSHIP_URL` is used when one is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("PURCHASE_MEMBERSHIP_URL"):
+            os.environ["PURCHASE_MEMBERSHIP_URL"] = TEST_PURCHASE_MEMBERSHIP_URL
+
+            RuntimeSettings._setup_purchase_membership_url()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["PURCHASE_MEMBERSHIP_URL"] == (
+            f"https://{TEST_PURCHASE_MEMBERSHIP_URL.strip()}"
+            if "://" not in TEST_PURCHASE_MEMBERSHIP_URL
+            else TEST_PURCHASE_MEMBERSHIP_URL.strip()
+        )
+
+    def test_missing_purchase_membership_url(self) -> None:
+        """Test that no error occurs when no `PURCHASE_MEMBERSHIP_URL` is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("PURCHASE_MEMBERSHIP_URL"):
+            try:
+                RuntimeSettings._setup_purchase_membership_url()  # noqa: SLF001
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert not RuntimeSettings()["PURCHASE_MEMBERSHIP_URL"]
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_PURCHASE_MEMBERSHIP_URL",
+        ("INVALID_PURCHASE_MEMBERSHIP_URL", "www.google..com/", "", "  ")
+    )
+    def test_invalid_purchase_membership_url(self, INVALID_PURCHASE_MEMBERSHIP_URL: str) -> None:  # noqa: N803,E501
+        """Test that an error occurs when the provided `PURCHASE_MEMBERSHIP_URL` is invalid."""
+        INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE: Final[str] = (
+            "PURCHASE_MEMBERSHIP_URL must be a valid URL"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("PURCHASE_MEMBERSHIP_URL"):
+            os.environ["PURCHASE_MEMBERSHIP_URL"] = INVALID_PURCHASE_MEMBERSHIP_URL
+
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE):  # noqa: E501
+                RuntimeSettings._setup_purchase_membership_url()  # noqa: SLF001
+
+
+class TestSetupPingCommandEasterEggProbability:
+    """Test case to unit-test the `_setup_ping_command_easter_egg_probability()` function."""
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_PING_COMMAND_EASTER_EGG_PROBABILITY",
+        ("1", "0", "0.5", "    0.5   ")
+    )
+    def test_setup_ping_command_easter_egg_probability_successful(self, TEST_PING_COMMAND_EASTER_EGG_PROBABILITY: str) -> None:  # noqa: N803,E501
+        """
+        Test that the given `PING_COMMAND_EASTER_EGG_PROBABILITY` is used when provided.
+
+        In this test, the provided `PING_COMMAND_EASTER_EGG_PROBABILITY` is valid
+        and so must be saved successfully.
+        """
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("PING_COMMAND_EASTER_EGG_PROBABILITY"):
+            os.environ["PING_COMMAND_EASTER_EGG_PROBABILITY"] = (
+                TEST_PING_COMMAND_EASTER_EGG_PROBABILITY
+            )
+
+            RuntimeSettings._setup_ping_command_easter_egg_probability()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["PING_COMMAND_EASTER_EGG_PROBABILITY"] == 100 * float(
+            TEST_PING_COMMAND_EASTER_EGG_PROBABILITY.strip()
+        )
+
+    def test_default_ping_command_easter_egg_probability(self) -> None:
+        """Test that a default value is used if no `PING_COMMAND_EASTER_EGG_PROBABILITY`."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("PING_COMMAND_EASTER_EGG_PROBABILITY"):
+            try:
+                RuntimeSettings._setup_ping_command_easter_egg_probability()  # noqa: SLF001
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert isinstance(RuntimeSettings()["PING_COMMAND_EASTER_EGG_PROBABILITY"], float)
+        assert 0 <= RuntimeSettings()["PING_COMMAND_EASTER_EGG_PROBABILITY"] <= 100
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY",
+        ("INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY", "", "  ", "-5", "1.1", "5", "-0.01")
+    )
+    def test_invalid_ping_command_easter_egg_probability(self, INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY: str) -> None:  # noqa: N803,E501
+        """Test that errors when provided `PING_COMMAND_EASTER_EGG_PROBABILITY` is invalid."""
+        INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE: Final[str] = (
+            r"PING_COMMAND_EASTER_EGG_PROBABILITY must be a float.*between.*1.*0"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("PING_COMMAND_EASTER_EGG_PROBABILITY"):
+            os.environ["PING_COMMAND_EASTER_EGG_PROBABILITY"] = (
+                INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY
+            )
+
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE):  # noqa: E501
+                RuntimeSettings._setup_ping_command_easter_egg_probability()  # noqa: SLF001
+
+
+class TestSetupMessagesFile:
+    """Test case to unit-test all functions that use/relate to the messages JSON file."""
+
+    def test_get_default_messages_json_file_path(self) -> None:
+        """Test that a default value is returned for the path of the messages JSON file."""
+
+
+class TestSetupMembershipPerksURL:
+    """Test case to unit-test the `_setup_membership_perks_url()` function."""
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_MEMBERSHIP_PERKS_URL",
+        ("https://google.com", "www.google.com/", "    https://google.com   ")
+    )
+    def test_setup_membership_perks_url_successful(self, TEST_MEMBERSHIP_PERKS_URL: str) -> None:  # noqa: N803,E501
+        """Test that the given valid `MEMBERSHIP_PERKS_URL` is used when one is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("MEMBERSHIP_PERKS_URL"):
+            os.environ["MEMBERSHIP_PERKS_URL"] = TEST_MEMBERSHIP_PERKS_URL
+
+            RuntimeSettings._setup_membership_perks_url()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["MEMBERSHIP_PERKS_URL"] == (
+            f"https://{TEST_MEMBERSHIP_PERKS_URL.strip()}"
+            if "://" not in TEST_MEMBERSHIP_PERKS_URL.strip()
+            else TEST_MEMBERSHIP_PERKS_URL.strip()
+        )
+
+    def test_missing_membership_perks_url(self) -> None:
+        """Test that no error occurs when no `MEMBERSHIP_PERKS_URL` is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("MEMBERSHIP_PERKS_URL"):
+            try:
+                RuntimeSettings._setup_membership_perks_url()  # noqa: SLF001
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert not RuntimeSettings()["MEMBERSHIP_PERKS_URL"]
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_MEMBERSHIP_PERKS_URL",
+        ("INVALID_MEMBERSHIP_PERKS_URL", "www.google..com/", "", "  ")
+    )
+    def test_invalid_membership_perks_url(self, INVALID_MEMBERSHIP_PERKS_URL: str) -> None:  # noqa: N803,E501
+        """Test that an error occurs when the provided `MEMBERSHIP_PERKS_URL` is invalid."""
+        INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (
+            "MEMBERSHIP_PERKS_URL must be a valid URL"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("MEMBERSHIP_PERKS_URL"):
+            os.environ["MEMBERSHIP_PERKS_URL"] = INVALID_MEMBERSHIP_PERKS_URL
+
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MEMBERSHIP_PERKS_URL_MESSAGE):  # noqa: E501
+                RuntimeSettings._setup_membership_perks_url()  # noqa: SLF001
+
+
+class TestSetupMembersListURL:
+    """Test case to unit-test the `_setup_members_list_url()` function."""
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_MEMBERS_LIST_URL",
+        ("https://google.com", "www.google.com/", "    https://google.com   ")
+    )
+    def test_setup_members_list_url_successful(self, TEST_MEMBERS_LIST_URL: str) -> None:  # noqa: N803,E501
+        """Test that the given `MEMBERS_LIST_URL` is used when a valid one is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("MEMBERS_LIST_URL"):
+            os.environ["MEMBERS_LIST_URL"] = TEST_MEMBERS_LIST_URL
+
+            RuntimeSettings._setup_members_list_url()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["MEMBERS_LIST_URL"] == (
+            f"https://{TEST_MEMBERS_LIST_URL.strip()}"
+            if "://" not in TEST_MEMBERS_LIST_URL.strip()
+            else TEST_MEMBERS_LIST_URL.strip()
+        )
+
+    def test_missing_members_list_url(self) -> None:
+        """Test that an error is raised when no `MEMBERS_LIST_URL` is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("MEMBERS_LIST_URL"):  # noqa: SIM117
+            with pytest.raises(ImproperlyConfiguredError, match=r"MEMBERS_LIST_URL.*valid.*URL"):  # noqa: E501
+                RuntimeSettings._setup_members_list_url()  # noqa: SLF001
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_MEMBERS_LIST_URL",
+        ("INVALID_MEMBERS_LIST_URL", "www.google..com/", "", "  ")
+    )
+    def test_invalid_membership_perks_url(self, INVALID_MEMBERS_LIST_URL: str) -> None:  # noqa: N803,E501
+        """Test that an error occurs when the provided `MEMBERS_LIST_URL` is invalid."""
+        INVALID_MEMBERS_LIST_URL_MESSAGE: Final[str] = (
+            "MEMBERS_LIST_URL must be a valid URL"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("MEMBERS_LIST_URL"):
+            os.environ["MEMBERS_LIST_URL"] = INVALID_MEMBERS_LIST_URL
+
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MEMBERS_LIST_URL_MESSAGE):  # noqa: E501
+                RuntimeSettings._setup_members_list_url()  # noqa: SLF001
+
+
+class TestSetupModerationDocumentURL:
+    """Test case to unit-test the `_setup_moderation_document_url()` function."""
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_MODERATION_DOCUMENT_URL",
+        ("https://google.com", "www.google.com/", "    https://google.com   ")
+    )
+    def test_setup_moderation_document_url_successful(self, TEST_MODERATION_DOCUMENT_URL: str) -> None:  # noqa: N803,E501
+        """Test that the given valid `MODERATION_DOCUMENT_URL` is used when one is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("MODERATION_DOCUMENT_URL"):
+            os.environ["MODERATION_DOCUMENT_URL"] = TEST_MODERATION_DOCUMENT_URL
+
+            RuntimeSettings._setup_moderation_document_url()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["MODERATION_DOCUMENT_URL"] == (
+            f"https://{TEST_MODERATION_DOCUMENT_URL.strip()}"
+            if "://" not in TEST_MODERATION_DOCUMENT_URL.strip()
+            else TEST_MODERATION_DOCUMENT_URL.strip()
+        )
+
+    def test_missing_moderation_document_url(self) -> None:
+        """Test that an error is raised when no `MODERATION_DOCUMENT_URL` is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("MODERATION_DOCUMENT_URL"):  # noqa: SIM117
+            with pytest.raises(ImproperlyConfiguredError, match=r"MODERATION_DOCUMENT_URL.*valid.*URL"):  # noqa: E501
+                RuntimeSettings._setup_moderation_document_url()  # noqa: SLF001
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_MODERATION_DOCUMENT_URL",
+        ("INVALID_MODERATION_DOCUMENT_URL", "www.google..com/", "", "  ")
+    )
+    def test_invalid_moderation_document_url(self, INVALID_MODERATION_DOCUMENT_URL: str) -> None:  # noqa: N803,E501
+        """Test that an error occurs when the provided `MODERATION_DOCUMENT_URL` is invalid."""
+        INVALID_MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
+            "MODERATION_DOCUMENT_URL must be a valid URL"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("MODERATION_DOCUMENT_URL"):
+            os.environ["MODERATION_DOCUMENT_URL"] = INVALID_MODERATION_DOCUMENT_URL
+
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MODERATION_DOCUMENT_URL_MESSAGE):  # noqa: E501
+                RuntimeSettings._setup_moderation_document_url()  # noqa: SLF001
