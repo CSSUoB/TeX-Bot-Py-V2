@@ -122,3 +122,4 @@ local/
 *.sqlite3
 *.db
 local_stubs/
+*.*-invalid

@@ -2,20 +2,23 @@
 
 import functools
 import itertools
+import json
 import logging
 import os
 import random
 import re
 import string
-from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Final
+from collections.abc import Callable, Iterable, Mapping
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+from typing import IO, TYPE_CHECKING, Final, TextIO
 
 import pytest
 
 import config
 from config import Settings, settings
 from exceptions import ImproperlyConfiguredError
-from tests._testing_utils import EnvVariableDeleter
+from tests._testing_utils import EnvVariableDeleter, FileTemporaryDeleter
 
 if TYPE_CHECKING:
     from _pytest.logging import LogCaptureFixture
@@ -1091,6 +1094,61 @@ class TestSetupMessagesFile:
 
     def test_get_default_messages_json_file_path(self) -> None:
         """Test that a default value is returned for the path of the messages JSON file."""
+        assert Settings._get_default_messages_json_file_path().suffix.lower() == ".json"  # noqa: SLF001
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "RAW_INVALID_MESSAGES_FILE_PATH",
+        ("messages.json.invalid", "", "  ")
+    )
+    def test_get_messages_dict_with_invalid_messages_file_path(self, RAW_INVALID_MESSAGES_FILE_PATH: str) -> None:  # noqa: N803,E501
+        """Test that an error occurs when the provided `messages_file_path` is invalid."""
+        INVALID_MESSAGES_FILE_PATH: Path = Path(RAW_INVALID_MESSAGES_FILE_PATH.strip())
+
+        with FileTemporaryDeleter(INVALID_MESSAGES_FILE_PATH):
+            INVALID_MESSAGES_FILE_PATH_MESSAGE: Final[str] = (
+                "MESSAGES_FILE_PATH must be a path to a file that exists"
+            )
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MESSAGES_FILE_PATH_MESSAGE):  # noqa: E501
+                Settings._get_messages_dict(RAW_INVALID_MESSAGES_FILE_PATH)  # noqa: SLF001
+
+    def test_get_messages_dict_with_no_messages_file_path(self) -> None:
+        """Test that the default value is used when no `messages_file_path` is provided."""
+        DEFAULT_MESSAGES_FILE_PATH: Path = Settings._get_default_messages_json_file_path()  # noqa: SLF001
+        MESSAGES_DICT: Mapping[str, object] = {"welcome_messages": ["Welcome!"]}
+
+        with FileTemporaryDeleter(DEFAULT_MESSAGES_FILE_PATH):
+            default_messages_file: TextIO
+            with DEFAULT_MESSAGES_FILE_PATH.open("w") as default_messages_file:
+                json.dump(MESSAGES_DICT, fp=default_messages_file)
+
+            assert Settings._get_messages_dict(raw_messages_file_path=None) == MESSAGES_DICT  # noqa: SLF001
+
+            DEFAULT_MESSAGES_FILE_PATH.unlink()
+
+    def test_get_messages_dict_successful(self) -> None:
+        """Test that the given path is used when a `messages_file_path` is provided."""
+        MESSAGES_DICT: Mapping[str, object] = {"welcome_messages": ["Welcome!"]}
+
+        temporary_messages_file: IO[str]
+        with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
+            json.dump(MESSAGES_DICT, fp=temporary_messages_file)
+
+            temporary_messages_file.close()
+
+            assert (
+                Settings._get_messages_dict(  # noqa: SLF001
+                    raw_messages_file_path=temporary_messages_file.name
+                )
+                == MESSAGES_DICT
+            )
+
+            assert (
+                Settings._get_messages_dict(  # noqa: SLF001
+                    raw_messages_file_path=f"  {temporary_messages_file.name}   "
+                )
+                == MESSAGES_DICT
+            )
 
 
 class TestSetupMembershipPerksURL:
@@ -1137,7 +1195,7 @@ class TestSetupMembershipPerksURL:
         "INVALID_MEMBERSHIP_PERKS_URL",
         ("INVALID_MEMBERSHIP_PERKS_URL", "www.google..com/", "", "  ")
     )
-    def test_invalid_membership_perks_url(self, INVALID_MEMBERSHIP_PERKS_URL: str) -> None:  # noqa: N803,E501
+    def test_invalid_membership_perks_url(self, INVALID_MEMBERSHIP_PERKS_URL: str) -> None:  # noqa: N803
         """Test that an error occurs when the provided `MEMBERSHIP_PERKS_URL` is invalid."""
         INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (
             "MEMBERSHIP_PERKS_URL must be a valid URL"
@@ -1160,7 +1218,7 @@ class TestSetupMembersListURL:
         "TEST_MEMBERS_LIST_URL",
         ("https://google.com", "www.google.com/", "    https://google.com   ")
     )
-    def test_setup_members_list_url_successful(self, TEST_MEMBERS_LIST_URL: str) -> None:  # noqa: N803,E501
+    def test_setup_members_list_url_successful(self, TEST_MEMBERS_LIST_URL: str) -> None:  # noqa: N803
         """Test that the given `MEMBERS_LIST_URL` is used when a valid one is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1190,7 +1248,7 @@ class TestSetupMembersListURL:
         "INVALID_MEMBERS_LIST_URL",
         ("INVALID_MEMBERS_LIST_URL", "www.google..com/", "", "  ")
     )
-    def test_invalid_membership_perks_url(self, INVALID_MEMBERS_LIST_URL: str) -> None:  # noqa: N803,E501
+    def test_invalid_membership_perks_url(self, INVALID_MEMBERS_LIST_URL: str) -> None:  # noqa: N803
         """Test that an error occurs when the provided `MEMBERS_LIST_URL` is invalid."""
         INVALID_MEMBERS_LIST_URL_MESSAGE: Final[str] = (
             "MEMBERS_LIST_URL must be a valid URL"
