@@ -12,8 +12,6 @@ import inspect
 from pathlib import Path
 from typing import Final
 
-from config import settings
-
 # Build paths inside the project like this: BASE_DIR / "subdir".
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -27,6 +25,8 @@ IMPORTED_BY_MYPY_OR_PYTEST: Final[bool] = any(
 if IMPORTED_BY_MYPY_OR_PYTEST:
     SECRET_KEY = "unsecure-secret-key"  # noqa: S105
 else:
+    from config import settings
+
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY = settings.DISCORD_BOT_TOKEN
 

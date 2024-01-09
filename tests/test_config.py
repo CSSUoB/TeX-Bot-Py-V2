@@ -1575,6 +1575,125 @@ class TestSetupMembersListURLSessionCookie:
                 RuntimeSettings._setup_members_list_url_session_cookie()  # noqa: SLF001
 
 
+class TestSetupSendIntroductionReminders:
+    """Test case to unit-test the configuration for sending introduction reminders."""
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_SEND_INTRODUCTION_REMINDERS_VALUE",
+        set(
+            itertools.chain(
+                (value for value in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES),
+                (
+                    f"  {
+                        next(
+                            iter(
+                                value
+                                for value
+                                in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
+                                if value.isalpha()
+                            )
+                        )
+                    }   ",
+                    next(
+                        iter(
+                            value
+                            for value
+                            in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
+                            if value.isalpha()
+                        )
+                    ).lower(),
+                    next(
+                        iter(
+                            value
+                            for value
+                            in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
+                            if value.isalpha()
+                        )
+                    ).upper(),
+                    "".join(
+                        random.choice((str.upper, str.lower))(character)
+                        for character
+                        in next(
+                            iter(
+                                value
+                                for value
+                                in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
+                                if value.isalpha()
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+    def test_setup_send_introduction_reminders_successful(self, TEST_SEND_INTRODUCTION_REMINDERS_VALUE: str) -> None:  # noqa: N803,E501
+        """Test that setup is successful when a valid option is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        print(TEST_SEND_INTRODUCTION_REMINDERS_VALUE)
+        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
+            os.environ["SEND_INTRODUCTION_REMINDERS"] = TEST_SEND_INTRODUCTION_REMINDERS_VALUE
+
+            RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["SEND_INTRODUCTION_REMINDERS"] == (
+            "once"
+            if TEST_SEND_INTRODUCTION_REMINDERS_VALUE.lower().strip() in config.TRUE_VALUES
+            else (
+                False
+                if TEST_SEND_INTRODUCTION_REMINDERS_VALUE.lower().strip() not in (
+                    "once",
+                    "interval"
+                )
+                else TEST_SEND_INTRODUCTION_REMINDERS_VALUE.lower().strip()
+            )
+        )
+
+    def test_default_send_introduction_reminders_value(self) -> None:
+        """Test that a default value is used when no introduction-reminders-flag is given."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):  # noqa: SIM117
+            try:
+                RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["SEND_INTRODUCTION_REMINDERS"] in ("once", "interval", False)
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_SEND_INTRODUCTION_REMINDERS_VALUE",
+        (
+            "INVALID_SEND_INTRODUCTION_REMINDERS_VALUE",
+            "",
+            "  ",
+            "".join(
+                random.choices(string.ascii_letters + string.digits + string.punctuation, k=8)
+            )
+        )
+    )
+    def test_invalid_members_list_url_session_cookie(self, INVALID_SEND_INTRODUCTION_REMINDERS_VALUE: str) -> None:  # noqa: N803
+        """Test that an error occurs when an invalid introduction-reminders-flag is given."""
+        INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
+            "SEND_INTRODUCTION_REMINDERS must be one of: \"Once\", \"Interval\" or \"False\"."
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
+            os.environ["SEND_INTRODUCTION_REMINDERS"] = (
+                INVALID_SEND_INTRODUCTION_REMINDERS_VALUE
+            )
+
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE):  # noqa: E501
+                RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+
+
 class TestSetupModerationDocumentURL:
     """Test case to unit-test the `_setup_moderation_document_url()` function."""
 

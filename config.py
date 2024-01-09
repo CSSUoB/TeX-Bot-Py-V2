@@ -539,8 +539,9 @@ class Settings(abc.ABC):
     def _setup_send_introduction_reminders(cls) -> None:
         raw_send_introduction_reminders: str | None = os.getenv("SEND_INTRODUCTION_REMINDERS")
 
+        # noinspection PyTypeChecker
         send_introduction_reminders: str | bool = (
-            "Once"
+            "Once".lower().strip()
             if raw_send_introduction_reminders is None
             else (
                 raw_send_introduction_reminders.lower().strip()
