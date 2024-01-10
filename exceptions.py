@@ -286,6 +286,7 @@ class MessagesJSONFileMissingKeyError(InvalidMessagesJSONFileError):
 
     @property
     def missing_key(self) -> str | None:
+        """The key that was missing from the messages.json file."""
         return self.dict_key
 
     @missing_key.setter

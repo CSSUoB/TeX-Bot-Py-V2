@@ -9,6 +9,7 @@ import random
 import re
 import string
 from collections.abc import Callable, Iterable, Mapping
+from datetime import timedelta
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import IO, TYPE_CHECKING, Final, TextIO
@@ -17,7 +18,11 @@ import pytest
 
 import config
 from config import Settings, settings
-from exceptions import ImproperlyConfiguredError, MessagesJSONFileMissingKeyError, MessagesJSONFileValueError
+from exceptions import (
+    ImproperlyConfiguredError,
+    MessagesJSONFileMissingKeyError,
+    MessagesJSONFileValueError,
+)
 from tests._testing_utils import EnvVariableDeleter, FileTemporaryDeleter
 
 if TYPE_CHECKING:
@@ -1184,7 +1189,9 @@ class TestSetupMessagesFile:
             with DEFAULT_MESSAGES_FILE_PATH.open("w") as default_messages_file:
                 json.dump(TEST_MESSAGES_DICT, fp=default_messages_file)
 
-            assert Settings._get_messages_dict(raw_messages_file_path=None) == TEST_MESSAGES_DICT  # noqa: SLF001
+            assert (
+                Settings._get_messages_dict(raw_messages_file_path=None) == TEST_MESSAGES_DICT  # noqa: SLF001
+            )
 
             DEFAULT_MESSAGES_FILE_PATH.unlink()
 
@@ -1225,7 +1232,7 @@ class TestSetupMessagesFile:
             "false"
         )
     )
-    def test_get_messages_dict_with_invalid_json(self, INVALID_MESSAGES_JSON: str) -> None:  # noqa: N803,E501
+    def test_get_messages_dict_with_invalid_json(self, INVALID_MESSAGES_JSON: str) -> None:  # noqa: N803
         """Test that an error is raised when the messages-file contains invalid JSON."""
         temporary_messages_file: IO[str]
         with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
@@ -1236,7 +1243,7 @@ class TestSetupMessagesFile:
             INVALID_MESSAGES_JSON_MESSAGE: Final[str] = (
                 "Messages JSON file must contain a JSON string"
             )
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MESSAGES_JSON_MESSAGE):  # noqa: E501
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MESSAGES_JSON_MESSAGE):
                 Settings._get_messages_dict(  # noqa: SLF001
                     raw_messages_file_path=temporary_messages_file.name
                 )
@@ -1278,7 +1285,7 @@ class TestSetupMessagesFile:
                 json.dump(TEST_MESSAGES_DICT, fp=default_messages_file)
 
             with EnvVariableDeleter("MESSAGES_FILE_PATH"):
-                RuntimeSettings._setup_welcome_messages()
+                RuntimeSettings._setup_welcome_messages()  # noqa: SLF001
 
             DEFAULT_MESSAGES_FILE_PATH.unlink()
 
@@ -1290,7 +1297,7 @@ class TestSetupMessagesFile:
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("NO_WELCOME_MESSAGES_DICT", ({"other_messages": ["Welcome!"]},))
-    def test_welcome_messages_key_not_in_messages_json(self, NO_WELCOME_MESSAGES_DICT: Mapping[str, Iterable[str]]) -> None:  # noqa: E501
+    def test_welcome_messages_key_not_in_messages_json(self, NO_WELCOME_MESSAGES_DICT: Mapping[str, Iterable[str]]) -> None:  # noqa: N803,E501
         """Test that error is raised when messages-file not contain `welcome_messages` key."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1322,7 +1329,7 @@ class TestSetupMessagesFile:
             {"welcome_messages": False}
         )
     )
-    def test_invalid_welcome_messages(self, INVALID_WELCOME_MESSAGES_DICT: Mapping[str, object]) -> None:  # noqa: E501
+    def test_invalid_welcome_messages(self, INVALID_WELCOME_MESSAGES_DICT: Mapping[str, object]) -> None:  # noqa: N803,E501
         """Test that error is raised when the `welcome_messages` is not a valid value."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1381,7 +1388,7 @@ class TestSetupMessagesFile:
                 json.dump(TEST_MESSAGES_DICT, fp=default_messages_file)
 
             with EnvVariableDeleter("MESSAGES_FILE_PATH"):
-                RuntimeSettings._setup_roles_messages()
+                RuntimeSettings._setup_roles_messages()  # noqa: SLF001
 
             DEFAULT_MESSAGES_FILE_PATH.unlink()
 
@@ -1393,7 +1400,7 @@ class TestSetupMessagesFile:
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("NO_ROLES_MESSAGES_DICT", ({"other_messages": ["Gaming"]},))
-    def test_roles_messages_key_not_in_messages_json(self, NO_ROLES_MESSAGES_DICT: Mapping[str, Iterable[str]]) -> None:  # noqa: E501
+    def test_roles_messages_key_not_in_messages_json(self, NO_ROLES_MESSAGES_DICT: Mapping[str, Iterable[str]]) -> None:  # noqa: N803,E501
         """Test that error is raised when messages-file not contain `roles_messages` key."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1425,7 +1432,7 @@ class TestSetupMessagesFile:
             {"roles_messages": False}
         )
     )
-    def test_invalid_roles_messages(self, INVALID_ROLES_MESSAGES_DICT: Mapping[str, object]) -> None:
+    def test_invalid_roles_messages(self, INVALID_ROLES_MESSAGES_DICT: Mapping[str, object]) -> None:  # noqa: N803,E501
         """Test that error is raised when the `roles_messages` is not a valid value."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1558,7 +1565,7 @@ class TestSetupMembersListURLSessionCookie:
             )
         )
     )
-    def test_invalid_members_list_url_session_cookie(self, INVALID_MEMBERS_LIST_URL_SESSION_COOKIE: str) -> None:  # noqa: N803
+    def test_invalid_members_list_url_session_cookie(self, INVALID_MEMBERS_LIST_URL_SESSION_COOKIE: str) -> None:  # noqa: N803,E501
         """Test that an error occurs when `MEMBERS_LIST_URL_SESSION_COOKIE` is invalid."""
         INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
             "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie"
@@ -1630,7 +1637,7 @@ class TestSetupSendIntroductionReminders:
     def test_setup_send_introduction_reminders_successful(self, TEST_SEND_INTRODUCTION_REMINDERS_VALUE: str) -> None:  # noqa: N803,E501
         """Test that setup is successful when a valid option is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-        print(TEST_SEND_INTRODUCTION_REMINDERS_VALUE)
+
         with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
             os.environ["SEND_INTRODUCTION_REMINDERS"] = TEST_SEND_INTRODUCTION_REMINDERS_VALUE
 
@@ -1655,7 +1662,7 @@ class TestSetupSendIntroductionReminders:
         """Test that a default value is used when no introduction-reminders-flag is given."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
-        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):  # noqa: SIM117
+        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
             try:
                 RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
             except ImproperlyConfiguredError:
@@ -1677,10 +1684,10 @@ class TestSetupSendIntroductionReminders:
             )
         )
     )
-    def test_invalid_members_list_url_session_cookie(self, INVALID_SEND_INTRODUCTION_REMINDERS_VALUE: str) -> None:  # noqa: N803
+    def test_invalid_send_introduction_reminders(self, INVALID_SEND_INTRODUCTION_REMINDERS_VALUE: str) -> None:  # noqa: N803,E501
         """Test that an error occurs when an invalid introduction-reminders-flag is given."""
-        INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
-            "SEND_INTRODUCTION_REMINDERS must be one of: \"Once\", \"Interval\" or \"False\"."
+        INVALID_SEND_INTRODUCTION_REMINDERS_VALUE_MESSAGE: Final[str] = (
+            "SEND_INTRODUCTION_REMINDERS must be one of: \"Once\", \"Interval\" or \"False\""
         )
 
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
@@ -1690,8 +1697,303 @@ class TestSetupSendIntroductionReminders:
                 INVALID_SEND_INTRODUCTION_REMINDERS_VALUE
             )
 
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE):  # noqa: E501
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_SEND_INTRODUCTION_REMINDERS_VALUE_MESSAGE):  # noqa: E501
                 RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_SEND_INTRODUCTION_REMINDERS_INTERVAL",
+        (
+            f"{random.randint(3, 999)}s",
+            f"{random.randint(3, 999)}.{random.randint(0, 999)}s",
+            (
+                f"  {
+                    random.randint(3, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }s   "
+            ),
+            f"{random.randint(3, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}m",
+            f"{random.randint(3, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}h",
+            (
+                f"{
+                    random.randint(3, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }s{
+                    random.randint(3, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }m{
+                    random.randint(3, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }h"
+            ),
+            (
+                f"{
+                    random.randint(3, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                } s  {
+                    random.randint(3, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }   m   {
+                    random.randint(3, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }  h"
+            )
+        )
+    )
+    def test_setup_send_introduction_reminders_interval_successful(self, TEST_SEND_INTRODUCTION_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
+        """
+        Test that the given `SEND_INTRODUCTION_REMINDERS_INTERVAL` is used when provided.
+
+        In this test, the provided `SEND_INTRODUCTION_REMINDERS_INTERVAL` is valid
+        and so must be saved successfully.
+        """
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+
+        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"):
+            os.environ["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
+                TEST_SEND_INTRODUCTION_REMINDERS_INTERVAL
+            )
+
+            RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"] == {
+            key: float(value)
+            for key, value
+            in (
+                re.match(
+                    r"\A(?:(?P<seconds>(?:\d*\.)?\d+)\s*s)?\s*(?:(?P<minutes>(?:\d*\.)?\d+)\s*m)?\s*(?:(?P<hours>(?:\d*\.)?\d+)\s*h)?\Z",
+                    TEST_SEND_INTRODUCTION_REMINDERS_INTERVAL.lower().strip()
+                ).groupdict().items()  # type: ignore[union-attr]
+            )
+            if value
+        }
+
+        assert (
+            "seconds" in RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"]
+            or "minutes" in RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"]
+            or "hours" in RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"]
+        )
+
+        assert all(
+            isinstance(value, float)
+            for value
+            in RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"].values()
+        )
+
+        timedelta_error: TypeError
+        try:
+            assert (
+                timedelta(**RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"])
+                > timedelta(seconds=3)
+            )
+
+        except TypeError as timedelta_error:
+            if "invalid keyword argument for __new__()" not in str(timedelta_error):
+                raise timedelta_error from timedelta_error
+
+            pytest.fail(
+                (
+                    "Failed to construct `timedelta` object "
+                    "from given `SEND_INTRODUCTION_REMINDERS_INTERVAL`"
+                ),
+                pytrace=False
+            )
+
+    def test_default_send_introduction_reminders_interval(self) -> None:
+        """Test that a default value is used when no `SEND_INTRODUCTION_REMINDERS_INTERVAL`."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+
+        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"):
+            try:
+                RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert (
+            "seconds" in RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"]
+            or "minutes" in RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"]
+            or "hours" in RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"]
+        )
+
+        assert all(
+            isinstance(value, float)
+            for value
+            in RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"].values()
+        )
+
+        timedelta_error: TypeError
+        try:
+            assert (
+                timedelta(**RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"])
+                > timedelta(seconds=3)
+            )
+
+        except TypeError as timedelta_error:
+            if "invalid keyword argument for __new__()" not in str(timedelta_error):
+                raise timedelta_error from timedelta_error
+
+            pytest.fail(
+                (
+                    "Failed to construct `timedelta` object "
+                    "from given `SEND_INTRODUCTION_REMINDERS_INTERVAL`"
+                ),
+                pytrace=False
+            )
+
+    def test_setup_send_introduction_reminders_interval_without_send_introduction_reminders_setup(self) -> None:  # noqa: E501
+        """Test that an error is raised when setting up the interval without the flag."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        RuntimeSettings._settings.pop("SEND_INTRODUCTION_REMINDERS", None)  # noqa: SLF001
+
+        with pytest.raises(RuntimeError, match="Invalid setup order"):
+            RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL",
+        (
+            "INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL",
+            "",
+            "  ",
+            f"{random.randint(3, 999)}d",
+            f"{random.randint(3, 999)},{random.randint(0, 999)}s",
+        )
+    )
+    def test_invalid_send_introduction_reminders_interval_flag_disabled(self, INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
+        """
+        Test that no error is raised when `SEND_INTRODUCTION_REMINDERS_INTERVAL` is invalid.
+
+        The enable/disable flag `SEND_INTRODUCTION_REMINDERS` is disabled (set to `False`)
+        during this test, so an invalid interval value should be ignored.
+        """
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"):
+            os.environ["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
+                INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL
+            )
+
+            with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
+                os.environ["SEND_INTRODUCTION_REMINDERS"] = "false"
+                RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+
+                try:
+                    RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
+                except ImproperlyConfiguredError:
+                    pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL",
+        (
+            "INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL",
+            "",
+            "  ",
+            f"{random.randint(3, 999)}d",
+            f"{random.randint(3, 999)},{random.randint(0, 999)}s",
+        )
+    )
+    @pytest.mark.parametrize("SEND_INTRODUCTION_REMINDERS_VALUE", ("once", "interval"))
+    def test_invalid_send_introduction_reminders_interval_flag_enabled(self, INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL: str, SEND_INTRODUCTION_REMINDERS_VALUE: str) -> None:  # noqa: N803,ARG002,E501
+        """
+        Test that an error is raised when `SEND_INTRODUCTION_REMINDERS_INTERVAL` is invalid.
+
+        The enable/disable flag `SEND_INTRODUCTION_REMINDERS` is enabled
+        (set to `once` or `interval`) during this test,
+        so an invalid interval value should be ignored.
+        """
+        INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
+            "SEND_INTRODUCTION_REMINDERS_INTERVAL must contain the interval "
+            "in any combination of seconds, minutes or hours"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"):
+            os.environ["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
+                INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL
+            )
+
+            with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
+                os.environ["SEND_INTRODUCTION_REMINDERS"] = random.choice(("once", "interval"))
+                RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+
+                with pytest.raises(ImproperlyConfiguredError, match=INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE):  # noqa: E501
+                    RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL",
+        ("0.5s", "0s")
+    )
+    def test_too_small_send_introduction_reminders_interval_flag_disabled(self, TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
+        """
+        Test that no error is raised when `SEND_INTRODUCTION_REMINDERS_INTERVAL` is too small.
+
+        The enable/disable flag `SEND_INTRODUCTION_REMINDERS` is disabled (set to `False`)
+        during this test, so an invalid interval value should be ignored.
+        """
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"):
+            os.environ["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
+                TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL
+            )
+
+            with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
+                os.environ["SEND_INTRODUCTION_REMINDERS"] = "false"
+                RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+
+                try:
+                    RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
+                except ImproperlyConfiguredError:
+                    pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL",
+        ("0.5s", "0s")
+    )
+    @pytest.mark.parametrize("SEND_INTRODUCTION_REMINDERS_VALUE", ("once", "interval"))
+    def test_too_small_send_introduction_reminders_interval_flag_enabled(self, TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL: str, SEND_INTRODUCTION_REMINDERS_VALUE: str) -> None:  # noqa: N803,ARG002,E501
+        """
+        Test that an error is raised when `SEND_INTRODUCTION_REMINDERS_INTERVAL` is too small.
+
+        The enable/disable flag `SEND_INTRODUCTION_REMINDERS` is enabled
+        (set to `once` or `interval`) during this test,
+        so an invalid interval value should be ignored.
+        """
+        INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
+            "SEND_INTRODUCTION_REMINDERS_INTERVAL must be greater than 3 seconds"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"):
+            os.environ["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
+                TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL
+            )
+
+            with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
+                os.environ["SEND_INTRODUCTION_REMINDERS"] = random.choice(("once", "interval"))
+                RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+
+                with pytest.raises(ImproperlyConfiguredError, match=INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE):  # noqa: E501
+                    RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
 
 
 class TestSetupModerationDocumentURL:
