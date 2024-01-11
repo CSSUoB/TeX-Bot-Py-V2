@@ -280,7 +280,7 @@ class TestSetupLogging:
     """Test case to unit-test the `_setup_logging()` function."""
 
     # noinspection PyPep8Naming
-    @pytest.mark.parametrize("TEST_LOG_LEVEL", ("DEBUG",))
+    @pytest.mark.parametrize("TEST_LOG_LEVEL", config.LOG_LEVEL_CHOICES)
     def test_setup_logging_successful(self, TEST_LOG_LEVEL: str) -> None:  # noqa: N803
         """Test that the given `CONSOLE_LOG_LEVEL` is used when a valid one is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
@@ -1590,7 +1590,7 @@ class TestSetupSendIntroductionReminders:
         "TEST_SEND_INTRODUCTION_REMINDERS_VALUE",
         set(
             itertools.chain(
-                (value for value in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES),
+                config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES,
                 (
                     f"  {
                         next(
@@ -1713,19 +1713,19 @@ class TestSetupSendIntroductionReminders:
                     random.choice(("", f".{random.randint(0, 999)}"))
                 }s   "
             ),
-            f"{random.randint(3, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}m",
-            f"{random.randint(3, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}h",
+            f"{random.randint(1, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}m",
+            f"{random.randint(1, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}h",
             (
                 f"{
                     random.randint(3, 999)
                 }{
                     random.choice(("", f".{random.randint(0, 999)}"))
                 }s{
-                    random.randint(3, 999)
+                    random.randint(0, 999)
                 }{
                     random.choice(("", f".{random.randint(0, 999)}"))
                 }m{
-                    random.randint(3, 999)
+                    random.randint(0, 999)
                 }{
                     random.choice(("", f".{random.randint(0, 999)}"))
                 }h"
@@ -1736,11 +1736,11 @@ class TestSetupSendIntroductionReminders:
                 }{
                     random.choice(("", f".{random.randint(0, 999)}"))
                 } s  {
-                    random.randint(3, 999)
+                    random.randint(0, 999)
                 }{
                     random.choice(("", f".{random.randint(0, 999)}"))
                 }   m   {
-                    random.randint(3, 999)
+                    random.randint(0, 999)
                 }{
                     random.choice(("", f".{random.randint(0, 999)}"))
                 }  h"
@@ -1869,7 +1869,7 @@ class TestSetupSendIntroductionReminders:
             "INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL",
             "",
             "  ",
-            f"{random.randint(3, 999)}d",
+            f"{random.randint(1, 999)}d",
             f"{random.randint(3, 999)},{random.randint(0, 999)}s",
         )
     )
@@ -1903,7 +1903,7 @@ class TestSetupSendIntroductionReminders:
             "INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL",
             "",
             "  ",
-            f"{random.randint(3, 999)}d",
+            f"{random.randint(1, 999)}d",
             f"{random.randint(3, 999)},{random.randint(0, 999)}s",
         )
     )
@@ -1914,7 +1914,7 @@ class TestSetupSendIntroductionReminders:
 
         The enable/disable flag `SEND_INTRODUCTION_REMINDERS` is enabled
         (set to `once` or `interval`) during this test,
-        so an invalid interval value should be ignored.
+        so an invalid interval value should not be ignored, and error should be raised.
         """
         INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
             "SEND_INTRODUCTION_REMINDERS_INTERVAL must contain the interval "
@@ -1938,7 +1938,7 @@ class TestSetupSendIntroductionReminders:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL",
-        ("0.5s", "0s")
+        ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h")
     )
     def test_too_small_send_introduction_reminders_interval_flag_disabled(self, TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
         """
@@ -1966,7 +1966,7 @@ class TestSetupSendIntroductionReminders:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL",
-        ("0.5s", "0s")
+        ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h")
     )
     @pytest.mark.parametrize("SEND_INTRODUCTION_REMINDERS_VALUE", ("once", "interval"))
     def test_too_small_send_introduction_reminders_interval_flag_enabled(self, TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL: str, SEND_INTRODUCTION_REMINDERS_VALUE: str) -> None:  # noqa: N803,ARG002,E501
@@ -1975,9 +1975,9 @@ class TestSetupSendIntroductionReminders:
 
         The enable/disable flag `SEND_INTRODUCTION_REMINDERS` is enabled
         (set to `once` or `interval`) during this test,
-        so an invalid interval value should be ignored.
+        so an invalid interval value should not be ignored, and error should be raised.
         """
-        INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
+        TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
             "SEND_INTRODUCTION_REMINDERS_INTERVAL must be greater than 3 seconds"
         )
 
@@ -1992,8 +1992,391 @@ class TestSetupSendIntroductionReminders:
                 os.environ["SEND_INTRODUCTION_REMINDERS"] = random.choice(("once", "interval"))
                 RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
 
-                with pytest.raises(ImproperlyConfiguredError, match=INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE):  # noqa: E501
+                with pytest.raises(ImproperlyConfiguredError, match=TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE):  # noqa: E501
                     RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
+
+
+class TestSetupKickNoIntroductionDiscordMembers:
+    """
+    Test case to unit-test the configuration for kicking no-introduction Discord members.
+
+    The no-introduction Discord members are those Discord members
+    that have joined your group's Discord server but have not yet sent a message
+    introducing themselves.
+    """
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE",
+        set(
+            itertools.chain(
+                config.TRUE_VALUES | config.FALSE_VALUES,
+                (
+                    f"  {
+                        next(
+                            iter(
+                                value
+                                for value
+                                in config.TRUE_VALUES | config.FALSE_VALUES
+                                if value.isalpha()
+                            )
+                        )
+                    }   ",
+                    next(
+                        iter(
+                            value
+                            for value
+                            in config.TRUE_VALUES | config.FALSE_VALUES
+                            if value.isalpha()
+                        )
+                    ).lower(),
+                    next(
+                        iter(
+                            value
+                            for value
+                            in config.TRUE_VALUES | config.FALSE_VALUES
+                            if value.isalpha()
+                        )
+                    ).upper(),
+                    "".join(
+                        random.choice((str.upper, str.lower))(character)
+                        for character
+                        in next(
+                            iter(
+                                value
+                                for value
+                                in config.TRUE_VALUES | config.FALSE_VALUES
+                                if value.isalpha()
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+    def test_setup_kick_no_introduction_discord_members_successful(self, TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE: str) -> None:  # noqa: N803,E501
+        """Test that setup is successful when a valid option is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS"):
+            os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = (
+                TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE
+            )
+
+            RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] == (
+            TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE.lower().strip()
+            in config.TRUE_VALUES
+        )
+
+    def test_default_kick_no_introduction_discord_members_value(self) -> None:
+        """Test that a default value is used when no kick-no-introductions-flag is given."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS"):
+            try:
+                RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] in (True, False)
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE",
+        (
+            "INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE",
+            "",
+            "  ",
+            "".join(
+                random.choices(string.ascii_letters + string.digits + string.punctuation, k=8)
+            )
+        )
+    )
+    def test_invalid_kick_no_introduction_discord_members(self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE: str) -> None:  # noqa: N803,E501
+        """Test that an error occurs when an invalid kick-no-introductions-flag is given."""
+        INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE_MESSAGE: Final[str] = (
+            "KICK_NO_INTRODUCTION_DISCORD_MEMBERS must be a boolean value"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS"):
+            os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = (
+                INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE
+            )
+
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE_MESSAGE):  # noqa: E501
+                RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
+        (
+            f"{random.randint(86400, 777600)}s",
+            f"{random.randint(86400, 777600)}.{random.randint(0, 999)}s",
+            (
+                f"  {
+                    random.randint(86400, 777600)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }s   "
+            ),
+            f"{random.randint(1440, 12960)}{random.choice(("", f".{random.randint(0, 999)}"))}m",
+            f"{random.randint(24, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}h",
+            f"{random.randint(1, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}d",
+            f"{random.randint(1, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}w",
+            (
+                f"{
+                    random.randint(86400, 777600)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }s{
+                    random.randint(0, 12960)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }m{
+                    random.randint(0, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }h{
+                    random.randint(0, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }d{
+                    random.randint(0, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }w"
+            ),
+            (
+                f"{
+                    random.randint(86400, 777600)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                } s  {
+                    random.randint(0, 12960)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }   m   {
+                    random.randint(0, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }  h  {
+                    random.randint(0, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }    d   {
+                    random.randint(0, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                } w"
+            )
+        )
+    )
+    def test_setup_kick_no_introduction_discord_members_delay_successful(self, TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,E501
+        """
+        Test that the given `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is used when provided.
+
+        In this test, the provided `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is valid
+        and so must be saved successfully.
+        """
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
+
+        with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"):
+            os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
+                TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY
+            )
+
+            RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] == timedelta(
+            **{
+                key: float(value)
+                for key, value
+                in (
+                    re.match(
+                        r"\A(?:(?P<seconds>(?:\d*\.)?\d+)\s*s)?\s*(?:(?P<minutes>(?:\d*\.)?\d+)\s*m)?\s*(?:(?P<hours>(?:\d*\.)?\d+)\s*h)?\s*(?:(?P<days>(?:\d*\.)?\d+)\s*d)?\s*(?:(?P<weeks>(?:\d*\.)?\d+)\s*w)?\Z",
+                        TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY.lower().strip()
+                    ).groupdict().items()  # type: ignore[union-attr]
+                )
+                if value
+            }
+        )
+
+        assert (
+            RuntimeSettings()["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] > timedelta(days=1)
+        )
+
+    def test_default_kick_no_introduction_discord_members_delay(self) -> None:
+        """Test default value is used when no `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY`."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
+
+        with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"):
+            try:
+                RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert isinstance(
+            RuntimeSettings()["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"],
+            timedelta
+        )
+
+        assert (
+            RuntimeSettings()["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] > timedelta(days=1)
+        )
+
+    def test_setup_kick_no_introduction_discord_members_delay_without_kick_no_introduction_discord_members_setup(self) -> None:  # noqa: E501
+        """Test that an error is raised when setting up the delay without the kick flag."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        RuntimeSettings._settings.pop("KICK_NO_INTRODUCTION_DISCORD_MEMBERS", None)  # noqa: SLF001
+
+        with pytest.raises(RuntimeError, match="Invalid setup order"):
+            RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
+        (
+            "INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
+            "",
+            "  ",
+            f"{random.randint(86400, 777600)}y",
+            f"{random.randint(86400, 777600)},{random.randint(0, 999)}s",
+        )
+    )
+    def test_invalid_kick_no_introduction_discord_members_delay_flag_disabled(self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,E501
+        """
+        Test no error is raised when `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is invalid.
+
+        The enable/disable flag `KICK_NO_INTRODUCTION_DISCORD_MEMBERS` is disabled
+        (set to `False`) during this test, so an invalid delay value should be ignored.
+        """
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"):
+            os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
+                INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY
+            )
+
+            with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS"):
+                os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = "false"
+                RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
+
+                try:
+                    RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
+                except ImproperlyConfiguredError:
+                    pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
+        (
+            "INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
+            "",
+            "  ",
+            f"{random.randint(86400, 777600)}y",
+            f"{random.randint(86400, 777600)},{random.randint(0, 999)}s",
+        )
+    )
+    def test_invalid_kick_no_introduction_discord_members_delay_flag_enabled(self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,ARG002,E501
+        """
+        Test an error is raised when `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is invalid.
+
+        The enable/disable flag `KICK_NO_INTRODUCTION_DISCORD_MEMBERS` is enabled
+        (set to `True`) during this test, so an invalid delay value should not be ignored,
+        and error should be raised.
+        """
+        INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE: Final[str] = (
+            "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must contain the delay "
+            "in any combination of seconds, minutes, hours, days or weeks."
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"):
+            os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
+                INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY
+            )
+
+            with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS"):
+                os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = "true"
+                RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
+
+                with pytest.raises(ImproperlyConfiguredError, match=INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE):  # noqa: E501
+                    RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
+        ("0.5s", "0s", "0.5m", "0m", "0.5h", "0h", "0.5d", "0d", "0.05w", "0w")
+    )
+    def test_too_small_kick_no_introduction_discord_members_delay_flag_disabled(self, TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,E501
+        """
+        Test no error is raised when `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is too small.
+
+        The enable/disable flag `KICK_NO_INTRODUCTION_DISCORD_MEMBERS` is disabled
+        (set to `False`) during this test, so an invalid delay value should be ignored.
+        """
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"):
+            os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
+                TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY
+            )
+
+            with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS"):
+                os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = "false"
+                RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
+
+                try:
+                    RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
+                except ImproperlyConfiguredError:
+                    pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
+        ("0.5s", "0s", "0.5m", "0m", "0.5h", "0h", "0.5d", "0d", "0.05w", "0w")
+    )
+    def test_too_small_send_introduction_reminders_interval_flag_enabled(self, TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,ARG002,E501
+        """
+        Test an error is raised when `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is too small.
+
+        The enable/disable flag `SEND_INTRODUCTION_REMINDERS` is enabled
+        (set to `True`) during this test, so an invalid delay value should not be ignored,
+        and error should be raised.
+        """
+        TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE: Final[str] = (
+            "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must be greater than 1 day"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"):
+            os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
+                TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY
+            )
+
+            with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS"):
+                os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = "true"
+                RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
+
+                with pytest.raises(ImproperlyConfiguredError, match=TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE):  # noqa: E501
+                    RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
 
 
 class TestSetupModerationDocumentURL:

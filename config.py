@@ -608,25 +608,25 @@ class Settings(abc.ABC):
             cls._error_setup_send_introduction_reminders_interval()
             return
 
-        send_introduction_reminders_interval_details: dict[str, float] = {
+        details_send_introduction_reminders_interval: dict[str, float] = {
             key: float(value)
             for key, value
             in send_introduction_reminders_interval.groupdict().items()
             if value
         }
 
-        if not send_introduction_reminders_interval_details:
+        if not details_send_introduction_reminders_interval:
             cls._error_setup_send_introduction_reminders_interval()
             return
 
-        if timedelta(**send_introduction_reminders_interval_details) <= timedelta(seconds=3):
+        if timedelta(**details_send_introduction_reminders_interval) <= timedelta(seconds=3):
             cls._error_setup_send_introduction_reminders_interval(
                 "SEND_INTRODUCTION_REMINDERS_INTERVAL must be greater than 3 seconds."
             )
             return
 
         cls._settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
-            send_introduction_reminders_interval_details
+            details_send_introduction_reminders_interval
         )
 
     @classmethod
@@ -637,7 +637,10 @@ class Settings(abc.ABC):
 
         KICK_NO_INTRODUCTION_DISCORD_MEMBERS_IS_VALID: Final[bool] = bool(
             raw_kick_no_introduction_discord_members is None
-            or raw_kick_no_introduction_discord_members in TRUE_VALUES | FALSE_VALUES
+            or (
+                raw_kick_no_introduction_discord_members.lower().strip()
+                in TRUE_VALUES | FALSE_VALUES
+            )
         )
         if not KICK_NO_INTRODUCTION_DISCORD_MEMBERS_IS_VALID:
             INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_MESSAGE: Final[str] = (
@@ -650,8 +653,19 @@ class Settings(abc.ABC):
         cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = (
             False
             if raw_kick_no_introduction_discord_members is None
-            else raw_kick_no_introduction_discord_members in TRUE_VALUES
+            else raw_kick_no_introduction_discord_members.lower().strip() in TRUE_VALUES
         )
+
+    @classmethod
+    def _error_setup_kick_no_introduction_discord_members_delay(cls, msg: str | None = None) -> None:
+        if cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"]:
+            msg = msg if msg is not None else (
+                "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must contain the delay "
+                "in any combination of seconds, minutes, hours, days or weeks."
+            )
+            raise ImproperlyConfiguredError(msg)
+
+        cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = timedelta()
 
     @classmethod
     def _setup_kick_no_introduction_discord_members_delay(cls) -> None:
@@ -680,34 +694,29 @@ class Settings(abc.ABC):
         )
 
         if kick_no_introduction_discord_members_delay is None:
-            if cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"]:
-                INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE: Final[str] = (
-                    "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must contain the delay "
-                    "in any combination of seconds, minutes, hours, days or weeks."
-                )
-                raise ImproperlyConfiguredError(
-                    INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE
-                )
+            cls._error_setup_kick_no_introduction_discord_members_delay()
+            return
 
-            cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = timedelta()
+        details_kick_no_introduction_discord_members_delay: dict[str, float] = {
+            key: float(value)
+            for key, value
+            in kick_no_introduction_discord_members_delay.groupdict().items()
+            if value
+        }
+
+        if not details_kick_no_introduction_discord_members_delay:
+            cls._error_setup_kick_no_introduction_discord_members_delay()
             return
 
         timedelta_kick_no_introduction_discord_members_delay: timedelta = timedelta(
-            **{
-                key: float(value)
-                for key, value
-                in kick_no_introduction_discord_members_delay.groupdict().items()
-                if value
-            }
+            **details_kick_no_introduction_discord_members_delay
         )
 
         if timedelta_kick_no_introduction_discord_members_delay <= timedelta(days=1):
-            TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE: Final[str] = (
+            cls._error_setup_kick_no_introduction_discord_members_delay(
                 "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must be greater than 1 day."
             )
-            raise ImproperlyConfiguredError(
-                TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE
-            )
+            return
 
         cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
             timedelta_kick_no_introduction_discord_members_delay
@@ -776,14 +785,14 @@ class Settings(abc.ABC):
             cls._settings["SEND_GET_ROLES_REMINDERS_INTERVAL"] = {"hours": 24}
             return
 
-        send_get_roles_reminders_interval_details: dict[str, float] = {
+        details_send_get_roles_reminders_interval: dict[str, float] = {
             key: float(value)
             for key, value
             in send_get_roles_reminders_interval.groupdict().items()
             if value
         }
 
-        if timedelta(**send_get_roles_reminders_interval_details) <= timedelta(seconds=3):
+        if timedelta(**details_send_get_roles_reminders_interval) <= timedelta(seconds=3):
             TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
                 "SEND_GET_ROLES_REMINDERS_INTERVAL must be greater than 3 seconds."
             )
@@ -792,7 +801,7 @@ class Settings(abc.ABC):
             )
 
         cls._settings["SEND_GET_ROLES_REMINDERS_INTERVAL"] = (
-            send_get_roles_reminders_interval_details
+            details_send_get_roles_reminders_interval
         )
 
     @classmethod
