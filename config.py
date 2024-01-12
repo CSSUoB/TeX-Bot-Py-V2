@@ -33,7 +33,6 @@ from typing import IO, Any, ClassVar, Final, final
 
 import dotenv
 import validators
-from django.core import management
 
 from exceptions import (
     ImproperlyConfiguredError,
@@ -148,10 +147,11 @@ class Settings(abc.ABC):
         console_logging_handler: logging.Handler = logging.StreamHandler()
         # noinspection SpellCheckingInspection
         console_logging_handler.setFormatter(
-            logging.Formatter("{asctime} - {name} - {levelname}", style="{")
+            logging.Formatter("{asctime} | {name} | {levelname:^8} - {message}", style="{")
         )
 
         logger.addHandler(console_logging_handler)
+        logger.propagate = False
 
     @classmethod
     def _setup_discord_bot_token(cls) -> None:
@@ -715,7 +715,11 @@ def run_setup() -> None:
     # noinspection PyProtectedMember
     settings._setup_env_variables()  # noqa: SLF001
 
-    logging.debug("Begin database setup")
+    logger.debug("Begin database setup")
+
     importlib.import_module("db")
+    from django.core import management
+
     management.call_command("migrate")
-    logging.debug("Database setup completed")
+
+    logger.debug("Database setup completed")
