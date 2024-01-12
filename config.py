@@ -621,7 +621,7 @@ class Settings(abc.ABC):
 
         if timedelta(**details_send_introduction_reminders_interval) <= timedelta(seconds=3):
             cls._error_setup_send_introduction_reminders_interval(
-                "SEND_INTRODUCTION_REMINDERS_INTERVAL must be greater than 3 seconds."
+                msg="SEND_INTRODUCTION_REMINDERS_INTERVAL must be greater than 3 seconds."
             )
             return
 
@@ -657,7 +657,7 @@ class Settings(abc.ABC):
         )
 
     @classmethod
-    def _error_setup_kick_no_introduction_discord_members_delay(cls, msg: str | None = None) -> None:
+    def _error_setup_kick_no_introduction_discord_members_delay(cls, msg: str | None = None) -> None:  # noqa: E501
         if cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"]:
             msg = msg if msg is not None else (
                 "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must contain the delay "
@@ -714,7 +714,7 @@ class Settings(abc.ABC):
 
         if timedelta_kick_no_introduction_discord_members_delay <= timedelta(days=1):
             cls._error_setup_kick_no_introduction_discord_members_delay(
-                "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must be greater than 1 day."
+                msg="KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must be greater than 1 day."
             )
             return
 
@@ -730,7 +730,7 @@ class Settings(abc.ABC):
 
         SEND_GET_ROLES_REMINDERS_IS_VALID: Final[bool] = bool(
             raw_send_get_roles_reminders is None
-            or raw_send_get_roles_reminders in TRUE_VALUES | FALSE_VALUES
+            or raw_send_get_roles_reminders.lower().strip() in TRUE_VALUES | FALSE_VALUES
         )
         if not SEND_GET_ROLES_REMINDERS_IS_VALID:
             INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE: Final[str] = (
@@ -743,8 +743,19 @@ class Settings(abc.ABC):
         cls._settings["SEND_GET_ROLES_REMINDERS"] = (
             True
             if raw_send_get_roles_reminders is None
-            else raw_send_get_roles_reminders in TRUE_VALUES
+            else raw_send_get_roles_reminders.lower().strip() in TRUE_VALUES
         )
+
+    @classmethod
+    def _error_setup_send_get_roles_reminders_interval(cls, msg: str | None = None) -> None:
+        if cls._settings["SEND_GET_ROLES_REMINDERS"]:
+            msg = msg if msg is not None else (
+                "SEND_GET_ROLES_REMINDERS_INTERVAL must contain the interval "
+                "in any combination of seconds, minutes or hours."
+            )
+            raise ImproperlyConfiguredError(msg)
+
+        cls._settings["SEND_GET_ROLES_REMINDERS_INTERVAL"] = {"hours": 24}
 
     @classmethod
     def _setup_send_get_roles_reminders_interval(cls) -> None:
@@ -773,16 +784,7 @@ class Settings(abc.ABC):
         )
 
         if send_get_roles_reminders_interval is None:
-            if cls._settings["SEND_GET_ROLES_REMINDERS"]:
-                INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
-                    "SEND_GET_ROLES_REMINDERS_INTERVAL must contain the interval "
-                    "in any combination of seconds, minutes or hours."
-                )
-                raise ImproperlyConfiguredError(
-                    INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE
-                )
-
-            cls._settings["SEND_GET_ROLES_REMINDERS_INTERVAL"] = {"hours": 24}
+            cls._error_setup_send_get_roles_reminders_interval()
             return
 
         details_send_get_roles_reminders_interval: dict[str, float] = {
@@ -792,13 +794,15 @@ class Settings(abc.ABC):
             if value
         }
 
+        if not details_send_get_roles_reminders_interval:
+            cls._error_setup_send_get_roles_reminders_interval()
+            return
+
         if timedelta(**details_send_get_roles_reminders_interval) <= timedelta(seconds=3):
-            TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
-                "SEND_GET_ROLES_REMINDERS_INTERVAL must be greater than 3 seconds."
+            cls._error_setup_send_get_roles_reminders_interval(
+                msg="SEND_GET_ROLES_REMINDERS_INTERVAL must be greater than 3 seconds."
             )
-            raise ImproperlyConfiguredError(
-                TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE
-            )
+            return
 
         cls._settings["SEND_GET_ROLES_REMINDERS_INTERVAL"] = (
             details_send_get_roles_reminders_interval
@@ -811,13 +815,19 @@ class Settings(abc.ABC):
         e: ValueError
         try:
             statistics_days: float = (
-                30 if raw_statistics_days is None else float(raw_statistics_days)
+                30 if raw_statistics_days is None else float(raw_statistics_days.strip())
             )
         except ValueError as e:
             INVALID_STATISTICS_DAYS_MESSAGE: Final[str] = (
                 "STATISTICS_DAYS must contain the statistics period in days."
             )
             raise ImproperlyConfiguredError(INVALID_STATISTICS_DAYS_MESSAGE) from e
+
+        if statistics_days <= 1:
+            TOO_SMALL_STATISTICS_DAYS_MESSAGE: Final[str] = (
+                "STATISTICS_DAYS cannot be less than (or equal to) 1 day."
+            )
+            raise ImproperlyConfiguredError(TOO_SMALL_STATISTICS_DAYS_MESSAGE)
 
         cls._settings["STATISTICS_DAYS"] = timedelta(days=statistics_days)
 
@@ -867,8 +877,8 @@ class Settings(abc.ABC):
         )
 
         MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_IS_VALID: Final[bool] = bool(
-            raw_manual_moderation_warning_message_location is not None
-            and raw_manual_moderation_warning_message_location.strip()
+            raw_manual_moderation_warning_message_location is None
+            or raw_manual_moderation_warning_message_location.upper().strip()
         )
         if not MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_IS_VALID:
             MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE: Final[str] = (
@@ -880,11 +890,7 @@ class Settings(abc.ABC):
         cls._settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] = (
             "DM"
             if raw_manual_moderation_warning_message_location is None
-            else (
-                raw_manual_moderation_warning_message_location.upper().strip()
-                if raw_manual_moderation_warning_message_location.upper().strip()
-                else raw_manual_moderation_warning_message_location
-            )
+            else raw_manual_moderation_warning_message_location.upper().strip()
         )
 
     @classmethod

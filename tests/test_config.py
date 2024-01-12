@@ -275,6 +275,19 @@ class TestSettings:
         assert "already" in caplog.text
         assert "set up" in caplog.text
 
+    def test_module_level_settings_object(self) -> None:
+        """Test that the auto-instantiated module-level settings object is correct."""
+        assert isinstance(config.settings, Settings)
+
+    def test_settings_class_factory(self) -> None:
+        """Test that the settings class factory produces valid & separate settings classes."""
+        assert issubclass(config._settings_class_factory(), Settings)  # noqa: SLF001
+
+        assert config._settings_class_factory()._is_env_variables_setup is False  # noqa: SLF001
+        assert not config._settings_class_factory()._settings  # noqa: SLF001
+
+        assert config._settings_class_factory() != config._settings_class_factory()  # noqa: SLF001
+
 
 class TestSetupLogging:
     """Test case to unit-test the `_setup_logging()` function."""
@@ -1914,7 +1927,7 @@ class TestSetupSendIntroductionReminders:
 
         The enable/disable flag `SEND_INTRODUCTION_REMINDERS` is enabled
         (set to `once` or `interval`) during this test,
-        so an invalid interval value should not be ignored, and error should be raised.
+        so an invalid interval value should not be ignored, and an error should be raised.
         """
         INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
             "SEND_INTRODUCTION_REMINDERS_INTERVAL must contain the interval "
@@ -1975,7 +1988,7 @@ class TestSetupSendIntroductionReminders:
 
         The enable/disable flag `SEND_INTRODUCTION_REMINDERS` is enabled
         (set to `once` or `interval`) during this test,
-        so an invalid interval value should not be ignored, and error should be raised.
+        so an invalid interval value should not be ignored, and an error should be raised.
         """
         TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
             "SEND_INTRODUCTION_REMINDERS_INTERVAL must be greater than 3 seconds"
@@ -2127,7 +2140,13 @@ class TestSetupKickNoIntroductionDiscordMembers:
                     random.choice(("", f".{random.randint(0, 999)}"))
                 }s   "
             ),
-            f"{random.randint(1440, 12960)}{random.choice(("", f".{random.randint(0, 999)}"))}m",
+            (
+                f"{
+                    random.randint(1440, 12960)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }m"
+            ),
             f"{random.randint(24, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}h",
             f"{random.randint(1, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}d",
             f"{random.randint(1, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}w",
@@ -2292,13 +2311,13 @@ class TestSetupKickNoIntroductionDiscordMembers:
             f"{random.randint(86400, 777600)},{random.randint(0, 999)}s",
         )
     )
-    def test_invalid_kick_no_introduction_discord_members_delay_flag_enabled(self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,ARG002,E501
+    def test_invalid_kick_no_introduction_discord_members_delay_flag_enabled(self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,E501
         """
         Test an error is raised when `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is invalid.
 
         The enable/disable flag `KICK_NO_INTRODUCTION_DISCORD_MEMBERS` is enabled
         (set to `True`) during this test, so an invalid delay value should not be ignored,
-        and error should be raised.
+        and an error should be raised.
         """
         INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE: Final[str] = (
             "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must contain the delay "
@@ -2352,13 +2371,13 @@ class TestSetupKickNoIntroductionDiscordMembers:
         "TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
         ("0.5s", "0s", "0.5m", "0m", "0.5h", "0h", "0.5d", "0d", "0.05w", "0w")
     )
-    def test_too_small_send_introduction_reminders_interval_flag_enabled(self, TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,ARG002,E501
+    def test_too_small_kick_no_introduction_discord_members_delay_flag_enabled(self, TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,E501
         """
         Test an error is raised when `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is too small.
 
-        The enable/disable flag `SEND_INTRODUCTION_REMINDERS` is enabled
+        The enable/disable flag `KICK_NO_INTRODUCTION_DISCORD_MEMBERS` is enabled
         (set to `True`) during this test, so an invalid delay value should not be ignored,
-        and error should be raised.
+        and an error should be raised.
         """
         TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE: Final[str] = (
             "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must be greater than 1 day"
@@ -2377,6 +2396,546 @@ class TestSetupKickNoIntroductionDiscordMembers:
 
                 with pytest.raises(ImproperlyConfiguredError, match=TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE):  # noqa: E501
                     RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
+
+
+class TestSetupSendGetRolesReminders:
+    """Test case to unit-test the configuration for sending get-roles reminders."""
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_SEND_GET_ROLES_REMINDERS_VALUE",
+        set(
+            itertools.chain(
+                config.TRUE_VALUES | config.FALSE_VALUES,
+                (
+                    f"  {
+                        next(
+                            iter(
+                                value
+                                for value
+                                in config.TRUE_VALUES | config.FALSE_VALUES
+                                if value.isalpha()
+                            )
+                        )
+                    }   ",
+                    next(
+                        iter(
+                            value
+                            for value
+                            in config.TRUE_VALUES | config.FALSE_VALUES
+                            if value.isalpha()
+                        )
+                    ).lower(),
+                    next(
+                        iter(
+                            value
+                            for value
+                            in config.TRUE_VALUES | config.FALSE_VALUES
+                            if value.isalpha()
+                        )
+                    ).upper(),
+                    "".join(
+                        random.choice((str.upper, str.lower))(character)
+                        for character
+                        in next(
+                            iter(
+                                value
+                                for value
+                                in config.TRUE_VALUES | config.FALSE_VALUES
+                                if value.isalpha()
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+    def test_setup_send_get_roles_reminders_successful(self, TEST_SEND_GET_ROLES_REMINDERS_VALUE: str) -> None:  # noqa: N803,E501
+        """Test that setup is successful when a valid option is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"):
+            os.environ["SEND_GET_ROLES_REMINDERS"] = TEST_SEND_GET_ROLES_REMINDERS_VALUE
+
+            RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS"] == (
+            TEST_SEND_GET_ROLES_REMINDERS_VALUE.lower().strip() in config.TRUE_VALUES
+        )
+
+    def test_default_send_get_roles_reminders_value(self) -> None:
+        """Test that a default value is used when no get-roles-reminders-flag is given."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"):
+            try:
+                RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS"] in (True, False)
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_SEND_GET_ROLES_REMINDERS_VALUE",
+        (
+            "INVALID_SEND_GET_ROLES_REMINDERS_VALUE",
+            "",
+            "  ",
+            "".join(
+                random.choices(string.ascii_letters + string.digits + string.punctuation, k=8)
+            )
+        )
+    )
+    def test_invalid_send_get_roles_reminders(self, INVALID_SEND_GET_ROLES_REMINDERS_VALUE: str) -> None:  # noqa: N803,E501
+        """Test that an error occurs when an invalid get-roles-reminders-flag is given."""
+        INVALID_SEND_GET_ROLES_REMINDERS_VALUE_MESSAGE: Final[str] = (
+            "SEND_GET_ROLES_REMINDERS must be a boolean value"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"):
+            os.environ["SEND_GET_ROLES_REMINDERS"] = (
+                INVALID_SEND_GET_ROLES_REMINDERS_VALUE
+            )
+
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_SEND_GET_ROLES_REMINDERS_VALUE_MESSAGE):  # noqa: E501
+                RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_SEND_GET_ROLES_REMINDERS_INTERVAL",
+        (
+            f"{random.randint(3, 999)}s",
+            f"{random.randint(3, 999)}.{random.randint(0, 999)}s",
+            (
+                f"  {
+                    random.randint(3, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }s   "
+            ),
+            f"{random.randint(1, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}m",
+            f"{random.randint(1, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}h",
+            (
+                f"{
+                    random.randint(3, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }s{
+                    random.randint(0, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }m{
+                    random.randint(0, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }h"
+            ),
+            (
+                f"{
+                    random.randint(3, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                } s  {
+                    random.randint(0, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }   m   {
+                    random.randint(0, 999)
+                }{
+                    random.choice(("", f".{random.randint(0, 999)}"))
+                }  h"
+            )
+        )
+    )
+    def test_setup_send_get_roles_reminders_interval_successful(self, TEST_SEND_GET_ROLES_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
+        """
+        Test that the given `SEND_GET_ROLES_REMINDERS_INTERVAL` is used when provided.
+
+        In this test, the provided `SEND_GET_ROLES_REMINDERS_INTERVAL` is valid
+        and so must be saved successfully.
+        """
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
+
+        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_INTERVAL"):
+            os.environ["SEND_GET_ROLES_REMINDERS_INTERVAL"] = (
+                TEST_SEND_GET_ROLES_REMINDERS_INTERVAL
+            )
+
+            RuntimeSettings._setup_send_get_roles_reminders_interval()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"] == {
+            key: float(value)
+            for key, value
+            in (
+                re.match(
+                    r"\A(?:(?P<seconds>(?:\d*\.)?\d+)\s*s)?\s*(?:(?P<minutes>(?:\d*\.)?\d+)\s*m)?\s*(?:(?P<hours>(?:\d*\.)?\d+)\s*h)?\Z",
+                    TEST_SEND_GET_ROLES_REMINDERS_INTERVAL.lower().strip()
+                ).groupdict().items()  # type: ignore[union-attr]
+            )
+            if value
+        }
+
+        assert (
+            "seconds" in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"]
+            or "minutes" in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"]
+            or "hours" in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"]
+        )
+
+        assert all(
+            isinstance(value, float)
+            for value
+            in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"].values()
+        )
+
+        timedelta_error: TypeError
+        try:
+            assert (
+                timedelta(**RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"])
+                > timedelta(seconds=3)
+            )
+
+        except TypeError as timedelta_error:
+            if "invalid keyword argument for __new__()" not in str(timedelta_error):
+                raise timedelta_error from timedelta_error
+
+            pytest.fail(
+                (
+                    "Failed to construct `timedelta` object "
+                    "from given `SEND_GET_ROLES_REMINDERS_INTERVAL`"
+                ),
+                pytrace=False
+            )
+
+    def test_default_send_get_roles_reminders_interval(self) -> None:
+        """Test that a default value is used when no `SEND_GET_ROLES_REMINDERS_INTERVAL`."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
+
+        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_INTERVAL"):
+            try:
+                RuntimeSettings._setup_send_get_roles_reminders_interval()  # noqa: SLF001
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert (
+            "seconds" in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"]
+            or "minutes" in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"]
+            or "hours" in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"]
+        )
+
+        assert all(
+            isinstance(value, float)
+            for value
+            in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"].values()
+        )
+
+        timedelta_error: TypeError
+        try:
+            assert (
+                timedelta(**RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"])
+                > timedelta(seconds=3)
+            )
+
+        except TypeError as timedelta_error:
+            if "invalid keyword argument for __new__()" not in str(timedelta_error):
+                raise timedelta_error from timedelta_error
+
+            pytest.fail(
+                (
+                    "Failed to construct `timedelta` object "
+                    "from given `SEND_GET_ROLES_REMINDERS_INTERVAL`"
+                ),
+                pytrace=False
+            )
+
+    def test_setup_send_get_roles_reminders_interval_without_send_get_roles_reminders_setup(self) -> None:  # noqa: E501
+        """Test that an error is raised when setting up the interval without the flag."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        RuntimeSettings._settings.pop("SEND_GET_ROLES_REMINDERS", None)  # noqa: SLF001
+
+        with pytest.raises(RuntimeError, match="Invalid setup order"):
+            RuntimeSettings._setup_send_get_roles_reminders_interval()  # noqa: SLF001
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL",
+        (
+            "INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL",
+            "",
+            "  ",
+            f"{random.randint(1, 999)}d",
+            f"{random.randint(3, 999)},{random.randint(0, 999)}s",
+        )
+    )
+    def test_invalid_send_get_roles_reminders_interval_flag_disabled(self, INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
+        """
+        Test that no error is raised when `SEND_GET_ROLES_REMINDERS_INTERVAL` is invalid.
+
+        The enable/disable flag `SEND_GET_ROLES_REMINDERS` is disabled (set to `False`)
+        during this test, so an invalid interval value should be ignored.
+        """
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_INTERVAL"):
+            os.environ["SEND_GET_ROLES_REMINDERS_INTERVAL"] = (
+                INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL
+            )
+
+            with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"):
+                os.environ["SEND_GET_ROLES_REMINDERS"] = "false"
+                RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
+
+                try:
+                    RuntimeSettings._setup_send_get_roles_reminders_interval()  # noqa: SLF001
+                except ImproperlyConfiguredError:
+                    pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL",
+        (
+            "INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL",
+            "",
+            "  ",
+            f"{random.randint(1, 999)}d",
+            f"{random.randint(3, 999)},{random.randint(0, 999)}s",
+        )
+    )
+    def test_invalid_send_get_roles_reminders_interval_flag_enabled(self, INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
+        """
+        Test that an error is raised when `SEND_GET_ROLES_REMINDERS_INTERVAL` is invalid.
+
+        The enable/disable flag `SEND_GET_ROLES_REMINDERS` is enabled (set to `True`)
+        during this test, so an invalid interval value should not be ignored,
+        and an error should be raised.
+        """
+        INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
+            "SEND_GET_ROLES_REMINDERS_INTERVAL must contain the interval "
+            "in any combination of seconds, minutes or hours"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_INTERVAL"):
+            os.environ["SEND_GET_ROLES_REMINDERS_INTERVAL"] = (
+                INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL
+            )
+
+            with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"):
+                os.environ["SEND_GET_ROLES_REMINDERS"] = "true"
+                RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
+
+                with pytest.raises(ImproperlyConfiguredError, match=INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE):  # noqa: E501
+                    RuntimeSettings._setup_send_get_roles_reminders_interval()  # noqa: SLF001
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL",
+        ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h")
+    )
+    def test_too_small_send_get_roles_reminders_interval_flag_disabled(self, TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
+        """
+        Test that no error is raised when `SEND_GET_ROLES_REMINDERS_INTERVAL` is too small.
+
+        The enable/disable flag `SEND_GET_ROLES_REMINDERS` is disabled (set to `False`)
+        during this test, so an invalid interval value should be ignored.
+        """
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_INTERVAL"):
+            os.environ["SEND_GET_ROLES_REMINDERS_INTERVAL"] = (
+                TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL
+            )
+
+            with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"):
+                os.environ["SEND_GET_ROLES_REMINDERS"] = "false"
+                RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
+
+                try:
+                    RuntimeSettings._setup_send_get_roles_reminders_interval()  # noqa: SLF001
+                except ImproperlyConfiguredError:
+                    pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL",
+        ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h")
+    )
+    def test_too_small_send_introduction_reminders_interval_flag_enabled(self, TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
+        """
+        Test that an error is raised when `SEND_GET_ROLES_REMINDERS_INTERVAL` is too small.
+
+        The enable/disable flag `SEND_GET_ROLES_REMINDERS` is enabled (set to `True`)
+        during this test, so an invalid interval value should not be ignored,
+        and an error should be raised.
+        """
+        TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
+            "SEND_GET_ROLES_REMINDERS_INTERVAL must be greater than 3 seconds"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_INTERVAL"):
+            os.environ["SEND_GET_ROLES_REMINDERS_INTERVAL"] = (
+                TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL
+            )
+
+            with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"):
+                os.environ["SEND_GET_ROLES_REMINDERS"] = "true"
+                RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
+
+                with pytest.raises(ImproperlyConfiguredError, match=TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE):  # noqa: E501
+                    RuntimeSettings._setup_send_get_roles_reminders_interval()  # noqa: SLF001
+
+
+class TestSetupStatisticsDays:
+    """Test case to unit-test the `_setup_statistics_days()` function."""
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize("TEST_STATISTICS_DAYS", ("5", "3.55", "664", "    5   "))
+    def test_setup_statistics_days_successful(self, TEST_STATISTICS_DAYS: str) -> None:  # noqa: N803
+        """Test that the given valid `STATISTICS_DAYS` is used when one is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("STATISTICS_DAYS"):
+            os.environ["STATISTICS_DAYS"] = TEST_STATISTICS_DAYS
+
+            RuntimeSettings._setup_statistics_days()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["STATISTICS_DAYS"] == timedelta(
+            days=float(TEST_STATISTICS_DAYS.strip())
+        )
+
+    def test_default_statistics_days(self) -> None:
+        """Test that a default value is used when no `STATISTICS_DAYS` is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("STATISTICS_DAYS"):
+            try:
+                RuntimeSettings._setup_statistics_days()  # noqa: SLF001
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert isinstance(RuntimeSettings()["STATISTICS_DAYS"], timedelta)
+
+        assert RuntimeSettings()["STATISTICS_DAYS"] > timedelta(days=1)
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "INVALID_STATISTICS_DAYS",
+        (
+            "INVALID_STATISTICS_DAYS",
+            "",
+            "  ",
+            "".join(
+                random.choices(string.ascii_letters + string.digits + string.punctuation, k=18)
+            )
+        )
+    )
+    def test_invalid_statistics_days(self, INVALID_STATISTICS_DAYS: str) -> None:  # noqa: N803
+        """Test that an error is raised when an invalid `STATISTICS_DAYS` is provided."""
+        INVALID_STATISTICS_DAYS_MESSAGE: Final[str] = (
+            "STATISTICS_DAYS must contain the statistics period in days"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("STATISTICS_DAYS"):
+            os.environ["STATISTICS_DAYS"] = INVALID_STATISTICS_DAYS
+
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_STATISTICS_DAYS_MESSAGE):  # noqa: E501
+                RuntimeSettings._setup_statistics_days()  # noqa: SLF001
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TOO_SMALL_STATISTICS_DAYS",
+        ("-15", "-2.3", "-0.02", "0", "0.40", "1")
+    )
+    def test_too_small_statistics_days(self, TOO_SMALL_STATISTICS_DAYS: str) -> None:  # noqa: N803
+        """Test that an error is raised when a too small `STATISTICS_DAYS` is provided."""
+        TOO_SMALL_STATISTICS_DAYS_MESSAGE: Final[str] = (
+            r"STATISTICS_DAYS cannot be less than \(or equal to\) 1 day"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("STATISTICS_DAYS"):
+            os.environ["STATISTICS_DAYS"] = TOO_SMALL_STATISTICS_DAYS
+
+            with pytest.raises(ImproperlyConfiguredError, match=TOO_SMALL_STATISTICS_DAYS_MESSAGE):  # noqa: E501
+                RuntimeSettings._setup_statistics_days()  # noqa: SLF001
+
+
+class TestSetupStatisticsRoles:
+    """Test case to unit-test the `_setup_statistics_roles()` function."""
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_STATISTICS_ROLES",
+        (
+            "Guest",
+            "Guest,Member",
+            "Guest,Member,Admin",
+            "    Guest,Member,Admin   ",
+            "    Guest ,   Member  ,Admin   "
+        )
+    )
+    def test_setup_statistics_roles_successful(self, TEST_STATISTICS_ROLES: str) -> None:  # noqa: N803
+        """Test that the given valid `STATISTICS_ROLES` is used when they are provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("STATISTICS_ROLES"):
+            os.environ["STATISTICS_ROLES"] = TEST_STATISTICS_ROLES
+
+            RuntimeSettings._setup_statistics_roles()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["STATISTICS_ROLES"] == {
+            test_statistics_role.strip()
+            for test_statistics_role
+            in TEST_STATISTICS_ROLES.strip().split(",")
+            if test_statistics_role.strip()
+        }
+
+    def test_default_statistics_roles(self) -> None:
+        """Test that default values are used when no `STATISTICS_ROLES` are provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("STATISTICS_ROLES"):
+            try:
+                RuntimeSettings._setup_statistics_roles()  # noqa: SLF001
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert isinstance(RuntimeSettings()["STATISTICS_ROLES"], Iterable)
+
+        assert bool(RuntimeSettings()["STATISTICS_ROLES"])
+
+        assert all(
+            isinstance(statistics_role, str) and bool(statistics_role)
+            for statistics_role
+            in RuntimeSettings()["STATISTICS_ROLES"]
+        )
 
 
 class TestSetupModerationDocumentURL:
@@ -2430,3 +2989,64 @@ class TestSetupModerationDocumentURL:
 
             with pytest.raises(ImproperlyConfiguredError, match=INVALID_MODERATION_DOCUMENT_URL_MESSAGE):  # noqa: E501
                 RuntimeSettings._setup_moderation_document_url()  # noqa: SLF001
+
+
+class TestSetupManualModerationWarningMessageLocation:
+    """Test case for the `_setup_manual_moderation_warning_message_location()` function."""
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize(
+        "TEST_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION",
+        ("DM", "dm", "general", "Memes", "   general  ", "JUST-CHATTING", "Talking4")
+    )
+    def test_setup_manual_moderation_warning_message_location_successful(self, TEST_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION: str) -> None:  # noqa: N803,E501
+        """Test that the given valid `MANUAL_MODERATION_WARNING_MESSAGE_LOCATION` is used."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"):
+            os.environ["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] = (
+                TEST_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION
+            )
+
+            RuntimeSettings._setup_manual_moderation_warning_message_location()  # noqa: SLF001
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] == (
+            TEST_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION.upper().strip()
+        )
+
+    def test_default_manual_moderation_warning_message_location(self) -> None:
+        """Test a default value used when no `MANUAL_MODERATION_WARNING_MESSAGE_LOCATION`."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"):
+            try:
+                RuntimeSettings._setup_manual_moderation_warning_message_location()  # noqa: SLF001
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert isinstance(RuntimeSettings()["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"], str)
+
+        assert bool(RuntimeSettings()["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"])
+
+    # noinspection PyPep8Naming
+    @pytest.mark.parametrize("INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION", ("", "  "))
+    def test_invalid_manual_moderation_warning_message_location(self, INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION: str) -> None:  # noqa: N803,E501
+        """Test error raised when `MANUAL_MODERATION_WARNING_MESSAGE_LOCATION` is invalid."""
+        INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE: Final[str] = (
+            "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION must be a valid name "
+            "of a channel in your group's Discord guild."
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"):
+            os.environ["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] = (
+                INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION
+            )
+
+            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE):  # noqa: E501
+                RuntimeSettings._setup_manual_moderation_warning_message_location()  # noqa: SLF001
