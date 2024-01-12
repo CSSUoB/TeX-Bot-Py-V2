@@ -20,6 +20,7 @@ __all__: Sequence[str] = (
 
 import abc
 import functools
+import importlib
 import json
 import logging
 import os
@@ -958,5 +959,6 @@ def run_setup() -> None:
     settings._setup_env_variables()  # noqa: SLF001
 
     logger.debug("Begin database setup")
+    importlib.import_module("db")
     management.call_command("migrate")
     logger.debug("Database setup completed")
