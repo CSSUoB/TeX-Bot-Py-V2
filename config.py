@@ -34,7 +34,6 @@ from typing import IO, Any, ClassVar, Final, final
 import dotenv
 import git
 import validators
-from django.core import management
 
 from exceptions import (
     ImproperlyConfiguredError,
@@ -726,7 +725,11 @@ def run_setup() -> None:
     # noinspection PyProtectedMember
     settings._setup_env_variables()  # noqa: SLF001
 
-    logging.debug("Begin database setup")
+    logger.debug("Begin database setup")
+
     importlib.import_module("db")
+    from django.core import management
+
     management.call_command("migrate")
-    logging.debug("Database setup completed")
+
+    logger.debug("Database setup completed")
