@@ -147,10 +147,11 @@ class Settings(abc.ABC):
         console_logging_handler: logging.Handler = logging.StreamHandler()
         # noinspection SpellCheckingInspection
         console_logging_handler.setFormatter(
-            logging.Formatter("{asctime} - {name} - {levelname}", style="{")
+            logging.Formatter("{asctime} | {name} | {levelname:^8} - {message}", style="{")
         )
 
         logger.addHandler(console_logging_handler)
+        logger.propagate = False
 
     @classmethod
     def _setup_discord_bot_token(cls) -> None:
