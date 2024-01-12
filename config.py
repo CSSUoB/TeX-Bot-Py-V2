@@ -32,7 +32,6 @@ from re import Match
 from typing import IO, Any, ClassVar, Final, final
 
 import dotenv
-import git
 import validators
 from django.core import management
 
@@ -41,6 +40,8 @@ from exceptions import (
     MessagesJSONFileMissingKeyError,
     MessagesJSONFileValueError,
 )
+
+PROJECT_ROOT: Final[Path] = Path(__file__).parent.resolve()
 
 TRUE_VALUES: Final[frozenset[str]] = frozenset({"true", "1", "t", "y", "yes", "on"})
 FALSE_VALUES: Final[frozenset[str]] = frozenset({"false", "0", "f", "n", "no", "off"})
@@ -301,17 +302,6 @@ class Settings(abc.ABC):
             raw_ping_command_easter_egg_probability
         )
 
-    @staticmethod
-    def _get_default_messages_json_file_path() -> Path:
-        PROJECT_ROOT: Final[str | git.PathLike | None] = (
-            git.Repo(".", search_parent_directories=True).working_tree_dir
-        )
-        if PROJECT_ROOT is None:
-            NO_ROOT_DIRECTORY_MESSAGE: Final[str] = "Could not locate project root directory."
-            raise FileNotFoundError(NO_ROOT_DIRECTORY_MESSAGE)
-
-        return PROJECT_ROOT / Path("messages.json")
-
     @classmethod
     @functools.lru_cache(maxsize=5)
     def _get_messages_dict(cls, raw_messages_file_path: str | None) -> Mapping[str, object]:
@@ -323,7 +313,7 @@ class Settings(abc.ABC):
         messages_file_path: Path = (
             Path(raw_messages_file_path)
             if raw_messages_file_path
-            else cls._get_default_messages_json_file_path()
+            else PROJECT_ROOT / Path("messages.json")
         )
 
         if not messages_file_path.is_file():
