@@ -22,6 +22,8 @@ from typing import Final
 
 import aiohttp
 import discord
+# noinspection SpellCheckingInspection
+from asyncstdlib.builtins import any as asyncany
 from discord import Webhook
 from discord.ui import View
 
@@ -664,7 +666,7 @@ class ManualModerationCog(BaseStrikeCog):
         MEMBER_REMOVED_BECAUSE_OF_MANUALLY_APPLIED_KICK: Final[bool] = bool(
             member.guild == self.bot.main_guild
             and not member.bot
-            and not any(
+            and not await asyncany(
                 ban.user == member async for ban in main_guild.bans()
             )
         )
