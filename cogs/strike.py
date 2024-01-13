@@ -22,6 +22,9 @@ from typing import Final
 
 import aiohttp
 import discord
+
+# noinspection SpellCheckingInspection
+from asyncstdlib.builtins import any as asyncany
 from discord import Webhook
 from discord.ui import View
 
@@ -29,6 +32,7 @@ from config import settings
 from db.core.models import DiscordMemberStrikes
 from exceptions import (
     GuildDoesNotExistError,
+    NoAuditLogsStrikeTrackingError,
     RulesChannelDoesNotExistError,
     StrikeTrackingError,
 )
@@ -446,12 +450,12 @@ class ManualModerationCog(BaseStrikeCog):
                 )
                 if _audit_log_entry.target == strike_user
             )
-        except StopIteration:
+        except (StopIteration, StopAsyncIteration):
             IRRETRIEVABLE_AUDIT_LOG_MESSAGE: Final[str] = (
                 f"Unable to retrieve audit log entry of {str(action)!r} action "
                 f"on user {str(strike_user)!r}"
             )
-            raise StrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
+            raise NoAuditLogsStrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
 
         if not audit_log_entry.user:
             raise StrikeTrackingError
@@ -657,14 +661,25 @@ class ManualModerationCog(BaseStrikeCog):
     @capture_guild_does_not_exist_error
     async def on_member_remove(self, member: discord.Member) -> None:
         """Flag manually applied kick & track strikes accordingly."""
-        if member.guild != self.bot.main_guild or member.bot:
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        main_guild: discord.Guild = self.bot.main_guild
+
+        MEMBER_REMOVED_BECAUSE_OF_MANUALLY_APPLIED_KICK: Final[bool] = bool(
+            member.guild == self.bot.main_guild
+            and not member.bot
+            and not await asyncany(
+                ban.user == member async for ban in main_guild.bans()
+            )
+        )
+        if not MEMBER_REMOVED_BECAUSE_OF_MANUALLY_APPLIED_KICK:
             return
 
-        # noinspection PyArgumentList
-        await self._confirm_manual_add_strike(
-            strike_user=member,
-            action=discord.AuditLogAction.kick
-        )
+        with contextlib.suppress(NoAuditLogsStrikeTrackingError):
+            # noinspection PyArgumentList
+            await self._confirm_manual_add_strike(
+                strike_user=member,
+                action=discord.AuditLogAction.kick
+            )
 
     @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
