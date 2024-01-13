@@ -137,13 +137,16 @@ class BaseInductCog(TeXBotBaseCog):
 
     async def get_random_welcome_message(self, induction_member: discord.User | discord.Member | None = None) -> str:  # noqa: E501
         """Get & format a random welcome message."""
-        random_welcome_message: str = random.choice(settings["WELCOME_MESSAGES"])
+        random_welcome_message: str = random.choice(tuple(settings["WELCOME_MESSAGES"]))
 
         if "<User>" in random_welcome_message:
             if not induction_member:
                 return await self.get_random_welcome_message(induction_member)
 
-            random_welcome_message.replace("<User>", induction_member.mention)
+            random_welcome_message = random_welcome_message.replace(
+                "<User>",
+                induction_member.mention
+            )
 
         if "<Committee>" in random_welcome_message:
             try:
@@ -160,13 +163,16 @@ class BaseInductCog(TeXBotBaseCog):
             if not settings["PURCHASE_MEMBERSHIP_URL"]:
                 return await self.get_random_welcome_message(induction_member)
 
-            random_welcome_message.replace(
+            random_welcome_message = random_welcome_message.replace(
                 "<Purchase_Membership_URL>",
                 settings["PURCHASE_MEMBERSHIP_URL"]
             )
 
         if "<Purchase_Membership_URL>" in random_welcome_message:
-            random_welcome_message.replace("<Group_Name>", self.bot.group_short_name)
+            random_welcome_message = random_welcome_message.replace(
+                "<Group_Name>",
+                self.bot.group_short_name
+            )
 
         return random_welcome_message.strip()
 
@@ -201,7 +207,7 @@ class BaseInductCog(TeXBotBaseCog):
                 roles_channel_mention = (await self.bot.roles_channel).mention
 
             await general_channel.send(
-                f"{self.get_random_welcome_message(induction_member)} :tada:\n"
+                f"{await self.get_random_welcome_message(induction_member)} :tada:\n"
                 f"Remember to grab your roles in {roles_channel_mention} "
                 "and say hello to everyone here! :wave:"
             )

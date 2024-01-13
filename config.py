@@ -33,16 +33,16 @@ from re import Match
 from typing import IO, Any, ClassVar, Final, final
 
 import dotenv
-import git
 import regex
 import validators
-from django.core import management
 
 from exceptions import (
     ImproperlyConfiguredError,
     MessagesJSONFileMissingKeyError,
     MessagesJSONFileValueError,
 )
+
+PROJECT_ROOT: Final[Path] = Path(__file__).parent.resolve()
 
 TRUE_VALUES: Final[frozenset[str]] = frozenset({"true", "1", "t", "y", "yes", "on"})
 FALSE_VALUES: Final[frozenset[str]] = frozenset({"false", "0", "f", "n", "no", "off"})
@@ -159,10 +159,11 @@ class Settings(abc.ABC):
         console_logging_handler: logging.Handler = logging.StreamHandler()
         # noinspection SpellCheckingInspection
         console_logging_handler.setFormatter(
-            logging.Formatter("{asctime} - {name} - {levelname}", style="{")
+            logging.Formatter("{asctime} | {name} | {levelname:^8} - {message}", style="{")
         )
 
         logger.addHandler(console_logging_handler)
+        logger.propagate = False
 
     @classmethod
     def _setup_discord_bot_token(cls) -> None:
@@ -400,17 +401,6 @@ class Settings(abc.ABC):
             ping_command_easter_egg_probability
         )
 
-    @staticmethod
-    def _get_default_messages_json_file_path() -> Path:
-        PROJECT_ROOT: Final[str | git.PathLike | None] = (
-            git.Repo(".", search_parent_directories=True).working_tree_dir
-        )
-        if PROJECT_ROOT is None:
-            NO_ROOT_DIRECTORY_MESSAGE: Final[str] = "Could not locate project root directory."
-            raise FileNotFoundError(NO_ROOT_DIRECTORY_MESSAGE)
-
-        return PROJECT_ROOT / Path("messages.json")
-
     @classmethod
     @functools.lru_cache(maxsize=5)
     def _get_messages_dict(cls, raw_messages_file_path: str | None) -> Mapping[str, object]:
@@ -425,11 +415,10 @@ class Settings(abc.ABC):
         if raw_messages_file_path is not None and not raw_messages_file_path.strip():
             raise ImproperlyConfiguredError(MESSAGES_FILE_PATH_DOES_NOT_EXIST_MESSAGE)
 
-        # noinspection PyTypeChecker,PyUnresolvedReferences
         messages_file_path: Path = (
-            cls._get_default_messages_json_file_path()
-            if raw_messages_file_path is None
-            else Path(raw_messages_file_path.strip())
+            Path(raw_messages_file_path.strip())
+            if raw_messages_file_path is not None
+            else PROJECT_ROOT / Path("messages.json")
         )
 
         if not messages_file_path.is_file():
@@ -959,6 +948,10 @@ def run_setup() -> None:
     settings._setup_env_variables()  # noqa: SLF001
 
     logger.debug("Begin database setup")
+
     importlib.import_module("db")
+    from django.core import management
+
     management.call_command("migrate")
+
     logger.debug("Database setup completed")
