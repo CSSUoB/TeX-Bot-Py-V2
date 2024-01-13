@@ -39,6 +39,7 @@ mplcyberpunk = "^0.7"
 regex = "^2023.12"
 python-logging-discord-handler = "^0.1"
 classproperties = {git = "https://github.com/hottwaj/classproperties.git"}
+asyncstdlib = "~3.12"
 setuptools = "^69.0"
 
 [tool.poetry.group.dev.dependencies]
