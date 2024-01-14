@@ -375,10 +375,10 @@ class StatsCommandsCog(TeXBotBaseCog):
                     x_label="Role Name",
                     y_label=(
                         f"""Number of Messages Sent (in the past {
-                        amount_of_time_formatter(
-                            settings["STATISTICS_DAYS"].days,
-                            "day"
-                        )
+                            amount_of_time_formatter(
+                                settings["STATISTICS_DAYS"].days,
+                                "day"
+                            )
                         })"""
                     ),
                     title=(
