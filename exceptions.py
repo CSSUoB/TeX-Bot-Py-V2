@@ -285,6 +285,15 @@ class MessagesJSONFileMissingKeyError(InvalidMessagesJSONFileError):
         """Initialize a new InvalidMessagesJSONFile exception for a missing key."""
         super().__init__(message, dict_key=missing_key)
 
+    @property
+    def missing_key(self) -> str | None:
+        """The key that was missing from the messages.json file."""
+        return self.dict_key
+
+    @missing_key.setter
+    def missing_key(self, value: str | None) -> None:
+        self.dict_key = value
+
 
 class MessagesJSONFileValueError(InvalidMessagesJSONFileError):
     """Exception class to raise when a key in the messages.json file has an invalid value."""
@@ -383,6 +392,7 @@ class RoleDoesNotExistError(BaseDoesNotExistError, abc.ABC):
     @abc.abstractmethod
     def ROLE_NAME(cls) -> str:  # noqa: N802,N805
         """The name of the Discord role that does not exist."""  # noqa: D401
+
     def __init__(self, message: str | None = None) -> None:
         """Initialize a new DoesNotExist exception for a role not existing."""
         HAS_DEPENDANTS: Final[bool] = bool(
