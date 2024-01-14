@@ -1171,10 +1171,6 @@ class TestSetupPingCommandEasterEggProbability:
 class TestSetupMessagesFile:
     """Test case to unit-test all functions that use/relate to the messages JSON file."""
 
-    def test_get_default_messages_json_file_path(self) -> None:
-        """Test that a default value is returned for the path of the messages JSON file."""
-        assert Settings._get_default_messages_json_file_path().suffix.lower() == ".json"  # noqa: SLF001
-
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "RAW_INVALID_MESSAGES_FILE_PATH",
@@ -1195,7 +1191,7 @@ class TestSetupMessagesFile:
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"welcome_messages": ["Welcome!"]},))
     def test_get_messages_dict_with_no_messages_file_path(self, TEST_MESSAGES_DICT: Mapping[str, object]) -> None:  # noqa: N803,E501
         """Test that the default value is used when no `messages_file_path` is provided."""
-        DEFAULT_MESSAGES_FILE_PATH: Path = Settings._get_default_messages_json_file_path()  # noqa: SLF001
+        DEFAULT_MESSAGES_FILE_PATH: Path = config.PROJECT_ROOT / "messages.json"
 
         with FileTemporaryDeleter(DEFAULT_MESSAGES_FILE_PATH):
             default_messages_file: TextIO
@@ -1290,7 +1286,7 @@ class TestSetupMessagesFile:
         """Test that correct welcome messages are loaded when no `MESSAGES_FILE_PATH` given."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
-        DEFAULT_MESSAGES_FILE_PATH: Path = Settings._get_default_messages_json_file_path()  # noqa: SLF001
+        DEFAULT_MESSAGES_FILE_PATH: Path = config.PROJECT_ROOT / "messages.json"
 
         with FileTemporaryDeleter(DEFAULT_MESSAGES_FILE_PATH):
             default_messages_file: TextIO
@@ -1393,7 +1389,7 @@ class TestSetupMessagesFile:
         """Test that correct roles messages are loaded when no `MESSAGES_FILE_PATH` given."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
-        DEFAULT_MESSAGES_FILE_PATH: Path = Settings._get_default_messages_json_file_path()  # noqa: SLF001
+        DEFAULT_MESSAGES_FILE_PATH: Path = config.PROJECT_ROOT / "messages.json"
 
         with FileTemporaryDeleter(DEFAULT_MESSAGES_FILE_PATH):
             default_messages_file: TextIO

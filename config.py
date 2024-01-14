@@ -30,7 +30,7 @@ from datetime import timedelta
 from logging import Logger
 from pathlib import Path
 from re import Match
-from typing import IO, Any, ClassVar, Final, final
+from typing import IO, Any, ClassVar, Final
 
 import dotenv
 import regex
@@ -148,9 +148,11 @@ class Settings(abc.ABC):
 
         if console_log_level not in LOG_LEVEL_CHOICES:
             INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"""LOG_LEVEL must be one of {
-                ",".join(f"{log_level_choice!r}"
-                    for log_level_choice
-                    in LOG_LEVEL_CHOICES[:-1])
+                    ",".join(
+                        f"{log_level_choice!r}"
+                        for log_level_choice
+                        in LOG_LEVEL_CHOICES[:-1]
+                    )
                 } or {LOG_LEVEL_CHOICES[-1]!r}."""
             raise ImproperlyConfiguredError(INVALID_LOG_LEVEL_MESSAGE)
 
@@ -925,18 +927,12 @@ class Settings(abc.ABC):
 
 
 def _settings_class_factory() -> type[Settings]:
-    @final
-    class RuntimeSettings(Settings):
-        """
-        Settings class that provides access to all settings values.
-
-        Settings values can be accessed via key (like a dictionary) or via class attribute.
-        """
-
-        _is_env_variables_setup: ClassVar[bool] = False
-        _settings: ClassVar[dict[str, object]] = {}
-
-    return RuntimeSettings
+    # noinspection PyTypeChecker
+    return type(
+        "Settings",
+        (Settings,),
+        {"_is_env_variables_setup": False, "_settings": {}}
+    )
 
 
 settings: Final[Settings] = _settings_class_factory()()
