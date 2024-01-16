@@ -1,11 +1,9 @@
 """Automated test suite for the `stats.py` cog."""
-import importlib
 from typing import TYPE_CHECKING, Final
 
 import pytest
 
-from cogs.stats import amount_of_time_formatter, plot_bar_chart, StatsCommandsCog
-from tests._testing_utils import TemporarySettingsKeyReplacer
+from cogs.stats import StatsCommandsCog, amount_of_time_formatter, plot_bar_chart
 
 if TYPE_CHECKING:
     import discord
@@ -75,7 +73,7 @@ class TestStatsCommandGroup:
     """Test case to unit-test the stats command group within the `StatsCommandsCog`."""
 
     def test_command_group_description(self) -> None:
-        """Test that the stats command group has a valid description"""
+        """Test that the stats command group has a valid description."""
         assert "stat" in StatsCommandsCog.stats.description.lower()
         assert "Discord server" in StatsCommandsCog.stats.description
         assert (

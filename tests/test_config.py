@@ -931,8 +931,8 @@ class TestSetupGroupShortName:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
         with EnvVariableDeleter("GROUP_SHORT_NAME"), EnvVariableDeleter("GROUP_NAME"):
-            RuntimeSettings._setup_group_full_name()
-            assert RuntimeSettings._settings["_GROUP_FULL_NAME"] is None
+            RuntimeSettings._setup_group_full_name()  # noqa: SLF001
+            assert RuntimeSettings._settings["_GROUP_FULL_NAME"] is None  # noqa: SLF001
 
             try:
                 RuntimeSettings._setup_group_short_name()  # noqa: SLF001
@@ -962,7 +962,7 @@ class TestSetupGroupShortName:
             "(Computer Science Society)"
         )
     )
-    def test_resolved_value_group_short_name_with_group_full_name(self, TEST_GROUP_FULL_NAME: str) -> None:
+    def test_resolved_value_group_short_name_with_group_full_name(self, TEST_GROUP_FULL_NAME: str) -> None:  # noqa: N803,E501
         """
         Test that a resolved value is used when no `GROUP_SHORT_NAME` is provided.
 
@@ -973,7 +973,7 @@ class TestSetupGroupShortName:
 
         with EnvVariableDeleter("GROUP_SHORT_NAME"), EnvVariableDeleter("GROUP_NAME"):
             os.environ["GROUP_NAME"] = TEST_GROUP_FULL_NAME
-            RuntimeSettings._setup_group_full_name()
+            RuntimeSettings._setup_group_full_name()  # noqa: SLF001
 
             try:
                 RuntimeSettings._setup_group_short_name()  # noqa: SLF001
