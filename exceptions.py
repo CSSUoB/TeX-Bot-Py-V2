@@ -326,7 +326,7 @@ class StrikeTrackingError(BaseTeXBotError, RuntimeError):
         return "An error occurred while trying to track manually applied moderation actions."
 
 
-class NoAuditLogsStrikeTrackingError(StrikeTrackingError):
+class NoAuditLogsStrikeTrackingError(BaseTeXBotError, RuntimeError):
     """
     Exception class to raise when there are no audit logs to resolve the committee member.
 
