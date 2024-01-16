@@ -135,7 +135,7 @@ def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str,
 class StatsCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/stats" command group and its command call-back methods."""
 
-    _DISCORD_SERVER_NAME: Final[str] = f"""{
+    _DISCORD_GUILD_NAME: Final[str] = f"""{
         "the " if (
             settings["_GROUP_SHORT_NAME"] is not None
             and (
@@ -160,7 +160,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
     stats: discord.SlashCommandGroup = discord.SlashCommandGroup(
         "stats",
-        f"Various statistics about {_DISCORD_SERVER_NAME}"
+        f"Various statistics about {_DISCORD_GUILD_NAME}"
     )
 
     # noinspection SpellCheckingInspection
@@ -288,7 +288,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
     @stats.command(
         name="server",
-        description=f"Displays the stats for the whole of {_DISCORD_SERVER_NAME}"
+        description=f"Displays the stats for the whole of {_DISCORD_GUILD_NAME}"
     )
     async def server_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
@@ -508,7 +508,7 @@ class StatsCommandsCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
     @stats.command(
         name="leftmembers",
-        description=f"Displays the stats about members that have left {_DISCORD_SERVER_NAME}"
+        description=f"Displays the stats about members that have left {_DISCORD_GUILD_NAME}"
     )
     async def left_member_stats(self, ctx: TeXBotApplicationContext) -> None:
         """

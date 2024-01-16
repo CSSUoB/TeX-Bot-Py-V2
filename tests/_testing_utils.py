@@ -6,6 +6,8 @@ from typing import Final
 
 import git
 
+from config import settings
+
 
 class EnvVariableDeleter:
     """
@@ -47,6 +49,43 @@ class EnvVariableDeleter:
 
         if self.old_env_value is not None:
             os.environ[self.env_variable_name] = self.old_env_value
+
+
+class TemporarySettingsKeyReplacer:
+    """Context manager that temporarily replaces the value at the given settings key."""
+
+    NOT_SET: Final[object] = object()
+
+    @classmethod
+    def _get_old_settings_value(cls, settings_key_name: str) -> object:
+        try:
+            return settings[settings_key_name]
+        except KeyError:
+            return cls.NOT_SET
+
+    def __init__(self, settings_key_name: str, new_settings_value: object) -> None:
+        """Store the current state of the settings value if it exists."""
+        self.settings_key_name: str = settings_key_name
+        self.new_settings_value: object = new_settings_value
+
+        self.old_settings_value: object = self._get_old_settings_value(
+            self.settings_key_name
+        )
+
+    def __enter__(self) -> None:
+        """Replace the settings value with the new value provided."""
+        # noinspection PyProtectedMember
+        settings._settings[self.settings_key_name] = self.new_settings_value  # noqa: SLF001
+
+    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None) -> None:  # noqa: E501
+        """Restore the replaced settings value with the original value, if it existed."""
+        if self.old_settings_value is self.NOT_SET:
+            # noinspection PyProtectedMember
+            settings._settings.pop(self.settings_key_name)  # noqa: SLF001
+
+        else:
+            # noinspection PyProtectedMember
+            settings._settings[self.settings_key_name] = self.old_settings_value  # noqa: SLF001
 
 
 class FileTemporaryDeleter:

@@ -77,7 +77,7 @@ class TestSettings:
     @pytest.mark.parametrize("TEST_ITEM_NAME", ("item_1",))
     def test_get_invalid_settings_key_message(self, TEST_ITEM_NAME: str) -> None:  # noqa: N803
         """Test that the `get_invalid_settings_key_message()` method returns correctly."""
-        INVALID_SETTINGS_KEY_MESSAGE: Final[str] = settings.get_invalid_settings_key_message(
+        INVALID_SETTINGS_KEY_MESSAGE: Final[str] = settings.get_invalid_settings_key_message_for_item_name(  # noqa: E501
             TEST_ITEM_NAME
         )
 
@@ -109,7 +109,7 @@ class TestSettings:
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
         INVALID_SETTINGS_KEY_MESSAGE: Final[str] = (
-            RuntimeSettings.get_invalid_settings_key_message(MISSING_ITEM_NAME)
+            RuntimeSettings.get_invalid_settings_key_message_for_item_name(MISSING_ITEM_NAME)
         )
 
         with pytest.raises(AttributeError, match=INVALID_SETTINGS_KEY_MESSAGE):
@@ -174,7 +174,7 @@ class TestSettings:
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
         INVALID_SETTINGS_KEY_MESSAGE: Final[str] = (
-            RuntimeSettings.get_invalid_settings_key_message(MISSING_ITEM_NAME)
+            RuntimeSettings.get_invalid_settings_key_message_for_item_name(MISSING_ITEM_NAME)
         )
 
         with pytest.raises(KeyError, match=INVALID_SETTINGS_KEY_MESSAGE):
@@ -926,11 +926,14 @@ class TestSetupGroupShortName:
             )
         )
 
-    def test_missing_group_short_name(self) -> None:
+    def test_missing_group_short_name_without_group_full_name(self) -> None:
         """Test that no error occurs when no `GROUP_SHORT_NAME` is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
-        with EnvVariableDeleter("GROUP_SHORT_NAME"):
+        with EnvVariableDeleter("GROUP_SHORT_NAME"), EnvVariableDeleter("GROUP_NAME"):
+            RuntimeSettings._setup_group_full_name()
+            assert RuntimeSettings._settings["_GROUP_FULL_NAME"] is None
+
             try:
                 RuntimeSettings._setup_group_short_name()  # noqa: SLF001
             except ImproperlyConfiguredError:
@@ -939,6 +942,78 @@ class TestSetupGroupShortName:
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
         assert not RuntimeSettings()["_GROUP_SHORT_NAME"]
+
+    # noinspection PyPep8Naming,SpellCheckingInspection
+    @pytest.mark.parametrize(
+        "TEST_GROUP_FULL_NAME",
+        (
+            "Computer Science Society",
+            "Arts & Crafts Soc",
+            "3Bugs Fringe Theatre Society",
+            "Bahá’í",  # noqa: RUF001
+            "Burn FM.com",
+            "Dental Society (BUDSS)",
+            "Devil\'s Advocate Society",
+            "KASE: Knowledge And Skills Exchange",
+            "Law for Non-Law",
+            "   Computer Science Society    ",
+            "Computer Science Society?",
+            "Computer Science Society!",
+            "(Computer Science Society)"
+        )
+    )
+    def test_resolved_value_group_short_name_with_group_full_name(self, TEST_GROUP_FULL_NAME: str) -> None:
+        """
+        Test that a resolved value is used when no `GROUP_SHORT_NAME` is provided.
+
+        This test runs with the given value for `GROUP_FULL_NAME`,
+        so a resolved value from that should be used for the `GROUP_SHORT_NAME`.
+        """
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+
+        with EnvVariableDeleter("GROUP_SHORT_NAME"), EnvVariableDeleter("GROUP_NAME"):
+            os.environ["GROUP_NAME"] = TEST_GROUP_FULL_NAME
+            RuntimeSettings._setup_group_full_name()
+
+            try:
+                RuntimeSettings._setup_group_short_name()  # noqa: SLF001
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+
+        assert RuntimeSettings()["_GROUP_SHORT_NAME"] == (
+            "CSS"
+            if (
+                "computer science society" in TEST_GROUP_FULL_NAME.lower()
+                or "css" in TEST_GROUP_FULL_NAME.lower()
+            )
+            else TEST_GROUP_FULL_NAME
+        ).replace(
+            "the",
+            ""
+        ).replace(
+            "THE",
+            ""
+        ).replace(
+            "The",
+            ""
+        ).replace(
+            " ",
+            ""
+        ).replace(
+            "\t",
+            ""
+        ).replace(
+            "\n",
+            ""
+        ).translate(
+            {
+                ord(unicode_char): ascii_char
+                for unicode_char, ascii_char
+                in zip("‘’´“”–-", "''`\"\"--", strict=True)  # noqa: RUF001
+            }
+        ).strip()
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(

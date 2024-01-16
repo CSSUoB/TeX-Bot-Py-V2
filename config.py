@@ -93,9 +93,9 @@ class Settings(abc.ABC):
     _settings: ClassVar[dict[str, object]]
 
     @classmethod
-    def get_invalid_settings_key_message(cls, item: str) -> str:
+    def get_invalid_settings_key_message_for_item_name(cls, item_name: str) -> str:
         """Return the message to state that the given settings key is invalid."""
-        return f"{item!r} is not a valid settings key."
+        return f"{item_name!r} is not a valid settings key."
 
     def __getattr__(self, item: str) -> Any:  # type: ignore[misc]
         """Retrieve settings value by attribute lookup."""
@@ -113,7 +113,7 @@ class Settings(abc.ABC):
             return self._settings[item]
 
         if re.match(r"\A(?!_)(?:(?!_{2,})[A-Z_])+(?<!_)\Z", item):
-            INVALID_SETTINGS_KEY_MESSAGE: Final[str] = self.get_invalid_settings_key_message(
+            INVALID_SETTINGS_KEY_MESSAGE: Final[str] = self.get_invalid_settings_key_message_for_item_name(  # noqa: E501
                 item
             )
             raise AttributeError(INVALID_SETTINGS_KEY_MESSAGE)
@@ -128,7 +128,7 @@ class Settings(abc.ABC):
         except AttributeError as e:
             key_error_message: str = item
 
-            if self.get_invalid_settings_key_message(item) in str(e):
+            if self.get_invalid_settings_key_message_for_item_name(item) in str(e):
                 key_error_message = str(e)
 
             raise KeyError(key_error_message) from None
@@ -165,7 +165,6 @@ class Settings(abc.ABC):
         )
 
         logger.addHandler(console_logging_handler)
-        logger.propagate = False
 
     @classmethod
     def _setup_discord_bot_token(cls) -> None:
@@ -275,6 +274,43 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_group_short_name(cls) -> None:
         raw_group_short_name: str | None = os.getenv("GROUP_SHORT_NAME")
+
+        GROUP_SHORT_NAME_CAN_BE_RESOLVED_FROM_GROUP_FULL_NAME: Final[bool] = bool(
+            raw_group_short_name is None
+            and "_GROUP_FULL_NAME" in cls._settings
+            and cls._settings["_GROUP_FULL_NAME"] is not None
+        )
+        if GROUP_SHORT_NAME_CAN_BE_RESOLVED_FROM_GROUP_FULL_NAME:
+            raw_group_short_name = (
+                "CSS"
+                if (
+                    "_GROUP_FULL_NAME" in cls._settings
+                    and cls._settings["_GROUP_FULL_NAME"] is not None
+                    and (
+                        "computer science society" in cls._settings["_GROUP_FULL_NAME"].lower()  # type: ignore[attr-defined]
+                        or "css" in cls._settings["_GROUP_FULL_NAME"].lower()  # type: ignore[attr-defined]
+                    )
+                )
+                else cls._settings["_GROUP_FULL_NAME"]
+            ).replace(
+                "the",
+                ""
+            ).replace(
+                "THE",
+                ""
+            ).replace(
+                "The",
+                ""
+            ).replace(
+                " ",
+                ""
+            ).replace(
+                "\t",
+                ""
+            ).replace(
+                "\n",
+                ""
+            ).strip()
 
         if raw_group_short_name is not None:
             raw_group_short_name = raw_group_short_name.translate(
