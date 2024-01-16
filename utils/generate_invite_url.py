@@ -118,6 +118,7 @@ class InviteURLGenerator(UtilityFunction):
                 add_reactions=True,
                 use_slash_commands=True,
                 kick_members=True,
+                ban_members=True,
                 manage_channels=True,
                 view_audit_log=True
             ),

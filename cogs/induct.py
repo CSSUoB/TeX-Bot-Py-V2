@@ -168,7 +168,7 @@ class BaseInductCog(TeXBotBaseCog):
                 settings["PURCHASE_MEMBERSHIP_URL"]
             )
 
-        if "<Purchase_Membership_URL>" in random_welcome_message:
+        if "<Group_Name>" in random_welcome_message:
             random_welcome_message = random_welcome_message.replace(
                 "<Group_Name>",
                 self.bot.group_short_name
