@@ -92,7 +92,7 @@ jobs:
 
     steps:
       - name: Prevent migrations files changing
-        uses: CSSUoB/action-prevent-file-change@v1.6.0
+        uses: CSSUoB/action-prevent-file-change@v1
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           pattern: 'db\/.+\/migrations\/\d{4}\w*\.py$'
