@@ -24,6 +24,11 @@ from exceptions import (
     MessagesJSONFileValueError,
 )
 from tests._testing_utils import EnvVariableDeleter, FileTemporaryDeleter
+from utils import (
+    RandomDiscordBotTokenGenerator,
+    RandomDiscordGuildIDGenerator,
+    RandomDiscordLogChannelWebhookURLGenerator,
+)
 
 if TYPE_CHECKING:
     # noinspection PyProtectedMember
@@ -355,37 +360,12 @@ class TestSetupLogging:
 class TestSetupDiscordBotToken:
     """Test case to unit-test the `_setup_discord_bot_token()` function."""
 
-    @staticmethod
-    def get_multiple_random_test_discord_bot_token(*, count: int = 5) -> Iterable[str]:
-        """Return `count` number of random test `DISCORD_BOT_TOKEN` values."""
-        return (
-            f"{
-                "".join(
-                    random.choices(
-                        string.ascii_letters + string.digits,
-                        k=random.randint(24, 26)
-                    )
-                )
-            }.{
-                "".join(random.choices(string.ascii_letters + string.digits, k=6))
-            }.{
-                "".join(
-                    random.choices(
-                        string.ascii_letters + string.digits + "_-",
-                        k=random.randint(27, 38)
-                    )
-                )
-            }"
-            for _
-            in range(count)
-        )
-
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_DISCORD_BOT_TOKEN",
         itertools.chain(
-            get_multiple_random_test_discord_bot_token(),
-            (f"    {next(iter(get_multiple_random_test_discord_bot_token(count=1)))}   ",)
+            RandomDiscordBotTokenGenerator.multiple_values(),
+            (f"    {RandomDiscordBotTokenGenerator.single_value()}   ",)
         )
     )
     def test_setup_discord_bot_token_successful(self, TEST_DISCORD_BOT_TOKEN: str) -> None:  # noqa: N803
@@ -422,13 +402,13 @@ class TestSetupDiscordBotToken:
             re.sub(
                 r"\A[A-Za-z0-9]{24,26}\.",
                 f"{"".join(random.choices(string.ascii_letters + string.digits, k=2))}.",
-                string=next(iter(get_multiple_random_test_discord_bot_token(count=1))),
+                string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1
             ),
             re.sub(
                 r"\A[A-Za-z0-9]{24,26}\.",
                 f"{"".join(random.choices(string.ascii_letters + string.digits, k=50))}.",
-                string=next(iter(get_multiple_random_test_discord_bot_token(count=1))),
+                string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1
             ),
             re.sub(
@@ -440,13 +420,13 @@ class TestSetupDiscordBotToken:
                         "".join(random.choices(string.ascii_letters + string.digits, k=12))
                     }."
                 ),
-                string=next(iter(get_multiple_random_test_discord_bot_token(count=1))),
+                string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1
             ),
             re.sub(
                 r"\.[A-Za-z0-9]{6}\.",
                 f".{"".join(random.choices(string.ascii_letters + string.digits, k=2))}.",
-                string=next(iter(get_multiple_random_test_discord_bot_token(count=1))),
+                string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1
             ),
             re.sub(
@@ -454,7 +434,7 @@ class TestSetupDiscordBotToken:
                 (
                     f".{"".join(random.choices(string.ascii_letters + string.digits, k=50))}."
                 ),
-                string=next(iter(get_multiple_random_test_discord_bot_token(count=1))),
+                string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1
             ),
             re.sub(
@@ -466,7 +446,7 @@ class TestSetupDiscordBotToken:
                         "".join(random.choices(string.ascii_letters + string.digits, k=2))
                     }."
                 ),
-                string=next(iter(get_multiple_random_test_discord_bot_token(count=1))),
+                string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1
             ),
             re.sub(
@@ -478,7 +458,7 @@ class TestSetupDiscordBotToken:
                         )
                     }"
                 ),
-                string=next(iter(get_multiple_random_test_discord_bot_token(count=1))),
+                string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1
             ),
             re.sub(
@@ -490,7 +470,7 @@ class TestSetupDiscordBotToken:
                         )
                     }"
                 ),
-                string=next(iter(get_multiple_random_test_discord_bot_token(count=1))),
+                string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1
             ),
             re.sub(
@@ -506,7 +486,7 @@ class TestSetupDiscordBotToken:
                         )
                     }"
                 ),
-                string=next(iter(get_multiple_random_test_discord_bot_token(count=1))),
+                string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1
             )
         )
@@ -529,54 +509,18 @@ class TestSetupDiscordBotToken:
 class TestSetupDiscordLogChannelWebhookURL:
     """Test case to unit-test the `_setup_discord_log_channel_webhook_url()` function."""
 
-    @staticmethod
-    def get_multiple_random_test_discord_log_channel_webhook_url(count: int = 5, *, with_trailing_slash: bool | None = None) -> Iterable[str]:  # noqa: E501
-        """Return `count` number of random test `DISCORD_LOG_CHANNEL_WEBHOOK_URL` values."""
-        return (
-            f"https://discord.com/api/webhooks/{
-                "".join(random.choices(string.digits, k=random.randint(17, 20)))
-            }/{
-                "".join(
-                    random.choices(
-                        string.ascii_letters + string.digits,
-                        k=random.randint(60, 90)
-                    )
-                )
-            }{
-                (
-                    "/"
-                    if with_trailing_slash
-                    else (random.choice(("", "/")) if with_trailing_slash is None else "")
-                )
-            }"
-            for _
-            in range(count)
-        )
-
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL",
         itertools.chain(
-            get_multiple_random_test_discord_log_channel_webhook_url(
+            RandomDiscordLogChannelWebhookURLGenerator.multiple_values(
                 with_trailing_slash=False
             ),
-            get_multiple_random_test_discord_log_channel_webhook_url(
+            RandomDiscordLogChannelWebhookURLGenerator.multiple_values(
                 count=1,
                 with_trailing_slash=True
             ),
-            (
-                (
-                    f"    {
-                        next(
-                            iter(
-                                get_multiple_random_test_discord_log_channel_webhook_url(
-                                    count=1
-                                )
-                            )
-                        )
-                    }   "
-                ),
-            )
+            (f"    {RandomDiscordLogChannelWebhookURLGenerator.single_value()}   ",)
         )
     )
     def test_setup_discord_log_channel_webhook_url_successful(self, TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str) -> None:  # noqa: N803,E501
@@ -628,21 +572,13 @@ class TestSetupDiscordLogChannelWebhookURL:
             re.sub(
                 r"/\d{17,20}/",
                 f"/{"".join(random.choices(string.digits, k=2))}/",
-                string=(
-                    next(
-                        iter(get_multiple_random_test_discord_log_channel_webhook_url(count=1))
-                    )
-                ),
+                string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1
             ),
             re.sub(
                 r"/\d{17,20}/",
                 f"/{"".join(random.choices(string.digits, k=50))}/",
-                string=(
-                    next(
-                        iter(get_multiple_random_test_discord_log_channel_webhook_url(count=1))
-                    )
-                ),
+                string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1
             ),
             re.sub(
@@ -654,21 +590,13 @@ class TestSetupDiscordLogChannelWebhookURL:
                         "".join(random.choices(string.ascii_letters + string.digits, k=9))
                     }/"
                 ),
-                string=(
-                    next(
-                        iter(get_multiple_random_test_discord_log_channel_webhook_url(count=1))
-                    )
-                ),
+                string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1
             ),
             re.sub(
                 r"/[a-zA-Z\d]{60,90}",
                 f"/{"".join(random.choices(string.ascii_letters + string.digits, k=2))}",
-                string=(
-                    next(
-                        iter(get_multiple_random_test_discord_log_channel_webhook_url(count=1))
-                    )
-                ),
+                string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1
             ),
             re.sub(
@@ -676,11 +604,7 @@ class TestSetupDiscordLogChannelWebhookURL:
                 (
                     f"/{"".join(random.choices(string.ascii_letters + string.digits, k=150))}"
                 ),
-                string=(
-                    next(
-                        iter(get_multiple_random_test_discord_log_channel_webhook_url(count=1))
-                    )
-                ),
+                string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1
             ),
             re.sub(
@@ -692,11 +616,7 @@ class TestSetupDiscordLogChannelWebhookURL:
                         "".join(random.choices(string.ascii_letters + string.digits, k=37))
                     }"
                 ),
-                string=(
-                    next(
-                        iter(get_multiple_random_test_discord_log_channel_webhook_url(count=1))
-                    )
-                ),
+                string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1
             )
         )
@@ -721,21 +641,12 @@ class TestSetupDiscordLogChannelWebhookURL:
 class TestSetupDiscordGuildID:
     """Test case to unit-test the `_setup_discord_guild_id()` function."""
 
-    @staticmethod
-    def get_multiple_random_test_discord_guild_id(count: int = 5) -> Iterable[str]:
-        """Return `count` number of random test `DISCORD_GUILD_ID` values."""
-        return (
-            "".join(random.choices(string.digits, k=random.randint(17, 20)))
-            for _
-            in range(count)
-        )
-
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_DISCORD_GUILD_ID",
         itertools.chain(
-            get_multiple_random_test_discord_guild_id(),
-            (f"    {next(iter(get_multiple_random_test_discord_guild_id(count=1)))}   ",)
+            RandomDiscordGuildIDGenerator.multiple_values(),
+            (f"    {RandomDiscordGuildIDGenerator.single_value()}   ",)
         )
     )
     def test_setup_discord_guild_id_successful(self, TEST_DISCORD_GUILD_ID: str) -> None:  # noqa: N803

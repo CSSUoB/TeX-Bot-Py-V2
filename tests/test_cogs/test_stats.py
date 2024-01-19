@@ -3,7 +3,11 @@ from typing import TYPE_CHECKING, Final
 
 import pytest
 
-from cogs.stats import StatsCommandsCog, amount_of_time_formatter, plot_bar_chart  # BUG: Importing any cogs loads all other cogs which then sets up the Env variables & fails
+from cogs.stats import (
+    StatsCommandsCog,
+    amount_of_time_formatter,
+    plot_bar_chart,
+)
 
 if TYPE_CHECKING:
     import discord
