@@ -1,3 +1,5 @@
+"""Simple value generators to generate random values for environment variables."""
+
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
@@ -18,6 +20,8 @@ T = TypeVar("T")
 
 
 class BaseRandomEnvVariableValueGenerator(Generic[T], ABC):
+    """Generates random values for a specific environment variable."""
+
     @classmethod
     @abc.abstractmethod
     def multiple_values(cls, count: int = 5) -> Iterable[T]:
@@ -30,6 +34,8 @@ class BaseRandomEnvVariableValueGenerator(Generic[T], ABC):
 
 
 class RandomDiscordBotTokenGenerator(BaseRandomEnvVariableValueGenerator[str]):
+    """Generates random values that are valid Discord bot tokens."""
+
     @classmethod
     def multiple_values(cls, count: int = 5) -> Iterable[str]:
         """Return `count` number of random `DISCORD_BOT_TOKEN` values."""
@@ -62,6 +68,8 @@ class RandomDiscordBotTokenGenerator(BaseRandomEnvVariableValueGenerator[str]):
 
 
 class RandomDiscordLogChannelWebhookURLGenerator(BaseRandomEnvVariableValueGenerator[str]):
+    """Generates random values that are valid Discord log channel webhook URLs."""
+
     @classmethod
     def multiple_values(cls, count: int = 5, *, with_trailing_slash: bool | None = None) -> Iterable[str]:  # noqa: E501
         """Return `count` number of random `DISCORD_LOG_CHANNEL_WEBHOOK_URL` values."""
@@ -93,6 +101,8 @@ class RandomDiscordLogChannelWebhookURLGenerator(BaseRandomEnvVariableValueGener
 
 
 class RandomDiscordGuildIDGenerator(BaseRandomEnvVariableValueGenerator[str]):
+    """Generates random values that are valid Discord guild IDs."""
+
     @classmethod
     def multiple_values(cls, count: int = 5) -> Iterable[str]:
         """Return `count` number of random `DISCORD_GUILD_ID` values."""

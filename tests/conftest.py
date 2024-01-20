@@ -1,3 +1,5 @@
+"""Execute additional logic before/after tests are collected."""
+
 import os
 import random
 import string
@@ -43,6 +45,13 @@ if MISSING_ENV_VARIABLES:
 
 # noinspection SpellCheckingInspection,PyUnusedLocal
 def pytest_sessionstart(session: pytest.Session) -> None:  # noqa: ARG001
+    """
+    Called after the Session object has been created and before performing collection and entering the run test loop.
+
+    Tasks run upon session finishing:
+        * Add any additional required environment variables that have not been set,
+            but are needed before running any tests
+    """  # noqa: D401,W505,E501
     if MISSING_ENV_VARIABLES and dotenv_file_path is not None:
         with dotenv_file_path.open(dotenv_file_open_method) as dotenv_file:
             dotenv_file.write(
@@ -53,6 +62,12 @@ def pytest_sessionstart(session: pytest.Session) -> None:  # noqa: ARG001
 
 # noinspection SpellCheckingInspection,PyUnusedLocal
 def pytest_sessionfinish(session: pytest.Session, exitstatus: int | pytest.ExitCode) -> None:  # noqa: ARG001
+    """
+    Called after whole test run finished, right before returning the exit status to the system.
+
+    Tasks run upon session finishing:
+        * Restoring any changed environment variables within the identified `.env` file
+    """  # noqa: D401
     if MISSING_ENV_VARIABLES and dotenv_file_path is not None and dotenv_file_path.is_file():
         if dotenv_file_open_method == "w":
             dotenv_file_path.unlink()
