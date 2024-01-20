@@ -9,7 +9,7 @@ from utils import TeXBotApplicationContext
 
 
 class Response:
-    def __init__(self, content: str | None = None, *, tts: bool = False, ephemeral: bool = False, file: File | None = None, files: Iterable[File] | None = None, embed: Embed | None = None, embeds: Iterable[Embed] | None = None, view: View | None = None, delete_after: float | None = None) -> None:
+    def __init__(self, content: str | None = None, *, tts: bool = False, ephemeral: bool = False, file: File | None = None, files: Iterable[File] | None = None, embed: Embed | None = None, embeds: Iterable[Embed] | None = None, view: View | None = None, delete_after: float | None = None) -> None:  # noqa: PLR0913,E501
         if content is not None and not content.strip():
             EMPTY_CONTENT_MESSAGE: Final[str] = f"Parameter {"content"!r} cannot be empty."
             raise ValueError(EMPTY_CONTENT_MESSAGE)

@@ -9,15 +9,17 @@ import pytest
 from discord import HTTPClient
 from discord.state import ConnectionState
 
-# noinspection PyProtectedMember
-from tests._testing_utils.pycord_internals import TestingApplicationContext
-# noinspection PyProtectedMember
-from tests._testing_utils import TestingInteraction
 from cogs.stats import (
     StatsCommandsCog,
     amount_of_time_formatter,
     plot_bar_chart,
 )
+
+# noinspection PyProtectedMember
+from tests._testing_utils import TestingInteraction
+
+# noinspection PyProtectedMember
+from tests._testing_utils.pycord_internals import TestingApplicationContext
 from utils import TeXBot
 
 
@@ -108,7 +110,8 @@ class TestChannelStatsCommand:
             (
                 "channel" in option.description
                 and "stats" in option.description
-                and "id" in option._parameter_name.lower()
+                and option._parameter_name is not None
+                and "id" in option._parameter_name.lower()  # noqa: SLF001
             )
             for option
             in StatsCommandsCog.channel_stats.options
@@ -126,7 +129,7 @@ class TestChannelStatsCommand:
             "".join(random.choices(string.digits, k=50))
         )
     )
-    def test_invalid_channel_id(self, INVALID_CHANNEL_ID: str):  # noqa: N803
+    def test_invalid_channel_id(self, INVALID_CHANNEL_ID: str) -> None:  # noqa: N803
         bot: TeXBot = TeXBot()  # TODO: Move to inheritable fixture
         interaction: TestingInteraction = TestingInteraction(  # TODO: Move to inheritable fixture
             data={
@@ -162,6 +165,7 @@ class TestChannelStatsCommand:
         # )
 
         assert len(context.interaction.responses) == 1
+        assert context.interaction.responses[0].content is not None
         assert (
             f"{INVALID_CHANNEL_ID!r} is not a valid channel ID"
             in context.interaction.responses[0].content

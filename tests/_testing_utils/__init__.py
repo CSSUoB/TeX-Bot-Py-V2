@@ -9,7 +9,7 @@ __all__: Sequence[str] = (
 
 from tests._testing_utils.context_managers import (
     EnvVariableDeleter,
+    FileTemporaryDeleter,
     TemporarySettingsKeyReplacer,
-    FileTemporaryDeleter
 )
 from tests._testing_utils.pycord_internals import TestingInteraction
