@@ -51,7 +51,7 @@ class EnvVariableDeleter:
             os.environ[self.env_variable_name] = self.old_env_value
 
 
-class TemporarySettingsKeyReplacer:
+class TemporarySettingsKeyReplacer:  # TODO: Delete if has no uses
     """Context manager that temporarily replaces the value at the given settings key."""
 
     NOT_SET: Final[object] = object()

@@ -187,15 +187,15 @@ class StatsCommandsCog(TeXBotBaseCog):
         """
         channel_id: int = ctx.channel_id
 
-        if str_channel_id:
-            if not re.match(r"\A\d{17,20}\Z", str_channel_id):
+        if str_channel_id.strip():
+            if not re.match(r"\A\d{17,20}\Z", str_channel_id.strip()):
                 await self.command_send_error(
                     ctx,
-                    message=f"{str_channel_id!r} is not a valid channel ID."
+                    message=f"{str_channel_id.strip()!r} is not a valid channel ID."
                 )
                 return
 
-            channel_id = int(str_channel_id)
+            channel_id = int(str_channel_id.strip())
 
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guild: discord.Guild = self.bot.main_guild
