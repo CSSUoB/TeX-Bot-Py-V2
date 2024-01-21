@@ -6,7 +6,8 @@ from typing import Final
 
 import discord
 import pytest
-from discord import HTTPClient
+from classproperties import classproperty
+from discord import HTTPClient, MessageCommand, SlashCommand, UserCommand
 from discord.state import ConnectionState
 
 from cogs.stats import (
@@ -16,7 +17,7 @@ from cogs.stats import (
 )
 
 # noinspection PyProtectedMember
-from tests._testing_utils import TestingInteraction
+from tests._testing_utils import BaseTestDiscordCommand, TestingInteraction
 
 # noinspection PyProtectedMember
 from tests._testing_utils.pycord_internals import TestingApplicationContext
@@ -96,8 +97,14 @@ class TestStatsCommandGroup:
         )
 
 
-class TestChannelStatsCommand:
+class TestChannelStatsCommand(BaseTestDiscordCommand):
     """Test case to unit-test the channel stats command."""
+
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def COMMAND(cls) -> SlashCommand | UserCommand | MessageCommand:  # noqa: N802,N805
+        # noinspection PyTypeChecker
+        return StatsCommandsCog.channel_stats
 
     def test_command_description(self) -> None:
         """Test that the channel stats command has a valid description."""
@@ -105,12 +112,13 @@ class TestChannelStatsCommand:
         assert "channel" in StatsCommandsCog.channel_stats.description.lower()
 
     def test_command_option(self) -> None:
-        discord.Bot().load_extension("cogs")
+        discord.Bot().load_extension("cogs")  # type: ignore[no-untyped-call]
+
         assert any(
             (
                 "channel" in option.description
                 and "stats" in option.description
-                and option._parameter_name is not None
+                and option._parameter_name is not None  # noqa: SLF001
                 and "id" in option._parameter_name.lower()  # noqa: SLF001
             )
             for option
@@ -135,7 +143,7 @@ class TestChannelStatsCommand:
             data={
                 "id": 1,
                 "application_id": 1,
-                "type": discord.InteractionType.application_command,
+                "type": discord.InteractionType.application_command.value,
                 "token": "1",
                 "version": 2
             },
@@ -144,25 +152,18 @@ class TestChannelStatsCommand:
                 handlers={},
                 hooks={},
                 http=HTTPClient(),
-                loop=asyncio.AbstractEventLoop()
+                loop=asyncio.new_event_loop()
             )
         )
         context: TestingApplicationContext = TestingApplicationContext(bot, interaction)  # TODO: Move to inheritable fixture
 
         context.command = StatsCommandsCog.channel_stats  # TODO: Set class wide after parent class fixture has run
 
-        asyncio.get_event_loop().run_until_complete(  # TODO: Make into inheritable execute command function
-            StatsCommandsCog.channel_stats.callback(
-                self=StatsCommandsCog(bot),
-                ctx=context,
-                str_channel_id=INVALID_CHANNEL_ID
-            )
+        self.execute_command(
+            command=StatsCommandsCog.channel_stats,
+            ctx=context,
+            str_channel_id=INVALID_CHANNEL_ID
         )
-        # self.execute_command(
-        #     command=StatsCommandsCog.channel_stats,
-        #     ctx=context,
-        #     str_channel_id=INVALID_CHANNEL_ID
-        # )
 
         assert len(context.interaction.responses) == 1
         assert context.interaction.responses[0].content is not None

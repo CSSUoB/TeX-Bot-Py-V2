@@ -1,3 +1,11 @@
+from collections.abc import Sequence
+
+__all__: Sequence[str] = (
+    "EnvVariableDeleter",
+    "TemporarySettingsKeyReplacer",
+    "FileTemporaryDeleter"
+)
+
 import hashlib
 import os
 from pathlib import Path

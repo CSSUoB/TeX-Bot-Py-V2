@@ -1,14 +1,19 @@
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ("TestingResponse", "TestingInteraction", "TestingApplicationContext")
+
 from collections.abc import Iterable, MutableSequence
 from typing import Final
 
 import discord
 from discord import Embed, File
+from discord.state import ConnectionState
 from discord.ui import View
 
 from utils import TeXBotApplicationContext
 
 
-class Response:
+class TestingResponse:
     def __init__(self, content: str | None = None, *, tts: bool = False, ephemeral: bool = False, file: File | None = None, files: Iterable[File] | None = None, embed: Embed | None = None, embeds: Iterable[Embed] | None = None, view: View | None = None, delete_after: float | None = None) -> None:  # noqa: PLR0913,E501
         if content is not None and not content.strip():
             EMPTY_CONTENT_MESSAGE: Final[str] = f"Parameter {"content"!r} cannot be empty."
@@ -94,19 +99,29 @@ class Response:
 
 
 class TestingInteraction(discord.Interaction):
-    def __init__(self, *args: object, **kwargs: object) -> None:
-        self._responses: MutableSequence[Response] = []
-        super().__init__(*args, **kwargs)
+    def __init__(self, *, data: discord.types.interactions.Interaction, state: ConnectionState) -> None:  # noqa: E501
+        self._responses: MutableSequence[TestingResponse] = []
+        super().__init__(data=data, state=state)
 
-    async def respond(self, *args: object, **kwargs: object) -> object:
-        response: Response = Response(*args, **kwargs)
+    async def respond(self, content: str | None = None, *, username: str | None = None, avatar_url: str | None = None, tts: bool = False, ephemeral: bool = False, file: File | None = None, files: Iterable[File] | None = None, embed: Embed | None = None, embeds: Iterable[Embed] | None = None, view: View | None = None, delete_after: float | None = None) -> discord.Interaction | discord.WebhookMessage:  # noqa: ARG002, PLR0913, E501
+        response: TestingResponse = TestingResponse(
+            content=content,
+            tts=tts,
+            ephemeral=ephemeral,
+            file=file,
+            files=files,
+            embed=embed,
+            embeds=embeds,
+            view=view,
+            delete_after=delete_after
+        )
 
         self._responses.append(response)
 
-        return response
+        return self
 
     @property
-    def responses(self) -> MutableSequence[Response]:
+    def responses(self) -> MutableSequence[TestingResponse]:
         return self._responses
 
 
