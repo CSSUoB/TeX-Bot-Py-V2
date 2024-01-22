@@ -160,7 +160,6 @@ class TestChannelStatsCommand(BaseTestDiscordCommand):
         context.command = StatsCommandsCog.channel_stats  # TODO: Set class wide after parent class fixture has run
 
         self.execute_command(
-            command=StatsCommandsCog.channel_stats,
             ctx=context,
             str_channel_id=INVALID_CHANNEL_ID
         )
@@ -171,3 +170,6 @@ class TestChannelStatsCommand(BaseTestDiscordCommand):
             f"{INVALID_CHANNEL_ID!r} is not a valid channel ID"
             in context.interaction.responses[0].content
         )
+        del context
+        del interaction
+        del bot

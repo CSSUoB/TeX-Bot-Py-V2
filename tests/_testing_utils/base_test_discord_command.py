@@ -9,23 +9,15 @@ from typing import Final
 from classproperties import classproperty
 from discord import MessageCommand, SlashCommand, UserCommand
 
-from tests._testing_utils import TestingApplicationContext
-from utils import TeXBot
+from tests._testing_utils.pycord_internals import TestingApplicationContext
 
 
 class BaseTestDiscordCommand:
-    _BOT: TeXBot = TeXBot()
-
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
     def COMMAND(cls) -> SlashCommand | UserCommand | MessageCommand:  # noqa: N802,N805
         """"""
-
-    # noinspection PyMethodParameters,PyPep8Naming
-    @classproperty
-    def BOT(cls) -> TeXBot:  # noqa: N802,N805
-        return cls._BOT
 
     @classmethod
     def execute_command(cls, ctx: TestingApplicationContext, **kwargs: object) -> None:
@@ -33,9 +25,9 @@ class BaseTestDiscordCommand:
             COG_NOT_DEFINED_MESSAGE: Final[str] = "Cog is not defined."
             raise ValueError(COG_NOT_DEFINED_MESSAGE)
 
-        asyncio.run(
+        asyncio.new_event_loop().run_until_complete(
             cls.COMMAND.callback(  # type: ignore[arg-type,call-arg]
-                self=cls.COMMAND.cog(cls.BOT),
+                self=cls.COMMAND.cog,
                 ctx=ctx,
                 **kwargs
             )
