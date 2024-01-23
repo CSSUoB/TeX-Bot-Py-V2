@@ -1,5 +1,4 @@
 """Automated test suite for the `stats.py` cog."""
-import asyncio
 import random
 import string
 from typing import Final
@@ -7,8 +6,7 @@ from typing import Final
 import discord
 import pytest
 from classproperties import classproperty
-from discord import HTTPClient, MessageCommand, SlashCommand, UserCommand
-from discord.state import ConnectionState
+from discord import MessageCommand, SlashCommand, UserCommand
 
 from cogs.stats import (
     StatsCommandsCog,
@@ -17,11 +15,10 @@ from cogs.stats import (
 )
 
 # noinspection PyProtectedMember
-from tests._testing_utils import BaseTestDiscordCommand, TestingInteraction
+from tests._testing_utils import BaseTestDiscordCommand
 
 # noinspection PyProtectedMember
 from tests._testing_utils.pycord_internals import TestingApplicationContext
-from utils import TeXBot
 
 
 class TestAmountOfTimeFormatter:
@@ -103,6 +100,7 @@ class TestChannelStatsCommand(BaseTestDiscordCommand):
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     def COMMAND(cls) -> SlashCommand | UserCommand | MessageCommand:  # noqa: N802,N805
+        """The Discord command the cog, linked to this test case, has the functionality for."""  # noqa: D401
         # noinspection PyTypeChecker
         return StatsCommandsCog.channel_stats
 
@@ -112,6 +110,7 @@ class TestChannelStatsCommand(BaseTestDiscordCommand):
         assert "channel" in StatsCommandsCog.channel_stats.description.lower()
 
     def test_command_option(self) -> None:
+        """Test that the channel stats command has an option with the correct details."""
         discord.Bot().load_extension("cogs")  # type: ignore[no-untyped-call]
 
         assert any(
@@ -137,39 +136,16 @@ class TestChannelStatsCommand(BaseTestDiscordCommand):
             "".join(random.choices(string.digits, k=50))
         )
     )
-    def test_invalid_channel_id(self, INVALID_CHANNEL_ID: str) -> None:  # noqa: N803
-        bot: TeXBot = TeXBot()  # TODO: Move to inheritable fixture
-        interaction: TestingInteraction = TestingInteraction(  # TODO: Move to inheritable fixture
-            data={
-                "id": 1,
-                "application_id": 1,
-                "type": discord.InteractionType.application_command.value,
-                "token": "1",
-                "version": 2
-            },
-            state=ConnectionState(
-                dispatch=(lambda: None),
-                handlers={},
-                hooks={},
-                http=HTTPClient(),
-                loop=asyncio.new_event_loop()
-            )
-        )
-        context: TestingApplicationContext = TestingApplicationContext(bot, interaction)  # TODO: Move to inheritable fixture
-
-        context.command = StatsCommandsCog.channel_stats  # TODO: Set class wide after parent class fixture has run
-
+    def test_invalid_channel_id(self, INVALID_CHANNEL_ID: str, CONTEXT: TestingApplicationContext) -> None:  # noqa: N803, E501
+        """Test that an error occurs when running the command with an invalid channel ID."""
         self.execute_command(
-            ctx=context,
+            ctx=CONTEXT,
             str_channel_id=INVALID_CHANNEL_ID
         )
 
-        assert len(context.interaction.responses) == 1
-        assert context.interaction.responses[0].content is not None
+        assert len(CONTEXT.interaction.responses) == 1
+        assert CONTEXT.interaction.responses[0].content is not None
         assert (
             f"{INVALID_CHANNEL_ID!r} is not a valid channel ID"
-            in context.interaction.responses[0].content
+            in CONTEXT.interaction.responses[0].content
         )
-        del context
-        del interaction
-        del bot
