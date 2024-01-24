@@ -194,8 +194,8 @@ class HashedDiscordMember(AsyncBaseModel):
         else:
             super().__setattr__(name, value)
 
-    @staticmethod
-    def hash_member_id(member_id: str | int) -> str:
+    @classmethod
+    def hash_member_id(cls, member_id: str | int) -> str:
         """
         Hash the provided member_id.
 

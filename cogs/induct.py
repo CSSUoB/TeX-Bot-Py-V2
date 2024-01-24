@@ -12,9 +12,9 @@ __all__: Sequence[str] = (
 
 import contextlib
 import logging
-from logging import Logger
 import random
 import re
+from logging import Logger
 from typing import Literal
 
 import discord
@@ -249,8 +249,8 @@ class BaseInductCog(TeXBotBaseCog):
 class InductCommandCog(BaseInductCog):
     """Cog class that defines the "/induct" command and its call-back method."""
 
-    @staticmethod
-    async def autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+    @classmethod
+    async def autocomplete_get_members(cls, ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable members.
 

@@ -19,8 +19,8 @@ from utils.tex_bot_contexts import TeXBotApplicationContext
 class CommandChecks:
     """Command check decorators to ensure given predicates before executing a command."""
 
-    @staticmethod
-    async def _check_interaction_user_in_main_guild(ctx: TeXBotApplicationContext) -> bool:
+    @classmethod
+    async def _check_interaction_user_in_main_guild(cls, ctx: TeXBotApplicationContext) -> bool:  # noqa: E501
         try:
             await ctx.bot.get_main_guild_member(ctx.user)
         except DiscordMemberNotInMainGuildError:
@@ -35,8 +35,8 @@ class CommandChecks:
     Instead an error message will be sent to the user.
     """
 
-    @staticmethod
-    async def _check_interaction_user_has_committee_role(ctx: TeXBotApplicationContext) -> bool:  # noqa: E501
+    @classmethod
+    async def _check_interaction_user_has_committee_role(cls, ctx: TeXBotApplicationContext) -> bool:  # noqa: E501
         return await ctx.bot.check_user_has_committee_role(ctx.user)
 
     check_interaction_user_has_committee_role: Callable[[T], T]

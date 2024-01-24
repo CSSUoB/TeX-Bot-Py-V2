@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Final
 import pytest
 from classproperties import classproperty
 
+# noinspection PyProtectedMember
 from tests._testing_utils import EnvVariableDeleter
 from tests.test_utils._testing_utils import BaseTestArgumentParser, EmptyContextManager
 from utils import InviteURLGenerator, UtilityFunction
@@ -60,8 +61,7 @@ class TestInviteURLGenerator(BaseTestArgumentParser):
         with env_guild_id_deleter:
             return super().execute_argument_parser_function(args, capsys, utility_functions)
 
-    @staticmethod
-    def test_low_level_url_generates() -> None:
+    def test_low_level_url_generates(self) -> None:
         """Test that the invite URL generates successfully when valid arguments are passed."""
         DISCORD_BOT_APPLICATION_ID: Final[str] = "".join(
             random.choices(string.digits, k=random.randint(17, 20))
@@ -79,8 +79,7 @@ class TestInviteURLGenerator(BaseTestArgumentParser):
             invite_url
         )
 
-    @classmethod
-    def test_parser_generates_url_with_discord_guild_id_as_environment_variable(cls, capsys: "CaptureFixture[str]") -> None:  # noqa: E501
+    def test_parser_generates_url_with_discord_guild_id_as_environment_variable(self, capsys: "CaptureFixture[str]") -> None:  # noqa: E501
         """Test for the correct response when discord_guild_id is given as an env variable."""
         DISCORD_BOT_APPLICATION_ID: Final[str] = str(
             random.randint(10000000000000000, 99999999999999999999)
@@ -95,7 +94,7 @@ class TestInviteURLGenerator(BaseTestArgumentParser):
 
         RETURN_CODE: int
         CAPTURE_RESULT: "CaptureResult[str]"
-        RETURN_CODE, CAPTURE_RESULT = cls.execute_argument_parser_function(
+        RETURN_CODE, CAPTURE_RESULT = self.execute_argument_parser_function(
             ["generate_invite_url", str(DISCORD_BOT_APPLICATION_ID)],
             capsys,
             delete_env_guild_id=False
@@ -113,8 +112,7 @@ class TestInviteURLGenerator(BaseTestArgumentParser):
             DISCORD_GUILD_ID
         )
 
-    @classmethod
-    def test_parser_generates_url_with_discord_guild_id_as_argument(cls, capsys: "CaptureFixture[str]") -> None:  # noqa: E501
+    def test_parser_generates_url_with_discord_guild_id_as_argument(self, capsys: "CaptureFixture[str]") -> None:  # noqa: E501
         """Test for the correct response when discord_guild_id is provided as an argument."""
         DISCORD_BOT_APPLICATION_ID: Final[str] = str(
             random.randint(10000000000000000, 99999999999999999999)
@@ -126,7 +124,7 @@ class TestInviteURLGenerator(BaseTestArgumentParser):
 
         return_code: int
         capture_result: "CaptureResult[str]"
-        return_code, capture_result = cls.execute_argument_parser_function(
+        return_code, capture_result = self.execute_argument_parser_function(
             ["generate_invite_url", DISCORD_BOT_APPLICATION_ID, str(DISCORD_GUILD_ID)],
             capsys
         )
@@ -138,8 +136,7 @@ class TestInviteURLGenerator(BaseTestArgumentParser):
             DISCORD_GUILD_ID
         )
 
-    @classmethod
-    def test_parser_error_when_no_discord_bot_application_id(cls, capsys: "CaptureFixture[str]") -> None:  # noqa: E501
+    def test_parser_error_when_no_discord_bot_application_id(self, capsys: "CaptureFixture[str]") -> None:  # noqa: E501
         """Test for the correct error when no discord_bot_application_id is provided."""
         EXPECTED_ERROR_MESSAGE: Final[str] = (
             "utils generate_invite_url: error: the following arguments are required: "
@@ -148,18 +145,17 @@ class TestInviteURLGenerator(BaseTestArgumentParser):
 
         return_code: int
         capture_result: "CaptureResult[str]"
-        return_code, capture_result = cls.execute_argument_parser_function(
+        return_code, capture_result = self.execute_argument_parser_function(
             ["generate_invite_url"],
             capsys
         )
 
         assert return_code != 0
         assert not capture_result.out
-        assert cls.USAGE_MESSAGE in " ".join(capture_result.err.replace("\n", "").split())
+        assert self.USAGE_MESSAGE in " ".join(capture_result.err.replace("\n", "").split())
         assert EXPECTED_ERROR_MESSAGE in capture_result.err
 
-    @classmethod
-    def test_parser_error_when_invalid_discord_bot_application_id(cls, capsys: "CaptureFixture[str]") -> None:  # noqa: E501
+    def test_parser_error_when_invalid_discord_bot_application_id(self, capsys: "CaptureFixture[str]") -> None:  # noqa: E501
         """Test for the correct error with an invalid discord_bot_application_id."""
         EXPECTED_ERROR_MESSAGE: Final[str] = (
             "utils generate_invite_url: error: discord_bot_application_id must be "
@@ -169,7 +165,7 @@ class TestInviteURLGenerator(BaseTestArgumentParser):
 
         return_code: int
         capture_result: "CaptureResult[str]"
-        return_code, capture_result = cls.execute_argument_parser_function(
+        return_code, capture_result = self.execute_argument_parser_function(
             [
                 "generate_invite_url",
                 "".join(random.choices(string.ascii_letters + string.digits, k=7))
@@ -179,11 +175,10 @@ class TestInviteURLGenerator(BaseTestArgumentParser):
 
         assert return_code != 0
         assert not capture_result.out
-        assert cls.USAGE_MESSAGE in " ".join(capture_result.err.replace("\n", "").split())
+        assert self.USAGE_MESSAGE in " ".join(capture_result.err.replace("\n", "").split())
         assert EXPECTED_ERROR_MESSAGE in capture_result.err
 
-    @classmethod
-    def test_parser_error_when_no_discord_guild_id(cls, capsys: "CaptureFixture[str]") -> None:
+    def test_parser_error_when_no_discord_guild_id(self, capsys: "CaptureFixture[str]") -> None:  # noqa: E501
         """Test for the correct error when no discord_guild_id is provided."""
         EXPECTED_ERROR_MESSAGE: Final[str] = (
             "utils generate_invite_url: error: discord_guild_id must be provided as an "
@@ -193,7 +188,7 @@ class TestInviteURLGenerator(BaseTestArgumentParser):
 
         return_code: int
         capture_result: "CaptureResult[str]"
-        return_code, capture_result = cls.execute_argument_parser_function(
+        return_code, capture_result = self.execute_argument_parser_function(
             [
                 "generate_invite_url",
                 "".join(random.choices(string.digits, k=random.randint(17, 20)))
@@ -204,11 +199,10 @@ class TestInviteURLGenerator(BaseTestArgumentParser):
 
         assert return_code != 0
         assert not capture_result.out
-        assert cls.USAGE_MESSAGE in " ".join(capture_result.err.replace("\n", "").split())
+        assert self.USAGE_MESSAGE in " ".join(capture_result.err.replace("\n", "").split())
         assert EXPECTED_ERROR_MESSAGE in capture_result.err
 
-    @classmethod
-    def test_parser_error_when_invalid_discord_guild_id(cls, capsys: "CaptureFixture[str]") -> None:  # noqa: E501
+    def test_parser_error_when_invalid_discord_guild_id(self, capsys: "CaptureFixture[str]") -> None:  # noqa: E501
         """Test for the correct error when an invalid discord_guild_id is provided."""
         EXPECTED_ERROR_MESSAGE: Final[str] = (
             "utils generate_invite_url: error: discord_guild_id must be "
@@ -217,7 +211,7 @@ class TestInviteURLGenerator(BaseTestArgumentParser):
 
         return_code: int
         capture_result: "CaptureResult[str]"
-        return_code, capture_result = cls.execute_argument_parser_function(
+        return_code, capture_result = self.execute_argument_parser_function(
             [
                 "generate_invite_url",
                 str(random.randint(10000000000000000, 99999999999999999999)),
@@ -228,11 +222,10 @@ class TestInviteURLGenerator(BaseTestArgumentParser):
 
         assert return_code != 0
         assert not capture_result.out
-        assert cls.USAGE_MESSAGE in " ".join(capture_result.err.replace("\n", "").split())
+        assert self.USAGE_MESSAGE in " ".join(capture_result.err.replace("\n", "").split())
         assert EXPECTED_ERROR_MESSAGE in capture_result.err
 
-    @classmethod
-    def test_parser_error_when_too_many_arguments(cls, capsys: "CaptureFixture[str]") -> None:
+    def test_parser_error_when_too_many_arguments(self, capsys: "CaptureFixture[str]") -> None:
         """Test for the correct error when too many arguments are provided."""
         EXTRA_ARGUMENT: Final[str] = str(
             random.randint(10000000000000000, 99999999999999999999)
@@ -244,7 +237,7 @@ class TestInviteURLGenerator(BaseTestArgumentParser):
 
         return_code: int
         capture_result: "CaptureResult[str]"
-        return_code, capture_result = cls.execute_argument_parser_function(
+        return_code, capture_result = self.execute_argument_parser_function(
             [
                 "generate_invite_url",
                 str(random.randint(10000000000000000, 99999999999999999999)),
@@ -259,18 +252,17 @@ class TestInviteURLGenerator(BaseTestArgumentParser):
         assert super().USAGE_MESSAGE in capture_result.err
         assert EXPECTED_ERROR_MESSAGE in capture_result.err
 
-    @classmethod
     @pytest.mark.parametrize("help_argument", ("-h", "--help"))
-    def test_parser_help(cls, capsys: "CaptureFixture[str]", help_argument: str) -> None:
+    def test_parser_help(self, capsys: "CaptureFixture[str]", help_argument: str) -> None:
         """Test for the correct response when any of the help arguments are provided."""
         return_code: int
         capture_result: "CaptureResult[str]"
-        return_code, capture_result = cls.execute_argument_parser_function(
+        return_code, capture_result = self.execute_argument_parser_function(
             ["generate_invite_url", help_argument],
             capsys
         )
 
         assert return_code == 0
         assert not capture_result.err
-        assert cls.USAGE_MESSAGE in " ".join(capture_result.out.replace("\n", "").split())
+        assert self.USAGE_MESSAGE in " ".join(capture_result.out.replace("\n", "").split())
         assert "positional arguments:" in capture_result.out

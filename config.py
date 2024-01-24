@@ -133,8 +133,8 @@ class Settings(abc.ABC):
 
             raise KeyError(key_error_message) from None
 
-    @staticmethod
-    def _setup_logging() -> None:
+    @classmethod
+    def _setup_logging(cls) -> None:
         raw_console_log_level: str | None = os.getenv("CONSOLE_LOG_LEVEL")
         console_log_level: str = (
             "INFO"

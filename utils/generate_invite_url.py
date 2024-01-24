@@ -97,8 +97,8 @@ class InviteURLGenerator(UtilityFunction):
         return 0
 
     # noinspection PyShadowingNames
-    @staticmethod
-    def generate_invite_url(discord_bot_application_id: str, discord_guild_id: int) -> str:
+    @classmethod
+    def generate_invite_url(cls, discord_bot_application_id: str, discord_guild_id: int) -> str:  # noqa: E501
         """
         Generate the correct OAuth invite URL for the bot.
 

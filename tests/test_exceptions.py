@@ -164,7 +164,7 @@ class TestBaseDoesNotExistError:
         Custom subclass implementation of `BaseDoesNotExistError`.
 
         This specific custom subclass implementation is used for testing
-        with a subclass that has one command dependent.
+        with a subclass that has one command-dependent.
         """
 
         # noinspection PyMethodParameters,PyPep8Naming
@@ -202,7 +202,7 @@ class TestBaseDoesNotExistError:
         Custom subclass implementation of `BaseDoesNotExistError`.
 
         This specific custom subclass implementation is used for testing
-        with a subclass that has one task dependent.
+        with a subclass that has one task-dependent.
         """
 
         # noinspection PyMethodParameters,PyPep8Naming

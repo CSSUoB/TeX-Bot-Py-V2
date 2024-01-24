@@ -23,6 +23,7 @@ from exceptions import (
     MessagesJSONFileMissingKeyError,
     MessagesJSONFileValueError,
 )
+# noinspection PyProtectedMember
 from tests._testing_utils import EnvVariableDeleter, FileTemporaryDeleter
 from utils import (
     RandomDiscordBotTokenGenerator,
@@ -39,8 +40,8 @@ if TYPE_CHECKING:
 class TestSettings:
     """Test case to unit-test the `Settings` class & its instances."""
 
-    @staticmethod
-    def replace_setup_methods(ignore_methods: Iterable[str] | None = None, replacement_method: Callable[[str], None] | None = None) -> type[Settings]:  # noqa: E501
+    @classmethod
+    def replace_setup_methods(cls, ignore_methods: Iterable[str] | None = None, replacement_method: Callable[[str], None] | None = None) -> type[Settings]:  # noqa: E501
         """Return a new runtime version of the `Settings` class, with replaced methods."""
         if ignore_methods is None:
             ignore_methods = set()

@@ -30,8 +30,7 @@ class TestUtilFunctionsExecution(BaseTestArgumentParser):
         """The set of utility function components associated with this specific test case."""  # noqa: D401
         return frozenset()
 
-    @classmethod
-    def test_error_when_no_function(cls, capsys: "CaptureFixture[str]") -> None:
+    def test_error_when_no_function(self, capsys: "CaptureFixture[str]") -> None:
         """Test for the correct error when no function name is provided."""
         EXPECTED_ERROR_MESSAGE: Final[str] = (
             "utils: error: the following arguments are required: function"
@@ -39,15 +38,14 @@ class TestUtilFunctionsExecution(BaseTestArgumentParser):
 
         return_code: int
         capture_result: CaptureResult[str]
-        return_code, capture_result = cls.execute_argument_parser_function([], capsys)
+        return_code, capture_result = self.execute_argument_parser_function([], capsys)
 
         assert return_code != 0
         assert not capture_result.out
-        assert cls.USAGE_MESSAGE in capture_result.err
+        assert self.USAGE_MESSAGE in capture_result.err
         assert EXPECTED_ERROR_MESSAGE in capture_result.err
 
-    @classmethod
-    def test_error_when_invalid_function(cls, capsys: "CaptureFixture[str]") -> None:
+    def test_error_when_invalid_function(self, capsys: "CaptureFixture[str]") -> None:
         """Test for the correct error when an invalid function name is provided."""
         INVALID_FUNCTION: Final[str] = "".join(
             random.choices(string.ascii_letters + string.digits, k=7)
@@ -59,22 +57,21 @@ class TestUtilFunctionsExecution(BaseTestArgumentParser):
 
         return_code: int
         capture_result: CaptureResult[str]
-        return_code, capture_result = cls.execute_argument_parser_function(
+        return_code, capture_result = self.execute_argument_parser_function(
             [INVALID_FUNCTION],
             capsys
         )
 
         assert return_code != 0
         assert not capture_result.out
-        assert cls.USAGE_MESSAGE in capture_result.err
+        assert self.USAGE_MESSAGE in capture_result.err
         assert EXPECTED_ERROR_MESSAGE in capture_result.err
 
-    @classmethod
     @pytest.mark.parametrize(
         "help_argument",
         ("test_successful_execution", "test_invalid_function_error_message")
     )
-    def test_attaching_utility_function(cls, capsys: "CaptureFixture[str]", help_argument: str) -> None:  # noqa: E501
+    def test_attaching_utility_function(self, capsys: "CaptureFixture[str]", help_argument: str) -> None:  # noqa: E501
         """Test for the correct error when an invalid function name is provided."""
         class ExampleUtilityFunction(UtilityFunction):
             NAME: str = "example_utility_function"
@@ -89,7 +86,7 @@ class TestUtilFunctionsExecution(BaseTestArgumentParser):
         capture_result: CaptureResult[str]
 
         if help_argument == "test_successful_execution":
-            return_code, capture_result = cls.execute_argument_parser_function(
+            return_code, capture_result = self.execute_argument_parser_function(
                 [ExampleUtilityFunction.NAME],
                 capsys,
                 {ExampleUtilityFunction}
@@ -108,7 +105,7 @@ class TestUtilFunctionsExecution(BaseTestArgumentParser):
                 f"'{INVALID_FUNCTION}' (choose from {ExampleUtilityFunction.NAME!r})"
             )
 
-            return_code, capture_result = cls.execute_argument_parser_function(
+            return_code, capture_result = self.execute_argument_parser_function(
                 [INVALID_FUNCTION],
                 capsys,
                 {ExampleUtilityFunction}
@@ -117,23 +114,22 @@ class TestUtilFunctionsExecution(BaseTestArgumentParser):
             assert return_code != 0
             assert not capture_result.out
             assert (
-                    cls._format_usage_message({ExampleUtilityFunction.NAME})
+                    self._format_usage_message({ExampleUtilityFunction.NAME})
                     in capture_result.err
             )
             assert EXPECTED_ERROR_MESSAGE in capture_result.err
 
-    @classmethod
     @pytest.mark.parametrize("help_argument", ("-h", "--help"))
-    def test_help(cls, capsys: "CaptureFixture[str]", help_argument: str) -> None:
+    def test_help(self, capsys: "CaptureFixture[str]", help_argument: str) -> None:
         """Test for the correct response when any of the help arguments are provided."""
         return_code: int
         capture_result: CaptureResult[str]
-        return_code, capture_result = cls.execute_argument_parser_function(
+        return_code, capture_result = self.execute_argument_parser_function(
             [help_argument],
             capsys
         )
 
         assert return_code == 0
         assert not capture_result.err
-        assert cls.USAGE_MESSAGE in capture_result.out
+        assert self.USAGE_MESSAGE in capture_result.out
         assert "functions:" in capture_result.out

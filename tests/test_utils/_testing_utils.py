@@ -39,8 +39,8 @@ class BaseTestArgumentParser(abc.ABC):
             utility_function.NAME for utility_function in cls.UTILITY_FUNCTIONS
         )
 
-    @staticmethod
-    def _format_usage_message(utility_function_names: Iterable[str]) -> str:
+    @classmethod
+    def _format_usage_message(cls, utility_function_names: Iterable[str]) -> str:
         return f"""usage: utils [-h]{
             " {" if utility_function_names else ""
         }{

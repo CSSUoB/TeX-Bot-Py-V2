@@ -86,7 +86,7 @@ class TemporarySettingsKeyReplacer:  # TODO: Delete if has no uses
         settings._settings[self.settings_key_name] = self.new_settings_value  # noqa: SLF001
 
     def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None) -> None:  # noqa: E501
-        """Restore the replaced settings value with the original value, if it existed."""
+        """Restore the replaced settings value with the original value if it existed."""
         if self.old_settings_value is self.NOT_SET:
             # noinspection PyProtectedMember
             settings._settings.pop(self.settings_key_name)  # noqa: SLF001

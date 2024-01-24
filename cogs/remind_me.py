@@ -31,8 +31,8 @@ logger: Logger = logging.getLogger("texbot")
 class RemindMeCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/remindme" command and its call-back method."""
 
-    @staticmethod
-    async def autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> set[str]:  # noqa: C901, PLR0912
+    @classmethod
+    async def autocomplete_get_delays(cls, ctx: TeXBotAutocompleteContext) -> set[str]:  # noqa: C901, PLR0912
         """
         Autocomplete callable that generates the common delay input values.
 
