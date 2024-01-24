@@ -164,7 +164,7 @@ class Settings(abc.ABC):
             logging.Formatter("{asctime} | {name} | {levelname:^8} - {message}", style="{")
         )
 
-        logger.addHandler(console_logging_handler)
+        logging.getLogger("").addHandler(console_logging_handler)
 
     @classmethod
     def _setup_discord_bot_token(cls) -> None:
