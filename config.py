@@ -161,7 +161,7 @@ class Settings(abc.ABC):
         console_logging_handler: logging.Handler = logging.StreamHandler()
         # noinspection SpellCheckingInspection
         console_logging_handler.setFormatter(
-            logging.Formatter("{asctime} | {name} | {levelname:^8} - {message}", style="{")
+            logging.Formatter("[{asctime}] {name} | {levelname:^8} - {message}", style="{")
         )
 
         logging.getLogger("").addHandler(console_logging_handler)
