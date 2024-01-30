@@ -6,13 +6,13 @@ used for managing a community group's Discord guild.
 
 Featured in the [CSS Discord guild](https://cssbham.com/discord).
 
-[![Current Version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSUoB%2FTeX-Bot-Py-V2%2Fmain%2Fpyproject.toml&query=%24.tool.poetry.version&label=TeX-Bot)](https://github.com/CSSUoB/TeX-Bot-Py-V2/tree/main)
-[![Python Version](https://img.shields.io/badge/Python-3.12-blue)](https://www.python.org/downloads/release/python-3116/)
-[![py-cord Version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSUoB%2FTeX-Bot-Py-V2%2Fmain%2Fpyproject.toml&query=%24.tool.poetry.dependencies%5B%22py-cord%22%5D%5B%22rev%22%5D&label=py-cord)](https://pycord.dev/)
+[![Current Version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSUoB%2FTeX-Bot-Py-V2%2Fmain%2Fpyproject.toml&query=%24.tool.poetry.version&label=TeX-Bot)](https://github.com/CSSUoB/TeX-Bot-Py-V2)
+[![Python Version](https://img.shields.io/badge/Python-3.12-blue)](https://www.python.org/downloads/release/python-3121)
+[![py-cord Version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSUoB%2FTeX-Bot-Py-V2%2Fmain%2Fpyproject.toml&query=%24.tool.poetry.dependencies%5B%22py-cord%22%5D%5B%22rev%22%5D&label=py-cord)](https://pycord.dev)
 [![Tests](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yaml/badge.svg)](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yaml)
-[![mypy passing](https://img.shields.io/badge/mypy-checked-%232EBB4E&label=mypy)](https://www.mypy-lang.org/)
+[![mypy passing](https://img.shields.io/badge/mypy-checked-%232EBB4E&label=mypy)](https://www.mypy-lang.org)
 [![pymarkdown passing](https://img.shields.io/badge/pymarkdown-passing-%232EBB4E&label=pymarkdown)](https://github.com/jackdewinter/pymarkdown)
-[![ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://ruff.rs/)
+[![ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://ruff.rs)
 
 ## Terminology
 
@@ -121,12 +121,12 @@ that can be used to configure the conditions to suit your needs.
 ## Production Deployment
 
 The only supported way to deploy TeXBot in production
-is by using our pre-built [docker container](https://www.docker.com/resources/what-container/).
+is by using our pre-built [docker container](https://www.docker.com/resources/what-container).
 It is [built automatically](.github/workflows/update-container-image.yaml)
 when new changes are made to [the 'main' branch](https://github.com/CSSUoB/TeX-Bot-JS/tree/main),
 and can be pulled from the [GitHub Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
 with this identifier: `ghcr.io/CSSUoB/texbot-py-v2:latest`.
-An introduction on how to use a docker-compose deployment can be found [here](https://docs.docker.com/get-started/08_using_compose/).
+An introduction on how to use a docker-compose deployment can be found [here](https://docs.docker.com/get-started/08_using_compose).
 
 Before running the container, some [environment variables](https://en.wikipedia.org/wiki/Environment_variable)
 will need to be set.
@@ -138,7 +138,7 @@ are explained within [the **Setting Environment Variables** section](#setting-en
 
 ### Installing Dependencies
 
-Ensure that you have [Poetry](https://python-poetry.org/) installed.
+Ensure that you have [Poetry](https://python-poetry.org) installed.
 Then install all the required dependencies, by navigating to the repository's root folder
 and running the following command:
 
@@ -213,7 +213,7 @@ after logging in to view your members-list yourself.
 It will probably be listed as a cookie named `.ASPXAUTH`.)
 
 You can put these in a `.env` file in the root folder,
-as [python-dotenv](https://saurabh-kumar.com/python-dotenv/)
+as [python-dotenv](https://saurabh-kumar.com/python-dotenv)
 is used to collect all [environment variables](https://en.wikipedia.org/wiki/Environment_variable).
 There is an `example.env` file in the repo that you can rename and populate.
 
