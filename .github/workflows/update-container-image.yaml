@@ -1,4 +1,4 @@
-name: Build Container Image & Push To Github Container Registry
+name: Build Container Image & Push To GitHub Container Registry
 
 on:
   workflow_run:
