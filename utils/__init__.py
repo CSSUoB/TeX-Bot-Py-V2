@@ -7,6 +7,9 @@ __all__: Sequence[str] = (
     "InviteURLGenerator",
     "main",
     "MessageSenderComponent",
+    "RandomDiscordBotTokenGenerator",
+    "RandomDiscordGuildIDGenerator",
+    "RandomDiscordLogChannelWebhookURLGenerator",
     "SuppressTraceback",
     "TeXBot",
     "TeXBotBaseCog",
@@ -22,6 +25,11 @@ from typing import TYPE_CHECKING, Final
 from utils.base_utility_function import UtilityFunction
 from utils.command_checks import CommandChecks
 from utils.generate_invite_url import InviteURLGenerator
+from utils.generate_random_env_variable_values import (
+    RandomDiscordBotTokenGenerator,
+    RandomDiscordGuildIDGenerator,
+    RandomDiscordLogChannelWebhookURLGenerator,
+)
 from utils.message_sender_components import MessageSenderComponent
 from utils.suppress_traceback import SuppressTraceback
 from utils.tex_bot import TeXBot

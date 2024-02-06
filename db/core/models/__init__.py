@@ -157,8 +157,8 @@ class GroupMadeMember(AsyncBaseModel):
         """Generate the string representation of this GroupMadeMember."""
         return f"{self.hashed_group_member_id}"
 
-    @staticmethod
-    def hash_group_member_id(group_member_id: str | int, group_member_id_type: str = "community group") -> str:  # noqa: E501
+    @classmethod
+    def hash_group_member_id(cls, group_member_id: str | int, group_member_id_type: str = "community group") -> str:  # noqa: E501
         """
         Hash the provided group_member_id.
 

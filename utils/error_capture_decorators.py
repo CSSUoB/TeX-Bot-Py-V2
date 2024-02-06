@@ -47,8 +47,8 @@ class ErrorCaptureDecorators:
     Capturing errors is necessary in contexts where exceptions are not already suppressed.
     """
 
-    @staticmethod
-    def capture_error_and_close(func: "DecoratorInputFunc[P, T]", error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> "WrapperOutputFunc[P, T]":  # noqa: E501
+    @classmethod
+    def capture_error_and_close(cls, func: "DecoratorInputFunc[P, T]", error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> "WrapperOutputFunc[P, T]":  # noqa: E501
         """
         Decorator to send an error message to the user when the given exception type is raised.
 
@@ -70,8 +70,8 @@ class ErrorCaptureDecorators:
                 return None
         return wrapper  # type: ignore[return-value]
 
-    @staticmethod
-    def critical_error_close_func(error: BaseException) -> None:
+    @classmethod
+    def critical_error_close_func(cls, error: BaseException) -> None:
         """Component function to send logging messages when a critical error is encountered."""
         logger.critical(str(error).rstrip(".:"))
 

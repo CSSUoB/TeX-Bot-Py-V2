@@ -11,8 +11,10 @@ __all__: Sequence[str] = (
 )
 
 import contextlib
+import logging
 import random
 import re
+from logging import Logger
 from typing import Literal
 
 import discord
@@ -34,6 +36,8 @@ from utils import (
     TeXBotBaseCog,
 )
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
+
+logger: Logger = logging.getLogger("texbot")
 
 
 class InductSendMessageCog(TeXBotBaseCog):
@@ -141,6 +145,8 @@ class BaseInductCog(TeXBotBaseCog):
 
         if "<User>" in random_welcome_message:
             if not induction_member:
+                logger.warning("No user provided, when retrieving a random welcome message.")
+
                 return await self.get_random_welcome_message(induction_member)
 
             random_welcome_message = random_welcome_message.replace(
@@ -152,6 +158,10 @@ class BaseInductCog(TeXBotBaseCog):
             try:
                 committee_role_mention: str = (await self.bot.committee_role).mention
             except CommitteeRoleDoesNotExistError:
+                logger.warning(
+                    "Committee role does not exist, when retrieving a random welcome message."
+                )
+
                 return await self.get_random_welcome_message(induction_member)
             else:
                 random_welcome_message = random_welcome_message.replace(
@@ -161,6 +171,11 @@ class BaseInductCog(TeXBotBaseCog):
 
         if "<Purchase_Membership_URL>" in random_welcome_message:
             if not settings["PURCHASE_MEMBERSHIP_URL"]:
+                logger.warning(
+                    "Env variable `PURCHASE_MEMBERSHIP_URL` is not set, "
+                    "when retrieving a random welcome message."
+                )
+
                 return await self.get_random_welcome_message(induction_member)
 
             random_welcome_message = random_welcome_message.replace(
@@ -234,8 +249,8 @@ class BaseInductCog(TeXBotBaseCog):
 class InductCommandCog(BaseInductCog):
     """Cog class that defines the "/induct" command and its call-back method."""
 
-    @staticmethod
-    async def autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+    @classmethod
+    async def autocomplete_get_members(cls, ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable members.
 
