@@ -171,6 +171,7 @@ ignore = [
     "Q003",
     "TD002",
     "TD003",
+    "UP040",  # NOTE: Mypy does not currently support PEP 695 type aliases, so they should not be used
     "PLR0911",
     "PLR0915",
     "TRY400"
@@ -186,6 +187,34 @@ task-tags = [
     "NOTE",
     "ISSUE",
     "DONE",
+]
+allowed-confusables = [
+    "ᴀ",
+    "ʙ",
+    "ᴄ",
+    "ᴅ",
+    "ᴇ",
+    "ғ",
+    "ɢ",
+    "ʜ",
+    "ɪ",
+    "ᴊ",
+    "ᴋ",
+    "ʟ",
+    "ᴍ",
+    "ɴ",
+    "ᴏ",
+    "ᴘ",
+    "ǫ",
+    "ʀ",
+    "s",
+    "ᴛ",
+    "ᴜ",
+    "ᴠ",
+    "ᴡ",
+    "x",
+    "ʏ",
+    "ᴢ"
 ]
 
 [tool.ruff.lint.flake8-pytest-style]
