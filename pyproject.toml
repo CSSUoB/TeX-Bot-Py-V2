@@ -10,7 +10,9 @@ authors = [
     "FrozenDude101",
     "noodleWrecker7",
     "JTWWilson",
-    "LMBishop"
+    "LMBishop",
+    "awsloth",
+    "ChrisDev18",
 ]
 readme = "README.md"
 repository = "https://github.com/CSSUoB/TeX-Bot-Py-V2.git"
@@ -21,7 +23,7 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.12",
     "Typing :: Typed",
-    "Topic :: Internet"
+    "Topic :: Internet",
 ]
 
 
@@ -54,14 +56,12 @@ pymarkdownlnt = "^0.9"
 
 
 [tool.pytest.ini_options]
-filterwarnings = [
-    "ignore:'audioop':DeprecationWarning"
-]
+filterwarnings = ["ignore:'audioop':DeprecationWarning"]
 
 
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]
-exclude = "db/_settings\\.py$"
+exclude = ["db/_settings\\.py$", "venv/"]
 extra_checks = true
 warn_unused_configs = true
 disallow_untyped_calls = true
@@ -86,7 +86,7 @@ module = [
     "mplcyberpunk",
     "discord_logging.handler",
     "parsedatetime",
-    "validators"
+    "validators",
 ]
 ignore_missing_imports = true
 
@@ -96,6 +96,20 @@ django_settings_module = "db._settings"
 
 
 [tool.ruff]
+line-length = 95
+target-version ="py312"
+extend-exclude = [
+    "db/**/migrations/",
+    "venv/",
+    ".vscode",
+    ".idea",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    "__pycache__",
+]
+
+[tool.ruff.lint]
 select = [
     "E",
     "F",
@@ -140,8 +154,9 @@ select = [
     "TRY",
     "FLY",
     "PERF",
-    "RUF"
+    "RUF",
 ]
+fixable = ["I001", "TCH", "F401", "RUF100"]
 ignore = [
     "N818",
     "N806",
@@ -160,9 +175,6 @@ ignore = [
     "PLR0915",
     "TRY400"
 ]
-line-length = 95
-fixable = ["I001", "TCH", "F401", "RUF100"]
-target-version ="py311"
 task-tags = [
     "TODO",
     "FIXME",
@@ -172,59 +184,29 @@ task-tags = [
     "REQ",
     "IDEA",
     "NOTE",
-    "ISSUE"
+    "ISSUE",
+    "DONE",
 ]
-# TODO(CarrotManMatt): When extracting raw message strings into the translations JSON file, this allowed-confusable-characters list should be removed
-# https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/90
-allowed-confusables = [
-    "ᴀ",
-    "ʙ",
-    "ᴄ",
-    "ᴅ",
-    "ᴇ",
-    "ғ",
-    "ɢ",
-    "ʜ",
-    "ɪ",
-    "ᴊ",
-    "ᴋ",
-    "ʟ",
-    "ᴍ",
-    "ɴ",
-    "ᴏ",
-    "ᴘ",
-    "ǫ",
-    "ʀ",
-    "s",
-    "ᴛ",
-    "ᴜ",
-    "ᴠ",
-    "ᴡ",
-    "x",
-    "ʏ",
-    "ᴢ"
-]
-extend-exclude = ["db/**/migrations/", ".idea", ".pytest_cache", "__pycache__"]
 
-[tool.ruff.flake8-pytest-style]
+[tool.ruff.lint.flake8-pytest-style]
 parametrize-values-type = "tuple"
 
-[tool.ruff.flake8-self]
+[tool.ruff.lint.flake8-self]
 extend-ignore-names = ["_base_manager", "_default_manager",  "_meta", "_get_wrap_line_width"]
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 max-complexity = 18
 
-[tool.ruff.pycodestyle]
+[tool.ruff.lint.pycodestyle]
 ignore-overlong-task-comments = true
 max-doc-length = 95
 
-[tool.ruff.pylint]
+[tool.ruff.lint.pylint]
 allow-magic-value-types = ["str", "bytes", "int"]
 max-args = 7
 max-branches = 19
 
-[tool.ruff.pyupgrade]
+[tool.ruff.lint.pyupgrade]
 keep-runtime-typing = true
 
 
