@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     import time
     from collections.abc import Iterator
 
-logger: Logger = logging.getLogger("texbot")
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class RemindMeCommandCog(TeXBotBaseCog):
