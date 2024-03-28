@@ -48,7 +48,6 @@ types-beautifulsoup4 = "^4.12.0"
 pytest = "^7.4"
 ruff = "^0.1"
 gitpython = "^3.1"
-pymarkdownlnt = "^0.9"
 
 
 
@@ -225,21 +224,3 @@ max-branches = 19
 
 [tool.ruff.pyupgrade]
 keep-runtime-typing = true
-
-
-[tool.pymarkdown]
-mode.strict-config = true
-extensions.front-matter.enabled = true
-plugins.heading-style.style = "atx"
-plugins.ul-style.style = "asterisk"
-plugins.ul-start-left.enabled = true
-plugins.ul-indent.indent = 4
-plugins.no-trailing-spaces.strict = true
-plugins.line-length.line_length = 95
-plugins.line-length.heading_line_length = 95
-plugins.line-length.code_block_line_length = 95
-plugins.ol-prefix.style = "ordered"
-plugins.no-inline-html.allow_first_image_element = false
-plugins.hr-style.style = "---"
-plugins.code-block-style.style = "fenced"
-plugins.code-fence-style.style = "backtick"
