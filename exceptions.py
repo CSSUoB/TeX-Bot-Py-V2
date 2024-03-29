@@ -14,6 +14,7 @@ __all__: Sequence[str] = (
     "MessagesJSONFileMissingKeyError",
     "MessagesJSONFileValueError",
     "StrikeTrackingError",
+    "NoAuditLogsStrikeTrackingError",
     "GuildDoesNotExistError",
     "RoleDoesNotExistError",
     "CommitteeRoleDoesNotExistError",
@@ -284,6 +285,15 @@ class MessagesJSONFileMissingKeyError(InvalidMessagesJSONFileError):
         """Initialize a new InvalidMessagesJSONFile exception for a missing key."""
         super().__init__(message, dict_key=missing_key)
 
+    @property
+    def missing_key(self) -> str | None:
+        """The key that was missing from the messages.json file."""
+        return self.dict_key
+
+    @missing_key.setter
+    def missing_key(self, value: str | None) -> None:
+        self.dict_key = value
+
 
 class MessagesJSONFileValueError(InvalidMessagesJSONFileError):
     """Exception class to raise when a key in the messages.json file has an invalid value."""
@@ -314,6 +324,21 @@ class StrikeTrackingError(BaseTeXBotError, RuntimeError):
     def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802,N805
         """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
         return "An error occurred while trying to track manually applied moderation actions."
+
+
+class NoAuditLogsStrikeTrackingError(BaseTeXBotError, RuntimeError):
+    """
+    Exception class to raise when there are no audit logs to resolve the committee member.
+
+    If this error occurs, it is likely that manually applied moderation actions will be missed
+    and not tracked correctly.
+    """
+
+    # noinspection PyMethodParameters,PyPep8Naming
+    @classproperty
+    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802,N805
+        """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
+        return "Unable to retrieve audit log entry after possible manual moderation action."
 
 
 class GuildDoesNotExistError(BaseDoesNotExistError):
@@ -367,6 +392,7 @@ class RoleDoesNotExistError(BaseDoesNotExistError, abc.ABC):
     @abc.abstractmethod
     def ROLE_NAME(cls) -> str:  # noqa: N802,N805
         """The name of the Discord role that does not exist."""  # noqa: D401
+
     def __init__(self, message: str | None = None) -> None:
         """Initialize a new DoesNotExist exception for a role not existing."""
         HAS_DEPENDANTS: Final[bool] = bool(

@@ -16,12 +16,12 @@ especially if you have never contributed before.
 ## Getting Started
 
 If you have never used git before, we would recommend that you read
-[GitHub's Getting Started guide](https://guides.github.com/introduction/getting-started-with-git/).
+[GitHub's Getting Started guide](https://guides.github.com/introduction/getting-started-with-git).
 Additionally, linked below are some helpful resources:
 
 * [GitHub git guides](https://github.com/git-guides)
-* [git - the simple guide](https://rogerdudler.github.io/git-guide/)
-* [Getting Git Right (Atlassian)](https://www.atlassian.com/git/)
+* [git - the simple guide](https://rogerdudler.github.io/git-guide)
+* [Getting Git Right (Atlassian)](https://atlassian.com/git)
 
 If you are new to contributing to open-source projects on GitHub,
 the general workflow is as follows:
@@ -34,13 +34,13 @@ the general workflow is as follows:
 
 We recommend also reading the following if you're unsure or not confident:
 
-* [How To Make A Pull Request](https://makeapullrequest.com/)
-* [Contributing To An Open Source Project For The First Time](https://www.firsttimersonly.com/)
+* [How To Make A Pull Request](https://makeapullrequest.com)
+* [Contributing To An Open Source Project For The First Time](https://firsttimersonly.com)
 
 This bot is written in [Python](https://www.python.org/) using [Pycord](https://pycord.dev)
 and uses Discord's [slash-commands](https://support.discord.com/hc/en-gb/articles/1500000368501-Slash-Commands-FAQ)
 & [user-commands](https://guide.pycord.dev/interactions/application-commands/context-menus).
-We would recommend being somewhat familiar with the [Pycord library](https://docs.pycord.dev/en/stable/),
+We would recommend being somewhat familiar with the [Pycord library](https://docs.pycord.dev/en/stable),
 [Python language](https://docs.python.org/3/reference/index) & [project terminology](README.md#terminology)
 before contributing.
 
@@ -75,7 +75,7 @@ contains all the [cogs](https://guide.pycord.dev/popular-topics/cogs) within thi
 see [below](#cogs) for more information
 * [`utils/`](utils): contains common utility classes & functions
 used by the top-level modules & cogs
-* [`db/core/models/`](db/core/models): contains all the [database ORM models](https://docs.djangoproject.com/en/stable/topics/db/models/)
+* [`db/core/models/`](db/core/models): contains all the [database ORM models](https://docs.djangoproject.com/en/stable/topics/db/models)
 to interact with storing information longer-term (between individual command events)
 * [`tests/`](tests): contains the complete test suite for this project,
 based on the [Pytest framework](https://pytest.org)
@@ -111,7 +111,7 @@ cogs related to kicking Discord members that have not introduced themselves
 for which conditions are required to be met, to execute this task.)
 * [`cogs/make_member.py`](cogs/make_member.py): cogs related to making guests into members
 * [`cogs/ping.py`](cogs/ping.py):
-cog to request a [ping](https://en.wikipedia.org/wiki/Ping-pong_scheme#Internet) response
+cog to request a [ping](https://wikipedia.org/wiki/Ping-pong_scheme#Internet) response
 * [`cogs/remind_me.py`](cogs/remind_me.py): cogs to ask the bot to send a reminder message
 at a later date
 * [`cogs/send_get_roles_reminders.py`](cogs/send_get_roles_reminders.py):
@@ -151,13 +151,13 @@ Pycharm & VS Code also provide GUI interfaces to run the Pytest test suite.
 ### Code Style
 
 In general, follow the formatting in the file you are editing.
-You should also run the [static analysis linting](https://en.wikipedia.org/wiki/Lint_(software))
-/[type checking](https://realpython.com/python-type-checking/#static-type-checking) tools
+You should also run the [static analysis linting](https://wikipedia.org/wiki/Lint_(software))
+/[type checking](https://realpython.com/python-type-checking#static-type-checking) tools
 to validate your code.
 
 #### ruff
 
-[ruff](https://ruff.rs) is a [static analysis code linter](https://en.wikipedia.org/wiki/Lint_(software)),
+[ruff](https://ruff.rs) is a [static analysis code linter](https://wikipedia.org/wiki/Lint_(software)),
 which will alert you to possible formatting mistakes in your Python code.
 It can be run with the following command:
 
@@ -166,13 +166,13 @@ poetry run ruff check .
 ```
 
 There are many additional flags to provide more advanced linting help (E.g. `--fix`).
-See [ruff's documentation](https://docs.astral.sh/ruff/configuration/#command-line-interface)
+See [ruff's documentation](https://docs.astral.sh/ruff/configuration#command-line-interface)
 for additional configuration options.
 
 #### mypy
 
-[mypy](https://www.mypy-lang.org/) is a [static type checker](https://realpython.com/python-type-checking/#static-type-checking),
-which will alert you to possible [typing](https://realpython.com/python-type-checking/#type-systems)
+[mypy](https://mypy-lang.org) is a [static type checker](https://realpython.com/python-type-checking#static-type-checking),
+which will alert you to possible [typing](https://realpython.com/python-type-checking#type-systems)
 errors in your Python code.
 It can be run with the following command:
 
@@ -181,17 +181,17 @@ poetry run mypy .
 ```
 
 Although there is [a PyCharm plugin](https://github.com/leinardi/mypy-pycharm#mypy-pycharm)
-to provide GUI control & inline warnings for [mypy](https://www.mypy-lang.org/),
+to provide GUI control & inline warnings for [mypy](https://mypy-lang.org),
 it has been rather temperamental recently.
 So it is suggested to avoid using it,
-and run [mypy](https://www.mypy-lang.org/) from the command-line instead.
+and run [mypy](https://mypy-lang.org) from the command-line instead.
 
 #### PyMarkdown
 
 [PyMarkdown](https://github.com/jackdewinter/pymarkdown) is a static analysis
-[MarkDown](https://www.markdownguide.org/getting-started/#what-is-markdown) [linter](https://en.wikipedia.org/wiki/Lint_(software)),
+[MarkDown](https://markdownguide.org/getting-started#what-is-markdown) [linter](https://wikipedia.org/wiki/Lint_(software)),
 which will alert you to possible formatting mistakes
-in your [MarkDown](https://www.markdownguide.org/getting-started/#what-is-markdown) files.
+in your [MarkDown](https://markdownguide.org/getting-started#what-is-markdown) files.
 It can be run with the following command:
 
 ```shell
@@ -207,8 +207,8 @@ as discussed in [the "Markdown Linting Issues" section](#markdown-linting-issues
 
 ##### Markdown Linting Issues
 
-The tools [ruff](https://ruff.rs) & [mypy](https://www.mypy-lang.org/) can be run as normal
-from the command line (as long as you are [within the poetry environment](https://python-poetry.org/docs/basic-usage/#activating-the-virtual-environment)),
+The tools [ruff](https://ruff.rs) & [mypy](https://mypy-lang.org) can be run as normal
+from the command line (as long as you are [within the poetry environment](https://python-poetry.org/docs/basic-usage#activating-the-virtual-environment)),
 however, [PyMarkdown](https://github.com/jackdewinter/pymarkdown) will **incorrectly** throw errors
 if run according to its own documentation.
 This is because some markdown files contain custom-formatted tables
@@ -257,7 +257,7 @@ After that, that's it! You've made your first contribution. 🎉
 ## License
 
 Please note that any contributions you make will be made under the terms of the
-[Apache Licence 2.0](https://github.com/CSSUoB/TeX-Bot-Py/blob/main/LICENSE).
+[Apache Licence 2.0](LICENSE).
 
 ## Guidance
 

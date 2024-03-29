@@ -137,7 +137,8 @@ class StatsCommandsCog(TeXBotBaseCog):
 
     _DISCORD_SERVER_NAME: Final[str] = f"""{
         "the " if (
-            (
+            settings["_GROUP_SHORT_NAME"] is not None
+            and (
                 settings["_GROUP_SHORT_NAME"]
             ).replace("the", "").replace("THE", "").replace("The", "").strip()
         )
@@ -149,7 +150,8 @@ class StatsCommandsCog(TeXBotBaseCog):
             ).replace("the", "").replace("THE", "").replace("The", "").strip()
         )
         if (
-            (
+            settings["_GROUP_SHORT_NAME"] is not None
+            and (
                 settings["_GROUP_SHORT_NAME"]
             ).replace("the", "").replace("THE", "").replace("The", "").strip()
         )
@@ -373,10 +375,10 @@ class StatsCommandsCog(TeXBotBaseCog):
                     x_label="Role Name",
                     y_label=(
                         f"""Number of Messages Sent (in the past {
-                        amount_of_time_formatter(
-                            settings["STATISTICS_DAYS"].days,
-                            "day"
-                        )
+                            amount_of_time_formatter(
+                                settings["STATISTICS_DAYS"].days,
+                                "day"
+                            )
                         })"""
                     ),
                     title=(

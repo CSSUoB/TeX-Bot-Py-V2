@@ -81,3 +81,19 @@ jobs:
 
       - name: Run PyMarkdown scan
         run: poetry run python ./.github/workflows/scripts/remove_invalid_tables.py && poetry run pymarkdown scan . ; poetry run python ./.github/workflows/scripts/remove_invalid_tables.py --restore
+
+  prevent-migrations-deletion:
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: read
+
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Prevent migrations files changing
+        uses: CSSUoB/action-prevent-file-change@v1
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          pattern: '.*\/db\/.+\/migrations\/\d{4}\w*\.py$'
+          allowNewFiles: true
