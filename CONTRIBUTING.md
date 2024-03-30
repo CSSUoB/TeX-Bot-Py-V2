@@ -155,7 +155,7 @@ So it is suggested to avoid using it, and run [mypy](https://mypy-lang.org) from
 
 #### PyMarkdown
 
-[PyMarkdown](https://github.com/jackdewinter/pymarkdown) is a static analysis [MarkDown](https://markdownguide.org/getting-started#what-is-markdown) [linter](https://wikipedia.org/wiki/Lint_(software)), which will alert you to possible formatting mistakes in your [MarkDown](https://markdownguide.org/getting-started#what-is-markdown) files.
+[PyMarkdown](https://github.com/jackdewinter/pymarkdown) is a static analysis [Markdown](https://markdownguide.org/getting-started#what-is-markdown) [linter](https://wikipedia.org/wiki/Lint_(software)), which will alert you to possible formatting mistakes in your [MarkDown](https://markdownguide.org/getting-started#what-is-markdown) files.
 It can be run with the following command:
 
 ```shell
