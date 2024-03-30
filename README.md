@@ -2,7 +2,7 @@
 
 [![TeX-Bot Version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSUoB%2FTeX-Bot-Py-V2%2Fmain%2Fpyproject.toml&query=%24.tool.poetry.version&label=TeX-Bot)](https://github.com/CSSUoB/TeX-Bot-Py-V2)
 [![Python Version](https://img.shields.io/badge/Python-3.12-blue?&logo=Python&logoColor=white)](https://python.org/downloads/release/python-3122)
-[![Pycord Version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSUoB%2FTeX-Bot-Py-V2%2Fmain%2Fpyproject.toml&query=%24.package%5B%3F%28%40.name%3D%3D%27py-cord%27%29%5D.version&logo=Discord&label=Pycord&logoColor=white)](https://pycord.dev)
+[![Pycord Version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSUoB%2FTeX-Bot-Py-V2%2Fmain%2Fpoetry.lock&query=%24.package%5B%3F%28%40.name%3D%3D%27py-cord%27%29%5D.version&logo=Discord&label=Pycord&logoColor=white)](https://pycord.dev)
 [![Tests Status](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yaml/badge.svg)](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yaml)
 [![Mypy Status](https://img.shields.io/badge/mypy-checked-%232EBB4E&label=mypy)](https://mypy-lang.org)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://ruff.rs)
@@ -43,7 +43,7 @@ This is in contrast to a "guest", which is a person that has not purchased a mem
 Guests often can only attend events that are open to anyone (i.e. **not** members only), and have limited communication/perks within your [Discord guild](https://discord.com/developers/docs/resources/guild).
 Some commands may require you to create [roles](https://discord.com/developers/docs/topics/permissions#role-object) within your [Discord guild](https://discord.com/developers/docs/resources/guild), to differentiate between these different types of users.
 
-==== Other Uses
+#### Other Uses
 
 In some other contexts, the term "user" may be used to refer to any person/organisation making use of this project.
 (E.g. the description within [the "Error Codes" section](#error-codes).)
