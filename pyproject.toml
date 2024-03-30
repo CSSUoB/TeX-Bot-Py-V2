@@ -16,7 +16,7 @@ authors = [
 ]
 readme = "README.md"
 repository = "https://github.com/CSSUoB/TeX-Bot-Py-V2.git"
-keywords = ["discord", "uob", "uob-css", "TeXBot"]
+keywords = ["discord", "uob", "uob-css", "TeX-Bot"]
 classifiers = [
     "Private :: Do Not Upload",
     "Natural Language :: English",

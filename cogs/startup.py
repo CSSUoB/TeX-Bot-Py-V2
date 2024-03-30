@@ -22,7 +22,7 @@ from exceptions import (
 )
 from utils import TeXBotBaseCog
 
-logger: Logger = logging.getLogger("texbot")
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class StartupCog(TeXBotBaseCog):

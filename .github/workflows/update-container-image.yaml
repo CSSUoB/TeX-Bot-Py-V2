@@ -29,6 +29,6 @@ jobs:
       with:
         push: true
         # noinspection SpellCheckingInspection
-        tags: ghcr.io/cssuob/texbot-py-v2:latest
+        tags: ghcr.io/cssuob/tex-bot-py-v2:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
