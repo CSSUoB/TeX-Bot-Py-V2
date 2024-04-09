@@ -53,7 +53,9 @@
     "roles_messages": [
         "_ _\nReact to this message to get pronoun roles\n:regional_indicator_h: - He/Him\n:regional_indicator_s: - She/Her\n:regional_indicator_t: - They/Them",
         "_ _\nReact to this message to get year group roles\n:zero: - Foundation Year\n:one: - First Year\n:two: - Second Year\n:regional_indicator_f: - Final Year (incl. 3rd Year MSci/MEng)\n:regional_indicator_i: - Year in Industry\n:regional_indicator_a: - Year Abroad\n:regional_indicator_t: - Post-Graduate Taught (Masters/MSc)\n:regional_indicator_r: - Post-Graduate Research (PhD)\n:a: - Alumnus\n:regional_indicator_d: - Postdoc",
-        "_ _\nReact to this message to join the **opt in channels**\n:speech_balloon: - Serious Talk\n:house_with_garden: - Housing\n:video_game: - Gaming\n:tv: - Anime\n:soccer: - Sport\n:briefcase: - Industry\n:pick: - Minecraft\n:globe_with_meridians: - <Group_Name> Website\n:bookmark: - Archivist",
+        "_ _\nReact to this message to join the **opt in channels**\n:speech_balloon: - Serious Talk\n:house_with_garden: - Housing\n:video_game: - Gaming\n:tv: - Anime\n:soccer: - Sport\n:briefcase: - Industry\n:pick: - Minecraft\n:globe_with_meridians: - <Group_Name> Website\n:bookmark: - Archivist", 
+        "_ _\nReact to this message to ***opt out*** of the starboard. This will mean that messages you send won't be eligible to be added to the starboard, nor will stars you add to a message be counted toward the starboard threshold
+"
         "_ _\nReact to this message to opt in to News notifications\n:speaker: - Get notifications when we `@News`\n:mute:- Don't get notifications when we `@News`\n\n> We will still use `@everyone` messages if there is something urgent"
     ]
 }
