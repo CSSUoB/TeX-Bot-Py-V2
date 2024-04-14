@@ -69,7 +69,9 @@ class StartupCog(TeXBotBaseCog):
         if not main_guild:
             logger.info(
                 "Invite URL: %s",
-                generate_invite_url(str(self.bot.application_id), str(settings["DISCORD_GUILD_ID"]))
+                generate_invite_url(
+                    str(self.bot.application_id), 
+                    str(settings["DISCORD_GUILD_ID"]))
                 )
             logger.critical(GuildDoesNotExistError(guild_id=settings["DISCORD_GUILD_ID"]))
             await self.bot.close()
@@ -77,7 +79,9 @@ class StartupCog(TeXBotBaseCog):
 
         logger.debug(
             "Invite URL: %s",
-            generate_invite_url(str(self.bot.application_id), str(settings["DISCORD_GUILD_ID"]))
+            generate_invite_url(
+                str(self.bot.application_id), 
+                str(settings["DISCORD_GUILD_ID"]))
         )
 
         if not discord.utils.get(main_guild.roles, name="Committee"):
