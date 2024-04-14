@@ -70,7 +70,7 @@ class StartupCog(TeXBotBaseCog):
             logger.info(
                 "Invite URL: %s",
                 generate_invite_url(
-                    str(self.bot.application_id), 
+                    str(self.bot.application_id),
                     str(settings["DISCORD_GUILD_ID"]))
                 )
             logger.critical(GuildDoesNotExistError(guild_id=settings["DISCORD_GUILD_ID"]))
@@ -80,7 +80,7 @@ class StartupCog(TeXBotBaseCog):
         logger.debug(
             "Invite URL: %s",
             generate_invite_url(
-                str(self.bot.application_id), 
+                str(self.bot.application_id),
                 str(settings["DISCORD_GUILD_ID"]))
         )
 
