@@ -20,7 +20,7 @@ from exceptions import (
     MemberRoleDoesNotExistError,
     RolesChannelDoesNotExistError,
 )
-from utils import TeXBotBaseCog
+from utils import TeXBotBaseCog, generate_invite_url
 
 logger: Logger = logging.getLogger("TeX-Bot")
 
@@ -67,9 +67,18 @@ class StartupCog(TeXBotBaseCog):
                 self.bot.set_main_guild(main_guild)
 
         if not main_guild:
+            logger.info(
+                "Invite URL: %s",
+                generate_invite_url(str(self.bot.application_id), str(settings["DISCORD_GUILD_ID"]))
+                )
             logger.critical(GuildDoesNotExistError(guild_id=settings["DISCORD_GUILD_ID"]))
             await self.bot.close()
             return
+
+        logger.debug(
+            "Invite URL: %s",
+            generate_invite_url(str(self.bot.application_id), str(settings["DISCORD_GUILD_ID"]))
+        )
 
         if not discord.utils.get(main_guild.roles, name="Committee"):
             logger.warning(CommitteeRoleDoesNotExistError())
