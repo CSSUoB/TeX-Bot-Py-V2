@@ -23,7 +23,7 @@
         "Is it a bird? Or is it a plane? Nope! It's <User> coming down in their brand new scooter!",
         "<User> has hacked their way into the server!",
         "`if (username == `<User>`) print('Welcome to <Group_Name>!');`",
-        "<@Committee> welcomes <User>",
+        "@Committee welcomes <User>",
         "My name is <User>, you accessed invalid memory.\nPrepare to Segmentation fault (core dumped)",
         "I am become <User>, joiner of the <Group_Name> Discord server",
         "<User> navigated here by cardinal directions and vibes",
