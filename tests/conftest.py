@@ -25,7 +25,7 @@ MISSING_ENV_VARIABLES: Final[Mapping[str, object]] = {
             "MEMBERS_LIST_URL": "https://google.com",
             "MEMBERS_LIST_URL_SESSION_COOKIE": (
                 "".join(random.choices(string.hexdigits, k=random.randint(128, 256)))
-            )
+            ),
         }.items()
     )
     if key not in _EXISTING_ENV_VARIABLES
@@ -55,7 +55,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:  # noqa: ARG001
     if MISSING_ENV_VARIABLES and dotenv_file_path is not None:
         with dotenv_file_path.open(dotenv_file_open_method) as dotenv_file:
             dotenv_file.write(
-                "\n".join(f"{key}={value}" for key, value in MISSING_ENV_VARIABLES.items())
+                "\n".join(f"{key}={value}" for key, value in MISSING_ENV_VARIABLES.items()),
             )
             dotenv_file.write("\n")
 
@@ -91,7 +91,7 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int | pytest.ExitC
                                     not in MISSING_ENV_VARIABLES
                                 )
                             )
-                        ]
-                    )
+                        ],
+                    ),
                 )
                 dotenv_file.write("\n")

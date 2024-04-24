@@ -37,14 +37,14 @@ class TestAmountOfTimeFormatter:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_TIME_VALUE",
-        (*range(2, 21), 2.00, 0, 0.0, 25.0, -0, -0.0, -25.0)
+        (*range(2, 21), 2.00, 0, 0.0, 25.0, -0, -0.0, -25.0),
     )
     @pytest.mark.parametrize("TIME_SCALE", ("day",))
     def test_format_integer_value(self, TEST_TIME_VALUE: float, TIME_SCALE: str) -> None:  # noqa: N803
         """Test that an integer value includes the value and time_scale pluralized."""
         assert amount_of_time_formatter(
             TEST_TIME_VALUE,
-            TIME_SCALE
+            TIME_SCALE,
         ) == f"{int(TEST_TIME_VALUE)} {TIME_SCALE}s"
 
     # noinspection PyPep8Naming
@@ -54,7 +54,7 @@ class TestAmountOfTimeFormatter:
         """Test that a float value includes the rounded value and time_scale pluralized."""
         assert amount_of_time_formatter(
             TEST_TIME_VALUE,
-            TIME_SCALE
+            TIME_SCALE,
         ) == f"{TEST_TIME_VALUE:.2f} {TIME_SCALE}s"
 
 
@@ -73,7 +73,7 @@ class TestPlotBarChart:
             title="Counted Value Of Each Role",
             filename=FILENAME,
             description=DESCRIPTION,
-            extra_text="This is extra text"
+            extra_text="This is extra text",
         )
 
         assert bar_chart_image.filename == FILENAME
@@ -130,17 +130,20 @@ class TestChannelStatsCommand(BaseTestDiscordCommand):
         (
             "INVALID_CHANNEL_ID",
             "".join(
-                random.choices(string.ascii_letters + string.digits + string.punctuation, k=18)
+                random.choices(
+                    string.ascii_letters + string.digits + string.punctuation,
+                    k=18,
+                ),
             ),
             "".join(random.choices(string.digits, k=2)),
-            "".join(random.choices(string.digits, k=50))
-        )
+            "".join(random.choices(string.digits, k=50)),
+        ),
     )
     def test_invalid_channel_id(self, INVALID_CHANNEL_ID: str, CONTEXT: TestingApplicationContext) -> None:  # noqa: N803, E501
         """Test that an error occurs when running the command with an invalid channel ID."""
         self.execute_command(
             ctx=CONTEXT,
-            str_channel_id=INVALID_CHANNEL_ID
+            str_channel_id=INVALID_CHANNEL_ID,
         )
 
         assert len(CONTEXT.interaction.responses) == 1

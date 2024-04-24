@@ -113,7 +113,7 @@ class TestingInteraction(discord.Interaction):
             embed=embed,
             embeds=embeds,
             view=view,
-            delete_after=delete_after
+            delete_after=delete_after,
         )
 
         self._responses.append(response)

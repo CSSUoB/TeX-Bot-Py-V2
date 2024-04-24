@@ -23,6 +23,7 @@ from exceptions import (
     MessagesJSONFileMissingKeyError,
     MessagesJSONFileValueError,
 )
+
 # noinspection PyProtectedMember
 from tests._testing_utils import EnvVariableDeleter, FileTemporaryDeleter
 from utils import (
@@ -74,7 +75,7 @@ class TestSettings:
                     functools.partial(replacement_method, setup_method_name=setup_method_name)
                     if replacement_method is not None
                     else empty_setup_method
-                )
+                ),
             )
 
         return RuntimeSettings
@@ -84,7 +85,7 @@ class TestSettings:
     def test_get_invalid_settings_key_message(self, TEST_ITEM_NAME: str) -> None:  # noqa: N803
         """Test that the `get_invalid_settings_key_message()` method returns correctly."""
         INVALID_SETTINGS_KEY_MESSAGE: Final[str] = settings.get_invalid_settings_key_message_for_item_name(  # noqa: E501
-            TEST_ITEM_NAME
+            TEST_ITEM_NAME,
         )
 
         assert TEST_ITEM_NAME in INVALID_SETTINGS_KEY_MESSAGE
@@ -222,7 +223,7 @@ class TestSettings:
     def test_is_env_variables_setup_made_true(self) -> None:
         """Test calling `_setup_env_variables()` sets `_is_env_variables_setup` to True."""
         RuntimeSettings: Final[type[Settings]] = self.replace_setup_methods(
-            ignore_methods=("_setup_env_variables",)
+            ignore_methods=("_setup_env_variables",),
         )
 
         assert RuntimeSettings._is_env_variables_setup is False  # noqa: SLF001
@@ -241,7 +242,7 @@ class TestSettings:
 
         RuntimeSettings: Final[type[Settings]] = self.replace_setup_methods(
             ignore_methods=("_setup_env_variables",),
-            replacement_method=add_called_setup_method
+            replacement_method=add_called_setup_method,
         )
 
         RuntimeSettings._setup_env_variables()  # noqa: SLF001
@@ -265,7 +266,7 @@ class TestSettings:
     def test_cannot_setup_more_than_once(self, caplog: "LogCaptureFixture", TEST_ITEM_NAME: str, TEST_ITEM_VALUE: str) -> None:  # noqa: N803,E501
         """Test that the Env Variables cannot be set more than once."""
         RuntimeSettings: Final[type[Settings]] = self.replace_setup_methods(
-            ignore_methods=("_setup_env_variables",)
+            ignore_methods=("_setup_env_variables",),
         )
 
         RuntimeSettings._setup_env_variables()  # noqa: SLF001
@@ -332,9 +333,12 @@ class TestSetupLogging:
             "",
             "  ",
             "".join(
-                random.choices(string.ascii_letters + string.digits + string.punctuation, k=18)
-            )
-        )
+                random.choices(
+                    string.ascii_letters + string.digits + string.punctuation,
+                    k=18,
+                ),
+            ),
+        ),
     )
     def test_invalid_console_log_level(self, INVALID_LOG_LEVEL: str) -> None:  # noqa: N803
         """Test that an error is raised when an invalid `CONSOLE_LOG_LEVEL` is provided."""
@@ -366,8 +370,8 @@ class TestSetupDiscordBotToken:
         "TEST_DISCORD_BOT_TOKEN",
         itertools.chain(
             RandomDiscordBotTokenGenerator.multiple_values(),
-            (f"    {RandomDiscordBotTokenGenerator.single_value()}   ",)
-        )
+            (f"    {RandomDiscordBotTokenGenerator.single_value()}   ",),
+        ),
     )
     def test_setup_discord_bot_token_successful(self, TEST_DISCORD_BOT_TOKEN: str) -> None:  # noqa: N803
         """Test that the given `DISCORD_BOT_TOKEN` is used when a valid one is provided."""
@@ -398,19 +402,22 @@ class TestSetupDiscordBotToken:
             "",
             "  ",
             "".join(
-                random.choices(string.ascii_letters + string.digits + string.punctuation, k=18)
+                random.choices(
+                    string.ascii_letters + string.digits + string.punctuation,
+                    k=18,
+                ),
             ),
             re.sub(
                 r"\A[A-Za-z0-9]{24,26}\.",
                 f"{"".join(random.choices(string.ascii_letters + string.digits, k=2))}.",
                 string=RandomDiscordBotTokenGenerator.single_value(),
-                count=1
+                count=1,
             ),
             re.sub(
                 r"\A[A-Za-z0-9]{24,26}\.",
                 f"{"".join(random.choices(string.ascii_letters + string.digits, k=50))}.",
                 string=RandomDiscordBotTokenGenerator.single_value(),
-                count=1
+                count=1,
             ),
             re.sub(
                 r"\A[A-Za-z0-9]{24,26}\.",
@@ -422,13 +429,13 @@ class TestSetupDiscordBotToken:
                     }."
                 ),
                 string=RandomDiscordBotTokenGenerator.single_value(),
-                count=1
+                count=1,
             ),
             re.sub(
                 r"\.[A-Za-z0-9]{6}\.",
                 f".{"".join(random.choices(string.ascii_letters + string.digits, k=2))}.",
                 string=RandomDiscordBotTokenGenerator.single_value(),
-                count=1
+                count=1,
             ),
             re.sub(
                 r"\.[A-Za-z0-9]{6}\.",
@@ -436,7 +443,7 @@ class TestSetupDiscordBotToken:
                     f".{"".join(random.choices(string.ascii_letters + string.digits, k=50))}."
                 ),
                 string=RandomDiscordBotTokenGenerator.single_value(),
-                count=1
+                count=1,
             ),
             re.sub(
                 r"\.[A-Za-z0-9]{6}\.",
@@ -448,7 +455,7 @@ class TestSetupDiscordBotToken:
                     }."
                 ),
                 string=RandomDiscordBotTokenGenerator.single_value(),
-                count=1
+                count=1,
             ),
             re.sub(
                 r"\.[A-Za-z0-9_-]{27,38}\Z",
@@ -460,7 +467,7 @@ class TestSetupDiscordBotToken:
                     }"
                 ),
                 string=RandomDiscordBotTokenGenerator.single_value(),
-                count=1
+                count=1,
             ),
             re.sub(
                 r"\.[A-Za-z0-9_-]{27,38}\Z",
@@ -472,7 +479,7 @@ class TestSetupDiscordBotToken:
                     }"
                 ),
                 string=RandomDiscordBotTokenGenerator.single_value(),
-                count=1
+                count=1,
             ),
             re.sub(
                 r"\.[A-Za-z0-9_-]{27,38}\Z",
@@ -488,9 +495,9 @@ class TestSetupDiscordBotToken:
                     }"
                 ),
                 string=RandomDiscordBotTokenGenerator.single_value(),
-                count=1
-            )
-        )
+                count=1,
+            ),
+        ),
     )
     def test_invalid_discord_bot_token(self, INVALID_DISCORD_BOT_TOKEN: str) -> None:  # noqa: N803
         """Test that an error is raised when an invalid `DISCORD_BOT_TOKEN` is provided."""
@@ -515,14 +522,14 @@ class TestSetupDiscordLogChannelWebhookURL:
         "TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL",
         itertools.chain(
             RandomDiscordLogChannelWebhookURLGenerator.multiple_values(
-                with_trailing_slash=False
+                with_trailing_slash=False,
             ),
             RandomDiscordLogChannelWebhookURLGenerator.multiple_values(
                 count=1,
-                with_trailing_slash=True
+                with_trailing_slash=True,
             ),
-            (f"    {RandomDiscordLogChannelWebhookURLGenerator.single_value()}   ",)
-        )
+            (f"    {RandomDiscordLogChannelWebhookURLGenerator.single_value()}   ",),
+        ),
     )
     def test_setup_discord_log_channel_webhook_url_successful(self, TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str) -> None:  # noqa: N803,E501
         """
@@ -568,19 +575,22 @@ class TestSetupDiscordLogChannelWebhookURL:
             "",
             "  ",
             "".join(
-                random.choices(string.ascii_letters + string.digits + string.punctuation, k=18)
+                random.choices(
+                    string.ascii_letters + string.digits + string.punctuation,
+                    k=18,
+                ),
             ),
             re.sub(
                 r"/\d{17,20}/",
                 f"/{"".join(random.choices(string.digits, k=2))}/",
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
-                count=1
+                count=1,
             ),
             re.sub(
                 r"/\d{17,20}/",
                 f"/{"".join(random.choices(string.digits, k=50))}/",
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
-                count=1
+                count=1,
             ),
             re.sub(
                 r"/\d{17,20}/",
@@ -592,13 +602,13 @@ class TestSetupDiscordLogChannelWebhookURL:
                     }/"
                 ),
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
-                count=1
+                count=1,
             ),
             re.sub(
                 r"/[a-zA-Z\d]{60,90}",
                 f"/{"".join(random.choices(string.ascii_letters + string.digits, k=2))}",
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
-                count=1
+                count=1,
             ),
             re.sub(
                 r"/[a-zA-Z\d]{60,90}",
@@ -606,7 +616,7 @@ class TestSetupDiscordLogChannelWebhookURL:
                     f"/{"".join(random.choices(string.ascii_letters + string.digits, k=150))}"
                 ),
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
-                count=1
+                count=1,
             ),
             re.sub(
                 r"/[a-zA-Z\d]{60,90}",
@@ -618,9 +628,9 @@ class TestSetupDiscordLogChannelWebhookURL:
                     }"
                 ),
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
-                count=1
-            )
-        )
+                count=1,
+            ),
+        ),
     )
     def test_invalid_discord_log_channel_webhook_url(self, INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str) -> None:  # noqa: N803,E501
         """Test that an error occurs when `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is invalid."""
@@ -647,8 +657,8 @@ class TestSetupDiscordGuildID:
         "TEST_DISCORD_GUILD_ID",
         itertools.chain(
             RandomDiscordGuildIDGenerator.multiple_values(),
-            (f"    {RandomDiscordGuildIDGenerator.single_value()}   ",)
-        )
+            (f"    {RandomDiscordGuildIDGenerator.single_value()}   ",),
+        ),
     )
     def test_setup_discord_guild_id_successful(self, TEST_DISCORD_GUILD_ID: str) -> None:  # noqa: N803
         """Test that the given `DISCORD_GUILD_ID` is used when a valid one is provided."""
@@ -679,11 +689,14 @@ class TestSetupDiscordGuildID:
             "",
             "  ",
             "".join(
-                random.choices(string.ascii_letters + string.digits + string.punctuation, k=18)
+                random.choices(
+                    string.ascii_letters + string.digits + string.punctuation,
+                    k=18,
+                ),
             ),
             "".join(random.choices(string.digits, k=2)),
-            "".join(random.choices(string.digits, k=50))
-        )
+            "".join(random.choices(string.digits, k=50)),
+        ),
     )
     def test_invalid_discord_guild_id(self, INVALID_DISCORD_GUILD_ID: str) -> None:  # noqa: N803
         """Test that an error is raised when an invalid `DISCORD_GUILD_ID` is provided."""
@@ -713,14 +726,14 @@ class TestSetupGroupFullName:
             "Bahá’í",  # noqa: RUF001
             "Burn FM.com",
             "Dental Society (BUDSS)",
-            "Devil\'s Advocate Society",
+            "Devil's Advocate Society",
             "KASE: Knowledge And Skills Exchange",
             "Law for Non-Law",
             "   Computer Science Society    ",
             "Computer Science Society?",
             "Computer Science Society!",
-            "(Computer Science Society)"
-        )
+            "(Computer Science Society)",
+        ),
     )
     def test_setup_group_full_name_successful(self, TEST_GROUP_FULL_NAME: str) -> None:  # noqa: N803
         """Test that the given `GROUP_NAME` is used when a valid one is provided."""
@@ -738,7 +751,7 @@ class TestSetupGroupFullName:
                 ord(unicode_char): ascii_char
                 for unicode_char, ascii_char
                 in zip("‘’´“”–-", "''`\"\"--", strict=True)  # noqa: RUF001
-            }
+            },
         )
 
     def test_missing_group_full_name(self) -> None:
@@ -780,8 +793,8 @@ class TestSetupGroupFullName:
             "-Computer Science Society",
             "",
             "  ",
-            "".join(random.choices(string.digits, k=30))
-        )
+            "".join(random.choices(string.digits, k=30)),
+        ),
     )
     def test_invalid_group_full_name(self, INVALID_GROUP_FULL_NAME: str) -> None:  # noqa: N803
         """Test that an error is raised when an invalid `GROUP_NAME` is provided."""
@@ -814,8 +827,8 @@ class TestSetupGroupShortName:
             "   CSS    ",
             "CSS?",
             "CSS!",
-            "(CSS)"
-        )
+            "(CSS)",
+        ),
     )
     def test_setup_group_short_name_successful(self, TEST_GROUP_SHORT_NAME: str) -> None:  # noqa: N803
         """Test that the given `GROUP_SHORT_NAME` is used when a valid one is provided."""
@@ -834,7 +847,7 @@ class TestSetupGroupShortName:
                     ord(unicode_char): ascii_char
                     for unicode_char, ascii_char
                     in zip("‘’´“”–-", "''`\"\"--", strict=True)  # noqa: RUF001
-                }
+                },
             )
         )
 
@@ -865,14 +878,14 @@ class TestSetupGroupShortName:
             "Bahá’í",  # noqa: RUF001
             "Burn FM.com",
             "Dental Society (BUDSS)",
-            "Devil\'s Advocate Society",
+            "Devil's Advocate Society",
             "KASE: Knowledge And Skills Exchange",
             "Law for Non-Law",
             "   Computer Science Society    ",
             "Computer Science Society?",
             "Computer Science Society!",
-            "(Computer Science Society)"
-        )
+            "(Computer Science Society)",
+        ),
     )
     def test_resolved_value_group_short_name_with_group_full_name(self, TEST_GROUP_FULL_NAME: str) -> None:  # noqa: N803,E501
         """
@@ -903,28 +916,28 @@ class TestSetupGroupShortName:
             else TEST_GROUP_FULL_NAME
         ).replace(
             "the",
-            ""
+            "",
         ).replace(
             "THE",
-            ""
+            "",
         ).replace(
             "The",
-            ""
+            "",
         ).replace(
             " ",
-            ""
+            "",
         ).replace(
             "\t",
-            ""
+            "",
         ).replace(
             "\n",
-            ""
+            "",
         ).translate(
             {
                 ord(unicode_char): ascii_char
                 for unicode_char, ascii_char
                 in zip("‘’´“”–-", "''`\"\"--", strict=True)  # noqa: RUF001
-            }
+            },
         ).strip()
 
     # noinspection PyPep8Naming
@@ -952,8 +965,8 @@ class TestSetupGroupShortName:
             "-CSS",
             "",
             "  ",
-            "".join(random.choices(string.digits, k=30))
-        )
+            "".join(random.choices(string.digits, k=30)),
+        ),
     )
     def test_invalid_group_short_name(self, INVALID_GROUP_SHORT_NAME: str) -> None:  # noqa: N803
         """Test that an error is raised when an invalid `GROUP_SHORT_NAME` is provided."""
@@ -976,7 +989,7 @@ class TestSetupPurchaseMembershipURL:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_PURCHASE_MEMBERSHIP_URL",
-        ("https://google.com", "www.google.com/", "    https://google.com   ")
+        ("https://google.com", "www.google.com/", "    https://google.com   "),
     )
     def test_setup_purchase_membership_url_successful(self, TEST_PURCHASE_MEMBERSHIP_URL: str) -> None:  # noqa: N803,E501
         """Test that the given valid `PURCHASE_MEMBERSHIP_URL` is used when one is provided."""
@@ -1012,7 +1025,7 @@ class TestSetupPurchaseMembershipURL:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_PURCHASE_MEMBERSHIP_URL",
-        ("INVALID_PURCHASE_MEMBERSHIP_URL", "www.google..com/", "", "  ")
+        ("INVALID_PURCHASE_MEMBERSHIP_URL", "www.google..com/", "", "  "),
     )
     def test_invalid_purchase_membership_url(self, INVALID_PURCHASE_MEMBERSHIP_URL: str) -> None:  # noqa: N803,E501
         """Test that an error occurs when the provided `PURCHASE_MEMBERSHIP_URL` is invalid."""
@@ -1035,7 +1048,7 @@ class TestSetupMembershipPerksURL:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_MEMBERSHIP_PERKS_URL",
-        ("https://google.com", "www.google.com/", "    https://google.com   ")
+        ("https://google.com", "www.google.com/", "    https://google.com   "),
     )
     def test_setup_membership_perks_url_successful(self, TEST_MEMBERSHIP_PERKS_URL: str) -> None:  # noqa: N803,E501
         """Test that the given valid `MEMBERSHIP_PERKS_URL` is used when one is provided."""
@@ -1071,7 +1084,7 @@ class TestSetupMembershipPerksURL:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_MEMBERSHIP_PERKS_URL",
-        ("INVALID_MEMBERSHIP_PERKS_URL", "www.google..com/", "", "  ")
+        ("INVALID_MEMBERSHIP_PERKS_URL", "www.google..com/", "", "  "),
     )
     def test_invalid_membership_perks_url(self, INVALID_MEMBERSHIP_PERKS_URL: str) -> None:  # noqa: N803
         """Test that an error occurs when the provided `MEMBERSHIP_PERKS_URL` is invalid."""
@@ -1094,7 +1107,7 @@ class TestSetupPingCommandEasterEggProbability:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_PING_COMMAND_EASTER_EGG_PROBABILITY",
-        ("1", "0", "0.5", "    0.5   ")
+        ("1", "0", "0.5", "    0.5   "),
     )
     def test_setup_ping_command_easter_egg_probability_successful(self, TEST_PING_COMMAND_EASTER_EGG_PROBABILITY: str) -> None:  # noqa: N803,E501
         """
@@ -1115,7 +1128,7 @@ class TestSetupPingCommandEasterEggProbability:
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
         assert RuntimeSettings()["PING_COMMAND_EASTER_EGG_PROBABILITY"] == 100 * float(
-            TEST_PING_COMMAND_EASTER_EGG_PROBABILITY.strip()
+            TEST_PING_COMMAND_EASTER_EGG_PROBABILITY.strip(),
         )
 
     def test_default_ping_command_easter_egg_probability(self) -> None:
@@ -1136,7 +1149,7 @@ class TestSetupPingCommandEasterEggProbability:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY",
-        ("INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY", "", "  ", "-5", "1.1", "5", "-0.01")
+        ("INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY", "", "  ", "-5", "1.1", "5", "-0.01"),
     )
     def test_invalid_ping_command_easter_egg_probability(self, INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY: str) -> None:  # noqa: N803,E501
         """Test that errors when provided `PING_COMMAND_EASTER_EGG_PROBABILITY` is invalid."""
@@ -1161,7 +1174,7 @@ class TestSetupMessagesFile:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "RAW_INVALID_MESSAGES_FILE_PATH",
-        ("messages.json.invalid", "", "  ")
+        ("messages.json.invalid", "", "  "),
     )
     def test_get_messages_dict_with_invalid_messages_file_path(self, RAW_INVALID_MESSAGES_FILE_PATH: str) -> None:  # noqa: N803,E501
         """Test that an error occurs when the provided `messages_file_path` is invalid."""
@@ -1203,14 +1216,14 @@ class TestSetupMessagesFile:
 
             assert (
                 Settings._get_messages_dict(  # noqa: SLF001
-                    raw_messages_file_path=temporary_messages_file.name
+                    raw_messages_file_path=temporary_messages_file.name,
                 )
                 == TEST_MESSAGES_DICT
             )
 
             assert (
                 Settings._get_messages_dict(  # noqa: SLF001
-                    raw_messages_file_path=f"  {temporary_messages_file.name}   "
+                    raw_messages_file_path=f"  {temporary_messages_file.name}   ",
                 )
                 == TEST_MESSAGES_DICT
             )
@@ -1225,8 +1238,8 @@ class TestSetupMessagesFile:
             "99",
             "null",
             "true",
-            "false"
-        )
+            "false",
+        ),
     )
     def test_get_messages_dict_with_invalid_json(self, INVALID_MESSAGES_JSON: str) -> None:  # noqa: N803
         """Test that an error is raised when the messages-file contains invalid JSON."""
@@ -1241,7 +1254,7 @@ class TestSetupMessagesFile:
             )
             with pytest.raises(ImproperlyConfiguredError, match=INVALID_MESSAGES_JSON_MESSAGE):
                 Settings._get_messages_dict(  # noqa: SLF001
-                    raw_messages_file_path=temporary_messages_file.name
+                    raw_messages_file_path=temporary_messages_file.name,
                 )
 
     # noinspection PyPep8Naming
@@ -1264,7 +1277,7 @@ class TestSetupMessagesFile:
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
         assert RuntimeSettings()["WELCOME_MESSAGES"] == set(
-            TEST_MESSAGES_DICT["welcome_messages"]
+            TEST_MESSAGES_DICT["welcome_messages"],
         )
 
     # noinspection PyPep8Naming
@@ -1288,7 +1301,7 @@ class TestSetupMessagesFile:
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
         assert RuntimeSettings()["WELCOME_MESSAGES"] == set(
-            TEST_MESSAGES_DICT["welcome_messages"]
+            TEST_MESSAGES_DICT["welcome_messages"],
         )
 
     # noinspection PyPep8Naming
@@ -1322,8 +1335,8 @@ class TestSetupMessagesFile:
             {"welcome_messages": 99},
             {"welcome_messages": None},
             {"welcome_messages": True},
-            {"welcome_messages": False}
-        )
+            {"welcome_messages": False},
+        ),
     )
     def test_invalid_welcome_messages(self, INVALID_WELCOME_MESSAGES_DICT: Mapping[str, object]) -> None:  # noqa: N803,E501
         """Test that error is raised when the `welcome_messages` is not a valid value."""
@@ -1367,7 +1380,7 @@ class TestSetupMessagesFile:
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
         assert RuntimeSettings()["ROLES_MESSAGES"] == set(
-            TEST_MESSAGES_DICT["roles_messages"]
+            TEST_MESSAGES_DICT["roles_messages"],
         )
 
     # noinspection PyPep8Naming
@@ -1391,7 +1404,7 @@ class TestSetupMessagesFile:
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
         assert RuntimeSettings()["ROLES_MESSAGES"] == set(
-            TEST_MESSAGES_DICT["roles_messages"]
+            TEST_MESSAGES_DICT["roles_messages"],
         )
 
     # noinspection PyPep8Naming
@@ -1425,8 +1438,8 @@ class TestSetupMessagesFile:
             {"roles_messages": 99},
             {"roles_messages": None},
             {"roles_messages": True},
-            {"roles_messages": False}
-        )
+            {"roles_messages": False},
+        ),
     )
     def test_invalid_roles_messages(self, INVALID_ROLES_MESSAGES_DICT: Mapping[str, object]) -> None:  # noqa: N803,E501
         """Test that error is raised when the `roles_messages` is not a valid value."""
@@ -1455,7 +1468,7 @@ class TestSetupMembersListURL:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_MEMBERS_LIST_URL",
-        ("https://google.com", "www.google.com/", "    https://google.com   ")
+        ("https://google.com", "www.google.com/", "    https://google.com   "),
     )
     def test_setup_members_list_url_successful(self, TEST_MEMBERS_LIST_URL: str) -> None:  # noqa: N803
         """Test that the given `MEMBERS_LIST_URL` is used when a valid one is provided."""
@@ -1485,7 +1498,7 @@ class TestSetupMembersListURL:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_MEMBERS_LIST_URL",
-        ("INVALID_MEMBERS_LIST_URL", "www.google..com/", "", "  ")
+        ("INVALID_MEMBERS_LIST_URL", "www.google..com/", "", "  "),
     )
     def test_invalid_members_list_url(self, INVALID_MEMBERS_LIST_URL: str) -> None:  # noqa: N803
         """Test that an error occurs when the provided `MEMBERS_LIST_URL` is invalid."""
@@ -1510,8 +1523,8 @@ class TestSetupMembersListURLSessionCookie:
         "TEST_MEMBERS_LIST_URL_SESSION_COOKIE",
         (
             "".join(random.choices(string.hexdigits, k=random.randint(128, 256))),
-            f"  {"".join(random.choices(string.hexdigits, k=random.randint(128, 256)))}   "
-        )
+            f"  {"".join(random.choices(string.hexdigits, k=random.randint(128, 256)))}   ",
+        ),
     )
     def test_setup_members_list_url_session_cookie_successful(self, TEST_MEMBERS_LIST_URL_SESSION_COOKIE: str) -> None:  # noqa: N803,E501
         """
@@ -1558,8 +1571,8 @@ class TestSetupMembersListURLSessionCookie:
                 }>{
                     "".join(random.choices(string.hexdigits, k=64))
                 }"
-            )
-        )
+            ),
+        ),
     )
     def test_invalid_members_list_url_session_cookie(self, INVALID_MEMBERS_LIST_URL_SESSION_COOKIE: str) -> None:  # noqa: N803,E501
         """Test that an error occurs when `MEMBERS_LIST_URL_SESSION_COOKIE` is invalid."""
@@ -1604,7 +1617,7 @@ class TestSetupSendIntroductionReminders:
                             for value
                             in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
                             if value.isalpha()
-                        )
+                        ),
                     ).lower(),
                     next(
                         iter(
@@ -1612,7 +1625,7 @@ class TestSetupSendIntroductionReminders:
                             for value
                             in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
                             if value.isalpha()
-                        )
+                        ),
                     ).upper(),
                     "".join(
                         random.choice((str.upper, str.lower))(character)
@@ -1623,12 +1636,12 @@ class TestSetupSendIntroductionReminders:
                                 for value
                                 in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
                                 if value.isalpha()
-                            )
+                            ),
                         )
-                    )
-                )
-            )
-        )
+                    ),
+                ),
+            ),
+        ),
     )
     def test_setup_send_introduction_reminders_successful(self, TEST_SEND_INTRODUCTION_REMINDERS_VALUE: str) -> None:  # noqa: N803,E501
         """Test that setup is successful when a valid option is provided."""
@@ -1648,7 +1661,7 @@ class TestSetupSendIntroductionReminders:
                 False
                 if TEST_SEND_INTRODUCTION_REMINDERS_VALUE.lower().strip() not in (
                     "once",
-                    "interval"
+                    "interval",
                 )
                 else TEST_SEND_INTRODUCTION_REMINDERS_VALUE.lower().strip()
             )
@@ -1676,9 +1689,9 @@ class TestSetupSendIntroductionReminders:
             "",
             "  ",
             "".join(
-                random.choices(string.ascii_letters + string.digits + string.punctuation, k=8)
-            )
-        )
+                random.choices(string.ascii_letters + string.digits + string.punctuation, k=8),
+            ),
+        ),
     )
     def test_invalid_send_introduction_reminders(self, INVALID_SEND_INTRODUCTION_REMINDERS_VALUE: str) -> None:  # noqa: N803,E501
         """Test that an error occurs when an invalid introduction-reminders-flag is given."""
@@ -1740,8 +1753,8 @@ class TestSetupSendIntroductionReminders:
                 }{
                     random.choice(("", f".{random.randint(0, 999)}"))
                 }  h"
-            )
-        )
+            ),
+        ),
     )
     def test_setup_send_introduction_reminders_interval_successful(self, TEST_SEND_INTRODUCTION_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
         """
@@ -1768,7 +1781,7 @@ class TestSetupSendIntroductionReminders:
             in (
                 re.match(
                     r"\A(?:(?P<seconds>(?:\d*\.)?\d+)\s*s)?\s*(?:(?P<minutes>(?:\d*\.)?\d+)\s*m)?\s*(?:(?P<hours>(?:\d*\.)?\d+)\s*h)?\Z",
-                    TEST_SEND_INTRODUCTION_REMINDERS_INTERVAL.lower().strip()
+                    TEST_SEND_INTRODUCTION_REMINDERS_INTERVAL.lower().strip(),
                 ).groupdict().items()  # type: ignore[union-attr]
             )
             if value
@@ -1802,7 +1815,7 @@ class TestSetupSendIntroductionReminders:
                     "Failed to construct `timedelta` object "
                     "from given `SEND_INTRODUCTION_REMINDERS_INTERVAL`"
                 ),
-                pytrace=False
+                pytrace=False,
             )
 
     def test_default_send_introduction_reminders_interval(self) -> None:
@@ -1846,7 +1859,7 @@ class TestSetupSendIntroductionReminders:
                     "Failed to construct `timedelta` object "
                     "from given `SEND_INTRODUCTION_REMINDERS_INTERVAL`"
                 ),
-                pytrace=False
+                pytrace=False,
             )
 
     def test_setup_send_introduction_reminders_interval_without_send_introduction_reminders_setup(self) -> None:  # noqa: E501
@@ -1867,7 +1880,7 @@ class TestSetupSendIntroductionReminders:
             "  ",
             f"{random.randint(1, 999)}d",
             f"{random.randint(3, 999)},{random.randint(0, 999)}s",
-        )
+        ),
     )
     def test_invalid_send_introduction_reminders_interval_flag_disabled(self, INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
         """
@@ -1901,7 +1914,7 @@ class TestSetupSendIntroductionReminders:
             "  ",
             f"{random.randint(1, 999)}d",
             f"{random.randint(3, 999)},{random.randint(0, 999)}s",
-        )
+        ),
     )
     @pytest.mark.parametrize("SEND_INTRODUCTION_REMINDERS_VALUE", ("once", "interval"))
     def test_invalid_send_introduction_reminders_interval_flag_enabled(self, INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL: str, SEND_INTRODUCTION_REMINDERS_VALUE: str) -> None:  # noqa: N803,ARG002,E501
@@ -1934,7 +1947,7 @@ class TestSetupSendIntroductionReminders:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL",
-        ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h")
+        ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h"),
     )
     def test_too_small_send_introduction_reminders_interval_flag_disabled(self, TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
         """
@@ -1962,7 +1975,7 @@ class TestSetupSendIntroductionReminders:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL",
-        ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h")
+        ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h"),
     )
     @pytest.mark.parametrize("SEND_INTRODUCTION_REMINDERS_VALUE", ("once", "interval"))
     def test_too_small_send_introduction_reminders_interval_flag_enabled(self, TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL: str, SEND_INTRODUCTION_REMINDERS_VALUE: str) -> None:  # noqa: N803,ARG002,E501
@@ -2024,7 +2037,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
                             for value
                             in config.TRUE_VALUES | config.FALSE_VALUES
                             if value.isalpha()
-                        )
+                        ),
                     ).lower(),
                     next(
                         iter(
@@ -2032,7 +2045,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
                             for value
                             in config.TRUE_VALUES | config.FALSE_VALUES
                             if value.isalpha()
-                        )
+                        ),
                     ).upper(),
                     "".join(
                         random.choice((str.upper, str.lower))(character)
@@ -2043,12 +2056,12 @@ class TestSetupKickNoIntroductionDiscordMembers:
                                 for value
                                 in config.TRUE_VALUES | config.FALSE_VALUES
                                 if value.isalpha()
-                            )
+                            ),
                         )
-                    )
-                )
-            )
-        )
+                    ),
+                ),
+            ),
+        ),
     )
     def test_setup_kick_no_introduction_discord_members_successful(self, TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE: str) -> None:  # noqa: N803,E501
         """Test that setup is successful when a valid option is provided."""
@@ -2090,9 +2103,9 @@ class TestSetupKickNoIntroductionDiscordMembers:
             "",
             "  ",
             "".join(
-                random.choices(string.ascii_letters + string.digits + string.punctuation, k=8)
-            )
-        )
+                random.choices(string.ascii_letters + string.digits + string.punctuation, k=8),
+            ),
+        ),
     )
     def test_invalid_kick_no_introduction_discord_members(self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE: str) -> None:  # noqa: N803,E501
         """Test that an error occurs when an invalid kick-no-introductions-flag is given."""
@@ -2178,8 +2191,8 @@ class TestSetupKickNoIntroductionDiscordMembers:
                 }{
                     random.choice(("", f".{random.randint(0, 999)}"))
                 } w"
-            )
-        )
+            ),
+        ),
     )
     def test_setup_kick_no_introduction_discord_members_delay_successful(self, TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,E501
         """
@@ -2207,11 +2220,11 @@ class TestSetupKickNoIntroductionDiscordMembers:
                 in (
                     re.match(
                         r"\A(?:(?P<seconds>(?:\d*\.)?\d+)\s*s)?\s*(?:(?P<minutes>(?:\d*\.)?\d+)\s*m)?\s*(?:(?P<hours>(?:\d*\.)?\d+)\s*h)?\s*(?:(?P<days>(?:\d*\.)?\d+)\s*d)?\s*(?:(?P<weeks>(?:\d*\.)?\d+)\s*w)?\Z",
-                        TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY.lower().strip()
+                        TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY.lower().strip(),
                     ).groupdict().items()  # type: ignore[union-attr]
                 )
                 if value
-            }
+            },
         )
 
         assert (
@@ -2233,7 +2246,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
 
         assert isinstance(
             RuntimeSettings()["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"],
-            timedelta
+            timedelta,
         )
 
         assert (
@@ -2258,7 +2271,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
             "  ",
             f"{random.randint(86400, 777600)}y",
             f"{random.randint(86400, 777600)},{random.randint(0, 999)}s",
-        )
+        ),
     )
     def test_invalid_kick_no_introduction_discord_members_delay_flag_disabled(self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,E501
         """
@@ -2292,7 +2305,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
             "  ",
             f"{random.randint(86400, 777600)}y",
             f"{random.randint(86400, 777600)},{random.randint(0, 999)}s",
-        )
+        ),
     )
     def test_invalid_kick_no_introduction_discord_members_delay_flag_enabled(self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,E501
         """
@@ -2324,7 +2337,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
-        ("0.5s", "0s", "0.5m", "0m", "0.5h", "0h", "0.5d", "0d", "0.05w", "0w")
+        ("0.5s", "0s", "0.5m", "0m", "0.5h", "0h", "0.5d", "0d", "0.05w", "0w"),
     )
     def test_too_small_kick_no_introduction_discord_members_delay_flag_disabled(self, TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,E501
         """
@@ -2352,7 +2365,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
-        ("0.5s", "0s", "0.5m", "0m", "0.5h", "0h", "0.5d", "0d", "0.05w", "0w")
+        ("0.5s", "0s", "0.5m", "0m", "0.5h", "0h", "0.5d", "0d", "0.05w", "0w"),
     )
     def test_too_small_kick_no_introduction_discord_members_delay_flag_enabled(self, TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,E501
         """
@@ -2407,7 +2420,7 @@ class TestSetupSendGetRolesReminders:
                             for value
                             in config.TRUE_VALUES | config.FALSE_VALUES
                             if value.isalpha()
-                        )
+                        ),
                     ).lower(),
                     next(
                         iter(
@@ -2415,7 +2428,7 @@ class TestSetupSendGetRolesReminders:
                             for value
                             in config.TRUE_VALUES | config.FALSE_VALUES
                             if value.isalpha()
-                        )
+                        ),
                     ).upper(),
                     "".join(
                         random.choice((str.upper, str.lower))(character)
@@ -2426,12 +2439,12 @@ class TestSetupSendGetRolesReminders:
                                 for value
                                 in config.TRUE_VALUES | config.FALSE_VALUES
                                 if value.isalpha()
-                            )
+                            ),
                         )
-                    )
-                )
-            )
-        )
+                    ),
+                ),
+            ),
+        ),
     )
     def test_setup_send_get_roles_reminders_successful(self, TEST_SEND_GET_ROLES_REMINDERS_VALUE: str) -> None:  # noqa: N803,E501
         """Test that setup is successful when a valid option is provided."""
@@ -2470,9 +2483,9 @@ class TestSetupSendGetRolesReminders:
             "",
             "  ",
             "".join(
-                random.choices(string.ascii_letters + string.digits + string.punctuation, k=8)
-            )
-        )
+                random.choices(string.ascii_letters + string.digits + string.punctuation, k=8),
+            ),
+        ),
     )
     def test_invalid_send_get_roles_reminders(self, INVALID_SEND_GET_ROLES_REMINDERS_VALUE: str) -> None:  # noqa: N803,E501
         """Test that an error occurs when an invalid get-roles-reminders-flag is given."""
@@ -2534,8 +2547,8 @@ class TestSetupSendGetRolesReminders:
                 }{
                     random.choice(("", f".{random.randint(0, 999)}"))
                 }  h"
-            )
-        )
+            ),
+        ),
     )
     def test_setup_send_get_roles_reminders_interval_successful(self, TEST_SEND_GET_ROLES_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
         """
@@ -2562,7 +2575,7 @@ class TestSetupSendGetRolesReminders:
             in (
                 re.match(
                     r"\A(?:(?P<seconds>(?:\d*\.)?\d+)\s*s)?\s*(?:(?P<minutes>(?:\d*\.)?\d+)\s*m)?\s*(?:(?P<hours>(?:\d*\.)?\d+)\s*h)?\Z",
-                    TEST_SEND_GET_ROLES_REMINDERS_INTERVAL.lower().strip()
+                    TEST_SEND_GET_ROLES_REMINDERS_INTERVAL.lower().strip(),
                 ).groupdict().items()  # type: ignore[union-attr]
             )
             if value
@@ -2596,7 +2609,7 @@ class TestSetupSendGetRolesReminders:
                     "Failed to construct `timedelta` object "
                     "from given `SEND_GET_ROLES_REMINDERS_INTERVAL`"
                 ),
-                pytrace=False
+                pytrace=False,
             )
 
     def test_default_send_get_roles_reminders_interval(self) -> None:
@@ -2640,7 +2653,7 @@ class TestSetupSendGetRolesReminders:
                     "Failed to construct `timedelta` object "
                     "from given `SEND_GET_ROLES_REMINDERS_INTERVAL`"
                 ),
-                pytrace=False
+                pytrace=False,
             )
 
     def test_setup_send_get_roles_reminders_interval_without_send_get_roles_reminders_setup(self) -> None:  # noqa: E501
@@ -2661,7 +2674,7 @@ class TestSetupSendGetRolesReminders:
             "  ",
             f"{random.randint(1, 999)}d",
             f"{random.randint(3, 999)},{random.randint(0, 999)}s",
-        )
+        ),
     )
     def test_invalid_send_get_roles_reminders_interval_flag_disabled(self, INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
         """
@@ -2695,7 +2708,7 @@ class TestSetupSendGetRolesReminders:
             "  ",
             f"{random.randint(1, 999)}d",
             f"{random.randint(3, 999)},{random.randint(0, 999)}s",
-        )
+        ),
     )
     def test_invalid_send_get_roles_reminders_interval_flag_enabled(self, INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
         """
@@ -2727,7 +2740,7 @@ class TestSetupSendGetRolesReminders:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL",
-        ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h")
+        ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h"),
     )
     def test_too_small_send_get_roles_reminders_interval_flag_disabled(self, TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
         """
@@ -2755,7 +2768,7 @@ class TestSetupSendGetRolesReminders:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL",
-        ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h")
+        ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h"),
     )
     def test_too_small_send_introduction_reminders_interval_flag_enabled(self, TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
         """
@@ -2801,7 +2814,7 @@ class TestSetupStatisticsDays:
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
         assert RuntimeSettings()["STATISTICS_DAYS"] == timedelta(
-            days=float(TEST_STATISTICS_DAYS.strip())
+            days=float(TEST_STATISTICS_DAYS.strip()),
         )
 
     def test_default_statistics_days(self) -> None:
@@ -2828,9 +2841,12 @@ class TestSetupStatisticsDays:
             "",
             "  ",
             "".join(
-                random.choices(string.ascii_letters + string.digits + string.punctuation, k=18)
-            )
-        )
+                random.choices(
+                    string.ascii_letters + string.digits + string.punctuation,
+                    k=18,
+                ),
+            ),
+        ),
     )
     def test_invalid_statistics_days(self, INVALID_STATISTICS_DAYS: str) -> None:  # noqa: N803
         """Test that an error is raised when an invalid `STATISTICS_DAYS` is provided."""
@@ -2849,7 +2865,7 @@ class TestSetupStatisticsDays:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TOO_SMALL_STATISTICS_DAYS",
-        ("-15", "-2.3", "-0.02", "0", "0.40", "1")
+        ("-15", "-2.3", "-0.02", "0", "0.40", "1"),
     )
     def test_too_small_statistics_days(self, TOO_SMALL_STATISTICS_DAYS: str) -> None:  # noqa: N803
         """Test that an error is raised when a too small `STATISTICS_DAYS` is provided."""
@@ -2877,8 +2893,8 @@ class TestSetupStatisticsRoles:
             "Guest,Member",
             "Guest,Member,Admin",
             "    Guest,Member,Admin   ",
-            "    Guest ,   Member  ,Admin   "
-        )
+            "    Guest ,   Member  ,Admin   ",
+        ),
     )
     def test_setup_statistics_roles_successful(self, TEST_STATISTICS_ROLES: str) -> None:  # noqa: N803
         """Test that the given valid `STATISTICS_ROLES` is used when they are provided."""
@@ -2927,7 +2943,7 @@ class TestSetupModerationDocumentURL:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_MODERATION_DOCUMENT_URL",
-        ("https://google.com", "www.google.com/", "    https://google.com   ")
+        ("https://google.com", "www.google.com/", "    https://google.com   "),
     )
     def test_setup_moderation_document_url_successful(self, TEST_MODERATION_DOCUMENT_URL: str) -> None:  # noqa: N803,E501
         """Test that the given valid `MODERATION_DOCUMENT_URL` is used when one is provided."""
@@ -2957,7 +2973,7 @@ class TestSetupModerationDocumentURL:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_MODERATION_DOCUMENT_URL",
-        ("INVALID_MODERATION_DOCUMENT_URL", "www.google..com/", "", "  ")
+        ("INVALID_MODERATION_DOCUMENT_URL", "www.google..com/", "", "  "),
     )
     def test_invalid_moderation_document_url(self, INVALID_MODERATION_DOCUMENT_URL: str) -> None:  # noqa: N803,E501
         """Test that an error occurs when the provided `MODERATION_DOCUMENT_URL` is invalid."""
@@ -2980,7 +2996,7 @@ class TestSetupManualModerationWarningMessageLocation:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION",
-        ("DM", "dm", "general", "Memes", "   general  ", "JUST-CHATTING", "Talking4")
+        ("DM", "dm", "general", "Memes", "   general  ", "JUST-CHATTING", "Talking4"),
     )
     def test_setup_manual_moderation_warning_message_location_successful(self, TEST_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION: str) -> None:  # noqa: N803,E501
         """Test that the given valid `MANUAL_MODERATION_WARNING_MESSAGE_LOCATION` is used."""

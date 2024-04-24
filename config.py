@@ -202,7 +202,7 @@ class Settings(abc.ABC):
                     raw_discord_log_channel_webhook_url.strip(),
                 )
                 and validators.url(raw_discord_log_channel_webhook_url.strip())
-            )
+            ),
         )
         if not DISCORD_LOG_CHANNEL_WEBHOOK_URL_IS_VALID:
             INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE: Final[str] = (
@@ -224,7 +224,7 @@ class Settings(abc.ABC):
         DISCORD_GUILD_ID_IS_VALID: Final[bool] = bool(
             raw_discord_guild_id is not None
             and raw_discord_guild_id.strip()
-            and re.match(r"\A\d{17,20}\Z", raw_discord_guild_id.strip())
+            and re.match(r"\A\d{17,20}\Z", raw_discord_guild_id.strip()),
         )
         if not DISCORD_GUILD_ID_IS_VALID:
             INVALID_DISCORD_GUILD_ID_MESSAGE: Final[str] = (
@@ -245,7 +245,7 @@ class Settings(abc.ABC):
                     ord(unicode_char): ascii_char
                     for unicode_char, ascii_char
                     in zip("‘’´“”–-", "''`\"\"--", strict=True)  # noqa: RUF001
-                }
+                },
             )
 
         GROUP_FULL_NAME_IS_VALID: Final[bool] = bool(
@@ -257,7 +257,7 @@ class Settings(abc.ABC):
                     raw_group_full_name.strip(),
                 )
                 and regex.search(r"\p{L}", raw_group_full_name.strip())  # NOTE: The `regex` package is used here instead of python's in-built `re` package, because the `regex` package supports matching Unicode character classes (E.g. `\p{L}`)
-            )
+            ),
         )
         if not GROUP_FULL_NAME_IS_VALID:
             INVALID_GROUP_FULL_NAME: Final[str] = (
@@ -278,7 +278,7 @@ class Settings(abc.ABC):
         GROUP_SHORT_NAME_CAN_BE_RESOLVED_FROM_GROUP_FULL_NAME: Final[bool] = bool(
             raw_group_short_name is None
             and "_GROUP_FULL_NAME" in cls._settings
-            and cls._settings["_GROUP_FULL_NAME"] is not None
+            and cls._settings["_GROUP_FULL_NAME"] is not None,
         )
         if GROUP_SHORT_NAME_CAN_BE_RESOLVED_FROM_GROUP_FULL_NAME:
             raw_group_short_name = (
@@ -294,22 +294,22 @@ class Settings(abc.ABC):
                 else cls._settings["_GROUP_FULL_NAME"]
             ).replace(
                 "the",
-                ""
+                "",
             ).replace(
                 "THE",
-                ""
+                "",
             ).replace(
                 "The",
-                ""
+                "",
             ).replace(
                 " ",
-                ""
+                "",
             ).replace(
                 "\t",
-                ""
+                "",
             ).replace(
                 "\n",
-                ""
+                "",
             ).strip()
 
         if raw_group_short_name is not None:
@@ -318,7 +318,7 @@ class Settings(abc.ABC):
                     ord(unicode_char): ascii_char
                     for unicode_char, ascii_char
                     in zip("‘’´“”–-", "''`\"\"--", strict=True)  # noqa: RUF001
-                }
+                },
             )
 
         GROUP_SHORT_NAME_IS_VALID: Final[bool] = bool(
@@ -330,7 +330,7 @@ class Settings(abc.ABC):
                     raw_group_short_name.strip(),
                 )
                 and regex.search(r"\p{L}", raw_group_short_name.strip())  # NOTE: The `regex` package is used here instead of python's in-built `re` package, because the `regex` package supports matching Unicode character classes (E.g. `\p{L}`)
-            )
+            ),
         )
         if not GROUP_SHORT_NAME_IS_VALID:
             INVALID_GROUP_SHORT_NAME: Final[str] = (
@@ -350,7 +350,7 @@ class Settings(abc.ABC):
 
         RAW_PURCHASE_MEMBERSHIP_URL_HAS_NO_SCHEME: Final[bool] = bool(
             raw_purchase_membership_url is not None
-            and "://" not in raw_purchase_membership_url.strip()
+            and "://" not in raw_purchase_membership_url.strip(),
         )
         if RAW_PURCHASE_MEMBERSHIP_URL_HAS_NO_SCHEME:
             raw_purchase_membership_url = f"https://{raw_purchase_membership_url.strip()}"  # type: ignore[union-attr]
@@ -360,7 +360,7 @@ class Settings(abc.ABC):
             or (
                 raw_purchase_membership_url.strip()
                 and validators.url(raw_purchase_membership_url.strip())
-            )
+            ),
         )
         if not PURCHASE_MEMBERSHIP_URL_IS_VALID:
             INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE: Final[str] = (
@@ -380,7 +380,7 @@ class Settings(abc.ABC):
 
         RAW_MEMBERSHIP_PERKS_URL_HAS_NO_SCHEME: Final[bool] = bool(
             raw_membership_perks_url is not None
-            and "://" not in raw_membership_perks_url.strip()
+            and "://" not in raw_membership_perks_url.strip(),
         )
         if RAW_MEMBERSHIP_PERKS_URL_HAS_NO_SCHEME:
             raw_membership_perks_url = f"https://{raw_membership_perks_url.strip()}"  # type: ignore[union-attr]
@@ -390,7 +390,7 @@ class Settings(abc.ABC):
             or (
                 raw_membership_perks_url.strip()
                 and validators.url(raw_membership_perks_url.strip())
-            )
+            ),
         )
         if not MEMBERSHIP_PERKS_URL_IS_VALID:
             INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (
@@ -507,7 +507,7 @@ class Settings(abc.ABC):
 
         ROLES_MESSAGES_KEY_IS_VALID: Final[bool] = bool(
             isinstance(messages_dict["roles_messages"], Iterable)
-            and messages_dict["roles_messages"]
+            and messages_dict["roles_messages"],
         )
         if not ROLES_MESSAGES_KEY_IS_VALID:
             raise MessagesJSONFileValueError(
@@ -521,7 +521,7 @@ class Settings(abc.ABC):
         raw_members_list_url: str | None = os.getenv("MEMBERS_LIST_URL")
 
         RAW_MEMBERS_LIST_URL_HAS_NO_SCHEME: Final[bool] = bool(
-            raw_members_list_url is not None and "://" not in raw_members_list_url.strip()
+            raw_members_list_url is not None and "://" not in raw_members_list_url.strip(),
         )
         if RAW_MEMBERS_LIST_URL_HAS_NO_SCHEME:
             raw_members_list_url = f"https://{raw_members_list_url.strip()}"  # type: ignore[union-attr]
@@ -529,7 +529,7 @@ class Settings(abc.ABC):
         MEMBERS_LIST_URL_IS_VALID: Final[bool] = bool(
             raw_members_list_url is not None
             and raw_members_list_url.strip()
-            and validators.url(raw_members_list_url.strip())
+            and validators.url(raw_members_list_url.strip()),
         )
         if not MEMBERS_LIST_URL_IS_VALID:
             INVALID_MEMBERS_LIST_URL_MESSAGE: Final[str] = (
@@ -550,8 +550,8 @@ class Settings(abc.ABC):
             and raw_members_list_url_session_cookie.strip()
             and re.match(
                 r"\A[A-Fa-f\d]{128,256}\Z",
-                raw_members_list_url_session_cookie.strip()
-            )
+                raw_members_list_url_session_cookie.strip(),
+            ),
         )
         if not MEMBERS_LIST_URL_SESSION_COOKIE_IS_VALID:
             INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
@@ -616,7 +616,7 @@ class Settings(abc.ABC):
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
         raw_send_introduction_reminders_interval: str | None = (
-            os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL"),
+            os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL")
         )
 
         send_introduction_reminders_interval: Match[str] | None = re.match(
@@ -629,7 +629,7 @@ class Settings(abc.ABC):
                     if raw_send_introduction_reminders_interval.lower().strip()
                     else raw_send_introduction_reminders_interval
                 )
-            )
+            ),
         )
 
         if send_introduction_reminders_interval is None:
@@ -649,7 +649,7 @@ class Settings(abc.ABC):
 
         if timedelta(**details_send_introduction_reminders_interval) <= timedelta(seconds=3):
             cls._error_setup_send_introduction_reminders_interval(
-                msg="SEND_INTRODUCTION_REMINDERS_INTERVAL must be greater than 3 seconds."
+                msg="SEND_INTRODUCTION_REMINDERS_INTERVAL must be greater than 3 seconds.",
             )
             return
 
@@ -668,7 +668,7 @@ class Settings(abc.ABC):
             or (
                 raw_kick_no_introduction_discord_members.lower().strip()
                 in TRUE_VALUES | FALSE_VALUES
-            )
+            ),
         )
         if not KICK_NO_INTRODUCTION_DISCORD_MEMBERS_IS_VALID:
             INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_MESSAGE: Final[str] = (
@@ -718,7 +718,7 @@ class Settings(abc.ABC):
                     if raw_kick_no_introduction_discord_members_delay.lower().strip()
                     else raw_kick_no_introduction_discord_members_delay
                 )
-            )
+            ),
         )
 
         if kick_no_introduction_discord_members_delay is None:
@@ -737,12 +737,12 @@ class Settings(abc.ABC):
             return
 
         timedelta_kick_no_introduction_discord_members_delay: timedelta = timedelta(
-            **details_kick_no_introduction_discord_members_delay
+            **details_kick_no_introduction_discord_members_delay,
         )
 
         if timedelta_kick_no_introduction_discord_members_delay <= timedelta(days=1):
             cls._error_setup_kick_no_introduction_discord_members_delay(
-                msg="KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must be greater than 1 day."
+                msg="KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must be greater than 1 day.",
             )
             return
 
@@ -758,14 +758,14 @@ class Settings(abc.ABC):
 
         SEND_GET_ROLES_REMINDERS_IS_VALID: Final[bool] = bool(
             raw_send_get_roles_reminders is None
-            or raw_send_get_roles_reminders.lower().strip() in TRUE_VALUES | FALSE_VALUES
+            or raw_send_get_roles_reminders.lower().strip() in TRUE_VALUES | FALSE_VALUES,
         )
         if not SEND_GET_ROLES_REMINDERS_IS_VALID:
             INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE: Final[str] = (
                 "SEND_GET_ROLES_REMINDERS must be a boolean value."
             )
             raise ImproperlyConfiguredError(
-                INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE
+                INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE,
             )
 
         cls._settings["SEND_GET_ROLES_REMINDERS"] = (
@@ -808,7 +808,7 @@ class Settings(abc.ABC):
                     if raw_send_get_roles_reminders_interval.lower().strip()
                     else raw_send_get_roles_reminders_interval
                 )
-            )
+            ),
         )
 
         if send_get_roles_reminders_interval is None:
@@ -828,7 +828,7 @@ class Settings(abc.ABC):
 
         if timedelta(**details_send_get_roles_reminders_interval) <= timedelta(seconds=3):
             cls._error_setup_send_get_roles_reminders_interval(
-                msg="SEND_GET_ROLES_REMINDERS_INTERVAL must be greater than 3 seconds."
+                msg="SEND_GET_ROLES_REMINDERS_INTERVAL must be greater than 3 seconds.",
             )
             return
 
@@ -880,7 +880,7 @@ class Settings(abc.ABC):
 
         RAW_MODERATION_DOCUMENT_URL_HAS_NO_SCHEME: Final[bool] = bool(
             raw_moderation_document_url is not None
-            and "://" not in raw_moderation_document_url.strip()
+            and "://" not in raw_moderation_document_url.strip(),
         )
         if RAW_MODERATION_DOCUMENT_URL_HAS_NO_SCHEME:
             raw_moderation_document_url = f"https://{raw_moderation_document_url.strip()}"  # type: ignore[union-attr]
@@ -888,7 +888,7 @@ class Settings(abc.ABC):
         MODERATION_DOCUMENT_URL_IS_VALID: Final[bool] = bool(
             raw_moderation_document_url is not None
             and raw_moderation_document_url.strip()
-            and validators.url(raw_moderation_document_url.strip())
+            and validators.url(raw_moderation_document_url.strip()),
         )
         if not MODERATION_DOCUMENT_URL_IS_VALID:
             MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
@@ -906,7 +906,7 @@ class Settings(abc.ABC):
 
         MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_IS_VALID: Final[bool] = bool(
             raw_manual_moderation_warning_message_location is None
-            or raw_manual_moderation_warning_message_location.upper().strip()
+            or raw_manual_moderation_warning_message_location.upper().strip(),
         )
         if not MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_IS_VALID:
             MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE: Final[str] = (
@@ -967,7 +967,7 @@ def _settings_class_factory() -> type[Settings]:
     return type(
         "Settings",
         (Settings,),
-        {"_is_env_variables_setup": False, "_settings": {}}
+        {"_is_env_variables_setup": False, "_settings": {}},
     )
 
 

@@ -76,8 +76,8 @@ class TestBaseTeXBotError:
         (
             _DefaultMessageBaseTeXBotErrorSubclass(),
             _DefaultMessageBaseTeXBotErrorSubclass(message=None),
-            _DefaultMessageBaseTeXBotErrorSubclass(message="")
-        )
+            _DefaultMessageBaseTeXBotErrorSubclass(message=""),
+        ),
     )
     def test_default_message(self, TEST_BASE_TEXBOT_ERROR_SUBCLASS: BaseTeXBotError) -> None:  # noqa: N803
         """Test that the class' default error message is shown, when no custom message."""
@@ -109,8 +109,8 @@ class TestBaseTeXBotError:
         (
             _AttributesBaseTeXBotErrorSubclass(),
             _AttributesBaseTeXBotErrorSubclass(test_attribute_value=None),
-            _AttributesBaseTeXBotErrorSubclass(test_attribute_value=7)
-        )
+            _AttributesBaseTeXBotErrorSubclass(test_attribute_value=7),
+        ),
     )
     def test_repr_with_attributes(self, TEST_ATTRIBUTES_BASE_TEXBOT_ERROR_SUBCLASS: _AttributesBaseTeXBotErrorSubclass) -> None:  # noqa: N803,E501
         """Test that the exception message contains any instance attributes."""
@@ -309,7 +309,7 @@ class TestBaseDoesNotExistError:
         """
         with pytest.raises(ValueError, match="no dependants"):
             self._NoDependantsBaseDoesNotExistErrorSubclass.get_formatted_message(
-                non_existent_object_identifier="object_1"
+                non_existent_object_identifier="object_1",
             )
 
     # noinspection PyPep8Naming
@@ -317,8 +317,8 @@ class TestBaseDoesNotExistError:
         "DependentCommandsBaseDoesNotExistErrorSubclass",
         (
             _OneDependentCommandBaseDoesNotExistErrorSubclass,
-            _MultipleDependentCommandsBaseDoesNotExistErrorSubclass
-        )
+            _MultipleDependentCommandsBaseDoesNotExistErrorSubclass,
+        ),
     )
     @pytest.mark.parametrize("TEST_NON_EXISTENT_OBJECT_IDENTIFIER", ("object_1",))
     def test_get_formatted_message_with_dependent_commands(self, DependentCommandsBaseDoesNotExistErrorSubclass: type[_NoDependantsBaseDoesNotExistErrorSubclass], TEST_NON_EXISTENT_OBJECT_IDENTIFIER: str) -> None:  # noqa: N803,E501
@@ -332,7 +332,7 @@ class TestBaseDoesNotExistError:
         """
         FORMATTED_MESSAGE: Final[str] = (
             DependentCommandsBaseDoesNotExistErrorSubclass.get_formatted_message(
-                non_existent_object_identifier=TEST_NON_EXISTENT_OBJECT_IDENTIFIER
+                non_existent_object_identifier=TEST_NON_EXISTENT_OBJECT_IDENTIFIER,
             )
         )
 
@@ -363,7 +363,7 @@ class TestBaseDoesNotExistError:
 
         elif len(DependentCommandsBaseDoesNotExistErrorSubclass.DEPENDENT_COMMANDS) > 1:
             DEPENDENT_COMMANDS: Final[Iterator[str]] = iter(
-                DependentCommandsBaseDoesNotExistErrorSubclass.DEPENDENT_COMMANDS
+                DependentCommandsBaseDoesNotExistErrorSubclass.DEPENDENT_COMMANDS,
             )
 
             assert (
@@ -382,8 +382,8 @@ class TestBaseDoesNotExistError:
         "DependentTasksBaseDoesNotExistErrorSubclass",
         (
             _OneDependentTaskBaseDoesNotExistErrorSubclass,
-            _MultipleDependentTasksBaseDoesNotExistErrorSubclass
-        )
+            _MultipleDependentTasksBaseDoesNotExistErrorSubclass,
+        ),
     )
     @pytest.mark.parametrize("TEST_NON_EXISTENT_OBJECT_IDENTIFIER", ("object_1",))
     def test_get_formatted_message_with_dependent_tasks(self, DependentTasksBaseDoesNotExistErrorSubclass: type[_NoDependantsBaseDoesNotExistErrorSubclass], TEST_NON_EXISTENT_OBJECT_IDENTIFIER: str) -> None:  # noqa: N803,E501
@@ -397,7 +397,7 @@ class TestBaseDoesNotExistError:
         """
         FORMATTED_MESSAGE: Final[str] = (
             DependentTasksBaseDoesNotExistErrorSubclass.get_formatted_message(
-                non_existent_object_identifier=TEST_NON_EXISTENT_OBJECT_IDENTIFIER
+                non_existent_object_identifier=TEST_NON_EXISTENT_OBJECT_IDENTIFIER,
             )
         )
 
@@ -424,7 +424,7 @@ class TestBaseDoesNotExistError:
 
         elif len(DependentTasksBaseDoesNotExistErrorSubclass.DEPENDENT_TASKS) > 1:
             DEPENDENT_TASKS: Final[Iterator[str]] = iter(
-                DependentTasksBaseDoesNotExistErrorSubclass.DEPENDENT_TASKS
+                DependentTasksBaseDoesNotExistErrorSubclass.DEPENDENT_TASKS,
             )
 
             assert (
@@ -443,8 +443,8 @@ class TestBaseDoesNotExistError:
         "DependentEventsBaseDoesNotExistErrorSubclass",
         (
             _OneDependentEventBaseDoesNotExistErrorSubclass,
-            _MultipleDependentEventsBaseDoesNotExistErrorSubclass
-        )
+            _MultipleDependentEventsBaseDoesNotExistErrorSubclass,
+        ),
     )
     @pytest.mark.parametrize("TEST_NON_EXISTENT_OBJECT_IDENTIFIER", ("object_1",))
     def test_get_formatted_message_with_dependent_events(self, DependentEventsBaseDoesNotExistErrorSubclass: type[_NoDependantsBaseDoesNotExistErrorSubclass], TEST_NON_EXISTENT_OBJECT_IDENTIFIER: str) -> None:  # noqa: N803,E501
@@ -458,7 +458,7 @@ class TestBaseDoesNotExistError:
         """
         FORMATTED_MESSAGE: Final[str] = (
             DependentEventsBaseDoesNotExistErrorSubclass.get_formatted_message(
-                non_existent_object_identifier=TEST_NON_EXISTENT_OBJECT_IDENTIFIER
+                non_existent_object_identifier=TEST_NON_EXISTENT_OBJECT_IDENTIFIER,
             )
         )
 
@@ -487,7 +487,7 @@ class TestBaseDoesNotExistError:
 
         elif len(DependentEventsBaseDoesNotExistErrorSubclass.DEPENDENT_EVENTS) > 1:
             DEPENDENT_EVENTS: Final[Iterator[str]] = iter(
-                DependentEventsBaseDoesNotExistErrorSubclass.DEPENDENT_EVENTS
+                DependentEventsBaseDoesNotExistErrorSubclass.DEPENDENT_EVENTS,
             )
 
             assert (
@@ -522,7 +522,7 @@ class TestBaseDoesNotExistError:
                 "must exist"
             )
             in self._ChannelDoesNotExistTypeBaseDoesNotExistErrorSubclass.get_formatted_message(  # noqa: E501
-                non_existent_object_identifier=TEST_NON_EXISTENT_OBJECT_IDENTIFIER
+                non_existent_object_identifier=TEST_NON_EXISTENT_OBJECT_IDENTIFIER,
             )
         )
 
@@ -679,7 +679,7 @@ class TestRoleDoesNotExistError:
         """Test that the exception message contains the auto-generated formatted message."""
         assert (
             self._RoleDoesNotExistErrorSubclass.get_formatted_message(
-                non_existent_object_identifier=self._RoleDoesNotExistErrorSubclass.ROLE_NAME
+                non_existent_object_identifier=self._RoleDoesNotExistErrorSubclass.ROLE_NAME,
             )
             in str(self._RoleDoesNotExistErrorSubclass())
         )
@@ -770,7 +770,7 @@ class TestChannelDoesNotExistError:
         """Test that the exception message contains the auto-generated formatted message."""
         assert (
             self._ChannelDoesNotExistErrorSubclass.get_formatted_message(
-                non_existent_object_identifier=self._ChannelDoesNotExistErrorSubclass.CHANNEL_NAME
+                non_existent_object_identifier=self._ChannelDoesNotExistErrorSubclass.CHANNEL_NAME,
             )
             in str(self._ChannelDoesNotExistErrorSubclass())
         )

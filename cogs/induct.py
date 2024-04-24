@@ -160,7 +160,7 @@ class BaseInductCog(TeXBotBaseCog):
                 committee_role_mention: str = (await self.bot.committee_role).mention
             except CommitteeRoleDoesNotExistError:
                 logger.warning(
-                    "Committee role does not exist, when retrieving a random welcome message."
+                    "Committee role does not exist, when retrieving a random welcome message.",
                 )
 
                 return await self.get_random_welcome_message(induction_member)
@@ -174,7 +174,7 @@ class BaseInductCog(TeXBotBaseCog):
             if not settings["PURCHASE_MEMBERSHIP_URL"]:
                 logger.warning(
                     "Env variable `PURCHASE_MEMBERSHIP_URL` is not set, "
-                    "when retrieving a random welcome message."
+                    "when retrieving a random welcome message.",
                 )
 
                 return await self.get_random_welcome_message(induction_member)

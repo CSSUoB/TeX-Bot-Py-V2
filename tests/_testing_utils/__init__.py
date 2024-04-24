@@ -7,7 +7,7 @@ __all__: Sequence[str] = (
     "TestingInteraction",
     "TestingResponse",
     "TestingApplicationContext",
-    "BaseTestDiscordCommand"
+    "BaseTestDiscordCommand",
 )
 
 from tests._testing_utils.base_test_discord_command import BaseTestDiscordCommand

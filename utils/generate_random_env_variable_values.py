@@ -6,7 +6,7 @@ __all__: Sequence[str] = (
     "BaseRandomEnvVariableValueGenerator",
     "RandomDiscordBotTokenGenerator",
     "RandomDiscordLogChannelWebhookURLGenerator",
-    "RandomDiscordGuildIDGenerator"
+    "RandomDiscordGuildIDGenerator",
 )
 
 import abc

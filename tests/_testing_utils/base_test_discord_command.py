@@ -33,8 +33,8 @@ class BaseTestDiscordCommand:
             cls.COMMAND.callback(  # type: ignore[arg-type,call-arg]
                 self=cls.COMMAND.cog,
                 ctx=ctx,
-                **kwargs
-            )
+                **kwargs,
+            ),
         )
 
     # noinspection PyPep8Naming
@@ -48,15 +48,16 @@ class BaseTestDiscordCommand:
                 "application_id": 1,
                 "type": discord.InteractionType.application_command.value,
                 "token": "1",
-                "version": 2
+                "version": 2,
+                "entitlements": [],
             },
             state=ConnectionState(
                 dispatch=(lambda: None),
                 handlers={},
                 hooks={},
                 http=HTTPClient(),
-                loop=asyncio.new_event_loop()
-            )
+                loop=asyncio.new_event_loop(),
+            ),
         )
 
         context: TestingApplicationContext = TestingApplicationContext(bot, interaction)

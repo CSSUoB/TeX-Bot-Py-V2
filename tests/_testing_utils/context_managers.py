@@ -3,7 +3,7 @@ from collections.abc import Sequence
 __all__: Sequence[str] = (
     "EnvVariableDeleter",
     "TemporarySettingsKeyReplacer",
-    "FileTemporaryDeleter"
+    "FileTemporaryDeleter",
 )
 
 import hashlib
@@ -44,7 +44,7 @@ class EnvVariableDeleter:
         """Delete all stored instances of the stored environment variable."""
         if self.env_file_path.is_file():
             self.env_file_path = self.env_file_path.rename(
-                self.env_file_path.parent / Path(".env.original")
+                self.env_file_path.parent / Path(".env.original"),
             )
 
         if self.old_env_value is not None:
@@ -77,7 +77,7 @@ class TemporarySettingsKeyReplacer:  # TODO: Delete if has no uses
         self.new_settings_value: object = new_settings_value
 
         self.old_settings_value: object = self._get_old_settings_value(
-            self.settings_key_name
+            self.settings_key_name,
         )
 
     def __enter__(self) -> None:
