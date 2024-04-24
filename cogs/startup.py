@@ -10,6 +10,7 @@ from logging import Logger
 import discord
 from discord_logging.handler import DiscordHandler
 
+import utils
 from config import settings
 from exceptions import (
     ArchivistRoleDoesNotExistError,
@@ -20,7 +21,6 @@ from exceptions import (
     MemberRoleDoesNotExistError,
     RolesChannelDoesNotExistError,
 )
-import utils
 from utils import TeXBotBaseCog
 
 logger: Logger = logging.getLogger("TeX-Bot")
