@@ -20,7 +20,8 @@ from exceptions import (
     MemberRoleDoesNotExistError,
     RolesChannelDoesNotExistError,
 )
-from utils import TeXBotBaseCog, generate_invite_url
+import utils
+from utils import TeXBotBaseCog
 
 logger: Logger = logging.getLogger("TeX-Bot")
 
@@ -70,7 +71,7 @@ class StartupCog(TeXBotBaseCog):
             if self.bot.application_id:
                 logger.info(
                     "Invite URL: %s",
-                    generate_invite_url(
+                    utils.generate_invite_url(
                         self.bot.application_id,
                         settings["DISCORD_GUILD_ID"]),
                     )
@@ -81,7 +82,7 @@ class StartupCog(TeXBotBaseCog):
         if self.bot.application_id:
             logger.debug(
                 "Invite URL: %s",
-                generate_invite_url(
+                utils.generate_invite_url(
                     self.bot.application_id,
                     settings["DISCORD_GUILD_ID"]),
             )

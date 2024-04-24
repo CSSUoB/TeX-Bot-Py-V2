@@ -4,14 +4,11 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ()
 
-import os
 import random
 import re
 from typing import Final
 
-import pytest
-
-from utils import generate_invite_url
+import utils
 
 # TODO(CarrotManMatt): Move to stats_tests  # noqa: FIX002
 # https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/57
@@ -80,15 +77,11 @@ from utils import generate_invite_url
 #         ) == f"{time_value:.2f} {TIME_SCALE}s"
 
 
-class TestInviteURLGenerator:
-    """
-    Test case to unit-test the generate_invite_url utility function component.
-
-    Includes tests for both the argument parser & low-level URL generation function.
-    """
+class TestGenerateInviteURL:
+    """Test case to unit-test the generate_invite_url utility function."""
 
     @staticmethod
-    def test_low_level_url_generates() -> None:
+    def test_url_generates() -> None:
         """Test that the invite URL generates successfully when valid arguments are passed."""
         DISCORD_BOT_APPLICATION_ID: Final[int] = random.randint(
             10000000000000000, 99999999999999999999,
@@ -97,7 +90,7 @@ class TestInviteURLGenerator:
             10000000000000000, 99999999999999999999,
         )
 
-        invite_url: str = generate_invite_url(
+        invite_url: str = utils.generate_invite_url(
             DISCORD_BOT_APPLICATION_ID, DISCORD_GUILD_ID,
         )
 
@@ -105,59 +98,3 @@ class TestInviteURLGenerator:
             f"https://discord.com/.*={DISCORD_BOT_APPLICATION_ID}.*={DISCORD_GUILD_ID}",
             invite_url,
         )
-
-    @classmethod
-    def test_parser_generates_url_with_discord_guild_id_as_environment_variable(cls) -> None:
-        """Test for the correct response when discord_guild_id is given as an env variable."""
-        DISCORD_BOT_APPLICATION_ID: Final[int] = random.randint(
-            10000000000000000, 99999999999999999999,
-        )
-        DISCORD_GUILD_ID: Final[int] = random.randint(
-            10000000000000000,
-            99999999999999999999,
-        )
-
-        old_env_discord_guild_id: str = os.environ.get("DISCORD_GUILD_ID", "")
-        os.environ["DISCORD_GUILD_ID"] = str(DISCORD_GUILD_ID)
-
-        try:
-            capture_result: str
-            capture_result = generate_invite_url(
-                DISCORD_BOT_APPLICATION_ID, DISCORD_GUILD_ID,
-            )
-            if old_env_discord_guild_id:
-                os.environ["DISCORD_GUILD_ID"] = old_env_discord_guild_id
-            else:
-                del os.environ["DISCORD_GUILD_ID"]
-            assert re.match(
-                f"https://discord.com/.*={DISCORD_BOT_APPLICATION_ID}.*={DISCORD_GUILD_ID}",
-                capture_result,
-            )
-        except Exception as e:  # noqa: BLE001
-            if old_env_discord_guild_id:
-                os.environ["DISCORD_GUILD_ID"] = old_env_discord_guild_id
-            else:
-                del os.environ["DISCORD_GUILD_ID"]
-            pytest.fail(f"generate_invite_url raised error: {e}")
-
-    @classmethod
-    def test_parser_generates_url_with_discord_guild_id_as_argument(cls) -> None:
-        """Test for the correct response when discord_guild_id is provided as an argument."""
-        DISCORD_BOT_APPLICATION_ID: Final[int] = random.randint(
-            10000000000000000, 99999999999999999999,
-        )
-        DISCORD_GUILD_ID: Final[int] = random.randint(
-            10000000000000000,
-            99999999999999999999,
-        )
-        try:
-            capture_result: str
-            capture_result = generate_invite_url(
-                DISCORD_BOT_APPLICATION_ID, DISCORD_GUILD_ID,
-            )
-            assert re.match(
-                f"https://discord.com/.*={DISCORD_BOT_APPLICATION_ID}.*={DISCORD_GUILD_ID}",
-                capture_result,
-            )
-        except Exception as e:  # noqa: BLE001
-            pytest.fail(f"generate_invite_url raised error: {e}")
