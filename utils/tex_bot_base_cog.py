@@ -57,7 +57,7 @@ class TeXBotBaseCog(Cog):
         "left_member_stats": (
             "display statistics about the members that have left the server"
         ),
-        "write_roles": "send messages"
+        "write_roles": "send messages",
     }
 
     def __init__(self, bot: TeXBot) -> None:
@@ -85,7 +85,7 @@ class TeXBotBaseCog(Cog):
             interaction_name=COMMAND_NAME,
             error_code=error_code,
             message=message,
-            logging_message=logging_message
+            logging_message=logging_message,
         )
 
     @classmethod
@@ -126,7 +126,7 @@ class TeXBotBaseCog(Cog):
             message = re.sub(
                 r"<([@&#]?|(@[&#])?)\d+>",
                 lambda match: f"`{match.group(0)}`",
-                message.strip()
+                message.strip(),
             )
             construct_error_message += f"\n`{message}`"
 
@@ -140,10 +140,10 @@ class TeXBotBaseCog(Cog):
                     in (
                         error_code if error_code else "",
                         f"({interaction_name})",
-                        str(logging_message)
+                        str(logging_message),
                     )
                     if message_part
-                ).rstrip(": ;")
+                ).rstrip(": ;"),
             )
 
     @staticmethod
@@ -166,7 +166,7 @@ class TeXBotBaseCog(Cog):
 
         with contextlib.suppress(BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
             channel_permissions_limiter = await ctx.bot.get_main_guild_member(
-                ctx.interaction.user
+                ctx.interaction.user,
             )
 
         if not ctx.value or re.match(r"\A#.*\Z", ctx.value):
@@ -175,7 +175,7 @@ class TeXBotBaseCog(Cog):
                 for channel
                 in main_guild.text_channels
                 if channel.permissions_for(channel_permissions_limiter).is_superset(
-                    discord.Permissions(send_messages=True, view_channel=True)
+                    discord.Permissions(send_messages=True, view_channel=True),
                 )
             }
 
@@ -184,6 +184,6 @@ class TeXBotBaseCog(Cog):
             for channel
             in main_guild.text_channels
             if channel.permissions_for(channel_permissions_limiter).is_superset(
-                discord.Permissions(send_messages=True, view_channel=True)
+                discord.Permissions(send_messages=True, view_channel=True),
             )
         }
