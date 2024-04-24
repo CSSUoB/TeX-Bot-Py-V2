@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "TeX-Bot"
-version = "0.5.0"
+version = "0.5.1"
 license = "Apache-2.0"
 description = "TeX-Bot, but back in Python!"
 authors = [
@@ -10,59 +10,61 @@ authors = [
     "FrozenDude101",
     "noodleWrecker7",
     "JTWWilson",
-    "LMBishop"
+    "LMBishop",
+    "awsloth",
+    "ChrisDev18",
+    "edwinchan129",
 ]
 readme = "README.md"
 repository = "https://github.com/CSSUoB/TeX-Bot-Py-V2.git"
-keywords = ["discord", "uob", "uob-css", "TeXBot"]
+keywords = ["discord", "uob", "uob-css", "TeX-Bot"]
 classifiers = [
     "Private :: Do Not Upload",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.12",
     "Typing :: Typed",
-    "Topic :: Internet"
+    "Topic :: Internet",
 ]
 
 
 [tool.poetry.dependencies]
-python = "^3.12"  # NOTE: The Python version cannot be updated to 3.12, because it is not currently supported by Pycord
-py-cord = {git = "https://github.com/Pycord-Development/pycord.git", branch = "master", rev = "8af8454a5befbdd6589d24016dcc7bfee252de0b"}  # NOTE: Pycord has temporarily lost the ability to create new releases on their main pypi page so we use their git version, pinned to a specific commit hash. Pycord has been tested to be stable, up to the pinned commit
+python = "^3.12"
+py-cord = "~2.5"
 python-dotenv = "^1.0"
-validators = "^0.22"
+validators = "^0.28"
 beautifulsoup4 = "^4.12"
-emoji = "^2.9"
+emoji = "^2.11"
 parsedatetime = "^2.6"
-django = "~4.2"
+django = "~4.2"  # NOTE: Django is pinned below version 5.0 because the django-stubs package is not yet compatable with Django 5.0 (see https://github.com/typeddjango/django-stubs/issues/1493 for the tracked issue)
 matplotlib = "^3.8"
 mplcyberpunk = "^0.7"
 regex = "^2023.12"
 python-logging-discord-handler = "^0.1"
 classproperties = {git = "https://github.com/hottwaj/classproperties.git"}
 asyncstdlib = "~3.12"
-setuptools = "^69.0"
+setuptools = "^69.5"
 
 [tool.poetry.group.dev.dependencies]
+pre-commit = "^3.7"
 mypy = "~1.7"
 django-stubs = {extras = ["compatible-mypy"], version = "~4.2"}
-types-beautifulsoup4 = "^4.12"
+types-beautifulsoup4 = "^4.12.0"
 types-regex = "^2023.12"
-pytest = "^7.4"
-ruff = "^0.1"
+pytest = "^8.1"
+ruff = "^0.4"
 gitpython = "^3.1"
 pymarkdownlnt = "^0.9"
 
 
 
 [tool.pytest.ini_options]
-filterwarnings = [
-    "ignore:'audioop':DeprecationWarning"
-]
+filterwarnings = ["ignore:'audioop':DeprecationWarning"]
 
 
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]
-exclude = "db/_settings\\.py$"
+exclude = ["db/_settings\\.py$", "venv/"]
 extra_checks = true
 warn_unused_configs = true
 disallow_untyped_calls = true
@@ -87,7 +89,7 @@ module = [
     "mplcyberpunk",
     "discord_logging.handler",
     "parsedatetime",
-    "validators"
+    "validators",
 ]
 ignore_missing_imports = true
 
@@ -97,6 +99,20 @@ django_settings_module = "db._settings"
 
 
 [tool.ruff]
+line-length = 95
+target-version ="py312"
+extend-exclude = [
+    "db/**/migrations/",
+    "venv/",
+    ".vscode",
+    ".idea",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    "__pycache__",
+]
+
+[tool.ruff.lint]
 select = [
     "E",
     "F",
@@ -141,8 +157,9 @@ select = [
     "TRY",
     "FLY",
     "PERF",
-    "RUF"
+    "RUF",
 ]
+fixable = ["I001", "TCH", "F401", "COM812"]
 ignore = [
     "N818",
     "N806",
@@ -150,20 +167,14 @@ ignore = [
     "D212",
     "ANN101",
     "ANN102",
-    "ANN401",
-    "S101",
-    "S311",
-    "COM812",
     "Q003",
     "TD002",
     "TD003",
-    "PLR0911",
-    "PLR0915",
-    "TRY400"
+    "S311",
+    "UP040",  # NOTE: Mypy does not currently support PEP 695 type aliases, so they should not be used
+    "PT009",
+    "PT027",
 ]
-line-length = 95
-fixable = ["I001", "TCH", "F401", "RUF100"]
-target-version ="py311"
 task-tags = [
     "TODO",
     "FIXME",
@@ -173,10 +184,9 @@ task-tags = [
     "REQ",
     "IDEA",
     "NOTE",
-    "ISSUE"
+    "ISSUE",
+    "DONE",
 ]
-# TODO(CarrotManMatt): When extracting raw message strings into the translations JSON file, this allowed-confusable-characters list should be removed
-# https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/90
 allowed-confusables = [
     "ᴀ",
     "ʙ",
@@ -205,27 +215,30 @@ allowed-confusables = [
     "ʏ",
     "ᴢ"
 ]
-extend-exclude = ["db/**/migrations/", ".idea", ".pytest_cache", "__pycache__"]
 
-[tool.ruff.flake8-pytest-style]
+[tool.ruff.lint.per-file-ignores]
+"tests/**/test_*.py" =["S101"]
+
+[tool.ruff.lint.flake8-pytest-style]
 parametrize-values-type = "tuple"
 
-[tool.ruff.flake8-self]
+[tool.ruff.lint.flake8-self]
 extend-ignore-names = ["_base_manager", "_default_manager",  "_meta", "_get_wrap_line_width"]
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 max-complexity = 18
 
-[tool.ruff.pycodestyle]
+[tool.ruff.lint.pycodestyle]
 ignore-overlong-task-comments = true
 max-doc-length = 95
 
-[tool.ruff.pylint]
+[tool.ruff.lint.pylint]
 allow-magic-value-types = ["str", "bytes", "int"]
 max-args = 7
+max-returns = 10
 max-branches = 19
 
-[tool.ruff.pyupgrade]
+[tool.ruff.lint.pyupgrade]
 keep-runtime-typing = true
 
 
@@ -237,11 +250,10 @@ plugins.ul-style.style = "asterisk"
 plugins.ul-start-left.enabled = true
 plugins.ul-indent.indent = 4
 plugins.no-trailing-spaces.strict = true
-plugins.line-length.line_length = 95
-plugins.line-length.heading_line_length = 95
-plugins.line-length.code_block_line_length = 95
+plugins.line-length.enabled = false
 plugins.ol-prefix.style = "ordered"
 plugins.no-inline-html.allow_first_image_element = false
+plugins.no-inline-html.allowed_elements = "!--,br"
 plugins.hr-style.style = "---"
 plugins.code-block-style.style = "fenced"
 plugins.code-fence-style.style = "backtick"

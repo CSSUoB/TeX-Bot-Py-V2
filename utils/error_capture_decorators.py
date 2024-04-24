@@ -9,7 +9,7 @@ from collections.abc import Sequence
 __all__: Sequence[str] = (
     "ErrorCaptureDecorators",
     "capture_guild_does_not_exist_error",
-    "capture_strike_tracking_error"
+    "capture_strike_tracking_error",
 )
 
 import functools
@@ -91,7 +91,7 @@ def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T]") -> "Wrapp
     return ErrorCaptureDecorators.capture_error_and_close(
         func,  # type: ignore[arg-type]
         error_type=GuildDoesNotExistError,
-        close_func=ErrorCaptureDecorators.critical_error_close_func
+        close_func=ErrorCaptureDecorators.critical_error_close_func,
     )
 
 
@@ -104,5 +104,5 @@ def capture_strike_tracking_error(func: "WrapperInputFunc[P, T]") -> "WrapperOut
     return ErrorCaptureDecorators.capture_error_and_close(
         func,  # type: ignore[arg-type]
         error_type=StrikeTrackingError,
-        close_func=ErrorCaptureDecorators.strike_tracking_error_close_func
+        close_func=ErrorCaptureDecorators.strike_tracking_error_close_func,
     )

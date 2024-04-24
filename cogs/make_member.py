@@ -21,7 +21,7 @@ from db.core.models import GroupMadeMember
 from exceptions import CommitteeRoleDoesNotExistError, GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
-logger: Logger = logging.getLogger("texbot")
+logger: Logger = logging.getLogger("TeX-Bot")
 
 _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: Final[str] = (
     f"""{
@@ -47,7 +47,7 @@ _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: Final[str] = (
 _GROUP_MEMBER_ID_ARGUMENT_NAME: Final[str] = (
     _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME.lower().replace(
         " ",
-        ""
+        "",
     )
 )
 
@@ -62,7 +62,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         description=(
             "Gives you the Member role "
             f"when supplied with an appropriate {_GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME}."
-        )
+        ),
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name=_GROUP_MEMBER_ID_ARGUMENT_NAME,
@@ -90,7 +90,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         required=True,
         max_length=7,
         min_length=7,
-        parameter_name="group_member_id"
+        parameter_name="group_member_id",
     )
     @CommandChecks.check_interaction_user_in_main_guild
     async def make_member(self, ctx: TeXBotApplicationContext, group_member_id: str) -> None:
@@ -111,7 +111,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                     ":information_source: No changes made. You're already a member "
                     "- why are you trying this again? :information_source:"
                 ),
-                ephemeral=True
+                ephemeral=True,
             )
             return
 
@@ -120,15 +120,15 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 ctx,
                 message=(
                     f"{group_member_id!r} is not a valid {self.bot.group_member_id_type} ID."
-                )
+                ),
             )
             return
 
         GROUP_MEMBER_ID_IS_ALREADY_USED: Final[bool] = await GroupMadeMember.objects.filter(
             hashed_group_member_id=GroupMadeMember.hash_group_member_id(
                 group_member_id,
-                self.bot.group_member_id_type
-            )
+                self.bot.group_member_id_type,
+            ),
         ).aexists()
         if GROUP_MEMBER_ID_IS_ALREADY_USED:
             # noinspection PyUnusedLocal
@@ -142,7 +142,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                     f"been used. Please contact a {committee_mention} member if this is "
                     "an error. :information_source:"
                 ),
-                ephemeral=True
+                ephemeral=True,
             )
             return
 
@@ -151,10 +151,10 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         request_headers: dict[str, str] = {
             "Cache-Control": "no-cache",
             "Pragma": "no-cache",
-            "Expires": "0"
+            "Expires": "0",
         }
         request_cookies: dict[str, str] = {
-            ".ASPXAUTH": settings["MEMBERS_LIST_URL_SESSION_COOKIE"]
+            ".ASPXAUTH": settings["MEMBERS_LIST_URL_SESSION_COOKIE"],
         }
         async with aiohttp.ClientSession(headers=request_headers, cookies=request_cookies) as http_session:  # noqa: E501, SIM117
             async with http_session.get(url=settings["MEMBERS_LIST_URL"]) as http_response:
@@ -163,17 +163,17 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
             {
                 "ctl00_Main_rptGroups_ctl05_gvMemberships",
-                "ctl00_Main_rptGroups_ctl03_gvMemberships"
-            }
+                "ctl00_Main_rptGroups_ctl03_gvMemberships",
+            },
         )
         table_id: str
         for table_id in MEMBER_HTML_TABLE_IDS:
             parsed_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
                 response_html,
-                "html.parser"
+                "html.parser",
             ).find(
                 "table",
-                {"id": table_id}
+                {"id": table_id},
             )
 
             if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
@@ -184,7 +184,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 for row
                 in parsed_html.find_all(
                     "tr",
-                    {"class": ["msl_row", "msl_altrow"]}
+                    {"class": ["msl_row", "msl_altrow"]},
                 )
             )
 
@@ -198,8 +198,8 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 error_code="E1041",
                 logging_message=OSError(
                     "The guild member IDs could not be retrieved from "
-                    "the MEMBERS_LIST_URL."
-                )
+                    "the MEMBERS_LIST_URL.",
+                ),
             )
             return
 
@@ -212,14 +212,14 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                     f"The provided {_GROUP_MEMBER_ID_ARGUMENT_NAME} must match "
                     f"the {self.bot.group_member_id_type} ID "
                     f"that you purchased your {self.bot.group_short_name} membership with."
-                )
+                ),
             )
             return
 
         # NOTE: The "Member" role must be added to the user **before** the "Guest" role to ensure that the welcome message does not include the suggestion to purchase membership
         await interaction_member.add_roles(
             member_role,
-            reason="TeX Bot slash-command: \"/makemember\""
+            reason="TeX Bot slash-command: \"/makemember\"",
         )
 
         try:
@@ -245,21 +245,21 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             logger.warning(
                 "\"/makemember\" command used but the \"Guest\" role does not exist. "
                 "Some user's may now have the \"Member\" role without the \"Guest\" role. "
-                "Use the \"/ensure-members-inducted\" command to fix this issue."
+                "Use the \"/ensure-members-inducted\" command to fix this issue.",
             )
         else:
             if guest_role not in interaction_member.roles:
                 await interaction_member.add_roles(
                     guest_role,
-                    reason="TeX Bot slash-command: \"/makemember\""
+                    reason="TeX Bot slash-command: \"/makemember\"",
                 )
 
         applicant_role: discord.Role | None = discord.utils.get(
             self.bot.main_guild.roles,
-            name="Applicant"
+            name="Applicant",
         )
         if applicant_role and applicant_role in interaction_member.roles:
             await interaction_member.remove_roles(
                 applicant_role,
-                reason="TeX Bot slash-command: \"/makemember\""
+                reason="TeX Bot slash-command: \"/makemember\"",
             )

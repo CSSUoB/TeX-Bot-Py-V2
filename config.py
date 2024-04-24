@@ -47,7 +47,7 @@ PROJECT_ROOT: Final[Path] = Path(__file__).parent.resolve()
 TRUE_VALUES: Final[frozenset[str]] = frozenset({"true", "1", "t", "y", "yes", "on"})
 FALSE_VALUES: Final[frozenset[str]] = frozenset({"false", "0", "f", "n", "no", "off"})
 VALID_SEND_INTRODUCTION_REMINDERS_VALUES: Final[frozenset[str]] = frozenset(
-    {"once", "interval"} | TRUE_VALUES | FALSE_VALUES
+    {"once", "interval"} | TRUE_VALUES | FALSE_VALUES,
 )
 DEFAULT_STATISTICS_ROLES: Final[frozenset[str]] = frozenset(
     {
@@ -67,19 +67,19 @@ DEFAULT_STATISTICS_ROLES: Final[frozenset[str]] = frozenset(
         "PGR",
         "Alumnus/Alumna",
         "Postdoc",
-        "Quiz Victor"
-    }
+        "Quiz Victor",
+    },
 )
 LOG_LEVEL_CHOICES: Final[Sequence[str]] = (
     "DEBUG",
     "INFO",
     "WARNING",
     "ERROR",
-    "CRITICAL"
+    "CRITICAL",
 )
 
 
-logger: Logger = logging.getLogger("texbot")
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class Settings(abc.ABC):
@@ -97,7 +97,7 @@ class Settings(abc.ABC):
         """Return the message to state that the given settings key is invalid."""
         return f"{item_name!r} is not a valid settings key."
 
-    def __getattr__(self, item: str) -> Any:  # type: ignore[misc]
+    def __getattr__(self, item: str) -> Any:  # type: ignore[misc]  # noqa: ANN401
         """Retrieve settings value by attribute lookup."""
         MISSING_ATTRIBUTE_MESSAGE: Final[str] = (
             f"{type(self).__name__!r} object has no attribute {item!r}"
@@ -114,13 +114,13 @@ class Settings(abc.ABC):
 
         if re.match(r"\A(?!_)(?:(?!_{2,})[A-Z_])+(?<!_)\Z", item):
             INVALID_SETTINGS_KEY_MESSAGE: Final[str] = self.get_invalid_settings_key_message_for_item_name(  # noqa: E501
-                item
+                item,
             )
             raise AttributeError(INVALID_SETTINGS_KEY_MESSAGE)
 
         raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
-    def __getitem__(self, item: str) -> Any:  # type: ignore[misc]
+    def __getitem__(self, item: str) -> Any:  # type: ignore[misc]  # noqa: ANN401
         """Retrieve settings value by key lookup."""
         e: AttributeError
         try:
@@ -161,7 +161,7 @@ class Settings(abc.ABC):
         console_logging_handler: logging.Handler = logging.StreamHandler()
         # noinspection SpellCheckingInspection
         console_logging_handler.setFormatter(
-            logging.Formatter("[{asctime}] {name} | {levelname:^8} - {message}", style="{")
+            logging.Formatter("[{asctime}] {name} | {levelname:^8} - {message}", style="{"),
         )
 
         logging.getLogger("").addHandler(console_logging_handler)
@@ -175,8 +175,8 @@ class Settings(abc.ABC):
             and raw_discord_bot_token.strip()
             and re.match(
                 r"\A[A-Za-z0-9]{24,26}\.[A-Za-z0-9]{6}\.[A-Za-z0-9_-]{27,38}\Z",
-                raw_discord_bot_token.strip()
-            )
+                raw_discord_bot_token.strip(),
+            ),
         )
         if not DISCORD_BOT_TOKEN_IS_VALID:
             INVALID_DISCORD_BOT_TOKEN_MESSAGE: Final[str] = (
@@ -190,7 +190,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_discord_log_channel_webhook_url(cls) -> None:
         raw_discord_log_channel_webhook_url: str | None = os.getenv(
-           "DISCORD_LOG_CHANNEL_WEBHOOK_URL"
+           "DISCORD_LOG_CHANNEL_WEBHOOK_URL",
         )
 
         DISCORD_LOG_CHANNEL_WEBHOOK_URL_IS_VALID: Final[bool] = bool(
@@ -199,7 +199,7 @@ class Settings(abc.ABC):
                 raw_discord_log_channel_webhook_url.strip()
                 and re.match(
                     r"\Ahttps://discord.com/api/webhooks/\d{17,20}/[a-zA-Z\d]{60,90}/?\Z",
-                    raw_discord_log_channel_webhook_url.strip()
+                    raw_discord_log_channel_webhook_url.strip(),
                 )
                 and validators.url(raw_discord_log_channel_webhook_url.strip())
             )
@@ -254,7 +254,7 @@ class Settings(abc.ABC):
                 raw_group_full_name.strip()
                 and regex.match(  # NOTE: The `regex` package is used here instead of python's in-built `re` package, because the `regex` package supports matching Unicode character classes (E.g. `\p{L}`)
                     r"\A(?![ &!?:,.%-])(?:(?!['()&:,.#%\"-]{2,}| {2,})[\p{L}\p{M}0-9 '()&!?:,.#%\"-])*(?<![ &,-])\Z",  # noqa: E501
-                    raw_group_full_name.strip()
+                    raw_group_full_name.strip(),
                 )
                 and regex.search(r"\p{L}", raw_group_full_name.strip())  # NOTE: The `regex` package is used here instead of python's in-built `re` package, because the `regex` package supports matching Unicode character classes (E.g. `\p{L}`)
             )
@@ -327,7 +327,7 @@ class Settings(abc.ABC):
                 raw_group_short_name.strip()
                 and regex.match(  # NOTE: The `regex` package is used here instead of python's in-built `re` package, because the `regex` package supports matching Unicode character classes (E.g. `\p{L}`)
                     r"\A(?![&!?:,.%-])(?:(?!['()&:,.#%\"-]{2,})[\p{L}\p{M}0-9'()&!?:,.#%\"-])*(?<![&,-])\Z",
-                    raw_group_short_name.strip()
+                    raw_group_short_name.strip(),
                 )
                 and regex.search(r"\p{L}", raw_group_short_name.strip())  # NOTE: The `regex` package is used here instead of python's in-built `re` package, because the `regex` package supports matching Unicode character classes (E.g. `\p{L}`)
             )
@@ -432,7 +432,7 @@ class Settings(abc.ABC):
 
         if not 0 <= ping_command_easter_egg_probability <= 100:
             raise ImproperlyConfiguredError(
-                INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE
+                INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE,
             )
 
         cls._settings["PING_COMMAND_EASTER_EGG_PROBABILITY"] = (
@@ -478,7 +478,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_welcome_messages(cls) -> None:
         messages_dict: Mapping[str, object] = cls._get_messages_dict(
-            os.getenv("MESSAGES_FILE_PATH")
+            os.getenv("MESSAGES_FILE_PATH"),
         )
 
         if "welcome_messages" not in messages_dict:
@@ -486,12 +486,12 @@ class Settings(abc.ABC):
 
         WELCOME_MESSAGES_KEY_IS_VALID: Final[bool] = bool(
             isinstance(messages_dict["welcome_messages"], Iterable)
-            and messages_dict["welcome_messages"]
+            and messages_dict["welcome_messages"],
         )
         if not WELCOME_MESSAGES_KEY_IS_VALID:
             raise MessagesJSONFileValueError(
                 dict_key="welcome_messages",
-                invalid_value=messages_dict["welcome_messages"]
+                invalid_value=messages_dict["welcome_messages"],
             )
 
         cls._settings["WELCOME_MESSAGES"] = set(messages_dict["welcome_messages"])  # type: ignore[call-overload]
@@ -499,7 +499,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_roles_messages(cls) -> None:
         messages_dict: Mapping[str, object] = cls._get_messages_dict(
-            os.getenv("MESSAGES_FILE_PATH")
+            os.getenv("MESSAGES_FILE_PATH"),
         )
 
         if "roles_messages" not in messages_dict:
@@ -512,7 +512,7 @@ class Settings(abc.ABC):
         if not ROLES_MESSAGES_KEY_IS_VALID:
             raise MessagesJSONFileValueError(
                 dict_key="roles_messages",
-                invalid_value=messages_dict["roles_messages"]
+                invalid_value=messages_dict["roles_messages"],
             )
         cls._settings["ROLES_MESSAGES"] = set(messages_dict["roles_messages"])  # type: ignore[call-overload]
 
@@ -542,7 +542,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_members_list_url_session_cookie(cls) -> None:
         raw_members_list_url_session_cookie: str | None = os.getenv(
-            "MEMBERS_LIST_URL_SESSION_COOKIE"
+            "MEMBERS_LIST_URL_SESSION_COOKIE",
         )
 
         MEMBERS_LIST_URL_SESSION_COOKIE_IS_VALID: Final[bool] = bool(
@@ -616,7 +616,7 @@ class Settings(abc.ABC):
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
         raw_send_introduction_reminders_interval: str | None = (
-            os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL")
+            os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL"),
         )
 
         send_introduction_reminders_interval: Match[str] | None = re.match(
@@ -675,7 +675,7 @@ class Settings(abc.ABC):
                 "KICK_NO_INTRODUCTION_DISCORD_MEMBERS must be a boolean value."
             )
             raise ImproperlyConfiguredError(
-                INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_MESSAGE
+                INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_MESSAGE,
             )
 
         cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = (

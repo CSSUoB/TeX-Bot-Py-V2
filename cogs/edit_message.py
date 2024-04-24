@@ -34,10 +34,12 @@ class EditMessageCommandCog(TeXBotBaseCog):
 
         try:
             interaction_user: discord.Member = await ctx.bot.get_main_guild_member(
-                ctx.interaction.user
+                ctx.interaction.user,
             )
-            assert await ctx.bot.check_user_has_committee_role(interaction_user)
-        except (AssertionError, BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
+        except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
+            return set()
+
+        if not await ctx.bot.check_user_has_committee_role(interaction_user):
             return set()
 
         return await TeXBotBaseCog.autocomplete_get_text_channels(ctx)
@@ -45,7 +47,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="editmessage",
-        description="Edits a message sent by TeX-Bot to the value supplied."
+        description="Edits a message sent by TeX-Bot to the value supplied.",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="channel",
@@ -53,7 +55,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore[arg-type]
         required=True,
-        parameter_name="str_channel_id"
+        parameter_name="str_channel_id",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="message_id",
@@ -62,7 +64,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         required=True,
         max_length=20,
         min_length=17,
-        parameter_name="str_message_id"
+        parameter_name="str_message_id",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="text",
@@ -71,7 +73,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         required=True,
         max_length=2000,
         min_length=1,
-        parameter_name="new_message_content"
+        parameter_name="new_message_content",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -87,7 +89,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         if not re.match(r"\A\d{17,20}\Z", str_channel_id):
             await self.command_send_error(
                 ctx,
-                message=f"{str_channel_id!r} is not a valid channel ID."
+                message=f"{str_channel_id!r} is not a valid channel ID.",
             )
             return
 
@@ -96,7 +98,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         if not re.match(r"\A\d{17,20}\Z", str_message_id):
             await self.command_send_error(
                 ctx,
-                message=f"{str_message_id!r} is not a valid message ID."
+                message=f"{str_message_id!r} is not a valid message ID.",
             )
             return
 
@@ -104,12 +106,12 @@ class EditMessageCommandCog(TeXBotBaseCog):
 
         channel: discord.TextChannel | None = discord.utils.get(
             main_guild.text_channels,
-            id=channel_id
+            id=channel_id,
         )
         if not channel:
             await self.command_send_error(
                 ctx,
-                message=f"Text channel with ID \"{channel_id}\" does not exist."
+                message=f"Text channel with ID \"{channel_id}\" does not exist.",
             )
             return
 
@@ -118,7 +120,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         except discord.NotFound:
             await self.command_send_error(
                 ctx,
-                message=f"Message with ID \"{message_id}\" does not exist."
+                message=f"Message with ID \"{message_id}\" does not exist.",
             )
             return
 
@@ -130,7 +132,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
                 message=(
                     f"Message with ID {str(message_id)!r} cannot be edited "
                     "because it belongs to another user."
-                )
+                ),
             )
             return
         else:
