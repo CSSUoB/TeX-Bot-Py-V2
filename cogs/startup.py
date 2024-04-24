@@ -43,12 +43,12 @@ class StartupCog(TeXBotBaseCog):
                     self.bot.user.avatar.url
                     if self.bot.user and self.bot.user.avatar
                     else None
-                )
+                ),
             )
             discord_logging_handler.setLevel(logging.WARNING)
             # noinspection SpellCheckingInspection
             discord_logging_handler.setFormatter(
-                logging.Formatter("{levelname} | {message}", style="{")
+                logging.Formatter("{levelname} | {message}", style="{"),
             )
 
             logger.addHandler(discord_logging_handler)
@@ -56,7 +56,7 @@ class StartupCog(TeXBotBaseCog):
         else:
             logger.warning(
                 "DISCORD_LOG_CHANNEL_WEBHOOK_URL was not set, "
-                "so error logs will not be sent to the Discord log channel."
+                "so error logs will not be sent to the Discord log channel.",
             )
 
         try:
@@ -72,7 +72,7 @@ class StartupCog(TeXBotBaseCog):
                     "Invite URL: %s",
                     generate_invite_url(
                         self.bot.application_id,
-                        settings["DISCORD_GUILD_ID"])
+                        settings["DISCORD_GUILD_ID"]),
                     )
             logger.critical(GuildDoesNotExistError(guild_id=settings["DISCORD_GUILD_ID"]))
             await self.bot.close()
@@ -83,7 +83,7 @@ class StartupCog(TeXBotBaseCog):
                 "Invite URL: %s",
                 generate_invite_url(
                     self.bot.application_id,
-                    settings["DISCORD_GUILD_ID"])
+                    settings["DISCORD_GUILD_ID"]),
             )
 
         if not discord.utils.get(main_guild.roles, name="Committee"):
@@ -108,8 +108,8 @@ class StartupCog(TeXBotBaseCog):
             manual_moderation_warning_message_location_exists: bool = bool(
                 discord.utils.get(
                     main_guild.text_channels,
-                    name=settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"]
-                )
+                    name=settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"],
+                ),
             )
             if not manual_moderation_warning_message_location_exists:
                 logger.critical(
@@ -117,7 +117,7 @@ class StartupCog(TeXBotBaseCog):
                         "The channel %s does not exist, so cannot be used as the location "
                         "for sending manual-moderation warning messages"
                     ),
-                    repr(settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"])
+                    repr(settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"]),
                 )
                 manual_moderation_warning_message_location_similar_to_dm: bool = (
                     settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"].lower()
@@ -131,7 +131,7 @@ class StartupCog(TeXBotBaseCog):
                             "the DMs of the committee member that applied "
                             "the manual moderation action, use the value of %s"
                         ),
-                        repr("DM")
+                        repr("DM"),
                     )
                 await self.bot.close()
                 return

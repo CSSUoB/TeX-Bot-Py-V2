@@ -30,7 +30,7 @@ __all__: Sequence[str] = (
     "StrikeCommandCog",
     "StrikeUserCommandCog",
     "WriteRolesCommandCog",
-    "setup"
+    "setup",
 )
 
 from typing import TYPE_CHECKING

@@ -88,7 +88,7 @@ class TeXBot(discord.Bot):
         if not self._committee_role or not self._guild_has_role(self._committee_role):
             self._committee_role = discord.utils.get(
                 await self.main_guild.fetch_roles(),
-                name="Committee"
+                name="Committee",
             )
 
         if not self._committee_role:
@@ -111,7 +111,7 @@ class TeXBot(discord.Bot):
         if not self._guest_role or not self._guild_has_role(self._guest_role):
             self._guest_role = discord.utils.get(
                 await self.main_guild.fetch_roles(),
-                name="Guest"
+                name="Guest",
             )
 
         if not self._guest_role:
@@ -135,7 +135,7 @@ class TeXBot(discord.Bot):
             self._member_role = discord.utils.get(self.main_guild.roles, name="Member")
             self._member_role = discord.utils.get(
                 await self.main_guild.fetch_roles(),
-                name="Member"
+                name="Member",
             )
 
         if not self._member_role:
@@ -156,7 +156,7 @@ class TeXBot(discord.Bot):
         if not self._archivist_role or not self._guild_has_role(self._archivist_role):
             self._archivist_role = discord.utils.get(
                 await self.main_guild.fetch_roles(),
-                name="Archivist"
+                name="Archivist",
             )
 
         if not self._archivist_role:
@@ -261,13 +261,13 @@ class TeXBot(discord.Bot):
             )
         ).replace(
             "the",
-            ""
+            "",
         ).replace(
             "THE",
-            ""
+            "",
         ).replace(
             "The",
-            ""
+            "",
         ).strip()
 
     @property
@@ -329,7 +329,7 @@ class TeXBot(discord.Bot):
         text_channel: ChannelTypes = discord.utils.get(
             await self.main_guild.fetch_channels(),
             name=name,
-            type=discord.ChannelType.text
+            type=discord.ChannelType.text,
         )
 
         if text_channel is not None and not isinstance(text_channel, discord.TextChannel):
@@ -349,7 +349,7 @@ class TeXBot(discord.Bot):
         """
         everyone_role: discord.Role | None = discord.utils.get(
             self.main_guild.roles,
-            name="@everyone"
+            name="@everyone",
         )
         if not everyone_role:
             raise EveryoneRoleCouldNotBeRetrievedError
@@ -403,7 +403,7 @@ class TeXBot(discord.Bot):
         user: discord.User | None = self.get_user(int(str_member_id))
         if not user:
             raise ValueError(
-                DiscordMemberNotInMainGuildError(user_id=int(str_member_id)).message
+                DiscordMemberNotInMainGuildError(user_id=int(str_member_id)).message,
             )
         try:
             member: discord.Member = await self.get_main_guild_member(user)

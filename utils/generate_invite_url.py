@@ -24,9 +24,9 @@ def generate_invite_url(discord_bot_application_id: int, discord_guild_id: int) 
             kick_members=True,
             ban_members=True,
             manage_channels=True,
-            view_audit_log=True
+            view_audit_log=True,
         ),
         guild=discord.Object(id=discord_guild_id),
         scopes=("bot", "applications.commands"),
-        disable_guild_select=True
+        disable_guild_select=True,
     )

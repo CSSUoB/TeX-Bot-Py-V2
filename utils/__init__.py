@@ -10,7 +10,7 @@ __all__: Sequence[str] = (
     "TeXBotBaseCog",
     "TeXBotApplicationContext",
     "TeXBotAutocompleteContext",
-    "generate_invite_url"
+    "generate_invite_url",
 )
 
 

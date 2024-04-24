@@ -13,6 +13,7 @@ authors = [
     "LMBishop",
     "awsloth",
     "ChrisDev18",
+    "edwinchan129",
 ]
 readme = "README.md"
 repository = "https://github.com/CSSUoB/TeX-Bot-Py-V2.git"
@@ -156,7 +157,7 @@ select = [
     "PERF",
     "RUF",
 ]
-fixable = ["I001", "TCH", "F401", "RUF100"]
+fixable = ["I001", "TCH", "F401", "COM812"]
 ignore = [
     "N818",
     "N806",
@@ -164,17 +165,13 @@ ignore = [
     "D212",
     "ANN101",
     "ANN102",
-    "ANN401",
-    "S101",
-    "S311",
-    "COM812",
     "Q003",
     "TD002",
     "TD003",
+    "S311",
     "UP040",  # NOTE: Mypy does not currently support PEP 695 type aliases, so they should not be used
-    "PLR0911",
-    "PLR0915",
-    "TRY400"
+    "PT009",
+    "PT027",
 ]
 task-tags = [
     "TODO",
@@ -217,6 +214,9 @@ allowed-confusables = [
     "ᴢ"
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/**/test_*.py" =["S101"]
+
 [tool.ruff.lint.flake8-pytest-style]
 parametrize-values-type = "tuple"
 
@@ -233,6 +233,7 @@ max-doc-length = 95
 [tool.ruff.lint.pylint]
 allow-magic-value-types = ["str", "bytes", "int"]
 max-args = 7
+max-returns = 10
 max-branches = 19
 
 [tool.ruff.lint.pyupgrade]

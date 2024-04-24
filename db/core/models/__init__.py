@@ -9,7 +9,7 @@ __all__: Sequence[str] = (
     "GroupMadeMember",
     "DiscordReminder",
     "LeftDiscordMember",
-    "DiscordMemberStrikes"
+    "DiscordMemberStrikes",
 )
 
 import hashlib
@@ -123,9 +123,9 @@ class GroupMadeMember(AsyncBaseModel):
         validators=[
             RegexValidator(
                 r"\A[A-Fa-f\d]{64}\Z",
-                "hashed_group_member_id must be a valid sha256 hex-digest."
-            )
-        ]
+                "hashed_group_member_id must be a valid sha256 hex-digest.",
+            ),
+        ],
     )
 
     class Meta:
@@ -199,15 +199,15 @@ class DiscordReminder(HashedDiscordMember):
         validators=[
             RegexValidator(
                 r"\A[A-Fa-f0-9]{64}\Z",
-                "hashed_member_id must be a valid sha256 hex-digest."
-            )
-        ]
+                "hashed_member_id must be a valid sha256 hex-digest.",
+            ),
+        ],
     )
     message = models.TextField(
         "Message to remind User",
         max_length=1500,
         null=False,
-        blank=True
+        blank=True,
     )
     _channel_id = models.CharField(
         "Discord Channel ID of the channel that the reminder needs to be sent in",
@@ -218,9 +218,9 @@ class DiscordReminder(HashedDiscordMember):
         validators=[
             RegexValidator(
                 r"\A\d{17,20}\Z",
-                "channel_id must be a valid Discord channel ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
-            )
-        ]
+                "channel_id must be a valid Discord channel ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)",
+            ),
+        ],
     )
     _channel_type = models.IntegerField(
         "Discord Channel Type of the channel that the reminder needs to be sent in",
@@ -230,13 +230,13 @@ class DiscordReminder(HashedDiscordMember):
             in discord.ChannelType
         ],
         null=True,
-        blank=True
+        blank=True,
     )
     send_datetime = models.DateTimeField(
         "Date & time to send reminder",
         unique=False,
         null=False,
-        blank=False
+        blank=False,
     )
 
     @property
@@ -274,8 +274,8 @@ class DiscordReminder(HashedDiscordMember):
         constraints = [  # noqa: RUF012
             models.UniqueConstraint(
                 fields=["hashed_member_id", "message", "_channel_id"],
-                name="unique_user_channel_message"
-            )
+                name="unique_user_channel_message",
+            ),
         ]
 
     def __repr__(self) -> str:
@@ -367,9 +367,9 @@ class LeftDiscordMember(AsyncBaseModel):
         if any(not isinstance(role, str) for role in self.roles):
             raise ValidationError(
                 {
-                    "_roles": "Roles must be a set of strings representing the role names."
+                    "_roles": "Roles must be a set of strings representing the role names.",
                 },
-                code="invalid"
+                code="invalid",
             )
 
     @classmethod
@@ -404,7 +404,7 @@ class DiscordMemberStrikes(HashedDiscordMember):
         null=False,
         blank=True,
         validators=[MinValueValidator(0)],
-        default=0
+        default=0,
     )
 
     class Meta:
