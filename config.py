@@ -45,7 +45,7 @@ PROJECT_ROOT: Final[Path] = Path(__file__).parent.resolve()
 TRUE_VALUES: Final[frozenset[str]] = frozenset({"true", "1", "t", "y", "yes", "on"})
 FALSE_VALUES: Final[frozenset[str]] = frozenset({"false", "0", "f", "n", "no", "off"})
 VALID_SEND_INTRODUCTION_REMINDERS_VALUES: Final[frozenset[str]] = frozenset(
-    {"once"} | TRUE_VALUES | FALSE_VALUES
+    {"once"} | TRUE_VALUES | FALSE_VALUES,
 )
 DEFAULT_STATISTICS_ROLES: Final[frozenset[str]] = frozenset(
     {
@@ -65,15 +65,15 @@ DEFAULT_STATISTICS_ROLES: Final[frozenset[str]] = frozenset(
         "PGR",
         "Alumnus/Alumna",
         "Postdoc",
-        "Quiz Victor"
-    }
+        "Quiz Victor",
+    },
 )
 LOG_LEVEL_CHOICES: Final[Sequence[str]] = (
     "DEBUG",
     "INFO",
     "WARNING",
     "ERROR",
-    "CRITICAL"
+    "CRITICAL",
 )
 
 logger: Logger = logging.getLogger("TeX-Bot")
@@ -94,7 +94,7 @@ class Settings(abc.ABC):
         """Return the message to state that the given settings key is invalid."""
         return f"{item!r} is not a valid settings key."
 
-    def __getattr__(self, item: str) -> Any:  # type: ignore[misc]
+    def __getattr__(self, item: str) -> Any:  # type: ignore[misc]  # noqa: ANN401
         """Retrieve settings value by attribute lookup."""
         MISSING_ATTRIBUTE_MESSAGE: Final[str] = (
             f"{type(self).__name__!r} object has no attribute {item!r}"
@@ -111,13 +111,13 @@ class Settings(abc.ABC):
 
         if re.match(r"\A[A-Z](?:[A-Z_]*[A-Z])?\Z", item):
             INVALID_SETTINGS_KEY_MESSAGE: Final[str] = self.get_invalid_settings_key_message(
-                item
+                item,
             )
             raise AttributeError(INVALID_SETTINGS_KEY_MESSAGE)
 
         raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
-    def __getitem__(self, item: str) -> Any:  # type: ignore[misc]
+    def __getitem__(self, item: str) -> Any:  # type: ignore[misc]  # noqa: ANN401
         """Retrieve settings value by key lookup."""
         e: AttributeError
         try:
@@ -147,7 +147,7 @@ class Settings(abc.ABC):
         console_logging_handler: logging.Handler = logging.StreamHandler()
         # noinspection SpellCheckingInspection
         console_logging_handler.setFormatter(
-            logging.Formatter("{asctime} | {name} | {levelname:^8} - {message}", style="{")
+            logging.Formatter("{asctime} | {name} | {levelname:^8} - {message}", style="{"),
         )
 
         logger.addHandler(console_logging_handler)
@@ -161,8 +161,8 @@ class Settings(abc.ABC):
             raw_discord_bot_token
             and re.match(
                 r"\A([A-Za-z0-9]{24,26})\.([A-Za-z0-9]{6})\.([A-Za-z0-9_-]{27,38})\Z",
-                raw_discord_bot_token
-            )
+                raw_discord_bot_token,
+            ),
         )
         if not DISCORD_BOT_TOKEN_IS_VALID:
             INVALID_DISCORD_BOT_TOKEN_MESSAGE: Final[str] = (
@@ -177,7 +177,7 @@ class Settings(abc.ABC):
     def _setup_discord_log_channel_webhook_url(cls) -> None:
         raw_discord_log_channel_webhook_url: str = os.getenv(
            "DISCORD_LOG_CHANNEL_WEBHOOK_URL",
-           ""
+           "",
         )
 
         DISCORD_LOG_CHANNEL_WEBHOOK_URL_IS_VALID: Final[bool] = bool(
@@ -185,9 +185,9 @@ class Settings(abc.ABC):
             or (
                 validators.url(raw_discord_log_channel_webhook_url)
                 and raw_discord_log_channel_webhook_url.startswith(
-                    "https://discord.com/api/webhooks/"
+                    "https://discord.com/api/webhooks/",
                 )
-            )
+            ),
         )
         if not DISCORD_LOG_CHANNEL_WEBHOOK_URL_IS_VALID:
             INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE: Final[str] = (
@@ -204,7 +204,7 @@ class Settings(abc.ABC):
 
         DISCORD_GUILD_ID_IS_VALID: Final[bool] = bool(
             raw_discord_guild_id
-            and re.match(r"\A\d{17,20}\Z", raw_discord_guild_id)
+            and re.match(r"\A\d{17,20}\Z", raw_discord_guild_id),
         )
         if not DISCORD_GUILD_ID_IS_VALID:
             INVALID_DISCORD_GUILD_ID_MESSAGE: Final[str] = (
@@ -221,7 +221,7 @@ class Settings(abc.ABC):
 
         GROUP_FULL_NAME_IS_VALID: Final[bool] = bool(
             not raw_group_full_name
-            or re.match(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", raw_group_full_name)
+            or re.match(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", raw_group_full_name),
         )
         if not GROUP_FULL_NAME_IS_VALID:
             INVALID_GROUP_FULL_NAME: Final[str] = (
@@ -236,7 +236,7 @@ class Settings(abc.ABC):
 
         GROUP_SHORT_NAME_IS_VALID: Final[bool] = bool(
             not raw_group_short_name
-            or re.match(r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", raw_group_short_name)
+            or re.match(r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", raw_group_short_name),
         )
         if not GROUP_SHORT_NAME_IS_VALID:
             INVALID_GROUP_SHORT_NAME: Final[str] = (
@@ -251,7 +251,7 @@ class Settings(abc.ABC):
 
         PURCHASE_MEMBERSHIP_URL_IS_VALID: Final[bool] = bool(
             not raw_purchase_membership_url
-            or validators.url(raw_purchase_membership_url)
+            or validators.url(raw_purchase_membership_url),
         )
         if not PURCHASE_MEMBERSHIP_URL_IS_VALID:
             INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE: Final[str] = (
@@ -267,7 +267,7 @@ class Settings(abc.ABC):
 
         MEMBERSHIP_PERKS_URL_IS_VALID: Final[bool] = bool(
             not raw_membership_perks_url
-            or validators.url(raw_membership_perks_url)
+            or validators.url(raw_membership_perks_url),
         )
         if not MEMBERSHIP_PERKS_URL_IS_VALID:
             INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (
@@ -286,7 +286,7 @@ class Settings(abc.ABC):
         e: ValueError
         try:
             raw_ping_command_easter_egg_probability: float = 100 * float(
-                os.getenv("PING_COMMAND_EASTER_EGG_PROBABILITY", "0.01")
+                os.getenv("PING_COMMAND_EASTER_EGG_PROBABILITY", "0.01"),
             )
         except ValueError as e:
             raise (
@@ -295,7 +295,7 @@ class Settings(abc.ABC):
 
         if not 0 <= raw_ping_command_easter_egg_probability <= 100:
             raise ImproperlyConfiguredError(
-                INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE
+                INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE,
             )
 
         cls._settings["PING_COMMAND_EASTER_EGG_PROBABILITY"] = (
@@ -338,7 +338,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_welcome_messages(cls) -> None:
         messages_dict: Mapping[str, object] = cls._get_messages_dict(
-            os.getenv("MESSAGES_FILE_PATH")
+            os.getenv("MESSAGES_FILE_PATH"),
         )
 
         if "welcome_messages" not in messages_dict:
@@ -346,12 +346,12 @@ class Settings(abc.ABC):
 
         WELCOME_MESSAGES_KEY_IS_VALID: Final[bool] = bool(
             isinstance(messages_dict["welcome_messages"], Iterable)
-            and messages_dict["welcome_messages"]
+            and messages_dict["welcome_messages"],
         )
         if not WELCOME_MESSAGES_KEY_IS_VALID:
             raise MessagesJSONFileValueError(
                 dict_key="welcome_messages",
-                invalid_value=messages_dict["welcome_messages"]
+                invalid_value=messages_dict["welcome_messages"],
             )
 
         cls._settings["WELCOME_MESSAGES"] = set(messages_dict["welcome_messages"])  # type: ignore[call-overload]
@@ -359,7 +359,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_roles_messages(cls) -> None:
         messages_dict: Mapping[str, object] = cls._get_messages_dict(
-            os.getenv("MESSAGES_FILE_PATH")
+            os.getenv("MESSAGES_FILE_PATH"),
         )
 
         if "roles_messages" not in messages_dict:
@@ -372,7 +372,7 @@ class Settings(abc.ABC):
         if not ROLES_MESSAGES_KEY_IS_VALID:
             raise MessagesJSONFileValueError(
                 dict_key="roles_messages",
-                invalid_value=messages_dict["roles_messages"]
+                invalid_value=messages_dict["roles_messages"],
             )
         cls._settings["ROLES_MESSAGES"] = set(messages_dict["roles_messages"])  # type: ignore[call-overload]
 
@@ -382,7 +382,7 @@ class Settings(abc.ABC):
 
         MEMBERS_LIST_URL_IS_VALID: Final[bool] = bool(
             raw_members_list_url
-            and validators.url(raw_members_list_url)
+            and validators.url(raw_members_list_url),
         )
         if not MEMBERS_LIST_URL_IS_VALID:
             INVALID_MEMBERS_LIST_URL_MESSAGE: Final[str] = (
@@ -395,12 +395,12 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_members_list_url_session_cookie(cls) -> None:
         raw_members_list_url_session_cookie: str | None = os.getenv(
-            "MEMBERS_LIST_URL_SESSION_COOKIE"
+            "MEMBERS_LIST_URL_SESSION_COOKIE",
         )
 
         MEMBERS_LIST_URL_SESSION_COOKIE_IS_VALID: Final[bool] = bool(
             raw_members_list_url_session_cookie
-            and re.match(r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_url_session_cookie)
+            and re.match(r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_url_session_cookie),
         )
         if not MEMBERS_LIST_URL_SESSION_COOKIE_IS_VALID:
             INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
@@ -413,7 +413,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_send_introduction_reminders(cls) -> None:
         raw_send_introduction_reminders: str | bool = str(
-            os.getenv("SEND_INTRODUCTION_REMINDERS", "Once")
+            os.getenv("SEND_INTRODUCTION_REMINDERS", "Once"),
         ).lower()
 
         if raw_send_introduction_reminders not in VALID_SEND_INTRODUCTION_REMINDERS_VALUES:
@@ -442,11 +442,11 @@ class Settings(abc.ABC):
 
         raw_send_introduction_reminders_interval: Match[str] | None = re.match(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            str(os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h"))
+            str(os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h")),
         )
 
         raw_timedelta_details_send_introduction_reminders_interval: Mapping[str, float] = {
-            "hours": 6
+            "hours": 6,
         }
 
         if cls._settings["SEND_INTRODUCTION_REMINDERS"]:
@@ -456,7 +456,7 @@ class Settings(abc.ABC):
                     "in any combination of seconds, minutes or hours."
                 )
                 raise ImproperlyConfiguredError(
-                    INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE
+                    INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE,
                 )
 
             raw_timedelta_details_send_introduction_reminders_interval = {
@@ -473,7 +473,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_kick_no_introduction_discord_members(cls) -> None:
         raw_kick_no_introduction_discord_members: str = str(
-            os.getenv("KICK_NO_INTRODUCTION_DISCORD_MEMBERS", "False")
+            os.getenv("KICK_NO_INTRODUCTION_DISCORD_MEMBERS", "False"),
         ).lower()
 
         if raw_kick_no_introduction_discord_members not in TRUE_VALUES | FALSE_VALUES:
@@ -481,7 +481,7 @@ class Settings(abc.ABC):
                 "KICK_NO_INTRODUCTION_DISCORD_MEMBERS must be a boolean value."
             )
             raise ImproperlyConfiguredError(
-                INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_MESSAGE
+                INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_MESSAGE,
             )
 
         cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = (
@@ -499,7 +499,7 @@ class Settings(abc.ABC):
 
         raw_kick_no_introduction_discord_members_delay: Match[str] | None = re.match(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            str(os.getenv("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY", "5d"))
+            str(os.getenv("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY", "5d")),
         )
 
         raw_timedelta_kick_no_introduction_discord_members_delay: timedelta = timedelta()
@@ -511,7 +511,7 @@ class Settings(abc.ABC):
                     "in any combination of seconds, minutes, hours, days or weeks."
                 )
                 raise ImproperlyConfiguredError(
-                    INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE
+                    INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE,
                 )
 
             raw_timedelta_kick_no_introduction_discord_members_delay = timedelta(
@@ -520,7 +520,7 @@ class Settings(abc.ABC):
                     for key, value
                     in raw_kick_no_introduction_discord_members_delay.groupdict().items()
                     if value
-                }
+                },
             )
 
             if raw_timedelta_kick_no_introduction_discord_members_delay <= timedelta(days=1):
@@ -528,7 +528,7 @@ class Settings(abc.ABC):
                     "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must be greater than 1 day."
                 )
                 raise ImproperlyConfiguredError(
-                    TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE
+                    TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE,
                 )
 
         cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
@@ -538,7 +538,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_send_get_roles_reminders(cls) -> None:
         raw_send_get_roles_reminders: str = str(
-            os.getenv("SEND_GET_ROLES_REMINDERS", "True")
+            os.getenv("SEND_GET_ROLES_REMINDERS", "True"),
         ).lower()
 
         if raw_send_get_roles_reminders not in TRUE_VALUES | FALSE_VALUES:
@@ -562,11 +562,11 @@ class Settings(abc.ABC):
 
         raw_send_get_roles_reminders_interval: Match[str] | None = re.match(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            str(os.getenv("SEND_GET_ROLES_REMINDERS_INTERVAL", "24h"))
+            str(os.getenv("SEND_GET_ROLES_REMINDERS_INTERVAL", "24h")),
         )
 
         raw_timedelta_details_send_get_roles_reminders_interval: Mapping[str, float] = {
-            "hours": 24
+            "hours": 24,
         }
 
         if cls._settings["SEND_GET_ROLES_REMINDERS"]:
@@ -576,7 +576,7 @@ class Settings(abc.ABC):
                     "in any combination of seconds, minutes or hours."
                 )
                 raise ImproperlyConfiguredError(
-                    INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE
+                    INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE,
                 )
 
             raw_timedelta_details_send_get_roles_reminders_interval = {
@@ -624,7 +624,7 @@ class Settings(abc.ABC):
 
         MODERATION_DOCUMENT_URL_IS_VALID: Final[bool] = bool(
             raw_moderation_document_url
-            and validators.url(raw_moderation_document_url)
+            and validators.url(raw_moderation_document_url),
         )
         if not MODERATION_DOCUMENT_URL_IS_VALID:
             MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
@@ -638,7 +638,7 @@ class Settings(abc.ABC):
     def _setup_manual_moderation_warning_message_location(cls) -> None:
         raw_manual_moderation_warning_message_location: str = os.getenv(
             "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION",
-            "DM"
+            "DM",
         )
         if not raw_manual_moderation_warning_message_location:
             MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE: Final[str] = (

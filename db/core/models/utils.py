@@ -98,7 +98,7 @@ class AsyncBaseModel(models.Model):
                 force_insert=force_insert,
                 force_update=force_update,
                 using=using,
-                update_fields=update_fields
+                update_fields=update_fields,
             )
 
         return None
@@ -124,7 +124,7 @@ class AsyncBaseModel(models.Model):
             force_update=force_update,
             using=using,
             update_fields=update_fields,
-            **kwargs
+            **kwargs,
         )
 
     aupdate.alters_data: bool = True  # type: ignore[attr-defined, misc]
@@ -162,9 +162,9 @@ class HashedDiscordMember(AsyncBaseModel):
         validators=[
             RegexValidator(
                 r"\A[A-Fa-f0-9]{64}\Z",
-                "hashed_member_id must be a valid sha256 hex-digest."
-            )
-        ]
+                "hashed_member_id must be a valid sha256 hex-digest.",
+            ),
+        ],
     )
 
     class Meta:

@@ -29,7 +29,7 @@ def _get_project_root() -> Path:
     raise FileNotFoundError(NO_ROOT_DIRECTORY_MESSAGE)
 
 
-def _remove_any_invalid_tables(original_file_path: Path) -> None:
+def _remove_any_invalid_tables(original_file_path: Path) -> None:  # noqa: PLR0915
     table_lines: MutableSequence[int] = []
     custom_formatted_table_lines: MutableSequence[int] = []
 
@@ -55,7 +55,7 @@ def _remove_any_invalid_tables(original_file_path: Path) -> None:
 
     temp_file_path: Path = shutil.copy2(
         original_file_path,
-        original_file_path.parent / f"{original_file_path.name}.original"
+        original_file_path.parent / f"{original_file_path.name}.original",
     )
     new_file_path = original_file_path
     original_file_path = temp_file_path
@@ -157,12 +157,12 @@ def restore_invalid_tables() -> None:
 def main(argv: Sequence[str] | None = None) -> int:
     """Run this script as a CLI tool with argument parsing."""
     arg_parser: ArgumentParser = ArgumentParser(
-        description="Remove or restore custom formatted tables from all markdown files"
+        description="Remove or restore custom formatted tables from all markdown files",
     )
     arg_parser.add_argument(
         "--restore",
         action="store_true",
-        help="Restore any custom-formatted tables from the original file"
+        help="Restore any custom-formatted tables from the original file",
     )
     arg_parser.add_argument(
         "--remove",
@@ -171,7 +171,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         help=(
             "Override the `--restore` flag "
             "and explicitly declare to remove any custom-formatted tables"
-        )
+        ),
     )
 
     parsed_args: Namespace = arg_parser.parse_args(argv)

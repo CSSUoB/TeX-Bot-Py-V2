@@ -38,10 +38,12 @@ class ArchiveCommandCog(TeXBotBaseCog):
         try:
             main_guild: discord.Guild = ctx.bot.main_guild
             interaction_user: discord.Member = await ctx.bot.get_main_guild_member(
-                ctx.interaction.user
+                ctx.interaction.user,
             )
-            assert await ctx.bot.check_user_has_committee_role(interaction_user)
-        except (AssertionError, BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
+        except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
+            return set()
+
+        if not await ctx.bot.check_user_has_committee_role(interaction_user):
             return set()
 
         return {
@@ -49,13 +51,13 @@ class ArchiveCommandCog(TeXBotBaseCog):
             for category
             in main_guild.categories
             if category.permissions_for(interaction_user).is_superset(
-                discord.Permissions(send_messages=True, view_channel=True)
+                discord.Permissions(send_messages=True, view_channel=True),
             )
         }
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="archive",
-        description="Archives the selected category."
+        description="Archives the selected category.",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="category",
@@ -63,7 +65,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_categories),  # type: ignore[arg-type]
         required=True,
-        parameter_name="str_category_id"
+        parameter_name="str_category_id",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -86,7 +88,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         if not re.match(r"\A\d{17,20}\Z", str_category_id):
             await self.command_send_error(
                 ctx,
-                message=f"{str_category_id!r} is not a valid category ID."
+                message=f"{str_category_id!r} is not a valid category ID.",
             )
             return
 
@@ -94,12 +96,12 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
         category: discord.CategoryChannel | None = discord.utils.get(
             main_guild.categories,
-            id=category_id
+            id=category_id,
         )
         if not category:
             await self.command_send_error(
                 ctx,
-                message=f"Category with ID {str(category_id)!r} does not exist."
+                message=f"Category with ID {str(category_id)!r} does not exist.",
             )
             return
 
@@ -109,7 +111,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
                     ":information_source: No changes made. "
                     "Category has already been archived. :information_source:"
                 ),
-                ephemeral=True
+                ephemeral=True,
             )
             return
 
@@ -125,73 +127,73 @@ class ArchiveCommandCog(TeXBotBaseCog):
             try:
                 channel_needs_committee_archiving: bool = (
                     channel.permissions_for(committee_role).is_superset(
-                        discord.Permissions(view_channel=True)
+                        discord.Permissions(view_channel=True),
                     ) and not channel.permissions_for(guest_role).is_superset(
-                        discord.Permissions(view_channel=True)
+                        discord.Permissions(view_channel=True),
                     )
                 )
                 channel_needs_normal_archiving: bool = channel.permissions_for(
-                    guest_role
+                    guest_role,
                 ).is_superset(
-                    discord.Permissions(view_channel=True)
+                    discord.Permissions(view_channel=True),
                 )
                 if channel_needs_committee_archiving:
                     await channel.set_permissions(
                         everyone_role,
                         reason=f"{interaction_member.display_name} used \"/archive\".",
-                        view_channel=False
+                        view_channel=False,
                     )
                     await channel.set_permissions(
                         guest_role,
                         overwrite=None,
-                        reason=f"{interaction_member.display_name} used \"/archive\"."
+                        reason=f"{interaction_member.display_name} used \"/archive\".",
                     )
                     await channel.set_permissions(
                         member_role,
                         overwrite=None,
-                        reason=f"{interaction_member.display_name} used \"/archive\"."
+                        reason=f"{interaction_member.display_name} used \"/archive\".",
                     )
                     await channel.set_permissions(
                         committee_role,
                         overwrite=None,
-                        reason=f"{interaction_member.display_name} used \"/archive\"."
+                        reason=f"{interaction_member.display_name} used \"/archive\".",
                     )
 
                 elif channel_needs_normal_archiving:
                     await channel.set_permissions(
                         everyone_role,
                         reason=f"{interaction_member.display_name} used \"/archive\".",
-                        view_channel=False
+                        view_channel=False,
                     )
                     await channel.set_permissions(
                         guest_role,
                         overwrite=None,
-                        reason=f"{interaction_member.display_name} used \"/archive\"."
+                        reason=f"{interaction_member.display_name} used \"/archive\".",
                     )
                     await channel.set_permissions(
                         member_role,
                         overwrite=None,
-                        reason=f"{interaction_member.display_name} used \"/archive\"."
+                        reason=f"{interaction_member.display_name} used \"/archive\".",
                     )
                     await channel.set_permissions(
                         committee_role,
                         reason=f"{interaction_member.display_name} used \"/archive\".",
-                        view_channel=False
+                        view_channel=False,
                     )
                     await channel.set_permissions(
                         archivist_role,
                         reason=f"{interaction_member.display_name} used \"/archive\".",
-                        view_channel=True
+                        view_channel=True,
                     )
 
                 else:
                     await self.command_send_error(
                         ctx,
-                        message=f"Channel {channel.mention} had invalid permissions"
+                        message=f"Channel {channel.mention} had invalid permissions",
                     )
                     logger.error(
                         "Channel %s had invalid permissions, so could not be archived.",
-                        channel.name
+                        channel.name,
                     )
                     return
 
@@ -200,14 +202,14 @@ class ArchiveCommandCog(TeXBotBaseCog):
                     ctx,
                     message=(
                         "Bot does not have access to the channels in the selected category."
-                    )
+                    ),
                 )
-                logger.error(
+                logger.error(  # noqa: TRY400
                     (
                         "Bot did not have access to the channels in the selected category: "
                         "%s."
                     ),
-                    category.name
+                    category.name,
                 )
                 return
 

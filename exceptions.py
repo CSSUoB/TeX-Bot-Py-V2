@@ -23,7 +23,7 @@ __all__: Sequence[str] = (
     "ArchivistRoleDoesNotExistError",
     "ChannelDoesNotExistError",
     "RolesChannelDoesNotExistError",
-    "GeneralChannelDoesNotExistError"
+    "GeneralChannelDoesNotExistError",
 )
 
 import abc
@@ -124,7 +124,7 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
         """The name of the Discord entity that this `DoesNotExistError` is associated with."""  # noqa: D401
 
     @classmethod
-    def get_formatted_message(cls, non_existent_object_identifier: str) -> str:  # noqa: C901, PLR0912
+    def get_formatted_message(cls, non_existent_object_identifier: str) -> str:  # noqa: C901, PLR0912, PLR0915
         """
         Format the exception message with the dependants that require the non-existent object.
 
@@ -396,7 +396,7 @@ class RoleDoesNotExistError(BaseDoesNotExistError, abc.ABC):
     def __init__(self, message: str | None = None) -> None:
         """Initialize a new DoesNotExist exception for a role not existing."""
         HAS_DEPENDANTS: Final[bool] = bool(
-            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS
+            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS,
         )
 
         if not message and HAS_DEPENDANTS:
@@ -432,8 +432,8 @@ class CommitteeRoleDoesNotExistError(RoleDoesNotExistError):
                 "strike",
                 "archive",
                 "delete-all",
-                "ensure-members-inducted"
-            }
+                "ensure-members-inducted",
+            },
         )
 
     # noinspection PyMethodParameters,PyPep8Naming
@@ -478,8 +478,8 @@ class GuestRoleDoesNotExistError(RoleDoesNotExistError):
             {
                 "kick_no_introduction_discord_members",
                 "introduction_reminder",
-                "get_roles_reminder"
-            }
+                "get_roles_reminder",
+            },
         )
 
     # noinspection PyMethodParameters,PyPep8Naming
@@ -569,12 +569,12 @@ class ChannelDoesNotExistError(BaseDoesNotExistError):
     def __init__(self, message: str | None = None) -> None:
         """Initialize a new DoesNotExist exception for a role not existing."""
         HAS_DEPENDANTS: Final[bool] = bool(
-            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS
+            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS,
         )
 
         if not message and HAS_DEPENDANTS:
             message = self.get_formatted_message(
-                non_existent_object_identifier=self.CHANNEL_NAME
+                non_existent_object_identifier=self.CHANNEL_NAME,
             )
 
         super().__init__(message)
