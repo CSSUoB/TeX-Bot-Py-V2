@@ -55,7 +55,7 @@ class ErrorCaptureDecorators:
         The raised exception is then suppressed.
         """  # noqa: D401
         @functools.wraps(func)
-        async def wrapper(self: TeXBotBaseCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:  # noqa: E501
+        async def wrapper(self: TeXBotBaseCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:  # type: ignore[misc] # noqa: E501
             if not isinstance(self, TeXBotBaseCog):
                 INVALID_METHOD_TYPE_MESSAGE: Final[str] = (  # type: ignore[unreachable]
                     f"Parameter {self.__name__!r} of any 'capture_error' decorator "
