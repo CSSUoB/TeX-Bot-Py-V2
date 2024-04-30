@@ -36,7 +36,7 @@ validators = "^0.28"
 beautifulsoup4 = "^4.12"
 emoji = "^2.11"
 parsedatetime = "^2.6"
-django = "~4.2"  # NOTE: Django is pinned below version 5.0 because the django-stubs package is not yet compatable with Django 5.0 (see https://github.com/typeddjango/django-stubs/issues/1493 for the tracked issue)
+django = "~5.0"
 matplotlib = "^3.8"
 mplcyberpunk = "^0.7"
 python-logging-discord-handler = "^0.1"
@@ -46,8 +46,8 @@ setuptools = "^69.5"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.7"
-mypy = "~1.7"
-django-stubs = {extras = ["compatible-mypy"], version = "~4.2"}
+mypy = "~1.10"
+django-stubs = {extras = ["compatible-mypy"], version = "~5.0"}
 types-beautifulsoup4 = "^4.12.0"
 pytest = "^8.1"
 ruff = "^0.4"
