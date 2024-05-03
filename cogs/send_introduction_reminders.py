@@ -140,7 +140,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                                 "Member: %s left the server before the introduction "
                                 "reminder could be sent.",
                             ),
-                            repr(member),
+                            repr(member.id),
                         )
                         continue
 
