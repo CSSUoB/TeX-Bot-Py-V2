@@ -164,6 +164,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                         ),
                         repr(member),
                     )
+                    continue
 
             await member.send(
                 "Hey! It seems like you joined "
