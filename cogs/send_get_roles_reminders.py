@@ -159,10 +159,10 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
             if member not in guild.members:
                 logger.info(
                     (
-                        "Member: %s left the server before the introduction "
-                        "reminder could be sent.",
+                        "Member with ID: %s does not need to be sent a reminder "
+                        "because they have left the server."
                     ),
-                    repr(member.id),
+                    member.id,
                 )
                 continue
 
