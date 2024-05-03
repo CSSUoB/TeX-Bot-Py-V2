@@ -24,9 +24,7 @@ class AsyncBaseModel(models.Model):
 
     INSTANCES_NAME_PLURAL: str
 
-    class Meta:
-        """Metadata options about this model."""
-
+    class Meta:  # noqa: D106
         abstract = True
 
     def save(self, *, force_insert: bool = False, force_update: bool = False, using: str | None = None, update_fields: Iterable[str] | None = None) -> None:  # type: ignore[override] # noqa: E501
@@ -167,9 +165,7 @@ class HashedDiscordMember(AsyncBaseModel):
         ],
     )
 
-    class Meta:
-        """Metadata options about this model."""
-
+    class Meta:  # noqa: D106
         abstract: bool = True
 
     def __str__(self) -> str:

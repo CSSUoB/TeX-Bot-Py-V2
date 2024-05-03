@@ -23,7 +23,7 @@ from utils.error_capture_decorators import (
 if TYPE_CHECKING:
     import datetime
 
-logger: Logger = logging.getLogger("texbot")
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class KickNoIntroductionDiscordMembersTaskCog(TeXBotBaseCog):
@@ -31,7 +31,7 @@ class KickNoIntroductionDiscordMembersTaskCog(TeXBotBaseCog):
 
     def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
-        if settings["SEND_GET_ROLES_REMINDERS"]:
+        if settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"]:
             self.kick_no_introduction_discord_members.start()
 
         super().__init__(bot)

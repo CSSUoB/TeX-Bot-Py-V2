@@ -103,7 +103,7 @@ class Settings(abc.ABC):
             f"{type(self).__name__!r} object has no attribute {item!r}"
         )
 
-        if "_pytest" in item or item in ("__bases__", "__test__"):  # HACK: Overriding __getattr__() leads to many edge-case issues where external libraries will attempt to call getattr() with peculiar values # noqa: FIX004
+        if "_pytest" in item or item in ("__bases__", "__test__"):  # NOTE: Overriding __getattr__() leads to many edge-case issues where external libraries will attempt to call getattr() with peculiar values
             raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
         if not self._is_env_variables_setup:
