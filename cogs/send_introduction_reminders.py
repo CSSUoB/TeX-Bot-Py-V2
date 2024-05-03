@@ -134,31 +134,31 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     if message_contains_opt_in_out_button:
                         await message.edit(view=None)
 
-                if member in guild.members:
-                    await member.send(
-                        content=(
-                            "Hey! It seems like you joined "
-                            f"the {self.bot.group_short_name} Discord server "
-                            "but have not yet introduced yourself.\n"
-                            "You will only get access to the rest of the server after sending "
-                            "an introduction message."
-                        ),
-                        view=(
-                            self.OptOutIntroductionRemindersView(self.bot)
-                            if settings["SEND_INTRODUCTION_REMINDERS"] == "interval"
-                            else None  # type: ignore[arg-type]
-                        ),
-                    )
-
-                    await SentOneOffIntroductionReminderMember.objects.acreate(
-                            member_id=member.id
-                        )
-                else:
+                if member not in guild.members:
                     logger.info(
                         "Member: {member} left the server before the introduction "
                         "reminder could be sent."
+                    )
+
+                await member.send(
+                    content=(
+                        "Hey! It seems like you joined "
+                        f"the {self.bot.group_short_name} Discord server "
+                        "but have not yet introduced yourself.\n"
+                        "You will only get access to the rest of the server after sending "
+                        "an introduction message."
                     ),
-                    member_needs_reminder = False
+                    view=(
+                        self.OptOutIntroductionRemindersView(self.bot)
+                        if settings["SEND_INTRODUCTION_REMINDERS"] == "interval"
+                        else None  # type: ignore[arg-type]
+                    ),
+                )
+
+                await SentOneOffIntroductionReminderMember.objects.acreate(
+                        member_id=member.id,
+                    )
+                
 
 
     class OptOutIntroductionRemindersView(View):
