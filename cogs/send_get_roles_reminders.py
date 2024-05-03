@@ -24,7 +24,7 @@ from utils.error_capture_decorators import (
     capture_guild_does_not_exist_error,
 )
 
-logger: Logger = logging.getLogger("texbot")
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
@@ -49,7 +49,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
     @functools.partial(
         ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExistError,
-        close_func=ErrorCaptureDecorators.critical_error_close_func
+        close_func=ErrorCaptureDecorators.critical_error_close_func,
     )
     @capture_guild_does_not_exist_error
     async def send_get_roles_reminders(self) -> None:
@@ -99,8 +99,8 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 "Minecraft",
                 "Github",
                 "Archivist",
-                "News"
-            }
+                "News",
+            },
         )
 
         member: discord.Member
@@ -120,7 +120,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
             hashed_member_id: str = SentGetRolesReminderMember.hash_member_id(member.id)
             sent_get_roles_reminder_member_exists: bool = (
                 await SentGetRolesReminderMember.objects.filter(
-                    hashed_member_id=hashed_member_id
+                    hashed_member_id=hashed_member_id,
                 ).aexists()
             )
             if sent_get_roles_reminder_member_exists:
@@ -139,14 +139,14 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                     )
                 )
             except StopIteration:
-                logger.error(
+                logger.error(  # noqa: TRY400
                     (
                         "Member with ID: %s could not be checked whether to send "
                         "role_reminder, because their %s "
                         "could not be found."
                     ),
                     member.id,
-                    repr("guest_role_received_time")
+                    repr("guest_role_received_time"),
                 )
                 continue
 
@@ -162,11 +162,11 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 "and have been given the `@Guest` role but have not yet nabbed yourself any "
                 f"opt-in roles.\nYou can head to {roles_channel_mention} "
                 "and click on the icons to get optional roles like pronouns "
-                "and year group identifiers."
+                "and year group identifiers.",
             )
 
             await SentGetRolesReminderMember.objects.acreate(
-                hashed_member_id=hashed_member_id
+                hashed_member_id=hashed_member_id,
             )
 
     @send_get_roles_reminders.before_loop

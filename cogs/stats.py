@@ -87,7 +87,7 @@ def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str,
         x_label,
         fontweight="bold",
         fontsize="large",
-        wrap=True
+        wrap=True,
     )
     x_label_obj._get_wrap_line_width = lambda: 475  # type: ignore[attr-defined]
 
@@ -95,7 +95,7 @@ def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str,
         y_label,
         fontweight="bold",
         fontsize="large",
-        wrap=True
+        wrap=True,
     )
     y_label_obj._get_wrap_line_width = lambda: 375  # type: ignore[attr-defined]
 
@@ -111,7 +111,7 @@ def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str,
             transform=plt.gca().transAxes,
             wrap=True,
             fontstyle="italic",
-            fontsize="small"
+            fontsize="small",
         )
         extra_text_obj._get_wrap_line_width = lambda: 400  # type: ignore[attr-defined]
         plt.subplots_adjust(bottom=0.2)
@@ -124,7 +124,7 @@ def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str,
     discord_plot_file: discord.File = discord.File(
         plot_file,
         filename,
-        description=description
+        description=description,
     )
 
     plot_file.close()
@@ -160,23 +160,23 @@ class StatsCommandsCog(TeXBotBaseCog):
 
     stats: discord.SlashCommandGroup = discord.SlashCommandGroup(
         "stats",
-        f"Various statistics about {_DISCORD_SERVER_NAME}"
+        f"Various statistics about {_DISCORD_SERVER_NAME}",
     )
 
     # noinspection SpellCheckingInspection
     @stats.command(
         name="channel",
-        description="Displays the stats for the current/a given channel."
+        description="Displays the stats for the current/a given channel.",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="channel",
         description="The channel to display the stats for.",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(
-            TeXBotBaseCog.autocomplete_get_text_channels  # type: ignore[arg-type]
+            TeXBotBaseCog.autocomplete_get_text_channels,  # type: ignore[arg-type]
         ),
         required=False,
-        parameter_name="str_channel_id"
+        parameter_name="str_channel_id",
     )
     async def channel_stats(self, ctx: TeXBotApplicationContext, str_channel_id: str) -> None:
         """
@@ -191,7 +191,7 @@ class StatsCommandsCog(TeXBotBaseCog):
             if not re.match(r"\A\d{17,20}\Z", str_channel_id):
                 await self.command_send_error(
                     ctx,
-                    message=f"{str_channel_id!r} is not a valid channel ID."
+                    message=f"{str_channel_id!r} is not a valid channel ID.",
                 )
                 return
 
@@ -201,12 +201,12 @@ class StatsCommandsCog(TeXBotBaseCog):
         guild: discord.Guild = self.bot.main_guild
         channel: discord.TextChannel | None = discord.utils.get(
             guild.text_channels,
-            id=channel_id
+            id=channel_id,
         )
         if not channel:
             await self.command_send_error(
                 ctx,
-                message=f"Text channel with ID {str(channel_id)!r} does not exist."
+                message=f"Text channel with ID {str(channel_id)!r} does not exist.",
             )
             return
 
@@ -220,7 +220,7 @@ class StatsCommandsCog(TeXBotBaseCog):
                 message_counts[f"@{role_name}"] = 0
 
         message_history_period: discord.iterators.HistoryIterator = channel.history(
-            after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]
+            after=discord.utils.utcnow() - settings["STATISTICS_DAYS"],
         )
         message: discord.Message
         async for message in message_history_period:
@@ -253,7 +253,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         if math.ceil(max(message_counts.values()) / 15) < 1:
             await self.command_send_error(
                 ctx,
-                message="There are not enough messages sent in this channel."
+                message="There are not enough messages sent in this channel.",
             )
             return
 
@@ -282,13 +282,13 @@ class StatsCommandsCog(TeXBotBaseCog):
                     "Messages sent by members with multiple roles are counted once "
                     "for each role "
                     "(except for @Member vs @Guest & @Committee vs @Committee-Elect)"
-                )
-            )
+                ),
+            ),
         )
 
     @stats.command(
         name="server",
-        description=f"Displays the stats for the whole of {_DISCORD_SERVER_NAME}"
+        description=f"Displays the stats for the whole of {_DISCORD_SERVER_NAME}",
     )
     async def server_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
@@ -305,7 +305,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
         message_counts: dict[str, dict[str, int]] = {
             "roles": {"Total": 0},
-            "channels": {}
+            "channels": {},
         }
 
         role_name: str
@@ -316,9 +316,9 @@ class StatsCommandsCog(TeXBotBaseCog):
         channel: discord.TextChannel
         for channel in guild.text_channels:
             member_has_access_to_channel: bool = channel.permissions_for(
-                guest_role
+                guest_role,
             ).is_superset(
-                discord.Permissions(send_messages=True)
+                discord.Permissions(send_messages=True),
             )
             if not member_has_access_to_channel:
                 continue
@@ -326,7 +326,7 @@ class StatsCommandsCog(TeXBotBaseCog):
             message_counts["channels"][f"#{channel.name}"] = 0
 
             message_history_period: discord.iterators.HistoryIterator = channel.history(
-                after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]
+                after=discord.utils.utcnow() - settings["STATISTICS_DAYS"],
             )
             message: discord.Message
             async for message in message_history_period:
@@ -359,7 +359,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
         too_few_roles_stats: bool = math.ceil(max(message_counts["roles"].values()) / 15) < 1
         too_few_channels_stats: bool = math.ceil(
-            max(message_counts["channels"].values()) / 15
+            max(message_counts["channels"].values()) / 15,
         ) < 1
         if too_few_roles_stats or too_few_channels_stats:
             await self.command_send_error(ctx, message="There are not enough messages sent.")
@@ -393,7 +393,7 @@ class StatsCommandsCog(TeXBotBaseCog):
                         "Messages sent by members with multiple roles are counted once "
                         "for each role "
                         "(except for @Member vs @Guest & @Committee vs @Committee-Elect)"
-                    )
+                    ),
                 ),
                 plot_bar_chart(
                     message_counts["channels"],
@@ -414,14 +414,14 @@ class StatsCommandsCog(TeXBotBaseCog):
                     description=(
                         "Bar chart of the number of messages sent in different text channels "
                         f"in the {self.bot.group_short_name} Discord server."
-                    )
+                    ),
                 ),
-            ]
+            ],
         )
 
     @stats.command(
         name="self",
-        description="Displays stats about the number of messages you have sent."
+        description="Displays stats about the number of messages you have sent.",
     )
     @CommandChecks.check_interaction_user_in_main_guild
     async def user_stats(self, ctx: TeXBotApplicationContext) -> None:
@@ -442,7 +442,7 @@ class StatsCommandsCog(TeXBotBaseCog):
                 message=(
                     "You must be inducted as a guest member "
                     f"of the {self.bot.group_short_name} Discord server to use this command."
-                )
+                ),
             )
             return
 
@@ -453,9 +453,9 @@ class StatsCommandsCog(TeXBotBaseCog):
         channel: discord.TextChannel
         for channel in guild.text_channels:
             member_has_access_to_channel: bool = channel.permissions_for(
-                guest_role
+                guest_role,
             ).is_superset(
-                discord.Permissions(send_messages=True)
+                discord.Permissions(send_messages=True),
             )
             if not member_has_access_to_channel:
                 continue
@@ -463,7 +463,7 @@ class StatsCommandsCog(TeXBotBaseCog):
             message_counts[f"#{channel.name}"] = 0
 
             message_history_period: discord.iterators.HistoryIterator = channel.history(
-                after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]
+                after=discord.utils.utcnow() - settings["STATISTICS_DAYS"],
             )
             message: discord.Message
             async for message in message_history_period:
@@ -474,7 +474,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         if math.ceil(max(message_counts.values()) / 15) < 1:
             await self.command_send_error(
                 ctx,
-                message="You have not sent enough messages."
+                message="You have not sent enough messages.",
             )
             return
 
@@ -501,14 +501,14 @@ class StatsCommandsCog(TeXBotBaseCog):
                 description=(
                     f"Bar chart of the number of messages sent by {ctx.user} "
                     f"in different channels in the {self.bot.group_short_name} Discord server."
-                )
-            )
+                ),
+            ),
         )
 
     # noinspection SpellCheckingInspection
     @stats.command(
         name="leftmembers",
-        description=f"Displays the stats about members that have left {_DISCORD_SERVER_NAME}"
+        description=f"Displays the stats about members that have left {_DISCORD_SERVER_NAME}",
     )
     async def left_member_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
@@ -523,7 +523,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         await ctx.defer(ephemeral=True)
 
         left_member_counts: dict[str, int] = {
-            "Total": await LeftDiscordMember.objects.acount()
+            "Total": await LeftDiscordMember.objects.acount(),
         }
 
         role_name: str
@@ -549,7 +549,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         if math.ceil(max(left_member_counts.values()) / 15) < 1:
             await self.command_send_error(
                 ctx,
-                message="Not enough data about members that have left the server."
+                message="Not enough data about members that have left the server.",
             )
             return
 
@@ -577,8 +577,8 @@ class StatsCommandsCog(TeXBotBaseCog):
                     "Members that left with multiple roles "
                     "are counted once for each role "
                     "(except for @Member vs @Guest & @Committee vs @Committee-Elect)"
-                )
-            )
+                ),
+            ),
         )
 
     @TeXBotBaseCog.listener()
@@ -589,5 +589,5 @@ class StatsCommandsCog(TeXBotBaseCog):
             return
 
         await LeftDiscordMember.objects.acreate(
-            roles={f"@{role.name}" for role in member.roles if role.name != "@everyone"}
+            roles={f"@{role.name}" for role in member.roles if role.name != "@everyone"},
         )

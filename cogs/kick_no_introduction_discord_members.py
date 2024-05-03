@@ -23,7 +23,7 @@ from utils.error_capture_decorators import (
 if TYPE_CHECKING:
     import datetime
 
-logger: Logger = logging.getLogger("texbot")
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class KickNoIntroductionDiscordMembersTaskCog(TeXBotBaseCog):
@@ -31,7 +31,7 @@ class KickNoIntroductionDiscordMembersTaskCog(TeXBotBaseCog):
 
     def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
-        if settings["SEND_GET_ROLES_REMINDERS"]:
+        if settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"]:
             self.kick_no_introduction_discord_members.start()
 
         super().__init__(bot)
@@ -48,7 +48,7 @@ class KickNoIntroductionDiscordMembersTaskCog(TeXBotBaseCog):
     @functools.partial(
         ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExistError,
-        close_func=ErrorCaptureDecorators.critical_error_close_func
+        close_func=ErrorCaptureDecorators.critical_error_close_func,
     )
     @capture_guild_does_not_exist_error
     async def kick_no_introduction_discord_members(self) -> None:
@@ -74,7 +74,7 @@ class KickNoIntroductionDiscordMembersTaskCog(TeXBotBaseCog):
                         "because their %s attribute was None."
                     ),
                     member.id,
-                    repr("joined_at")
+                    repr("joined_at"),
                 )
                 continue
 
@@ -89,13 +89,13 @@ class KickNoIntroductionDiscordMembersTaskCog(TeXBotBaseCog):
                         reason=(
                             "Member was in server without introduction sent "
                             f"for longer than {kick_no_introduction_discord_members_delay}"
-                        )
+                        ),
                     )
                 except discord.Forbidden as kick_error:
-                    logger.error(
+                    logger.error(  # noqa: TRY400
                         "Member with ID: %s could not be kicked due to %s",
                         member.id,
-                        kick_error.text
+                        kick_error.text,
                     )
 
     @kick_no_introduction_discord_members.before_loop

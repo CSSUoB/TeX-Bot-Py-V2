@@ -24,9 +24,7 @@ class AsyncBaseModel(models.Model):
 
     INSTANCES_NAME_PLURAL: str
 
-    class Meta:
-        """Metadata options about this model."""
-
+    class Meta:  # noqa: D106
         abstract = True
 
     def save(self, *, force_insert: bool = False, force_update: bool = False, using: str | None = None, update_fields: Iterable[str] | None = None) -> None:  # type: ignore[override] # noqa: E501
@@ -98,7 +96,7 @@ class AsyncBaseModel(models.Model):
                 force_insert=force_insert,
                 force_update=force_update,
                 using=using,
-                update_fields=update_fields
+                update_fields=update_fields,
             )
 
         return None
@@ -124,7 +122,7 @@ class AsyncBaseModel(models.Model):
             force_update=force_update,
             using=using,
             update_fields=update_fields,
-            **kwargs
+            **kwargs,
         )
 
     aupdate.alters_data: bool = True  # type: ignore[attr-defined, misc]
@@ -162,14 +160,12 @@ class HashedDiscordMember(AsyncBaseModel):
         validators=[
             RegexValidator(
                 r"\A[A-Fa-f0-9]{64}\Z",
-                "hashed_member_id must be a valid sha256 hex-digest."
-            )
-        ]
+                "hashed_member_id must be a valid sha256 hex-digest.",
+            ),
+        ],
     )
 
-    class Meta:
-        """Metadata options about this model."""
-
+    class Meta:  # noqa: D106
         abstract: bool = True
 
     def __str__(self) -> str:

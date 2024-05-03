@@ -25,14 +25,14 @@ if TYPE_CHECKING:
     import time
     from collections.abc import Iterator
 
-logger: Logger = logging.getLogger("texbot")
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class RemindMeCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/remindme" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> set[str]:  # noqa: C901, PLR0912
+    async def autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> set[str]:  # noqa: C901, PLR0912, PLR0915
         """
         Autocomplete callable that generates the common delay input values.
 
@@ -47,7 +47,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                 "30 secs",
                 "2 days time",
                 "22/9/2040",
-                "5h"
+                "5h",
             }
 
         SECONDS_CHOICES: Final[frozenset[str]] = frozenset({"s", "sec", "second"})
@@ -71,7 +71,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
             FORMATTED_TIME_NUMS: Final[Iterator[tuple[int, str, str]]] = itertools.product(
                 range(1, 150),
                 {"", " "},
-                {"", "s"}
+                {"", "s"},
             )
             time_num: int
             joiner: str
@@ -113,7 +113,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                 FORMATTED_DAY_DATE_CHOICES: Final[Iterator[tuple[int, int, str]]] = itertools.product(  # noqa: E501
                     range(1, 12),
                     range(current_year, current_year + 40),
-                    ("/", " / ", "-", " - ", ".", " . ")
+                    ("/", " / ", "-", " - ", ".", " . "),
                 )
                 month: int
                 year: int
@@ -126,7 +126,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
             FORMATTED_TIME_CHOICES: Final[Iterator[tuple[str, str, str]]] = itertools.product(
                 {"", " "},
                 TIME_CHOICES,
-                {"", "s"}
+                {"", "s"},
             )
             time_choice: str
             for joiner, time_choice, has_s in FORMATTED_TIME_CHOICES:
@@ -145,7 +145,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                 FORMATTED_DAY_AND_JOINER_DATE_CHOICES: Final[Iterator[tuple[int, int, str]]] = itertools.product(  # noqa: E501
                     range(1, 12),
                     range(current_year, current_year + 40),
-                    ("/", " / ", "-", " - ", ".", " . ")
+                    ("/", " / ", "-", " - ", ".", " . "),
                 )
                 for month, year, joiner in FORMATTED_DAY_AND_JOINER_DATE_CHOICES:
                     delay_choices.add(f"{month}{joiner}{year}")
@@ -172,7 +172,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="remindme",
-        description="Responds with the given message after the specified time."
+        description="Responds with the given message after the specified time.",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="delay",
@@ -185,7 +185,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
         name="message",
         input_type=str,
         description="The message you want to be reminded with.",
-        required=False
+        required=False,
     )
     async def remind_me(self, ctx: TeXBotApplicationContext, delay: str, message: str) -> None:
         """
@@ -196,7 +196,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
         # noinspection PyTypeChecker
         parsed_time: tuple[time.struct_time, int] = parsedatetime.Calendar().parseDT(
             delay,
-            tzinfo=timezone.get_current_timezone()
+            tzinfo=timezone.get_current_timezone(),
         )
 
         if parsed_time[1] == 0:
@@ -204,7 +204,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                 ctx,
                 message=(
                     f"""The value provided in the {"delay"!r} argument was not a time/date."""
-                )
+                ),
             )
             return
 
@@ -217,7 +217,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                 message=message or "",
                 channel_id=ctx.channel_id,
                 send_datetime=parsed_time[0],
-                channel_type=ctx.channel.type
+                channel_type=ctx.channel.type,
             )
         except ValidationError as create_discord_reminder_error:
             error_is_already_exists: bool = (
@@ -232,14 +232,14 @@ class RemindMeCommandCog(TeXBotBaseCog):
                 await self.command_send_error(ctx, message="An unrecoverable error occurred.")
                 logger.critical(
                     "Error when creating DiscordReminder object: %s",
-                    create_discord_reminder_error
+                    create_discord_reminder_error,
                 )
                 await self.bot.close()
                 return
 
             await self.command_send_error(
                 ctx,
-                message="You already have a reminder with that message in this channel!"
+                message="You already have a reminder with that message in this channel!",
             )
             return
 
@@ -281,8 +281,8 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                 discord.ChannelType.text,
                 discord.ChannelType.group,
                 discord.ChannelType.public_thread,
-                discord.ChannelType.private_thread
-            }
+                discord.ChannelType.private_thread,
+            },
         )
 
         reminder: DiscordReminder
@@ -297,15 +297,15 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                             not _user.bot
                             and DiscordReminder.hash_member_id(_user.id) == _reminder.hashed_member_id  # noqa: E501
                         ),
-                        _reminder=reminder
+                        _reminder=reminder,
                     ),
-                    self.bot.users
+                    self.bot.users,
                 )
 
                 if not user:
                     logger.warning(
                         "User with hashed user ID: %s no longer exists.",
-                        reminder.hashed_member_id
+                        reminder.hashed_member_id,
                     )
                     await reminder.adelete()
                     continue
@@ -316,7 +316,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                         discord.ChannelType(reminder.channel_type.value)
                         if reminder.channel_type
                         else None
-                    )
+                    ),
                 )
 
                 user_mention: str | None = None
@@ -326,8 +326,8 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                 elif channel.type != discord.ChannelType.private:
                     logger.critical(
                         ValueError(
-                            "Reminder's channel_id must refer to a valid text channel/DM."
-                        )
+                            "Reminder's channel_id must refer to a valid text channel/DM.",
+                        ),
                     )
                     await self.bot.close()
                     return
@@ -335,7 +335,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                 await channel.send(
                     "**Sorry it's a bit late! "
                     "(I'm just catching up with some reminders I missed!)**\n\n"
-                    f"{reminder.get_formatted_message(user_mention)}"
+                    f"{reminder.get_formatted_message(user_mention)}",
                 )
 
                 await reminder.adelete()

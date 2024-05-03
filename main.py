@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 The main entrypoint into the running of the bot.
 
@@ -19,6 +20,7 @@ from utils import SuppressTraceback, TeXBot
 
 with SuppressTraceback():
     config.run_setup()
+
     intents: discord.Intents = discord.Intents.default()
     # noinspection PyDunderSlots,PyUnresolvedReferences
     intents.members = True

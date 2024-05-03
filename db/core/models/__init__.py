@@ -9,7 +9,7 @@ __all__: Sequence[str] = (
     "GroupMadeMember",
     "DiscordReminder",
     "LeftDiscordMember",
-    "DiscordMemberStrikes"
+    "DiscordMemberStrikes",
 )
 
 import hashlib
@@ -35,9 +35,7 @@ class IntroductionReminderOptOutMember(HashedDiscordMember):
 
     INSTANCES_NAME_PLURAL: str = "Introduction Reminder Opt-Out Member objects"
 
-    class Meta:
-        """Metadata options about this model."""
-
+    class Meta:  # noqa: D106
         verbose_name = (
             "Hashed Discord ID of a Discord Member "
             "that has Opted-Out of Introduction Reminders"
@@ -60,9 +58,7 @@ class SentOneOffIntroductionReminderMember(HashedDiscordMember):
 
     INSTANCES_NAME_PLURAL: str = "Sent One Off Introduction Reminder Member objects"
 
-    class Meta:
-        """Metadata options about this model."""
-
+    class Meta:  # noqa: D106
         verbose_name = (
             "Hashed Discord ID of a Discord Member "
             "that has had a one-off Introduction reminder sent to their DMs"
@@ -87,9 +83,7 @@ class SentGetRolesReminderMember(HashedDiscordMember):
 
     INSTANCES_NAME_PLURAL: str = "Sent Get Roles Reminder Member objects"
 
-    class Meta:
-        """Metadata options about this model."""
-
+    class Meta:  # noqa: D106
         verbose_name = (
             "Hashed Discord ID of a Discord Member that has had a \"Get Roles\" reminder "
             "sent to their DMs"
@@ -123,14 +117,12 @@ class GroupMadeMember(AsyncBaseModel):
         validators=[
             RegexValidator(
                 r"\A[A-Fa-f\d]{64}\Z",
-                "hashed_group_member_id must be a valid sha256 hex-digest."
-            )
-        ]
+                "hashed_group_member_id must be a valid sha256 hex-digest.",
+            ),
+        ],
     )
 
-    class Meta:
-        """Metadata options about this model."""
-
+    class Meta:  # noqa: D106
         verbose_name = "Hashed Group ID of User that has been made Member"
         verbose_name_plural = "Hashed Group IDs of Users that have been made Member"
 
@@ -199,15 +191,15 @@ class DiscordReminder(HashedDiscordMember):
         validators=[
             RegexValidator(
                 r"\A[A-Fa-f0-9]{64}\Z",
-                "hashed_member_id must be a valid sha256 hex-digest."
-            )
-        ]
+                "hashed_member_id must be a valid sha256 hex-digest.",
+            ),
+        ],
     )
     message = models.TextField(
         "Message to remind User",
         max_length=1500,
         null=False,
-        blank=True
+        blank=True,
     )
     _channel_id = models.CharField(
         "Discord Channel ID of the channel that the reminder needs to be sent in",
@@ -218,9 +210,9 @@ class DiscordReminder(HashedDiscordMember):
         validators=[
             RegexValidator(
                 r"\A\d{17,20}\Z",
-                "channel_id must be a valid Discord channel ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
-            )
-        ]
+                "channel_id must be a valid Discord channel ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)",
+            ),
+        ],
     )
     _channel_type = models.IntegerField(
         "Discord Channel Type of the channel that the reminder needs to be sent in",
@@ -230,13 +222,13 @@ class DiscordReminder(HashedDiscordMember):
             in discord.ChannelType
         ],
         null=True,
-        blank=True
+        blank=True,
     )
     send_datetime = models.DateTimeField(
         "Date & time to send reminder",
         unique=False,
         null=False,
-        blank=False
+        blank=False,
     )
 
     @property
@@ -266,16 +258,14 @@ class DiscordReminder(HashedDiscordMember):
 
         self._channel_type = channel_type
 
-    class Meta:
-        """Metadata options about this model."""
-
+    class Meta:  # noqa: D106
         verbose_name = "A Reminder for a Discord Member"
         verbose_name_plural = "Reminders for Discord Members"
         constraints = [  # noqa: RUF012
             models.UniqueConstraint(
                 fields=["hashed_member_id", "message", "_channel_id"],
-                name="unique_user_channel_message"
-            )
+                name="unique_user_channel_message",
+            ),
         ]
 
     def __repr__(self) -> str:
@@ -346,9 +336,7 @@ class LeftDiscordMember(AsyncBaseModel):
     def roles(self, roles: set[str]) -> None:
         self._roles = list(roles)
 
-    class Meta:
-        """Metadata options about this model."""
-
+    class Meta:  # noqa: D106
         verbose_name = (
             "A List of Roles that a Discord Member had "
             "when they left your group's Discord guild"
@@ -367,9 +355,9 @@ class LeftDiscordMember(AsyncBaseModel):
         if any(not isinstance(role, str) for role in self.roles):
             raise ValidationError(
                 {
-                    "_roles": "Roles must be a set of strings representing the role names."
+                    "_roles": "Roles must be a set of strings representing the role names.",
                 },
-                code="invalid"
+                code="invalid",
             )
 
     @classmethod
@@ -404,12 +392,10 @@ class DiscordMemberStrikes(HashedDiscordMember):
         null=False,
         blank=True,
         validators=[MinValueValidator(0)],
-        default=0
+        default=0,
     )
 
-    class Meta:
-        """Metadata options about this model."""
-
+    class Meta:  # noqa: D106
         verbose_name = (
             "Hashed Discord ID of a Discord Member "
             "that has been previously given one or more strikes "

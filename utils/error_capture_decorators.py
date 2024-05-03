@@ -9,7 +9,7 @@ from collections.abc import Sequence
 __all__: Sequence[str] = (
     "ErrorCaptureDecorators",
     "capture_guild_does_not_exist_error",
-    "capture_strike_tracking_error"
+    "capture_strike_tracking_error",
 )
 
 import functools
@@ -31,7 +31,7 @@ type DecoratorInputFunc[**P, T] = (
 )
 
 
-logger: Logger = logging.getLogger("texbot")
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class ErrorCaptureDecorators:
@@ -49,7 +49,7 @@ class ErrorCaptureDecorators:
         The raised exception is then suppressed.
         """  # noqa: D401
         @functools.wraps(func)
-        async def wrapper(self: TeXBotBaseCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:  # noqa: E501
+        async def wrapper(self: TeXBotBaseCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:  # type: ignore[misc] # noqa: E501
             if not isinstance(self, TeXBotBaseCog):
                 INVALID_METHOD_TYPE_MESSAGE: Final[str] = (  # type: ignore[unreachable]
                     f"Parameter {self.__name__!r} of any 'capture_error' decorator "
@@ -85,7 +85,7 @@ def capture_guild_does_not_exist_error[**P, T](func: WrapperInputFunc[P, T]) -> 
     return ErrorCaptureDecorators.capture_error_and_close(
         func,  # type: ignore[arg-type]
         error_type=GuildDoesNotExistError,
-        close_func=ErrorCaptureDecorators.critical_error_close_func
+        close_func=ErrorCaptureDecorators.critical_error_close_func,
     )
 
 
@@ -98,5 +98,5 @@ def capture_strike_tracking_error[**P, T](func: WrapperInputFunc[P, T]) -> Wrapp
     return ErrorCaptureDecorators.capture_error_and_close(
         func,  # type: ignore[arg-type]
         error_type=StrikeTrackingError,
-        close_func=ErrorCaptureDecorators.strike_tracking_error_close_func
+        close_func=ErrorCaptureDecorators.strike_tracking_error_close_func,
     )

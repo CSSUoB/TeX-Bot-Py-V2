@@ -19,7 +19,7 @@ from exceptions import (
 )
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
-logger: Logger = logging.getLogger("texbot")
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class CommandErrorCog(TeXBotBaseCog):
@@ -62,7 +62,7 @@ class CommandErrorCog(TeXBotBaseCog):
             ctx,
             error_code=error_code,
             message=message,
-            logging_message=logging_message
+            logging_message=logging_message,
         )
 
         if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(error.original, GuildDoesNotExistError):  # noqa: E501
@@ -79,9 +79,9 @@ class CommandErrorCog(TeXBotBaseCog):
                     in (
                         error.original.ERROR_CODE,
                         f"({command_name})" if command_name in self.ERROR_ACTIVITIES else "",
-                        str(error.original).rstrip(".:")
+                        str(error.original).rstrip(".:"),
                     )
                     if message_part
-                )
+                ),
             )
             await self.bot.close()

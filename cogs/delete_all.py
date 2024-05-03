@@ -16,7 +16,7 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
 
     delete_all: discord.SlashCommandGroup = discord.SlashCommandGroup(
         "delete-all",
-        "Delete all instances of the selected object type from the backend database"
+        "Delete all instances of the selected object type from the backend database",
     )
 
     @staticmethod
@@ -33,12 +33,12 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
 
         await ctx.respond(
             f"All {delete_model_instances_name_plural} deleted successfully.",
-            ephemeral=True
+            ephemeral=True,
         )
 
     @delete_all.command(
         name="reminders",
-        description="Deletes all Reminders from the backend database."
+        description="Deletes all Reminders from the backend database.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -53,7 +53,7 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
 
     @delete_all.command(
         name="group-made-members",
-        description="Deletes all Group Made Members from the backend database."
+        description="Deletes all Group Made Members from the backend database.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
