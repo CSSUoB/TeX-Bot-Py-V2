@@ -142,6 +142,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                             ),
                             repr(member),
                         )
+                        continue
 
                 await member.send(
                     content=(
