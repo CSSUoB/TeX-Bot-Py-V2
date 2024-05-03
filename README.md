@@ -88,7 +88,7 @@ If the error persists, please file an issue on [this project's bug tracker](http
 
 * `E1044` - An interaction was denied because the Discord permissions for TeX-Bot were not set correctly
 
-* `E1045` - The bot failed to send a DM to the user specified because the user is not in the Guild
+* `E1045` - TeX-Bot failed to send a DM to the user specified because the user is not in the Guild
 
 ## Log-Entry Error Levels
 
