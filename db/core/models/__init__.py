@@ -35,9 +35,7 @@ class IntroductionReminderOptOutMember(HashedDiscordMember):
 
     INSTANCES_NAME_PLURAL: str = "Introduction Reminder Opt-Out Member objects"
 
-    class Meta:
-        """Metadata options about this model."""
-
+    class Meta:  # noqa: D106
         verbose_name = (
             "Hashed Discord ID of a Discord Member "
             "that has Opted-Out of Introduction Reminders"
@@ -60,9 +58,7 @@ class SentOneOffIntroductionReminderMember(HashedDiscordMember):
 
     INSTANCES_NAME_PLURAL: str = "Sent One Off Introduction Reminder Member objects"
 
-    class Meta:
-        """Metadata options about this model."""
-
+    class Meta:  # noqa: D106
         verbose_name = (
             "Hashed Discord ID of a Discord Member "
             "that has had a one-off Introduction reminder sent to their DMs"
@@ -87,9 +83,7 @@ class SentGetRolesReminderMember(HashedDiscordMember):
 
     INSTANCES_NAME_PLURAL: str = "Sent Get Roles Reminder Member objects"
 
-    class Meta:
-        """Metadata options about this model."""
-
+    class Meta:  # noqa: D106
         verbose_name = (
             "Hashed Discord ID of a Discord Member that has had a \"Get Roles\" reminder "
             "sent to their DMs"
@@ -128,9 +122,7 @@ class GroupMadeMember(AsyncBaseModel):
         ],
     )
 
-    class Meta:
-        """Metadata options about this model."""
-
+    class Meta:  # noqa: D106
         verbose_name = "Hashed Group ID of User that has been made Member"
         verbose_name_plural = "Hashed Group IDs of Users that have been made Member"
 
@@ -266,9 +258,7 @@ class DiscordReminder(HashedDiscordMember):
 
         self._channel_type = channel_type
 
-    class Meta:
-        """Metadata options about this model."""
-
+    class Meta:  # noqa: D106
         verbose_name = "A Reminder for a Discord Member"
         verbose_name_plural = "Reminders for Discord Members"
         constraints = [  # noqa: RUF012
@@ -346,9 +336,7 @@ class LeftDiscordMember(AsyncBaseModel):
     def roles(self, roles: set[str]) -> None:
         self._roles = list(roles)
 
-    class Meta:
-        """Metadata options about this model."""
-
+    class Meta:  # noqa: D106
         verbose_name = (
             "A List of Roles that a Discord Member had "
             "when they left your group's Discord guild"
@@ -407,9 +395,7 @@ class DiscordMemberStrikes(HashedDiscordMember):
         default=0,
     )
 
-    class Meta:
-        """Metadata options about this model."""
-
+    class Meta:  # noqa: D106
         verbose_name = (
             "Hashed Discord ID of a Discord Member "
             "that has been previously given one or more strikes "

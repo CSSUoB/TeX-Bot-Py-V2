@@ -207,11 +207,19 @@ class BaseInductCog(TeXBotBaseCog):
             with contextlib.suppress(RolesChannelDoesNotExistError):
                 roles_channel_mention = (await self.bot.roles_channel).mention
 
-            await general_channel.send(
-                f"{await self.get_random_welcome_message(induction_member)} :tada:\n"
-                f"Remember to grab your roles in {roles_channel_mention} "
-                "and say hello to everyone here! :wave:",
-            )
+            message_already_sent: bool = False
+            message: discord.Message
+            async for message in general_channel.history(limit=7):
+                if message.author == self.bot.user and "grab your roles" in message.content:
+                    message_already_sent = True
+                    break
+
+            if not message_already_sent:
+                await general_channel.send(
+                    f"{await self.get_random_welcome_message(induction_member)} :tada:\n"
+                    f"Remember to grab your roles in {roles_channel_mention} "
+                    "and say hello to everyone here! :wave:",
+                )
 
         await induction_member.add_roles(
             guest_role,
