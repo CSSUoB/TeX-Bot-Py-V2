@@ -29,7 +29,7 @@ from utils.error_capture_decorators import (
     capture_guild_does_not_exist_error,
 )
 
-logger: Logger = logging.getLogger("texbot")
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class SendIntroductionRemindersTaskCog(TeXBotBaseCog):

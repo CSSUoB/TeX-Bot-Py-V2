@@ -37,7 +37,7 @@ if TYPE_CHECKING:
     )
 
 
-logger: Logger = logging.getLogger("texbot")
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class ErrorCaptureDecorators:
