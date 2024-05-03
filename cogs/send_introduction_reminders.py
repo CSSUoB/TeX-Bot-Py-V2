@@ -134,12 +134,14 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     if message_contains_opt_in_out_button:
                         await message.edit(view=None)
 
-                if member not in guild.members:
-                    logger.info(
-                        "Member: %s left the server before the introduction "
-                        "reminder could be sent.",
-                    ), member
-                    repr(member)
+                    if member not in guild.members:
+                        logger.info(
+                            (
+                                "Member: %s left the server before the introduction "
+                                "reminder could be sent.",
+                            ),
+                            repr(member),
+                        )
 
                 await member.send(
                     content=(
