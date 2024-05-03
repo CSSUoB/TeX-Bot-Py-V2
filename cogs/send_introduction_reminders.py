@@ -153,10 +153,11 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     await SentOneOffIntroductionReminderMember.objects.acreate(member_id=member.id)
                 else:
                     logger.info(
-                        "Member: {member} left the server before the introduction reminder could be sent."
+                        "Member: {member} left the server before the introduction "
+                        "reminder could be sent."  # noqa: E501
                     )
                     member_needs_reminder = False
-                    
+
 
     class OptOutIntroductionRemindersView(View):
         """
