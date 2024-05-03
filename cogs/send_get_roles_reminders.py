@@ -156,6 +156,16 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
             if time_since_role_received <= datetime.timedelta(days=1):
                 continue
 
+            if member not in guild.members:
+                logger.info(
+                    (
+                        "Member with ID: %s does not need to be sent a reminder "
+                        "because they have left the server."
+                    ),
+                    member.id,
+                )
+                continue
+
             await member.send(
                 "Hey! It seems like you joined "
                 f"the {self.bot.group_short_name} Discord server "
