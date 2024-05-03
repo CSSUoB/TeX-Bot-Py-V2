@@ -161,7 +161,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                         "Member: %s left the server before the introduction "
                         "reminder could be sent.",
                     ), member
-                    repr(member.id)
+                    repr(member)
 
             await member.send(
                 "Hey! It seems like you joined "
