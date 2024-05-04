@@ -400,7 +400,8 @@ class ManualModerationCog(BaseStrikeCog):
                 with aiohttp.ClientSession() as session:  # type: ignore[assignment]
                     log_confirmation_message_channel: discord.TextChannel | None = (
                         await Webhook.from_url(
-                            settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"], session=session,
+                            settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"], 
+                            session=session,
                         ).fetch()
                     ).channel
 
