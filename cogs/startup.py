@@ -24,7 +24,6 @@ from exceptions import (
 )
 from utils import TeXBotBaseCog
 
-
 logger: Logger = logging.getLogger("TeX-Bot")
 
 

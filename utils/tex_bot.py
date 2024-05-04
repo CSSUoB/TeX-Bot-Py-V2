@@ -24,7 +24,6 @@ from exceptions import (
     RulesChannelDoesNotExistError,
 )
 
-
 ChannelTypes: TypeAlias = (
     discord.VoiceChannel
     | discord.StageChannel

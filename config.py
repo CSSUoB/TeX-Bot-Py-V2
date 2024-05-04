@@ -41,7 +41,6 @@ from exceptions import (
     MessagesJSONFileValueError,
 )
 
-
 PROJECT_ROOT: Final[Path] = Path(__file__).parent.resolve()
 
 TRUE_VALUES: Final[frozenset[str]] = frozenset({"true", "1", "t", "y", "yes", "on"})
