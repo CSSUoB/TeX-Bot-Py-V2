@@ -66,7 +66,7 @@ class KillCommandCog(TeXBotBaseCog):
                 "re you sure you want to kill me?\n"
                 "This action is irreversible "
                 "and will prevent me from performing any further actions.\n\n"
-                "Please confirm your choice by clicking the button below."
+                "Please confirm using the buttons below."
             ),
             view=ConfirmKillView(),
             ephemeral=True,
