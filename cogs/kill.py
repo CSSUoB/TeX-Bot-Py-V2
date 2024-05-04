@@ -15,7 +15,7 @@ logger: Logger = logging.getLogger("TeX-Bot")
 class ConfirmationView(discord.ui.View):
     """Confirmation view for the kill command."""
 
-    @discord.ui.button(
+    @discord.ui.button( # type: ignore[misc]
         label = "SHUTDOWN",
         style = discord.ButtonStyle.red,
         custom_id = "shutdown",
@@ -24,7 +24,7 @@ class ConfirmationView(discord.ui.View):
         """When the shutdown button is pressed, delete the message."""
         await interaction.response.edit_message(delete_after = 0)
 
-    @discord.ui.button(
+    @discord.ui.button( # type: ignore[misc]
         label = "CANCEL",
         style = discord.ButtonStyle.green,
         custom_id = "cancel",
