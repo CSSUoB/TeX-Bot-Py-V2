@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Install Python Project
-        uses: CSSUoB/action-install-python-project@v1.0.2
+        uses: CSSUoB/action-install-python-project@v1.1.0
         with:
           python-version: 3.12
 
@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Install Python Project
-        uses: CSSUoB/action-install-python-project@v1.0.2
+        uses: CSSUoB/action-install-python-project@v1.1.0
         with:
           python-version: 3.12
 
@@ -36,11 +36,11 @@ jobs:
 
     steps:
       - name: Install Python Project
-        uses: CSSUoB/action-install-python-project@v1.0.2
+        uses: CSSUoB/action-install-python-project@v1.1.0
         with:
           python-version: 3.12
 
-      - name: Run ruff
+      - name: Run Ruff
         run: poetry run ruff check . --no-fix --extend-select TD002,TD003
 
   poetry-check:
@@ -48,7 +48,7 @@ jobs:
 
     steps:
       - name: Install Python Project
-        uses: CSSUoB/action-install-python-project@v1.0.2
+        uses: CSSUoB/action-install-python-project@v1.1.0
         with:
           python-version: 3.12
 
@@ -60,10 +60,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
@@ -75,12 +75,12 @@ jobs:
 
     steps:
       - name: Install Python Project
-        uses: CSSUoB/action-install-python-project@v1.0.2
+        uses: CSSUoB/action-install-python-project@v1.1.0
         with:
           python-version: 3.12
 
       - name: Run PyMarkdown scan
-        run: poetry run python ./.github/workflows/scripts/remove_invalid_tables.py && poetry run pymarkdown scan . ; poetry run python ./.github/workflows/scripts/remove_invalid_tables.py --restore
+        run: poetry run rcft-pymarkdown scan-all
 
   prevent-migrations-deletion:
     runs-on: ubuntu-latest
@@ -92,7 +92,7 @@ jobs:
 
     steps:
       - name: Prevent migrations files changing
-        uses: CSSUoB/action-prevent-file-change@v1
+        uses: CSSUoB/action-prevent-file-change@v1.6.0
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           pattern: '.*\/db\/.+\/migrations\/\d{4}\w*\.py$'

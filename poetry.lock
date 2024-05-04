@@ -884,6 +884,22 @@ files = [
 ]
 
 [[package]]
+name = "marko"
+version = "2.0.3"
+description = "A markdown parser with high extensibility."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "marko-2.0.3-py3-none-any.whl", hash = "sha256:7fca1c4ab1dbc09b4b3be83c22caafd7d97c99439cb4143d025727cb3df1f4d0"},
+    {file = "marko-2.0.3.tar.gz", hash = "sha256:3b323dcd7dd48181871718ac09b3825bc8f74493cec378f2bacaaceec47577d4"},
+]
+
+[package.extras]
+codehilite = ["pygments"]
+repr = ["objprint"]
+toc = ["python-slugify"]
+
+[[package]]
 name = "matplotlib"
 version = "3.8.4"
 description = "Python plotting package"
@@ -1492,6 +1508,23 @@ files = [
 ]
 
 [[package]]
+name = "rcft-pymarkdown"
+version = "1.0.4"
+description = "A Python wrapper around jackdewinter's PyMarkdown linter to remove custom tables in Markdown files"
+optional = false
+python-versions = "<4.0,>=3.12"
+files = [
+    {file = "rcft_pymarkdown-1.0.4-py3-none-any.whl", hash = "sha256:a72840d3482c025dbc258e8e8b78067c3b7375b9573d2bc109118a7d3c916d56"},
+    {file = "rcft_pymarkdown-1.0.4.tar.gz", hash = "sha256:9d08e4e7380c1f8e04c036d0faf4897fe137a24461b2b01bca3e91cb05cc5338"},
+]
+
+[package.dependencies]
+gitpython = ">=3.1,<4.0"
+marko = ">=2.0,<3.0"
+pymarkdownlnt = ">=0.9,<0.10"
+setuptools = ">=69.5,<70.0"
+
+[[package]]
 name = "requests"
 version = "2.31.0"
 description = "Python HTTP for Humans."
@@ -1847,4 +1880,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "4c78af87d697142b416f89ab0578301605ace926cd128d493a24b7004ff82c03"
+content-hash = "5dfc847989c4cd48fe08c820deb5d73775035e3d7a0b7dee8d9185be83d51419"
