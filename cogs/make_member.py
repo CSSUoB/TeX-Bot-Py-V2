@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("MakeMemberCommandCog",)
 
+
 import contextlib
 import logging
 import re
@@ -20,6 +21,7 @@ from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import CommitteeRoleDoesNotExistError, GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+
 
 logger: Logger = logging.getLogger("TeX-Bot")
 

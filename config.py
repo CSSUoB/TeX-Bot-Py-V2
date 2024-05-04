@@ -17,6 +17,7 @@ __all__: Sequence[str] = (
     "settings",
 )
 
+
 import abc
 import functools
 import importlib
@@ -39,6 +40,7 @@ from exceptions import (
     MessagesJSONFileMissingKeyError,
     MessagesJSONFileValueError,
 )
+
 
 PROJECT_ROOT: Final[Path] = Path(__file__).parent.resolve()
 

@@ -4,11 +4,13 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ()
 
+
 import random
 import re
 from typing import Final
 
 import utils
+
 
 # TODO(CarrotManMatt): Move to stats_tests  # noqa: FIX002
 # https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/57

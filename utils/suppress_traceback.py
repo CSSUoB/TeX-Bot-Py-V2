@@ -8,6 +8,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("SuppressTraceback",)
 
+
 import sys
 from types import TracebackType
 

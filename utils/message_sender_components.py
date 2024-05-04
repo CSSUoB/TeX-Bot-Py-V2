@@ -8,6 +8,7 @@ __all__: Sequence[str] = (
     "ResponseMessageSender",
 )
 
+
 import abc
 from typing import Final, TypedDict, final
 

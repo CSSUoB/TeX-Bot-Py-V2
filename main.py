@@ -18,6 +18,7 @@ import config
 from config import settings
 from utils import SuppressTraceback, TeXBot
 
+
 with SuppressTraceback():
     config.run_setup()
 

@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("SendGetRolesRemindersTaskCog",)
 
+
 import contextlib
 import datetime
 import functools
@@ -23,6 +24,7 @@ from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
     capture_guild_does_not_exist_error,
 )
+
 
 logger: Logger = logging.getLogger("TeX-Bot")
 

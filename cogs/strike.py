@@ -13,6 +13,7 @@ __all__: Sequence[str] = (
     "StrikeUserCommandCog",
 )
 
+
 import asyncio
 import contextlib
 import datetime

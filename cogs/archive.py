@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("ArchiveCommandCog",)
 
+
 import logging
 import re
 from logging import Logger
@@ -17,6 +18,7 @@ from utils import (
     TeXBotAutocompleteContext,
     TeXBotBaseCog,
 )
+
 
 logger: Logger = logging.getLogger("TeX-Bot")
 

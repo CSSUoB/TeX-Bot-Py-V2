@@ -1,16 +1,20 @@
 """Contains cog classes for any killing interactions."""
 
-import logging
 from collections.abc import Sequence
+
+__all__: Sequence[str] = ("KillCommandCog", "ConfirmationView")
+
+
+import logging
 from logging import Logger
 
 import discord
 
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
-__all__: Sequence[str] = ("KillCommandCog","ConfirmationView")
 
 logger: Logger = logging.getLogger("TeX-Bot")
+
 
 class ConfirmationView(discord.ui.View):
     """Confirmation view for the kill command."""

@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("CommandChecks",)
 
+
 from collections.abc import Callable
 
 from discord.ext import commands

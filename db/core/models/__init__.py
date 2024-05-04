@@ -12,6 +12,7 @@ __all__: Sequence[str] = (
     "DiscordMemberStrikes",
 )
 
+
 import hashlib
 import re
 from typing import Final

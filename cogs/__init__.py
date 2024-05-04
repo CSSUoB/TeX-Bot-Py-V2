@@ -33,6 +33,7 @@ __all__: Sequence[str] = (
     "setup",
 )
 
+
 from typing import TYPE_CHECKING
 
 from cogs.archive import ArchiveCommandCog

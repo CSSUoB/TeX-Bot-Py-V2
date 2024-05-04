@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("TeXBot",)
 
+
 import re
 from typing import Final, TypeAlias
 
@@ -22,6 +23,7 @@ from exceptions import (
     RolesChannelDoesNotExistError,
     RulesChannelDoesNotExistError,
 )
+
 
 ChannelTypes: TypeAlias = (
     discord.VoiceChannel

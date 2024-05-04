@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("CommandErrorCog",)
 
+
 import contextlib
 import logging
 from logging import Logger
@@ -18,6 +19,7 @@ from exceptions import (
     GuildDoesNotExistError,
 )
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+
 
 logger: Logger = logging.getLogger("TeX-Bot")
 
