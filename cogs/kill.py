@@ -40,7 +40,7 @@ class KillCommandCog(TeXBotBaseCog):
     async def confirm_kill(self, ctx: TeXBotApplicationContext) -> None:
         """Confirm that the user did indeed intent to kill the bot."""
         main_guild = self.bot.main_guild
-        confirmation_message_channel: discord.TextChannel = main_guild.get_channel(main_guild, 1128049192498102483) # noqa: E501
+        confirmation_message_channel: discord.TextChannel = main_guild.get_channel(1128049192498102483) # noqa: E501
         committee_role: discord.Role = await self.bot.committee_role
 
         confirmation_message: discord.Message = await confirmation_message_channel.send(
