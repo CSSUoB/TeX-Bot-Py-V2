@@ -1,10 +1,10 @@
 """Contains cog classes for any killing interactions."""
 
+import logging
 from collections.abc import Sequence
+from logging import Logger
 
 import discord
-import logging
-from logging import Logger
 
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
