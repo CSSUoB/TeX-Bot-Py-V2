@@ -14,6 +14,7 @@ logger: Logger = logging.getLogger("TeX-Bot")
 
 class ConfirmationView(discord.ui.View):
     """Confirmation view for the kill command."""
+    
     @discord.ui.button(
         label = "SHUTDOWN",
         style = discord.ButtonStyle.red,
