@@ -13,11 +13,20 @@ __all__: Sequence[str] = ("KillCommandCog","ConfirmationView")
 logger: Logger = logging.getLogger("TeX-Bot")
 
 class ConfirmationView(discord.ui.View):
-    @discord.ui.button(label = "SHUTDOWN", style = discord.ButtonStyle.red, custom_id = "shutdown")
+    """Confirmation view for the kill command."""
+    @discord.ui.button(
+        label = "SHUTDOWN", 
+        style = discord.ButtonStyle.red, 
+        custom_id = "shutdown"
+    )
     async def shutdown_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:
         await interaction.response.edit_message(delete_after = 0)
 
-    @discord.ui.button(label = "CANCEL", style = discord.ButtonStyle.green, custom_id = "cancel")
+    @discord.ui.button(
+        label = "CANCEL", 
+        style = discord.ButtonStyle.green, 
+        custom_id = "cancel"
+    )
     async def cancel_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:
         await interaction.response.edit_message(delete_after = 0)
 
