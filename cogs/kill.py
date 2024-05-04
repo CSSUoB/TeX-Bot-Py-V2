@@ -14,13 +14,14 @@ logger: Logger = logging.getLogger("TeX-Bot")
 
 class ConfirmationView(discord.ui.View):
     """Confirmation view for the kill command."""
-    
+
     @discord.ui.button(
         label = "SHUTDOWN",
         style = discord.ButtonStyle.red,
         custom_id = "shutdown",
     )
-    async def shutdown_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:
+    async def shutdown_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
+        """When the shutdown button is pressed, delete the message."""
         await interaction.response.edit_message(delete_after = 0)
 
     @discord.ui.button(
@@ -28,7 +29,8 @@ class ConfirmationView(discord.ui.View):
         style = discord.ButtonStyle.green,
         custom_id = "cancel",
     )
-    async def cancel_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:
+    async def cancel_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
+        """When the cancel button is pressed, delete the message."""
         await interaction.response.edit_message(delete_after = 0)
 
 
@@ -37,13 +39,13 @@ class KillCommandCog(TeXBotBaseCog):
 
     async def confirm_kill(self, ctx: TeXBotApplicationContext) -> None:
         """Confirm that the user did indeed intent to kill the bot."""
-        confirmation_message_channel: discord.TextChannel = discord.get_channel(1128049192498102483)
+        confirmation_message_channel: discord.TextChannel = discord.get_channel(1128049192498102483)  # noqa: E501
         committee_role: discord.Role = await self.bot.committee_role
 
         confirmation_message: discord.Message = await confirmation_message_channel.send(
             content = (
             f"""Hi {committee_role.mention}, are you sure you want to kill me?\n"""
-            """This action is irreversible and will prevent me from performing any actions.\n"""
+            """This action is irreversible and will prevent me from performing any actions.\n"""  # noqa: E501
             """Please confirm your choice by clicking the button below.\n"""
             f"""This action was triggered by {ctx.interaction.user.mention}.\n"""
             ), view = ConfirmationView())
@@ -59,7 +61,7 @@ class KillCommandCog(TeXBotBaseCog):
 
         if button_interaction.component.custom_id == "shutdown":
             await confirmation_message.delete()
-            init_shutdown_message: discord.Message = await confirmation_message_channel.send(
+            _: discord.Message = await confirmation_message_channel.send(
                 content = "My battery is low and it's getting dark...",
             )
             logger.info("Manual shutdown initiated by %s.", ctx.interaction.user)
