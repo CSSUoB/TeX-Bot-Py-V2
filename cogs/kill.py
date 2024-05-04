@@ -8,9 +8,7 @@ from logging import Logger
 
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
-__all__: Sequence[str] = ("KillCommandCog","ConfirmationView",)
-
-from utils import (CommandChecks, TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotBaseCog,)
+__all__: Sequence[str] = ("KillCommandCog","ConfirmationView")
 
 logger: Logger = logging.getLogger("TeX-Bot")
 
