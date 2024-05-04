@@ -15,27 +15,27 @@ logger: Logger = logging.getLogger("TeX-Bot")
 class ConfirmationView(discord.ui.View):
     """Confirmation view for the kill command."""
     @discord.ui.button(
-        label = "SHUTDOWN", 
-        style = discord.ButtonStyle.red, 
-        custom_id = "shutdown"
+        label = "SHUTDOWN",
+        style = discord.ButtonStyle.red,
+        custom_id = "shutdown",
     )
     async def shutdown_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:
         await interaction.response.edit_message(delete_after = 0)
 
     @discord.ui.button(
-        label = "CANCEL", 
-        style = discord.ButtonStyle.green, 
-        custom_id = "cancel"
+        label = "CANCEL",
+        style = discord.ButtonStyle.green,
+        custom_id = "cancel",
     )
     async def cancel_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:
         await interaction.response.edit_message(delete_after = 0)
 
 
 class KillCommandCog(TeXBotBaseCog):
-    """Cog class that defines the "/kill" command."""    
+    """Cog class that defines the "/kill" command."""
 
     async def confirm_kill(self, ctx: TeXBotApplicationContext) -> None:
-        """Confirms the bot's termination."""
+        """Confirm that the user did indeed intent to kill the bot."""
         confirmation_message_channel: discord.TextChannel = discord.get_channel(1128049192498102483)
         committee_role: discord.Role = await self.bot.committee_role
 
@@ -46,19 +46,19 @@ class KillCommandCog(TeXBotBaseCog):
             """Please confirm your choice by clicking the button below.\n"""
             f"""This action was triggered by {ctx.interaction.user.mention}.\n"""
             ), view = ConfirmationView())
-        
+
         button_interaction: discord.Interaction = await self.bot.wait_for(
             "interaction",
             check=lambda interaction: (
                 interaction.type == discord.InteractionType.component
                 and interaction.message == confirmation_message
                 and committee_role in interaction.user.roles
-            )
+            ),
         )
 
         if button_interaction.component.custom_id == "shutdown":
             await confirmation_message.delete()
-            initiating_shutdown_message: discord.Message = await confirmation_message_channel.send(
+            init_shutdown_message: discord.Message = await confirmation_message_channel.send(
                 content = "My battery is low and it's getting dark...",
             )
             logger.info("Manual shutdown initiated by %s.", ctx.interaction.user)
@@ -70,7 +70,6 @@ class KillCommandCog(TeXBotBaseCog):
                 content = "Shutdown has been cancelled.",
             )
             logger.info("Manual shutdown cancelled by %s.", ctx.interaction.user)
-    
 
     @discord.slash_command(
         name="kill",
