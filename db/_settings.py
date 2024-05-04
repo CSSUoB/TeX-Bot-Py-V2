@@ -8,6 +8,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ()
 
+
 import inspect
 from pathlib import Path
 from typing import Final

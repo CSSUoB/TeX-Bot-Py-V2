@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("PingCommandCog",)
 
+
 import random
 
 import discord

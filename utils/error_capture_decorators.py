@@ -12,6 +12,7 @@ __all__: Sequence[str] = (
     "capture_strike_tracking_error",
 )
 
+
 import functools
 import logging
 from collections.abc import Callable, Coroutine
@@ -21,12 +22,14 @@ from typing import TYPE_CHECKING, Final, ParamSpec, TypeVar
 from exceptions import GuildDoesNotExistError, StrikeTrackingError
 from utils.tex_bot_base_cog import TeXBotBaseCog
 
+if TYPE_CHECKING:
+    from typing import Concatenate, TypeAlias
+
+
 P = ParamSpec("P")
 T = TypeVar("T")
 
 if TYPE_CHECKING:
-    from typing import Concatenate, TypeAlias
-
     WrapperInputFunc: TypeAlias = (
         Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T]]
         | Callable[P, Coroutine[object, object, T]]
@@ -35,7 +38,6 @@ if TYPE_CHECKING:
     DecoratorInputFunc: TypeAlias = (
         Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T]]
     )
-
 
 logger: Logger = logging.getLogger("TeX-Bot")
 

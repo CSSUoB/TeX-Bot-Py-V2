@@ -26,6 +26,7 @@ __all__: Sequence[str] = (
     "GeneralChannelDoesNotExistError",
 )
 
+
 import abc
 from typing import Final
 

@@ -9,6 +9,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("TeXBotAutocompleteContext", "TeXBotApplicationContext")
 
+
 import discord
 
 from utils.tex_bot import TeXBot

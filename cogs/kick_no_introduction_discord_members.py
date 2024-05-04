@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("KickNoIntroductionDiscordMembersTaskCog",)
 
+
 import functools
 import logging
 from logging import Logger
@@ -22,6 +23,7 @@ from utils.error_capture_decorators import (
 
 if TYPE_CHECKING:
     import datetime
+
 
 logger: Logger = logging.getLogger("TeX-Bot")
 
