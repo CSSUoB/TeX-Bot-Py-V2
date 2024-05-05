@@ -69,7 +69,6 @@ class KillCommandCog(TeXBotBaseCog):
                 "Please confirm using the buttons below."
             ),
             view=ConfirmKillView(),
-            ephemeral=True,
         )
 
         button_interaction: discord.Interaction = await self.bot.wait_for(
