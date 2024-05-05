@@ -140,7 +140,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                     )
                 )
             except (StopIteration, StopAsyncIteration):
-                logger.error(  # noqa: TRY400
+                logger.warning(
                     (
                         "Member with ID: %s could not be checked whether to send "
                         "role_reminder, because their %s "
