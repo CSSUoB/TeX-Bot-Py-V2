@@ -139,7 +139,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                         and guest_role in log.after.roles
                     )
                 )
-            except StopIteration:
+            except (StopIteration, StopAsyncIteration):
                 logger.error(  # noqa: TRY400
                     (
                         "Member with ID: %s could not be checked whether to send "
