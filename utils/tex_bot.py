@@ -12,6 +12,7 @@ import discord
 
 from config import settings
 from exceptions import (
+    ApplicantRoleDoesNotExistError,
     ArchivistRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
     DiscordMemberNotInMainGuildError,
@@ -164,6 +165,29 @@ class TeXBot(discord.Bot):
             raise ArchivistRoleDoesNotExistError
 
         return self._archivist_role
+
+    @property
+    async def applicant_role(self) -> discord.Role:
+        """
+        Shortcut accessor to the applicant role.
+
+        The Applicant role is given to users who have joined the discord and
+        introduced themselves, but who are not yet full students and are
+        are not given full access to the server. This role is considered
+        to have been inducted for the purposes of the introduction reminders.
+
+        Raises `ApplicantRoleDoesNotExist` if the role does not exist.
+        """
+        if not self._applicant_role or not self._guild_has_role(self._applicant_role):
+            self._applicant_role = discord.utils.get(
+                await self.main_guild.fetch_roles(),
+                name="Applicant",
+            )
+
+        if not self._archivist_role:
+            raise ApplicantRoleDoesNotExistError
+
+        return self._applicant_role
 
     @property
     async def roles_channel(self) -> discord.TextChannel:
