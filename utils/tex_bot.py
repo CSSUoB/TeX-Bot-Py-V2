@@ -361,29 +361,6 @@ class TeXBot(discord.Bot):
         """Util method to validate whether the given user has the "Committee" role."""
         return await self.committee_role in (await self.get_main_guild_member(user)).roles
 
-    async def is_user_inducted(self, user: discord.Member) -> bool:
-        """
-        Util method to check if the supplied user has been inducted.
-
-        Returns true if the user has a role that is considered to be inducted.
-        Which roles are considered to be inducted should be specified in the config.
-        """
-        guild: discord.Guild = self.main_guild
-        inducted_roles = ["Guest", "Applicant", "Staff"]
-
-        for role in inducted_roles:
-            r: discord.Role | None = discord.utils.get(
-                guild.roles,
-                name = "@%s",
-            ), repr(role)
-
-            if r is None:
-                continue
-
-            if r in user.roles:
-                return True
-        return False
-
 
     def set_main_guild(self, main_guild: discord.Guild) -> None:
         """

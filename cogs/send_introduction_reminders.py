@@ -24,7 +24,7 @@ from db.core.models import (
     SentOneOffIntroductionReminderMember,
 )
 from exceptions import DiscordMemberNotInMainGuildError, GuestRoleDoesNotExistError
-from utils import TeXBot, TeXBotBaseCog
+from utils import TeXBot, TeXBotBaseCog, is_user_inducted
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
     capture_guild_does_not_exist_error,
@@ -80,12 +80,10 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guild: discord.Guild = self.bot.main_guild
-        guest_role: discord.Role = await self.bot.guest_role
-        applicant_role: discord.Role = await self.bot.applicant_role
 
         member: discord.Member
         for member in guild.members:
-            if guest_role in member.roles or applicant_role in member.roles or member.bot:
+            if is_user_inducted(member) or member.bot:
                 continue
 
             if not member.joined_at:
