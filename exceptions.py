@@ -558,7 +558,7 @@ class ApplicantRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     def ROLE_NAME(cls) -> str:  # noqa: N802,N805
         """The name of the Discord role that does not exist."""  # noqa: D401
-        return "Archivist"
+        return "Applicant"
 
 
 class ChannelDoesNotExistError(BaseDoesNotExistError):
