@@ -545,21 +545,6 @@ class ArchivistRoleDoesNotExistError(RoleDoesNotExistError):
         """The name of the Discord role that does not exist."""  # noqa: D401
         return "Archivist"
 
-class ApplicantRoleDoesNotExistError(RoleDoesNotExistError):
-    """Exception class to raise when the "Applicant" Discord role is missing."""
-
-    # noinspection PyMethodParameters,PyPep8Naming
-    @classproperty
-    def ERROR_CODE(cls) -> str:  # noqa: N802,N805
-        """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
-        return "E1025"
-
-    # noinspection PyMethodParameters,PyPep8Naming
-    @classproperty
-    def ROLE_NAME(cls) -> str:  # noqa: N802,N805
-        """The name of the Discord role that does not exist."""  # noqa: D401
-        return "Applicant"
-
 
 class ChannelDoesNotExistError(BaseDoesNotExistError):
     """Exception class to raise when a required Discord channel is missing."""
