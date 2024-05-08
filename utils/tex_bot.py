@@ -165,7 +165,6 @@ class TeXBot(discord.Bot):
 
         return self._archivist_role
 
-
     @property
     async def roles_channel(self) -> discord.TextChannel:
         """
@@ -360,7 +359,6 @@ class TeXBot(discord.Bot):
     async def check_user_has_committee_role(self, user: discord.Member | discord.User) -> bool:
         """Util method to validate whether the given user has the "Committee" role."""
         return await self.committee_role in (await self.get_main_guild_member(user)).roles
-
 
     def set_main_guild(self, main_guild: discord.Guild) -> None:
         """
