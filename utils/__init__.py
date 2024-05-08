@@ -52,8 +52,8 @@ def is_user_inducted(guild: discord.Guild, user: discord.Member) -> bool:
     """
     Util method to check if the supplied user has been inducted.
 
-    Returns true if the user has a role that is considered to be inducted.
-    Which roles are considered to be inducted should be specified in the config.
+    Returns true if the user has any role other than the default News role.
+    News role is not required. 
     """
     news_role: discord.Role | None = discord.utils.get(
         guild.roles,
