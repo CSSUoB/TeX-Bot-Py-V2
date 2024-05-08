@@ -14,7 +14,6 @@ from discord_logging.handler import DiscordHandler
 import utils
 from config import settings
 from exceptions import (
-    ApplicantRoleDoesNotExistError,
     ArchivistRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
     GeneralChannelDoesNotExistError,
@@ -100,9 +99,6 @@ class StartupCog(TeXBotBaseCog):
 
         if not discord.utils.get(main_guild.roles, name="Archivist"):
             logger.warning(ArchivistRoleDoesNotExistError())
-
-        if not discord.utils.get(main_guild.roles, name="Applicant"):
-            logger.warning(ApplicantRoleDoesNotExistError())
 
         if not discord.utils.get(main_guild.text_channels, name="roles"):
             logger.warning(RolesChannelDoesNotExistError())
