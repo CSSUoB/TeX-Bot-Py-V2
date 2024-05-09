@@ -11,6 +11,7 @@ __all__: Sequence[str] = (
     "TeXBotApplicationContext",
     "TeXBotAutocompleteContext",
     "generate_invite_url",
+    "is_member_inducted",
 )
 
 
@@ -46,4 +47,16 @@ def generate_invite_url(discord_bot_application_id: int, discord_guild_id: int) 
         guild=discord.Object(id=discord_guild_id),
         scopes=("bot", "applications.commands"),
         disable_guild_select=True,
+    )
+
+
+def is_member_inducted(member: discord.Member) -> bool:
+    """
+    Util method to check if the supplied member has been inducted.
+
+    Returns True if the member has any role other than "@News".
+    The set of ignored roles is a tuple, to make the set easily expandable.
+    """
+    return any(
+        role.name.lower().strip().strip("@").strip() not in ("news",) for role in member.roles
     )

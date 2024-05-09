@@ -16,6 +16,7 @@ import discord
 from discord import AuditLogAction
 from discord.ext import tasks
 
+import utils
 from config import settings
 from db.core.models import SentGetRolesReminderMember
 from exceptions import GuestRoleDoesNotExistError, RolesChannelDoesNotExistError
@@ -110,7 +111,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         for member in guild.members:
             member_requires_opt_in_roles_reminder: bool = (
                 not member.bot
-                and self.bot.is_member_inducted(member)
+                and utils.is_member_inducted(member)
                 and not any(
                     opt_in_role_name.lower() in {role.name.lower() for role in member.roles}
                     for opt_in_role_name

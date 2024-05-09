@@ -18,6 +18,7 @@ from discord.ext import tasks
 from discord.ui import View
 from django.core.exceptions import ValidationError
 
+import utils
 from config import settings
 from db.core.models import (
     IntroductionReminderOptOutMember,
@@ -83,7 +84,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
         member: discord.Member
         for member in guild.members:
-            if self.bot.is_member_inducted(member) or member.bot:
+            if utils.is_member_inducted(member) or member.bot:
                 continue
 
             if not member.joined_at:
