@@ -108,7 +108,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         for member in guild.members:
             member_requires_opt_in_roles_reminder: bool = (
                 not member.bot
-                and guest_role in member.roles
+                and self.bot.is_member_inducted(member)
                 and not any(
                     opt_in_role_name in {role.name for role in member.roles}
                     for opt_in_role_name
