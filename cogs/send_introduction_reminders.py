@@ -123,15 +123,15 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             )
 
             if member_needs_reminder:
-                if member not in guild.members:
-                        logger.info(
-                            (
-                                "Member with ID: %s does not need to be sent a reminder "
-                                "because they have left the server."
-                            ),
-                            member.id,
-                        )
-                        continue
+                if member not in guild.members:  # HACK: Caching errors can cause the member to no longer be part of the guild, so this check must be performed before sending that member a message # noqa: FIX004
+                    logger.info(
+                        (
+                            "Member with ID: %s does not need to be sent a reminder "
+                            "because they have left the server."
+                        ),
+                        member.id,
+                    )
+                    continue
 
                 async for message in member.history():
                     # noinspection PyUnresolvedReferences
