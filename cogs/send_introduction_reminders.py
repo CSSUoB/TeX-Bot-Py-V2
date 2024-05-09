@@ -83,7 +83,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
         member: discord.Member
         for member in guild.members:
-            if self.bot.is_member_inducted(guild, member) or member.bot:
+            if self.bot.is_member_inducted(member) or member.bot:
                 continue
 
             if not member.joined_at:
