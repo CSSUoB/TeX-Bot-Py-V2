@@ -590,5 +590,10 @@ class StatsCommandsCog(TeXBotBaseCog):
             return
 
         await LeftDiscordMember.objects.acreate(
-            roles={f"@{role.name}" for role in member.roles if role.name != "@everyone"},
+            roles={
+                f"@{role.name}"
+                for role
+                in member.roles
+                if role.name.lower().strip("@").strip() != "everyone"
+            },
         )

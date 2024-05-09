@@ -83,11 +83,11 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 "First Year",
                 "Second Year",
                 "Final Year",
-                "Joint Honours"
                 "Year In Industry",
                 "Year Abroad",
                 "PGT",
                 "PGR",
+                "Joint Honours",
                 "Alumnus/Alumna",
                 "Postdoc",
                 "Serious Talk",
@@ -98,9 +98,11 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 "Food",
                 "Industry",
                 "Minecraft",
-                "Github",
+                "GitHub",
                 "Archivist",
-                "News",
+                "Rate My Meal",
+                "Website",
+                "Student Rep",
             },
         )
 
@@ -110,7 +112,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 not member.bot
                 and self.bot.is_member_inducted(member)
                 and not any(
-                    opt_in_role_name in {role.name for role in member.roles}
+                    opt_in_role_name.lower() in {role.name.lower() for role in member.roles}
                     for opt_in_role_name
                     in OPT_IN_ROLE_NAMES
                 )
@@ -160,10 +162,10 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 continue
 
             await member.send(
-                "Hey! It seems like you joined "
-                f"the {self.bot.group_short_name} Discord server "
-                "and have been given the `@Guest` role but have not yet nabbed yourself any "
-                f"opt-in roles.\nYou can head to {roles_channel_mention} "
+                "Hey! It seems like you have been given the `@Guest` role "
+                f"on the {self.bot.group_short_name} Discord server "
+                " but have not yet nabbed yourself any opt-in roles.\n"
+                f"You can head to {roles_channel_mention} "
                 "and click on the icons to get optional roles like pronouns "
                 "and year group identifiers.",
             )
