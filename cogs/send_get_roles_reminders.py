@@ -6,11 +6,10 @@ __all__: Sequence[str] = ("SendGetRolesRemindersTaskCog",)
 
 
 import contextlib
-import datetime
 import functools
 import logging
 from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import discord
 from discord import AuditLogAction
@@ -25,6 +24,9 @@ from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
     capture_guild_does_not_exist_error,
 )
+
+if TYPE_CHECKING:
+    import datetime
 
 logger: Logger = logging.getLogger("TeX-Bot")
 
