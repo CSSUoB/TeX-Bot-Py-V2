@@ -106,7 +106,7 @@ This level of error will cause TeX-Bot to shut down, as the problem can only be 
 
 ## [Repeated Tasks](https://docs.pycord.dev/en/stable/ext/tasks) Conditions
 
-The [configuration variables](https://wikipedia.org/wiki/Environment_variable) `SEND_INTRODUCTION_REMINDERS`, `SEND_GET_ROLES_REMINDERS` & `KICK_NO_INTRODUCTION_DISCORD_MEMBERS` determine whether their related [tasks](https://docs.pycord.dev/en/stable/ext/tasks) should run.
+The [configuration variables](https://wikipedia.org/wiki/Environment_variable) `SEND_INTRODUCTION_REMINDERS` & `SEND_GET_ROLES_REMINDERS` determine whether their related [tasks](https://docs.pycord.dev/en/stable/ext/tasks) should run.
 However, because these are rather annoying/drastic actions to be executed automatically, there are additional conditions that must be met on a per-[member](https://discord.com/developers/docs/resources/guild#guild-member-object) basis for the action to trigger.
 The conditions for each [task](https://docs.pycord.dev/en/stable/ext/tasks) are listed below, along with the additional [environment variables](https://wikipedia.org/wiki/Environment_variable) that can be used to configure the conditions to suit your needs.
 
