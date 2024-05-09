@@ -17,6 +17,7 @@ __all__: Sequence[str] = (
     "InductSendMessageCog",
     "InductUserCommandsCog",
     "KickNoIntroductionDiscordMembersTaskCog",
+    "KillCommandCog",
     "MakeMemberCommandCog",
     "PingCommandCog",
     "ClearRemindersBacklogTaskCog",
@@ -33,6 +34,7 @@ __all__: Sequence[str] = (
     "setup",
 )
 
+
 from typing import TYPE_CHECKING
 
 from cogs.archive import ArchiveCommandCog
@@ -46,6 +48,7 @@ from cogs.induct import (
     InductUserCommandsCog,
 )
 from cogs.kick_no_introduction_discord_members import KickNoIntroductionDiscordMembersTaskCog
+from cogs.kill import KillCommandCog
 from cogs.make_member import MakeMemberCommandCog
 from cogs.ping import PingCommandCog
 from cogs.remind_me import ClearRemindersBacklogTaskCog, RemindMeCommandCog
@@ -76,6 +79,7 @@ def setup(bot: TeXBot) -> None:
         InductSendMessageCog,
         InductUserCommandsCog,
         KickNoIntroductionDiscordMembersTaskCog,
+        KillCommandCog,
         MakeMemberCommandCog,
         PingCommandCog,
         ClearRemindersBacklogTaskCog,

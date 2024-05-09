@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("TeXBotBaseCog",)
 
+
 import contextlib
 import logging
 import re
@@ -25,8 +26,9 @@ from utils.tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteC
 if TYPE_CHECKING:
     from typing import TypeAlias
 
-    MentionableMember: TypeAlias = discord.Member | discord.Role
 
+if TYPE_CHECKING:
+    MentionableMember: TypeAlias = discord.Member | discord.Role
 
 logger: Logger = logging.getLogger("TeX-Bot")
 

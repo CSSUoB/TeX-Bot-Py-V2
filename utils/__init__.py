@@ -16,6 +16,7 @@ __all__: Sequence[str] = (
     "generate_invite_url",
 )
 
+
 import discord
 
 from utils.command_checks import CommandChecks

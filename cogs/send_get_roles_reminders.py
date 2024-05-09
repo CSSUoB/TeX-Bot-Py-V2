@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("SendGetRolesRemindersTaskCog",)
 
+
 import contextlib
 import datetime
 import functools
@@ -126,9 +127,11 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
             if sent_get_roles_reminder_member_exists:
                 continue
 
-            try:
+            # noinspection PyUnusedLocal
+            guest_role_received_time: datetime.datetime | None = None
+            with contextlib.suppress(StopIteration, StopAsyncIteration):
                 # noinspection PyTypeChecker
-                guest_role_received_time: datetime.datetime = await anext(
+                guest_role_received_time = await anext(
                     log.created_at
                     async for log
                     in guild.audit_logs(action=AuditLogAction.member_role_update)
@@ -138,22 +141,22 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                         and guest_role in log.after.roles
                     )
                 )
-            except StopIteration:
-                logger.error(  # noqa: TRY400
+
+            if guest_role_received_time is not None:
+                time_since_role_received: datetime.timedelta = (
+                        discord.utils.utcnow() - guest_role_received_time
+                )
+                if time_since_role_received <= datetime.timedelta(days=1):
+                    continue
+
+            if member not in guild.members:
+                logger.info(
                     (
-                        "Member with ID: %s could not be checked whether to send "
-                        "role_reminder, because their %s "
-                        "could not be found."
+                        "Member with ID: %s does not need to be sent a reminder "
+                        "because they have left the server."
                     ),
                     member.id,
-                    repr("guest_role_received_time"),
                 )
-                continue
-
-            time_since_role_received: datetime.timedelta = (
-                    discord.utils.utcnow() - guest_role_received_time
-            )
-            if time_since_role_received <= datetime.timedelta(days=1):
                 continue
 
             await member.send(

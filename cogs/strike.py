@@ -13,6 +13,7 @@ __all__: Sequence[str] = (
     "StrikeUserCommandCog",
 )
 
+
 import asyncio
 import contextlib
 import datetime
@@ -267,16 +268,19 @@ class BaseStrikeCog(TeXBotBaseCog):
             )
             return
 
-        await perform_moderation_action(
-            strike_user,
-            actual_strike_amount,
-            committee_member=interaction_user,
-        )
+        if button_interaction.data["custom_id"] == "yes_strike_member":  # type: ignore[index, typeddict-item]
+            await perform_moderation_action(
+                strike_user,
+                actual_strike_amount,
+                committee_member=interaction_user,
+            )
 
-        await message_sender_component.send(
-            f"Successfully performed {self.SUGGESTED_ACTIONS[actual_strike_amount]} action "
-            f"on {strike_user.mention}.",
-        )
+            await message_sender_component.send(
+                f"Successfully performed {self.SUGGESTED_ACTIONS[actual_strike_amount]} "
+                f"action on {strike_user.mention}.",
+            )
+
+        raise ValueError
 
     async def _confirm_increase_strike(self, message_sender_component: MessageSenderComponent, interaction_user: discord.User, strike_user: discord.User | discord.Member, member_strikes: DiscordMemberStrikes, button_callback_channel: discord.TextChannel | discord.DMChannel, *, perform_action: bool) -> None:  # noqa: E501
         if perform_action and isinstance(strike_user, discord.User):
@@ -399,7 +403,10 @@ class ManualModerationCog(BaseStrikeCog):
                 session: aiohttp.ClientSession
                 with aiohttp.ClientSession() as session:  # type: ignore[assignment]
                     log_confirmation_message_channel: discord.TextChannel | None = (
-                        await Webhook.from_url("url-here", session=session).fetch()
+                        await Webhook.from_url(
+                            settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
+                            session=session,
+                        ).fetch()
                     ).channel
 
                     if not log_confirmation_message_channel:
@@ -549,28 +556,31 @@ class ManualModerationCog(BaseStrikeCog):
                 await aborted_out_of_sync_ban_message.delete()
                 return
 
-            await self._send_strike_user_message(strike_user, member_strikes)
-            await main_guild.ban(
-                strike_user,
-                reason=(
-                    f"**{applied_action_user.display_name} synced moderation action "
-                    "with number of strikes**"
-                ),
-            )
-            success_out_of_sync_ban_message: discord.Message = await confirmation_message_channel.send(  # noqa: E501
-                f"Successfully banned {strike_user.mention}.\n"
-                "**Please ensure you use the `/strike` command in future!**"
-                "\nᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
-                f"""{
-                    discord.utils.format_dt(
-                        discord.utils.utcnow() + datetime.timedelta(minutes=2),
-                        "R"
-                    )
-                }""",
-            )
-            await asyncio.sleep(118)
-            await success_out_of_sync_ban_message.delete()
-            return
+            if out_of_sync_ban_button_interaction.data["custom_id"] == "yes_out_of_sync_ban_member":  # type: ignore[index, typeddict-item] # noqa: E501
+                await self._send_strike_user_message(strike_user, member_strikes)
+                await main_guild.ban(
+                    strike_user,
+                    reason=(
+                        f"**{applied_action_user.display_name} synced moderation action "
+                        "with number of strikes**"
+                    ),
+                )
+                success_out_of_sync_ban_message: discord.Message = await confirmation_message_channel.send(  # noqa: E501
+                    f"Successfully banned {strike_user.mention}.\n"
+                    "**Please ensure you use the `/strike` command in future!**"
+                    "\nᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
+                    f"""{
+                        discord.utils.format_dt(
+                            discord.utils.utcnow() + datetime.timedelta(minutes=2),
+                            "R"
+                        )
+                    }""",
+                )
+                await asyncio.sleep(118)
+                await success_out_of_sync_ban_message.delete()
+                return
+
+            raise ValueError
 
         confirmation_message: discord.Message = await confirmation_message_channel.send(
             content=(
@@ -630,18 +640,21 @@ class ManualModerationCog(BaseStrikeCog):
             await aborted_strike_message.delete()
             return
 
-        interaction_user: discord.User | None = self.bot.get_user(applied_action_user.id)
-        if not interaction_user:
-            raise StrikeTrackingError
+        if button_interaction.data["custom_id"] == "yes_manual_moderation_action":  # type: ignore[index, typeddict-item]
+            interaction_user: discord.User | None = self.bot.get_user(applied_action_user.id)
+            if not interaction_user:
+                raise StrikeTrackingError
 
-        await self._confirm_increase_strike(
-            message_sender_component=ChannelMessageSender(confirmation_message_channel),
-            interaction_user=interaction_user,
-            strike_user=strike_user,
-            member_strikes=member_strikes,
-            button_callback_channel=confirmation_message_channel,
-            perform_action=False,
-        )
+            await self._confirm_increase_strike(
+                message_sender_component=ChannelMessageSender(confirmation_message_channel),
+                interaction_user=interaction_user,
+                strike_user=strike_user,
+                member_strikes=member_strikes,
+                button_callback_channel=confirmation_message_channel,
+                perform_action=False,
+            )
+
+        raise ValueError
 
     @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error

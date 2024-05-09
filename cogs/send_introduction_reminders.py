@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("SendIntroductionRemindersTaskCog",)
 
+
 import datetime
 import functools
 import logging
@@ -79,11 +80,10 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guild: discord.Guild = self.bot.main_guild
-        guest_role: discord.Role = await self.bot.guest_role
 
         member: discord.Member
         for member in guild.members:
-            if guest_role in member.roles or member.bot:
+            if self.bot.is_member_inducted(member) or member.bot:
                 continue
 
             if not member.joined_at:
@@ -134,6 +134,16 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     if message_contains_opt_in_out_button:
                         await message.edit(view=None)
 
+                    if member not in guild.members:
+                        logger.info(
+                            (
+                                "Member with ID: %s does not need to be sent a reminder "
+                                "because they have left the server."
+                            ),
+                            member.id,
+                        )
+                        continue
+
                 await member.send(
                     content=(
                         "Hey! It seems like you joined "
@@ -149,7 +159,10 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     ),
                 )
 
-                await SentOneOffIntroductionReminderMember.objects.acreate(member_id=member.id)
+                await SentOneOffIntroductionReminderMember.objects.acreate(
+                        member_id=member.id,
+                    )
+
 
     class OptOutIntroductionRemindersView(View):
         """

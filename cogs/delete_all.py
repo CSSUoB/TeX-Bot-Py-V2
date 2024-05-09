@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("DeleteAllCommandsCog",)
 
+
 import discord
 
 from db.core.models import DiscordReminder, GroupMadeMember

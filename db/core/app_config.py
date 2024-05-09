@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("CoreConfig",)
 
+
 from django.apps import AppConfig
 
 

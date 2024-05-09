@@ -10,6 +10,7 @@ __all__: Sequence[str] = (
     "EnsureMembersInductedCommandCog",
 )
 
+
 import contextlib
 import logging
 import random

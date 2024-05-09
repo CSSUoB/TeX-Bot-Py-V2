@@ -26,6 +26,7 @@ __all__: Sequence[str] = (
     "GeneralChannelDoesNotExistError",
 )
 
+
 import abc
 from typing import Final
 
@@ -477,7 +478,6 @@ class GuestRoleDoesNotExistError(RoleDoesNotExistError):
         return frozenset(
             {
                 "kick_no_introduction_discord_members",
-                "introduction_reminder",
                 "get_roles_reminder",
             },
         )

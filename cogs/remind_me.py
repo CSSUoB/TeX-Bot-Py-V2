@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("RemindMeCommandCog", "ClearRemindersBacklogTaskCog")
 
+
 import datetime
 import functools
 import itertools
@@ -24,6 +25,7 @@ from utils import TeXBot, TeXBotApplicationContext, TeXBotAutocompleteContext, T
 if TYPE_CHECKING:
     import time
     from collections.abc import Iterator
+
 
 logger: Logger = logging.getLogger("TeX-Bot")
 

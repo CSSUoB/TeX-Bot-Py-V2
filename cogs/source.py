@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("SourceCommandCog",)
 
+
 import discord
 
 from utils import TeXBotApplicationContext, TeXBotBaseCog
@@ -19,8 +20,9 @@ class SourceCommandCog(TeXBotBaseCog):
         """Definition & callback response of the "source" command."""
         await ctx.respond(
             (
-                "TeX is an open-source project made specifically for the CSS Discord server! "
-                "You can see and contribute to the source code at https://github.com/CSSUoB/TeX-Bot-Py-V2"
+                "TeX-Bot is an open-source project "
+                "made specifically for the CSS Discord server!\n"
+                "You can see and contribute to the source code at [CSSUoB/TeX-Bot-Py-V2](https://github.com/CSSUoB/TeX-Bot-Py-V2)."
             ),
             ephemeral=True,
         )

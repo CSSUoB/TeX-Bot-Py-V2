@@ -4,6 +4,7 @@ from collections.abc import Iterable, Sequence
 
 __all__: Sequence[str] = ("AsyncBaseModel", "HashedDiscordMember")
 
+
 import hashlib
 import re
 from typing import Final
