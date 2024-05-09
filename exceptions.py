@@ -463,7 +463,7 @@ class GuestRoleDoesNotExistError(RoleDoesNotExistError):
         or no bot commands require this Discord entity.
         """  # noqa: D401
         # noinspection SpellCheckingInspection
-        return frozenset({"stats", "archive", "ensure-members-inducted"})
+        return frozenset({"induct", "stats", "archive", "ensure-members-inducted"})
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
