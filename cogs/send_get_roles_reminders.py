@@ -47,7 +47,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         """
         self.send_get_roles_reminders.cancel()
 
-    @tasks.loop(**settings["SEND_GET_ROLES_REMINDERS_INTERVAL"])  # type: ignore[misc]
+    @tasks.loop(**settings["ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL"])  # type: ignore[misc]
     @functools.partial(
         ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExistError,
@@ -147,9 +147,9 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
 
             if guest_role_received_time is not None:
                 time_since_role_received: datetime.timedelta = (
-                        discord.utils.utcnow() - guest_role_received_time
+                    discord.utils.utcnow() - guest_role_received_time
                 )
-                if time_since_role_received <= datetime.timedelta(days=1):
+                if time_since_role_received <= settings["SEND_GET_ROLES_REMINDERS_DELAY"]:
                     continue
 
             if member not in guild.members:  # HACK: Caching errors can cause the member to no longer be part of the guild at this point, so this check must be performed before sending that member a message # noqa: FIX004
