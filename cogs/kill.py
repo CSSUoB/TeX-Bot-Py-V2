@@ -75,7 +75,6 @@ class KillCommandCog(TeXBotBaseCog):
             "interaction",
             check=lambda interaction: (
                 interaction.type == discord.InteractionType.component
-                and interaction.message == confirmation_message
                 and ((committee_role in interaction.user.roles) if committee_role else True)
                 and "custom_id" in interaction.data
                 and interaction.data["custom_id"] in {"shutdown_confirm", "shutdown_cancel"}
