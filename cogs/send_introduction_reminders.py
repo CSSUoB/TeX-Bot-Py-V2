@@ -80,11 +80,10 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guild: discord.Guild = self.bot.main_guild
-        guest_role: discord.Role = await self.bot.guest_role
 
         member: discord.Member
         for member in guild.members:
-            if guest_role in member.roles or member.bot:
+            if self.bot.is_member_inducted(member) or member.bot:
                 continue
 
             if not member.joined_at:
