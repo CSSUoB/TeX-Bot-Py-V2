@@ -24,7 +24,7 @@ from db.core.models import (
     SentOneOffIntroductionReminderMember,
 )
 from exceptions import DiscordMemberNotInMainGuildError, GuestRoleDoesNotExistError
-from utils import TeXBot, TeXBotBaseCog, is_user_inducted
+from utils import TeXBot, TeXBotBaseCog
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
     capture_guild_does_not_exist_error,
@@ -83,7 +83,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
         member: discord.Member
         for member in guild.members:
-            if is_user_inducted(guild, member) or member.bot:
+            if self.bot.is_member_inducted(guild, member) or member.bot:
                 continue
 
             if not member.joined_at:

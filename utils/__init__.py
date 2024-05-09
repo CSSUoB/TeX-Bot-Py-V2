@@ -47,17 +47,3 @@ def generate_invite_url(discord_bot_application_id: int, discord_guild_id: int) 
         scopes=("bot", "applications.commands"),
         disable_guild_select=True,
     )
-
-def is_user_inducted(guild: discord.Guild, user: discord.Member) -> bool:
-    """
-    Util method to check if the supplied user has been inducted.
-
-    Returns true if the user has any role other than the default News role.
-    News role is not required.
-    """
-    news_role: discord.Role | None = discord.utils.get(
-        guild.roles,
-        name="@News",
-    )
-
-    return any(role is not news_role for role in user.roles)
