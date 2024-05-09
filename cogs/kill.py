@@ -4,9 +4,9 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("KillCommandCog", "ConfirmKillView")
 
-
 import contextlib
 import logging
+import sys
 from logging import Logger
 
 import discord
@@ -91,7 +91,7 @@ class KillCommandCog(TeXBotBaseCog):
             await ctx.respond(content="My battery is low and it's getting dark...")
             logger.info("Manual shutdown initiated by %s.", ctx.interaction.user)
             await self.bot.close()
-            return
+            sys.exit(0)
 
         if button_interaction.data["custom_id"] == "shutdown_cancel":  # type: ignore[index, typeddict-item]
             if isinstance(confirmation_message, discord.Message):
