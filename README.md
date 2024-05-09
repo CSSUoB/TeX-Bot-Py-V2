@@ -60,7 +60,7 @@ The meaning of each error code is given here:
 (This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/writeroles`, `/editmessage`, `/induct`, `/strike`, `/archive`, `/delete-all` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
 
 * `E1022` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-object) with the name "@**Guest**".
-(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/induct`, `/stats`, `/archive` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands) and the `kick_no_introduction_discord_members` & `introduction_reminder` [tasks](https://docs.pycord.dev/en/stable/ext/tasks))
+(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/stats`, `/archive` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands) and the `kick_no_introduction_discord_members` [task](https://docs.pycord.dev/en/stable/ext/tasks))
 
 * `E1023` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-object) with the name "@**Member**".
 (This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/makemember` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
