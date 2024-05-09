@@ -124,6 +124,16 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             )
 
             if member_needs_reminder:
+                if member not in guild.members:
+                        logger.info(
+                            (
+                                "Member with ID: %s does not need to be sent a reminder "
+                                "because they have left the server."
+                            ),
+                            member.id,
+                        )
+                        continue
+
                 async for message in member.history():
                     # noinspection PyUnresolvedReferences
                     message_contains_opt_in_out_button: bool = (
@@ -134,16 +144,6 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     )
                     if message_contains_opt_in_out_button:
                         await message.edit(view=None)
-
-                    if member not in guild.members:
-                        logger.info(
-                            (
-                                "Member with ID: %s does not need to be sent a reminder "
-                                "because they have left the server."
-                            ),
-                            member.id,
-                        )
-                        continue
 
                 await member.send(
                     content=(
