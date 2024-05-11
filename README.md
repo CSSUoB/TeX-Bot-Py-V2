@@ -57,7 +57,7 @@ The meaning of each error code is given here:
 * `E1011` - The value for the [environment variable](https://wikipedia.org/wiki/Environment_variable) `DISCORD_GUILD_ID` is an [ID](https://discord.com/developers/docs/reference#snowflakes) that references a [Discord guild](https://discord.com/developers/docs/resources/guild) that does not exist
 
 * `E1021` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-object) with the name "@**Committee**".
-(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/writeroles`, `/editmessage`, `/induct`, `/strike`, `/archive`, `/delete-all` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
+(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/writeroles`, `/editmessage`, `/induct`, `/strike`, `/archive`, `/kill`, `/delete-all` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
 
 * `E1022` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-object) with the name "@**Guest**".
 (This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/induct`, `/stats`, `/archive` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands) and the `kick_no_introduction_discord_members` [task](https://docs.pycord.dev/en/stable/ext/tasks))

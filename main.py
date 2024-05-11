@@ -31,3 +31,8 @@ bot.load_extension("cogs")
 
 if __name__ == "__main__":
     bot.run(settings["DISCORD_BOT_TOKEN"])
+
+    if bot.EXIT_WAS_DUE_TO_KILL_COMMAND:
+        raise SystemExit(0)
+
+    raise SystemExit(1)
