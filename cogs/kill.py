@@ -113,7 +113,7 @@ class KillCommandCog(TeXBotBaseCog):
 
         if button_interaction.data["custom_id"] == "shutdown_cancel":  # type: ignore[index, typeddict-item]
             await button_interaction.respond(
-                content="Shutdown has been cancelled."
+                content="Shutdown has been cancelled.",
             )
             logger.info("Manual shutdown cancelled by %s.", ctx.interaction.user)
             return
