@@ -434,6 +434,7 @@ class CommitteeRoleDoesNotExistError(RoleDoesNotExistError):
                 "archive",
                 "delete-all",
                 "ensure-members-inducted",
+                "kill",
             },
         )
 
