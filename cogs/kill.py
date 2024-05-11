@@ -81,7 +81,8 @@ class KillCommandCog(TeXBotBaseCog):
                 f"{f"Hi {committee_role.mention}, a" if committee_role else "A"}"
                 "re you sure you want to kill me?\n"
                 "This action is irreversible "
-                "and will prevent me from performing any further actions.\n\n"
+                "and will prevent me from performing any further actions "
+		"until I am manually restarted.\n\n"
                 "Please confirm using the buttons below."
             ),
             view=ConfirmKillView(),
