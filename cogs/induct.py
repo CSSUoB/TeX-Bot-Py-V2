@@ -365,7 +365,7 @@ class InductUserCommandsCog(BaseInductCog):
         induct slash command using the message context menu instead of the user menu.
         """
         author: discord.Member | discord.User = message.author
-        if author is None:
+        if author is discord.User:
             await ctx.respond(
                 (
                     ":information_source: No changes made. User cannot be inducted "
@@ -387,7 +387,7 @@ class InductUserCommandsCog(BaseInductCog):
         induct slash command using the message context menu instead of the user menu.
         """
         author: discord.Member | discord.User = message.author
-        if author is None:
+        if author is discord.User:
             await ctx.respond(
                 (
                     ":information_source: No changes made. User cannot be inducted "
