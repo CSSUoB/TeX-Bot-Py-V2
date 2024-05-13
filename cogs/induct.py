@@ -1,8 +1,6 @@
 """Contains cog classes for any induction interactions."""
 
-import logging
 from collections.abc import Sequence
-from logging import Logger
 
 __all__: Sequence[str] = (
     "InductSendMessageCog",
@@ -38,7 +36,6 @@ from utils import (
 )
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
-logger: Logger = logging.getLogger("TeX-Bot")
 
 class InductSendMessageCog(TeXBotBaseCog):
     """Cog class that defines the "/induct" command and its call-back method."""
