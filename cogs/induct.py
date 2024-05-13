@@ -375,8 +375,7 @@ class InductUserCommandsCog(BaseInductCog):
                 ephemeral=True,
             )
         elif author is discord.Member:
-            member: discord.Member = author
-            await self._perform_induction(ctx, member, silent=False)
+            await self._perform_induction(ctx, author, silent=False)
 
     @discord.message_command(name="Silent Induct Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
@@ -399,8 +398,7 @@ class InductUserCommandsCog(BaseInductCog):
                 ephemeral=True,
             )
         elif author is discord.Member:
-            member: discord.Member = author
-            await self._perform_induction(ctx, member, silent=False)
+            await self._perform_induction(ctx, author, silent=False)
 
 
 class EnsureMembersInductedCommandCog(TeXBotBaseCog):
