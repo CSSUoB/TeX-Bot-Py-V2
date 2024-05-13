@@ -351,6 +351,30 @@ class InductUserCommandsCog(BaseInductCog):
         """
         await self._perform_induction(ctx, member, silent=True)
 
+    @discord.message_command(name="Induct Message Author")
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def non_silent_message_induct(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None: # noqa: E501
+        """
+        Definition and callback response of the "non_silent_induct" message-context-command.
+
+        The non_silent_message_induct command executes the same process as the
+        induct slash command using the message context menu instead of the user menu.
+        """
+        await self._perform_induction(ctx, message.author, silent=False)
+
+    @discord.message_command(name="Silent Induct Message Author")
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def silent_message_induct(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None: # noqa: E501
+        """
+        Definition and callback response of the "silent_induct" message-context-command.
+
+        The silent_message_induct command executes the same process as the
+        induct slash command using the message context menu instead of the user menu.
+        """
+        await self._perform_induction(ctx, message.author, silent=True)
+
 
 class EnsureMembersInductedCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/ensure-members-inducted" command and call-back method."""
