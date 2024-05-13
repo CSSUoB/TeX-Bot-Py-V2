@@ -183,6 +183,13 @@ class BaseInductCog(TeXBotBaseCog):
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guest_role: discord.Role = await self.bot.guest_role
 
+        if induction_member.bot:
+            await self.command_send_error(
+                ctx,
+                message="Member cannot be inducted because they are a bot.",
+            )
+            return
+
         if guest_role in induction_member.roles:
             await ctx.respond(
                 (
@@ -193,12 +200,16 @@ class BaseInductCog(TeXBotBaseCog):
             )
             return
 
-        if induction_member.bot:
-            await self.command_send_error(
-                ctx,
-                message="Member cannot be inducted because they are a bot.",
-            )
-            return
+        intro_channel: discord.TextChannel = discord.utils.get(
+            self.bot.main_guild.text_channels, name="introductions",
+        )
+
+        if intro_channel:
+            for message in await intro_channel.history(limit=30).flatten():
+                if message.author.id == induction_member.id:
+                    await message.add_reaction(":wave:")
+                    await message.add_reaction(":TeX:")
+
 
         if not silent:
             general_channel: discord.TextChannel = await self.bot.general_channel
