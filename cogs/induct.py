@@ -1,6 +1,8 @@
 """Contains cog classes for any induction interactions."""
 
+import logging
 from collections.abc import Sequence
+from logging import Logger
 
 __all__: Sequence[str] = (
     "InductSendMessageCog",
@@ -36,6 +38,7 @@ from utils import (
 )
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
+logger: Logger = logging.getLogger("TeX-Bot")
 
 class InductSendMessageCog(TeXBotBaseCog):
     """Cog class that defines the "/induct" command and its call-back method."""
@@ -361,7 +364,16 @@ class InductUserCommandsCog(BaseInductCog):
         The non_silent_message_induct command executes the same process as the
         induct slash command using the message context menu instead of the user menu.
         """
-        author: discord.Member = message.author
+        author: discord.Member | discord.User = message.author
+        if author is None:
+            await ctx.respond(
+                (
+                    ":information_source: No changes made. User cannot be inducted "
+                    "because they have left the server "
+                    ":information_source:"
+                ),
+                ephemeral=True,
+            )
         await self._perform_induction(ctx, author, silent=False)
 
     @discord.message_command(name="Silent Induct Message Author")  # type: ignore[no-untyped-call, misc]
@@ -374,7 +386,17 @@ class InductUserCommandsCog(BaseInductCog):
         The silent_message_induct command executes the same process as the
         induct slash command using the message context menu instead of the user menu.
         """
-        await self._perform_induction(ctx, message.author, silent=True)
+        author: discord.Member | discord.User = message.author
+        if author is None:
+            await ctx.respond(
+                (
+                    ":information_source: No changes made. User cannot be inducted "
+                    "because they have left the server "
+                    ":information_source:"
+                ),
+                ephemeral=True,
+            )
+        await self._perform_induction(ctx, author, silent=True)
 
 
 class EnsureMembersInductedCommandCog(TeXBotBaseCog):
