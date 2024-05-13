@@ -364,8 +364,9 @@ class InductUserCommandsCog(BaseInductCog):
         The non_silent_message_induct command executes the same process as the
         induct slash command using the message context menu instead of the user menu.
         """
-        member: discord.Member = await self.bot.get_member_from_str_id(str(message.author.id))
-        if member is None:
+        try:
+            member: discord.Member = await self.bot.get_member_from_str_id(str(message.author.id)) # noqa: E501
+        except ValueError:
             await ctx.respond(
                 (
                     ":information_source: No changes made. User cannot be inducted "
@@ -374,8 +375,7 @@ class InductUserCommandsCog(BaseInductCog):
                 ),
                 ephemeral=True,
             )
-        else:
-            await self._perform_induction(ctx, member, silent=False)
+        await self._perform_induction(ctx, member, silent=False)
 
     @discord.message_command(name="Silent Induct Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
@@ -387,8 +387,9 @@ class InductUserCommandsCog(BaseInductCog):
         The silent_message_induct command executes the same process as the
         induct slash command using the message context menu instead of the user menu.
         """
-        member: discord.Member = await self.bot.get_member_from_str_id(str(message.author.id))
-        if member is None:
+        try:
+            member: discord.Member = await self.bot.get_member_from_str_id(str(message.author.id)) # noqa: E501
+        except ValueError:
             await ctx.respond(
                 (
                     ":information_source: No changes made. User cannot be inducted "
@@ -397,8 +398,7 @@ class InductUserCommandsCog(BaseInductCog):
                 ),
                 ephemeral=True,
             )
-        else:
-            await self._perform_induction(ctx, member, silent=True)
+        await self._perform_induction(ctx, member, silent=True)
 
 
 class EnsureMembersInductedCommandCog(TeXBotBaseCog):
