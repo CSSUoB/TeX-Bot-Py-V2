@@ -374,7 +374,7 @@ class InductUserCommandsCog(BaseInductCog):
             )
         await self._perform_induction(ctx, member, silent=False)
 
-    @discord.message_command(name="Silent Induct Message Author")  # type: ignore[no-untyped-call, misc]
+    @discord.message_command(name="Silently Induct Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def silent_message_induct(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None: # noqa: E501
