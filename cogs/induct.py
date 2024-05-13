@@ -209,6 +209,7 @@ class BaseInductCog(TeXBotBaseCog):
                 if message.author.id == induction_member.id:
                     await message.add_reaction(":wave:")
                     await message.add_reaction(":TeX:")
+                    continue
 
 
         if not silent:
