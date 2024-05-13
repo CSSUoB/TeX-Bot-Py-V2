@@ -374,7 +374,7 @@ class InductUserCommandsCog(BaseInductCog):
                 ),
                 ephemeral=True,
             )
-        member: discord.member = author
+        member: discord.Member = author
         await self._perform_induction(ctx, member, silent=False)
 
     @discord.message_command(name="Silent Induct Message Author")  # type: ignore[no-untyped-call, misc]
@@ -397,7 +397,7 @@ class InductUserCommandsCog(BaseInductCog):
                 ),
                 ephemeral=True,
             )
-        member: discord.member = author
+        member: discord.Member = author
         await self._perform_induction(ctx, member, silent=False)
 
 
