@@ -362,7 +362,9 @@ class InductUserCommandsCog(BaseInductCog):
         induct slash command using the message context menu instead of the user menu.
         """
         try:
-            member: discord.Member = await self.bot.get_member_from_str_id(str(message.author.id)) # noqa: E501
+            member: discord.Member = await self.bot.get_member_from_str_id(
+                str(message.author.id),
+            )
         except ValueError:
             await ctx.respond(
                 (
@@ -385,7 +387,9 @@ class InductUserCommandsCog(BaseInductCog):
         induct slash command using the message context menu instead of the user menu.
         """
         try:
-            member: discord.Member = await self.bot.get_member_from_str_id(str(message.author.id)) # noqa: E501
+            member: discord.Member = await self.bot.get_member_from_str_id(
+                str(message.author.id),
+            )
         except ValueError:
             await ctx.respond(
                 (
