@@ -364,7 +364,7 @@ class InductUserCommandsCog(BaseInductCog):
         The non_silent_message_induct command executes the same process as the
         induct slash command using the message context menu instead of the user menu.
         """
-        member: discord.Member = self.bot.get_member_from_str_id(message.author.id)
+        member: discord.Member = self.bot.get_member_from_str_id(str(message.author.id))
         if member is None:
             await ctx.respond(
                 (
@@ -387,7 +387,7 @@ class InductUserCommandsCog(BaseInductCog):
         The silent_message_induct command executes the same process as the
         induct slash command using the message context menu instead of the user menu.
         """
-        member: discord.Member = self.bot.get_member_from_str_id(message.author.id)
+        member: discord.Member = self.bot.get_member_from_str_id(str(message.author.id))
         if member is None:
             await ctx.respond(
                 (
