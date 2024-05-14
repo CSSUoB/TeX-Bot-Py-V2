@@ -10,7 +10,8 @@ __all__: Sequence[str] = (
     "EnsureMembersInductedCommandCog",
 )
 
-
+import logging
+from logging import Logger
 import contextlib
 import random
 import re
@@ -36,6 +37,8 @@ from utils import (
 )
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
+
+logger: Logger = logging.getLogger("TeX-Bot")
 
 class InductSendMessageCog(TeXBotBaseCog):
     """Cog class that defines the "/induct" command and its call-back method."""
@@ -243,12 +246,14 @@ class BaseInductCog(TeXBotBaseCog):
             name="introductions",
         )
 
+        tex_emoji: discord.Emoji = self.bot.get_emoji(743218410409820213)
+
         if intro_channel:
             recent_message: discord.Message
             for recent_message in await intro_channel.history(limit=30).flatten():
                 if recent_message.author.id == induction_member.id:
-                    await recent_message.add_reaction(":wave:")
-                    await recent_message.add_reaction(":TeX:")
+                    if tex_emoji: await recent_message.add_reaction(tex_emoji)  # noqa: E701
+                    await recent_message.add_reaction("👋")
                     break
 
         await ctx.respond("User inducted successfully.", ephemeral=True)
