@@ -201,7 +201,7 @@ class BaseInductCog(TeXBotBaseCog):
             return
 
         intro_channel: discord.TextChannel | None = discord.utils.get(
-            self.bot.main_guild.text_channels, 
+            self.bot.main_guild.text_channels,
             name="introductions",
         )
 
