@@ -244,6 +244,8 @@ class BaseInductCog(TeXBotBaseCog):
         )
 
         tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
+        if not tex_emoji:
+            tex_emoji = discord.utils.get(main_guild.emojis, name="TeX")
 
         if intro_channel:
             recent_message: discord.Message
