@@ -206,11 +206,11 @@ class BaseInductCog(TeXBotBaseCog):
         )
 
         if intro_channel:
-            message: discord.Message
-            for message in await intro_channel.history(limit=30).flatten():
-                if message.author.id == induction_member.id:
-                    await message.add_reaction(":wave:")
-                    await message.add_reaction(":TeX:")
+            msg: discord.Message
+            for msg in await intro_channel.history(limit=30).flatten():
+                if msg.author.id == induction_member.id:
+                    await msg.add_reaction(":wave:")
+                    await msg.add_reaction(":TeX:")
                     return
 
 
