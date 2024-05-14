@@ -25,6 +25,73 @@ from django.db import models
 from .utils import AsyncBaseModel, HashedDiscordMember
 
 
+class Action(HashedDiscordMember):
+    """Model to represent an action item that has been assigned to a Discord Member."""
+
+    INSTANCES_NAME_PLURAL: str = "Actions"
+
+    hashed_member_id = models.CharField(
+        "Hashed Discord Member ID",
+        null=False,
+        blank=False,
+        max_length=64,
+        validators=[
+            RegexValidator(
+                r"\A[A-Fa-f0-9]{64}\Z",
+                "hashed_member_id must be a valid sha256 hex-digest.",
+            ),
+        ],
+    )
+    description = models.TextField(
+        "Description of the action",
+        max_length=1500,
+        null=False,
+        blank=True,
+    )
+    class Meta:
+        verbose_name = "An Action for a Discord Member"
+        verbose_name_plural = "Actions for Discord Members"
+        constraints = [  # noqa: RUF012
+            models.UniqueConstraint(
+                fields=["hashed_member_id", "description"],
+                name="unique_user_action",
+            ),
+        ]
+
+    def __repr__(self) -> str:
+        """Generate a developer-focused representation of this DiscordReminder's attributes."""
+        return (
+            f"<{self._meta.verbose_name}: {self.hashed_member_id!r}, {str(self.description)!r}"
+        )
+
+    def __str__(self) -> str:
+        """Generate the string representation of this DiscordReminder."""
+        construct_str: str = f"{self.hashed_member_id}"
+
+        if self.description:
+            construct_str += f": {self.description[:50]}"
+
+        return construct_str
+
+    def get_formatted_message(self, user_mention: str | None) -> str:
+        """
+        Return the formatted description stored by this action.
+
+        Adds a mention to the Discord member that was assigned the action,
+        if passed in from the calling context.
+        """
+        constructed_message: str = "This is your reminder"
+
+        if user_mention:
+            constructed_message += f", {user_mention}"
+
+        constructed_message += "!"
+
+        if self.description:
+            constructed_message = f"**{constructed_message}**\n{self.description}"
+
+        return constructed_message
+
 class IntroductionReminderOptOutMember(HashedDiscordMember):
     """
     Model to represent a Discord member that has opted out of introduction reminders.

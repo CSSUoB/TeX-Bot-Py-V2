@@ -8,6 +8,7 @@ cogs for each activity.
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
+    "ActionsTrackingCog",
     "ArchiveCommandCog",
     "CommandErrorCog",
     "DeleteAllCommandsCog",
@@ -37,6 +38,7 @@ __all__: Sequence[str] = (
 
 from typing import TYPE_CHECKING
 
+from cogs.actions_tracking import ActionsTrackingCog
 from cogs.archive import ArchiveCommandCog
 from cogs.command_error import CommandErrorCog
 from cogs.delete_all import DeleteAllCommandsCog
@@ -70,6 +72,7 @@ if TYPE_CHECKING:
 def setup(bot: TeXBot) -> None:
     """Add all the cogs to the bot, at bot startup."""
     cogs: Iterable[type[TeXBotBaseCog]] = (
+        ActionsTrackingCog,
         ArchiveCommandCog,
         CommandErrorCog,
         DeleteAllCommandsCog,
