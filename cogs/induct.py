@@ -201,15 +201,17 @@ class BaseInductCog(TeXBotBaseCog):
             return
 
         intro_channel: discord.TextChannel | None = discord.utils.get(
-            self.bot.main_guild.text_channels, name="introductions",
+            self.bot.main_guild.text_channels, 
+            name="introductions",
         )
 
         if intro_channel:
-            for m in await intro_channel.history(limit=30).flatten():
+            message: discord.Message
+            for message in await intro_channel.history(limit=30).flatten():
                 if m.author.id == induction_member.id:
                     await m.add_reaction(":wave:")
                     await m.add_reaction(":TeX:")
-                    continue
+                    return
 
 
         if not silent:
