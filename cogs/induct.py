@@ -242,7 +242,7 @@ class BaseInductCog(TeXBotBaseCog):
             name="introductions",
         )
 
-        tex_emoji: discord.Emoji = self.bot.get_emoji(743218410409820213)
+        tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
 
         if intro_channel:
             recent_message: discord.Message
