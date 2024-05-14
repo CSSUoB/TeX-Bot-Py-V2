@@ -200,20 +200,6 @@ class BaseInductCog(TeXBotBaseCog):
             )
             return
 
-        intro_channel: discord.TextChannel | None = discord.utils.get(
-            self.bot.main_guild.text_channels,
-            name="introductions",
-        )
-
-        if intro_channel:
-            msg: discord.Message
-            for msg in await intro_channel.history(limit=30).flatten():
-                if msg.author.id == induction_member.id:
-                    await msg.add_reaction(":wave:")
-                    await msg.add_reaction(":TeX:")
-                    return
-
-
         if not silent:
             general_channel: discord.TextChannel = await self.bot.general_channel
 
@@ -251,6 +237,19 @@ class BaseInductCog(TeXBotBaseCog):
                 applicant_role,
                 reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\"",
             )
+
+        intro_channel: discord.TextChannel | None = discord.utils.get(
+            self.bot.main_guild.text_channels,
+            name="introductions",
+        )
+
+        if intro_channel:
+            recent_message: discord.Message
+            for recent_message in await intro_channel.history(limit=30).flatten():
+                if recent_message.author.id == induction_member.id:
+                    await recent_message.add_reaction(":wave:")
+                    await recent_message.add_reaction(":TeX:")
+                    return
 
         await ctx.respond("User inducted successfully.", ephemeral=True)
 
