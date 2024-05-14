@@ -57,5 +57,23 @@
         "_ _\nReact to this message to join the **opt in channels**\n:speech_balloon: - Serious Talk\n:house_with_garden: - Housing\n:video_game: - Gaming\n:tv: - Anime\n:soccer: - Sport\n:briefcase: - Industry\n:pick: - Minecraft\n:globe_with_meridians: - <Group_Name> Website\n:bookmark: - Archivist", 
         "_ _\nReact to this message to **__opt out__** of the #starboard\n:no_entry_sign: - Messages you send **won't** be eligible to be added to the starboard, and stars you add to a message won't be counted towards the starboard threshold\n:star: - Your messages **can** be added to the starboard and stars you add to messages **will** be counted towards the starboard threshold",
         "_ _\nReact to this message to opt in to News notifications\n:speaker: - Get notifications when we `@News`\n:mute:- Don't get notifications when we `@News`\n\n> We will still use `@everyone` messages if there is something urgent"
-    ]
+    ],
+    "induction_messages": {
+        "induction_fail_bot_user": ":information_source: No changes made. User has already been inducted.\n\n:information_source:",
+        "induction_fail_user_left": ":information_source: No changes made. User cannot be inducted because they have left the server \n\n:information_source:"
+    },
+    "kill_cog_messages": {
+        "confirmation_message": "Hi <Committee>, are you sure you want to kill me?\n This action is irreversible and will prevent me performing any furhter actions until I am manually rebooted.\n\nPlease confirm using the buttons below.",
+        "killed": "My battery is low and it's getting dark..."
+    },
+    "make_member_cog_messages" : {
+        "user_is_already_a_member": ":information_source: No changes made. You're already a member - why are you trying this again? :information_source:",
+        "student_id_already_used": ":information_source: No changes made. This student ID has already been used by someone else. Please contact a <Committee> member if this is an error. :information_source:",
+        "member_add_success": "Successfully made you a member!"
+    },
+    "reminder_messages": {
+        "invalid_delay_input": "The value provided in the <Delay> argument was not a time/date.",
+        "duplicate": "You already have a reminder with that message in this channel!",
+        "reminder_set": "Reminder set!"        
+    }
 }
