@@ -4,16 +4,16 @@ version = "0.5.1"
 license = "Apache-2.0"
 description = "TeX-Bot, but back in Python!"
 authors = [
-    "CarrotManMatt <matt@carrotmanmatt.com>",
-    "sapphyree",
-    "MattyTheHacker",
-    "FrozenDude101",
-    "noodleWrecker7",
-    "JTWWilson",
-    "LMBishop",
+    "Matt Norton <matt@carrotmanmatt.com>",
+    "Victoria \"V\" Tilley",
+    "Matty Widdop",
+    "Matthew Hammond",
     "awsloth",
-    "ChrisDev18",
-    "edwinchan129",
+    "Edwin Chan",
+    "Chris W",
+    "Adam Hodgkinson <adam@adamhodgkinson.dev>",
+    "JTWWilson",
+    "Leonardo Bishop",
 ]
 readme = "README.md"
 repository = "https://github.com/CSSUoB/TeX-Bot-Py-V2.git"
