@@ -249,7 +249,7 @@ class BaseInductCog(TeXBotBaseCog):
                 if recent_message.author.id == induction_member.id:
                     await recent_message.add_reaction(":wave:")
                     await recent_message.add_reaction(":TeX:")
-                    return
+                    break
 
         await ctx.respond("User inducted successfully.", ephemeral=True)
 
