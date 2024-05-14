@@ -5,15 +5,15 @@ license = "Apache-2.0"
 description = "TeX-Bot, but back in Python!"
 authors = [
     "Matt Norton <matt@carrotmanmatt.com>",
-    "Victoria \"V\" Tilley <sonexix@gmail.com>",
+    "Victoria \"V\" Tilley",
     "Matty Widdop",
     "Matthew Hammond",
-    "Adam Hodgkinson <hodgkinson.adam@gmail.com>",
+    "awsloth",
+    "Edwin Chan",
+    "Chris W",
+    "Adam Hodgkinson <adam@adamhodgkinson.dev>",
     "JTWWilson",
     "Leonardo Bishop",
-    "awsloth",
-    "Chris W",
-    "Edwin Chan",
 ]
 readme = "README.md"
 repository = "https://github.com/CSSUoB/TeX-Bot-Py-V2.git"
