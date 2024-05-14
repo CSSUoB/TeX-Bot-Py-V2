@@ -183,6 +183,11 @@ class BaseInductCog(TeXBotBaseCog):
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guest_role: discord.Role = await self.bot.guest_role
 
+        intro_channel: discord.TextChannel | None = discord.utils.get(
+            self.bot.main_guild.text_channels,
+            name="introductions",
+        )
+
         if induction_member.bot:
             await self.command_send_error(
                 ctx,
@@ -237,11 +242,6 @@ class BaseInductCog(TeXBotBaseCog):
                 applicant_role,
                 reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\"",
             )
-
-        intro_channel: discord.TextChannel | None = discord.utils.get(
-            self.bot.main_guild.text_channels,
-            name="introductions",
-        )
 
         tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
         if not tex_emoji:
