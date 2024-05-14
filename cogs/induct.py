@@ -182,9 +182,10 @@ class BaseInductCog(TeXBotBaseCog):
         """Perform the actual process of inducting a member by giving them the Guest role."""
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guest_role: discord.Role = await self.bot.guest_role
+        main_guild: discord.Guild = self.bot.main_guild
 
         intro_channel: discord.TextChannel | None = discord.utils.get(
-            self.bot.main_guild.text_channels,
+            main_guild.text_channels,
             name="introductions",
         )
 
@@ -233,7 +234,7 @@ class BaseInductCog(TeXBotBaseCog):
         )
 
         applicant_role: discord.Role | None = discord.utils.get(
-            self.bot.main_guild.roles,
+            main_guild.roles,
             name="Applicant",
         )
 
