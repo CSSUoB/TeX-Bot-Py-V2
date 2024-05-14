@@ -182,6 +182,19 @@ class BaseInductCog(TeXBotBaseCog):
         """Perform the actual process of inducting a member by giving them the Guest role."""
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guest_role: discord.Role = await self.bot.guest_role
+        main_guild: discord.Guild = self.bot.main_guild
+
+        intro_channel: discord.TextChannel | None = discord.utils.get(
+            main_guild.text_channels,
+            name="introductions",
+        )
+
+        if induction_member.bot:
+            await self.command_send_error(
+                ctx,
+                message="Member cannot be inducted because they are a bot.",
+            )
+            return
 
         if guest_role in induction_member.roles:
             await ctx.respond(
@@ -190,13 +203,6 @@ class BaseInductCog(TeXBotBaseCog):
                     ":information_source:"
                 ),
                 ephemeral=True,
-            )
-            return
-
-        if induction_member.bot:
-            await self.command_send_error(
-                ctx,
-                message="Member cannot be inducted because they are a bot.",
             )
             return
 
@@ -228,7 +234,7 @@ class BaseInductCog(TeXBotBaseCog):
         )
 
         applicant_role: discord.Role | None = discord.utils.get(
-            self.bot.main_guild.roles,
+            main_guild.roles,
             name="Applicant",
         )
 
@@ -237,6 +243,19 @@ class BaseInductCog(TeXBotBaseCog):
                 applicant_role,
                 reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\"",
             )
+
+        tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
+        if not tex_emoji:
+            tex_emoji = discord.utils.get(main_guild.emojis, name="TeX")
+
+        if intro_channel:
+            recent_message: discord.Message
+            for recent_message in await intro_channel.history(limit=30).flatten():
+                if recent_message.author.id == induction_member.id:
+                    if tex_emoji:
+                        await recent_message.add_reaction(tex_emoji)
+                    await recent_message.add_reaction("👋")
+                    break
 
         await ctx.respond("User inducted successfully.", ephemeral=True)
 
