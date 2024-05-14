@@ -249,7 +249,8 @@ class BaseInductCog(TeXBotBaseCog):
             recent_message: discord.Message
             for recent_message in await intro_channel.history(limit=30).flatten():
                 if recent_message.author.id == induction_member.id:
-                    if tex_emoji: await recent_message.add_reaction(tex_emoji)  # noqa: E701
+                    if tex_emoji:
+                        await recent_message.add_reaction(tex_emoji)
                     await recent_message.add_reaction("👋")
                     break
 
