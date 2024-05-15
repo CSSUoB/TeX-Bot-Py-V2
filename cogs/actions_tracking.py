@@ -47,6 +47,26 @@ class ActionsTrackingCog(TeXBotBaseCog):
             in committee_members
         }
 
+    async def action_autocomplete_get_all_actions(self) -> set[discord.OptionChoice]:
+        """
+        Autocomplete callable that generates a set of actions.
+
+        This list is used to give a list of actions to take anaction on.
+        """
+        actions = [action async for action in Action.objects.all()]
+
+        if not actions:
+            return set()
+
+        return {
+            discord.OptionChoice(name=str(action.description), value=str(action))
+            for action
+            in actions
+        }
+
+
+
+
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
         name="action",
         description="Adds a new action with the specified description",
@@ -118,6 +138,8 @@ class ActionsTrackingCog(TeXBotBaseCog):
         required=True,
         parameter_name="str_action_member_id",
     )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
     async def list_user_actions(self, ctx:TeXBotApplicationContext, str_action_member_id: str) -> None:  # noqa: E501
         """
         Definition and callback of the list user actions command.
@@ -137,7 +159,41 @@ class ActionsTrackingCog(TeXBotBaseCog):
             await ctx.respond(f"Found {len(actions)} actions for user {action_member.mention}:\n{"\n".join(str(action.description) for action in actions)}")  # noqa: E501
 
 
+    @discord.slash_command( # type: ignore[no-untyped-call, misc]
+        name="complete-action",
+        description="Deletes the specified action as being completed.",
+    )
+    @discord.option( # type: ignore[no-untyped-call, misc]
+        name="action",
+        description="The action to mark as completed.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(action_autocomplete_get_all_actions), # type: ignore[arg-type]
+        required=True,
+        parameter_name="str_action_object",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def complete_action(self, ctx:TeXBotApplicationContext, str_action_object: str) -> None:  # noqa: E501
+        """
+        Definition and callback of the complete action command.
 
+        Marks the specified action as complete by deleting it.
+        """
+        actions = [action async for action in Action.objects.all()]
+
+        components = str_action_object.split(":")
+        hashed_id = components[0].strip()
+        description = components[1].strip()
+
+        action: Action
+        for action in actions:
+            if action.hashed_member_id == hashed_id and action.description == description:
+                await ctx.respond(f"Found it chief! Action object: {action}")
+                await action.adelete()
+                return
+
+        await ctx.respond("Hmm, I couldn't find that action. Please check the logs.")
+        logger.error("Action: %s couldn't be deleted because it couldn't be found!")
 
 
 
