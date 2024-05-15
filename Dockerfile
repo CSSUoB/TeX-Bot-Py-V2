@@ -16,7 +16,7 @@ ENV PYTHONUNBUFFERED=true \
 
 RUN apt-get update && apt-get install --no-install-recommends -y curl build-essential
 RUN python3 -m venv $POETRY_HOME
-RUN $POETRY_HOME/bin/pip install poetry==1.8.2
+RUN $POETRY_HOME/bin/pip install poetry==1.8.3
 
 
 WORKDIR /app

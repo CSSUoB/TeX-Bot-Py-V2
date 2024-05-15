@@ -608,6 +608,54 @@ class Settings(abc.ABC):
         cls._settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = {"hours": 6}
 
     @classmethod
+    def _setup_send_introduction_reminders_delay(cls) -> None:
+        if "SEND_INTRODUCTION_REMINDERS" not in cls._settings:
+            INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+                "Invalid setup order: SEND_INTRODUCTION_REMINDERS must be set up "
+                "before SEND_INTRODUCTION_REMINDERS_DELAY can be set up."
+            )
+            raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
+
+        raw_send_introduction_reminders_delay: Match[str] | None = re.match(
+            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
+            str(os.getenv("SEND_INTRODUCTION_REMINDERS_DELAY", "40h")),
+        )
+
+        raw_timedelta_send_introduction_reminders_delay: timedelta = timedelta()
+
+        if cls._settings["SEND_INTRODUCTION_REMINDERS"]:
+            if not raw_send_introduction_reminders_delay:
+                INVALID_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE: Final[str] = (
+                    "SEND_INTRODUCTION_REMINDERS_DELAY must contain the delay "
+                    "in any combination of seconds, minutes, hours, days or weeks."
+                )
+                raise ImproperlyConfiguredError(
+                    INVALID_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE,
+                )
+
+            raw_timedelta_send_introduction_reminders_delay = timedelta(
+                **{
+                    key: float(value)
+                    for key, value
+                    in raw_send_introduction_reminders_delay.groupdict().items()
+                    if value
+                },
+            )
+
+            if raw_timedelta_send_introduction_reminders_delay < timedelta(days=1):
+                TOO_SMALL_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE: Final[str] = (
+                    "SEND_INTRODUCTION_REMINDERS_DELAY must be longer than or equal to 1 day "
+                    "(in any allowed format)."
+                )
+                raise ImproperlyConfiguredError(
+                    TOO_SMALL_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE,
+                )
+
+        cls._settings["SEND_INTRODUCTION_REMINDERS_DELAY"] = (
+            raw_timedelta_send_introduction_reminders_delay
+        )
+
+    @classmethod
     def _setup_send_introduction_reminders_interval(cls) -> None:
         if "SEND_INTRODUCTION_REMINDERS" not in cls._settings:
             INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
@@ -659,30 +707,19 @@ class Settings(abc.ABC):
         )
 
     @classmethod
-    def _setup_kick_no_introduction_discord_members(cls) -> None:
-        raw_kick_no_introduction_discord_members: str | None = (
-            os.getenv("KICK_NO_INTRODUCTION_DISCORD_MEMBERS")
-        )
+    def _setup_send_get_roles_reminders(cls) -> None:
+        raw_send_get_roles_reminders: str = str(
+            os.getenv("SEND_GET_ROLES_REMINDERS", "True"),
+        ).lower()
 
-        KICK_NO_INTRODUCTION_DISCORD_MEMBERS_IS_VALID: Final[bool] = bool(
-            raw_kick_no_introduction_discord_members is None
-            or (
-                raw_kick_no_introduction_discord_members.lower().strip()
-                in TRUE_VALUES | FALSE_VALUES
-            ),
-        )
-        if not KICK_NO_INTRODUCTION_DISCORD_MEMBERS_IS_VALID:
-            INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_MESSAGE: Final[str] = (
-                "KICK_NO_INTRODUCTION_DISCORD_MEMBERS must be a boolean value."
+        if raw_send_get_roles_reminders not in TRUE_VALUES | FALSE_VALUES:
+            INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE: Final[str] = (
+                "SEND_GET_ROLES_REMINDERS must be a boolean value."
             )
-            raise ImproperlyConfiguredError(
-                INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_MESSAGE,
-            )
+            raise ImproperlyConfiguredError(INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE)
 
-        cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = (
-            False
-            if raw_kick_no_introduction_discord_members is None
-            else raw_kick_no_introduction_discord_members.lower().strip() in TRUE_VALUES
+        cls._settings["SEND_GET_ROLES_REMINDERS"] = (
+            raw_send_get_roles_reminders in TRUE_VALUES
         )
 
     @classmethod
@@ -697,82 +734,51 @@ class Settings(abc.ABC):
         cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = timedelta()
 
     @classmethod
-    def _setup_kick_no_introduction_discord_members_delay(cls) -> None:
-        if "KICK_NO_INTRODUCTION_DISCORD_MEMBERS" not in cls._settings:
+    def _setup_send_get_roles_reminders_delay(cls) -> None:
+        if "SEND_GET_ROLES_REMINDERS" not in cls._settings:
             INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
-                "Invalid setup order: KICK_NO_INTRODUCTION_DISCORD_MEMBERS must be set up "
-                "before KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY can be set up."
+                "Invalid setup order: SEND_GET_ROLES_REMINDERS must be set up "
+                "before SEND_GET_ROLES_REMINDERS_DELAY can be set up."
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        raw_kick_no_introduction_discord_members_delay: str | None = (
-            os.getenv("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY")
+        raw_send_get_roles_reminders_delay: Match[str] | None = re.match(
+            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
+            str(os.getenv("SEND_GET_ROLES_REMINDERS_DELAY", "40h")),
         )
 
-        kick_no_introduction_discord_members_delay: Match[str] | None = re.match(
-            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)\s*s)?\s*(?:(?P<minutes>(?:\d*\.)?\d+)\s*m)?\s*(?:(?P<hours>(?:\d*\.)?\d+)\s*h)?\s*(?:(?P<days>(?:\d*\.)?\d+)\s*d)?\s*(?:(?P<weeks>(?:\d*\.)?\d+)\s*w)?\Z",
-            (
-                "5d"
-                if raw_kick_no_introduction_discord_members_delay is None
-                else (
-                    raw_kick_no_introduction_discord_members_delay.lower().strip()
-                    if raw_kick_no_introduction_discord_members_delay.lower().strip()
-                    else raw_kick_no_introduction_discord_members_delay
+        raw_timedelta_send_get_roles_reminders_delay: timedelta = timedelta()
+
+        if cls._settings["SEND_GET_ROLES_REMINDERS"]:
+            if not raw_send_get_roles_reminders_delay:
+                INVALID_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE: Final[str] = (
+                    "SEND_GET_ROLES_REMINDERS_DELAY must contain the delay "
+                    "in any combination of seconds, minutes, hours, days or weeks."
                 )
-            ),
-        )
+                raise ImproperlyConfiguredError(
+                    INVALID_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE,
+                )
 
-        if kick_no_introduction_discord_members_delay is None:
-            cls._error_setup_kick_no_introduction_discord_members_delay()
-            return
-
-        details_kick_no_introduction_discord_members_delay: dict[str, float] = {
-            key: float(value)
-            for key, value
-            in kick_no_introduction_discord_members_delay.groupdict().items()
-            if value
-        }
-
-        if not details_kick_no_introduction_discord_members_delay:
-            cls._error_setup_kick_no_introduction_discord_members_delay()
-            return
-
-        timedelta_kick_no_introduction_discord_members_delay: timedelta = timedelta(
-            **details_kick_no_introduction_discord_members_delay,
-        )
-
-        if timedelta_kick_no_introduction_discord_members_delay <= timedelta(days=1):
-            cls._error_setup_kick_no_introduction_discord_members_delay(
-                msg="KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must be greater than 1 day.",
-            )
-            return
-
-        cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
-            timedelta_kick_no_introduction_discord_members_delay
-        )
-
-    @classmethod
-    def _setup_send_get_roles_reminders(cls) -> None:
-        raw_send_get_roles_reminders: str | None = (
-            os.getenv("SEND_GET_ROLES_REMINDERS")
-        )
-
-        SEND_GET_ROLES_REMINDERS_IS_VALID: Final[bool] = bool(
-            raw_send_get_roles_reminders is None
-            or raw_send_get_roles_reminders.lower().strip() in TRUE_VALUES | FALSE_VALUES,
-        )
-        if not SEND_GET_ROLES_REMINDERS_IS_VALID:
-            INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE: Final[str] = (
-                "SEND_GET_ROLES_REMINDERS must be a boolean value."
-            )
-            raise ImproperlyConfiguredError(
-                INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE,
+            raw_timedelta_send_get_roles_reminders_delay = timedelta(
+                **{
+                    key: float(value)
+                    for key, value
+                    in raw_send_get_roles_reminders_delay.groupdict().items()
+                    if value
+                },
             )
 
-        cls._settings["SEND_GET_ROLES_REMINDERS"] = (
-            True
-            if raw_send_get_roles_reminders is None
-            else raw_send_get_roles_reminders.lower().strip() in TRUE_VALUES
+            if raw_timedelta_send_get_roles_reminders_delay < timedelta(days=1):
+                TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE: Final[str] = (
+                    "SEND_SEND_GET_ROLES_REMINDERS_DELAY "
+                    "must be longer than or equal to 1 day (in any allowed format)."
+                )
+                raise ImproperlyConfiguredError(
+                    TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE,
+                )
+
+        cls._settings["SEND_GET_ROLES_REMINDERS_DELAY"] = (
+            raw_timedelta_send_get_roles_reminders_delay
         )
 
     @classmethod
@@ -787,54 +793,42 @@ class Settings(abc.ABC):
         cls._settings["SEND_GET_ROLES_REMINDERS_INTERVAL"] = {"hours": 24}
 
     @classmethod
-    def _setup_send_get_roles_reminders_interval(cls) -> None:
+    def _setup_advanced_send_get_roles_reminders_interval(cls) -> None:
         if "SEND_GET_ROLES_REMINDERS" not in cls._settings:
             INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
                 "Invalid setup order: SEND_GET_ROLES_REMINDERS must be set up "
-                "before SEND_GET_ROLES_REMINDERS_INTERVAL can be set up."
+                "before ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL can be set up."
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        raw_send_get_roles_reminders_interval: str | None = (
-            os.getenv("SEND_GET_ROLES_REMINDERS_INTERVAL")
+        raw_advanced_send_get_roles_reminders_interval: Match[str] | None = re.match(
+            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
+            str(os.getenv("ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL", "24h")),
         )
 
-        send_get_roles_reminders_interval: Match[str] | None = re.match(
-            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)\s*s)?\s*(?:(?P<minutes>(?:\d*\.)?\d+)\s*m)?\s*(?:(?P<hours>(?:\d*\.)?\d+)\s*h)?\Z",
-            (
-                "24h"
-                if raw_send_get_roles_reminders_interval is None
-                else (
-                    raw_send_get_roles_reminders_interval.lower().strip()
-                    if raw_send_get_roles_reminders_interval.lower().strip()
-                    else raw_send_get_roles_reminders_interval
-                )
-            ),
-        )
-
-        if send_get_roles_reminders_interval is None:
-            cls._error_setup_send_get_roles_reminders_interval()
-            return
-
-        details_send_get_roles_reminders_interval: dict[str, float] = {
-            key: float(value)
-            for key, value
-            in send_get_roles_reminders_interval.groupdict().items()
-            if value
+        raw_timedelta_details_advanced_send_get_roles_reminders_interval: Mapping[str, float] = {  # noqa: E501
+            "hours": 24,
         }
 
-        if not details_send_get_roles_reminders_interval:
-            cls._error_setup_send_get_roles_reminders_interval()
-            return
+        if cls._settings["SEND_GET_ROLES_REMINDERS"]:
+            if not raw_advanced_send_get_roles_reminders_interval:
+                INVALID_ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
+                    "ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL must contain the interval "
+                    "in any combination of seconds, minutes or hours."
+                )
+                raise ImproperlyConfiguredError(
+                    INVALID_ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE,
+                )
 
-        if timedelta(**details_send_get_roles_reminders_interval) <= timedelta(seconds=3):
-            cls._error_setup_send_get_roles_reminders_interval(
-                msg="SEND_GET_ROLES_REMINDERS_INTERVAL must be greater than 3 seconds.",
-            )
-            return
+            raw_timedelta_details_advanced_send_get_roles_reminders_interval = {
+                key: float(value)
+                for key, value
+                in raw_advanced_send_get_roles_reminders_interval.groupdict().items()
+                if value
+            }
 
-        cls._settings["SEND_GET_ROLES_REMINDERS_INTERVAL"] = (
-            details_send_get_roles_reminders_interval
+        cls._settings["ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL"] = (
+            raw_timedelta_details_advanced_send_get_roles_reminders_interval
         )
 
     @classmethod
@@ -950,11 +944,11 @@ class Settings(abc.ABC):
         cls._setup_membership_perks_url()
         cls._setup_purchase_membership_url()
         cls._setup_send_introduction_reminders()
+        cls._setup_send_introduction_reminders_delay()
         cls._setup_send_introduction_reminders_interval()
-        cls._setup_kick_no_introduction_discord_members()
-        cls._setup_kick_no_introduction_discord_members_delay()
         cls._setup_send_get_roles_reminders()
-        cls._setup_send_get_roles_reminders_interval()
+        cls._setup_send_get_roles_reminders_delay()
+        cls._setup_advanced_send_get_roles_reminders_interval()
         cls._setup_statistics_days()
         cls._setup_statistics_roles()
         cls._setup_moderation_document_url()
