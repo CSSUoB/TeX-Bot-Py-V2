@@ -6,16 +6,16 @@ __all__: Sequence[str] = ("SendGetRolesRemindersTaskCog",)
 
 
 import contextlib
-import datetime
 import functools
 import logging
 from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import discord
 from discord import AuditLogAction
 from discord.ext import tasks
 
+import utils
 from config import settings
 from db.core.models import SentGetRolesReminderMember
 from exceptions import GuestRoleDoesNotExistError, RolesChannelDoesNotExistError
@@ -24,6 +24,9 @@ from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
     capture_guild_does_not_exist_error,
 )
+
+if TYPE_CHECKING:
+    import datetime
 
 logger: Logger = logging.getLogger("TeX-Bot")
 
@@ -46,7 +49,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         """
         self.send_get_roles_reminders.cancel()
 
-    @tasks.loop(**settings["SEND_GET_ROLES_REMINDERS_INTERVAL"])  # type: ignore[misc]
+    @tasks.loop(**settings["ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL"])  # type: ignore[misc]
     @functools.partial(
         ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExistError,
@@ -83,11 +86,11 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 "First Year",
                 "Second Year",
                 "Final Year",
-                "Joint Honours"
                 "Year In Industry",
                 "Year Abroad",
                 "PGT",
                 "PGR",
+                "Joint Honours",
                 "Alumnus/Alumna",
                 "Postdoc",
                 "Serious Talk",
@@ -98,9 +101,11 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 "Food",
                 "Industry",
                 "Minecraft",
-                "Github",
+                "GitHub",
                 "Archivist",
-                "News",
+                "Rate My Meal",
+                "Website",
+                "Student Rep",
             },
         )
 
@@ -108,9 +113,9 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         for member in guild.members:
             member_requires_opt_in_roles_reminder: bool = (
                 not member.bot
-                and guest_role in member.roles
+                and utils.is_member_inducted(member)
                 and not any(
-                    opt_in_role_name in {role.name for role in member.roles}
+                    opt_in_role_name.lower() in {role.name.lower() for role in member.roles}
                     for opt_in_role_name
                     in OPT_IN_ROLE_NAMES
                 )
@@ -144,9 +149,9 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
 
             if guest_role_received_time is not None:
                 time_since_role_received: datetime.timedelta = (
-                        discord.utils.utcnow() - guest_role_received_time
+                    discord.utils.utcnow() - guest_role_received_time
                 )
-                if time_since_role_received <= datetime.timedelta(days=1):
+                if time_since_role_received <= settings["SEND_GET_ROLES_REMINDERS_DELAY"]:
                     continue
 
             if member not in guild.members:  # HACK: Caching errors can cause the member to no longer be part of the guild at this point, so this check must be performed before sending that member a message # noqa: FIX004
@@ -160,10 +165,10 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 continue
 
             await member.send(
-                "Hey! It seems like you joined "
-                f"the {self.bot.group_short_name} Discord server "
-                "and have been given the `@Guest` role but have not yet nabbed yourself any "
-                f"opt-in roles.\nYou can head to {roles_channel_mention} "
+                "Hey! It seems like you have been given the `@Guest` role "
+                f"on the {self.bot.group_short_name} Discord server "
+                " but have not yet nabbed yourself any opt-in roles.\n"
+                f"You can head to {roles_channel_mention} "
                 "and click on the icons to get optional roles like pronouns "
                 "and year group identifiers.",
             )

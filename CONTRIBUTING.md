@@ -83,9 +83,6 @@ There are separate cog files for each activity, and one [`__init__.py`](cogs/__i
 
 * [`cogs/induct.py`](cogs/induct.py): cogs for inducting people into your group's Discord guild
 
-* [`cogs/kick_no_introduction_discord_members.py`](cogs/kick_no_introduction_discord_members.py): cogs related to kicking Discord members that have not introduced themselves.
-(See [Repeated Tasks Conditions](README.md#repeated-tasks-conditions) for which conditions are required to be met, to execute this task)
-
 * [`cogs/kill.py`](cogs/kill.py): cogs related to the shutdown of TeX-Bot
 
 * [`cogs/make_member.py`](cogs/make_member.py): cogs related to making guests into members
