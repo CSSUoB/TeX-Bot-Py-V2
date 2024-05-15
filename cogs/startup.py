@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("StartupCog",)
 
+
 import logging
 from logging import Logger
 

@@ -4,7 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("SendIntroductionRemindersTaskCog",)
 
-import datetime
+
 import functools
 import logging
 from logging import Logger
@@ -17,6 +17,7 @@ from discord.ext import tasks
 from discord.ui import View
 from django.core.exceptions import ValidationError
 
+import utils
 from config import settings
 from db.core.models import (
     IntroductionReminderOptOutMember,
@@ -79,11 +80,10 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guild: discord.Guild = self.bot.main_guild
-        guest_role: discord.Role = await self.bot.guest_role
 
         member: discord.Member
         for member in guild.members:
-            if guest_role in member.roles or member.bot:
+            if utils.is_member_inducted(member) or member.bot:
                 continue
 
             if not member.joined_at:
@@ -107,49 +107,63 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 ).aexists()
             )
             member_needs_recurring_reminder: bool = (
-                    settings["SEND_INTRODUCTION_REMINDERS"] == "interval"
+                settings["SEND_INTRODUCTION_REMINDERS"] == "interval"
             )
-            member_recently_joined: bool = (discord.utils.utcnow() - member.joined_at) <= max(
-                settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] / 3,
-                datetime.timedelta(days=1),
+            member_recently_joined: bool = (
+                (discord.utils.utcnow() - member.joined_at)
+                <= settings["SEND_INTRODUCTION_REMINDERS_DELAY"]
             )
             member_opted_out_from_reminders: bool = await IntroductionReminderOptOutMember.objects.filter(  # noqa: E501
                 hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(member.id),
             ).aexists()
             member_needs_reminder: bool = (
-                    (member_needs_one_off_reminder or member_needs_recurring_reminder)
-                    and not member_recently_joined
-                    and not member_opted_out_from_reminders
+                (member_needs_one_off_reminder or member_needs_recurring_reminder)
+                and not member_recently_joined
+                and not member_opted_out_from_reminders
             )
 
-            if member_needs_reminder:
-                async for message in member.history():
-                    # noinspection PyUnresolvedReferences
-                    message_contains_opt_in_out_button: bool = (
-                        bool(message.components)
-                        and isinstance(message.components[0], discord.ActionRow)
-                        and isinstance(message.components[0].children[0], discord.Button)
-                        and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button"  # noqa: E501
-                    )
-                    if message_contains_opt_in_out_button:
-                        await message.edit(view=None)
+            if not member_needs_reminder:
+                continue
 
-                await member.send(
-                    content=(
-                        "Hey! It seems like you joined "
-                        f"the {self.bot.group_short_name} Discord server "
-                        "but have not yet introduced yourself.\n"
-                        "You will only get access to the rest of the server after sending "
-                        "an introduction message."
-                    ),
-                    view=(
-                        self.OptOutIntroductionRemindersView(self.bot)
-                        if settings["SEND_INTRODUCTION_REMINDERS"] == "interval"
-                        else None  # type: ignore[arg-type]
-                    ),
+            async for message in member.history():
+                # noinspection PyUnresolvedReferences
+                message_contains_opt_in_out_button: bool = (
+                    bool(message.components)
+                    and isinstance(message.components[0], discord.ActionRow)
+                    and isinstance(message.components[0].children[0], discord.Button)
+                    and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button"  # noqa: E501
                 )
+                if message_contains_opt_in_out_button:
+                    await message.edit(view=None)
 
-                await SentOneOffIntroductionReminderMember.objects.acreate(member_id=member.id)
+            if member not in guild.members:  # HACK: Caching errors can cause the member to no longer be part of the guild at this point, so this check must be performed before sending that member a message # noqa: FIX004
+                logger.info(
+                    (
+                        "Member with ID: %s does not need to be sent a reminder "
+                        "because they have left the server."
+                    ),
+                    member.id,
+                )
+                continue
+
+            await member.send(
+                content=(
+                    "Hey! It seems like you joined "
+                    f"the {self.bot.group_short_name} Discord server "
+                    "but have not yet introduced yourself.\n"
+                    "You will only get access to the rest of the server after sending "
+                    "an introduction message."
+                ),
+                view=(
+                    self.OptOutIntroductionRemindersView(self.bot)
+                    if settings["SEND_INTRODUCTION_REMINDERS"] == "interval"
+                    else None  # type: ignore[arg-type]
+                ),
+            )
+
+            await SentOneOffIntroductionReminderMember.objects.acreate(
+                member_id=member.id,
+            )
 
     class OptOutIntroductionRemindersView(View):
         """

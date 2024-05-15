@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("CommandErrorCog",)
 
+
 import contextlib
 import logging
 from logging import Logger

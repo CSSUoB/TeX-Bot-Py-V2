@@ -4,7 +4,10 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("TeXBot",)
 
+
+import logging
 import re
+from logging import Logger
 from typing import Final
 
 import discord
@@ -32,6 +35,8 @@ type ChannelTypes = (
     | None
 )
 
+logger: Logger = logging.getLogger("TeX-Bot")
+
 
 class TeXBot(discord.Bot):
     """
@@ -53,10 +58,17 @@ class TeXBot(discord.Bot):
         self._roles_channel: discord.TextChannel | None = None
         self._general_channel: discord.TextChannel | None = None
         self._rules_channel: discord.TextChannel | None = None
+        self._exit_was_due_to_kill_command: bool = False
 
         self._main_guild_set: bool = False
 
         super().__init__(*args, **options)  # type: ignore[no-untyped-call]
+
+    # noinspection PyPep8Naming
+    @property
+    def EXIT_WAS_DUE_TO_KILL_COMMAND(self) -> bool:  # noqa: N802
+        """Return whether the TeX-Bot exited due to the kill command being used."""
+        return self._exit_was_due_to_kill_command
 
     @property
     def main_guild(self) -> discord.Guild:
@@ -339,6 +351,24 @@ class TeXBot(discord.Bot):
             raise TypeError(INVALID_TEXT_CHANNEL_MESSAGE)
 
         return text_channel
+
+    async def perform_kill_and_close(self, initiated_by_user: discord.User | discord.Member | None = None) -> None:  # noqa: E501
+        """
+        Shutdown TeX-Bot by using the "/kill" command.
+
+        A log message will also be sent, announcing the user that requested the shutdown.
+        """
+        if self.EXIT_WAS_DUE_TO_KILL_COMMAND:
+            EXIT_FLAG_ALREADY_SET_MESSAGE: Final[str] = (
+                "The kill & close command has already been used. Invalid state."
+            )
+            raise RuntimeError(EXIT_FLAG_ALREADY_SET_MESSAGE)
+
+        if initiated_by_user:
+            logger.info("Manual shutdown initiated by %s.", initiated_by_user)
+
+        self._exit_was_due_to_kill_command = True
+        await self.close()
 
     async def get_everyone_role(self) -> discord.Role:
         """

@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ()
 
+
 import random
 import re
 from typing import Final

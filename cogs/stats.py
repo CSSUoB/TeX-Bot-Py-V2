@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("amount_of_time_formatter", "plot_bar_chart", "StatsCommandsCog")
 
+
 import io
 import math
 import re
@@ -589,5 +590,10 @@ class StatsCommandsCog(TeXBotBaseCog):
             return
 
         await LeftDiscordMember.objects.acreate(
-            roles={f"@{role.name}" for role in member.roles if role.name != "@everyone"},
+            roles={
+                f"@{role.name}"
+                for role
+                in member.roles
+                if role.name.lower().strip("@").strip() != "everyone"
+            },
         )

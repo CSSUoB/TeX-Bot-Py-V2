@@ -12,6 +12,7 @@ __all__: Sequence[str] = (
     "capture_strike_tracking_error",
 )
 
+
 import functools
 import logging
 from collections.abc import Callable, Coroutine
@@ -29,7 +30,6 @@ type WrapperOutputFunc[**P, T] = Callable[P, Coroutine[object, object, T | None]
 type DecoratorInputFunc[**P, T] = (
     Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T]]
 )
-
 
 logger: Logger = logging.getLogger("TeX-Bot")
 
