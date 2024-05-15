@@ -10,7 +10,6 @@ from logging import Logger
 import discord
 from django.core.exceptions import ValidationError
 
-from config import settings
 from db.core.models import Action
 from exceptions import CommitteeRoleDoesNotExistError, GuildDoesNotExistError
 from utils import (
@@ -105,9 +104,37 @@ class ActionsTrackingCog(TeXBotBaseCog):
             )
             return
 
-        await ctx.respond(f"Action: {str_action_description} created for user: <@{str_action_member_id}>")  # noqa: E501
+        await ctx.respond(f"Action: {action.description} created for user: <@{str_action_member_id}>")  # noqa: E501
 
+    @discord.slash_command( # type: ignore[no-untyped-call, misc]
+        name="list-user-actions",
+        description="Lists all actions for a specified user",
+    )
+    @discord.option( # type: ignore[no-untyped-call, misc]
+        name="user",
+        description="The user to list actions for.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(action_autocomplete_get_committee), # type: ignore[arg-type]
+        required=True,
+        parameter_name="str_action_member_id",
+    )
+    async def list_user_actions(self, ctx:TeXBotApplicationContext, str_action_member_id: str) -> None:  # noqa: E501
+        """
+        Definition and callback of the list user actions command.
 
+        Takes in a user and lists out their current actions.
+        """
+        actions = [action async for action in Action.objects.all() if Action.hash_member_id(str_action_member_id) == action.hashed_member_id]  # noqa: E501
+        action_member: discord.User | None = self.bot.get_user(int(str_action_member_id))
+
+        if not action_member:
+            await ctx.respond("The user you supplied was dog shit. Fuck off cunt.")
+            return
+
+        if not actions:
+            await ctx.respond(f"User: {action_member.mention} has no actions.")
+        else:
+            await ctx.respond(f"Found {len(actions)} actions for user {action_member.mention}:\n{"\n".join(str(action.description) for action in actions)}")  # noqa: E501
 
 
 
