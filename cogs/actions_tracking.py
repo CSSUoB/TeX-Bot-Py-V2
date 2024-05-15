@@ -196,4 +196,22 @@ class ActionsTrackingCog(TeXBotBaseCog):
         logger.error("Action: %s couldn't be deleted because it couldn't be found!")
 
 
+    @discord.slash_command( # type: ignore[no-untyped-call, misc]
+        name="list-all-actions",
+        description="List all current actions.",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def list_all_actions(self, ctx:TeXBotApplicationContext) -> None:
+        """List all actions."""
+        main_guild: discord.Guild = self.bot.main_guild
+        committee_role: discord.Role = await self.bot.committee_role
 
+        actions = [action async for action in Action.objects.all()]
+        committee_members: set[discord.Member] = {member for member in main_guild.members if not member.bot and committee_role in member.roles}  # noqa: E501
+
+        cmt_actions = {cmt: [action for action in actions if action.hashed_member_id == Action.hash_member_id(cmt.id)] for cmt in committee_members}  # noqa: E501
+
+        all_actions_message = "\n".join([f"Listing all actions by committee member:\n{cmt.mention}, Actions:\n{', \n'.join(str(action.description) for action in actions)}" for cmt, actions in cmt_actions.items()])  # noqa: E501
+
+        await ctx.respond(all_actions_message)
