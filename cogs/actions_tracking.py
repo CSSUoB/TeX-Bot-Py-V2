@@ -195,6 +195,59 @@ class ActionsTrackingCog(TeXBotBaseCog):
         await ctx.respond("Hmm, I couldn't find that action. Please check the logs.")
         logger.error("Action: %s couldn't be deleted because it couldn't be found!")
 
+    @discord.slash_command( # type: ignore[no-untyped-call, misc]
+            name="reassign-action",
+            description="Reassign the specified action to another user.",
+    )
+    @discord.option( # type: ignore[no-untyped-call, misc]
+        name="action",
+        description="The action to reassign.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(action_autocomplete_get_all_actions), # type: ignore[arg-type]
+        required=True,
+        parameter_name="str_action_object",
+    )
+    @discord.option( # type: ignore[no-untyped-call, misc]
+        name="user",
+        description="The user to list actions for.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(action_autocomplete_get_committee), # type: ignore[arg-type]
+        required=True,
+        parameter_name="str_action_member_id",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def reassign_action(self, ctx:TeXBotApplicationContext, str_action_object: str, str_action_member_id: str) -> None:  # noqa: E501
+        """Reassign the specified action to the specified user."""
+        components = str_action_object.split(":")
+        hashed_id = components[0].strip()
+        description = components[1].strip()
+
+        actions = [action async for action in Action.objects.all()]
+
+        action_to_reassign: Action
+
+        for action in actions:
+            if action.hashed_member_id == hashed_id and action.description == description:
+                action_to_reassign = action
+
+        if not action_to_reassign:
+            await ctx.respond("Something went wrong! Couldn't find that action...")
+            logger.error(
+                "Action: %s couldn't be reassigned because it couldn't be found!",
+                str_action_object,
+            )
+            return
+
+        if hashed_id == Action.hash_member_id(str_action_member_id):
+            await ctx.respond(f"HEY! Action: {description} is already assigned to user: <@{str_action_member_id}>\nNo action has been taken.")  # noqa: E501
+            return
+
+        action_to_reassign.hashed_member_id = Action.hash_member_id(str_action_member_id)
+
+        await ctx.respond("Action successfully reassigned!")
+
+
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
         name="list-all-actions",
