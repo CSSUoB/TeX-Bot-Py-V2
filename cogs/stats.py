@@ -136,7 +136,7 @@ def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str,
 class StatsCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/stats" command group and its command call-back methods."""
 
-    _DISCORD_SERVER_NAME: Final[str] = f"""{
+    _DISCORD_GUILD_NAME: Final[str] = f"""{
         "the " if (
             settings["_GROUP_SHORT_NAME"] is not None
             and (
@@ -161,7 +161,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
     stats: discord.SlashCommandGroup = discord.SlashCommandGroup(
         "stats",
-        f"Various statistics about {_DISCORD_SERVER_NAME}",
+        f"Various statistics about {_DISCORD_GUILD_NAME}",
     )
 
     # noinspection SpellCheckingInspection
@@ -188,15 +188,15 @@ class StatsCommandsCog(TeXBotBaseCog):
         """
         channel_id: int = ctx.channel_id
 
-        if str_channel_id:
-            if not re.match(r"\A\d{17,20}\Z", str_channel_id):
+        if str_channel_id.strip():
+            if not re.match(r"\A\d{17,20}\Z", str_channel_id.strip()):
                 await self.command_send_error(
                     ctx,
-                    message=f"{str_channel_id!r} is not a valid channel ID.",
+                    message=f"{str_channel_id.strip()!r} is not a valid channel ID.",
                 )
                 return
 
-            channel_id = int(str_channel_id)
+            channel_id = int(str_channel_id.strip())
 
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guild: discord.Guild = self.bot.main_guild
@@ -289,7 +289,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
     @stats.command(
         name="server",
-        description=f"Displays the stats for the whole of {_DISCORD_SERVER_NAME}",
+        description=f"Displays the stats for the whole of {_DISCORD_GUILD_NAME}",
     )
     async def server_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
@@ -509,7 +509,7 @@ class StatsCommandsCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
     @stats.command(
         name="leftmembers",
-        description=f"Displays the stats about members that have left {_DISCORD_SERVER_NAME}",
+        description=f"Displays the stats about members that have left {_DISCORD_GUILD_NAME}",
     )
     async def left_member_stats(self, ctx: TeXBotApplicationContext) -> None:
         """

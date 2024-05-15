@@ -25,8 +25,8 @@ logger: Logger = logging.getLogger("TeX-Bot")
 class ArchiveCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/archive" command and its call-back method."""
 
-    @staticmethod
-    async def autocomplete_get_categories(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+    @classmethod
+    async def autocomplete_get_categories(cls, ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable categories.
 

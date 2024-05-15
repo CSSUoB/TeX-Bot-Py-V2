@@ -5,6 +5,9 @@ from collections.abc import Sequence
 __all__: Sequence[str] = (
     "CommandChecks",
     "MessageSenderComponent",
+    "RandomDiscordBotTokenGenerator",
+    "RandomDiscordGuildIDGenerator",
+    "RandomDiscordLogChannelWebhookURLGenerator",
     "SuppressTraceback",
     "TeXBot",
     "TeXBotBaseCog",
@@ -18,6 +21,11 @@ __all__: Sequence[str] = (
 import discord
 
 from utils.command_checks import CommandChecks
+from utils.generate_random_env_variable_values import (
+    RandomDiscordBotTokenGenerator,
+    RandomDiscordGuildIDGenerator,
+    RandomDiscordLogChannelWebhookURLGenerator,
+)
 from utils.message_sender_components import MessageSenderComponent
 from utils.suppress_traceback import SuppressTraceback
 from utils.tex_bot import TeXBot
