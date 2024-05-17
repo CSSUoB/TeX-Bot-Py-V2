@@ -1,8 +1,8 @@
-"""Contains cog classes for tracking committee actions."""
+"""Contains cog classes for tracking committee-actions."""
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("ActionsTrackingCog",)
+__all__: Sequence[str] = ("CommitteeActionsTrackingCog",)
 
 import logging
 from logging import Logger
@@ -11,7 +11,7 @@ import discord
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 
 from db.core.models import Action
-from exceptions import CommitteeRoleDoesNotExistError, GuildDoesNotExistError
+from exceptions import BaseDoesNotExistError
 from utils import (
     CommandChecks,
     TeXBotApplicationContext,
@@ -22,61 +22,57 @@ from utils import (
 logger: Logger = logging.getLogger("TeX-Bot")
 
 
-class ActionsTrackingCog(TeXBotBaseCog):
-    """Cog class that defines the action tracking functionality."""
+class CommitteeActionsTrackingCog(TeXBotBaseCog):
+    """Cog class that defines the committee-actions tracking functionality."""
+
+    committee_actions: discord.SlashCommandGroup = discord.SlashCommandGroup(
+        "committeeactions",
+        "Add, list & remove tracked committee-actions."
+    )
 
     @staticmethod
-    async def action_autocomplete_get_committee(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]: # noqa: E501
-        """
-        Autocomplete callable that generates a set of selectable committee members.
-
-        This list is used to give a list of actionable committee members.
-        """
+    async def autocomplete_get_committee_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+        """Autocomplete callable that generates a set of selectable committee members."""
+        shortcut_accessors_failed_error: BaseDoesNotExistError
         try:
             main_guild: discord.Guild = ctx.bot.main_guild
             committee_role: discord.Role = await ctx.bot.committee_role
-        except (GuildDoesNotExistError, CommitteeRoleDoesNotExistError):
-            logger.warning("Guild not found or committee role not found")
+        except BaseDoesNotExistError as shortcut_accessors_failed_error:
+            logger.warning(shortcut_accessors_failed_error.message)
             return set()
-
-        committee_members: set[discord.Member] = {member for member in main_guild.members if not member.bot and committee_role in member.roles}  # noqa: E501
 
         return {
-            discord.OptionChoice(name=committee_member.name, value=str(committee_member.id))
-            for committee_member
-            in committee_members
+            discord.OptionChoice(name=member.name, value=str(member.id))
+            for member
+            in main_guild.members
+            if not member.bot and committee_role in member.roles
         }
 
-    async def action_autocomplete_get_all_actions(self) -> set[discord.OptionChoice]:
+    @classmethod
+    async def action_autocomplete_get_all_actions(cls) -> set[discord.OptionChoice]:
         """
-        Autocomplete callable that generates a set of actions.
+        Autocomplete callable that provides a set of selectable committee tracked-actions.
 
-        Returns a list of actions that exist.
+        Each action is identified by its description.
         """
-        actions = [action async for action in Action.objects.all()]
-
-        if not actions:
-            return set()
-
         return {
             discord.OptionChoice(name=str(action.description), value=str(action))
-            for action
-            in actions
+            async for action
+            in Action.objects.all()
         }
 
-
-    @discord.slash_command( # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="action",
         description="Adds a new action with the specified description",
     )
-    @discord.option( # type: ignore[no-untyped-call, misc]
+    @discord.option(  # type: ignore[no-untyped-call, misc]
         name="description",
         description="The description of the action to assign.",
         input_type=str,
         required=True,
         parameter_name="str_action_description",
     )
-    @discord.option( # type: ignore[no-untyped-call, misc]
+    @discord.option(  # type: ignore[no-untyped-call, misc]
         name="user",
         description="The user to action, if no user is specified, default to self",
         input_type=str,
