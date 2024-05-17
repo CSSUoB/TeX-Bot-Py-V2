@@ -51,7 +51,7 @@ class ActionsTrackingCog(TeXBotBaseCog):
         """
         Autocomplete callable that generates a set of actions.
 
-        This list is used to give a list of actions to take anaction on.
+        Returns a list of actions that exist.
         """
         actions = [action async for action in Action.objects.all()]
 
@@ -150,7 +150,7 @@ class ActionsTrackingCog(TeXBotBaseCog):
         action_member: discord.User | None = self.bot.get_user(int(str_action_member_id))
 
         if not action_member:
-            await ctx.respond("The user you supplied was dog shit. Fuck off cunt.")
+            await ctx.respond("The user you supplied doesn't exist or isn't in the server.")
             return
 
         if not actions:
@@ -261,10 +261,11 @@ class ActionsTrackingCog(TeXBotBaseCog):
         committee_role: discord.Role = await self.bot.committee_role
 
         actions = [action async for action in Action.objects.all()]
+
         committee_members: set[discord.Member] = {member for member in main_guild.members if not member.bot and committee_role in member.roles}  # noqa: E501
 
-        cmt_actions = {cmt: [action for action in actions if action.hashed_member_id == Action.hash_member_id(cmt.id)] for cmt in committee_members}  # noqa: E501
+        committee_actions = {committee: [action for action in actions if action.hashed_member_id == Action.hash_member_id(committee.id)] for committee in committee_members}  # noqa: E501
 
-        all_actions_message = "\n".join([f"Listing all actions by committee member:\n{cmt.mention}, Actions:\n{', \n'.join(str(action.description) for action in actions)}" for cmt, actions in cmt_actions.items()])  # noqa: E501
+        all_actions_message = "\n".join([f"Listing all actions by committee member:\n{committee.mention}, Actions:\n{', \n'.join(str(action.description) for action in actions)}" for committee, actions in committee_actions.items()])  # noqa: E501
 
         await ctx.respond(all_actions_message)
