@@ -8,7 +8,7 @@ import logging
 from logging import Logger
 
 import discord
-from django.core.exceptions import ValidationError
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 
 from db.core.models import Action
 from exceptions import CommitteeRoleDoesNotExistError, GuildDoesNotExistError
@@ -63,8 +63,6 @@ class ActionsTrackingCog(TeXBotBaseCog):
             for action
             in actions
         }
-
-
 
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
@@ -146,17 +144,21 @@ class ActionsTrackingCog(TeXBotBaseCog):
 
         Takes in a user and lists out their current actions.
         """
-        actions = [action async for action in Action.objects.all() if Action.hash_member_id(str_action_member_id) == action.hashed_member_id]  # noqa: E501
-        action_member: discord.User | None = self.bot.get_user(int(str_action_member_id))
+        action_member: discord.Member = await self.bot.get_member_from_str_id(str_action_member_id)  # noqa: E501
 
         if not action_member:
             await ctx.respond("The user you supplied doesn't exist or isn't in the server.")
             return
 
-        if not actions:
+        user_actions = [action async for action in Action.objects.filter(
+            hashed_member_id=Action.hash_member_id(str_action_member_id),
+        )]
+
+        if not user_actions:
             await ctx.respond(f"User: {action_member.mention} has no actions.")
+            logger.debug(user_actions)
         else:
-            await ctx.respond(f"Found {len(actions)} actions for user {action_member.mention}:\n{"\n".join(str(action.description) for action in actions)}")  # noqa: E501
+            await ctx.respond(f"Found {len(user_actions)} actions for user {action_member.mention}:\n{"\n".join(str(action.description) for action in user_actions)}")  # noqa: E501
 
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
@@ -179,21 +181,19 @@ class ActionsTrackingCog(TeXBotBaseCog):
 
         Marks the specified action as complete by deleting it.
         """
-        actions = [action async for action in Action.objects.all()]
-
         components = str_action_object.split(":")
-        hashed_id = components[0].strip()
-        description = components[1].strip()
+        input_hashed_id = components[0].strip()
+        input_description = components[1].strip()
 
-        action: Action
-        for action in actions:
-            if action.hashed_member_id == hashed_id and action.description == description:
-                await ctx.respond(f"Found it chief! Action object: {action}")
-                await action.adelete()
-                return
+        try:
+            action = await Action.objects.aget(hashed_member_id=input_hashed_id, description=input_description)  # noqa: E501
+        except (MultipleObjectsReturned, ObjectDoesNotExist):
+            await ctx.respond("Provided action was either not unique or did not exist.")
+            logger.warning("Action object: %s could not be matched to a unique action.", str_action_object)  # noqa: E501
 
-        await ctx.respond("Hmm, I couldn't find that action. Please check the logs.")
-        logger.error("Action: %s couldn't be deleted because it couldn't be found!")
+        await ctx.respond(f"Action: {action} found! Deleting.")
+        await action.adelete()
+
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
             name="reassign-action",
@@ -220,27 +220,17 @@ class ActionsTrackingCog(TeXBotBaseCog):
     async def reassign_action(self, ctx:TeXBotApplicationContext, str_action_object: str, str_action_member_id: str) -> None:  # noqa: E501
         """Reassign the specified action to the specified user."""
         components = str_action_object.split(":")
-        hashed_id = components[0].strip()
-        description = components[1].strip()
+        input_hashed_id = components[0].strip()
+        input_description = components[1].strip()
 
-        actions = [action async for action in Action.objects.all()]
+        try:
+            action_to_reassign = await Action.objects.aget(hashed_member_id=input_hashed_id, description=input_description)  # noqa: E501
+        except (MultipleObjectsReturned, ObjectDoesNotExist):
+            await ctx.respond("Provided action was either not unique or did not exist.")
+            logger.warning("Action object: %s could not be matched to a unique action.", str_action_object)  # noqa: E501
 
-        action_to_reassign: Action
-
-        for action in actions:
-            if action.hashed_member_id == hashed_id and action.description == description:
-                action_to_reassign = action
-
-        if not action_to_reassign:
-            await ctx.respond("Something went wrong! Couldn't find that action...")
-            logger.error(
-                "Action: %s couldn't be reassigned because it couldn't be found!",
-                str_action_object,
-            )
-            return
-
-        if hashed_id == Action.hash_member_id(str_action_member_id):
-            await ctx.respond(f"HEY! Action: {description} is already assigned to user: <@{str_action_member_id}>\nNo action has been taken.")  # noqa: E501
+        if input_hashed_id == Action.hash_member_id(str_action_member_id):
+            await ctx.respond(f"HEY! Action: {input_description} is already assigned to user: <@{str_action_member_id}>\nNo action has been taken.")  # noqa: E501
             return
 
         action_to_reassign.hashed_member_id = Action.hash_member_id(str_action_member_id)
