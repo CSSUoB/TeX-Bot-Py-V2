@@ -22,55 +22,65 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
-from .utils import AsyncBaseModel, HashedDiscordMember
+from .utils import AsyncBaseModel, DiscordMember
 
 
-class IntroductionReminderOptOutMember(HashedDiscordMember):
+class IntroductionReminderOptOutMember(AsyncBaseModel):
     """
     Model to represent a Discord member that has opted out of introduction reminders.
 
     Opting-out of introduction reminders means that they have requested to not be sent any
     messages reminding them to introduce themselves in your group's Discord guild.
-    The Discord member is identified by their hashed Discord member ID.
     """
 
     INSTANCES_NAME_PLURAL: str = "Introduction Reminder Opt-Out Member objects"
 
+    discord_member = models.OneToOneField(
+        DiscordMember,
+        on_delete=models.CASCADE,
+        related_name="opted_out_of_introduction_reminders",
+        verbose_name="Discord Member",
+        blank=False,
+        null=False,
+        primary_key=True,
+    )
+
     class Meta:  # noqa: D106
-        verbose_name = (
-            "Hashed Discord ID of a Discord Member "
-            "that has Opted-Out of Introduction Reminders"
-        )
-        verbose_name_plural = (
-            "Hashed Discord IDs of Discord Members "
-            "that have Opted-Out of Introduction Reminders"
-        )
+        verbose_name = "Discord Member that has Opted-Out of Introduction Reminders"
+        verbose_name_plural = "Discord Members that have Opted-Out of Introduction Reminders"
 
 
-class SentOneOffIntroductionReminderMember(HashedDiscordMember):
+class SentOneOffIntroductionReminderMember(AsyncBaseModel):
     """
     Represents a Discord member that has been sent a one-off introduction reminder.
 
     A one-off introduction reminder sends a single message
     reminding the Discord member to introduce themselves in your group's Discord guild,
     when SEND_INTRODUCTION_REMINDERS is set to "Once".
-    The Discord member is identified by their hashed Discord member ID.
     """
 
-    INSTANCES_NAME_PLURAL: str = "Sent One Off Introduction Reminder Member objects"
+    INSTANCES_NAME_PLURAL: str = "Sent One-Off Introduction Reminder Member objects"
+
+    discord_member = models.OneToOneField(
+        DiscordMember,
+        on_delete=models.CASCADE,
+        related_name="sent_one_off_introduction_reminder",
+        verbose_name="Discord Member",
+        blank=False,
+        null=False,
+        primary_key=True,
+    )
 
     class Meta:  # noqa: D106
         verbose_name = (
-            "Hashed Discord ID of a Discord Member "
-            "that has had a one-off Introduction reminder sent to their DMs"
+            "Discord Member that has had a one-off Introduction reminder sent to their DMs"
         )
         verbose_name_plural = (
-            "Hashed Discord IDs of Discord Members "
-            "that have had a one-off Introduction reminder sent to their DMs"
+            "Discord Members that have had a one-off Introduction reminder sent to their DMs"
         )
 
 
-class SentGetRolesReminderMember(HashedDiscordMember):
+class SentGetRolesReminderMember(AsyncBaseModel):
     """
     Represents a Discord member that has already been sent an opt-in roles reminder.
 
@@ -84,14 +94,20 @@ class SentGetRolesReminderMember(HashedDiscordMember):
 
     INSTANCES_NAME_PLURAL: str = "Sent Get Roles Reminder Member objects"
 
+    discord_member = models.OneToOneField(
+        DiscordMember,
+        on_delete=models.CASCADE,
+        related_name="sent_get_roles_reminder",
+        verbose_name="Discord Member",
+        blank=False,
+        null=False,
+        primary_key=True,
+    )
+
     class Meta:  # noqa: D106
-        verbose_name = (
-            "Hashed Discord ID of a Discord Member that has had a \"Get Roles\" reminder "
-            "sent to their DMs"
-        )
+        verbose_name = "Discord Member that has had a \"Get Roles\" reminder sent to their DMs"
         verbose_name_plural = (
-            "Hashed Discord IDs of Discord Members that have had a \"Get Roles\" reminder "
-            "sent to their DMs"
+            "Discord Members that have had a \"Get Roles\" reminder sent to their DMs"
         )
 
 
@@ -186,6 +202,7 @@ class DiscordReminder(HashedDiscordMember):
 
     hashed_member_id = models.CharField(
         "Hashed Discord Member ID",
+        unique=False,
         null=False,
         blank=False,
         max_length=64,
