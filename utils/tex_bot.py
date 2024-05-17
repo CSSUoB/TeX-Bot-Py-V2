@@ -435,11 +435,9 @@ class TeXBot(discord.Bot):
             raise ValueError(
                 DiscordMemberNotInMainGuildError(user_id=int(str_member_id)).message,
             )
-
-        user_not_in_main_guild_error: DiscordMemberNotInMainGuildError
         try:
             member: discord.Member = await self.get_main_guild_member(user)
-        except DiscordMemberNotInMainGuildError as user_not_in_main_guild_error:
-            raise ValueError from user_not_in_main_guild_error
+        except DiscordMemberNotInMainGuildError as e:
+            raise ValueError from e
 
         return member

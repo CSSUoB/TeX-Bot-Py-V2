@@ -120,14 +120,14 @@ class Settings(abc.ABC):
 
     def __getitem__(self, item: str) -> Any:  # type: ignore[misc]  # noqa: ANN401
         """Retrieve settings value by key lookup."""
-        attribute_not_exist_error: AttributeError
+        e: AttributeError
         try:
             return getattr(self, item)
-        except AttributeError as attribute_not_exist_error:
+        except AttributeError as e:
             key_error_message: str = item
 
-            if self.get_invalid_settings_key_message(item) in str(attribute_not_exist_error):
-                key_error_message = str(attribute_not_exist_error)
+            if self.get_invalid_settings_key_message(item) in str(e):
+                key_error_message = str(e)
 
             raise KeyError(key_error_message) from None
 
