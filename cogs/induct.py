@@ -322,12 +322,13 @@ class InductCommandCog(BaseInductCog):
         The "induct" command inducts a given member into your group's Discord guild
         by giving them the "Guest" role.
         """
+        member_id_not_integer_error: ValueError
         try:
             induct_member: discord.Member = await self.bot.get_member_from_str_id(
                 str_induct_member_id,
             )
-        except ValueError as e:
-            await self.command_send_error(ctx, message=e.args[0])
+        except ValueError as member_id_not_integer_error:
+            await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
             return
 
         # noinspection PyUnboundLocalVariable
