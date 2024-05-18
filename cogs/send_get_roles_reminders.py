@@ -17,7 +17,7 @@ from discord.ext import tasks
 
 import utils
 from config import settings
-from db.core.models import DiscordMember, SentGetRolesReminderMember
+from db.core.models import SentGetRolesReminderMember
 from exceptions import GuestRoleDoesNotExistError, RolesChannelDoesNotExistError
 from utils import TeXBot, TeXBotBaseCog
 from utils.error_capture_decorators import (
@@ -123,11 +123,8 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
             if not member_requires_opt_in_roles_reminder:
                 continue
 
-            hashed_discord_id: str = DiscordMember.hash_discord_id(member.id)
             sent_get_roles_reminder_member_exists: bool = (
-                await SentGetRolesReminderMember.objects.filter(
-                    discord_member__hashed_discord_id=hashed_discord_id,
-                ).aexists()
+                await SentGetRolesReminderMember.objects.filter(discord_id=member.id).aexists()  # type: ignore[misc]
             )
             if sent_get_roles_reminder_member_exists:
                 continue
@@ -173,9 +170,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 "and year group identifiers.",
             )
 
-            await SentGetRolesReminderMember.objects.acreate(
-                hashed_discord_id=hashed_discord_id,
-            )
+            await SentGetRolesReminderMember.objects.acreate(discord_id=member.id)
 
     @send_get_roles_reminders.before_loop
     async def before_tasks(self) -> None:

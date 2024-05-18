@@ -215,7 +215,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
 
         try:
             reminder: DiscordReminder = await DiscordReminder.objects.acreate(
-                member_id=ctx.user.id,
+                discord_id=ctx.user.id,
                 message=message or "",
                 channel_id=ctx.channel_id,
                 send_datetime=parsed_time[0],

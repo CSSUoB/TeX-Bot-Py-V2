@@ -19,7 +19,7 @@ from typing import Literal
 import discord
 
 from config import settings
-from db.core.models import DiscordMember
+from db.core.models import IntroductionReminderOptOutMember
 from exceptions import (
     CommitteeRoleDoesNotExistError,
     GuestRoleDoesNotExistError,
@@ -63,12 +63,10 @@ class InductSendMessageCog(TeXBotBaseCog):
         if guest_role in before.roles or guest_role not in after.roles:
             return
 
-        with contextlib.suppress(DiscordMember.DoesNotExist, DiscordMember.opted_out_of_introduction_reminders.RelatedObjectDoesNotExist):  # noqa: E501
+        with contextlib.suppress(IntroductionReminderOptOutMember.DoesNotExist):
             await (
-                await DiscordMember.objects.aget(
-                    hashed_discord_id=DiscordMember.hash_discord_id(before.id)
-                )
-            ).opted_out_of_introduction_reminders.adelete()
+                await IntroductionReminderOptOutMember.objects.aget(discord_id=before.id)
+            ).adelete()
 
         async for message in after.history():
             message_is_introduction_reminder: bool = (

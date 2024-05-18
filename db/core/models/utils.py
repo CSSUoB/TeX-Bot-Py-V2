@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("AsyncBaseModel", "DiscordMember")
+__all__: Sequence[str] = ("AsyncBaseModel", "DiscordMember", "BaseDiscordMemberWrapper")
 
 
 import hashlib
@@ -14,6 +14,8 @@ from asgiref.sync import sync_to_async
 from django.core.exceptions import FieldDoesNotExist
 from django.core.validators import RegexValidator
 from django.db import models
+
+from .managers import HashedDiscordMemberManager, RelatedDiscordMemberManager
 
 
 class AsyncBaseModel(models.Model):
@@ -155,26 +157,7 @@ class DiscordMember(AsyncBaseModel):
         ],
     )
 
-    @property
-    def discord_id(self) -> NoReturn:
-        """Return the Discord ID of this member."""
-        HASHED_ID_CANNOT_BE_REVERSED_ERROR_MESSAGE: Final[str] = (
-            "The Discord IDs of members are hashed before being sent into the database. "
-            "The raw IDs cannot be retrieved after this hashing process."
-        )
-        raise ValueError(HASHED_ID_CANNOT_BE_REVERSED_ERROR_MESSAGE)
-
-    @property
-    def member_id(self) -> NoReturn:
-        return self.discord_id  # type: ignore[misc]
-
-    @property
-    def hashed_member_id(self) -> NoReturn:
-        raise DeprecationWarning
-
-    @hashed_member_id.setter
-    def hashed_member_id(self, value: Never) -> None:
-        raise DeprecationWarning
+    objects = HashedDiscordMemberManager()
 
     @override
     def __str__(self) -> str:
@@ -201,8 +184,39 @@ class DiscordMember(AsyncBaseModel):
         else:
             super().__setattr__(name, value)
 
+    @property
+    def discord_id(self) -> NoReturn:
+        """Return the Discord ID of this member."""
+        HASHED_ID_CANNOT_BE_REVERSED_ERROR_MESSAGE: Final[str] = (
+            "The Discord IDs of members are hashed before being sent into the database. "
+            "The raw IDs cannot be retrieved after this hashing process."
+        )
+        raise ValueError(HASHED_ID_CANNOT_BE_REVERSED_ERROR_MESSAGE)
+
+    @property
+    def member_id(self) -> NoReturn:
+        """Return the Discord ID of this member."""
+        return self.discord_id  # type: ignore[misc]
+
+    @property
+    def hashed_member_id(self) -> NoReturn:
+        """Return the hashed Discord ID of this member."""
+        raise DeprecationWarning
+
+    @hashed_member_id.setter
+    def hashed_member_id(self, value: Never) -> None:  # noqa: ARG002
+        """Assign the hashed Discord ID of this member."""
+        raise DeprecationWarning
+
     @classmethod
-    def hash_member_id(cls, discord_id: Never) -> NoReturn:
+    def hash_member_id(cls, member_id: Never) -> NoReturn:  # noqa: ARG003
+        """
+        Hash the provided discord_id.
+
+        The member_id value is hashed
+        into the format that hashed_discord_ids are stored in the database
+        when new objects of this class are created.
+        """
         raise DeprecationWarning
 
     @classmethod
@@ -233,3 +247,27 @@ class DiscordMember(AsyncBaseModel):
         database.
         """
         return super().get_proxy_field_names() | {"discord_id", "member_id"}
+
+
+class BaseDiscordMemberWrapper(AsyncBaseModel):
+    """
+    Abstract base class to wrap more information around a DiscordMember instance.
+
+    This class is abstract so should not be instantiated or have a table made for it in the
+    database (see https://docs.djangoproject.com/en/stable/topics/db/models/#abstract-base-classes).
+    """
+
+    discord_member: DiscordMember
+
+    objects = RelatedDiscordMemberManager()
+
+    class Meta:  # noqa: D106
+        abstract = True
+
+    @override
+    def __str__(self) -> str:
+        return str(self.discord_member)
+
+    @override
+    def __repr__(self) -> str:
+        return f"<{self._meta.verbose_name}: {self.discord_member}>"

@@ -368,9 +368,9 @@ class BaseStrikeCog(TeXBotBaseCog):
             )
             return
 
-        member_strikes: DiscordMemberStrikes = (
+        member_strikes: DiscordMemberStrikes = (  # type: ignore[assignment]
             await DiscordMemberStrikes.objects.aget_or_create(
-                hashed_discord_id=DiscordMemberStrikes.hash_discord_id(strike_member.id),
+                discord_id=strike_member.id,
             )
         )[0]
 
@@ -487,9 +487,9 @@ class ManualModerationCog(BaseStrikeCog):
             discord.AuditLogAction.ban: "banned",
         }
 
-        member_strikes: DiscordMemberStrikes = (
+        member_strikes: DiscordMemberStrikes = (  # type: ignore[assignment]
             await DiscordMemberStrikes.objects.aget_or_create(
-                hashed_discord_id=DiscordMemberStrikes.hash_discord_id(strike_user.id),
+                discord_id=strike_user.id,
             )
         )[0]
 
