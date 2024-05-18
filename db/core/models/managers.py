@@ -118,6 +118,7 @@ class HashedDiscordMemberManager(BaseHashedIDManager["DiscordMember"]):
     """
 
     # noinspection SpellCheckingInspection
+    @override
     def _remove_unhashed_id_from_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:
         raw_discord_id: object | None = None
 
@@ -139,6 +140,7 @@ class HashedDiscordMemberManager(BaseHashedIDManager["DiscordMember"]):
         return kwargs
 
     # noinspection SpellCheckingInspection
+    @override
     async def _aremove_unhashed_id_from_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:  # noqa: E501
         raw_discord_id: object | None = None
 
@@ -169,6 +171,7 @@ class RelatedDiscordMemberManager(BaseHashedIDManager["BaseDiscordMemberWrapper"
     """
 
     # noinspection SpellCheckingInspection
+    @override
     def _remove_unhashed_id_from_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:
         raw_discord_id: object | None = None
 
@@ -198,6 +201,7 @@ class RelatedDiscordMemberManager(BaseHashedIDManager["BaseDiscordMemberWrapper"
         return kwargs
 
     # noinspection SpellCheckingInspection
+    @override
     async def _aremove_unhashed_id_from_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:  # noqa: E501
         raw_discord_id: object | None = None
 

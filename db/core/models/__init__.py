@@ -146,7 +146,6 @@ class GroupMadeMember(AsyncBaseModel):
 
     @override
     def __setattr__(self, name: str, value: object) -> None:
-        """Set the attribute name to the given value, with special cases for proxy fields."""
         if name == "group_member_id":
             if not isinstance(value, str | int):
                 INVALID_GROUP_MEMBER_ID_TYPE_MESSAGE: Final[str] = (
@@ -162,12 +161,10 @@ class GroupMadeMember(AsyncBaseModel):
 
     @override
     def __str__(self) -> str:
-        """Generate the string representation of this GroupMadeMember."""
         return f"{self.hashed_group_member_id}"
 
     @override
     def __repr__(self) -> str:
-        """Generate a developer-focused representation of the member's hashed Group ID."""
         return f"<{self._meta.verbose_name}: {self.hashed_group_member_id!r}>"
 
     @classmethod
@@ -188,14 +185,8 @@ class GroupMadeMember(AsyncBaseModel):
         return hashlib.sha256(str(group_member_id).encode()).hexdigest()
 
     @classmethod
+    @override
     def get_proxy_field_names(cls) -> set[str]:
-        """
-        Return the set of extra names of properties that can be saved to the database.
-
-        These are proxy fields because their values are not stored as object attributes,
-        however, they can be used as a reference to a real attribute when saving objects to the
-        database.
-        """
         return super().get_proxy_field_names() | {"group_member_id"}
 
 
@@ -286,8 +277,8 @@ class DiscordReminder(AsyncBaseModel):
             ),
         ]
 
+    @override
     def __str__(self) -> str:
-        """Generate the string representation of this DiscordReminder."""
         return (
             f"{self.discord_member}"
             f"{
@@ -301,8 +292,8 @@ class DiscordReminder(AsyncBaseModel):
             }"
         )
 
+    @override
     def __repr__(self) -> str:
-        """Generate a developer-focused representation of this DiscordReminder's attributes."""
         return (
             f"<{self._meta.verbose_name}: {self.discord_member}, "
             f"{self.channel_id!r}, {self.send_datetime!r}>"
@@ -328,14 +319,8 @@ class DiscordReminder(AsyncBaseModel):
         return constructed_message
 
     @classmethod
+    @override
     def get_proxy_field_names(cls) -> set[str]:
-        """
-        Return the set of extra names of properties that can be saved to the database.
-
-        These are proxy fields because their values are not stored as object attributes,
-        however, they can be used as a reference to a real attribute when saving objects to the
-        database.
-        """
         return super().get_proxy_field_names() | {"channel_id", "channel_type"}
 
 
@@ -380,12 +365,8 @@ class LeftDiscordMember(AsyncBaseModel):
             f"<{self._meta.verbose_name}: {{{", ".join(repr(role) for role in self.roles)}}}>"
         )
 
+    @override
     def clean(self) -> None:
-        """
-        Perform extra model-wide validation.
-
-        This runs after clean() has been called on every field by self.clean_fields.
-        """
         if any(not isinstance(role, str) for role in self.roles):
             raise ValidationError(
                 {
@@ -395,14 +376,8 @@ class LeftDiscordMember(AsyncBaseModel):
             )
 
     @classmethod
+    @override
     def get_proxy_field_names(cls) -> set[str]:
-        """
-        Return the set of extra names of properties that can be saved to the database.
-
-        These are proxy fields because their values are not stored as object attributes,
-        however, they can be used as a reference to a real attribute when saving objects to the
-        database.
-        """
         return super().get_proxy_field_names() | {"roles"}
 
 

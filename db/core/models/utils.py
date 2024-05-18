@@ -161,17 +161,14 @@ class DiscordMember(AsyncBaseModel):
 
     @override
     def __str__(self) -> str:
-        """Generate the string representation of a DiscordMember."""
         return f"{self.hashed_discord_id}"
 
     @override
     def __repr__(self) -> str:
-        """Generate a developer-focused representation of the hashed discord member's ID."""
         return f"<{self._meta.verbose_name}: {self.hashed_discord_id!r}>"
 
     @override
     def __setattr__(self, name: str, value: object) -> None:
-        """Set the attribute name to the given value, with special cases for proxy fields."""
         if name in ("discord_id", "member_id"):
             if not isinstance(value, str | int):
                 MEMBER_ID_INVALID_TYPE_MESSAGE: Final[str] = (
@@ -238,14 +235,8 @@ class DiscordMember(AsyncBaseModel):
         return hashlib.sha256(str(discord_id).encode()).hexdigest()
 
     @classmethod
+    @override
     def get_proxy_field_names(cls) -> set[str]:
-        """
-        Return the set of extra names of properties that can be saved to the database.
-
-        These are proxy fields because their values are not stored as object attributes,
-        however, they can be used as a reference to a real attribute when saving objects to the
-        database.
-        """
         return super().get_proxy_field_names() | {"discord_id", "member_id"}
 
 
