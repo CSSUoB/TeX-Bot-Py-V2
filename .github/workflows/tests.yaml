@@ -80,7 +80,7 @@ jobs:
           python-version: 3.12
 
       - name: Run PyMarkdown scan
-        run: poetry run rcft-pymarkdown scan-all
+        run: poetry run ccft-pymarkdown scan-all
 
   prevent-migrations-deletion:
     runs-on: ubuntu-latest

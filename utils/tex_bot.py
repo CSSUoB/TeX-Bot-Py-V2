@@ -435,26 +435,11 @@ class TeXBot(discord.Bot):
             raise ValueError(
                 DiscordMemberNotInMainGuildError(user_id=int(str_member_id)).message,
             )
+
+        user_not_in_main_guild_error: DiscordMemberNotInMainGuildError
         try:
             member: discord.Member = await self.get_main_guild_member(user)
-        except DiscordMemberNotInMainGuildError as e:
-            raise ValueError from e
+        except DiscordMemberNotInMainGuildError as user_not_in_main_guild_error:
+            raise ValueError from user_not_in_main_guild_error
 
         return member
-
-    def is_member_inducted(self, user: discord.Member) -> bool:
-        """
-        Util method to check if the supplied member has been inducted.
-
-        Returns true if the user has any role other than the default News role.
-        News role is not required.
-        """
-        news_role: discord.Role | None = discord.utils.get(
-            self.main_guild.roles,
-            name="@News",
-        )
-
-        if news_role is None:
-            return bool(user.roles)
-
-        return any(role is not news_role for role in user.roles)
