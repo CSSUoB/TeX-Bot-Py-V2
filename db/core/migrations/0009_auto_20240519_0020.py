@@ -13,10 +13,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveConstraint(
-            model_name='discordreminder',
-            name='unique_user_channel_message',
-        ),
         migrations.RemoveField(
             model_name='discordmemberstrikes',
             name='hashed_member_id',

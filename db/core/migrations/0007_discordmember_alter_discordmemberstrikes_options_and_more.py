@@ -26,6 +26,31 @@ class Migration(migrations.Migration):
                 ('objects', db.core.models.managers.HashedDiscordMemberManager()),
             ],
         ),
+        migrations.AlterField(
+            model_name='discordmemberstrikes',
+            name='hashed_member_id',
+            field=models.CharField(max_length=64, null=True, unique=True, validators=[django.core.validators.RegexValidator('\\A[A-Fa-f0-9]{64}\\Z', 'hashed_member_id must be a valid sha256 hex-digest.')], verbose_name='Hashed Discord Member ID'),
+        ),
+        migrations.AlterField(
+            model_name='discordreminder',
+            name='hashed_member_id',
+            field=models.CharField(max_length=64, null=True, validators=[django.core.validators.RegexValidator('\\A[A-Fa-f0-9]{64}\\Z', 'hashed_member_id must be a valid sha256 hex-digest.')], verbose_name='Hashed Discord Member ID'),
+        ),
+        migrations.AlterField(
+            model_name='introductionreminderoptoutmember',
+            name='hashed_member_id',
+            field=models.CharField(max_length=64, null=True, unique=True, validators=[django.core.validators.RegexValidator('\\A[A-Fa-f0-9]{64}\\Z', 'hashed_member_id must be a valid sha256 hex-digest.')], verbose_name='Hashed Discord Member ID'),
+        ),
+        migrations.AlterField(
+            model_name='sentgetrolesremindermember',
+            name='hashed_member_id',
+            field=models.CharField(max_length=64, null=True, unique=True, validators=[django.core.validators.RegexValidator('\\A[A-Fa-f0-9]{64}\\Z', 'hashed_member_id must be a valid sha256 hex-digest.')], verbose_name='Hashed Discord Member ID'),
+        ),
+        migrations.AlterField(
+            model_name='sentoneoffintroductionremindermember',
+            name='hashed_member_id',
+            field=models.CharField(max_length=64, null=True, unique=True, validators=[django.core.validators.RegexValidator('\\A[A-Fa-f0-9]{64}\\Z', 'hashed_member_id must be a valid sha256 hex-digest.')], verbose_name='Hashed Discord Member ID'),
+        ),
         migrations.AlterModelOptions(
             name='discordmemberstrikes',
             options={'verbose_name': "Discord Member that has been previously given one or more strikes because they broke one or more of your group's Discord guild rules", 'verbose_name_plural': "Discord Members that have been previously given one or more strikes because they broke one or more of your group's Discord guild rules"},
@@ -66,5 +91,9 @@ class Migration(migrations.Migration):
             model_name='sentoneoffintroductionremindermember',
             name='discord_member',
             field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.CASCADE, primary_key=False, related_name='sent_one_off_introduction_reminder', serialize=False, to='core.discordmember', verbose_name='Discord Member'),
+        ),
+        migrations.RemoveConstraint(
+            model_name='discordreminder',
+            name='unique_user_channel_message',
         ),
     ]
