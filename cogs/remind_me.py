@@ -19,7 +19,7 @@ from discord.ext import tasks
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from db.core.models import DiscordReminder
+from db.core.models import DiscordMember, DiscordReminder
 from utils import TeXBot, TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotBaseCog
 
 if TYPE_CHECKING:
@@ -297,7 +297,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                     functools.partial(
                         lambda _user, _reminder: (
                             not _user.bot
-                            and DiscordReminder.hash_member_id(_user.id) == _reminder.hashed_member_id  # noqa: E501
+                            and DiscordMember.hash_discord_id(_user.id) == _reminder.hashed_discord_id  # noqa: E501
                         ),
                         _reminder=reminder,
                     ),
@@ -307,7 +307,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                 if not user:
                     logger.warning(
                         "User with hashed user ID: %s no longer exists.",
-                        reminder.hashed_member_id,
+                        reminder.discord_member.hashed_discord_id,
                     )
                     await reminder.adelete()
                     continue

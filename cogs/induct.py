@@ -19,7 +19,7 @@ from typing import Literal
 import discord
 
 from config import settings
-from db.core.models import IntroductionReminderOptOutMember
+from db.core.models import DiscordMember
 from exceptions import (
     CommitteeRoleDoesNotExistError,
     GuestRoleDoesNotExistError,
@@ -63,16 +63,12 @@ class InductSendMessageCog(TeXBotBaseCog):
         if guest_role in before.roles or guest_role not in after.roles:
             return
 
-        try:
-            introduction_reminder_opt_out_member: IntroductionReminderOptOutMember = await IntroductionReminderOptOutMember.objects.aget(  # noqa: E501
-                hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(
-                    before.id,
-                ),
-            )
-        except IntroductionReminderOptOutMember.DoesNotExist:
-            pass
-        else:
-            await introduction_reminder_opt_out_member.adelete()
+        with contextlib.suppress(DiscordMember.DoesNotExist, DiscordMember.opted_out_of_introduction_reminders.RelatedObjectDoesNotExist):  # noqa: E501
+            await (
+                await DiscordMember.objects.aget(
+                    hashed_discord_id=DiscordMember.hash_discord_id(before.id)
+                )
+            ).opted_out_of_introduction_reminders.adelete()
 
         async for message in after.history():
             message_is_introduction_reminder: bool = (
@@ -393,6 +389,8 @@ class InductUserCommandsCog(BaseInductCog):
                 ),
                 ephemeral=True,
             )
+            return
+
         await self._perform_induction(ctx, member, silent=False)
 
     @discord.message_command(name="Silently Induct Message Author")  # type: ignore[no-untyped-call, misc]
@@ -418,6 +416,8 @@ class InductUserCommandsCog(BaseInductCog):
                 ),
                 ephemeral=True,
             )
+            return
+
         await self._perform_induction(ctx, member, silent=True)
 
 

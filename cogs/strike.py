@@ -370,7 +370,7 @@ class BaseStrikeCog(TeXBotBaseCog):
 
         member_strikes: DiscordMemberStrikes = (
             await DiscordMemberStrikes.objects.aget_or_create(
-                hashed_member_id=DiscordMemberStrikes.hash_member_id(strike_member.id),
+                hashed_discord_id=DiscordMemberStrikes.hash_discord_id(strike_member.id),
             )
         )[0]
 
@@ -489,7 +489,7 @@ class ManualModerationCog(BaseStrikeCog):
 
         member_strikes: DiscordMemberStrikes = (
             await DiscordMemberStrikes.objects.aget_or_create(
-                hashed_member_id=DiscordMemberStrikes.hash_member_id(strike_user.id),
+                hashed_discord_id=DiscordMemberStrikes.hash_discord_id(strike_user.id),
             )
         )[0]
 

@@ -19,10 +19,7 @@ from django.core.exceptions import ValidationError
 
 import utils
 from config import settings
-from db.core.models import (
-    IntroductionReminderOptOutMember,
-    SentOneOffIntroductionReminderMember,
-)
+from db.core.models import (DiscordMember, IntroductionReminderOptOutMember, SentOneOffIntroductionReminderMember, )
 from exceptions import DiscordMemberNotInMainGuildError, GuestRoleDoesNotExistError
 from utils import TeXBot, TeXBotBaseCog
 from utils.error_capture_decorators import (
@@ -101,7 +98,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             member_needs_one_off_reminder: bool = (
                 settings["SEND_INTRODUCTION_REMINDERS"] == "once"
                 and not await SentOneOffIntroductionReminderMember.objects.filter(
-                    hashed_member_id=SentOneOffIntroductionReminderMember.hash_member_id(
+                    discord_member__hashed_discord_id=DiscordMember.hash_discord_id(
                         member.id,
                     ),
                 ).aexists()
@@ -114,7 +111,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 <= settings["SEND_INTRODUCTION_REMINDERS_DELAY"]
             )
             member_opted_out_from_reminders: bool = await IntroductionReminderOptOutMember.objects.filter(  # noqa: E501
-                hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(member.id),
+                discord_member__hashed_discord_id=DiscordMember.hash_discord_id(member.id),
             ).aexists()
             member_needs_reminder: bool = (
                 (member_needs_one_off_reminder or member_needs_recurring_reminder)
@@ -285,7 +282,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             else:
                 try:
                     introduction_reminder_opt_out_member: IntroductionReminderOptOutMember = await IntroductionReminderOptOutMember.objects.aget(  # noqa: E501
-                        hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(
+                        discord_member__hashed_discord_id=DiscordMember.hash_discord_id(
                             interaction_member.id,
                         ),
                     )
