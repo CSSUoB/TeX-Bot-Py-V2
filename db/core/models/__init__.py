@@ -10,12 +10,13 @@ __all__: Sequence[str] = (
     "DiscordReminder",
     "LeftDiscordMember",
     "DiscordMemberStrikes",
+    "DiscordMember",
 )
 
 
 import hashlib
 import re
-from typing import Final
+from typing import Final, override
 
 import discord
 from django.core.exceptions import ValidationError
@@ -23,6 +24,79 @@ from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
 from .utils import AsyncBaseModel, DiscordMember
+
+
+# class TrackedCommitteeAction(AsyncBaseModel):
+#     """Model to represent an action item that has been assigned to a Discord Member."""
+#
+#     INSTANCES_NAME_PLURAL: str = "Tracked Committee-Actions"
+#
+#     assigned_committee_members = models.ManyToManyField(
+#         DiscordMember,
+#         related_name="assigned_tracked_committee_actions",
+#         verbose_name="Assigned Committee Members",
+#         blank=False,
+#     )
+#     title = models.TextField(
+#         "Descriptive Title",
+#         max_length=1500,
+#         null=False,
+#         blank=True,
+#         unique=True,
+#     )
+#
+#     class Meta:
+#         verbose_name = "Tracked Committee-Action"
+#
+#     @override
+#     def __str__(self) -> str:
+#         """Generate the string representation of this TrackedCommitteeAction."""
+#         return (
+#             f"{
+#                 ", ".join(
+#                     self.assigned_committee_members.values_list(
+#                         "hashed_discord_id",
+#                         flat=True
+#                     )
+#                 )
+#             }"
+#             f": {f"{self.title[:50]}..." if len(self.title) > 50 else self.title}"
+#         )
+#
+#     @override
+#     def __repr__(self) -> str:
+#         """Generate a developer-focused representation of this TrackedCommitteeAction."""
+#         return (
+#             f"<{self._meta.verbose_name}: {{"
+#             f"{
+#                 ", ".join(
+#                     self.assigned_committee_members.values_list(
+#                         "hashed_discord_id",
+#                         flat=True
+#                     )
+#                 )
+#             }"
+#             f"}}, {f"{self.title[:50]!r}..." if len(self.title) > 50 else f"{self.title!r}"}>"
+#         )
+#
+#     def get_formatted_message(self, user_mention: str | None) -> str:
+#         """
+#         Return the formatted description stored by this action.
+#
+#         Adds a mention to the Discord member that was assigned the action,
+#         if passed in from the calling context.
+#         """
+#         constructed_message: str = "This is your reminder"
+#
+#         if user_mention:
+#             constructed_message += f", {user_mention}"
+#
+#         constructed_message += "!"
+#
+#         if self.title:
+#             constructed_message = f"**{constructed_message}**\n{self.title}"
+#
+#         return constructed_message
 
 
 class IntroductionReminderOptOutMember(AsyncBaseModel):
@@ -48,6 +122,14 @@ class IntroductionReminderOptOutMember(AsyncBaseModel):
     class Meta:  # noqa: D106
         verbose_name = "Discord Member that has Opted-Out of Introduction Reminders"
         verbose_name_plural = "Discord Members that have Opted-Out of Introduction Reminders"
+
+    @override
+    def __str__(self) -> str:
+        return str(self.discord_member)
+
+    @override
+    def __repr__(self) -> str:
+        return f"<{self._meta.verbose_name}: {self.discord_member}>"
 
 
 class SentOneOffIntroductionReminderMember(AsyncBaseModel):
@@ -79,6 +161,14 @@ class SentOneOffIntroductionReminderMember(AsyncBaseModel):
             "Discord Members that have had a one-off Introduction reminder sent to their DMs"
         )
 
+    @override
+    def __str__(self) -> str:
+        return str(self.discord_member)
+
+    @override
+    def __repr__(self) -> str:
+        return f"<{self._meta.verbose_name}: {self.discord_member}>"
+
 
 class SentGetRolesReminderMember(AsyncBaseModel):
     """
@@ -109,6 +199,14 @@ class SentGetRolesReminderMember(AsyncBaseModel):
         verbose_name_plural = (
             "Discord Members that have had a \"Get Roles\" reminder sent to their DMs"
         )
+
+    @override
+    def __str__(self) -> str:
+        return str(self.discord_member)
+
+    @override
+    def __repr__(self) -> str:
+        return f"<{self._meta.verbose_name}: {self.discord_member}>"
 
 
 class GroupMadeMember(AsyncBaseModel):
@@ -143,10 +241,7 @@ class GroupMadeMember(AsyncBaseModel):
         verbose_name = "Hashed Group ID of User that has been made Member"
         verbose_name_plural = "Hashed Group IDs of Users that have been made Member"
 
-    def __repr__(self) -> str:
-        """Generate a developer-focused representation of the member's hashed Group ID."""
-        return f"<{self._meta.verbose_name}: {self.hashed_group_member_id!r}>"
-
+    @override
     def __setattr__(self, name: str, value: object) -> None:
         """Set the attribute name to the given value, with special cases for proxy fields."""
         if name == "group_member_id":
@@ -162,12 +257,18 @@ class GroupMadeMember(AsyncBaseModel):
         else:
             super().__setattr__(name, value)
 
+    @override
     def __str__(self) -> str:
         """Generate the string representation of this GroupMadeMember."""
         return f"{self.hashed_group_member_id}"
 
-    @staticmethod
-    def hash_group_member_id(group_member_id: str | int, group_member_id_type: str = "community group") -> str:  # noqa: E501
+    @override
+    def __repr__(self) -> str:
+        """Generate a developer-focused representation of the member's hashed Group ID."""
+        return f"<{self._meta.verbose_name}: {self.hashed_group_member_id!r}>"
+
+    @classmethod
+    def hash_group_member_id(cls, group_member_id: str | int, group_member_id_type: str = "community group") -> str:  # noqa: E501
         """
         Hash the provided group_member_id.
 
@@ -195,23 +296,19 @@ class GroupMadeMember(AsyncBaseModel):
         return super().get_proxy_field_names() | {"group_member_id"}
 
 
-class DiscordReminder(HashedDiscordMember):
+class DiscordReminder(AsyncBaseModel):
     """Represents a reminder that a Discord member has requested to be sent to them."""
 
     INSTANCES_NAME_PLURAL: str = "Reminders"
 
-    hashed_member_id = models.CharField(
-        "Hashed Discord Member ID",
-        unique=False,
-        null=False,
+    discord_member = models.ForeignKey(
+        DiscordMember,
+        on_delete=models.CASCADE,
+        related_name="reminders",
+        verbose_name="Discord Member",
         blank=False,
-        max_length=64,
-        validators=[
-            RegexValidator(
-                r"\A[A-Fa-f0-9]{64}\Z",
-                "hashed_member_id must be a valid sha256 hex-digest.",
-            ),
-        ],
+        null=False,
+        unique=False,
     )
     message = models.TextField(
         "Message to remind User",
@@ -281,26 +378,32 @@ class DiscordReminder(HashedDiscordMember):
         verbose_name_plural = "Reminders for Discord Members"
         constraints = [  # noqa: RUF012
             models.UniqueConstraint(
-                fields=["hashed_member_id", "message", "_channel_id"],
+                fields=["discord_member", "message", "_channel_id"],
                 name="unique_user_channel_message",
             ),
         ]
 
+    def __str__(self) -> str:
+        """Generate the string representation of this DiscordReminder."""
+        return (
+            f"{self.discord_member}"
+            f"{
+                ""
+                if not self.message
+                else (
+                    f": {self.message[:50]}..."
+                    if len(self.message) > 50
+                    else self.message
+                )
+            }"
+        )
+
     def __repr__(self) -> str:
         """Generate a developer-focused representation of this DiscordReminder's attributes."""
         return (
-            f"<{self._meta.verbose_name}: {self.hashed_member_id!r}, "
-            f"{str(self.channel_id)!r}, {str(self.send_datetime)!r}>"
+            f"<{self._meta.verbose_name}: {self.discord_member}, "
+            f"{self.channel_id!r}, {self.send_datetime!r}>"
         )
-
-    def __str__(self) -> str:
-        """Generate the string representation of this DiscordReminder."""
-        construct_str: str = f"{self.hashed_member_id}"
-
-        if self.message:
-            construct_str += f": {self.message[:50]}"
-
-        return construct_str
 
     def get_formatted_message(self, user_mention: str | None) -> str:
         """
@@ -364,6 +467,16 @@ class LeftDiscordMember(AsyncBaseModel):
             "they left your group's Discord guild"
         )
 
+    @override
+    def __str__(self) -> str:
+        return f"{self.id}: {", ".join(self.roles)}"
+
+    @override
+    def __repr__(self) -> str:
+        return (
+            f"<{self._meta.verbose_name}: {{{", ".join(repr(role) for role in self.roles)}}}>"
+        )
+
     def clean(self) -> None:
         """
         Perform extra model-wide validation.
@@ -390,7 +503,7 @@ class LeftDiscordMember(AsyncBaseModel):
         return super().get_proxy_field_names() | {"roles"}
 
 
-class DiscordMemberStrikes(HashedDiscordMember):
+class DiscordMemberStrikes(AsyncBaseModel):
     """
     Represents a Discord member that has been given one or more strikes.
 
@@ -405,6 +518,14 @@ class DiscordMemberStrikes(HashedDiscordMember):
 
     INSTANCES_NAME_PLURAL: str = "Discord Member's Strikes"
 
+    discord_member = models.OneToOneField(
+        DiscordMember,
+        on_delete=models.CASCADE,
+        related_name="strikes",
+        verbose_name="Discord Member",
+        blank=False,
+        null=False,
+    )
     strikes = models.PositiveIntegerField(
         "Number of strikes",
         null=False,
@@ -415,12 +536,18 @@ class DiscordMemberStrikes(HashedDiscordMember):
 
     class Meta:  # noqa: D106
         verbose_name = (
-            "Hashed Discord ID of a Discord Member "
-            "that has been previously given one or more strikes "
+            "Discord Member that has been previously given one or more strikes "
             "because they broke one or more of your group's Discord guild rules"
         )
         verbose_name_plural = (
-            "Hashed Discord IDs of Discord Members "
-            "that have been previously given one or more strikes "
+            "Discord Members that have been previously given one or more strikes "
             "because they broke one or more of your group's Discord guild rules"
         )
+
+    @override
+    def __str__(self) -> str:
+        return f"{self.discord_member}: {self.strikes}"
+
+    @override
+    def __repr__(self) -> str:
+        return f"<{self._meta.verbose_name}: {self.discord_member}, {self.strikes!r}>"

@@ -8,7 +8,7 @@ __all__: Sequence[str] = ("AsyncBaseModel", "DiscordMember")
 import hashlib
 import re
 from collections.abc import Iterable
-from typing import Final, NoReturn, override
+from typing import Final, Never, NoReturn, override
 
 from asgiref.sync import sync_to_async
 from django.core.exceptions import FieldDoesNotExist
@@ -166,7 +166,15 @@ class DiscordMember(AsyncBaseModel):
 
     @property
     def member_id(self) -> NoReturn:
-        return self.discord_id
+        return self.discord_id  # type: ignore[misc]
+
+    @property
+    def hashed_member_id(self) -> NoReturn:
+        raise DeprecationWarning
+
+    @hashed_member_id.setter
+    def hashed_member_id(self, value: Never) -> None:
+        raise DeprecationWarning
 
     @override
     def __str__(self) -> str:
@@ -193,8 +201,12 @@ class DiscordMember(AsyncBaseModel):
         else:
             super().__setattr__(name, value)
 
-    @staticmethod
-    def hash_discord_id(discord_id: str | int) -> str:
+    @classmethod
+    def hash_member_id(cls, discord_id: Never) -> NoReturn:
+        raise DeprecationWarning
+
+    @classmethod
+    def hash_discord_id(cls, discord_id: str | int) -> str:
         """
         Hash the provided discord_id.
 
