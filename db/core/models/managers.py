@@ -14,8 +14,7 @@ from django.db.models import Manager, QuerySet
 if TYPE_CHECKING:
     from django.core.exceptions import ObjectDoesNotExist
 
-    # noinspection PyUnresolvedReferences
-    from .utils import AsyncBaseModel
+    from .utils import AsyncBaseModel, BaseDiscordMemberWrapper, DiscordMember  # noqa: F401
 
     T_model = TypeVar("T_model", bound=AsyncBaseModel)
 

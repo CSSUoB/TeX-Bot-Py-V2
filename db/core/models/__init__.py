@@ -258,6 +258,7 @@ class DiscordReminder(AsyncBaseModel):
     def channel_type(self, channel_type: discord.ChannelType | int) -> None:
         if isinstance(channel_type, discord.ChannelType):
             try:
+                # noinspection PyUnresolvedReferences
                 channel_type = int(channel_type.value)
             except ValueError:
                 INVALID_CHANNEL_TYPE_MESSAGE: Final[str] = (
@@ -357,6 +358,7 @@ class LeftDiscordMember(AsyncBaseModel):
 
     @override
     def __str__(self) -> str:
+        # noinspection PyUnresolvedReferences
         return f"{self.id}: {", ".join(self.roles)}"
 
     @override
