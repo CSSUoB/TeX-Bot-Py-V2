@@ -25,6 +25,7 @@ from django.db import models
 
 from .utils import AsyncBaseModel, BaseDiscordMemberWrapper, DiscordMember
 
+
 class IntroductionReminderOptOutMember(BaseDiscordMemberWrapper):
     """
     Model to represent a Discord member that has opted out of introduction reminders.
