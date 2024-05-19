@@ -10,7 +10,7 @@ __all__: Sequence[str] = (
 
 
 import abc
-from typing import Final, TypedDict, final
+from typing import Final, TypedDict, final, override
 
 import discord
 from discord.ui import View
@@ -25,16 +25,16 @@ class MessageSenderComponent(abc.ABC):
     Defines the way to send a provided message content & optional view to the defined endpoint.
     """
 
+    @override
     def __init__(self) -> None:
-        """Initialize a new MessageSenderComponent for later use."""
         self.sent_message: discord.Message | discord.Interaction | None = None
 
     @abc.abstractmethod
-    async def _send(self, content: str, *, view: View | None = None) -> None:
+    async def _send(self, content: str, *, view: View | None = None) -> discord.Message | discord.Interaction:  # noqa: E501
         """
         Subclass implementation of `send()` method.
 
-        Implementations should end the provided message content & optional view
+        Implementations should send the provided message content & optional view
         to the defined endpoint.
         """
 
@@ -47,7 +47,7 @@ class MessageSenderComponent(abc.ABC):
             )
             raise RuntimeError(ALREADY_SENT_MESSAGE)
 
-        await self._send(content=content, view=view)
+        self.sent_message = await self._send(content=content, view=view)
 
     async def delete(self) -> None:
         """Delete the previously sent message."""
@@ -71,14 +71,14 @@ class ChannelMessageSender(MessageSenderComponent):
     Defines the way to send a provided message content & optional view to the saved channel.
     """
 
+    @override
     def __init__(self, channel: discord.DMChannel | discord.TextChannel) -> None:
-        """Initialize a new ChannelMessageSender with the given channel for later use."""
         self.channel: discord.DMChannel | discord.TextChannel = channel
 
         super().__init__()
 
-    async def _send(self, content: str, *, view: View | None = None) -> None:
-        """Send the provided message content & optional view to the saved channel."""
+    @override
+    async def _send(self, content: str, *, view: View | None = None) -> discord.Message | discord.Interaction:  # noqa: E501
         class _BaseChannelSendKwargs(TypedDict):
             """Type-hint-definition for the required kwargs to the channel-send-function."""
 
@@ -97,7 +97,7 @@ class ChannelMessageSender(MessageSenderComponent):
         if view:
             send_kwargs["view"] = view
 
-        self.sent_message = await self.channel.send(**send_kwargs)
+        return await self.channel.send(**send_kwargs)
 
 
 class ResponseMessageSender(MessageSenderComponent):
@@ -108,12 +108,12 @@ class ResponseMessageSender(MessageSenderComponent):
     to the saved interaction context.
     """
 
+    @override
     def __init__(self, ctx: TeXBotApplicationContext) -> None:
-        """Initialize a new ResponseMessageSender with the given context for later use."""
         self.ctx: TeXBotApplicationContext = ctx
 
         super().__init__()
 
-    async def _send(self, content: str, *, view: View | None = None) -> None:
-        """Send the provided message content & optional view to the saved context."""
-        self.sent_message = await self.ctx.respond(content=content, view=view, ephemeral=True)
+    @override
+    async def _send(self, content: str, *, view: View | None = None) -> discord.Message | discord.Interaction:  # noqa: E501
+        return await self.ctx.respond(content=content, view=view, ephemeral=True)

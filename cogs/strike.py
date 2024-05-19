@@ -262,9 +262,13 @@ class BaseStrikeCog(TeXBotBaseCog):
         )
 
         if button_interaction.data["custom_id"] == "no_strike_member":  # type: ignore[index, typeddict-item]
-            await message_sender_component.send(
-                f"Aborted performing {self.SUGGESTED_ACTIONS[actual_strike_amount]} action "
-                f"on {strike_user.mention}.",
+            await button_interaction.respond(
+                (
+                    "Aborted performing "
+                    f"{self.SUGGESTED_ACTIONS[actual_strike_amount]} action "
+                    f"on {strike_user.mention}."
+                ),
+                ephemeral=True,
             )
             return
 
@@ -275,10 +279,14 @@ class BaseStrikeCog(TeXBotBaseCog):
                 committee_member=interaction_user,
             )
 
-            await message_sender_component.send(
-                f"Successfully performed {self.SUGGESTED_ACTIONS[actual_strike_amount]} "
-                f"action on {strike_user.mention}.",
+            await button_interaction.respond(
+                (
+                    f"Successfully performed {self.SUGGESTED_ACTIONS[actual_strike_amount]} "
+                    f"action on {strike_user.mention}."
+                ),
+                ephemeral=True,
             )
+            return
 
         raise ValueError
 
