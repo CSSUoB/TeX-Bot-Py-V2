@@ -13,7 +13,7 @@ from typing import Final
 import discord
 from discord.ui import View
 
-from exceptions import BaseDoesNotExistError
+from exceptions import CommitteeRoleDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 logger: Logger = logging.getLogger("TeX-Bot")
@@ -76,7 +76,7 @@ class KillCommandCog(TeXBotBaseCog):
         but only after the user has confirmed that this is the action they wish to take.
         """
         committee_role: discord.Role | None = None
-        with contextlib.suppress(BaseDoesNotExistError):
+        with contextlib.suppress(CommitteeRoleDoesNotExistError):
             committee_role = await self.bot.committee_role
 
         response: discord.Message | discord.Interaction = await ctx.respond(
