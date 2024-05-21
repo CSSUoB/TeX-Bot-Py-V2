@@ -40,8 +40,10 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
     def _warn_if_running_in_async(cls) -> None:
         if utils.is_running_in_async():
             logger.error(
-                "Synchronous database access used in asynchronous context. "
-                "Many Django database errors are likely to occur beyond this point!"
+                (
+                    "Synchronous database access used in asynchronous context. "
+                    "Many Django database errors are likely to occur beyond this point!"
+                ),
             )
 
     # noinspection SpellCheckingInspection
@@ -78,7 +80,7 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
                 async_to_sync(self._aremove_unhashed_id_from_kwargs)(kwargs)
                 if utils.is_running_in_async()
                 else self._perform_remove_unhashed_id_from_kwargs(kwargs)
-            )
+            ),
         )
 
     @override
@@ -89,7 +91,7 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
                 async_to_sync(self._aremove_unhashed_id_from_kwargs)(kwargs)
                 if utils.is_running_in_async()
                 else self._perform_remove_unhashed_id_from_kwargs(kwargs)
-            )
+            ),
         )
 
     @override

@@ -66,9 +66,10 @@ def is_member_inducted(member: discord.Member) -> bool:
 
 
 def is_running_in_async() -> bool:
-    """Simple check to determine whether the current context is asynchronous or not."""
+    """Determine whether the current context is asynchronous or not."""
     try:
         asyncio.get_running_loop()
-        return True
     except RuntimeError:
         return False
+    else:
+        return True
