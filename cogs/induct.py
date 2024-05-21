@@ -388,8 +388,6 @@ class InductUserCommandsCog(BaseInductCog):
                 ),
                 ephemeral=True,
             )
-            return
-
         await self._perform_induction(ctx, member, silent=False)
 
     @discord.message_command(name="Silently Induct Message Author")  # type: ignore[no-untyped-call, misc]
@@ -415,8 +413,6 @@ class InductUserCommandsCog(BaseInductCog):
                 ),
                 ephemeral=True,
             )
-            return
-
         await self._perform_induction(ctx, member, silent=True)
 
 
