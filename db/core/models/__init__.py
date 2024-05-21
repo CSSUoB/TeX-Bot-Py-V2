@@ -10,67 +10,78 @@ __all__: Sequence[str] = (
     "DiscordReminder",
     "LeftDiscordMember",
     "DiscordMemberStrikes",
+    "DiscordMember",
 )
 
 
 import hashlib
 import re
-from typing import Final
+from typing import Final, override
 
 import discord
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
-from .utils import AsyncBaseModel, HashedDiscordMember
+from .utils import AsyncBaseModel, BaseDiscordMemberWrapper, DiscordMember
 
 
-class IntroductionReminderOptOutMember(HashedDiscordMember):
+class IntroductionReminderOptOutMember(BaseDiscordMemberWrapper):
     """
     Model to represent a Discord member that has opted out of introduction reminders.
 
     Opting-out of introduction reminders means that they have requested to not be sent any
     messages reminding them to introduce themselves in your group's Discord guild.
-    The Discord member is identified by their hashed Discord member ID.
     """
 
     INSTANCES_NAME_PLURAL: str = "Introduction Reminder Opt-Out Member objects"
 
+    discord_member = models.OneToOneField(  # type: ignore[assignment]
+        DiscordMember,
+        on_delete=models.CASCADE,
+        related_name="opted_out_of_introduction_reminders",
+        verbose_name="Discord Member",
+        blank=False,
+        null=False,
+        primary_key=True,
+    )
+
     class Meta:  # noqa: D106
-        verbose_name = (
-            "Hashed Discord ID of a Discord Member "
-            "that has Opted-Out of Introduction Reminders"
-        )
-        verbose_name_plural = (
-            "Hashed Discord IDs of Discord Members "
-            "that have Opted-Out of Introduction Reminders"
-        )
+        verbose_name = "Discord Member that has Opted-Out of Introduction Reminders"
+        verbose_name_plural = "Discord Members that have Opted-Out of Introduction Reminders"
 
 
-class SentOneOffIntroductionReminderMember(HashedDiscordMember):
+class SentOneOffIntroductionReminderMember(BaseDiscordMemberWrapper):
     """
     Represents a Discord member that has been sent a one-off introduction reminder.
 
     A one-off introduction reminder sends a single message
     reminding the Discord member to introduce themselves in your group's Discord guild,
     when SEND_INTRODUCTION_REMINDERS is set to "Once".
-    The Discord member is identified by their hashed Discord member ID.
     """
 
-    INSTANCES_NAME_PLURAL: str = "Sent One Off Introduction Reminder Member objects"
+    INSTANCES_NAME_PLURAL: str = "Sent One-Off Introduction Reminder Member objects"
+
+    discord_member = models.OneToOneField(  # type: ignore[assignment]
+        DiscordMember,
+        on_delete=models.CASCADE,
+        related_name="sent_one_off_introduction_reminder",
+        verbose_name="Discord Member",
+        blank=False,
+        null=False,
+        primary_key=True,
+    )
 
     class Meta:  # noqa: D106
         verbose_name = (
-            "Hashed Discord ID of a Discord Member "
-            "that has had a one-off Introduction reminder sent to their DMs"
+            "Discord Member that has had a one-off Introduction reminder sent to their DMs"
         )
         verbose_name_plural = (
-            "Hashed Discord IDs of Discord Members "
-            "that have had a one-off Introduction reminder sent to their DMs"
+            "Discord Members that have had a one-off Introduction reminder sent to their DMs"
         )
 
 
-class SentGetRolesReminderMember(HashedDiscordMember):
+class SentGetRolesReminderMember(BaseDiscordMemberWrapper):
     """
     Represents a Discord member that has already been sent an opt-in roles reminder.
 
@@ -84,14 +95,20 @@ class SentGetRolesReminderMember(HashedDiscordMember):
 
     INSTANCES_NAME_PLURAL: str = "Sent Get Roles Reminder Member objects"
 
+    discord_member = models.OneToOneField(  # type: ignore[assignment]
+        DiscordMember,
+        on_delete=models.CASCADE,
+        related_name="sent_get_roles_reminder",
+        verbose_name="Discord Member",
+        blank=False,
+        null=False,
+        primary_key=True,
+    )
+
     class Meta:  # noqa: D106
-        verbose_name = (
-            "Hashed Discord ID of a Discord Member that has had a \"Get Roles\" reminder "
-            "sent to their DMs"
-        )
+        verbose_name = "Discord Member that has had a \"Get Roles\" reminder sent to their DMs"
         verbose_name_plural = (
-            "Hashed Discord IDs of Discord Members that have had a \"Get Roles\" reminder "
-            "sent to their DMs"
+            "Discord Members that have had a \"Get Roles\" reminder sent to their DMs"
         )
 
 
@@ -127,12 +144,8 @@ class GroupMadeMember(AsyncBaseModel):
         verbose_name = "Hashed Group ID of User that has been made Member"
         verbose_name_plural = "Hashed Group IDs of Users that have been made Member"
 
-    def __repr__(self) -> str:
-        """Generate a developer-focused representation of the member's hashed Group ID."""
-        return f"<{self._meta.verbose_name}: {self.hashed_group_member_id!r}>"
-
+    @override
     def __setattr__(self, name: str, value: object) -> None:
-        """Set the attribute name to the given value, with special cases for proxy fields."""
         if name == "group_member_id":
             if not isinstance(value, str | int):
                 INVALID_GROUP_MEMBER_ID_TYPE_MESSAGE: Final[str] = (
@@ -146,12 +159,16 @@ class GroupMadeMember(AsyncBaseModel):
         else:
             super().__setattr__(name, value)
 
+    @override
     def __str__(self) -> str:
-        """Generate the string representation of this GroupMadeMember."""
         return f"{self.hashed_group_member_id}"
 
-    @staticmethod
-    def hash_group_member_id(group_member_id: str | int, group_member_id_type: str = "community group") -> str:  # noqa: E501
+    @override
+    def __repr__(self) -> str:
+        return f"<{self._meta.verbose_name}: {self.hashed_group_member_id!r}>"
+
+    @classmethod
+    def hash_group_member_id(cls, group_member_id: str | int, group_member_id_type: str = "community group") -> str:  # noqa: E501
         """
         Hash the provided group_member_id.
 
@@ -168,33 +185,24 @@ class GroupMadeMember(AsyncBaseModel):
         return hashlib.sha256(str(group_member_id).encode()).hexdigest()
 
     @classmethod
+    @override
     def get_proxy_field_names(cls) -> set[str]:
-        """
-        Return the set of extra names of properties that can be saved to the database.
-
-        These are proxy fields because their values are not stored as object attributes,
-        however, they can be used as a reference to a real attribute when saving objects to the
-        database.
-        """
         return super().get_proxy_field_names() | {"group_member_id"}
 
 
-class DiscordReminder(HashedDiscordMember):
+class DiscordReminder(BaseDiscordMemberWrapper):
     """Represents a reminder that a Discord member has requested to be sent to them."""
 
     INSTANCES_NAME_PLURAL: str = "Reminders"
 
-    hashed_member_id = models.CharField(
-        "Hashed Discord Member ID",
-        null=False,
+    discord_member = models.ForeignKey(  # type: ignore[assignment]
+        DiscordMember,
+        on_delete=models.CASCADE,
+        related_name="reminders",
+        verbose_name="Discord Member",
         blank=False,
-        max_length=64,
-        validators=[
-            RegexValidator(
-                r"\A[A-Fa-f0-9]{64}\Z",
-                "hashed_member_id must be a valid sha256 hex-digest.",
-            ),
-        ],
+        null=False,
+        unique=False,
     )
     message = models.TextField(
         "Message to remind User",
@@ -250,6 +258,7 @@ class DiscordReminder(HashedDiscordMember):
     def channel_type(self, channel_type: discord.ChannelType | int) -> None:
         if isinstance(channel_type, discord.ChannelType):
             try:
+                # noinspection PyUnresolvedReferences
                 channel_type = int(channel_type.value)
             except ValueError:
                 INVALID_CHANNEL_TYPE_MESSAGE: Final[str] = (
@@ -264,26 +273,32 @@ class DiscordReminder(HashedDiscordMember):
         verbose_name_plural = "Reminders for Discord Members"
         constraints = [  # noqa: RUF012
             models.UniqueConstraint(
-                fields=["hashed_member_id", "message", "_channel_id"],
+                fields=["discord_member", "message", "_channel_id"],
                 name="unique_user_channel_message",
             ),
         ]
 
-    def __repr__(self) -> str:
-        """Generate a developer-focused representation of this DiscordReminder's attributes."""
+    @override
+    def __str__(self) -> str:
         return (
-            f"<{self._meta.verbose_name}: {self.hashed_member_id!r}, "
-            f"{str(self.channel_id)!r}, {str(self.send_datetime)!r}>"
+            f"{self.discord_member}"  # type: ignore[has-type]
+            f"{
+                ""
+                if not self.message
+                else (
+                    f": {self.message[:50]}..."
+                    if len(self.message) > 50
+                    else self.message
+                )
+            }"
         )
 
-    def __str__(self) -> str:
-        """Generate the string representation of this DiscordReminder."""
-        construct_str: str = f"{self.hashed_member_id}"
-
-        if self.message:
-            construct_str += f": {self.message[:50]}"
-
-        return construct_str
+    @override
+    def __repr__(self) -> str:
+        return (
+            f"<{self._meta.verbose_name}: {self.discord_member}, "  # type: ignore[has-type]
+            f"{self.channel_id!r}, {self.send_datetime!r}>"
+        )
 
     def get_formatted_message(self, user_mention: str | None) -> str:
         """
@@ -305,14 +320,8 @@ class DiscordReminder(HashedDiscordMember):
         return constructed_message
 
     @classmethod
+    @override
     def get_proxy_field_names(cls) -> set[str]:
-        """
-        Return the set of extra names of properties that can be saved to the database.
-
-        These are proxy fields because their values are not stored as object attributes,
-        however, they can be used as a reference to a real attribute when saving objects to the
-        database.
-        """
         return super().get_proxy_field_names() | {"channel_id", "channel_type"}
 
 
@@ -347,12 +356,19 @@ class LeftDiscordMember(AsyncBaseModel):
             "they left your group's Discord guild"
         )
 
-    def clean(self) -> None:
-        """
-        Perform extra model-wide validation.
+    @override
+    def __str__(self) -> str:
+        # noinspection PyUnresolvedReferences
+        return f"{self.id}: {", ".join(self.roles)}"
 
-        This runs after clean() has been called on every field by self.clean_fields.
-        """
+    @override
+    def __repr__(self) -> str:
+        return (
+            f"<{self._meta.verbose_name}: {{{", ".join(repr(role) for role in self.roles)}}}>"
+        )
+
+    @override
+    def clean(self) -> None:
         if any(not isinstance(role, str) for role in self.roles):
             raise ValidationError(
                 {
@@ -362,18 +378,12 @@ class LeftDiscordMember(AsyncBaseModel):
             )
 
     @classmethod
+    @override
     def get_proxy_field_names(cls) -> set[str]:
-        """
-        Return the set of extra names of properties that can be saved to the database.
-
-        These are proxy fields because their values are not stored as object attributes,
-        however, they can be used as a reference to a real attribute when saving objects to the
-        database.
-        """
         return super().get_proxy_field_names() | {"roles"}
 
 
-class DiscordMemberStrikes(HashedDiscordMember):
+class DiscordMemberStrikes(BaseDiscordMemberWrapper):
     """
     Represents a Discord member that has been given one or more strikes.
 
@@ -388,6 +398,15 @@ class DiscordMemberStrikes(HashedDiscordMember):
 
     INSTANCES_NAME_PLURAL: str = "Discord Member's Strikes"
 
+    discord_member = models.OneToOneField(  # type: ignore[assignment]
+        DiscordMember,
+        on_delete=models.CASCADE,
+        related_name="strikes",
+        verbose_name="Discord Member",
+        blank=False,
+        null=False,
+        primary_key=True,
+    )
     strikes = models.PositiveIntegerField(
         "Number of strikes",
         null=False,
@@ -398,12 +417,18 @@ class DiscordMemberStrikes(HashedDiscordMember):
 
     class Meta:  # noqa: D106
         verbose_name = (
-            "Hashed Discord ID of a Discord Member "
-            "that has been previously given one or more strikes "
+            "Discord Member that has been previously given one or more strikes "
             "because they broke one or more of your group's Discord guild rules"
         )
         verbose_name_plural = (
-            "Hashed Discord IDs of Discord Members "
-            "that have been previously given one or more strikes "
+            "Discord Members that have been previously given one or more strikes "
             "because they broke one or more of your group's Discord guild rules"
         )
+
+    @override
+    def __str__(self) -> str:
+        return f"{self.discord_member}: {self.strikes}"  # type: ignore[has-type]
+
+    @override
+    def __repr__(self) -> str:
+        return f"<{self._meta.verbose_name}: {self.discord_member}, {self.strikes!r}>"  # type: ignore[has-type]

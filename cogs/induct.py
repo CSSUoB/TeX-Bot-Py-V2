@@ -63,16 +63,10 @@ class InductSendMessageCog(TeXBotBaseCog):
         if guest_role in before.roles or guest_role not in after.roles:
             return
 
-        try:
-            introduction_reminder_opt_out_member: IntroductionReminderOptOutMember = await IntroductionReminderOptOutMember.objects.aget(  # noqa: E501
-                hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(
-                    before.id,
-                ),
-            )
-        except IntroductionReminderOptOutMember.DoesNotExist:
-            pass
-        else:
-            await introduction_reminder_opt_out_member.adelete()
+        with contextlib.suppress(IntroductionReminderOptOutMember.DoesNotExist):
+            await (
+                await IntroductionReminderOptOutMember.objects.aget(discord_id=before.id)
+            ).adelete()
 
         async for message in after.history():
             message_is_introduction_reminder: bool = (

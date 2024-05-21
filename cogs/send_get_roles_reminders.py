@@ -123,10 +123,9 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
             if not member_requires_opt_in_roles_reminder:
                 continue
 
-            hashed_member_id: str = SentGetRolesReminderMember.hash_member_id(member.id)
             sent_get_roles_reminder_member_exists: bool = (
-                await SentGetRolesReminderMember.objects.filter(
-                    hashed_member_id=hashed_member_id,
+                await (
+                    await SentGetRolesReminderMember.objects.afilter(discord_id=member.id)
                 ).aexists()
             )
             if sent_get_roles_reminder_member_exists:
@@ -173,9 +172,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 "and year group identifiers.",
             )
 
-            await SentGetRolesReminderMember.objects.acreate(
-                hashed_member_id=hashed_member_id,
-            )
+            await SentGetRolesReminderMember.objects.acreate(discord_id=member.id)
 
     @send_get_roles_reminders.before_loop
     async def before_tasks(self) -> None:

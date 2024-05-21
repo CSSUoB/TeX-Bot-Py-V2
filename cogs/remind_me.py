@@ -19,7 +19,7 @@ from discord.ext import tasks
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from db.core.models import DiscordReminder
+from db.core.models import DiscordMember, DiscordReminder
 from utils import TeXBot, TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotBaseCog
 
 if TYPE_CHECKING:
@@ -214,8 +214,8 @@ class RemindMeCommandCog(TeXBotBaseCog):
             message = re.sub(r"<@[&#]?\d+>", "@...", message.strip())
 
         try:
-            reminder: DiscordReminder = await DiscordReminder.objects.acreate(
-                member_id=ctx.user.id,
+            reminder: DiscordReminder = await DiscordReminder.objects.acreate(  # type: ignore[assignment]
+                discord_id=ctx.user.id,
                 message=message or "",
                 channel_id=ctx.channel_id,
                 send_datetime=parsed_time[0],
@@ -288,7 +288,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
         )
 
         reminder: DiscordReminder
-        async for reminder in DiscordReminder.objects.all():
+        async for reminder in DiscordReminder.objects.select_related("discord_member").all():  # type: ignore[assignment]
             time_since_reminder_needed_to_be_sent: datetime.timedelta = (
                 discord.utils.utcnow() - reminder.send_datetime
             )
@@ -297,7 +297,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                     functools.partial(
                         lambda _user, _reminder: (
                             not _user.bot
-                            and DiscordReminder.hash_member_id(_user.id) == _reminder.hashed_member_id  # noqa: E501
+                            and DiscordMember.hash_discord_id(_user.id) == _reminder.discord_member.hashed_discord_id  # noqa: E501
                         ),
                         _reminder=reminder,
                     ),
@@ -307,7 +307,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                 if not user:
                     logger.warning(
                         "User with hashed user ID: %s no longer exists.",
-                        reminder.hashed_member_id,
+                        reminder.discord_member.hashed_discord_id,  # type: ignore[has-type]
                     )
                     await reminder.adelete()
                     continue
