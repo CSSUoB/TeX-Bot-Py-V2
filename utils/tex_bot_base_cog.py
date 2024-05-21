@@ -166,7 +166,7 @@ class TeXBotBaseCog(Cog):
         except BaseDoesNotExistError:
             return set()
 
-        with contextlib.suppress(BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
+        with contextlib.suppress(DiscordMemberNotInMainGuildError):
             channel_permissions_limiter = await ctx.bot.get_main_guild_member(
                 ctx.interaction.user,
             )
