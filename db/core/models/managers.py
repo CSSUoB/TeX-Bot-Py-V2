@@ -6,10 +6,15 @@ __all__: Sequence[str] = ("HashedDiscordMemberManager", "RelatedDiscordMemberMan
 
 
 import abc
+import logging
 from collections.abc import Callable, MutableMapping
-from typing import TYPE_CHECKING, TypeAlias, TypeVar, override
+from logging import Logger
+from typing import TYPE_CHECKING, TypeAlias, TypeVar, final, override
 
+from asgiref.sync import async_to_sync
 from django.db.models import Manager, QuerySet
+
+import utils
 
 if TYPE_CHECKING:
     from django.core.exceptions import ObjectDoesNotExist
@@ -23,16 +28,31 @@ Defaults: TypeAlias = (
     | None
 )
 
+logger: Logger = logging.getLogger("TeX-Bot")
+
 
 class BaseHashedIDManager(Manager["T_model"], abc.ABC):
     """Base manager class to remove a given unhashed ID before executing a query."""
 
     use_in_migrations: bool = True
 
+    @classmethod
+    def _warn_if_running_in_async(cls) -> None:
+        if utils.is_running_in_async():
+            logger.error(
+                "Synchronous database access used in asynchronous context. "
+                "Many Django database errors are likely to occur beyond this point!"
+            )
+
     # noinspection SpellCheckingInspection
     @abc.abstractmethod
     def _remove_unhashed_id_from_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:
         """Remove any unhashed ID values from the kwargs dict before executing a query."""
+
+    @final
+    def _perform_remove_unhashed_id_from_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:  # noqa: E501
+        self._warn_if_running_in_async()
+        return self._remove_unhashed_id_from_kwargs(kwargs=kwargs)
 
     # noinspection SpellCheckingInspection
     @abc.abstractmethod
@@ -41,7 +61,7 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
 
     @override
     def get(self, *args: object, **kwargs: object) -> "T_model":
-        return super().get(*args, **self._remove_unhashed_id_from_kwargs(kwargs))
+        return super().get(*args, **self._perform_remove_unhashed_id_from_kwargs(kwargs))
 
     @override
     async def aget(self, *args: object, **kwargs: object) -> "T_model":
@@ -52,15 +72,29 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
 
     @override
     def filter(self, *args: object, **kwargs: object) -> QuerySet["T_model"]:
-        return super().filter(*args, **self._remove_unhashed_id_from_kwargs(kwargs))
+        return super().filter(
+            *args,
+            **(
+                async_to_sync(self._aremove_unhashed_id_from_kwargs)(kwargs)
+                if utils.is_running_in_async()
+                else self._perform_remove_unhashed_id_from_kwargs(kwargs)
+            )
+        )
 
     @override
     def exclude(self, *args: object, **kwargs: object) -> QuerySet["T_model"]:
-        return super().exclude(*args, **self._remove_unhashed_id_from_kwargs(kwargs))
+        return super().exclude(
+            *args,
+            **(
+                async_to_sync(self._aremove_unhashed_id_from_kwargs)(kwargs)
+                if utils.is_running_in_async()
+                else self._perform_remove_unhashed_id_from_kwargs(kwargs)
+            )
+        )
 
     @override
     def create(self, **kwargs: object) -> "T_model":
-        return super().create(**self._remove_unhashed_id_from_kwargs(kwargs))
+        return super().create(**self._perform_remove_unhashed_id_from_kwargs(kwargs))
 
     # noinspection SpellCheckingInspection
     @override
@@ -71,7 +105,7 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
     def get_or_create(self, defaults: Defaults = None, **kwargs: object) -> tuple["T_model", bool]:  # noqa: E501
         return super().get_or_create(
             defaults=defaults,
-            **self._remove_unhashed_id_from_kwargs(kwargs),
+            **self._perform_remove_unhashed_id_from_kwargs(kwargs),
         )
 
     @override
@@ -86,7 +120,7 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
         return super().get_or_create(
             defaults=defaults,
             create_defaults=create_defaults,
-            **self._remove_unhashed_id_from_kwargs(kwargs),
+            **self._perform_remove_unhashed_id_from_kwargs(kwargs),
         )
 
     # noinspection SpellCheckingInspection
@@ -100,7 +134,7 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
 
     @override
     def update(self, **kwargs: object) -> int:
-        return super().update(**self._remove_unhashed_id_from_kwargs(kwargs))
+        return super().update(**self._perform_remove_unhashed_id_from_kwargs(kwargs))
 
     # noinspection SpellCheckingInspection
     @override

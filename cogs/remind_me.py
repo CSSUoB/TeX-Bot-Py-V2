@@ -288,7 +288,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
         )
 
         reminder: DiscordReminder
-        async for reminder in DiscordReminder.objects.all():
+        async for reminder in DiscordReminder.objects.select_related("discord_member").all():
             time_since_reminder_needed_to_be_sent: datetime.timedelta = (
                 discord.utils.utcnow() - reminder.send_datetime
             )
@@ -297,7 +297,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                     functools.partial(
                         lambda _user, _reminder: (
                             not _user.bot
-                            and DiscordMember.hash_discord_id(_user.id) == _reminder.hashed_discord_id  # noqa: E501
+                            and DiscordMember.hash_discord_id(_user.id) == _reminder.discord_member.hashed_discord_id  # noqa: E501
                         ),
                         _reminder=reminder,
                     ),
