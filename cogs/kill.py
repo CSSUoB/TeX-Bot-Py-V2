@@ -13,7 +13,7 @@ from typing import Final
 import discord
 from discord.ui import View
 
-from exceptions import BaseDoesNotExistError
+from exceptions import CommitteeRoleDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 logger: Logger = logging.getLogger("TeX-Bot")
@@ -24,16 +24,19 @@ class ConfirmKillView(View):
 
     @classmethod
     async def _delete_message(cls, response: discord.InteractionResponse) -> None:
-        e: discord.NotFound
+        message_not_found_error: discord.NotFound
         try:
             await response.edit_message(delete_after=0)
-        except discord.NotFound as e:
+        except discord.NotFound as message_not_found_error:
             MESSAGE_WAS_ALREADY_DELETED: Final[bool] = (
-                e.code == 10008
-                or ("unknown" in e.text.lower() and "message" in e.text.lower())
+                message_not_found_error.code == 10008
+                or (
+                    "unknown" in message_not_found_error.text.lower()
+                    and "message" in message_not_found_error.text.lower()
+                )
             )
             if not MESSAGE_WAS_ALREADY_DELETED:
-                raise e from e
+                raise message_not_found_error from message_not_found_error
 
     @discord.ui.button(  # type: ignore[misc]
         label="SHUTDOWN",
@@ -73,7 +76,7 @@ class KillCommandCog(TeXBotBaseCog):
         but only after the user has confirmed that this is the action they wish to take.
         """
         committee_role: discord.Role | None = None
-        with contextlib.suppress(BaseDoesNotExistError):
+        with contextlib.suppress(CommitteeRoleDoesNotExistError):
             committee_role = await self.bot.committee_role
 
         response: discord.Message | discord.Interaction = await ctx.respond(

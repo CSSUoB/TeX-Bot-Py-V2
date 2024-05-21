@@ -290,7 +290,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
         reminder: DiscordReminder
         async for reminder in DiscordReminder.objects.all():
             time_since_reminder_needed_to_be_sent: datetime.timedelta = (
-                    discord.utils.utcnow() - reminder.send_datetime
+                discord.utils.utcnow() - reminder.send_datetime
             )
             if time_since_reminder_needed_to_be_sent > datetime.timedelta(minutes=15):
                 user: discord.User | None = discord.utils.find(

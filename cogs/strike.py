@@ -262,9 +262,13 @@ class BaseStrikeCog(TeXBotBaseCog):
         )
 
         if button_interaction.data["custom_id"] == "no_strike_member":  # type: ignore[index, typeddict-item]
-            await message_sender_component.send(
-                f"Aborted performing {self.SUGGESTED_ACTIONS[actual_strike_amount]} action "
-                f"on {strike_user.mention}.",
+            await button_interaction.respond(
+                (
+                    "Aborted performing "
+                    f"{self.SUGGESTED_ACTIONS[actual_strike_amount]} action "
+                    f"on {strike_user.mention}."
+                ),
+                ephemeral=True,
             )
             return
 
@@ -275,10 +279,14 @@ class BaseStrikeCog(TeXBotBaseCog):
                 committee_member=interaction_user,
             )
 
-            await message_sender_component.send(
-                f"Successfully performed {self.SUGGESTED_ACTIONS[actual_strike_amount]} "
-                f"action on {strike_user.mention}.",
+            await button_interaction.respond(
+                (
+                    f"Successfully performed {self.SUGGESTED_ACTIONS[actual_strike_amount]} "
+                    f"action on {strike_user.mention}."
+                ),
+                ephemeral=True,
             )
+            return
 
         raise ValueError
 
@@ -768,12 +776,13 @@ class StrikeCommandCog(BaseStrikeCog):
         The "strike" command adds an additional strike to the given member, then performs the
         appropriate moderation action to the member, according to the new number of strikes.
         """
+        member_id_not_integer_error: ValueError
         try:
             strike_member: discord.Member = await self.bot.get_member_from_str_id(
                 str_strike_member_id,
             )
-        except ValueError as e:
-            await self.command_send_error(ctx, message=e.args[0])
+        except ValueError as member_id_not_integer_error:
+            await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
             return
 
         await self._command_perform_strike(ctx, strike_member)
