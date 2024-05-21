@@ -9,9 +9,8 @@ import abc
 import logging
 from collections.abc import Callable, MutableMapping
 from logging import Logger
-from typing import TYPE_CHECKING, TypeAlias, TypeVar, final, override
+from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar, final, override
 
-from asgiref.sync import async_to_sync
 from django.db.models import Manager, QuerySet
 
 import utils
@@ -36,16 +35,6 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
 
     use_in_migrations: bool = True
 
-    @classmethod
-    def _warn_if_running_in_async(cls) -> None:
-        if utils.is_running_in_async():
-            logger.error(
-                (
-                    "Synchronous database access used in asynchronous context. "
-                    "Many Django database errors are likely to occur beyond this point!"
-                ),
-            )
-
     # noinspection SpellCheckingInspection
     @abc.abstractmethod
     def _remove_unhashed_id_from_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:
@@ -53,7 +42,13 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
 
     @final
     def _perform_remove_unhashed_id_from_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:  # noqa: E501
-        self._warn_if_running_in_async()
+        if utils.is_running_in_async():
+            SYNC_IN_ASYNC_MESSAGE: Final[str] = (
+                "Synchronous database access used in asynchronous context. "
+                "Use the respective async version of this function instead."
+            )
+            raise RuntimeError(SYNC_IN_ASYNC_MESSAGE)
+
         return self._remove_unhashed_id_from_kwargs(kwargs=kwargs)
 
     # noinspection SpellCheckingInspection
@@ -76,22 +71,27 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
     def filter(self, *args: object, **kwargs: object) -> QuerySet["T_model"]:
         return super().filter(
             *args,
-            **(
-                async_to_sync(self._aremove_unhashed_id_from_kwargs)(kwargs)
-                if utils.is_running_in_async()
-                else self._perform_remove_unhashed_id_from_kwargs(kwargs)
-            ),
+            **self._perform_remove_unhashed_id_from_kwargs(kwargs),
+        )
+
+    async def afilter(self, *args: object, **kwargs: object) -> QuerySet["T_model"]:
+        return super().filter(
+            *args,
+            **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
         )
 
     @override
     def exclude(self, *args: object, **kwargs: object) -> QuerySet["T_model"]:
         return super().exclude(
             *args,
-            **(
-                async_to_sync(self._aremove_unhashed_id_from_kwargs)(kwargs)
-                if utils.is_running_in_async()
-                else self._perform_remove_unhashed_id_from_kwargs(kwargs)
-            ),
+            **self._perform_remove_unhashed_id_from_kwargs(kwargs),
+        )
+
+    # noinspection SpellCheckingInspection
+    async def aexclude(self, *args: object, **kwargs: object) -> QuerySet["T_model"]:
+        return super().exclude(
+            *args,
+            **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
         )
 
     @override

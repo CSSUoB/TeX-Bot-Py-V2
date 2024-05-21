@@ -124,7 +124,9 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 continue
 
             sent_get_roles_reminder_member_exists: bool = (
-                await SentGetRolesReminderMember.objects.filter(discord_id=member.id).aexists()  # type: ignore[misc]
+                await (
+                    await SentGetRolesReminderMember.objects.afilter(discord_id=member.id)
+                ).aexists()
             )
             if sent_get_roles_reminder_member_exists:
                 continue
