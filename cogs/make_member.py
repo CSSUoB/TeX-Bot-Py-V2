@@ -135,7 +135,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             # noinspection PyUnusedLocal
             committee_mention: str = "committee"
             with contextlib.suppress(CommitteeRoleDoesNotExistError):
-                committee_mention = (await self.bot.roles_channel).mention
+                committee_mention = (await self.bot.committee_role).mention
 
             await ctx.respond(
                 (
