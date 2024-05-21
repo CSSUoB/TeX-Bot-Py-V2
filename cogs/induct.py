@@ -115,8 +115,6 @@ class InductSendMessageCog(TeXBotBaseCog):
             "to the right & selecting \"Edit Server Profile\").",
         )
         if user_type != "member":
-            # TODO @MattyTheHacker: Remove environment variables that are only used in messages. Messages will be extracted into the external JSON file.  # noqa: FIX002
-            # https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/90
             await after.send(
                 f"You can also get yourself an annual membership "
                 f"to {self.bot.group_full_name} for only £5! "
