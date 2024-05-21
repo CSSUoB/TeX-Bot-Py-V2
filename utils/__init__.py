@@ -46,6 +46,7 @@ def generate_invite_url(discord_bot_application_id: int, discord_guild_id: int) 
             ban_members=True,
             manage_channels=True,
             view_audit_log=True,
+            moderate_members=True,
         ),
         guild=discord.Object(id=discord_guild_id),
         scopes=("bot", "applications.commands"),

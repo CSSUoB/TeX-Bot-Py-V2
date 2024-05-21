@@ -14,8 +14,8 @@ from discord import Forbidden
 from discord.ext.commands.errors import CheckAnyFailure
 
 from exceptions import (
-    BaseDoesNotExistError,
     BaseErrorWithErrorCode,
+    CommitteeRoleDoesNotExistError,
     GuildDoesNotExistError,
 )
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
@@ -55,7 +55,7 @@ class CommandErrorCog(TeXBotBaseCog):
             elif CommandChecks.is_interaction_user_has_committee_role_failure(error.checks[0]):
                 # noinspection PyUnusedLocal
                 committee_role_mention: str = "@Committee"
-                with contextlib.suppress(BaseDoesNotExistError):
+                with contextlib.suppress(CommitteeRoleDoesNotExistError):
                     committee_role_mention = (await self.bot.committee_role).mention
                 message = f"Only {committee_role_mention} members can run this command."
 
