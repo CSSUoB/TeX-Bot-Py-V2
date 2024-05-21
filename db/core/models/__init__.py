@@ -195,7 +195,7 @@ class DiscordReminder(BaseDiscordMemberWrapper):
 
     INSTANCES_NAME_PLURAL: str = "Reminders"
 
-    discord_member = models.ForeignKey(
+    discord_member = models.ForeignKey(  # type: ignore[assignment]
         DiscordMember,
         on_delete=models.CASCADE,
         related_name="reminders",
@@ -281,7 +281,7 @@ class DiscordReminder(BaseDiscordMemberWrapper):
     @override
     def __str__(self) -> str:
         return (
-            f"{self.discord_member}"
+            f"{self.discord_member}"  # type: ignore[has-type]
             f"{
                 ""
                 if not self.message
@@ -296,7 +296,7 @@ class DiscordReminder(BaseDiscordMemberWrapper):
     @override
     def __repr__(self) -> str:
         return (
-            f"<{self._meta.verbose_name}: {self.discord_member}, "
+            f"<{self._meta.verbose_name}: {self.discord_member}, "  # type: ignore[has-type]
             f"{self.channel_id!r}, {self.send_datetime!r}>"
         )
 
