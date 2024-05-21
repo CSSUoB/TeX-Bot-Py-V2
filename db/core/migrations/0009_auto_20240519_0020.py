@@ -98,6 +98,12 @@ class Migration(migrations.Migration):
                 ('objects', db.core.models.managers.RelatedDiscordMemberManager()),
             ],
         ),
+        migrations.AlterModelManagers(
+            name='discordreminder',
+            managers=[
+                ('objects', db.core.models.managers.RelatedDiscordMemberManager()),
+            ],
+        ),
         migrations.AddConstraint(
             model_name='discordreminder',
             constraint=models.UniqueConstraint(fields=('discord_member', 'message', '_channel_id'), name='unique_user_channel_message'),

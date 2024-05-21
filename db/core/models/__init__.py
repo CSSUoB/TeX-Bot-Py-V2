@@ -190,7 +190,7 @@ class GroupMadeMember(AsyncBaseModel):
         return super().get_proxy_field_names() | {"group_member_id"}
 
 
-class DiscordReminder(AsyncBaseModel):
+class DiscordReminder(BaseDiscordMemberWrapper):
     """Represents a reminder that a Discord member has requested to be sent to them."""
 
     INSTANCES_NAME_PLURAL: str = "Reminders"
