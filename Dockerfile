@@ -35,11 +35,12 @@ COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
 WORKDIR /app
 
-COPY LICENSE .en[v] config.py exceptions.py main.py messages.json ./
+COPY LICENSE .en[v] exceptions.py main.py messages.json ./
 RUN chmod +x main.py
 
-COPY cogs/ ./cogs/
-COPY db/ ./db/
 COPY utils/ ./utils/
+COPY db/ ./db/
+COPY config/ ./config/
+COPY cogs/ ./cogs/
 
 ENTRYPOINT ["python", "-m", "main"]
