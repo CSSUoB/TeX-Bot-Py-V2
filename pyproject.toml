@@ -41,7 +41,9 @@ mplcyberpunk = "^0.7"
 python-logging-discord-handler = "^0.1"
 classproperties = {git = "https://github.com/hottwaj/classproperties.git"}
 asyncstdlib = "~3.12"
-setuptools = "^69.5"
+setuptools = "^70.0"
+strictyaml = "^1.7.3"
+python-slugify = "^8.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.7"
@@ -50,8 +52,6 @@ django-stubs = {extras = ["compatible-mypy"], version = "~5.0"}
 types-beautifulsoup4 = "^4.12.0"
 pytest = "^8.2"
 ruff = "^0.4"
-gitpython = "^3.1"
-pymarkdownlnt = "^0.9"
 ccft-pymarkdown = "^1.1"
 
 
@@ -88,6 +88,9 @@ module = [
     "discord_logging.handler",
     "parsedatetime",
     "validators",
+    "strictyaml",
+    "strictyaml.exceptions",
+    "strictyaml.yamllocation",
 ]
 ignore_missing_imports = true
 

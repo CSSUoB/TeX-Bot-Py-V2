@@ -22,7 +22,7 @@ from db.core.models import GroupMadeMember
 from exceptions import CommitteeRoleDoesNotExistError, GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: Final[str] = (
     f"""{

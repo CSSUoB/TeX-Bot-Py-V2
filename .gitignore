@@ -146,3 +146,15 @@ local/
 *.sqlite3.bak
 *.db.bak
 local_stubs/
+TeX-Bot-deployment.yaml
+TeX-Bot-deployment.yml
+tex-bot-deployment.yaml
+tex-bot-deployment.yml
+TeX-Bot-settings.yaml
+TeX-Bot-settings.yml
+tex-bot-settings.yaml
+tex-bot-settings.yml
+TeX-Bot-config.yaml
+TeX-Bot-config.yml
+tex-bot-config.yaml
+tex-bot-config.yml

@@ -28,7 +28,7 @@ from utils.error_capture_decorators import (
 if TYPE_CHECKING:
     import datetime
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class SendGetRolesRemindersTaskCog(TeXBotBaseCog):

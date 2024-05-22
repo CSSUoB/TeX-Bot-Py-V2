@@ -8,6 +8,7 @@ __all__: Sequence[str] = ("ArchiveCommandCog",)
 import logging
 import re
 from logging import Logger
+from typing import Final
 
 import discord
 
@@ -19,7 +20,7 @@ from utils import (
     TeXBotBaseCog,
 )
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class ArchiveCommandCog(TeXBotBaseCog):

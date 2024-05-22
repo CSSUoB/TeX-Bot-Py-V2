@@ -8,6 +8,7 @@ __all__: Sequence[str] = ("CommandErrorCog",)
 import contextlib
 import logging
 from logging import Logger
+from typing import Final
 
 import discord
 from discord import Forbidden
@@ -20,7 +21,7 @@ from exceptions import (
 )
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class CommandErrorCog(TeXBotBaseCog):

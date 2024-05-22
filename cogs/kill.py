@@ -16,7 +16,7 @@ from discord.ui import View
 from exceptions import CommitteeRoleDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class ConfirmKillView(View):

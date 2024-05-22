@@ -35,7 +35,7 @@ ChannelTypes: TypeAlias = (
     | None
 )
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class TeXBot(discord.Bot):
