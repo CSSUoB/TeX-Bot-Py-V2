@@ -15,8 +15,10 @@ __all__: Sequence[str] = ("bot",)
 import discord
 
 import config
+import utils
 from config import settings
-from utils import SuppressTraceback, TeXBot
+from typing import NoReturn
+from utils import SuppressTraceback, TeXBot, TeXBotExitReason
 
 with SuppressTraceback():
     config.run_setup()
@@ -29,10 +31,19 @@ with SuppressTraceback():
 
 bot.load_extension("cogs")
 
-if __name__ == "__main__":
+
+def _run_bot() -> NoReturn:
     bot.run(settings["DISCORD_BOT_TOKEN"])
+    assert not utils.is_running_in_async()
 
-    if bot.EXIT_WAS_DUE_TO_KILL_COMMAND:
-        raise SystemExit(0)
+    if bot.EXIT_REASON is TeXBotExitReason.RESTART_REQUIRED_DUE_TO_CHANGED_CONFIG:
+        bot.reset_exit_reason()
+        config.run_setup()
+        bot.reload_extension("cogs")
+        _run_bot()
 
-    raise SystemExit(1)
+    raise SystemExit(bot.EXIT_REASON.value)
+
+
+if __name__ == "__main__":
+    _run_bot()

@@ -2,16 +2,19 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("TeXBot",)
+__all__: Sequence[str] = ("TeXBot", "TeXBotExitReason")
 
 
 import logging
 import re
+from collections.abc import Collection
+from enum import IntEnum
 from logging import Logger
 from typing import Final, TypeAlias
 
 import discord
 
+import utils
 from config import settings
 from exceptions import (
     ArchivistRoleDoesNotExistError,
@@ -38,6 +41,12 @@ ChannelTypes: TypeAlias = (
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
+class TeXBotExitReason(IntEnum):
+    UNKNOWN_ERROR = -1
+    KILL_COMMAND_USED = 0
+    RESTART_REQUIRED_DUE_TO_CHANGED_CONFIG = 1
+
+
 class TeXBot(discord.Bot):
     """
     Subclass of the default Bot class provided by Pycord.
@@ -58,7 +67,7 @@ class TeXBot(discord.Bot):
         self._roles_channel: discord.TextChannel | None = None
         self._general_channel: discord.TextChannel | None = None
         self._rules_channel: discord.TextChannel | None = None
-        self._exit_was_due_to_kill_command: bool = False
+        self._exit_reason: TeXBotExitReason = TeXBotExitReason.UNKNOWN_ERROR
 
         self._main_guild_set: bool = False
 
@@ -66,9 +75,9 @@ class TeXBot(discord.Bot):
 
     # noinspection PyPep8Naming
     @property
-    def EXIT_WAS_DUE_TO_KILL_COMMAND(self) -> bool:  # noqa: N802
-        """Return whether the TeX-Bot exited due to the kill command being used."""
-        return self._exit_was_due_to_kill_command
+    def EXIT_REASON(self) -> TeXBotExitReason:  # noqa: N802
+        """Return the reason for TeX-Bot's last exit."""
+        return self._exit_reason
 
     @property
     def main_guild(self) -> discord.Guild:
@@ -358,17 +367,46 @@ class TeXBot(discord.Bot):
 
         A log message will also be sent, announcing the user that requested the shutdown.
         """
-        if self.EXIT_WAS_DUE_TO_KILL_COMMAND:
-            EXIT_FLAG_ALREADY_SET_MESSAGE: Final[str] = (
+        if self.EXIT_REASON is not TeXBotExitReason.UNKNOWN_ERROR:
+            EXIT_REASON_ALREADY_SET_MESSAGE: Final[str] = (
                 "The kill & close command has already been used. Invalid state."
             )
-            raise RuntimeError(EXIT_FLAG_ALREADY_SET_MESSAGE)
+            raise RuntimeError(EXIT_REASON_ALREADY_SET_MESSAGE)
 
         if initiated_by_user:
             logger.info("Manual shutdown initiated by %s.", initiated_by_user)
 
-        self._exit_was_due_to_kill_command = True
+        self._exit_reason = TeXBotExitReason.KILL_COMMAND_USED
         await self.close()
+
+    async def perform_restart_after_config_changes(self) -> None:  # noqa: E501
+        """Restart TeX-Bot after the config changes."""
+        if self.EXIT_REASON is not TeXBotExitReason.UNKNOWN_ERROR:
+            EXIT_REASON_ALREADY_SET_MESSAGE: Final[str] = (
+                "TeX-Bot cannot be restarted as the exit reason has already been set. "
+                "Invalid state."
+            )
+            raise RuntimeError(EXIT_REASON_ALREADY_SET_MESSAGE)
+
+        self._exit_reason = TeXBotExitReason.RESTART_REQUIRED_DUE_TO_CHANGED_CONFIG
+        await self.close()
+
+    def reset_exit_reason(self) -> None:
+        """Reset the exit reason of TeX-Bot back to `UNKNOWN_ERROR`."""
+        if utils.is_running_in_async():
+            raise RuntimeError("Cannot reset exit reason when TeX-Bot is currently running.")
+
+        RESETABLE_EXIT_REASONS: Collection[TeXBotExitReason] = (
+            TeXBotExitReason.UNKNOWN_ERROR,
+            TeXBotExitReason.RESTART_REQUIRED_DUE_TO_CHANGED_CONFIG,
+        )
+        if self.EXIT_REASON not in RESETABLE_EXIT_REASONS:
+            raise RuntimeError(
+                "Cannot reset exit reason, due to incorrect current exit reason. "
+                "Invalid state."
+            )
+
+        self._exit_reason = TeXBotExitReason.UNKNOWN_ERROR
 
     async def get_everyone_role(self) -> discord.Role:
         """
