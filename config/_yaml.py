@@ -13,12 +13,14 @@ from typing import Final, Literal, TypeAlias, override
 
 import slugify
 import strictyaml
-from strictyaml import YAML, constants as strictyaml_constants
+from strictyaml import YAML
+from strictyaml import constants as strictyaml_constants
 from strictyaml import utils as strictyaml_utils
 from strictyaml.exceptions import YAMLSerializationError
 from strictyaml.yamllocation import YAMLChunk
 
 from .constants import (
+    DEFAULT_DISCORD_LOG_CHANNEL_LOG_LEVEL,
     DEFAULT_STATISTICS_ROLES,
     LOG_LEVELS,
     TRANSLATED_MESSAGES_LOCALE_CODES,
@@ -216,13 +218,13 @@ class SendIntroductionRemindersFlagValidator(strictyaml.ScalarValidator):  # typ
 SETTINGS_YAML_SCHEMA: Final[strictyaml.Map] = strictyaml.Map(  # type: ignore[no-any-unimported]
     {
         strictyaml.Optional("console-log-level", default="INFO"): LogLevelValidator(),
-        strictyaml.Optional("discord-log-channel-log-level", default="WARNING"): (
+        strictyaml.Optional("discord-log-channel-log-level", default=DEFAULT_DISCORD_LOG_CHANNEL_LOG_LEVEL): (  # noqa: E501
             LogLevelValidator()
         ),
+        strictyaml.Optional("discord-log-channel-webhook-url"): DiscordWebhookURLValidator(),
         "discord-bot-token": strictyaml.Regex(
             r"\A([A-Za-z0-9]{24,26})\.([A-Za-z0-9]{6})\.([A-Za-z0-9_-]{27,38})\Z",
         ),
-        strictyaml.Optional("discord-log-channel-webhook-url"): DiscordWebhookURLValidator(),
         "discord-guild-id": DiscordSnowflakeValidator(),
         strictyaml.Optional("group-full-name"): strictyaml.Regex(
             r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z",

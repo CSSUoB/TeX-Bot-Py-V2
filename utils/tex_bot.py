@@ -379,7 +379,7 @@ class TeXBot(discord.Bot):
         self._exit_reason = TeXBotExitReason.KILL_COMMAND_USED
         await self.close()
 
-    async def perform_restart_after_config_changes(self) -> None:  # noqa: E501
+    async def perform_restart_after_config_changes(self) -> None:
         """Restart TeX-Bot after the config changes."""
         if self.EXIT_REASON is not TeXBotExitReason.UNKNOWN_ERROR:
             EXIT_REASON_ALREADY_SET_MESSAGE: Final[str] = (

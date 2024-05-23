@@ -21,8 +21,13 @@ from typing import Any, ClassVar, Final
 from strictyaml import YAML
 
 from exceptions import BotRequiresRestartAfterConfigChange
+
 from ._yaml import load_yaml
-from .constants import REQUIRES_RESTART_SETTINGS_KEYS, PROJECT_ROOT
+from .constants import (
+    DEFAULT_DISCORD_LOG_CHANNEL_LOG_LEVEL,
+    PROJECT_ROOT,
+    REQUIRES_RESTART_SETTINGS_KEYS,
+)
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
@@ -84,6 +89,7 @@ class SettingsAccessor:
 
     _settings: ClassVar[dict[str, object]] = {}
     _most_recent_yaml: ClassVar[YAML | None] = None  # type: ignore[no-any-unimported]
+    _discord_log_channel_log_level: str = DEFAULT_DISCORD_LOG_CHANNEL_LOG_LEVEL
 
     @classmethod
     def format_invalid_settings_key_message(cls, item: str) -> str:
@@ -144,7 +150,12 @@ class SettingsAccessor:
         if cls._reload_console_logging(current_yaml["console-log-level"]):
             changed_settings_keys.add("console-log-level")
 
-        if cls._reload_discord_log_channel_log_level(current_yaml["discord-log-channel-log-level"]):
+        DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED: Final[bool] = (
+            cls._reload_discord_log_channel_log_level(
+                current_yaml["discord-log-channel-log-level"],
+            )
+        )
+        if DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED:
             changed_settings_keys.add("discord-log-channel-log-level")
 
         cls._most_recent_yaml = current_yaml
@@ -161,11 +172,26 @@ class SettingsAccessor:
         if not CONSOLE_LOG_LEVEL_CHANGED:
             return False
 
-        logger.setLevel(getattr(logging, console_log_level))
+        logger.setLevel(1)
 
-        logger.handlers.clear()
+        console_logging_handler: logging.StreamHandler = logging.StreamHandler()
 
-        console_logging_handler: logging.Handler = logging.StreamHandler()
+        if logger.hasHandlers():
+            stream_handlers: set[logging.StreamHandler] = {
+                handler
+                for handler
+                in logger.handlers
+                if isinstance(handler, logging.StreamHandler)
+            }
+            if len(stream_handlers) > 1:
+                raise ValueError("Cannot determine which logging stream-handler to update.")
+
+            if len(stream_handlers) == 1:
+                console_logging_handler = stream_handlers.pop()
+
+        else:
+            logger.addHandler(console_logging_handler)
+
         # noinspection SpellCheckingInspection
         console_logging_handler.setFormatter(
             logging.Formatter(
@@ -173,7 +199,7 @@ class SettingsAccessor:
                 style="{",
             ),
         )
-        logger.addHandler(console_logging_handler)
+        console_logging_handler.setLevel(getattr(logging, console_log_level))
 
         logger.propagate = False
 
@@ -181,4 +207,17 @@ class SettingsAccessor:
 
     @classmethod
     def _reload_discord_log_channel_log_level(cls, discord_log_channel_log_level: str) -> bool:
-        raise NotImplementedError
+        DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or discord_log_channel_log_level != cls._most_recent_yaml[
+                "discord-log-channel-log-level"
+            ]
+        )
+        if not DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED:
+            return False
+
+        cls._discord_log_channel_log_level = discord_log_channel_log_level
+
+        return True
+
+    # TODO: Load more config settings

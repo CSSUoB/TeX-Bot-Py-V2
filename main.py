@@ -12,12 +12,12 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("bot",)
 
 
+from typing import NoReturn
+
 import discord
 
 import config
-import utils
 from config import settings
-from typing import NoReturn
 from utils import SuppressTraceback, TeXBot, TeXBotExitReason
 
 with SuppressTraceback():
@@ -34,7 +34,6 @@ bot.load_extension("cogs")
 
 def _run_bot() -> NoReturn:
     bot.run(settings["DISCORD_BOT_TOKEN"])
-    assert not utils.is_running_in_async()
 
     if bot.EXIT_REASON is TeXBotExitReason.RESTART_REQUIRED_DUE_TO_CHANGED_CONFIG:
         bot.reset_exit_reason()

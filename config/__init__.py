@@ -21,10 +21,10 @@ import logging
 import os
 from collections.abc import Iterable
 from logging import Logger
-from pathlib import Path
 from typing import Final
 
 from exceptions import BotRequiresRestartAfterConfigChange
+
 from ._settings import SettingsAccessor
 from .constants import PROJECT_ROOT
 

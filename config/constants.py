@@ -9,6 +9,7 @@ __all__: Sequence[str] = (
     "DEFAULT_STATISTICS_ROLES",
     "LOG_LEVELS",
     "REQUIRES_RESTART_SETTINGS_KEYS",
+    "DEFAULT_DISCORD_LOG_CHANNEL_LOG_LEVEL",
 )
 
 
@@ -67,3 +68,5 @@ REQUIRES_RESTART_SETTINGS_KEYS: Final[frozenset[str]] = frozenset(
         "send-get-roles-reminders-interval",
     },
 )
+
+DEFAULT_DISCORD_LOG_CHANNEL_LOG_LEVEL: str = "WARNING"

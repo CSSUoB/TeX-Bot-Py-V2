@@ -11,8 +11,6 @@ from typing import Final
 
 import utils
 
-# TODO(CarrotManMatt): Move to stats_tests  # noqa: FIX002
-# https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/57
 # class TestPlotBarChart:
 #     """Test case to unit-test the plot_bar_chart function."""
 #
@@ -36,8 +34,6 @@ import utils
 #         assert bool(bar_chart_image.fp.read()) is True  # noqa: ERA001
 
 
-# TODO(CarrotManMatt): Move to stats_tests  # noqa: FIX002
-# https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/57
 # class TestAmountOfTimeFormatter:
 #     """Test case to unit-test the amount_of_time_formatter function."""
 #
