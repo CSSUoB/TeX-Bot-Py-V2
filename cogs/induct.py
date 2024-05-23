@@ -182,11 +182,9 @@ class BaseInductCog(TeXBotBaseCog):
         )
 
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-            (
-                ":hourglass: Processing Induction... :hourglass:"
-            ),
-            ephemeral=True,
-        )
+                ":hourglass: Processing Induction... :hourglass:",
+                ephemeral=True,
+                )
 
         if induction_member.bot:
             await self.command_send_error(
