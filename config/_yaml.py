@@ -4,6 +4,7 @@ __all__: Sequence[str] = (
     "SlugValidator",
     "DiscordWebhookURLValidator",
     "SETTINGS_YAML_SCHEMA",
+    "load_yaml",
 )
 
 import math
@@ -12,7 +13,7 @@ from typing import Final, Literal, TypeAlias, override
 
 import slugify
 import strictyaml
-from strictyaml import constants as strictyaml_constants
+from strictyaml import YAML, constants as strictyaml_constants
 from strictyaml import utils as strictyaml_utils
 from strictyaml.exceptions import YAMLSerializationError
 from strictyaml.yamllocation import YAMLChunk
@@ -287,3 +288,15 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Map] = strictyaml.Map(  # type: ignore[no
     },
     key_validator=SlugValidator(),
 )
+
+
+def load_yaml(raw_yaml: str) -> YAML:
+    parsed_yaml: YAML = strictyaml.load(raw_yaml, SETTINGS_YAML_SCHEMA)  # type: ignore[no-any-unimported]
+
+    # noinspection SpellCheckingInspection
+    if "guildofstudents" in parsed_yaml["members-list-url"]:
+        parsed_yaml["members-list-url-session-cookie"].revalidate(
+            strictyaml.Regex(r"\A[A-Fa-f\d]{128,256}\Z"),
+        )
+
+    return parsed_yaml

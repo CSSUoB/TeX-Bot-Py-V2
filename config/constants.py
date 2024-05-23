@@ -17,10 +17,13 @@ from typing import Final
 from strictyaml import constants as strictyaml_constants
 
 PROJECT_ROOT: Final[Path] = Path(__file__).parent.parent.resolve()
+
 VALID_SEND_INTRODUCTION_REMINDERS_VALUES: Final[frozenset[str]] = frozenset(
     ({"once", "interval"} | set(strictyaml_constants.BOOL_VALUES)),
 )
+
 TRANSLATED_MESSAGES_LOCALE_CODES: Final[frozenset[str]] = frozenset({"en-GB"})
+
 DEFAULT_STATISTICS_ROLES: Final[frozenset[str]] = frozenset(
     {
         "Committee",

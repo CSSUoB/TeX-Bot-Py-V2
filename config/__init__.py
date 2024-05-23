@@ -15,6 +15,7 @@ __all__: Sequence[str] = (
 )
 
 
+import contextlib
 import importlib
 import logging
 import os
@@ -23,6 +24,7 @@ from logging import Logger
 from pathlib import Path
 from typing import Final
 
+from exceptions import BotRequiresRestartAfterConfigChange
 from ._settings import SettingsAccessor
 from .constants import PROJECT_ROOT
 
@@ -31,59 +33,12 @@ logger: Final[Logger] = logging.getLogger("TeX-Bot")
 settings: Final[SettingsAccessor] = SettingsAccessor()
 
 
-def _get_settings_file_path() -> Path:
-    settings_file_not_found_message: str = (
-        "No settings file was found. "
-        "Please make sure you have created a `TeX-Bot-deployment.yaml` file."
-    )
-
-    raw_settings_file_path: str | None = (
-        os.getenv("TEX_BOT_SETTINGS_FILE_PATH", None)
-        or os.getenv("TEX_BOT_SETTINGS_FILE", None)
-        or os.getenv("TEX_BOT_SETTINGS_PATH", None)
-        or os.getenv("TEX_BOT_SETTINGS", None)
-        or os.getenv("TEX_BOT_CONFIG_FILE_PATH", None)
-        or os.getenv("TEX_BOT_CONFIG_FILE", None)
-        or os.getenv("TEX_BOT_CONFIG_PATH", None)
-        or os.getenv("TEX_BOT_CONFIG", None)
-        or os.getenv("TEX_BOT_DEPLOYMENT_FILE_PATH", None)
-        or os.getenv("TEX_BOT_DEPLOYMENT_FILE", None)
-        or os.getenv("TEX_BOT_DEPLOYMENT_PATH", None)
-        or os.getenv("TEX_BOT_DEPLOYMENT", None)
-    )
-
-    if raw_settings_file_path:
-        settings_file_not_found_message = (
-            "A path to the settings file location was provided by environment variable, "
-            "however this path does not refer to an existing file."
-        )
-    else:
-        logger.debug(
-            (
-                "Settings file location not supplied by environment variable, "
-                "falling back to `Tex-Bot-deployment.yaml`."
-            ),
-        )
-        raw_settings_file_path = "TeX-Bot-deployment.yaml"
-        if not (PROJECT_ROOT / Path(raw_settings_file_path)).exists():
-            raw_settings_file_path = "TeX-Bot-settings.yaml"
-
-            if not (PROJECT_ROOT / Path(raw_settings_file_path)).exists():
-                raw_settings_file_path = "TeX-Bot-config.yaml"
-
-    settings_file_path: Path = Path(raw_settings_file_path)
-
-    if not settings_file_path.is_file():
-        raise FileNotFoundError(settings_file_not_found_message)
-
-    return settings_file_path
-
-
 def run_setup() -> None:
     """Execute the setup functions required, before other modules can be run."""
     check_for_deprecated_environment_variables()
 
-    settings.reload(_get_settings_file_path())
+    with contextlib.suppress(BotRequiresRestartAfterConfigChange):
+        settings.reload()
 
     logger.debug("Begin database setup")
 
