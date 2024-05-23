@@ -8,6 +8,7 @@ __all__: Sequence[str] = (
     "TRANSLATED_MESSAGES_LOCALE_CODES",
     "DEFAULT_STATISTICS_ROLES",
     "LOG_LEVELS",
+    "REQUIRES_RESTART_SETTINGS_KEYS",
 )
 
 
@@ -45,10 +46,24 @@ DEFAULT_STATISTICS_ROLES: Final[frozenset[str]] = frozenset(
         "Quiz Victor",
     },
 )
+
 LOG_LEVELS: Final[Sequence[str]] = (
     "DEBUG",
     "INFO",
     "WARNING",
     "ERROR",
     "CRITICAL",
+)
+
+REQUIRES_RESTART_SETTINGS_KEYS: Final[frozenset[str]] = frozenset(
+    {
+        "discord-bot-token",
+        "discord-guild-id",
+        "send-introduction-reminders",
+        "send-introduction-reminders-delay",
+        "send-introduction-reminders-interval",
+        "send-get-roles-reminders",
+        "send-get-roles-reminders-delay",
+        "send-get-roles-reminders-interval",
+    },
 )
