@@ -194,8 +194,8 @@ class BaseInductCog(TeXBotBaseCog):
             return
 
         if guest_role in induction_member.roles:
-            await initial_response.edit(content=
-                (
+            await initial_response.edit(
+                content=(
                     ":information_source: No changes made. "
                     "User has already been inducted. :information_source:"
                 ),
