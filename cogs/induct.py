@@ -181,6 +181,11 @@ class BaseInductCog(TeXBotBaseCog):
             name="introductions",
         )
 
+        initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
+            ":hourglass: Processing Induction... :hourglass:",
+            ephemeral=True,
+        )
+
         if induction_member.bot:
             await self.command_send_error(
                 ctx,
@@ -189,12 +194,11 @@ class BaseInductCog(TeXBotBaseCog):
             return
 
         if guest_role in induction_member.roles:
-            await ctx.respond(
-                (
-                    ":information_source: No changes made. User has already been inducted. "
-                    ":information_source:"
+            await initial_response.edit(
+                content=(
+                    ":information_source: No changes made. "
+                    "User has already been inducted. :information_source:"
                 ),
-                ephemeral=True,
             )
             return
 
@@ -249,7 +253,7 @@ class BaseInductCog(TeXBotBaseCog):
                     await recent_message.add_reaction("👋")
                     break
 
-        await ctx.respond("User inducted successfully.", ephemeral=True)
+        await initial_response.edit(content=":white_check_mark: User inducted successfully.")
 
 
 class InductCommandCog(BaseInductCog):
