@@ -8,8 +8,8 @@ __all__: Sequence[str] = (
     "TRANSLATED_MESSAGES_LOCALE_CODES",
     "DEFAULT_STATISTICS_ROLES",
     "LOG_LEVELS",
-    "REQUIRES_RESTART_SETTINGS_KEYS",
-    "DEFAULT_DISCORD_LOG_CHANNEL_LOG_LEVEL",
+    "REQUIRES_RESTART_SETTINGS",
+    "DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME",
 )
 
 
@@ -56,17 +56,17 @@ LOG_LEVELS: Final[Sequence[str]] = (
     "CRITICAL",
 )
 
-REQUIRES_RESTART_SETTINGS_KEYS: Final[frozenset[str]] = frozenset(
+REQUIRES_RESTART_SETTINGS: Final[frozenset[str]] = frozenset(
     {
-        "discord-bot-token",
-        "discord-guild-id",
-        "send-introduction-reminders",
-        "send-introduction-reminders-delay",
-        "send-introduction-reminders-interval",
-        "send-get-roles-reminders",
-        "send-get-roles-reminders-delay",
-        "send-get-roles-reminders-interval",
+        "discord:bot-token",
+        "discord:guild-id",
+        "reminders:send-introduction-reminders:enable",
+        "reminders:send-introduction-reminders:delay",
+        "reminders:send-introduction-reminders:interval",
+        "reminders:send-get-roles-reminders:enable",
+        "reminders:send-get-roles-reminders:delay",
+        "reminders:send-get-roles-reminders:interval",
     },
 )
 
-DEFAULT_DISCORD_LOG_CHANNEL_LOG_LEVEL: str = "WARNING"
+DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME: Final[str] = "TeX-Bot"

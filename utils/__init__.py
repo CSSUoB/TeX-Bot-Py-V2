@@ -17,16 +17,16 @@ __all__: Sequence[str] = (
 )
 
 
-import asyncio
-
 import discord
 
-from utils.command_checks import CommandChecks
-from utils.message_sender_components import MessageSenderComponent
-from utils.suppress_traceback import SuppressTraceback
-from utils.tex_bot import TeXBot, TeXBotExitReason
-from utils.tex_bot_base_cog import TeXBotBaseCog
-from utils.tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
+from .command_checks import CommandChecks
+from .message_sender_components import MessageSenderComponent
+from .suppress_traceback import SuppressTraceback
+from .tex_bot import TeXBot, TeXBotExitReason
+from .tex_bot_base_cog import TeXBotBaseCog
+from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
+# noinspection PyProtectedMember
+from config._pre_startup_utils import is_running_in_async
 
 
 def generate_invite_url(discord_bot_application_id: int, discord_guild_id: int) -> str:
@@ -65,13 +65,3 @@ def is_member_inducted(member: discord.Member) -> bool:
     return any(
         role.name.lower().strip().strip("@").strip() not in ("news",) for role in member.roles
     )
-
-
-def is_running_in_async() -> bool:
-    """Determine whether the current context is asynchronous or not."""
-    try:
-        asyncio.get_running_loop()
-    except RuntimeError:
-        return False
-    else:
-        return True

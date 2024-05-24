@@ -14,6 +14,7 @@ from discord_logging.handler import DiscordHandler
 
 import utils
 from config import settings
+from config.constants import DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME
 from exceptions import (
     ArchivistRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
@@ -31,41 +32,65 @@ logger: Final[Logger] = logging.getLogger("TeX-Bot")
 class StartupCog(TeXBotBaseCog):
     """Cog class that defines additional code to execute upon startup."""
 
-    @TeXBotBaseCog.listener()
-    async def on_ready(self) -> None:
-        """
-        Populate the shortcut accessors of the bot after initialisation.
+    def _setup_discord_log_channel(self) -> None:
+        NO_DISCORD_LOG_CHANNEL_SET_MESSAGE: Final[str] = (
+            "Discord log-channel webhook-URL was not set, "
+            "so error logs will not be sent to the Discord log-channel."
+        )
 
-        Shortcut accessors should only be populated once the bot is ready to make API requests.
-        """
-        if settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
-            discord_logging_handler: logging.Handler = DiscordHandler(
-                self.bot.user.name if self.bot.user else "TeXBot",
-                settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
-                avatar_url=(
-                    self.bot.user.avatar.url
-                    if self.bot.user and self.bot.user.avatar
-                    else None
-                ),
-            )
-            discord_logging_handler.setLevel(logging.WARNING)
-            # noinspection SpellCheckingInspection
-            discord_logging_handler.setFormatter(
-                logging.Formatter("{levelname} | {message}", style="{"),
+        discord_logging_handlers: set[DiscordHandler] = {
+            handler for handler in logger.handlers if isinstance(handler, DiscordHandler)
+        }
+
+        if len(discord_logging_handlers) > 1:
+            raise ValueError(
+                "Cannot determine which logging Discord-webhook-handler to update."
             )
 
-            logger.addHandler(discord_logging_handler)
+        elif len(discord_logging_handlers) == 1:
+            existing_discord_logging_handler: DiscordHandler = discord_logging_handlers.pop()
+
+            logger.removeHandler(existing_discord_logging_handler)
+
+            if settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
+                new_discord_logging_handler: DiscordHandler = DiscordHandler(
+                    (
+                        existing_discord_logging_handler.name
+                        if existing_discord_logging_handler.name != DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME  # noqa: E501
+                        else (
+                            self.bot.user.name
+                            if self.bot.user
+                            else DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME)
+                    ),
+                    settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
+                    avatar_url=(
+                        self.bot.user.avatar.url
+                        if self.bot.user and self.bot.user.avatar
+                        else None
+                    ),
+                )
+                new_discord_logging_handler.setLevel(existing_discord_logging_handler.level)
+                new_discord_logging_handler.setFormatter(
+                    existing_discord_logging_handler.formatter
+                )
+                new_discord_logging_handler.avatar_url = new_discord_logging_handler.avatar_url
+
+                logger.addHandler(new_discord_logging_handler)
+
+            else:
+                logger.warning(NO_DISCORD_LOG_CHANNEL_SET_MESSAGE)
+
+        elif len(discord_logging_handlers) == 0 or not settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:  # noqa: E501
+            logger.warning(NO_DISCORD_LOG_CHANNEL_SET_MESSAGE)
 
         else:
-            logger.warning(
-                "DISCORD_LOG_CHANNEL_WEBHOOK_URL was not set, "
-                "so error logs will not be sent to the Discord log channel.",
-            )
+            raise ValueError
 
+    async def _get_main_guild(self) -> discord.Guild:
         try:
             main_guild: discord.Guild | None = self.bot.main_guild
         except GuildDoesNotExistError:
-            main_guild = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
+            main_guild = self.bot.get_guild(settings["DISCORD_MAIN_GUILD_ID"])
             if main_guild:
                 self.bot.set_main_guild(main_guild)
 
@@ -75,21 +100,34 @@ class StartupCog(TeXBotBaseCog):
                     "Invite URL: %s",
                     utils.generate_invite_url(
                         self.bot.application_id,
-                        settings["DISCORD_GUILD_ID"]),
+                        settings["DISCORD_MAIN_GUILD_ID"]),
                     )
-            logger.critical(GuildDoesNotExistError(guild_id=settings["DISCORD_GUILD_ID"]))
+            logger.critical(GuildDoesNotExistError(guild_id=settings["DISCORD_MAIN_GUILD_ID"]))
             await self.bot.close()
-            return
+            raise RuntimeError
+
+        return main_guild
+
+    @TeXBotBaseCog.listener()
+    async def on_ready(self) -> None:
+        """
+        Populate the shortcut accessors of the bot after initialisation.
+
+        Shortcut accessors should only be populated once the bot is ready to make API requests.
+        """
+        self._setup_discord_log_channel()
+
+        main_guild: discord.Guild = await self._get_main_guild()
 
         if self.bot.application_id:
             logger.debug(
                 "Invite URL: %s",
                 utils.generate_invite_url(
                     self.bot.application_id,
-                    settings["DISCORD_GUILD_ID"]),
+                    settings["DISCORD_MAIN_GUILD_ID"]),
             )
 
-        if not discord.utils.get(main_guild.roles, name="Committee"):
+        if not discord.utils.get(main_guild.roles, name="Committee"):  # TODO: Move to separate functions
             logger.warning(CommitteeRoleDoesNotExistError())
 
         if not discord.utils.get(main_guild.roles, name="Guest"):

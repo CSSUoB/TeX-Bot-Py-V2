@@ -1,40 +1,30 @@
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
-    "SlugValidator",
     "DiscordWebhookURLValidator",
-    "SETTINGS_YAML_SCHEMA",
-    "load_yaml",
+    "LogLevelValidator",
+    "DiscordSnowflakeValidator",
+    "ProbabilityValidator",
+    "SendIntroductionRemindersFlagValidator",
+    "SendIntroductionRemindersFlagType",
+    "LogLevelType",
 )
 
 import math
 import re
-from typing import Final, Literal, TypeAlias, override
+from typing import Final, override, Literal, TypeAlias
 
-import slugify
 import strictyaml
-from strictyaml import YAML
 from strictyaml import constants as strictyaml_constants
 from strictyaml import utils as strictyaml_utils
 from strictyaml.exceptions import YAMLSerializationError
 from strictyaml.yamllocation import YAMLChunk
 
-from .constants import (
-    DEFAULT_DISCORD_LOG_CHANNEL_LOG_LEVEL,
-    DEFAULT_STATISTICS_ROLES,
-    LOG_LEVELS,
-    TRANSLATED_MESSAGES_LOCALE_CODES,
-    VALID_SEND_INTRODUCTION_REMINDERS_VALUES,
-)
+from ..constants import LOG_LEVELS, VALID_SEND_INTRODUCTION_REMINDERS_VALUES
+
 
 SendIntroductionRemindersFlagType: TypeAlias = Literal["once", "interval", False]
 LogLevelType: TypeAlias = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
-
-
-class SlugValidator(strictyaml.ScalarValidator):  # type: ignore[no-any-unimported,misc]
-    @override
-    def validate_scalar(self, chunk: YAMLChunk) -> str:  # type: ignore[no-any-unimported,misc]
-        return slugify.slugify(str(chunk.contents))
 
 
 class LogLevelValidator(strictyaml.ScalarValidator):  # type: ignore[no-any-unimported,misc]
@@ -213,92 +203,3 @@ class SendIntroductionRemindersFlagValidator(strictyaml.ScalarValidator):  # typ
             return "False"
 
         return data.title()
-
-
-SETTINGS_YAML_SCHEMA: Final[strictyaml.Map] = strictyaml.Map(  # type: ignore[no-any-unimported]
-    {
-        strictyaml.Optional("console-log-level", default="INFO"): LogLevelValidator(),
-        strictyaml.Optional("discord-log-channel-log-level", default=DEFAULT_DISCORD_LOG_CHANNEL_LOG_LEVEL): (  # noqa: E501
-            LogLevelValidator()
-        ),
-        strictyaml.Optional("discord-log-channel-webhook-url"): DiscordWebhookURLValidator(),
-        "discord-bot-token": strictyaml.Regex(
-            r"\A([A-Za-z0-9]{24,26})\.([A-Za-z0-9]{6})\.([A-Za-z0-9_-]{27,38})\Z",
-        ),
-        "discord-guild-id": DiscordSnowflakeValidator(),
-        strictyaml.Optional("group-full-name"): strictyaml.Regex(
-            r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z",
-        ),
-        strictyaml.Optional("group-short-name"): strictyaml.Regex(
-            r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z",
-        ),
-        strictyaml.Optional("purchase-membership-url"): strictyaml.Url(),
-        strictyaml.Optional("membership-perks-url"): strictyaml.Url(),
-        strictyaml.Optional("ping-command-easter-egg-probability", default=0.01): (
-            ProbabilityValidator()
-        ),
-        strictyaml.Optional("messages-language", default="en-GB"): strictyaml.Enum(
-            TRANSLATED_MESSAGES_LOCALE_CODES,
-        ),
-        "members-list-url": strictyaml.Url(),
-        "members-list-url-session-cookie": strictyaml.Str(),
-        strictyaml.Optional("send-introduction-reminders", default="once"): (
-            SendIntroductionRemindersFlagValidator()
-        ),
-        strictyaml.Optional("send-introduction-reminders-delay", default="40h"): (
-            strictyaml.Regex(
-                r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            )
-        ),
-        strictyaml.Optional("send-introduction-reminders-interval", default="6h"): (
-            strictyaml.Regex(
-                r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            )
-        ),
-        strictyaml.Optional("send-get-roles-reminders", default=True): strictyaml.Bool(),
-        strictyaml.Optional("send-get-roles-reminders-delay", default="40h"): (
-            strictyaml.Regex(
-                r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            )
-        ),
-        strictyaml.Optional("statistics-days", default=30.0): strictyaml.Float(),
-        strictyaml.Optional("statistics-roles", default=list(DEFAULT_STATISTICS_ROLES)): (
-            strictyaml.UniqueSeq(strictyaml.Str())
-        ),
-        "moderation-document-url": strictyaml.Url(),
-        strictyaml.Optional("manual-moderation-warning-message-location", default="DM"): (
-            strictyaml.Str()
-        ),
-        strictyaml.Optional("strike-timeout-duration", default="24h"): strictyaml.Regex(
-            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-        ),
-        strictyaml.Optional("group-member-id-format", default=r"\A\d{7}\Z"): (
-            strictyaml.Str()
-        ),
-        strictyaml.Optional("advanced", default={}): strictyaml.EmptyDict() | (
-            strictyaml.Map(
-                {
-                    strictyaml.Optional("send-get-roles-reminders-interval", default="6h"): (
-                        strictyaml.Regex(
-                            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-                        )
-                    ),
-                },
-                key_validator=SlugValidator(),
-            )
-        ),
-    },
-    key_validator=SlugValidator(),
-)
-
-
-def load_yaml(raw_yaml: str) -> YAML:
-    parsed_yaml: YAML = strictyaml.load(raw_yaml, SETTINGS_YAML_SCHEMA)  # type: ignore[no-any-unimported]
-
-    # noinspection SpellCheckingInspection
-    if "guildofstudents" in parsed_yaml["members-list-url"]:
-        parsed_yaml["members-list-url-session-cookie"].revalidate(
-            strictyaml.Regex(r"\A[A-Fa-f\d]{128,256}\Z"),
-        )
-
-    return parsed_yaml

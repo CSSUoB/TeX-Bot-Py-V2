@@ -9,6 +9,9 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = (
     "PROJECT_ROOT",
+    "TRANSLATED_MESSAGES_LOCALE_CODES",
+    "DEFAULT_STATISTICS_ROLES",
+    "LOG_LEVELS",
     "run_setup",
     "settings",
     "check_for_deprecated_environment_variables",
@@ -26,7 +29,12 @@ from typing import Final
 from exceptions import BotRequiresRestartAfterConfigChange
 
 from ._settings import SettingsAccessor
-from .constants import PROJECT_ROOT
+from .constants import (
+    PROJECT_ROOT,
+    TRANSLATED_MESSAGES_LOCALE_CODES,
+    DEFAULT_STATISTICS_ROLES,
+    LOG_LEVELS,
+)
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
