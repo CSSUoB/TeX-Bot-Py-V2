@@ -90,7 +90,7 @@ class StartupCog(TeXBotBaseCog):
         try:
             main_guild: discord.Guild | None = self.bot.main_guild
         except GuildDoesNotExistError:
-            main_guild = self.bot.get_guild(settings["DISCORD_MAIN_GUILD_ID"])
+            main_guild = self.bot.get_guild(settings["_DISCORD_MAIN_GUILD_ID"])
             if main_guild:
                 self.bot.set_main_guild(main_guild)
 
@@ -100,9 +100,11 @@ class StartupCog(TeXBotBaseCog):
                     "Invite URL: %s",
                     utils.generate_invite_url(
                         self.bot.application_id,
-                        settings["DISCORD_MAIN_GUILD_ID"]),
+                        settings["_DISCORD_MAIN_GUILD_ID"]),
                     )
-            logger.critical(GuildDoesNotExistError(guild_id=settings["DISCORD_MAIN_GUILD_ID"]))
+            logger.critical(GuildDoesNotExistError(
+                guild_id=settings["_DISCORD_MAIN_GUILD_ID"])
+            )
             await self.bot.close()
             raise RuntimeError
 
@@ -124,7 +126,7 @@ class StartupCog(TeXBotBaseCog):
                 "Invite URL: %s",
                 utils.generate_invite_url(
                     self.bot.application_id,
-                    settings["DISCORD_MAIN_GUILD_ID"]),
+                    settings["_DISCORD_MAIN_GUILD_ID"]),
             )
 
         if not discord.utils.get(main_guild.roles, name="Committee"):  # TODO: Move to separate functions

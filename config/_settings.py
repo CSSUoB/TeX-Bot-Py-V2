@@ -106,28 +106,28 @@ class SettingsAccessor:
         if "_pytest" in item or item in ("__bases__", "__test__"):  # NOTE: Overriding __getattr__() leads to many edge-case issues where external libraries will attempt to call getattr() with peculiar values
             raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
+        if not re.match(r"\A(?!.*__.*)(?:[A-Z]|[A-Z_][A-Z]|[A-Z_][A-Z][A-Z_]*[A-Z])\Z", item):
+            raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
+
         if self._most_recent_yaml is None:
             with contextlib.suppress(BotRequiresRestartAfterConfigChange):
                 self.reload()
 
-        if item in self._settings:
-            ATTEMPTING_TO_ACCESS_BOT_TOKEN_WHEN_ALREADY_RUNNING: Final[bool] = bool(
-                "bot" in item.lower()
-                and "token" in item.lower()
-                and is_running_in_async()
-            )
-            if ATTEMPTING_TO_ACCESS_BOT_TOKEN_WHEN_ALREADY_RUNNING:
-                raise RuntimeError(f"Cannot access {item!r} when TeX-Bot is already running.")
-
-            return self._settings[item]
-
-        if re.match(r"\A[A-Z](?:[A-Z_]*[A-Z])?\Z", item):
+        if item not in self._settings:
             INVALID_SETTINGS_KEY_MESSAGE: Final[str] = (
                 self.format_invalid_settings_key_message(item)
             )
             raise AttributeError(INVALID_SETTINGS_KEY_MESSAGE)
 
-        raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
+        ATTEMPTING_TO_ACCESS_BOT_TOKEN_WHEN_ALREADY_RUNNING: Final[bool] = bool(
+            "bot" in item.lower()
+            and "token" in item.lower()
+            and is_running_in_async()
+        )
+        if ATTEMPTING_TO_ACCESS_BOT_TOKEN_WHEN_ALREADY_RUNNING:
+            raise RuntimeError(f"Cannot access {item!r} when TeX-Bot is already running.")
+
+        return self._settings[item]
 
     def __getitem__(self, item: str) -> Any:  # type: ignore[misc]  # noqa: ANN401
         """Retrieve settings value by key lookup."""
@@ -163,6 +163,9 @@ class SettingsAccessor:
             ),
             cls._reload_discord_bot_token(current_yaml["discord"]["bot-token"]),
             cls._reload_discord_main_guild_id(current_yaml["discord"]["main-guild-id"]),
+            cls._reload_community_group_full_name(
+                current_yaml["community-group"].get("full-name", None),
+            ),
         )
 
         cls._most_recent_yaml = current_yaml
@@ -237,12 +240,11 @@ class SettingsAccessor:
         if not DISCORD_CHANNEL_LOGGING_SETTINGS_CHANGED:
             return set()
 
-        if discord_channel_logging_settings is None:
-            cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = None
-        else:
-            cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = (
-                discord_channel_logging_settings["webhook_url"].data
-            )
+        cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = (
+            discord_channel_logging_settings
+            if discord_channel_logging_settings is None
+            else discord_channel_logging_settings["webhook_url"].data
+        )
 
         discord_logging_handlers: set[DiscordHandler] = {
             handler for handler in logger.handlers if isinstance(handler, DiscordHandler)
@@ -353,13 +355,39 @@ class SettingsAccessor:
         DISCORD_MAIN_GUILD_ID_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or discord_main_guild_id != cls._most_recent_yaml["discord"]["main-guild-id"]
-            or "DISCORD_MAIN_GUILD_ID" not in cls._settings
+            or "_DISCORD_MAIN_GUILD_ID" not in cls._settings
         )
         if not DISCORD_MAIN_GUILD_ID_CHANGED:
             return set()
 
-        cls._settings["DISCORD_MAIN_GUILD_ID"] = discord_main_guild_id.data
+        cls._settings["_DISCORD_MAIN_GUILD_ID"] = discord_main_guild_id.data
 
         return {"discord:main-guild-id"}
+
+    @classmethod
+    def _reload_community_group_full_name(cls, community_group_full_name: YAML | None) -> set[str]:
+        """
+        Reload the community-group full name.
+
+        Returns the set of settings keys that have been changed.
+        """
+        COMMUNITY_GROUP_FULL_NAME_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or community_group_full_name != cls._most_recent_yaml["community-group"].get(
+                "full-name",
+                None,
+            )
+            or "_COMMUNITY_GROUP_FULL_NAME" not in cls._settings
+        )
+        if not COMMUNITY_GROUP_FULL_NAME_CHANGED:
+            return set()
+
+        cls._settings["_COMMUNITY_GROUP_FULL_NAME"] = (
+            community_group_full_name
+            if community_group_full_name is None
+            else community_group_full_name.data
+        )
+
+        return {"community-group:full-name"}
 
     # TODO: Load more config settings
