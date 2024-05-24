@@ -102,7 +102,7 @@ class ConfirmStrikeMemberView(View):
         The actual handling of the event is done by the command that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
-        await interaction.response.edit_message(delete_after=0)
+        await interaction.response.edit_message(view=None)
 
     @discord.ui.button(  # type: ignore[misc]
         label="No",
@@ -118,7 +118,7 @@ class ConfirmStrikeMemberView(View):
         The actual handling of the event is done by the command that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
-        await interaction.response.edit_message(delete_after=0)
+        await interaction.response.edit_message(view=None)
 
 
 class ConfirmManualModerationView(View):
@@ -139,7 +139,7 @@ class ConfirmManualModerationView(View):
         the manual moderation tracker subroutine that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
-        await interaction.response.edit_message(delete_after=0)
+        await interaction.response.edit_message(view=None)
 
     @discord.ui.button(  # type: ignore[misc]
         label="No",
@@ -156,7 +156,7 @@ class ConfirmManualModerationView(View):
         the manual moderation tracker subroutine that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
-        await interaction.response.edit_message(delete_after=0)
+        await interaction.response.edit_message(view=None)
 
 
 class ConfirmStrikesOutOfSyncWithBanView(View):
@@ -177,7 +177,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
         the manual moderation tracker subroutine that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
-        await interaction.response.edit_message(delete_after=0)
+        await interaction.response.edit_message(view=None)
 
     @discord.ui.button(  # type: ignore[misc]
         label="No",
@@ -194,7 +194,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
         the manual moderation tracker subroutine that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
-        await interaction.response.edit_message(delete_after=0)
+        await interaction.response.edit_message(view=None)
 
 
 class BaseStrikeCog(TeXBotBaseCog):
@@ -262,13 +262,12 @@ class BaseStrikeCog(TeXBotBaseCog):
         )
 
         if button_interaction.data["custom_id"] == "no_strike_member":  # type: ignore[index, typeddict-item]
-            await button_interaction.respond(
-                (
+            await button_interaction.edit_original_response(
+                content=(
                     "Aborted performing "
                     f"{self.SUGGESTED_ACTIONS[actual_strike_amount]} action "
                     f"on {strike_user.mention}."
                 ),
-                ephemeral=True,
             )
             return
 
@@ -279,12 +278,11 @@ class BaseStrikeCog(TeXBotBaseCog):
                 committee_member=interaction_user,
             )
 
-            await button_interaction.respond(
-                (
+            await button_interaction.edit_original_response(
+                content=(
                     f"Successfully performed {self.SUGGESTED_ACTIONS[actual_strike_amount]} "
                     f"action on {strike_user.mention}."
                 ),
-                ephemeral=True,
             )
             return
 
@@ -548,9 +546,8 @@ class ManualModerationCog(BaseStrikeCog):
             )
 
             if out_of_sync_ban_button_interaction.data["custom_id"] == "no_out_of_sync_ban_member":  # type: ignore[index, typeddict-item] # noqa: E501
-                await out_of_sync_ban_confirmation_message.delete()
-                aborted_out_of_sync_ban_message: discord.Message = await confirmation_message_channel.send(  # noqa: E501
-                    f"Aborted performing ban action upon {strike_user.mention}. "
+                await out_of_sync_ban_confirmation_message.edit(
+                    content=f"Aborted performing ban action upon {strike_user.mention}. "
                     "(This manual moderation action has not been tracked.)\n"
                     "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
                     f"""{
@@ -561,7 +558,7 @@ class ManualModerationCog(BaseStrikeCog):
                     }""",
                 )
                 await asyncio.sleep(118)
-                await aborted_out_of_sync_ban_message.delete()
+                await out_of_sync_ban_confirmation_message.delete()
                 return
 
             if out_of_sync_ban_button_interaction.data["custom_id"] == "yes_out_of_sync_ban_member":  # type: ignore[index, typeddict-item] # noqa: E501
@@ -573,8 +570,8 @@ class ManualModerationCog(BaseStrikeCog):
                         "with number of strikes**"
                     ),
                 )
-                success_out_of_sync_ban_message: discord.Message = await confirmation_message_channel.send(  # noqa: E501
-                    f"Successfully banned {strike_user.mention}.\n"
+                await out_of_sync_ban_confirmation_message.edit(
+                    content=f"Successfully banned {strike_user.mention}.\n"
                     "**Please ensure you use the `/strike` command in future!**"
                     "\nᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
                     f"""{
@@ -585,7 +582,7 @@ class ManualModerationCog(BaseStrikeCog):
                     }""",
                 )
                 await asyncio.sleep(118)
-                await success_out_of_sync_ban_message.delete()
+                await out_of_sync_ban_confirmation_message.delete()
                 return
 
             raise ValueError
@@ -631,9 +628,8 @@ class ManualModerationCog(BaseStrikeCog):
         )
 
         if button_interaction.data["custom_id"] == "no_manual_moderation_action":  # type: ignore[index, typeddict-item]
-            await confirmation_message.delete()
-            aborted_strike_message: discord.Message = await confirmation_message_channel.send(
-                f"Aborted increasing {strike_user.mention}'s strikes "
+            await confirmation_message.edit(
+                content=f"Aborted increasing {strike_user.mention}'s strikes "
                 "& sending moderation alert message. "
                 "(This manual moderation action has not been tracked.)\n"
                 "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
@@ -645,7 +641,7 @@ class ManualModerationCog(BaseStrikeCog):
                 }""",
             )
             await asyncio.sleep(118)
-            await aborted_strike_message.delete()
+            await confirmation_message.delete()
             return
 
         if button_interaction.data["custom_id"] == "yes_manual_moderation_action":  # type: ignore[index, typeddict-item]
