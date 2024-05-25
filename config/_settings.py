@@ -37,7 +37,7 @@ logger: Final[Logger] = logging.getLogger("TeX-Bot")
 def _get_settings_file_path() -> Path:
     settings_file_not_found_message: str = (
         "No settings file was found. "
-        "Please make sure you have created a `TeX-Bot-deployment.yaml` file."
+        "Please make sure you have created a `tex-bot-deployment.yaml` file."
     )
 
     raw_settings_file_path: str | None = (
@@ -67,12 +67,12 @@ def _get_settings_file_path() -> Path:
                 "falling back to `Tex-Bot-deployment.yaml`."
             ),
         )
-        raw_settings_file_path = "TeX-Bot-deployment.yaml"
+        raw_settings_file_path = "tex-bot-deployment.yaml"
         if not (PROJECT_ROOT / Path(raw_settings_file_path)).exists():
-            raw_settings_file_path = "TeX-Bot-settings.yaml"
+            raw_settings_file_path = "tex-bot-settings.yaml"
 
             if not (PROJECT_ROOT / Path(raw_settings_file_path)).exists():
-                raw_settings_file_path = "TeX-Bot-config.yaml"
+                raw_settings_file_path = "tex-bot-config.yaml"
 
     settings_file_path: Path = Path(raw_settings_file_path)
 
@@ -149,7 +149,11 @@ class SettingsAccessor:
 
     @classmethod
     def reload(cls) -> None:
-        current_yaml: YAML = load_yaml(_get_settings_file_path().read_text())  # type: ignore[no-any-unimported]
+        settings_file_path: Path = _get_settings_file_path()
+        current_yaml: YAML = load_yaml(  # type: ignore[no-any-unimported]
+            settings_file_path.read_text(),
+            file_name=settings_file_path.name,
+        )
 
         if current_yaml == cls._most_recent_yaml:
             return
@@ -171,7 +175,13 @@ class SettingsAccessor:
             ),
             cls._reload_purchase_membership_link(
                 current_yaml["community-group"]["links"].get("purchase-membership"),
-            )
+            ),
+            cls._reload_membership_perks_link(
+                current_yaml["community-group"]["links"].get("membership-perks"),
+            ),
+            cls._reload_moderation_document_link(
+                current_yaml["community-group"]["links"]["moderation-document"],
+            ),
         )
 
         cls._most_recent_yaml = current_yaml
@@ -446,5 +456,51 @@ class SettingsAccessor:
         )
 
         return {"community-group:links:purchase-membership"}
+
+    @classmethod
+    def _reload_membership_perks_link(cls, membership_perks_link: YAML | None) -> set[str]:
+        """
+        Reload the link to view the perks of getting a membership to join your community group.
+
+        Returns the set of settings keys that have been changed.
+        """
+        MEMBERSHIP_PERKS_LINK_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or membership_perks_link != cls._most_recent_yaml["community-group"][
+                "links"
+            ].get("membership-perks", None)
+            or "MEMBERSHIP_PERKS_LINK" not in cls._settings
+        )
+        if not MEMBERSHIP_PERKS_LINK_CHANGED:
+            return set()
+
+        cls._settings["MEMBERSHIP_PERKS_LINK"] = (
+            membership_perks_link
+            if membership_perks_link is None
+            else membership_perks_link.data
+        )
+
+        return {"community-group:links:membership-perks"}
+
+    @classmethod
+    def _reload_moderation_document_link(cls, moderation_document_link: YAML) -> set[str]:
+        """
+        Reload the link to view your community group's moderation document.
+
+        Returns the set of settings keys that have been changed.
+        """
+        MODERATION_DOCUMENT_LINK_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or moderation_document_link != cls._most_recent_yaml["community-group"]["links"][
+                "moderation-document"
+            ]
+            or "MODERATION_DOCUMENT_LINK" not in cls._settings
+        )
+        if not MODERATION_DOCUMENT_LINK_CHANGED:
+            return set()
+
+        cls._settings["MODERATION_DOCUMENT_LINK"] = moderation_document_link.data
+
+        return {"community-group:links:moderation-document"}
 
     # TODO: Load more config settings

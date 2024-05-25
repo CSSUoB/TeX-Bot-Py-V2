@@ -4,6 +4,7 @@ __all__: Sequence[str] = (
     "DiscordWebhookURLValidator",
     "LogLevelValidator",
     "DiscordSnowflakeValidator",
+    "RegexMatcher",
     "ProbabilityValidator",
     "SendIntroductionRemindersFlagValidator",
     "SendIntroductionRemindersFlagType",
@@ -114,6 +115,36 @@ class DiscordSnowflakeValidator(strictyaml.Int):  # type: ignore[no-any-unimport
             raise YAMLSerializationError(f"'{data}' is not a Discord snowflake ID.")
 
         return str(data)
+
+
+class RegexMatcher(strictyaml.ScalarValidator):
+    MATCHING_MESSAGE: str = "when expecting a regular expression matcher"
+
+    @override
+    def validate_scalar(self, chunk: YAMLChunk) -> str:  # type: ignore[no-any-unimported,misc]
+        try:
+            re.compile(chunk.contents)
+        except re.error:
+            chunk.expecting_but_found(
+                self.MATCHING_MESSAGE,
+                "found arbitrary string",
+            )
+        else:
+            return chunk.contents
+
+    # noinspection PyOverrides
+    @override
+    def to_yaml(self, data: object) -> str:  # type: ignore[misc]
+        self.should_be_string(data, self.MATCHING_MESSAGE)
+        if not isinstance(data, str):
+            raise TypeError
+
+        try:
+            re.compile(data)
+        except re.error:
+            raise YAMLSerializationError(f"{self.MATCHING_MESSAGE} found '{data}'")
+        else:
+            return data
 
 
 class ProbabilityValidator(strictyaml.Float):  # type: ignore[no-any-unimported,misc]

@@ -8,6 +8,7 @@ __all__: Sequence[str] = ("KillCommandCog", "ConfirmKillView")
 import contextlib
 import logging
 from logging import Logger
+from typing import Final
 
 import discord
 from discord.ui import View

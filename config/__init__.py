@@ -63,7 +63,7 @@ def check_for_deprecated_environment_variables() -> None:
         DeprecationWarning(
             (
                 "Configuration using environment variables is deprecated. "
-                "Use a `TeX-Bot-deployment.yaml` file instead."
+                "Use a `tex-bot-deployment.yaml` file instead."
             ),
         )
     )

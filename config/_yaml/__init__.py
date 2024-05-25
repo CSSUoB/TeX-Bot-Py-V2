@@ -20,6 +20,7 @@ from ..constants import DEFAULT_STATISTICS_ROLES, TRANSLATED_MESSAGES_LOCALE_COD
 from .custom_validators import (
     DiscordWebhookURLValidator,
     LogLevelValidator,
+    RegexMatcher,
     DiscordSnowflakeValidator,
     ProbabilityValidator,
     SendIntroductionRemindersFlagValidator,
@@ -100,7 +101,7 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
         "discord": SlugKeyMap(
             {
                 "bot-token": strictyaml.Regex(
-                    r"\A([A-Za-z0-9]{24,26})\.([A-Za-z0-9]{6})\.([A-Za-z0-9_-]{27,38})\Z",
+                    r"\A(?!.*__.*)(?!.*--.*)(?:([A-Za-z0-9]{24,26})\.([A-Za-z0-9]{6})\.([A-Za-z0-9_-]{27,38}))\Z",
                 ),
                 "main-guild-id": DiscordSnowflakeValidator(),
             },
@@ -108,10 +109,10 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
         "community-group": SlugKeyMap(
             {
                 strictyaml.Optional("full-name"): strictyaml.Regex(
-                    r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z",
+                    r"\A(?!.*['&!?:,.#%\"-]['&!?:,.#%\"-].*)(?!.*  .*)(?:[A-Za-z0-9 '&!?:,.#%\"-]+)\Z",
                 ),
                 strictyaml.Optional("short-name"): strictyaml.Regex(
-                    r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z",
+                    r"\A(?!.*['&!?:,.#%\"-]['&!?:,.#%\"-].*)(?:[A-Za-z0-9'&!?:,.#%\"-]+)\Z",
                 ),
                 "links": SlugKeyMap(
                     {
@@ -125,7 +126,7 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
                         "url": strictyaml.Url(),
                         "auth-session-cookie": strictyaml.Str(),
                         strictyaml.Optional("id-format", default=r"\A\d{6,7}\Z"): (
-                            strictyaml.Str()
+                            RegexMatcher()
                         ),
                     },
                 ),
@@ -209,8 +210,8 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
 )
 
 
-def load_yaml(raw_yaml: str) -> YAML:
-    parsed_yaml: YAML = strictyaml.load(raw_yaml, SETTINGS_YAML_SCHEMA)  # type: ignore[no-any-unimported]
+def load_yaml(raw_yaml: str, file_name: str = "tex-bot-deployment.yaml") -> YAML:
+    parsed_yaml: YAML = strictyaml.load(raw_yaml, SETTINGS_YAML_SCHEMA, label=file_name)  # type: ignore[no-any-unimported]
 
     # noinspection SpellCheckingInspection
     if "guildofstudents" in parsed_yaml["community-group"]["members-list"]["url"]:
