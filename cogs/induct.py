@@ -12,13 +12,13 @@ __all__: Sequence[str] = (
 
 
 import contextlib
-import random
 import logging
+import random
 import re
+from logging import Logger
 from typing import Literal
 
 import discord
-from logging import Logger
 
 from config import settings
 from db.core.models import IntroductionReminderOptOutMember
@@ -37,7 +37,6 @@ from utils import (
     TeXBotBaseCog,
 )
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
-
 
 logger: Logger = logging.getLogger("TeX-Bot")
 
@@ -124,9 +123,11 @@ class InductSendMessageCog(TeXBotBaseCog):
                     ":green_square:! "
                     f"Checkout all the perks at {settings["MEMBERSHIP_PERKS_URL"]}",
                 )
-        except discord.Forbidden as forbidden_error:
-            logger.info("Failed to open DM channel to user %s so no welcome message was sent.", after)
-            logger.debug(f.text)
+        except discord.Forbidden:
+            logger.info(
+                "Failed to open DM channel to user %s so no welcome message was sent.",
+                after,
+            )
 
 
 class BaseInductCog(TeXBotBaseCog):
@@ -261,8 +262,14 @@ class BaseInductCog(TeXBotBaseCog):
                             await recent_message.add_reaction(tex_emoji)
                         await recent_message.add_reaction("👋")
                     except discord.Forbidden as forbidden_error:
-                        if "Reaction blocked" not in forbidden_error:
-                            logger.info("Failed to add reactions because the user, %s, has blocked the bot.")
+                        if "Reaction blocked" in forbidden_error.text:
+                            logger.info(
+                                "Failed to add reactions because the user, %s, "
+                                "has blocked the bot.",
+                                recent_message.author,
+                                )
+                        else:
+                            logger.debug(forbidden_error.text)
                     break
 
         await initial_response.edit(content=":white_check_mark: User inducted successfully.")
