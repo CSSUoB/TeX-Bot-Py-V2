@@ -267,10 +267,10 @@ class BaseInductCog(TeXBotBaseCog):
                             raise forbidden_error from forbidden_error
 
                         logger.info(
-                                "Failed to add reactions because the user, %s, "
-                                "has blocked the bot.",
-                                recent_message.author,
-                            )
+                            "Failed to add reactions because the user, %s, "
+                            "has blocked the bot.",
+                            recent_message.author,
+                        )
                     break
 
         await initial_response.edit(content=":white_check_mark: User inducted successfully.")
