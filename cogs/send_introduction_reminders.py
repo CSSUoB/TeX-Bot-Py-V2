@@ -163,8 +163,12 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                         else None  # type: ignore[arg-type]
                     ),
                 )
-            except discord.Forbidden as f:
-                logger.info("Failed to open DM channel with user %s so no induction reminder was sent.", member)
+            except discord.Forbidden:
+                logger.info(
+                    "Failed to open DM channel with user, %s, "
+                    "so no induction reminder was sent.",
+                    member,
+                )
 
             await SentOneOffIntroductionReminderMember.objects.acreate(
                 discord_id=member.id,
