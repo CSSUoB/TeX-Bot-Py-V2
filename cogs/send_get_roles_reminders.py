@@ -172,8 +172,9 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                     "and click on the icons to get optional roles like pronouns "
                     "and year group identifiers.",
                 )
-            except discord.Forbidden:
+            except discord.Forbidden as e:
                 logger.warning("Failed to open DM channel to %s so no reminder was sent.", member)
+                logger.debug(e.text)
 
             await SentGetRolesReminderMember.objects.acreate(discord_id=member.id)
 
