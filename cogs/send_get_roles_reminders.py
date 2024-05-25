@@ -173,7 +173,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                     "and year group identifiers.",
                 )
             except discord.Forbidden:
-                logger.warning(
+                logger.info(
                     "Failed to open DM channel to user, %s, so no role reminder was sent.",
                     member,
                 )
