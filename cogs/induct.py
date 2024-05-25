@@ -257,19 +257,20 @@ class BaseInductCog(TeXBotBaseCog):
             recent_message: discord.Message
             for recent_message in await intro_channel.history(limit=30).flatten():
                 if recent_message.author.id == induction_member.id:
+                    forbidden_error: discord.Forbidden
                     try:
                         if tex_emoji:
                             await recent_message.add_reaction(tex_emoji)
                         await recent_message.add_reaction("👋")
                     except discord.Forbidden as forbidden_error:
-                        if "Reaction blocked" in forbidden_error.text:
+                        if "90001" in str(forbidden_error):
                             logger.info(
                                 "Failed to add reactions because the user, %s, "
                                 "has blocked the bot.",
                                 recent_message.author,
                                 )
                         else:
-                            logger.debug(forbidden_error.text)
+                            raise forbidden_error from forbidden_error
                     break
 
         await initial_response.edit(content=":white_check_mark: User inducted successfully.")
