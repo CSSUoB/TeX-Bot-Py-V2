@@ -263,14 +263,14 @@ class BaseInductCog(TeXBotBaseCog):
                             await recent_message.add_reaction(tex_emoji)
                         await recent_message.add_reaction("👋")
                     except discord.Forbidden as forbidden_error:
-                        if "90001" in str(forbidden_error):
-                            logger.info(
+                        if "90001" not in str(forbidden_error):
+                            raise forbidden_error from forbidden_error
+
+                        logger.info(
                                 "Failed to add reactions because the user, %s, "
                                 "has blocked the bot.",
                                 recent_message.author,
-                                )
-                        else:
-                            raise forbidden_error from forbidden_error
+                            )
                     break
 
         await initial_response.edit(content=":white_check_mark: User inducted successfully.")
