@@ -249,8 +249,8 @@ class TeXBot(discord.Bot):
         or automatically identified from the name of your group's Discord guild.
         """
         return (  # type: ignore[no-any-return]
-            settings["_COMMUNITY_GROUP_FULL_NAME"]
-            if settings["_COMMUNITY_GROUP_FULL_NAME"]
+            settings["_GROUP_FULL_NAME"]
+            if settings["_GROUP_FULL_NAME"]
             else (
                 "The Computer Science Society"
                 if (

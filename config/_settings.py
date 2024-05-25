@@ -163,9 +163,15 @@ class SettingsAccessor:
             ),
             cls._reload_discord_bot_token(current_yaml["discord"]["bot-token"]),
             cls._reload_discord_main_guild_id(current_yaml["discord"]["main-guild-id"]),
-            cls._reload_community_group_full_name(
+            cls._reload_group_full_name(
                 current_yaml["community-group"].get("full-name", None),
             ),
+            cls._reload_group_short_name(
+                current_yaml["community-group"].get("short-name", None),
+            ),
+            cls._reload_purchase_membership_link(
+                current_yaml["community-group"]["links"].get("purchase-membership"),
+            )
         )
 
         cls._most_recent_yaml = current_yaml
@@ -365,29 +371,80 @@ class SettingsAccessor:
         return {"discord:main-guild-id"}
 
     @classmethod
-    def _reload_community_group_full_name(cls, community_group_full_name: YAML | None) -> set[str]:
+    def _reload_group_full_name(cls, group_full_name: YAML | None) -> set[str]:
         """
         Reload the community-group full name.
 
         Returns the set of settings keys that have been changed.
         """
-        COMMUNITY_GROUP_FULL_NAME_CHANGED: Final[bool] = bool(
+        GROUP_FULL_NAME_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
-            or community_group_full_name != cls._most_recent_yaml["community-group"].get(
+            or group_full_name != cls._most_recent_yaml["community-group"].get(
                 "full-name",
                 None,
             )
-            or "_COMMUNITY_GROUP_FULL_NAME" not in cls._settings
+            or "_GROUP_FULL_NAME" not in cls._settings
         )
-        if not COMMUNITY_GROUP_FULL_NAME_CHANGED:
+        if not GROUP_FULL_NAME_CHANGED:
             return set()
 
-        cls._settings["_COMMUNITY_GROUP_FULL_NAME"] = (
-            community_group_full_name
-            if community_group_full_name is None
-            else community_group_full_name.data
+        cls._settings["_GROUP_FULL_NAME"] = (
+            group_full_name
+            if group_full_name is None
+            else group_full_name.data
         )
 
         return {"community-group:full-name"}
+
+    @classmethod
+    def _reload_group_short_name(cls, group_short_name: YAML | None) -> set[str]:
+        """
+        Reload the community-group short name.
+
+        Returns the set of settings keys that have been changed.
+        """
+        GROUP_SHORT_NAME_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or group_short_name != cls._most_recent_yaml["community-group"].get(
+                "short-name",
+                None,
+            )
+            or "_GROUP_SHORT_NAME" not in cls._settings
+        )
+        if not GROUP_SHORT_NAME_CHANGED:
+            return set()
+
+        cls._settings["_GROUP_SHORT_NAME"] = (
+            group_short_name
+            if group_short_name is None
+            else group_short_name.data
+        )
+
+        return {"community-group:short-name"}
+
+    @classmethod
+    def _reload_purchase_membership_link(cls, purchase_membership_link: YAML | None) -> set[str]:
+        """
+        Reload the link to allow people to purchase a membership.
+
+        Returns the set of settings keys that have been changed.
+        """
+        PURCHASE_MEMBERSHIP_LINK_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or purchase_membership_link != cls._most_recent_yaml["community-group"][
+                "links"
+            ].get("purchase-membership", None)
+            or "PURCHASE_MEMBERSHIP_LINK" not in cls._settings
+        )
+        if not PURCHASE_MEMBERSHIP_LINK_CHANGED:
+            return set()
+
+        cls._settings["PURCHASE_MEMBERSHIP_LINK"] = (
+            purchase_membership_link
+            if purchase_membership_link is None
+            else purchase_membership_link.data
+        )
+
+        return {"community-group:links:purchase-membership"}
 
     # TODO: Load more config settings

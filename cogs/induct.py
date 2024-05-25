@@ -112,7 +112,7 @@ class InductSendMessageCog(TeXBotBaseCog):
             await after.send(
                 f"You can also get yourself an annual membership "
                 f"to {self.bot.group_full_name} for only £5! "
-                f"""Just head to {settings["PURCHASE_MEMBERSHIP_URL"]}. """
+                f"""Just head to {settings["PURCHASE_MEMBERSHIP_LINK"]}. """
                 "You'll get awesome perks like a free T-shirt:shirt:, "
                 "access to member only events:calendar_spiral: "
                 f"& a cool green name on the {self.bot.group_short_name} Discord server"
@@ -153,13 +153,13 @@ class BaseInductCog(TeXBotBaseCog):
                     committee_role_mention,
                 )
 
-        if "<Purchase_Membership_URL>" in random_welcome_message:
-            if not settings["PURCHASE_MEMBERSHIP_URL"]:
+        if "<Purchase_Membership_Link>" in random_welcome_message:
+            if not settings["PURCHASE_MEMBERSHIP_LINK"]:
                 return await self.get_random_welcome_message(induction_member)
 
             random_welcome_message = random_welcome_message.replace(
-                "<Purchase_Membership_URL>",
-                settings["PURCHASE_MEMBERSHIP_URL"],
+                "<Purchase_Membership_Link>",
+                settings["PURCHASE_MEMBERSHIP_LINK"],
             )
 
         if "<Group_Name>" in random_welcome_message:

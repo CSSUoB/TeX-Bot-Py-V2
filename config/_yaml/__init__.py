@@ -113,11 +113,11 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
                 strictyaml.Optional("short-name"): strictyaml.Regex(
                     r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z",
                 ),
-                strictyaml.Optional("links"): SlugKeyMap(
+                "links": SlugKeyMap(
                     {
                         strictyaml.Optional("purchase-membership"): strictyaml.Url(),
                         strictyaml.Optional("membership-perks"): strictyaml.Url(),
-                        strictyaml.Optional("moderation-document"): strictyaml.Url(),
+                        "moderation-document": strictyaml.Url(),
                     }
                 ),
                 "members-list": SlugKeyMap(
