@@ -12,8 +12,10 @@ __all__: Sequence[str] = (
 
 
 import contextlib
+import logging
 import random
 import re
+from logging import Logger
 from typing import Literal
 
 import discord
@@ -36,6 +38,7 @@ from utils import (
 )
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
+logger: Logger = logging.getLogger("TeX-Bot")
 
 class InductSendMessageCog(TeXBotBaseCog):
     """Cog class that defines the "/induct" command and its call-back method."""
@@ -96,28 +99,34 @@ class InductSendMessageCog(TeXBotBaseCog):
             if await self.bot.member_role in after.roles:
                 user_type = "member"
 
-        await after.send(
-            f"**Congrats on joining the {self.bot.group_short_name} Discord server "
-            f"as a {user_type}!** "
-            "You now have access to communicate in all the public channels.\n\n"
-            "Some things to do to get started:\n"
-            f"1. Check out our rules in {rules_channel_mention}\n"
-            f"2. Head to {roles_channel_mention} and click on the icons to get "
-            "optional roles like pronouns and year groups\n"
-            "3. Change your nickname to whatever you wish others to refer to you as "
-            "(You can do this by right-clicking your name in the members-list "
-            "to the right & selecting \"Edit Server Profile\").",
-        )
-        if user_type != "member":
+        try:
             await after.send(
-                f"You can also get yourself an annual membership "
-                f"to {self.bot.group_full_name} for only £5! "
-                f"""Just head to {settings["PURCHASE_MEMBERSHIP_LINK"]}. """
-                "You'll get awesome perks like a free T-shirt:shirt:, "
-                "access to member only events:calendar_spiral: "
-                f"& a cool green name on the {self.bot.group_short_name} Discord server"
-                ":green_square:! "
-                f"Checkout all the perks at {settings["MEMBERSHIP_PERKS_LINKS"]}",
+                f"**Congrats on joining the {self.bot.group_short_name} Discord server "
+                f"as a {user_type}!** "
+                "You now have access to communicate in all the public channels.\n\n"
+                "Some things to do to get started:\n"
+                f"1. Check out our rules in {rules_channel_mention}\n"
+                f"2. Head to {roles_channel_mention} and click on the icons to get "
+                "optional roles like pronouns and year groups\n"
+                "3. Change your nickname to whatever you wish others to refer to you as "
+                "(You can do this by right-clicking your name in the members-list "
+                "to the right & selecting \"Edit Server Profile\").",
+            )
+            if user_type != "member":
+                await after.send(
+                    f"You can also get yourself an annual membership "
+                    f"to {self.bot.group_full_name} for only £5! "
+                    f"""Just head to {settings["PURCHASE_MEMBERSHIP_LINK"]}. """
+                    "You'll get awesome perks like a free T-shirt:shirt:, "
+                    "access to member only events:calendar_spiral: "
+                    f"& a cool green name on the {self.bot.group_short_name} Discord server"
+                    ":green_square:! "
+                    f"Checkout all the perks at {settings["MEMBERSHIP_PERKS_LINKS"]}",
+                )
+        except discord.Forbidden:
+            logger.info(
+                "Failed to open DM channel to user %s so no welcome message was sent.",
+                after,
             )
 
 
@@ -248,9 +257,20 @@ class BaseInductCog(TeXBotBaseCog):
             recent_message: discord.Message
             for recent_message in await intro_channel.history(limit=30).flatten():
                 if recent_message.author.id == induction_member.id:
-                    if tex_emoji:
-                        await recent_message.add_reaction(tex_emoji)
-                    await recent_message.add_reaction("👋")
+                    forbidden_error: discord.Forbidden
+                    try:
+                        if tex_emoji:
+                            await recent_message.add_reaction(tex_emoji)
+                        await recent_message.add_reaction("👋")
+                    except discord.Forbidden as forbidden_error:
+                        if "90001" not in str(forbidden_error):
+                            raise forbidden_error from forbidden_error
+
+                        logger.info(
+                            "Failed to add reactions because the user, %s, "
+                            "has blocked the bot.",
+                            recent_message.author,
+                        )
                     break
 
         await initial_response.edit(content=":white_check_mark: User inducted successfully.")
