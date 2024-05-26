@@ -3,16 +3,12 @@
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
-    "ImproperlyConfiguredError",
     "BaseTeXBotError",
     "BaseErrorWithErrorCode",
     "BaseDoesNotExistError",
     "RulesChannelDoesNotExistError",
     "DiscordMemberNotInMainGuildError",
     "EveryoneRoleCouldNotBeRetrievedError",
-    "InvalidMessagesJSONFileError",
-    "MessagesJSONFileMissingKeyError",
-    "MessagesJSONFileValueError",
     "StrikeTrackingError",
     "NoAuditLogsStrikeTrackingError",
     "GuildDoesNotExistError",
@@ -32,10 +28,6 @@ import abc
 from typing import Final
 
 from classproperties import classproperty
-
-
-class ImproperlyConfiguredError(Exception):
-    """Exception class to raise when environment variables are not correctly provided."""
 
 
 class BaseTeXBotError(BaseException, abc.ABC):
