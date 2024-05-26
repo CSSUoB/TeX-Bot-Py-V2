@@ -32,13 +32,13 @@ from config.constants import (
     DEFAULT_STATS_COMMAND_LOOKBACK_DAYS,
     DEFAULT_STRIKE_COMMAND_TIMEOUT_DURATION,
     DEFAULT_STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION,
-    TRANSLATED_MESSAGES_LOCALE_CODES,
+    MESSAGES_LOCALE_CODES,
     LogLevels,
     SendIntroductionRemindersFlagType,
 )
 
-from .custom_schema_utils import SlugKeyMap
-from .custom_validators import (
+from .custom_map_validator import SlugKeyMap
+from .custom_scalar_validators import (
     DiscordSnowflakeValidator,
     DiscordWebhookURLValidator,
     LogLevelValidator,
@@ -185,8 +185,8 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
                 ),
             },
         ),
-        strictyaml.Optional("messages-language", default="en-GB"): strictyaml.Enum(
-            TRANSLATED_MESSAGES_LOCALE_CODES,
+        strictyaml.Optional("messages-locale", default="en-GB"): strictyaml.Enum(
+            MESSAGES_LOCALE_CODES,
         ),
         strictyaml.Optional("reminders", default=_DEFAULT_REMINDERS_SETTINGS): SlugKeyMap(
             {

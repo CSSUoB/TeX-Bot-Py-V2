@@ -7,7 +7,7 @@ __all__: Sequence[str] = (
     "LogLevels",
     "PROJECT_ROOT",
     "VALID_SEND_INTRODUCTION_REMINDERS_RAW_VALUES",
-    "TRANSLATED_MESSAGES_LOCALE_CODES",
+    "MESSAGES_LOCALE_CODES",
     "REQUIRES_RESTART_SETTINGS",
     "DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME",
     "DEFAULT_PING_COMMAND_EASTER_EGG_PROBABILITY",
@@ -55,7 +55,7 @@ class LogLevels(str, Enum, metaclass=MetaEnum):
 
 PROJECT_ROOT: Final[Path] = Path(__file__).parent.parent.resolve()
 
-TRANSLATED_MESSAGES_LOCALE_CODES: Final[frozenset[str]] = frozenset({"en-GB"})
+MESSAGES_LOCALE_CODES: Final[frozenset[str]] = frozenset({"en-GB"})
 
 
 VALID_SEND_INTRODUCTION_REMINDERS_RAW_VALUES: Final[frozenset[str]] = frozenset(

@@ -69,10 +69,10 @@ def _get_settings_file_path() -> Path:
             ),
         )
         raw_settings_file_path = "tex-bot-deployment.yaml"
-        if not (PROJECT_ROOT / Path(raw_settings_file_path)).exists():
+        if not (PROJECT_ROOT / raw_settings_file_path).exists():
             raw_settings_file_path = "tex-bot-settings.yaml"
 
-            if not (PROJECT_ROOT / Path(raw_settings_file_path)).exists():
+            if not (PROJECT_ROOT / raw_settings_file_path).exists():
                 raw_settings_file_path = "tex-bot-config.yaml"
 
     settings_file_path: Path = Path(raw_settings_file_path)
@@ -154,12 +154,12 @@ class SettingsAccessor:
     @classmethod
     def reload(cls) -> None:
         settings_file_path: Path = _get_settings_file_path()
-        current_yaml: YAML = load_yaml(  # type: ignore[no-any-unimported]
+        current_yaml: YAML = load_yaml(  # type: ignore[no-any-unimported] # TODO: better error messages when loading yaml
             settings_file_path.read_text(),
             file_name=settings_file_path.name,
         )
 
-        if current_yaml == cls._most_recent_yaml:
+        if current_yaml == cls._most_recent_yaml and cls._settings:
             return
 
         changed_settings_keys: set[str] = set()
@@ -210,7 +210,7 @@ class SettingsAccessor:
             cls._reload_strike_performed_manually_warning_location(
                 current_yaml["commands"]["strike"]["performed-manually-warning-location"],
             ),
-            cls._reload_messages_language(current_yaml["messages-language"]),
+            cls._reload_messages_locale(current_yaml["messages-locale"]),
             cls._reload_send_introduction_reminders_enabled(
                 current_yaml["reminders"]["send-introduction-reminders"]["enabled"],
             ),
@@ -737,23 +737,23 @@ class SettingsAccessor:
         return {"commands:strike:performed-manually-warning-location"}
 
     @classmethod
-    def _reload_messages_language(cls, messages_language: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
+    def _reload_messages_locale(cls, messages_locale: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
         """
-        Reload the selected language for messages to be sent in.
+        Reload the selected locale for messages to be sent in.
 
         Returns the set of settings keys that have been changed.
         """
-        MESSAGES_LANGUAGE_CHANGED: Final[bool] = bool(
+        MESSAGES_LOCALE_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
-            or messages_language != cls._most_recent_yaml["messages-language"]
-            or "MESSAGES_LANGUAGE" not in cls._settings,
+            or messages_locale != cls._most_recent_yaml["messages-locale"]
+            or "MESSAGES_LOCALE" not in cls._settings,
         )
-        if not MESSAGES_LANGUAGE_CHANGED:
+        if not MESSAGES_LOCALE_CHANGED:
             return set()
 
-        cls._settings["MESSAGES_LANGUAGE"] = messages_language.data
+        cls._settings["MESSAGES_LOCALE"] = messages_locale.data
 
-        return {"messages-language"}
+        return {"messages-locale"}
 
     @classmethod
     def _reload_send_introduction_reminders_enabled(cls, send_introduction_reminders_enabled: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501

@@ -9,11 +9,12 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = (
     "PROJECT_ROOT",
-    "TRANSLATED_MESSAGES_LOCALE_CODES",
+    "MESSAGES_LOCALE_CODES",
     "LogLevels",
     "run_setup",
     "settings",
     "check_for_deprecated_environment_variables",
+    "messages",
 )
 
 
@@ -27,16 +28,14 @@ from typing import Final
 
 from exceptions import BotRequiresRestartAfterConfigChange
 
+from ._messages import MessagesAccessor
 from ._settings import SettingsAccessor
-from .constants import (
-    PROJECT_ROOT,
-    TRANSLATED_MESSAGES_LOCALE_CODES,
-    LogLevels,
-)
+from .constants import MESSAGES_LOCALE_CODES, PROJECT_ROOT, LogLevels
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 settings: Final[SettingsAccessor] = SettingsAccessor()
+messages: Final[MessagesAccessor] = MessagesAccessor()
 
 
 def run_setup() -> None:
@@ -46,7 +45,7 @@ def run_setup() -> None:
     with contextlib.suppress(BotRequiresRestartAfterConfigChange):
         settings.reload()
 
-    # TODO: load messages here using language from settings
+    messages.load(settings["MESSAGES_LOCALE_CODE"])
 
     logger.debug("Begin database setup")
 
@@ -147,78 +146,3 @@ def check_for_deprecated_environment_variables() -> None:
         )
         if deprecated_environment_variable_found:
             raise CONFIGURATION_VIA_ENVIRONMENT_VARIABLES_IS_DEPRECATED_ERROR
-
-
-# @classmethod
-# @functools.lru_cache(maxsize=5)
-# def _get_messages_dict(cls, raw_messages_file_path: str | None) -> Mapping[str, object]:
-#     JSON_DECODING_ERROR_MESSAGE: Final[str] = (
-#         "Messages JSON file must contain a JSON string that can be decoded "
-#         "into a Python dict object."
-#     )
-#
-#     messages_file_path: Path = (
-#         Path(raw_messages_file_path)
-#         if raw_messages_file_path
-#         else PROJECT_ROOT / Path("messages.json")
-#     )
-#
-#     if not messages_file_path.is_file():
-#         MESSAGES_FILE_PATH_DOES_NOT_EXIST_MESSAGE: Final[str] = (
-#             "MESSAGES_FILE_PATH must be a path to a file that exists."
-#         )
-#         raise ImproperlyConfiguredError(MESSAGES_FILE_PATH_DOES_NOT_EXIST_MESSAGE)
-#
-#     messages_file: IO[str]
-#     with messages_file_path.open(encoding="utf8") as messages_file:
-#         e: json.JSONDecodeError
-#         try:
-#             messages_dict: object = json.load(messages_file)
-#         except json.JSONDecodeError as e:
-#             raise ImproperlyConfiguredError(JSON_DECODING_ERROR_MESSAGE) from e
-#
-#     if not isinstance(messages_dict, Mapping):
-#         raise ImproperlyConfiguredError(JSON_DECODING_ERROR_MESSAGE)
-#
-#     return messages_dict
-#
-# @classmethod
-# def _setup_welcome_messages(cls) -> None:
-#     messages_dict: Mapping[str, object] = cls._get_messages_dict(
-#         os.getenv("MESSAGES_FILE_PATH"),
-#     )
-#
-#     if "welcome_messages" not in messages_dict:
-#         raise MessagesJSONFileMissingKeyError(missing_key="welcome_messages")
-#
-#     WELCOME_MESSAGES_KEY_IS_VALID: Final[bool] = bool(
-#         isinstance(messages_dict["welcome_messages"], Iterable)
-#         and messages_dict["welcome_messages"],
-#     )
-#     if not WELCOME_MESSAGES_KEY_IS_VALID:
-#         raise MessagesJSONFileValueError(
-#             dict_key="welcome_messages",
-#             invalid_value=messages_dict["welcome_messages"],
-#         )
-#
-#     cls._settings["WELCOME_MESSAGES"] = set(messages_dict["welcome_messages"])  # type: ignore[call-overload]
-#
-# @classmethod
-# def _setup_roles_messages(cls) -> None:
-#     messages_dict: Mapping[str, object] = cls._get_messages_dict(
-#         os.getenv("MESSAGES_FILE_PATH"),
-#     )
-#
-#     if "roles_messages" not in messages_dict:
-#         raise MessagesJSONFileMissingKeyError(missing_key="roles_messages")
-#
-#     ROLES_MESSAGES_KEY_IS_VALID: Final[bool] = (
-#         isinstance(messages_dict["roles_messages"], Iterable)
-#         and bool(messages_dict["roles_messages"])
-#     )
-#     if not ROLES_MESSAGES_KEY_IS_VALID:
-#         raise MessagesJSONFileValueError(
-#             dict_key="roles_messages",
-#             invalid_value=messages_dict["roles_messages"],
-#         )
-#     cls._settings["ROLES_MESSAGES"] = set(messages_dict["roles_messages"])  # type: ignore[call-overload]

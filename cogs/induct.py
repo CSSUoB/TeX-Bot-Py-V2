@@ -20,7 +20,7 @@ from typing import Literal
 
 import discord
 
-from config import settings
+from config import messages, settings
 from db.core.models import IntroductionReminderOptOutMember
 from exceptions import (
     CommitteeRoleDoesNotExistError,
@@ -140,7 +140,7 @@ class BaseInductCog(TeXBotBaseCog):
 
     async def get_random_welcome_message(self, induction_member: discord.User | discord.Member | None = None) -> str:  # noqa: E501
         """Get & format a random welcome message."""
-        random_welcome_message: str = random.choice(tuple(settings["WELCOME_MESSAGES"]))
+        random_welcome_message: str = random.choice(tuple(messages["WELCOME_MESSAGES"]))
 
         if "<User>" in random_welcome_message:
             if not induction_member:
