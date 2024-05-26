@@ -1,4 +1,4 @@
-"""Custom exception classes to be raised when errors occur with access properties of a Discord guild object."""
+"""Custom exception classes raised when errors occur with properties of a guild object."""
 
 from collections.abc import Sequence
 

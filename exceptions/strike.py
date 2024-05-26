@@ -1,4 +1,4 @@
-"""Custom exception classes to be raised when errors occur during use of the "/strike" command."""
+"""Custom exception classes raised when errors occur during use of the "/strike" command."""
 
 from collections.abc import Sequence
 
