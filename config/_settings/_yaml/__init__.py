@@ -185,7 +185,7 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
                 ),
             },
         ),
-        strictyaml.Optional("messages-locale", default="en-GB"): strictyaml.Enum(
+        strictyaml.Optional("messages-locale-code", default="en-GB"): strictyaml.Enum(
             MESSAGES_LOCALE_CODES,
         ),
         strictyaml.Optional("reminders", default=_DEFAULT_REMINDERS_SETTINGS): SlugKeyMap(

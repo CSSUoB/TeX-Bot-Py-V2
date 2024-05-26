@@ -58,6 +58,7 @@ def run_setup() -> None:
 
 
 def check_for_deprecated_environment_variables() -> None:
+    """Raise an error if the old method of configuration (environment variables) is used."""
     CONFIGURATION_VIA_ENVIRONMENT_VARIABLES_IS_DEPRECATED_ERROR: Final[DeprecationWarning] = (
         DeprecationWarning(
             (

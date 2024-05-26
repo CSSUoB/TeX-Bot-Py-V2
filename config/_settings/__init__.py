@@ -210,7 +210,7 @@ class SettingsAccessor:
             cls._reload_strike_performed_manually_warning_location(
                 current_yaml["commands"]["strike"]["performed-manually-warning-location"],
             ),
-            cls._reload_messages_locale(current_yaml["messages-locale"]),
+            cls._reload_messages_locale_code(current_yaml["messages-locale-code"]),
             cls._reload_send_introduction_reminders_enabled(
                 current_yaml["reminders"]["send-introduction-reminders"]["enabled"],
             ),
@@ -737,23 +737,23 @@ class SettingsAccessor:
         return {"commands:strike:performed-manually-warning-location"}
 
     @classmethod
-    def _reload_messages_locale(cls, messages_locale: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
+    def _reload_messages_locale_code(cls, messages_locale_code: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
         """
         Reload the selected locale for messages to be sent in.
 
         Returns the set of settings keys that have been changed.
         """
-        MESSAGES_LOCALE_CHANGED: Final[bool] = bool(
+        MESSAGES_LOCALE_CODE_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
-            or messages_locale != cls._most_recent_yaml["messages-locale"]
-            or "MESSAGES_LOCALE" not in cls._settings,
+            or messages_locale_code != cls._most_recent_yaml["messages-locale-code"]
+            or "MESSAGES_LOCALE_CODE" not in cls._settings,
         )
-        if not MESSAGES_LOCALE_CHANGED:
+        if not MESSAGES_LOCALE_CODE_CHANGED:
             return set()
 
-        cls._settings["MESSAGES_LOCALE"] = messages_locale.data
+        cls._settings["MESSAGES_LOCALE_CODE"] = messages_locale_code.data
 
-        return {"messages-locale"}
+        return {"messages-locale-code"}
 
     @classmethod
     def _reload_send_introduction_reminders_enabled(cls, send_introduction_reminders_enabled: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501

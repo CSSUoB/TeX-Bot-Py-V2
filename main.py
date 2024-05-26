@@ -29,17 +29,18 @@ with SuppressTraceback():
 
     bot = TeXBot(intents=intents)
 
-bot.load_extension("cogs")
+    bot.load_extension("cogs")
 
 
 def _run_bot() -> NoReturn:
     bot.run(settings["DISCORD_BOT_TOKEN"])
 
     if bot.EXIT_REASON is TeXBotExitReason.RESTART_REQUIRED_DUE_TO_CHANGED_CONFIG:
-        bot.reset_exit_reason()
-        config.run_setup()
-        bot.reload_extension("cogs")
-        _run_bot()
+        with SuppressTraceback():
+            bot.reset_exit_reason()
+            config.run_setup()
+            bot.reload_extension("cogs")
+            _run_bot()
 
     raise SystemExit(bot.EXIT_REASON.value)
 

@@ -46,6 +46,8 @@ class MetaEnum(EnumMeta):
 
 
 class LogLevels(str, Enum, metaclass=MetaEnum):
+    """Set of valid string values used for logging log-levels."""
+
     DEBUG = "DEBUG"
     INFO = "INFO"
     WARNING = "WARNING"

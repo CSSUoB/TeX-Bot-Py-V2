@@ -42,6 +42,8 @@ logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class TeXBotExitReason(IntEnum):
+    """Enum flag for the reason for TeX-Bot exiting."""
+
     UNKNOWN_ERROR = -1
     KILL_COMMAND_USED = 0
     RESTART_REQUIRED_DUE_TO_CHANGED_CONFIG = 1

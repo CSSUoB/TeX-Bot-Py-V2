@@ -73,6 +73,10 @@ class MessagesAccessor:
             MESSAGES_ALREADY_LOADED_MESSAGE: Final[str] = "Messages have already been loaded."
             raise RuntimeError(MESSAGES_ALREADY_LOADED_MESSAGE)
 
+        NO_MESSAGES_FILE_FOUND_ERROR: Final[RuntimeError] = RuntimeError(
+            f"No messages file found for locale: {messages_locale_code!r}",
+        )
+
         try:
             messages_locale_file_path: Path = next(
                 path
@@ -81,16 +85,16 @@ class MessagesAccessor:
                 if path.stem == messages_locale_code
             )
         except StopIteration:
-            NO_MESSAGES_FILE_FOUND_MESSAGE: Final[str] = (
-                f"No messages file found for locale: {messages_locale_code!r}"
-            )
-            raise RuntimeError(NO_MESSAGES_FILE_FOUND_MESSAGE) from None
+            raise NO_MESSAGES_FILE_FOUND_ERROR from None
+
+        if not messages_locale_file_path.is_file():
+            raise NO_MESSAGES_FILE_FOUND_ERROR
 
         messages_load_error: Exception
         try:
             raw_messages: object = json.loads(messages_locale_file_path.read_text())
 
-            if not hasattr(raw_messages, "__get_item__"):
+            if not hasattr(raw_messages, "__getitem__"):
                 raise TypeError
 
             cls._messages["WELCOME_MESSAGES"] = set(raw_messages["welcome-messages"])  # type: ignore[index]
@@ -98,7 +102,10 @@ class MessagesAccessor:
                 raw_messages["opt-in-roles-selectors"],  # type: ignore[index]
             )
 
-        except (json.JSONDecodeError, TypeError) as messages_load_error:
-            raise NotImplementedError from None
+        except (json.JSONDecodeError, TypeError, KeyError) as messages_load_error:
+            INVALID_MESSAGES_FILE_MESSAGE: Final[str] = (
+                "Messages file contained invalid contents."
+            )
+            raise ValueError(INVALID_MESSAGES_FILE_MESSAGE) from messages_load_error
 
         cls._messages_already_loaded = True

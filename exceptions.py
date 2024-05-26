@@ -66,6 +66,8 @@ class BaseTeXBotError(BaseException, abc.ABC):
 
 
 class BotRequiresRestartAfterConfigChange(BaseTeXBotError):
+    """Exception class to raise to enforce handling of bot restarts after config changes."""
+
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802,N805
