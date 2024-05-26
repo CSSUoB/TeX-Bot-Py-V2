@@ -21,7 +21,7 @@ from typing import Final
 
 from classproperties import classproperty
 
-from .base import BaseDoesNotExistError, BaseTeXBotError
+from exceptions.base import BaseDoesNotExistError, BaseTeXBotError
 
 
 class RulesChannelDoesNotExistError(BaseTeXBotError, ValueError):
