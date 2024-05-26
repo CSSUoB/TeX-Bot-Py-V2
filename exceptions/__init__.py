@@ -23,9 +23,15 @@ __all__: Sequence[str] = (
     "MessagesJSONFileMissingKeyError",
     "MessagesJSONFileValueError",
     "InvalidMessagesJSONFileError",
+    "ImproperlyConfiguredError",
+    "BotRequiresRestartAfterConfigChange",
 )
 
 from exceptions.base import BaseDoesNotExistError, BaseErrorWithErrorCode, BaseTeXBotError
+from exceptions.config_changes import (
+    BotRequiresRestartAfterConfigChange,
+    ImproperlyConfiguredError,
+)
 from exceptions.does_not_exist import (
     ArchivistRoleDoesNotExistError,
     ChannelDoesNotExistError,
