@@ -63,16 +63,10 @@ class InductSendMessageCog(TeXBotBaseCog):
         if guest_role in before.roles or guest_role not in after.roles:
             return
 
-        try:
-            introduction_reminder_opt_out_member: IntroductionReminderOptOutMember = await IntroductionReminderOptOutMember.objects.aget(  # noqa: E501
-                hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(
-                    before.id,
-                ),
-            )
-        except IntroductionReminderOptOutMember.DoesNotExist:
-            pass
-        else:
-            await introduction_reminder_opt_out_member.adelete()
+        with contextlib.suppress(IntroductionReminderOptOutMember.DoesNotExist):
+            await (
+                await IntroductionReminderOptOutMember.objects.aget(discord_id=before.id)
+            ).adelete()
 
         async for message in after.history():
             message_is_introduction_reminder: bool = (
@@ -115,8 +109,6 @@ class InductSendMessageCog(TeXBotBaseCog):
             "to the right & selecting \"Edit Server Profile\").",
         )
         if user_type != "member":
-            # TODO @CarrotManMatt: Remove environment variables that are only used in messages. Messages will be extracted into the external JSON file.  # noqa: FIX002
-            # https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/90
             await after.send(
                 f"You can also get yourself an annual membership "
                 f"to {self.bot.group_full_name} for only £5! "
@@ -189,6 +181,11 @@ class BaseInductCog(TeXBotBaseCog):
             name="introductions",
         )
 
+        initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
+            ":hourglass: Processing Induction... :hourglass:",
+            ephemeral=True,
+        )
+
         if induction_member.bot:
             await self.command_send_error(
                 ctx,
@@ -197,12 +194,11 @@ class BaseInductCog(TeXBotBaseCog):
             return
 
         if guest_role in induction_member.roles:
-            await ctx.respond(
-                (
-                    ":information_source: No changes made. User has already been inducted. "
-                    ":information_source:"
+            await initial_response.edit(
+                content=(
+                    ":information_source: No changes made. "
+                    "User has already been inducted. :information_source:"
                 ),
-                ephemeral=True,
             )
             return
 
@@ -257,7 +253,7 @@ class BaseInductCog(TeXBotBaseCog):
                     await recent_message.add_reaction("👋")
                     break
 
-        await ctx.respond("User inducted successfully.", ephemeral=True)
+        await initial_response.edit(content=":white_check_mark: User inducted successfully.")
 
 
 class InductCommandCog(BaseInductCog):
@@ -374,12 +370,12 @@ class InductUserCommandsCog(BaseInductCog):
     @discord.message_command(name="Induct Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def non_silent_message_induct(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None: # noqa: E501
+    async def non_silent_message_induct(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
         """
         Definition and callback response of the "non_silent_induct" message-context-command.
 
         The non_silent_message_induct command executes the same process as the
-        induct slash command using the message context menu instead of the user menu.
+        induct slash command using the message-context-menu instead of the user-menu.
         """
         try:
             member: discord.Member = await self.bot.get_member_from_str_id(
@@ -394,17 +390,19 @@ class InductUserCommandsCog(BaseInductCog):
                 ),
                 ephemeral=True,
             )
+            return
+
         await self._perform_induction(ctx, member, silent=False)
 
     @discord.message_command(name="Silently Induct Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def silent_message_induct(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None: # noqa: E501
+    async def silent_message_induct(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
         """
         Definition and callback response of the "silent_induct" message-context-command.
 
         The silent_message_induct command executes the same process as the
-        induct slash command using the message context menu instead of the user menu.
+        induct slash command using the message-context-menu instead of the user-menu.
         """
         try:
             member: discord.Member = await self.bot.get_member_from_str_id(
@@ -419,6 +417,8 @@ class InductUserCommandsCog(BaseInductCog):
                 ),
                 ephemeral=True,
             )
+            return
+
         await self._perform_induction(ctx, member, silent=True)
 
 
