@@ -7,8 +7,9 @@ __all__: Sequence[str] = (
     "NoAuditLogsStrikeTrackingError",
 )
 
-from base import BaseTeXBotError
 from classproperties import classproperty
+
+from exceptions import BaseTeXBotError
 
 
 class StrikeTrackingError(BaseTeXBotError, RuntimeError):

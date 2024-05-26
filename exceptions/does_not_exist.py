@@ -19,8 +19,9 @@ __all__: Sequence[str] = (
 import abc
 from typing import Final
 
-from base import BaseDoesNotExistError, BaseTeXBotError
 from classproperties import classproperty
+
+from exceptions import BaseDoesNotExistError, BaseTeXBotError
 
 
 class RulesChannelDoesNotExistError(BaseTeXBotError, ValueError):

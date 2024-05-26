@@ -9,9 +9,10 @@ __all__: Sequence[str] = (
 )
 
 
-from base import BaseTeXBotError
 from classproperties import classproperty
 from config_changes import ImproperlyConfiguredError
+
+from exceptions import BaseTeXBotError
 
 
 class InvalidMessagesJSONFileError(BaseTeXBotError, ImproperlyConfiguredError):

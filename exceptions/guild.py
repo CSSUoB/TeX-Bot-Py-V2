@@ -7,8 +7,9 @@ __all__: Sequence[str] = (
     "EveryoneRoleCouldNotBeRetrievedError",
 )
 
-from base import BaseErrorWithErrorCode, BaseTeXBotError
 from classproperties import classproperty
+
+from exceptions import BaseErrorWithErrorCode, BaseTeXBotError
 
 
 class DiscordMemberNotInMainGuildError(BaseTeXBotError, ValueError):
