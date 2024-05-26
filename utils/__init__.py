@@ -2,7 +2,10 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = (
+# noinspection PyProtectedMember
+from config._settings import utils as config_utils
+
+__all__: Sequence[str] = (  # noqa: PLE0604
     "CommandChecks",
     "MessageSenderComponent",
     "SuppressTraceback",
@@ -13,14 +16,14 @@ __all__: Sequence[str] = (
     "TeXBotAutocompleteContext",
     "generate_invite_url",
     "is_member_inducted",
-    "is_running_in_async",
+    *config_utils.__all__,
 )
 
 
 import discord
 
-# noinspection PyProtectedMember
-from config._pre_startup_utils import is_running_in_async
+# noinspection PyUnresolvedReferences,PyProtectedMember
+from config._settings.utils import *  # noqa: F403
 
 from .command_checks import CommandChecks
 from .message_sender_components import MessageSenderComponent

@@ -22,15 +22,15 @@ from typing import Any, ClassVar, Final, TextIO
 from discord_logging.handler import DiscordHandler
 from strictyaml import YAML
 
-from exceptions import BotRequiresRestartAfterConfigChange
-
-from ._pre_startup_utils import is_running_in_async
-from ._yaml import load_yaml
-from .constants import (
+from config.constants import (
     DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME,
     PROJECT_ROOT,
     REQUIRES_RESTART_SETTINGS,
 )
+from exceptions import BotRequiresRestartAfterConfigChange
+
+from . import utils
+from ._yaml import load_yaml
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
@@ -123,7 +123,7 @@ class SettingsAccessor:
         ATTEMPTING_TO_ACCESS_BOT_TOKEN_WHEN_ALREADY_RUNNING: Final[bool] = bool(
             "bot" in item.lower()
             and "token" in item.lower()
-            and is_running_in_async(),
+            and utils.is_running_in_async(),
         )
         if ATTEMPTING_TO_ACCESS_BOT_TOKEN_WHEN_ALREADY_RUNNING:
             TEX_BOT_ALREADY_RUNNING_MESSAGE: Final[str] = (
