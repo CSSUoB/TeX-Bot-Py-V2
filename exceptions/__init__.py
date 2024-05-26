@@ -20,6 +20,9 @@ __all__: Sequence[str] = (
     "EveryoneRoleCouldNotBeRetrievedError",
     "StrikeTrackingError",
     "NoAuditLogsStrikeTrackingError",
+    "MessagesJSONFileMissingKeyError",
+    "MessagesJSONFileValueError",
+    "InvalidMessagesJSONFileError",
 )
 
 from exceptions.base import BaseDoesNotExistError, BaseErrorWithErrorCode, BaseTeXBotError
@@ -38,5 +41,10 @@ from exceptions.does_not_exist import (
 from exceptions.guild import (
     DiscordMemberNotInMainGuildError,
     EveryoneRoleCouldNotBeRetrievedError,
+)
+from exceptions.messages import (
+    InvalidMessagesJSONFileError,
+    MessagesJSONFileMissingKeyError,
+    MessagesJSONFileValueError,
 )
 from exceptions.strike import NoAuditLogsStrikeTrackingError, StrikeTrackingError
