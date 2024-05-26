@@ -36,7 +36,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
 
     def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
-        if settings["SEND_GET_ROLES_REMINDERS"]:
+        if settings["SEND_GET_ROLES_REMINDERS_ENABLED"]:
             self.send_get_roles_reminders.start()
 
         super().__init__(bot)
@@ -49,7 +49,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         """
         self.send_get_roles_reminders.cancel()
 
-    @tasks.loop(**settings["SEND_GET_ROLES_REMINDERS_INTERVAL"])  # type: ignore[misc]
+    @tasks.loop(seconds=settings["SEND_GET_ROLES_REMINDERS_INTERVAL_SECONDS"])  # type: ignore[misc]
     @functools.partial(
         ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExistError,
@@ -71,7 +71,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         guest_role: discord.Role = await self.bot.guest_role
 
         # noinspection PyUnusedLocal
-        roles_channel_mention: str = "#roles"
+        roles_channel_mention: str = "**`#roles`**"
         with contextlib.suppress(RolesChannelDoesNotExistError):
             roles_channel_mention = (await self.bot.roles_channel).mention
 

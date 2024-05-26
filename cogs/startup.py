@@ -147,26 +147,26 @@ class StartupCog(TeXBotBaseCog):
         if not discord.utils.get(main_guild.text_channels, name="general"):
             logger.warning(GeneralChannelDoesNotExistError())
 
-        if settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] != "DM":
-            manual_moderation_warning_message_location_exists: bool = bool(
+        if settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] != "DM":
+            strike_performed_manually_warning_location_exists: bool = bool(
                 discord.utils.get(
                     main_guild.text_channels,
-                    name=settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"],
+                    name=settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"],
                 ),
             )
-            if not manual_moderation_warning_message_location_exists:
+            if not strike_performed_manually_warning_location_exists:
                 logger.critical(
                     (
                         "The channel %s does not exist, so cannot be used as the location "
                         "for sending manual-moderation warning messages"
                     ),
-                    repr(settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"]),
+                    repr(settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"]),
                 )
-                manual_moderation_warning_message_location_similar_to_dm: bool = (
-                    settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"].lower()
+                strike_performed_manually_warning_location_similar_to_dm: bool = (
+                    settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"].lower()
                     in ("dm", "dms")
                 )
-                if manual_moderation_warning_message_location_similar_to_dm:
+                if strike_performed_manually_warning_location_similar_to_dm:
                     logger.info(
                         (
                             "If you meant to set the location "

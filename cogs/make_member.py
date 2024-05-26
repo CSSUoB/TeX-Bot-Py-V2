@@ -116,7 +116,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             )
             return
 
-        if not re.match(r"\A\d{7}\Z", group_member_id):
+        if not re.match(settings["MEMBERS_LIST_ID_FORMAT"], group_member_id):
             await self.command_send_error(
                 ctx,
                 message=(
@@ -155,7 +155,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             "Expires": "0",
         }
         request_cookies: dict[str, str] = {
-            ".ASPXAUTH": settings["MEMBERS_LIST_URL_SESSION_COOKIE"],
+            ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
         }
         async with aiohttp.ClientSession(headers=request_headers, cookies=request_cookies) as http_session:  # noqa: E501, SIM117
             async with http_session.get(url=settings["MEMBERS_LIST_URL"]) as http_response:

@@ -10,67 +10,75 @@ __all__: Sequence[str] = (
     "load_yaml",
 )
 
+
 from collections.abc import Mapping
 from typing import Final
 
 import strictyaml
 from strictyaml import YAML
 
-from ..constants import DEFAULT_STATISTICS_ROLES, TRANSLATED_MESSAGES_LOCALE_CODES
+from ..constants import (
+    LogLevels,
+    SendIntroductionRemindersFlagType,
+    DEFAULT_CONSOLE_LOG_LEVEL,
+    DEFAULT_DISCORD_LOGGING_LOG_LEVEL,
+    TRANSLATED_MESSAGES_LOCALE_CODES,
+    DEFAULT_PING_COMMAND_EASTER_EGG_PROBABILITY,
+    DEFAULT_MEMBERS_LIST_ID_FORMAT,
+    DEFAULT_STATS_COMMAND_LOOKBACK_DAYS,
+    DEFAULT_STATS_COMMAND_DISPLAYED_ROLES,
+    DEFAULT_STRIKE_COMMAND_TIMEOUT_DURATION,
+    DEFAULT_STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION,
+    DEFAULT_SEND_INTRODUCTION_REMINDERS_ENABLED,
+    DEFAULT_SEND_INTRODUCTION_REMINDERS_DELAY,
+    DEFAULT_SEND_INTRODUCTION_REMINDERS_INTERVAL,
+    DEFAULT_SEND_GET_ROLES_REMINDERS_ENABLED,
+    DEFAULT_SEND_GET_ROLES_REMINDERS_DELAY,
+    DEFAULT_SEND_GET_ROLES_REMINDERS_INTERVAL,
+)
 from .custom_validators import (
     DiscordWebhookURLValidator,
+    TimeDeltaValidator,
     LogLevelValidator,
     RegexMatcher,
     DiscordSnowflakeValidator,
     ProbabilityValidator,
     SendIntroductionRemindersFlagValidator,
-    SendIntroductionRemindersFlagType,
-    LogLevelType,
 )
 from .custom_schema_utils import SlugKeyMap
 
 
-_DEFAULT_CONSOLE_LOG_LEVEL: Final[LogLevelType] = "INFO"
-_DEFAULT_CONSOLE_LOGGING_SETTINGS: Final[Mapping[str, str]] = {
-    "log-level": _DEFAULT_CONSOLE_LOG_LEVEL,
+_DEFAULT_CONSOLE_LOGGING_SETTINGS: Final[Mapping[str, LogLevels]] = {
+    "log-level": DEFAULT_CONSOLE_LOG_LEVEL,
 }
-_DEFAULT_LOGGING_SETTINGS: Final[Mapping[str, Mapping[str, str]]] = {
+_DEFAULT_LOGGING_SETTINGS: Final[Mapping[str, Mapping[str, LogLevels]]] = {
     "console": _DEFAULT_CONSOLE_LOGGING_SETTINGS,
 }
-_DEFAULT_PING_COMMAND_EASTER_EGG_PROBABILITY: Final[float] = 0.01
 _DEFAULT_PING_COMMAND_SETTINGS: Final[Mapping[str, float]] = {
-    "easter-egg-probability": _DEFAULT_PING_COMMAND_EASTER_EGG_PROBABILITY,
+    "easter-egg-probability": DEFAULT_PING_COMMAND_EASTER_EGG_PROBABILITY,
 }
-_DEFAULT_STATS_COMMAND_LOOKBACK_DAYS: Final[float] = 30.0
-_DEFAULT_STATS_COMMAND_DISPLAYED_ROLES: Final[Sequence[str]] = list(DEFAULT_STATISTICS_ROLES)
 _DEFAULT_STATS_COMMAND_SETTINGS: Final[Mapping[str, float | Sequence[str]]] = {
-    "lookback-days": _DEFAULT_STATS_COMMAND_LOOKBACK_DAYS,
-    "displayed-roles": _DEFAULT_STATS_COMMAND_DISPLAYED_ROLES,
+    "lookback-days": DEFAULT_STATS_COMMAND_LOOKBACK_DAYS,
+    "displayed-roles": DEFAULT_STATS_COMMAND_DISPLAYED_ROLES,
 }
-_DEFAULT_STRIKE_COMMAND_TIMEOUT_DURATION: Final[str] = "24h"
-_DEFAULT_STRIKE_COMMAND_MANUAL_USE_WARNING_LOCATION: Final[str] = "DM"
 _DEFAULT_STRIKE_COMMAND_SETTINGS: Final[Mapping[str, str]] = {
-    "timeout-duration": _DEFAULT_STRIKE_COMMAND_TIMEOUT_DURATION,
-    "manual-use-warning-location": _DEFAULT_STRIKE_COMMAND_MANUAL_USE_WARNING_LOCATION,
+    "timeout-duration": DEFAULT_STRIKE_COMMAND_TIMEOUT_DURATION,
+    "performed-manually-warning-location": DEFAULT_STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION,
 }
 _DEFAULT_COMMANDS_SETTINGS: Final[Mapping[str, Mapping[str, float]]] = {
     "ping": _DEFAULT_PING_COMMAND_SETTINGS,
     "stats": _DEFAULT_STATS_COMMAND_SETTINGS,
     "strike": _DEFAULT_STRIKE_COMMAND_SETTINGS,
 }
-_DEFAULT_SEND_INTRODUCTION_REMINDERS_DELAY: Final[str] = "40h"
-_DEFAULT_SEND_INTRODUCTION_REMINDERS_INTERVAL: Final[str] = "6h"
 _DEFAULT_SEND_INTRODUCTION_REMINDERS_SETTINGS: Final[Mapping[str, SendIntroductionRemindersFlagType | str]] = {
-    "enable": "once",
-    "delay": _DEFAULT_SEND_INTRODUCTION_REMINDERS_DELAY,
-    "interval": _DEFAULT_SEND_INTRODUCTION_REMINDERS_INTERVAL,
+    "enabled": DEFAULT_SEND_INTRODUCTION_REMINDERS_ENABLED,
+    "delay": DEFAULT_SEND_INTRODUCTION_REMINDERS_DELAY,
+    "interval": DEFAULT_SEND_INTRODUCTION_REMINDERS_INTERVAL,
 }
-_DEFAULT_SEND_GET_ROLES_REMINDERS_DELAY: Final[str] = "40h"
-_DEFAULT_SEND_GET_ROLES_REMINDERS_INTERVAL: Final[str] = "6h"
 _DEFAULT_SEND_GET_ROLES_REMINDERS_SETTINGS: Final[Mapping[str, bool | str]] = {
-    "enable": True,
-    "delay": _DEFAULT_SEND_GET_ROLES_REMINDERS_DELAY,
-    "interval": _DEFAULT_SEND_GET_ROLES_REMINDERS_INTERVAL,
+    "enabled": DEFAULT_SEND_GET_ROLES_REMINDERS_ENABLED,
+    "delay": DEFAULT_SEND_GET_ROLES_REMINDERS_DELAY,
+    "interval": DEFAULT_SEND_GET_ROLES_REMINDERS_INTERVAL,
 }
 _DEFAULT_REMINDERS_SETTINGS: Final[Mapping[str, Mapping[str, bool | str] | Mapping[str, SendIntroductionRemindersFlagType | str]]] = {  # noqa: E501
     "send-introduction-reminders": _DEFAULT_SEND_INTRODUCTION_REMINDERS_SETTINGS,
@@ -81,17 +89,19 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
     {
         strictyaml.Optional("logging", default=_DEFAULT_LOGGING_SETTINGS): SlugKeyMap(
             {
-                strictyaml.Optional("console", default=_DEFAULT_CONSOLE_LOGGING_SETTINGS): SlugKeyMap(  # noqa: E501
-                    {
-                        strictyaml.Optional("log-level", default=_DEFAULT_CONSOLE_LOG_LEVEL): (
-                            LogLevelValidator()
-                        ),
-                    },
+                strictyaml.Optional("console", default=_DEFAULT_CONSOLE_LOGGING_SETTINGS): (
+                    SlugKeyMap(
+                        {
+                            strictyaml.Optional("log-level", default=DEFAULT_CONSOLE_LOG_LEVEL): (  # noqa: E501
+                                LogLevelValidator()
+                            ),
+                        },
+                    )
                 ),
                 strictyaml.Optional("discord-channel"): SlugKeyMap(
                     {
                         "webhook-url": DiscordWebhookURLValidator(),
-                        strictyaml.Optional("log-level", default="WARNING"): (
+                        strictyaml.Optional("log-level", default=DEFAULT_DISCORD_LOGGING_LOG_LEVEL): (  # noqa: E501
                             LogLevelValidator()
                         ),
                     },
@@ -125,7 +135,7 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
                     {
                         "url": strictyaml.Url(),
                         "auth-session-cookie": strictyaml.Str(),
-                        strictyaml.Optional("id-format", default=r"\A\d{6,7}\Z"): (
+                        strictyaml.Optional("id-format", default=DEFAULT_MEMBERS_LIST_ID_FORMAT): (  # noqa: E501
                             RegexMatcher()
                         ),
                     },
@@ -136,7 +146,7 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
             {
                 strictyaml.Optional("ping", default=_DEFAULT_PING_COMMAND_SETTINGS): SlugKeyMap(  # noqa: E501
                     {
-                        strictyaml.Optional("easter-egg-probability", default=_DEFAULT_PING_COMMAND_EASTER_EGG_PROBABILITY): (  # noqa: E501
+                        strictyaml.Optional("easter-egg-probability", default=DEFAULT_PING_COMMAND_EASTER_EGG_PROBABILITY): (  # noqa: E501
                             ProbabilityValidator()
                         ),
                     },
@@ -144,10 +154,10 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
                 strictyaml.Optional("stats", default=_DEFAULT_STATS_COMMAND_SETTINGS): (
                     SlugKeyMap(
                         {
-                            strictyaml.Optional("lookback-days", default=_DEFAULT_STATS_COMMAND_LOOKBACK_DAYS): (  # noqa: E501
+                            strictyaml.Optional("lookback-days", default=DEFAULT_STATS_COMMAND_LOOKBACK_DAYS): (  # noqa: E501
                                 strictyaml.Float()
                             ),
-                            strictyaml.Optional("displayed-roles", default=_DEFAULT_STATS_COMMAND_DISPLAYED_ROLES): (  # noqa: E501
+                            strictyaml.Optional("displayed-roles", default=DEFAULT_STATS_COMMAND_DISPLAYED_ROLES): (  # noqa: E501
                                 strictyaml.UniqueSeq(strictyaml.Str())
                             ),
                         },
@@ -156,12 +166,15 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
                 strictyaml.Optional("strike", default=_DEFAULT_STRIKE_COMMAND_SETTINGS): (
                     SlugKeyMap(
                         {
-                            strictyaml.Optional("timeout-duration", default=_DEFAULT_STRIKE_COMMAND_TIMEOUT_DURATION): (  # noqa: E501
-                                strictyaml.Regex(
-                                    r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
+                            strictyaml.Optional("timeout-duration", default=DEFAULT_STRIKE_COMMAND_TIMEOUT_DURATION): (  # noqa: E501
+                                TimeDeltaValidator(
+                                    minutes=True,
+                                    hours=True,
+                                    days=True,
+                                    weeks=True,
                                 )
                             ),
-                            strictyaml.Optional("manual-use-warning-location", default=_DEFAULT_STRIKE_COMMAND_MANUAL_USE_WARNING_LOCATION): (  # noqa: E501
+                            strictyaml.Optional("performed-manually-warning-location", default=DEFAULT_STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION): (  # noqa: E501
                                 strictyaml.Str()
                             ),
                         },
@@ -176,31 +189,23 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
             {
                 strictyaml.Optional("send-introduction-reminders", default=_DEFAULT_SEND_INTRODUCTION_REMINDERS_SETTINGS): SlugKeyMap(  # noqa: E501
                     {
-                        "enable": SendIntroductionRemindersFlagValidator(),
-                        strictyaml.Optional("delay", default=_DEFAULT_SEND_INTRODUCTION_REMINDERS_DELAY): (  # noqa: E501
-                            strictyaml.Regex(
-                                r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-                            )
+                        "enabled": SendIntroductionRemindersFlagValidator(),
+                        strictyaml.Optional("delay", default=DEFAULT_SEND_INTRODUCTION_REMINDERS_DELAY): (  # noqa: E501
+                            TimeDeltaValidator(minutes=True, hours=True, days=True, weeks=True)
                         ),
-                        strictyaml.Optional("interval", default=_DEFAULT_SEND_INTRODUCTION_REMINDERS_INTERVAL): (  # noqa: E501
-                            strictyaml.Regex(
-                                r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-                            )
+                        strictyaml.Optional("interval", default=DEFAULT_SEND_INTRODUCTION_REMINDERS_INTERVAL): (  # noqa: E501
+                            TimeDeltaValidator(minutes=True, hours=True)
                         ),
                     },
                 ),
                 strictyaml.Optional("send-get-roles-reminders", default=_DEFAULT_SEND_GET_ROLES_REMINDERS_SETTINGS): SlugKeyMap(  # noqa: E501
                     {
-                        "enable": strictyaml.Bool(),
-                        strictyaml.Optional("delay", default=_DEFAULT_SEND_GET_ROLES_REMINDERS_DELAY): (  # noqa: E501
-                            strictyaml.Regex(
-                                r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-                            )
+                        "enabled": strictyaml.Bool(),
+                        strictyaml.Optional("delay", default=DEFAULT_SEND_GET_ROLES_REMINDERS_DELAY): (  # noqa: E501
+                            TimeDeltaValidator(minutes=True, hours=True, days=True, weeks=True)
                         ),
-                        strictyaml.Optional("interval", default=_DEFAULT_SEND_GET_ROLES_REMINDERS_INTERVAL): (  # noqa: E501
-                            strictyaml.Regex(
-                                r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-                            )
+                        strictyaml.Optional("interval", default=DEFAULT_SEND_GET_ROLES_REMINDERS_INTERVAL): (  # noqa: E501
+                            TimeDeltaValidator(minutes=True, hours=True)
                         ),
                     },
                 ),

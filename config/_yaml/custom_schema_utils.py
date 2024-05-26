@@ -2,6 +2,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("SlugKeyValidator", "SlugKeyMap")
 
+
 from typing import override
 
 import slugify

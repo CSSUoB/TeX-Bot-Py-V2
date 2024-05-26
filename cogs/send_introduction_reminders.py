@@ -38,8 +38,8 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
     def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
-        if settings["SEND_INTRODUCTION_REMINDERS"]:
-            if settings["SEND_INTRODUCTION_REMINDERS"] == "interval":
+        if settings["SEND_INTRODUCTION_REMINDERS_ENABLED"]:
+            if settings["SEND_INTRODUCTION_REMINDERS_ENABLED"] == "interval":
                 SentOneOffIntroductionReminderMember.objects.all().delete()
 
             self.send_introduction_reminders.start()
@@ -61,7 +61,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             self.OptOutIntroductionRemindersView(self.bot),
         )
 
-    @tasks.loop(**settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"])  # type: ignore[misc]
+    @tasks.loop(seconds=settings["SEND_INTRODUCTION_REMINDERS_INTERVAL_SECONDS"])  # type: ignore[misc]
     @functools.partial(
         ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExistError,
@@ -99,7 +99,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 continue
 
             member_needs_one_off_reminder: bool = (
-                settings["SEND_INTRODUCTION_REMINDERS"] == "once"
+                settings["SEND_INTRODUCTION_REMINDERS_ENABLED"] == "once"
                 and not await (
                     await SentOneOffIntroductionReminderMember.objects.afilter(
                         discord_id=member.id,
@@ -107,7 +107,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 ).aexists()
             )
             member_needs_recurring_reminder: bool = (
-                settings["SEND_INTRODUCTION_REMINDERS"] == "interval"
+                settings["SEND_INTRODUCTION_REMINDERS_ENABLED"] == "interval"
             )
             member_recently_joined: bool = (
                 (discord.utils.utcnow() - member.joined_at)
@@ -158,7 +158,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 ),
                 view=(
                     self.OptOutIntroductionRemindersView(self.bot)
-                    if settings["SEND_INTRODUCTION_REMINDERS"] == "interval"
+                    if settings["SEND_INTRODUCTION_REMINDERS_ENABLED"] == "interval"
                     else None  # type: ignore[arg-type]
                 ),
             )

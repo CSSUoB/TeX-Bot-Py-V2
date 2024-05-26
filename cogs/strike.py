@@ -74,7 +74,7 @@ async def perform_moderation_action(strike_user: discord.Member, strikes: int, c
 
     if strikes == 1:
         await strike_user.timeout_for(
-            datetime.timedelta(hours=24),
+            settings["STRIKE_COMMAND_TIMEOUT_DURATION"],
             reason=MODERATION_ACTION_REASON,
         )
 
@@ -209,7 +209,7 @@ class BaseStrikeCog(TeXBotBaseCog):
 
     async def _send_strike_user_message(self, strike_user: discord.User | discord.Member, member_strikes: DiscordMemberStrikes) -> None:  # noqa: E501
         # noinspection PyUnusedLocal
-        rules_channel_mention: str = "`#welcome`"
+        rules_channel_mention: str = "**`#welcome`**"
         with contextlib.suppress(RulesChannelDoesNotExistError):
             rules_channel_mention = (await self.bot.rules_channel).mention
 
@@ -402,9 +402,9 @@ class ManualModerationCog(BaseStrikeCog):
         """
         Retrieve the correct channel to send the strike confirmation message to.
 
-        This is based upon the MANUAL_MODERATION_WARNING_MESSAGE_LOCATION config setting value.
+        This is based upon the STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION config setting value.
         """
-        if settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] == "DM":
+        if settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] == "DM":
             if user.bot:
                 session: aiohttp.ClientSession
                 with aiohttp.ClientSession() as session:  # type: ignore[assignment]
@@ -438,12 +438,12 @@ class ManualModerationCog(BaseStrikeCog):
 
         guild_confirmation_message_channel: discord.TextChannel | None = discord.utils.get(
             self.bot.main_guild.text_channels,
-            name=settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"],
+            name=settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"],
         )
         if not guild_confirmation_message_channel:
             CHANNEL_DOES_NOT_EXIST_MESSAGE: Final[str] = (
                 "The channel "
-                f"""{settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"]!r} """
+                f"""{settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"]!r} """
                 "does not exist, so cannot be used as the location "
                 "for sending manual-moderation warning messages"
             )

@@ -90,8 +90,8 @@ class TeXBot(discord.Bot):
 
         Raises `GuildDoesNotExist` if the given ID does not link to a valid Discord guild.
         """
-        if not self._main_guild or not self._bot_has_guild(settings["DISCORD_GUILD_ID"]):
-            raise GuildDoesNotExistError(guild_id=settings["DISCORD_GUILD_ID"])
+        if not self._main_guild or not self._bot_has_guild(settings["_DISCORD_MAIN_GUILD_ID"]):
+            raise GuildDoesNotExistError(guild_id=settings["_DISCORD_MAIN_GUILD_ID"])
 
         return self._main_guild
 

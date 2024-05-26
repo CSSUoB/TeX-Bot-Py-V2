@@ -10,8 +10,7 @@ from collections.abc import Sequence
 __all__: Sequence[str] = (
     "PROJECT_ROOT",
     "TRANSLATED_MESSAGES_LOCALE_CODES",
-    "DEFAULT_STATISTICS_ROLES",
-    "LOG_LEVELS",
+    "LogLevels",
     "run_setup",
     "settings",
     "check_for_deprecated_environment_variables",
@@ -32,8 +31,7 @@ from ._settings import SettingsAccessor
 from .constants import (
     PROJECT_ROOT,
     TRANSLATED_MESSAGES_LOCALE_CODES,
-    DEFAULT_STATISTICS_ROLES,
-    LOG_LEVELS,
+    LogLevels,
 )
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
@@ -94,6 +92,12 @@ def check_for_deprecated_environment_variables() -> None:
         "MEMBERS_LIST_LIST",
         "MEMBERS_LIST",
         "MEMBERS_LIST_URL_SESSION_COOKIE",
+        "MEMBERS_LIST_AUTH_SESSION_COOKIE",
+        "MEMBERS_LIST_URL_AUTH_COOKIE",
+        "MEMBERS_LIST_SESSION_COOKIE",
+        "MEMBERS_LIST_URL_COOKIE",
+        "MEMBERS_LIST_AUTH_COOKIE",
+        "MEMBERS_LIST_COOKIE",
         "PING_COMMAND_EASTER_EGG_PROBABILITY",
         "PING_EASTER_EGG_PROBABILITY",
         "MESSAGES_FILE_PATH",
@@ -113,7 +117,14 @@ def check_for_deprecated_environment_variables() -> None:
         "MODERATION_DOCUMENT_LINK",
         "MODERATION_DOCUMENT",
         "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION",
+        "MANUAL_MODERATION_WARNING_LOCATION",
         "MANUAL_MODERATION_MESSAGE_LOCATION",
+        "STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION",
+        "STRIKE_PERFORMED_MANUALLY_WARNING_MESSAGE_LOCATION",
+        "STRIKE_PERFORMED_MANUALLY_MESSAGE_LOCATION",
+        "MANUAL_STRIKE_WARNING_MESSAGE_LOCATION",
+        "MANUAL_STRIKE_MESSAGE_LOCATION",
+        "MANUAL_STRIKE_WARNING_LOCATION",
     )
     deprecated_environment_variable_name: str
     for deprecated_environment_variable_name in DEPRECATED_ENVIRONMENT_VARIABLE_NAMES:

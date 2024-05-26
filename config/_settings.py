@@ -14,6 +14,7 @@ import contextlib
 import logging
 import os
 import re
+from datetime import timedelta
 from logging import Logger
 from pathlib import Path
 from typing import Any, ClassVar, Final
@@ -174,13 +175,56 @@ class SettingsAccessor:
                 current_yaml["community-group"].get("short-name", None),
             ),
             cls._reload_purchase_membership_link(
-                current_yaml["community-group"]["links"].get("purchase-membership"),
+                current_yaml["community-group"]["links"].get("purchase-membership", None),
             ),
             cls._reload_membership_perks_link(
-                current_yaml["community-group"]["links"].get("membership-perks"),
+                current_yaml["community-group"]["links"].get("membership-perks", None),
             ),
             cls._reload_moderation_document_link(
                 current_yaml["community-group"]["links"]["moderation-document"],
+            ),
+            cls._reload_members_list_url(
+                current_yaml["community-group"]["members-list"]["url"],
+            ),
+            cls._reload_members_list_auth_session_cookie(
+                current_yaml["community-group"]["members-list"]["auth-session-cookie"],
+            ),
+            cls._reload_members_list_id_format(
+                current_yaml["community-group"]["members-list"]["id-format"],
+            ),
+            cls._reload_ping_command_easter_egg_probability(
+                current_yaml["commands"]["ping"]["easter-egg-probability"],
+            ),
+            cls._reload_stats_command_lookback_days(
+                current_yaml["commands"]["stats"]["lookback-days"],
+            ),
+            cls._reload_stats_command_displayed_roles(
+                current_yaml["commands"]["stats"]["displayed-roles"],
+            ),
+            cls._reload_stats_command_displayed_roles(
+                current_yaml["commands"]["strike"]["timeout-duration"],
+            ),
+            cls._reload_strike_performed_manually_warning_location(
+                current_yaml["commands"]["strike"]["performed-manually-warning-location"],
+            ),
+            cls._reload_messages_language(current_yaml["messages-language"]),
+            cls._reload_send_introduction_reminders_enabled(
+                current_yaml["reminders"]["send-introduction-reminders"]["enabled"]
+            ),
+            cls._reload_send_introduction_reminders_delay(
+                current_yaml["reminders"]["send-introduction-reminders"]["delay"]
+            ),
+            cls._reload_send_introduction_reminders_interval(
+                current_yaml["reminders"]["send-introduction-reminders"]["interval"]
+            ),
+            cls._reload_send_get_roles_reminders_enabled(
+                current_yaml["reminders"]["send-get-roles-reminders"]["enabled"]
+            ),
+            cls._reload_send_get_roles_reminders_delay(
+                current_yaml["reminders"]["send-get-roles-reminders"]["delay"]
+            ),
+            cls._reload_send_get_roles_reminders_interval(
+                current_yaml["reminders"]["send-get-roles-reminders"]["interval"]
             ),
         )
 
@@ -503,4 +547,340 @@ class SettingsAccessor:
 
         return {"community-group:links:moderation-document"}
 
-    # TODO: Load more config settings
+    @classmethod
+    def _reload_members_list_url(cls, members_list_url: YAML) -> set[str]:
+        """
+        Reload the url that points to the location of your community group's members-list.
+
+        Returns the set of settings keys that have been changed.
+        """
+        MEMBERS_LIST_URL_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or members_list_url != cls._most_recent_yaml["community-group"]["members-list"][
+                "url"
+            ]
+            or "MEMBERS_LIST_URL" not in cls._settings
+        )
+        if not MEMBERS_LIST_URL_CHANGED:
+            return set()
+
+        cls._settings["MEMBERS_LIST_URL"] = members_list_url.data
+
+        return {"community-group:members-list:url"}
+
+    @classmethod
+    def _reload_members_list_auth_session_cookie(cls, members_list_auth_session_cookie: YAML) -> set[str]:
+        """
+        Reload the auth session cookie used to authenticate to access your members-list.
+
+        Returns the set of settings keys that have been changed.
+        """
+        MEMBERS_LIST_AUTH_SESSION_COOKIE_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or members_list_auth_session_cookie != cls._most_recent_yaml["community-group"][
+                "members-list"
+            ]["auth-session-cookie"]
+            or "MEMBERS_LIST_AUTH_SESSION_COOKIE" not in cls._settings
+        )
+        if not MEMBERS_LIST_AUTH_SESSION_COOKIE_CHANGED:
+            return set()
+
+        cls._settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"] = (
+            members_list_auth_session_cookie.data
+        )
+
+        return {"community-group:members-list:auth-session-cookie"}
+
+    @classmethod
+    def _reload_members_list_id_format(cls, members_list_id_format: YAML) -> set[str]:
+        """
+        Reload the format regex matcher for IDs in your community group's members-list.
+
+        Returns the set of settings keys that have been changed.
+        """
+        MEMBERS_LIST_ID_FORMAT_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or members_list_id_format != cls._most_recent_yaml["community-group"][
+                "members-list"
+            ]["id-format"]
+            or "MEMBERS_LIST_ID_FORMAT" not in cls._settings
+        )
+        if not MEMBERS_LIST_ID_FORMAT_CHANGED:
+            return set()
+
+        cls._settings["MEMBERS_LIST_ID_FORMAT"] = members_list_id_format.data
+
+        return {"community-group:members-list:id-format"}
+
+    @classmethod
+    def _reload_ping_command_easter_egg_probability(cls, ping_command_easter_egg_probability: YAML) -> set[str]:  # noqa: E501
+        """
+        Reload the probability that the rarer response will show when using the ping command.
+
+        Returns the set of settings keys that have been changed.
+        """
+        PING_COMMAND_EASTER_EGG_PROBABILITY_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or ping_command_easter_egg_probability != cls._most_recent_yaml["commands"][
+                "ping"
+            ]["easter-egg-probability"]
+            or "PING_COMMAND_EASTER_EGG_PROBABILITY" not in cls._settings
+        )
+        if not PING_COMMAND_EASTER_EGG_PROBABILITY_CHANGED:
+            return set()
+
+        cls._settings["PING_COMMAND_EASTER_EGG_PROBABILITY"] = (
+            ping_command_easter_egg_probability.data
+        )
+
+        return {"commands:ping:easter-egg-probability"}
+
+    @classmethod
+    def _reload_stats_command_lookback_days(cls, stats_command_lookback_days: YAML) -> set[str]:  # noqa: E501
+        """
+        Reload the number of days to lookback for statistics.
+
+        Returns the set of settings keys that have been changed.
+        """
+        STATS_COMMAND_LOOKBACK_DAYS_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or stats_command_lookback_days != cls._most_recent_yaml["commands"][
+                "stats"
+            ]["lookback-days"]
+            or "STATS_COMMAND_LOOKBACK_DAYS" not in cls._settings
+        )
+        if not STATS_COMMAND_LOOKBACK_DAYS_CHANGED:
+            return set()
+
+        cls._settings["STATS_COMMAND_LOOKBACK_DAYS"] = timedelta(
+            days=stats_command_lookback_days.data
+        )
+
+        return {"commands:stats:lookback-days"}
+
+    @classmethod
+    def _reload_stats_command_displayed_roles(cls, stats_command_displayed_roles: YAML) -> set[str]:  # noqa: E501
+        """
+        Reload the set of roles used to display statistics about.
+
+        Returns the set of settings keys that have been changed.
+        """
+        STATS_COMMAND_DISPLAYED_ROLES_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or stats_command_displayed_roles != cls._most_recent_yaml["commands"][
+                "stats"
+            ]["displayed-roles"]
+            or "STATS_COMMAND_DISPLAYED_ROLES" not in cls._settings
+        )
+        if not STATS_COMMAND_DISPLAYED_ROLES_CHANGED:
+            return set()
+
+        cls._settings["STATS_COMMAND_DISPLAYED_ROLES"] = stats_command_displayed_roles.data
+
+        return {"commands:stats:displayed-roles"}
+
+    @classmethod
+    def _reload_strike_command_timeout_duration(cls, strike_command_timeout_duration: YAML) -> set[str]:  # noqa: E501
+        """
+        Reload the duration to use when applying a timeout action for a strike increase.
+
+        Returns the set of settings keys that have been changed.
+        """
+        STRIKE_COMMAND_TIMEOUT_DURATION_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or strike_command_timeout_duration != cls._most_recent_yaml["commands"][
+                "strike"
+            ]["timeout-duration"]
+            or "STRIKE_COMMAND_TIMEOUT_DURATION" not in cls._settings
+        )
+        if not STRIKE_COMMAND_TIMEOUT_DURATION_CHANGED:
+            return set()
+
+        cls._settings["STRIKE_COMMAND_TIMEOUT_DURATION"] = strike_command_timeout_duration.data
+
+        return {"commands:strike:timeout-duration"}
+
+    @classmethod
+    def _reload_strike_performed_manually_warning_location(cls, strike_performed_manually_warning_location: YAML) -> set[str]:  # noqa: E501
+        """
+        Reload the location to send warning messages when strikes are performed manually.
+
+        Returns the set of settings keys that have been changed.
+        """
+        STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or strike_performed_manually_warning_location != cls._most_recent_yaml["commands"][
+                "strike"
+            ]["performed-manually-warning-location"]
+            or "STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION" not in cls._settings
+        )
+        if not STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_CHANGED:
+            return set()
+
+        cls._settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] = (
+            strike_performed_manually_warning_location.data
+        )
+
+        return {"commands:strike:performed-manually-warning-location"}
+
+    @classmethod
+    def _reload_messages_language(cls, messages_language: YAML) -> set[str]:
+        """
+        Reload the selected language for messages to be sent in.
+
+        Returns the set of settings keys that have been changed.
+        """
+        MESSAGES_LANGUAGE_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or messages_language != cls._most_recent_yaml["messages-language"]
+            or "MESSAGES_LANGUAGE" not in cls._settings
+        )
+        if not MESSAGES_LANGUAGE_CHANGED:
+            return set()
+
+        cls._settings["MESSAGES_LANGUAGE"] = messages_language.data
+
+        return {"messages-language"}
+
+    @classmethod
+    def _reload_send_introduction_reminders_enabled(cls, send_introduction_reminders_enabled: YAML) -> set[str]:  # noqa: E501
+        """
+        Reload the flag for whether the "send-introduction-reminders" task is enabled.
+
+        Returns the set of settings keys that have been changed.
+        """
+        SEND_INTRODUCTION_REMINDERS_ENABLED_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or send_introduction_reminders_enabled != cls._most_recent_yaml["reminders"][
+                "send-introduction-reminders"
+            ]["enabled"]
+            or "SEND_INTRODUCTION_REMINDERS_ENABLED" not in cls._settings
+        )
+        if not SEND_INTRODUCTION_REMINDERS_ENABLED_CHANGED:
+            return set()
+
+        cls._settings["SEND_INTRODUCTION_REMINDERS_ENABLED"] = (
+            send_introduction_reminders_enabled.data
+        )
+
+        return {"reminders:send-introduction-reminders:enabled"}
+
+    @classmethod
+    def _reload_send_introduction_reminders_delay(cls, send_introduction_reminders_delay: YAML) -> set[str]:  # noqa: E501
+        """
+        Reload the amount of time to wait before sending introduction-reminders to a user.
+
+        Returns the set of settings keys that have been changed.
+
+        Waiting begins from the time that the user joined your community group's Discord guild.
+        """
+        SEND_INTRODUCTION_REMINDERS_DELAY_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or send_introduction_reminders_delay != cls._most_recent_yaml["reminders"][
+                "send-introduction-reminders"
+            ]["delay"]
+            or "SEND_INTRODUCTION_REMINDERS_DELAY" not in cls._settings
+        )
+        if not SEND_INTRODUCTION_REMINDERS_DELAY_CHANGED:
+            return set()
+
+        cls._settings["SEND_INTRODUCTION_REMINDERS_DELAY"] = (
+            send_introduction_reminders_delay.data
+        )
+
+        return {"reminders:send-introduction-reminders:delay"}
+
+    @classmethod
+    def _reload_send_introduction_reminders_interval(cls, send_introduction_reminders_interval: YAML) -> set[str]:  # noqa: E501
+        """
+        Reload the interval of time between executing the task to send introduction-reminders.
+
+        Returns the set of settings keys that have been changed.
+        """
+        SEND_INTRODUCTION_REMINDERS_INTERVAL_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or send_introduction_reminders_interval != cls._most_recent_yaml["reminders"][
+                "send-introduction-reminders"
+            ]["interval"]
+            or "SEND_INTRODUCTION_REMINDERS_INTERVAL_SECONDS" not in cls._settings
+        )
+        if not SEND_INTRODUCTION_REMINDERS_INTERVAL_CHANGED:
+            return set()
+
+        cls._settings["SEND_INTRODUCTION_REMINDERS_INTERVAL_SECONDS"] = (
+            send_introduction_reminders_interval.data.total_seconds()
+        )
+
+        return {"reminders:send-introduction-reminders:interval"}
+
+    @classmethod
+    def _reload_send_get_roles_reminders_enabled(cls, send_get_roles_reminders_enabled: YAML) -> set[str]:  # noqa: E501
+        """
+        Reload the flag for whether the "send-get-roles-reminders" task is enabled.
+
+        Returns the set of settings keys that have been changed.
+        """
+        SEND_GET_ROLES_REMINDERS_ENABLED_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or send_get_roles_reminders_enabled != cls._most_recent_yaml["reminders"][
+                "send-get-roles-reminders"
+            ]["enabled"]
+            or "SEND_GET_ROLES_REMINDERS_ENABLED" not in cls._settings
+        )
+        if not SEND_GET_ROLES_REMINDERS_ENABLED_CHANGED:
+            return set()
+
+        cls._settings["SEND_GET_ROLES_REMINDERS_ENABLED"] = (
+            send_get_roles_reminders_enabled.data
+        )
+
+        return {"reminders:send-get-roles-reminders:enabled"}
+
+    @classmethod
+    def _reload_send_get_roles_reminders_delay(cls, send_get_roles_reminders_delay: YAML) -> set[str]:  # noqa: E501
+        """
+        Reload the amount of time to wait before sending get-roles-reminders to a user.
+
+        Returns the set of settings keys that have been changed.
+
+        Waiting begins from the time that the user was inducted as a guest
+        into your community group's Discord guild.
+        """
+        SEND_GET_ROLES_REMINDERS_DELAY_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or send_get_roles_reminders_delay != cls._most_recent_yaml["reminders"][
+                "send-get-roles-reminders"
+            ]["delay"]
+            or "SEND_GET_ROLES_REMINDERS_DELAY" not in cls._settings
+        )
+        if not SEND_GET_ROLES_REMINDERS_DELAY_CHANGED:
+            return set()
+
+        cls._settings["SEND_GET_ROLES_REMINDERS_DELAY"] = (
+            send_get_roles_reminders_delay.data
+        )
+
+        return {"reminders:send-get-roles-reminders:delay"}
+
+    @classmethod
+    def _reload_send_get_roles_reminders_interval(cls, send_get_roles_reminders_interval: YAML) -> set[str]:  # noqa: E501
+        """
+        Reload the interval of time between executing the task to send get-roles-reminders.
+
+        Returns the set of settings keys that have been changed.
+        """
+        SEND_GET_ROLES_REMINDERS_INTERVAL_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or send_get_roles_reminders_interval != cls._most_recent_yaml["reminders"][
+                "send-get-roles-reminders"
+            ]["interval"]
+            or "SEND_GET_ROLES_REMINDERS_INTERVAL_SECONDS" not in cls._settings
+        )
+        if not SEND_GET_ROLES_REMINDERS_INTERVAL_CHANGED:
+            return set()
+
+        cls._settings["SEND_GET_ROLES_REMINDERS_INTERVAL_SECONDS"] = (
+            send_get_roles_reminders_interval.data.total_seconds()
+        )
+
+        return {"reminders:send-get-roles-reminders:interval"}
