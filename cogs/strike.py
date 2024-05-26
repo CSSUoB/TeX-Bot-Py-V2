@@ -238,7 +238,7 @@ class BaseStrikeCog(TeXBotBaseCog):
             "the corresponding moderation action will soon be applied to you. "
             "To find what moderation action corresponds to which strike level, "
             f"you can view the {self.bot.group_short_name} Discord server moderation document "
-            f"[here](<{settings.MODERATION_DOCUMENT_URL}>)\nPlease ensure you have read "
+            f"[here](<{settings.MODERATION_DOCUMENT_LINK}>)\nPlease ensure you have read "
             f"the rules in {rules_channel_mention} so that your future behaviour adheres "
             f"to them.{includes_ban_message}\n\nA committee member will be in contact "
             "with you shortly, to discuss this further.",

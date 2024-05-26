@@ -117,7 +117,7 @@ class InductSendMessageCog(TeXBotBaseCog):
                 "access to member only events:calendar_spiral: "
                 f"& a cool green name on the {self.bot.group_short_name} Discord server"
                 ":green_square:! "
-                f"Checkout all the perks at {settings["MEMBERSHIP_PERKS_URL"]}",
+                f"Checkout all the perks at {settings["MEMBERSHIP_PERKS_LINKS"]}",
             )
 
 
