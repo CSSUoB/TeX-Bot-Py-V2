@@ -87,7 +87,7 @@ class StartupCog(TeXBotBaseCog):
         else:
             raise ValueError
 
-    async def _get_main_guild(self) -> discord.Guild:
+    async def _initialise_main_guild(self) -> None:
         try:
             main_guild: discord.Guild | None = self.bot.main_guild
         except GuildDoesNotExistError:
@@ -109,28 +109,48 @@ class StartupCog(TeXBotBaseCog):
             await self.bot.close()
             raise RuntimeError
 
-        return main_guild
+    async def _check_strike_performed_manually_warning_location_exists(self) -> None:
+        if settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] == "DM":
+            return
 
-    @TeXBotBaseCog.listener()
-    async def on_ready(self) -> None:
-        """
-        Populate the shortcut accessors of the bot after initialisation.
+        STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_EXISTS: Final[bool] = bool(
+            discord.utils.get(
+                self.bot.main_guild.text_channels,
+                name=settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"],
+            ),
+        )
+        if STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_EXISTS:
+            return
 
-        Shortcut accessors should only be populated once the bot is ready to make API requests.
-        """
-        self._setup_discord_log_channel()
+        logger.critical(
+            (
+                "The channel %s does not exist, so cannot be used as the location "
+                "for sending manual-moderation warning messages"
+            ),
+            repr(settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"]),
+        )
 
-        main_guild: discord.Guild = await self._get_main_guild()
-
-        if self.bot.application_id:
-            logger.debug(
-                "Invite URL: %s",
-                utils.generate_invite_url(
-                    self.bot.application_id,
-                    settings["_DISCORD_MAIN_GUILD_ID"]),
+        strike_performed_manually_warning_location_similar_to_dm: bool = (
+            settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"].lower()
+            in ("dm", "dms")
+        )
+        if strike_performed_manually_warning_location_similar_to_dm:
+            logger.info(
+                (
+                    "If you meant to set the location "
+                    "for sending manual-moderation warning messages to be "
+                    "the DMs of the committee member that applied "
+                    "the manual moderation action, use the value of %s"
+                ),
+                repr("DM"),
             )
 
-        if not discord.utils.get(main_guild.roles, name="Committee"):  # TODO: Move to separate functions
+        await self.bot.close()
+
+    async def _check_all_shortcut_accessors(self) -> None:
+        main_guild: discord.Guild = self.bot.main_guild
+
+        if not discord.utils.get(main_guild.roles, name="Committee"):
             logger.warning(CommitteeRoleDoesNotExistError())
 
         if not discord.utils.get(main_guild.roles, name="Guest"):
@@ -148,36 +168,27 @@ class StartupCog(TeXBotBaseCog):
         if not discord.utils.get(main_guild.text_channels, name="general"):
             logger.warning(GeneralChannelDoesNotExistError())
 
-        if settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] != "DM":
-            strike_performed_manually_warning_location_exists: bool = bool(
-                discord.utils.get(
-                    main_guild.text_channels,
-                    name=settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"],
-                ),
+        await self._check_strike_performed_manually_warning_location_exists()
+
+    @TeXBotBaseCog.listener()
+    async def on_ready(self) -> None:
+        """
+        Populate the shortcut accessors of the bot after initialisation.
+
+        Shortcut accessors should only be populated once the bot is ready to make API requests.
+        """
+        self._setup_discord_log_channel()
+
+        await self._initialise_main_guild()
+
+        if self.bot.application_id:
+            logger.debug(
+                "Invite URL: %s",
+                utils.generate_invite_url(
+                    self.bot.application_id,
+                    settings["_DISCORD_MAIN_GUILD_ID"]),
             )
-            if not strike_performed_manually_warning_location_exists:
-                logger.critical(
-                    (
-                        "The channel %s does not exist, so cannot be used as the location "
-                        "for sending manual-moderation warning messages"
-                    ),
-                    repr(settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"]),
-                )
-                strike_performed_manually_warning_location_similar_to_dm: bool = (
-                    settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"].lower()
-                    in ("dm", "dms")
-                )
-                if strike_performed_manually_warning_location_similar_to_dm:
-                    logger.info(
-                        (
-                            "If you meant to set the location "
-                            "for sending manual-moderation warning messages to be "
-                            "the DMs of the committee member that applied "
-                            "the manual moderation action, use the value of %s"
-                        ),
-                        repr("DM"),
-                    )
-                await self.bot.close()
-                return
+
+        await self._check_all_shortcut_accessors()
 
         logger.info("Ready! Logged in as %s", self.bot.user)
