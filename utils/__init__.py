@@ -19,14 +19,15 @@ __all__: Sequence[str] = (
 
 import discord
 
+# noinspection PyProtectedMember
+from config._pre_startup_utils import is_running_in_async
+
 from .command_checks import CommandChecks
 from .message_sender_components import MessageSenderComponent
 from .suppress_traceback import SuppressTraceback
 from .tex_bot import TeXBot, TeXBotExitReason
 from .tex_bot_base_cog import TeXBotBaseCog
 from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
-# noinspection PyProtectedMember
-from config._pre_startup_utils import is_running_in_async
 
 
 def generate_invite_url(discord_bot_application_id: int, discord_guild_id: int) -> str:

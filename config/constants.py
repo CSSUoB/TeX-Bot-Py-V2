@@ -29,16 +29,15 @@ __all__: Sequence[str] = (
 
 from enum import Enum, EnumMeta
 from pathlib import Path
-from typing import Final, TypeAlias, Literal
+from typing import Final, Literal, TypeAlias
 
 from strictyaml import constants as strictyaml_constants
-
 
 SendIntroductionRemindersFlagType: TypeAlias = Literal["once", "interval", False]
 
 
 class MetaEnum(EnumMeta):
-    def __contains__(cls, item: object) -> bool:
+    def __contains__(cls, item: object) -> bool:  # noqa: N805
         try:
             cls(item)
         except ValueError:

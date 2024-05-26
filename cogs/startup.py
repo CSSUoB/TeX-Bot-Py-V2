@@ -43,11 +43,12 @@ class StartupCog(TeXBotBaseCog):
         }
 
         if len(discord_logging_handlers) > 1:
-            raise ValueError(
+            CANNOT_DETERMINE_LOGGING_HANDLER_MESSAGE: Final[str] = (
                 "Cannot determine which logging Discord-webhook-handler to update."
             )
+            raise ValueError(CANNOT_DETERMINE_LOGGING_HANDLER_MESSAGE)
 
-        elif len(discord_logging_handlers) == 1:
+        if len(discord_logging_handlers) == 1:
             existing_discord_logging_handler: DiscordHandler = discord_logging_handlers.pop()  # type: ignore[no-any-unimported]
 
             logger.removeHandler(existing_discord_logging_handler)
@@ -71,7 +72,7 @@ class StartupCog(TeXBotBaseCog):
                 )
                 new_discord_logging_handler.setLevel(existing_discord_logging_handler.level)
                 new_discord_logging_handler.setFormatter(
-                    existing_discord_logging_handler.formatter
+                    existing_discord_logging_handler.formatter,
                 )
                 new_discord_logging_handler.avatar_url = new_discord_logging_handler.avatar_url
 
@@ -103,7 +104,7 @@ class StartupCog(TeXBotBaseCog):
                         settings["_DISCORD_MAIN_GUILD_ID"]),
                     )
             logger.critical(GuildDoesNotExistError(
-                guild_id=settings["_DISCORD_MAIN_GUILD_ID"])
+                guild_id=settings["_DISCORD_MAIN_GUILD_ID"]),
             )
             await self.bot.close()
             raise RuntimeError

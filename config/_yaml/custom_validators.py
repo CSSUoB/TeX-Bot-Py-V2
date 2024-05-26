@@ -14,9 +14,10 @@ __all__: Sequence[str] = (
 import functools
 import math
 import re
+from collections.abc import Callable
 from datetime import timedelta
-from typing import Final, NoReturn, override, Callable
 from re import Match
+from typing import Final, NoReturn, override
 
 import strictyaml
 from strictyaml import constants as strictyaml_constants
@@ -24,9 +25,9 @@ from strictyaml import utils as strictyaml_utils
 from strictyaml.exceptions import YAMLSerializationError
 from strictyaml.yamllocation import YAMLChunk
 
-from ..constants import (
-    LogLevels,
+from config.constants import (
     VALID_SEND_INTRODUCTION_REMINDERS_RAW_VALUES,
+    LogLevels,
     SendIntroductionRemindersFlagType,
 )
 
@@ -54,9 +55,10 @@ class LogLevelValidator(strictyaml.ScalarValidator):  # type: ignore[no-any-unim
         str_data: str = data.upper().strip().strip("-").strip("_").strip(".")  # type: ignore[attr-defined]
 
         if str_data not in LogLevels:
-            raise YAMLSerializationError(
-                f"Got {data} when expecting one of: \"{"\", \"".join(LogLevels)}\".",
+            INVALID_DATA_MESSAGE: Final[str] = (
+                f"Got {data} when expecting one of: \"{"\", \"".join(LogLevels)}\"."
             )
+            raise YAMLSerializationError(INVALID_DATA_MESSAGE)
 
         return str_data
 
@@ -87,7 +89,8 @@ class DiscordWebhookURLValidator(strictyaml.Url):  # type: ignore[no-any-unimpor
             ),
         )
         if not DATA_IS_VALID:
-            raise YAMLSerializationError(f"'{data}' is not a Discord webhook URL.")
+            INVALID_DATA_MESSAGE: Final[str] = f"'{data}' is not a Discord webhook URL."
+            raise YAMLSerializationError(INVALID_DATA_MESSAGE)
 
         return data  # type: ignore[return-value]
 
@@ -113,7 +116,8 @@ class DiscordSnowflakeValidator(strictyaml.Int):  # type: ignore[no-any-unimport
             ),
         )
         if not DATA_IS_VALID:
-            raise YAMLSerializationError(f"'{data}' is not a Discord snowflake ID.")
+            INVALID_DATA_MESSAGE: Final[str] = f"'{data}' is not a Discord snowflake ID."
+            raise YAMLSerializationError(INVALID_DATA_MESSAGE)
 
         return str(data)
 
@@ -138,10 +142,12 @@ class RegexMatcher(strictyaml.ScalarValidator):  # type: ignore[no-any-unimporte
     def to_yaml(self, data: object) -> str:  # type: ignore[misc]
         self.should_be_string(data, self.MATCHING_MESSAGE)
 
+        regex_error: re.error
         try:
             re.compile(data)  # type: ignore[call-overload]
-        except re.error:
-            raise YAMLSerializationError(f"{self.MATCHING_MESSAGE} found '{data}'")
+        except re.error as regex_error:
+            INVALID_DATA_MESSAGE: Final[str] = f"{self.MATCHING_MESSAGE} found '{data}'"
+            raise YAMLSerializationError(INVALID_DATA_MESSAGE) from regex_error
 
         return data  # type: ignore[return-value]
 
@@ -194,9 +200,11 @@ class TimeDeltaValidator(strictyaml.ScalarValidator):  # type: ignore[no-any-uni
 
         time_resolution_name: str
         for time_resolution_name in ("seconds", "minutes", "hours", "days", "weeks"):
-            time_resolution_name = time_resolution_name.lower().strip()
+            formatted_time_resolution_name: str = time_resolution_name.lower().strip()
             time_resolution: object = (
-                True if time_resolution_name == "seconds" else locals()[time_resolution_name]
+                True
+                if formatted_time_resolution_name == "seconds"
+                else locals()[formatted_time_resolution_name]
             )
 
             if not isinstance(time_resolution, bool):
@@ -207,9 +215,9 @@ class TimeDeltaValidator(strictyaml.ScalarValidator):  # type: ignore[no-any-uni
 
             regex_matcher += (
                 r"(?:(?P<"
-                + time_resolution_name
+                + formatted_time_resolution_name
                 + r">(?:\d*\.)?\d+)"
-                + time_resolution_name[0]
+                + formatted_time_resolution_name[0]
                 + ")?"
             )
 
@@ -218,7 +226,7 @@ class TimeDeltaValidator(strictyaml.ScalarValidator):  # type: ignore[no-any-uni
         self.regex_matcher: re.Pattern[str] = re.compile(regex_matcher)
 
     def _get_value_from_match(self, match: Match[str], key: str) -> float:
-        if key not in self.regex_matcher.groupindex.keys():
+        if key not in self.regex_matcher.groupindex:
             return 0.0
 
         value: str | None = match.group(key)
@@ -261,17 +269,19 @@ class TimeDeltaValidator(strictyaml.ScalarValidator):  # type: ignore[no-any-uni
         if strictyaml_utils.is_string(data):
             match: Match[str] | None = self.regex_matcher.match(str(data))
             if match is None:
-                raise YAMLSerializationError(
+                INVALID_DATA_MESSAGE: Final[str] = (
                     f"when expecting a delay/interval string found {str(data)!r}."
                 )
+                raise YAMLSerializationError(INVALID_DATA_MESSAGE)
             return str(data)
 
-        if not hasattr(data, "total_seconds") or not callable(getattr(data, "total_seconds")):
-            raise YAMLSerializationError(
+        if not hasattr(data, "total_seconds") or not callable(getattr(data, "total_seconds")):  # noqa: B009
+            INVALID_DATA_MESSAGE: Final[str] = (
                 f"when expecting a time delta object found {str(data)!r}."
             )
+            raise YAMLSerializationError(INVALID_DATA_MESSAGE)
 
-        total_seconds: object = getattr(data, "total_seconds")()
+        total_seconds: object = getattr(data, "total_seconds")()  # noqa: B009
         if not isinstance(total_seconds, float):
             raise TypeError
 
@@ -307,9 +317,10 @@ class SendIntroductionRemindersFlagValidator(strictyaml.ScalarValidator):  # typ
             return "Once" if data else "False"
 
         if str(data).lower() not in VALID_SEND_INTRODUCTION_REMINDERS_RAW_VALUES:
-            raise YAMLSerializationError(
-                f"Got {data} when expecting one of: \"Once\", \"Interval\" or \"False\".",
+            INVALID_DATA_MESSAGE: Final[str] = (
+                f"Got {data} when expecting one of: \"Once\", \"Interval\" or \"False\"."
             )
+            raise YAMLSerializationError(INVALID_DATA_MESSAGE)
 
         if str(data).lower() in strictyaml_constants.TRUE_VALUES:
             return "Once"

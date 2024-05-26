@@ -46,6 +46,8 @@ def run_setup() -> None:
     with contextlib.suppress(BotRequiresRestartAfterConfigChange):
         settings.reload()
 
+    # TODO: load messages here using language from settings
+
     logger.debug("Begin database setup")
 
     importlib.import_module("db")

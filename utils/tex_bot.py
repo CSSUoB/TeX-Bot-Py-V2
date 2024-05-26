@@ -394,17 +394,21 @@ class TeXBot(discord.Bot):
     def reset_exit_reason(self) -> None:
         """Reset the exit reason of TeX-Bot back to `UNKNOWN_ERROR`."""
         if utils.is_running_in_async():
-            raise RuntimeError("Cannot reset exit reason when TeX-Bot is currently running.")
+            TEX_BOT_STILL_RUNNING_MESSAGE: Final[str] = (
+                "Cannot reset exit reason when TeX-Bot is currently running."
+            )
+            raise RuntimeError(TEX_BOT_STILL_RUNNING_MESSAGE)
 
         RESETABLE_EXIT_REASONS: Collection[TeXBotExitReason] = (
             TeXBotExitReason.UNKNOWN_ERROR,
             TeXBotExitReason.RESTART_REQUIRED_DUE_TO_CHANGED_CONFIG,
         )
         if self.EXIT_REASON not in RESETABLE_EXIT_REASONS:
-            raise RuntimeError(
+            CURRENT_EXIT_REASON_IS_INVALID_MESSAGE: Final[str] = (
                 "Cannot reset exit reason, due to incorrect current exit reason. "
                 "Invalid state."
             )
+            raise RuntimeError(CURRENT_EXIT_REASON_IS_INVALID_MESSAGE)
 
         self._exit_reason = TeXBotExitReason.UNKNOWN_ERROR
 

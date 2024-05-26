@@ -17,36 +17,36 @@ from typing import Final
 import strictyaml
 from strictyaml import YAML
 
-from ..constants import (
-    LogLevels,
-    SendIntroductionRemindersFlagType,
+from config.constants import (
     DEFAULT_CONSOLE_LOG_LEVEL,
     DEFAULT_DISCORD_LOGGING_LOG_LEVEL,
-    TRANSLATED_MESSAGES_LOCALE_CODES,
-    DEFAULT_PING_COMMAND_EASTER_EGG_PROBABILITY,
     DEFAULT_MEMBERS_LIST_ID_FORMAT,
-    DEFAULT_STATS_COMMAND_LOOKBACK_DAYS,
+    DEFAULT_PING_COMMAND_EASTER_EGG_PROBABILITY,
+    DEFAULT_SEND_GET_ROLES_REMINDERS_DELAY,
+    DEFAULT_SEND_GET_ROLES_REMINDERS_ENABLED,
+    DEFAULT_SEND_GET_ROLES_REMINDERS_INTERVAL,
+    DEFAULT_SEND_INTRODUCTION_REMINDERS_DELAY,
+    DEFAULT_SEND_INTRODUCTION_REMINDERS_ENABLED,
+    DEFAULT_SEND_INTRODUCTION_REMINDERS_INTERVAL,
     DEFAULT_STATS_COMMAND_DISPLAYED_ROLES,
+    DEFAULT_STATS_COMMAND_LOOKBACK_DAYS,
     DEFAULT_STRIKE_COMMAND_TIMEOUT_DURATION,
     DEFAULT_STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION,
-    DEFAULT_SEND_INTRODUCTION_REMINDERS_ENABLED,
-    DEFAULT_SEND_INTRODUCTION_REMINDERS_DELAY,
-    DEFAULT_SEND_INTRODUCTION_REMINDERS_INTERVAL,
-    DEFAULT_SEND_GET_ROLES_REMINDERS_ENABLED,
-    DEFAULT_SEND_GET_ROLES_REMINDERS_DELAY,
-    DEFAULT_SEND_GET_ROLES_REMINDERS_INTERVAL,
+    TRANSLATED_MESSAGES_LOCALE_CODES,
+    LogLevels,
+    SendIntroductionRemindersFlagType,
 )
-from .custom_validators import (
-    DiscordWebhookURLValidator,
-    TimeDeltaValidator,
-    LogLevelValidator,
-    RegexMatcher,
-    DiscordSnowflakeValidator,
-    ProbabilityValidator,
-    SendIntroductionRemindersFlagValidator,
-)
-from .custom_schema_utils import SlugKeyMap
 
+from .custom_schema_utils import SlugKeyMap
+from .custom_validators import (
+    DiscordSnowflakeValidator,
+    DiscordWebhookURLValidator,
+    LogLevelValidator,
+    ProbabilityValidator,
+    RegexMatcher,
+    SendIntroductionRemindersFlagValidator,
+    TimeDeltaValidator,
+)
 
 _DEFAULT_CONSOLE_LOGGING_SETTINGS: Final[Mapping[str, LogLevels]] = {
     "log-level": DEFAULT_CONSOLE_LOG_LEVEL,
@@ -70,7 +70,7 @@ _DEFAULT_COMMANDS_SETTINGS: Final[Mapping[str, Mapping[str, float] | Mapping[str
     "stats": _DEFAULT_STATS_COMMAND_SETTINGS,
     "strike": _DEFAULT_STRIKE_COMMAND_SETTINGS,
 }
-_DEFAULT_SEND_INTRODUCTION_REMINDERS_SETTINGS: Final[Mapping[str, SendIntroductionRemindersFlagType | str]] = {
+_DEFAULT_SEND_INTRODUCTION_REMINDERS_SETTINGS: Final[Mapping[str, SendIntroductionRemindersFlagType | str]] = {  # noqa: E501
     "enabled": DEFAULT_SEND_INTRODUCTION_REMINDERS_ENABLED,
     "delay": DEFAULT_SEND_INTRODUCTION_REMINDERS_DELAY,
     "interval": DEFAULT_SEND_INTRODUCTION_REMINDERS_INTERVAL,
@@ -119,7 +119,10 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
         "community-group": SlugKeyMap(
             {
                 strictyaml.Optional("full-name"): strictyaml.Regex(
-                    r"\A(?!.*['&!?:,.#%\"-]['&!?:,.#%\"-].*)(?!.*  .*)(?:[A-Za-z0-9 '&!?:,.#%\"-]+)\Z",
+                    (
+                        r"\A(?!.*['&!?:,.#%\"-]['&!?:,.#%\"-].*)(?!.*  .*)"
+                        r"(?:[A-Za-z0-9 '&!?:,.#%\"-]+)\Z"
+                    ),
                 ),
                 strictyaml.Optional("short-name"): strictyaml.Regex(
                     r"\A(?!.*['&!?:,.#%\"-]['&!?:,.#%\"-].*)(?:[A-Za-z0-9'&!?:,.#%\"-]+)\Z",
@@ -129,7 +132,7 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
                         strictyaml.Optional("purchase-membership"): strictyaml.Url(),
                         strictyaml.Optional("membership-perks"): strictyaml.Url(),
                         "moderation-document": strictyaml.Url(),
-                    }
+                    },
                 ),
                 "members-list": SlugKeyMap(
                     {

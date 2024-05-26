@@ -22,9 +22,9 @@ from typing import Any, ClassVar, Final, TextIO
 from discord_logging.handler import DiscordHandler
 from strictyaml import YAML
 
-from ._pre_startup_utils import is_running_in_async
 from exceptions import BotRequiresRestartAfterConfigChange
 
+from ._pre_startup_utils import is_running_in_async
 from ._yaml import load_yaml
 from .constants import (
     DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME,
@@ -123,10 +123,13 @@ class SettingsAccessor:
         ATTEMPTING_TO_ACCESS_BOT_TOKEN_WHEN_ALREADY_RUNNING: Final[bool] = bool(
             "bot" in item.lower()
             and "token" in item.lower()
-            and is_running_in_async()
+            and is_running_in_async(),
         )
         if ATTEMPTING_TO_ACCESS_BOT_TOKEN_WHEN_ALREADY_RUNNING:
-            raise RuntimeError(f"Cannot access {item!r} when TeX-Bot is already running.")
+            TEX_BOT_ALREADY_RUNNING_MESSAGE: Final[str] = (
+                f"Cannot access {item!r} when TeX-Bot is already running."
+            )
+            raise RuntimeError(TEX_BOT_ALREADY_RUNNING_MESSAGE)
 
         return self._settings[item]
 
@@ -209,22 +212,22 @@ class SettingsAccessor:
             ),
             cls._reload_messages_language(current_yaml["messages-language"]),
             cls._reload_send_introduction_reminders_enabled(
-                current_yaml["reminders"]["send-introduction-reminders"]["enabled"]
+                current_yaml["reminders"]["send-introduction-reminders"]["enabled"],
             ),
             cls._reload_send_introduction_reminders_delay(
-                current_yaml["reminders"]["send-introduction-reminders"]["delay"]
+                current_yaml["reminders"]["send-introduction-reminders"]["delay"],
             ),
             cls._reload_send_introduction_reminders_interval(
-                current_yaml["reminders"]["send-introduction-reminders"]["interval"]
+                current_yaml["reminders"]["send-introduction-reminders"]["interval"],
             ),
             cls._reload_send_get_roles_reminders_enabled(
-                current_yaml["reminders"]["send-get-roles-reminders"]["enabled"]
+                current_yaml["reminders"]["send-get-roles-reminders"]["enabled"],
             ),
             cls._reload_send_get_roles_reminders_delay(
-                current_yaml["reminders"]["send-get-roles-reminders"]["delay"]
+                current_yaml["reminders"]["send-get-roles-reminders"]["delay"],
             ),
             cls._reload_send_get_roles_reminders_interval(
-                current_yaml["reminders"]["send-get-roles-reminders"]["interval"]
+                current_yaml["reminders"]["send-get-roles-reminders"]["interval"],
             ),
         )
 
@@ -242,7 +245,7 @@ class SettingsAccessor:
         """
         CONSOLE_LOGGING_SETTINGS_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
-            or console_logging_settings != cls._most_recent_yaml["logging"]["console"]
+            or console_logging_settings != cls._most_recent_yaml["logging"]["console"],
         )
         if not CONSOLE_LOGGING_SETTINGS_CHANGED:
             return set()
@@ -254,7 +257,10 @@ class SettingsAccessor:
             if isinstance(handler, logging.StreamHandler)
         }
         if len(stream_handlers) > 1:
-            raise ValueError("Cannot determine which logging stream-handler to update.")
+            CANNOT_DETERMINE_LOGGING_HANDLER_MESSAGE: Final[str] = (
+                "Cannot determine which logging stream-handler to update."
+            )
+            raise ValueError(CANNOT_DETERMINE_LOGGING_HANDLER_MESSAGE)
 
         console_logging_handler: logging.StreamHandler[TextIO] = logging.StreamHandler()
 
@@ -277,7 +283,7 @@ class SettingsAccessor:
             raise ValueError
 
         console_logging_handler.setLevel(
-            getattr(logging, console_logging_settings["log-level"].data)
+            getattr(logging, console_logging_settings["log-level"].data),
         )
 
         return {"logging:console:log-level"}
@@ -295,7 +301,7 @@ class SettingsAccessor:
                 "discord-channel",
                 None,
             )
-            or "DISCORD_LOG_CHANNEL_WEBHOOK_URL" not in cls._settings
+            or "DISCORD_LOG_CHANNEL_WEBHOOK_URL" not in cls._settings,
         )
         if not DISCORD_CHANNEL_LOGGING_SETTINGS_CHANGED:
             return set()
@@ -310,9 +316,10 @@ class SettingsAccessor:
             handler for handler in logger.handlers if isinstance(handler, DiscordHandler)
         }
         if len(discord_logging_handlers) > 1:
-            raise ValueError(
+            CANNOT_DETERMINE_LOGGING_HANDLER_MESSAGE: Final[str] = (
                 "Cannot determine which logging Discord-webhook-handler to update."
             )
+            raise ValueError(CANNOT_DETERMINE_LOGGING_HANDLER_MESSAGE)
 
         discord_logging_handler_display_name: str = (
             DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME
@@ -331,21 +338,22 @@ class SettingsAccessor:
                     for key, value
                     in discord_channel_logging_settings.items()
                     if key != "log-level"
-                )
+                ),
             )
             if ONLY_DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED:
                 DISCORD_LOG_CHANNEL_LOG_LEVEL_IS_SAME: Final[bool] = bool(
                     discord_channel_logging_settings["log-level"] == cls._most_recent_yaml[  # type: ignore[index]
                         "logging"
-                    ]["discord-channel"]["log-level"]
+                    ]["discord-channel"]["log-level"],
                 )
                 if DISCORD_LOG_CHANNEL_LOG_LEVEL_IS_SAME:
-                    raise ValueError(
+                    LOG_LEVEL_DIDNT_CHANGE_MESSAGE: Final[str] = (
                         "Assumed Discord log channel log level had changed, but it hadn't."
                     )
+                    raise ValueError(LOG_LEVEL_DIDNT_CHANGE_MESSAGE)
 
                 existing_discord_logging_handler.setLevel(
-                    getattr(logging, discord_channel_logging_settings["log-level"].data)  # type: ignore[index]
+                    getattr(logging, discord_channel_logging_settings["log-level"].data),  # type: ignore[index]
                 )
                 return {"logging:discord-channel:log-level"}
 
@@ -368,7 +376,7 @@ class SettingsAccessor:
             avatar_url=discord_logging_handler_avatar_url,
         )
         discord_logging_handler.setLevel(
-            getattr(logging, discord_channel_logging_settings["log-level"].data)
+            getattr(logging, discord_channel_logging_settings["log-level"].data),
         )
         # noinspection SpellCheckingInspection
         discord_logging_handler.setFormatter(
@@ -384,7 +392,7 @@ class SettingsAccessor:
             or cls._most_recent_yaml["logging"].get("discord-channel", None) is None
             or discord_channel_logging_settings["log-level"] != cls._most_recent_yaml[
                 "logging"
-            ]["discord-channel"]["log-level"]
+            ]["discord-channel"]["log-level"],
         )
         if DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED:
             changed_settings.add("logging:discord-channel:log-level")
@@ -401,7 +409,7 @@ class SettingsAccessor:
         DISCORD_BOT_TOKEN_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or discord_bot_token != cls._most_recent_yaml["discord"]["bot-token"]
-            or "DISCORD_BOT_TOKEN" not in cls._settings
+            or "DISCORD_BOT_TOKEN" not in cls._settings,
         )
         if not DISCORD_BOT_TOKEN_CHANGED:
             return set()
@@ -420,7 +428,7 @@ class SettingsAccessor:
         DISCORD_MAIN_GUILD_ID_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or discord_main_guild_id != cls._most_recent_yaml["discord"]["main-guild-id"]
-            or "_DISCORD_MAIN_GUILD_ID" not in cls._settings
+            or "_DISCORD_MAIN_GUILD_ID" not in cls._settings,
         )
         if not DISCORD_MAIN_GUILD_ID_CHANGED:
             return set()
@@ -442,7 +450,7 @@ class SettingsAccessor:
                 "full-name",
                 None,
             )
-            or "_GROUP_FULL_NAME" not in cls._settings
+            or "_GROUP_FULL_NAME" not in cls._settings,
         )
         if not GROUP_FULL_NAME_CHANGED:
             return set()
@@ -468,7 +476,7 @@ class SettingsAccessor:
                 "short-name",
                 None,
             )
-            or "_GROUP_SHORT_NAME" not in cls._settings
+            or "_GROUP_SHORT_NAME" not in cls._settings,
         )
         if not GROUP_SHORT_NAME_CHANGED:
             return set()
@@ -482,7 +490,7 @@ class SettingsAccessor:
         return {"community-group:short-name"}
 
     @classmethod
-    def _reload_purchase_membership_link(cls, purchase_membership_link: YAML | None) -> set[str]:  # type: ignore[no-any-unimported,misc]
+    def _reload_purchase_membership_link(cls, purchase_membership_link: YAML | None) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
         """
         Reload the link to allow people to purchase a membership.
 
@@ -493,7 +501,7 @@ class SettingsAccessor:
             or purchase_membership_link != cls._most_recent_yaml["community-group"][
                 "links"
             ].get("purchase-membership", None)
-            or "PURCHASE_MEMBERSHIP_LINK" not in cls._settings
+            or "PURCHASE_MEMBERSHIP_LINK" not in cls._settings,
         )
         if not PURCHASE_MEMBERSHIP_LINK_CHANGED:
             return set()
@@ -518,7 +526,7 @@ class SettingsAccessor:
             or membership_perks_link != cls._most_recent_yaml["community-group"][
                 "links"
             ].get("membership-perks", None)
-            or "MEMBERSHIP_PERKS_LINK" not in cls._settings
+            or "MEMBERSHIP_PERKS_LINK" not in cls._settings,
         )
         if not MEMBERSHIP_PERKS_LINK_CHANGED:
             return set()
@@ -543,7 +551,7 @@ class SettingsAccessor:
             or moderation_document_link != cls._most_recent_yaml["community-group"]["links"][
                 "moderation-document"
             ]
-            or "MODERATION_DOCUMENT_LINK" not in cls._settings
+            or "MODERATION_DOCUMENT_LINK" not in cls._settings,
         )
         if not MODERATION_DOCUMENT_LINK_CHANGED:
             return set()
@@ -564,7 +572,7 @@ class SettingsAccessor:
             or members_list_url != cls._most_recent_yaml["community-group"]["members-list"][
                 "url"
             ]
-            or "MEMBERS_LIST_URL" not in cls._settings
+            or "MEMBERS_LIST_URL" not in cls._settings,
         )
         if not MEMBERS_LIST_URL_CHANGED:
             return set()
@@ -574,7 +582,7 @@ class SettingsAccessor:
         return {"community-group:members-list:url"}
 
     @classmethod
-    def _reload_members_list_auth_session_cookie(cls, members_list_auth_session_cookie: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
+    def _reload_members_list_auth_session_cookie(cls, members_list_auth_session_cookie: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
         """
         Reload the auth session cookie used to authenticate to access your members-list.
 
@@ -585,7 +593,7 @@ class SettingsAccessor:
             or members_list_auth_session_cookie != cls._most_recent_yaml["community-group"][
                 "members-list"
             ]["auth-session-cookie"]
-            or "MEMBERS_LIST_AUTH_SESSION_COOKIE" not in cls._settings
+            or "MEMBERS_LIST_AUTH_SESSION_COOKIE" not in cls._settings,
         )
         if not MEMBERS_LIST_AUTH_SESSION_COOKIE_CHANGED:
             return set()
@@ -608,7 +616,7 @@ class SettingsAccessor:
             or members_list_id_format != cls._most_recent_yaml["community-group"][
                 "members-list"
             ]["id-format"]
-            or "MEMBERS_LIST_ID_FORMAT" not in cls._settings
+            or "MEMBERS_LIST_ID_FORMAT" not in cls._settings,
         )
         if not MEMBERS_LIST_ID_FORMAT_CHANGED:
             return set()
@@ -629,7 +637,7 @@ class SettingsAccessor:
             or ping_command_easter_egg_probability != cls._most_recent_yaml["commands"][
                 "ping"
             ]["easter-egg-probability"]
-            or "PING_COMMAND_EASTER_EGG_PROBABILITY" not in cls._settings
+            or "PING_COMMAND_EASTER_EGG_PROBABILITY" not in cls._settings,
         )
         if not PING_COMMAND_EASTER_EGG_PROBABILITY_CHANGED:
             return set()
@@ -652,13 +660,13 @@ class SettingsAccessor:
             or stats_command_lookback_days != cls._most_recent_yaml["commands"][
                 "stats"
             ]["lookback-days"]
-            or "STATS_COMMAND_LOOKBACK_DAYS" not in cls._settings
+            or "STATS_COMMAND_LOOKBACK_DAYS" not in cls._settings,
         )
         if not STATS_COMMAND_LOOKBACK_DAYS_CHANGED:
             return set()
 
         cls._settings["STATS_COMMAND_LOOKBACK_DAYS"] = timedelta(
-            days=stats_command_lookback_days.data
+            days=stats_command_lookback_days.data,
         )
 
         return {"commands:stats:lookback-days"}
@@ -675,7 +683,7 @@ class SettingsAccessor:
             or stats_command_displayed_roles != cls._most_recent_yaml["commands"][
                 "stats"
             ]["displayed-roles"]
-            or "STATS_COMMAND_DISPLAYED_ROLES" not in cls._settings
+            or "STATS_COMMAND_DISPLAYED_ROLES" not in cls._settings,
         )
         if not STATS_COMMAND_DISPLAYED_ROLES_CHANGED:
             return set()
@@ -696,7 +704,7 @@ class SettingsAccessor:
             or strike_command_timeout_duration != cls._most_recent_yaml["commands"][
                 "strike"
             ]["timeout-duration"]
-            or "STRIKE_COMMAND_TIMEOUT_DURATION" not in cls._settings
+            or "STRIKE_COMMAND_TIMEOUT_DURATION" not in cls._settings,
         )
         if not STRIKE_COMMAND_TIMEOUT_DURATION_CHANGED:
             return set()
@@ -717,7 +725,7 @@ class SettingsAccessor:
             or strike_performed_manually_warning_location != cls._most_recent_yaml["commands"][
                 "strike"
             ]["performed-manually-warning-location"]
-            or "STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION" not in cls._settings
+            or "STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION" not in cls._settings,
         )
         if not STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_CHANGED:
             return set()
@@ -738,7 +746,7 @@ class SettingsAccessor:
         MESSAGES_LANGUAGE_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or messages_language != cls._most_recent_yaml["messages-language"]
-            or "MESSAGES_LANGUAGE" not in cls._settings
+            or "MESSAGES_LANGUAGE" not in cls._settings,
         )
         if not MESSAGES_LANGUAGE_CHANGED:
             return set()
@@ -759,7 +767,7 @@ class SettingsAccessor:
             or send_introduction_reminders_enabled != cls._most_recent_yaml["reminders"][
                 "send-introduction-reminders"
             ]["enabled"]
-            or "SEND_INTRODUCTION_REMINDERS_ENABLED" not in cls._settings
+            or "SEND_INTRODUCTION_REMINDERS_ENABLED" not in cls._settings,
         )
         if not SEND_INTRODUCTION_REMINDERS_ENABLED_CHANGED:
             return set()
@@ -784,7 +792,7 @@ class SettingsAccessor:
             or send_introduction_reminders_delay != cls._most_recent_yaml["reminders"][
                 "send-introduction-reminders"
             ]["delay"]
-            or "SEND_INTRODUCTION_REMINDERS_DELAY" not in cls._settings
+            or "SEND_INTRODUCTION_REMINDERS_DELAY" not in cls._settings,
         )
         if not SEND_INTRODUCTION_REMINDERS_DELAY_CHANGED:
             return set()
@@ -807,7 +815,7 @@ class SettingsAccessor:
             or send_introduction_reminders_interval != cls._most_recent_yaml["reminders"][
                 "send-introduction-reminders"
             ]["interval"]
-            or "SEND_INTRODUCTION_REMINDERS_INTERVAL_SECONDS" not in cls._settings
+            or "SEND_INTRODUCTION_REMINDERS_INTERVAL_SECONDS" not in cls._settings,
         )
         if not SEND_INTRODUCTION_REMINDERS_INTERVAL_CHANGED:
             return set()
@@ -830,7 +838,7 @@ class SettingsAccessor:
             or send_get_roles_reminders_enabled != cls._most_recent_yaml["reminders"][
                 "send-get-roles-reminders"
             ]["enabled"]
-            or "SEND_GET_ROLES_REMINDERS_ENABLED" not in cls._settings
+            or "SEND_GET_ROLES_REMINDERS_ENABLED" not in cls._settings,
         )
         if not SEND_GET_ROLES_REMINDERS_ENABLED_CHANGED:
             return set()
@@ -856,7 +864,7 @@ class SettingsAccessor:
             or send_get_roles_reminders_delay != cls._most_recent_yaml["reminders"][
                 "send-get-roles-reminders"
             ]["delay"]
-            or "SEND_GET_ROLES_REMINDERS_DELAY" not in cls._settings
+            or "SEND_GET_ROLES_REMINDERS_DELAY" not in cls._settings,
         )
         if not SEND_GET_ROLES_REMINDERS_DELAY_CHANGED:
             return set()
@@ -879,7 +887,7 @@ class SettingsAccessor:
             or send_get_roles_reminders_interval != cls._most_recent_yaml["reminders"][
                 "send-get-roles-reminders"
             ]["interval"]
-            or "SEND_GET_ROLES_REMINDERS_INTERVAL_SECONDS" not in cls._settings
+            or "SEND_GET_ROLES_REMINDERS_INTERVAL_SECONDS" not in cls._settings,
         )
         if not SEND_GET_ROLES_REMINDERS_INTERVAL_CHANGED:
             return set()

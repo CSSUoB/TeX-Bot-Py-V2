@@ -7,7 +7,6 @@ from typing import override
 
 import slugify
 import strictyaml
-
 from strictyaml.yamllocation import YAMLChunk
 
 
@@ -22,5 +21,5 @@ class SlugKeyMap(strictyaml.Map):  # type: ignore[no-any-unimported,misc]
     def __init__(self, validator: dict[object, object], key_validator: strictyaml.Validator | None = None) -> None:  # type: ignore[no-any-unimported,misc] # noqa: E501
         super().__init__(
             validator=validator,
-            key_validator=key_validator if key_validator is not None else SlugKeyValidator()
+            key_validator=key_validator if key_validator is not None else SlugKeyValidator(),
         )
