@@ -9,7 +9,7 @@ __all__: Sequence[str] = (
 
 from classproperties import classproperty
 
-from exceptions import BaseErrorWithErrorCode, BaseTeXBotError
+from .base import BaseErrorWithErrorCode, BaseTeXBotError
 
 
 class DiscordMemberNotInMainGuildError(BaseTeXBotError, ValueError):

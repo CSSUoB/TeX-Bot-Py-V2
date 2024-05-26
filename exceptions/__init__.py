@@ -3,9 +3,6 @@
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
-    "BaseDoesNotExistError",
-    "BaseErrorWithErrorCode",
-    "BaseTeXBotError",
     "ArchivistRoleDoesNotExistError",
     "ChannelDoesNotExistError",
     "CommitteeRoleDoesNotExistError",
@@ -27,7 +24,6 @@ __all__: Sequence[str] = (
     "BotRequiresRestartAfterConfigChange",
 )
 
-from .base import BaseDoesNotExistError, BaseErrorWithErrorCode, BaseTeXBotError
 from .config_changes import (
     BotRequiresRestartAfterConfigChange,
     ImproperlyConfiguredError,

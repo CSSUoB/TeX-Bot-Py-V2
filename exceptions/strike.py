@@ -9,7 +9,7 @@ __all__: Sequence[str] = (
 
 from classproperties import classproperty
 
-from exceptions import BaseTeXBotError
+from .base import BaseTeXBotError
 
 
 class StrikeTrackingError(BaseTeXBotError, RuntimeError):
