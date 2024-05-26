@@ -17,7 +17,7 @@ import re
 from datetime import timedelta
 from logging import Logger
 from pathlib import Path
-from typing import Any, ClassVar, Final
+from typing import Any, ClassVar, Final, TextIO
 
 from discord_logging.handler import DiscordHandler
 from strictyaml import YAML
@@ -234,7 +234,7 @@ class SettingsAccessor:
             raise BotRequiresRestartAfterConfigChange(changed_settings=changed_settings_keys)
 
     @classmethod
-    def _reload_console_logging(cls, console_logging_settings: YAML) -> set[str]:
+    def _reload_console_logging(cls, console_logging_settings: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
         """
         Reload the console logging configuration with the new given log level.
 
@@ -247,7 +247,7 @@ class SettingsAccessor:
         if not CONSOLE_LOGGING_SETTINGS_CHANGED:
             return set()
 
-        stream_handlers: set[logging.StreamHandler] = {
+        stream_handlers: set[logging.StreamHandler[TextIO]] = {
             handler
             for handler
             in logger.handlers
@@ -256,7 +256,7 @@ class SettingsAccessor:
         if len(stream_handlers) > 1:
             raise ValueError("Cannot determine which logging stream-handler to update.")
 
-        console_logging_handler: logging.StreamHandler = logging.StreamHandler()
+        console_logging_handler: logging.StreamHandler[TextIO] = logging.StreamHandler()
 
         if len(stream_handlers) == 0:
             # noinspection SpellCheckingInspection
@@ -283,7 +283,7 @@ class SettingsAccessor:
         return {"logging:console:log-level"}
 
     @classmethod
-    def _reload_discord_log_channel_logging(cls, discord_channel_logging_settings: YAML | None) -> set[str]:  # noqa: E501
+    def _reload_discord_log_channel_logging(cls, discord_channel_logging_settings: YAML | None) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
         """
         Reload the Discord log channel logging configuration.
 
@@ -306,7 +306,7 @@ class SettingsAccessor:
             else discord_channel_logging_settings["webhook_url"].data
         )
 
-        discord_logging_handlers: set[DiscordHandler] = {
+        discord_logging_handlers: set[DiscordHandler] = {  # type: ignore[no-any-unimported]
             handler for handler in logger.handlers if isinstance(handler, DiscordHandler)
         }
         if len(discord_logging_handlers) > 1:
@@ -320,10 +320,11 @@ class SettingsAccessor:
         discord_logging_handler_avatar_url: str | None = None
 
         if len(discord_logging_handlers) == 1:
-            existing_discord_logging_handler: DiscordHandler = discord_logging_handlers.pop()
+            existing_discord_logging_handler: DiscordHandler = discord_logging_handlers.pop()  # type: ignore[no-any-unimported]
 
             ONLY_DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED: Final[bool] = bool(
                 discord_channel_logging_settings is not None
+                and cls._most_recent_yaml is not None
                 and cls._most_recent_yaml["logging"].get("discord-channel", None) is not None
                 and all(
                     value == cls._most_recent_yaml["logging"]["discord-channel"].get(key, None)
@@ -334,7 +335,7 @@ class SettingsAccessor:
             )
             if ONLY_DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED:
                 DISCORD_LOG_CHANNEL_LOG_LEVEL_IS_SAME: Final[bool] = bool(
-                    discord_channel_logging_settings["log-level"] == cls._most_recent_yaml[
+                    discord_channel_logging_settings["log-level"] == cls._most_recent_yaml[  # type: ignore[index]
                         "logging"
                     ]["discord-channel"]["log-level"]
                 )
@@ -344,7 +345,7 @@ class SettingsAccessor:
                     )
 
                 existing_discord_logging_handler.setLevel(
-                    getattr(logging, discord_channel_logging_settings["log-level"].data)
+                    getattr(logging, discord_channel_logging_settings["log-level"].data)  # type: ignore[index]
                 )
                 return {"logging:discord-channel:log-level"}
 
@@ -357,6 +358,9 @@ class SettingsAccessor:
 
         elif len(discord_logging_handlers) == 0 and discord_channel_logging_settings is None:
             return set()
+
+        if discord_channel_logging_settings is None:
+            raise RuntimeError
 
         discord_logging_handler: logging.Handler = DiscordHandler(
             discord_logging_handler_display_name,
@@ -376,7 +380,8 @@ class SettingsAccessor:
         changed_settings: set[str] = {"logging:discord-channel:webhook-url"}
 
         DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED: Final[bool] = bool(
-            cls._most_recent_yaml["logging"].get("discord-channel", None) is None
+            cls._most_recent_yaml is None
+            or cls._most_recent_yaml["logging"].get("discord-channel", None) is None
             or discord_channel_logging_settings["log-level"] != cls._most_recent_yaml[
                 "logging"
             ]["discord-channel"]["log-level"]
@@ -387,7 +392,7 @@ class SettingsAccessor:
         return changed_settings
 
     @classmethod
-    def _reload_discord_bot_token(cls, discord_bot_token: YAML) -> set[str]:
+    def _reload_discord_bot_token(cls, discord_bot_token: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
         """
         Reload the Discord bot-token.
 
@@ -406,7 +411,7 @@ class SettingsAccessor:
         return {"discord:bot-token"}
 
     @classmethod
-    def _reload_discord_main_guild_id(cls, discord_main_guild_id: YAML) -> set[str]:
+    def _reload_discord_main_guild_id(cls, discord_main_guild_id: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
         """
         Reload the Discord main-guild ID.
 
@@ -425,7 +430,7 @@ class SettingsAccessor:
         return {"discord:main-guild-id"}
 
     @classmethod
-    def _reload_group_full_name(cls, group_full_name: YAML | None) -> set[str]:
+    def _reload_group_full_name(cls, group_full_name: YAML | None) -> set[str]:  # type: ignore[no-any-unimported,misc]
         """
         Reload the community-group full name.
 
@@ -451,7 +456,7 @@ class SettingsAccessor:
         return {"community-group:full-name"}
 
     @classmethod
-    def _reload_group_short_name(cls, group_short_name: YAML | None) -> set[str]:
+    def _reload_group_short_name(cls, group_short_name: YAML | None) -> set[str]:  # type: ignore[no-any-unimported,misc]
         """
         Reload the community-group short name.
 
@@ -477,7 +482,7 @@ class SettingsAccessor:
         return {"community-group:short-name"}
 
     @classmethod
-    def _reload_purchase_membership_link(cls, purchase_membership_link: YAML | None) -> set[str]:
+    def _reload_purchase_membership_link(cls, purchase_membership_link: YAML | None) -> set[str]:  # type: ignore[no-any-unimported,misc]
         """
         Reload the link to allow people to purchase a membership.
 
@@ -502,7 +507,7 @@ class SettingsAccessor:
         return {"community-group:links:purchase-membership"}
 
     @classmethod
-    def _reload_membership_perks_link(cls, membership_perks_link: YAML | None) -> set[str]:
+    def _reload_membership_perks_link(cls, membership_perks_link: YAML | None) -> set[str]:  # type: ignore[no-any-unimported,misc]
         """
         Reload the link to view the perks of getting a membership to join your community group.
 
@@ -527,7 +532,7 @@ class SettingsAccessor:
         return {"community-group:links:membership-perks"}
 
     @classmethod
-    def _reload_moderation_document_link(cls, moderation_document_link: YAML) -> set[str]:
+    def _reload_moderation_document_link(cls, moderation_document_link: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
         """
         Reload the link to view your community group's moderation document.
 
@@ -548,7 +553,7 @@ class SettingsAccessor:
         return {"community-group:links:moderation-document"}
 
     @classmethod
-    def _reload_members_list_url(cls, members_list_url: YAML) -> set[str]:
+    def _reload_members_list_url(cls, members_list_url: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
         """
         Reload the url that points to the location of your community group's members-list.
 
@@ -569,7 +574,7 @@ class SettingsAccessor:
         return {"community-group:members-list:url"}
 
     @classmethod
-    def _reload_members_list_auth_session_cookie(cls, members_list_auth_session_cookie: YAML) -> set[str]:
+    def _reload_members_list_auth_session_cookie(cls, members_list_auth_session_cookie: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
         """
         Reload the auth session cookie used to authenticate to access your members-list.
 
@@ -592,7 +597,7 @@ class SettingsAccessor:
         return {"community-group:members-list:auth-session-cookie"}
 
     @classmethod
-    def _reload_members_list_id_format(cls, members_list_id_format: YAML) -> set[str]:
+    def _reload_members_list_id_format(cls, members_list_id_format: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
         """
         Reload the format regex matcher for IDs in your community group's members-list.
 
@@ -613,7 +618,7 @@ class SettingsAccessor:
         return {"community-group:members-list:id-format"}
 
     @classmethod
-    def _reload_ping_command_easter_egg_probability(cls, ping_command_easter_egg_probability: YAML) -> set[str]:  # noqa: E501
+    def _reload_ping_command_easter_egg_probability(cls, ping_command_easter_egg_probability: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
         """
         Reload the probability that the rarer response will show when using the ping command.
 
@@ -636,7 +641,7 @@ class SettingsAccessor:
         return {"commands:ping:easter-egg-probability"}
 
     @classmethod
-    def _reload_stats_command_lookback_days(cls, stats_command_lookback_days: YAML) -> set[str]:  # noqa: E501
+    def _reload_stats_command_lookback_days(cls, stats_command_lookback_days: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
         """
         Reload the number of days to lookback for statistics.
 
@@ -659,7 +664,7 @@ class SettingsAccessor:
         return {"commands:stats:lookback-days"}
 
     @classmethod
-    def _reload_stats_command_displayed_roles(cls, stats_command_displayed_roles: YAML) -> set[str]:  # noqa: E501
+    def _reload_stats_command_displayed_roles(cls, stats_command_displayed_roles: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
         """
         Reload the set of roles used to display statistics about.
 
@@ -680,7 +685,7 @@ class SettingsAccessor:
         return {"commands:stats:displayed-roles"}
 
     @classmethod
-    def _reload_strike_command_timeout_duration(cls, strike_command_timeout_duration: YAML) -> set[str]:  # noqa: E501
+    def _reload_strike_command_timeout_duration(cls, strike_command_timeout_duration: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
         """
         Reload the duration to use when applying a timeout action for a strike increase.
 
@@ -701,7 +706,7 @@ class SettingsAccessor:
         return {"commands:strike:timeout-duration"}
 
     @classmethod
-    def _reload_strike_performed_manually_warning_location(cls, strike_performed_manually_warning_location: YAML) -> set[str]:  # noqa: E501
+    def _reload_strike_performed_manually_warning_location(cls, strike_performed_manually_warning_location: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
         """
         Reload the location to send warning messages when strikes are performed manually.
 
@@ -724,7 +729,7 @@ class SettingsAccessor:
         return {"commands:strike:performed-manually-warning-location"}
 
     @classmethod
-    def _reload_messages_language(cls, messages_language: YAML) -> set[str]:
+    def _reload_messages_language(cls, messages_language: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
         """
         Reload the selected language for messages to be sent in.
 
@@ -743,7 +748,7 @@ class SettingsAccessor:
         return {"messages-language"}
 
     @classmethod
-    def _reload_send_introduction_reminders_enabled(cls, send_introduction_reminders_enabled: YAML) -> set[str]:  # noqa: E501
+    def _reload_send_introduction_reminders_enabled(cls, send_introduction_reminders_enabled: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
         """
         Reload the flag for whether the "send-introduction-reminders" task is enabled.
 
@@ -766,7 +771,7 @@ class SettingsAccessor:
         return {"reminders:send-introduction-reminders:enabled"}
 
     @classmethod
-    def _reload_send_introduction_reminders_delay(cls, send_introduction_reminders_delay: YAML) -> set[str]:  # noqa: E501
+    def _reload_send_introduction_reminders_delay(cls, send_introduction_reminders_delay: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
         """
         Reload the amount of time to wait before sending introduction-reminders to a user.
 
@@ -791,7 +796,7 @@ class SettingsAccessor:
         return {"reminders:send-introduction-reminders:delay"}
 
     @classmethod
-    def _reload_send_introduction_reminders_interval(cls, send_introduction_reminders_interval: YAML) -> set[str]:  # noqa: E501
+    def _reload_send_introduction_reminders_interval(cls, send_introduction_reminders_interval: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
         """
         Reload the interval of time between executing the task to send introduction-reminders.
 
@@ -814,7 +819,7 @@ class SettingsAccessor:
         return {"reminders:send-introduction-reminders:interval"}
 
     @classmethod
-    def _reload_send_get_roles_reminders_enabled(cls, send_get_roles_reminders_enabled: YAML) -> set[str]:  # noqa: E501
+    def _reload_send_get_roles_reminders_enabled(cls, send_get_roles_reminders_enabled: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
         """
         Reload the flag for whether the "send-get-roles-reminders" task is enabled.
 
@@ -837,7 +842,7 @@ class SettingsAccessor:
         return {"reminders:send-get-roles-reminders:enabled"}
 
     @classmethod
-    def _reload_send_get_roles_reminders_delay(cls, send_get_roles_reminders_delay: YAML) -> set[str]:  # noqa: E501
+    def _reload_send_get_roles_reminders_delay(cls, send_get_roles_reminders_delay: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
         """
         Reload the amount of time to wait before sending get-roles-reminders to a user.
 
@@ -863,7 +868,7 @@ class SettingsAccessor:
         return {"reminders:send-get-roles-reminders:delay"}
 
     @classmethod
-    def _reload_send_get_roles_reminders_interval(cls, send_get_roles_reminders_interval: YAML) -> set[str]:  # noqa: E501
+    def _reload_send_get_roles_reminders_interval(cls, send_get_roles_reminders_interval: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
         """
         Reload the interval of time between executing the task to send get-roles-reminders.
 

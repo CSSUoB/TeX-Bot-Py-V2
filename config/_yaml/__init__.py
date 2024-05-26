@@ -65,7 +65,7 @@ _DEFAULT_STRIKE_COMMAND_SETTINGS: Final[Mapping[str, str]] = {
     "timeout-duration": DEFAULT_STRIKE_COMMAND_TIMEOUT_DURATION,
     "performed-manually-warning-location": DEFAULT_STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION,
 }
-_DEFAULT_COMMANDS_SETTINGS: Final[Mapping[str, Mapping[str, float]]] = {
+_DEFAULT_COMMANDS_SETTINGS: Final[Mapping[str, Mapping[str, float] | Mapping[str, float | Sequence[str]] | Mapping[str, str]]] = {  # noqa: E501
     "ping": _DEFAULT_PING_COMMAND_SETTINGS,
     "stats": _DEFAULT_STATS_COMMAND_SETTINGS,
     "strike": _DEFAULT_STRIKE_COMMAND_SETTINGS,
@@ -215,7 +215,7 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
 )
 
 
-def load_yaml(raw_yaml: str, file_name: str = "tex-bot-deployment.yaml") -> YAML:
+def load_yaml(raw_yaml: str, file_name: str = "tex-bot-deployment.yaml") -> YAML:  # type: ignore[no-any-unimported]
     parsed_yaml: YAML = strictyaml.load(raw_yaml, SETTINGS_YAML_SCHEMA, label=file_name)  # type: ignore[no-any-unimported]
 
     # noinspection SpellCheckingInspection

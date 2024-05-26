@@ -51,7 +51,7 @@ class LogLevelValidator(strictyaml.ScalarValidator):  # type: ignore[no-any-unim
     @override
     def to_yaml(self, data: object) -> str:  # type: ignore[misc]
         self.should_be_string(data, "expected a valid log-level.")
-        str_data: str = data.upper().strip().strip("-").strip("_").strip(".")
+        str_data: str = data.upper().strip().strip("-").strip("_").strip(".")  # type: ignore[attr-defined]
 
         if str_data not in LogLevels:
             raise YAMLSerializationError(
@@ -83,13 +83,13 @@ class DiscordWebhookURLValidator(strictyaml.Url):  # type: ignore[no-any-unimpor
         DATA_IS_VALID: Final[bool] = bool(
             (
                 self.__is_absolute_url(data)
-                and data.startswith("https://discord.com/api/webhooks/")
+                and data.startswith("https://discord.com/api/webhooks/")  # type: ignore[attr-defined]
             ),
         )
         if not DATA_IS_VALID:
             raise YAMLSerializationError(f"'{data}' is not a Discord webhook URL.")
 
-        return data
+        return data  # type: ignore[return-value]
 
 
 class DiscordSnowflakeValidator(strictyaml.Int):  # type: ignore[no-any-unimported,misc]
@@ -118,7 +118,7 @@ class DiscordSnowflakeValidator(strictyaml.Int):  # type: ignore[no-any-unimport
         return str(data)
 
 
-class RegexMatcher(strictyaml.ScalarValidator):
+class RegexMatcher(strictyaml.ScalarValidator):  # type: ignore[no-any-unimported,misc]
     MATCHING_MESSAGE: str = "when expecting a regular expression matcher"
 
     @override
@@ -130,8 +130,8 @@ class RegexMatcher(strictyaml.ScalarValidator):
                 self.MATCHING_MESSAGE,
                 "found arbitrary string",
             )
-        else:
-            return chunk.contents
+
+        return chunk.contents  # type: ignore[no-any-return]
 
     # noinspection PyOverrides
     @override
@@ -139,11 +139,11 @@ class RegexMatcher(strictyaml.ScalarValidator):
         self.should_be_string(data, self.MATCHING_MESSAGE)
 
         try:
-            re.compile(data)
+            re.compile(data)  # type: ignore[call-overload]
         except re.error:
             raise YAMLSerializationError(f"{self.MATCHING_MESSAGE} found '{data}'")
-        else:
-            return data
+
+        return data  # type: ignore[return-value]
 
 
 class ProbabilityValidator(strictyaml.Float):  # type: ignore[no-any-unimported,misc]
@@ -164,17 +164,17 @@ class ProbabilityValidator(strictyaml.Float):  # type: ignore[no-any-unimported,
         )
 
         if strictyaml_utils.has_number_type(data):
-            if not 0 <= data <= 100:
+            if not 0 <= data <= 100:  # type: ignore[operator]
                 raise YAML_SERIALIZATION_ERROR
 
-            if math.isnan(data):
+            if math.isnan(data):  # type: ignore[arg-type]
                 return "nan"
             if data == float("inf"):
                 return "inf"
             if data == float("-inf"):
                 return "-inf"
 
-            return str(data / 100)
+            return str(data / 100)  # type: ignore[operator]
 
         if strictyaml_utils.is_string(data) and strictyaml_utils.is_decimal(data):
             float_data: float = float(str(data))
@@ -233,7 +233,7 @@ class TimeDeltaValidator(strictyaml.ScalarValidator):  # type: ignore[no-any-uni
             raise float_conversion_error from float_conversion_error
 
     @override
-    def validate_scalar(self, chunk: YAMLChunk) -> timedelta:
+    def validate_scalar(self, chunk: YAMLChunk) -> timedelta:  # type: ignore[no-any-unimported,misc]
         chunk_error_func: Callable[[], NoReturn] = functools.partial(
             chunk.expecting_but_found,
             expecting="when expecting a delay/interval string",
@@ -257,7 +257,7 @@ class TimeDeltaValidator(strictyaml.ScalarValidator):  # type: ignore[no-any-uni
 
     # noinspection PyOverrides
     @override
-    def to_yaml(self, data: object) -> str:
+    def to_yaml(self, data: object) -> str:  # type: ignore[misc]
         if strictyaml_utils.is_string(data):
             match: Match[str] | None = self.regex_matcher.match(str(data))
             if match is None:

@@ -38,7 +38,7 @@ class StartupCog(TeXBotBaseCog):
             "so error logs will not be sent to the Discord log-channel."
         )
 
-        discord_logging_handlers: set[DiscordHandler] = {
+        discord_logging_handlers: set[DiscordHandler] = {  # type: ignore[no-any-unimported]
             handler for handler in logger.handlers if isinstance(handler, DiscordHandler)
         }
 
@@ -48,12 +48,12 @@ class StartupCog(TeXBotBaseCog):
             )
 
         elif len(discord_logging_handlers) == 1:
-            existing_discord_logging_handler: DiscordHandler = discord_logging_handlers.pop()
+            existing_discord_logging_handler: DiscordHandler = discord_logging_handlers.pop()  # type: ignore[no-any-unimported]
 
             logger.removeHandler(existing_discord_logging_handler)
 
             if settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
-                new_discord_logging_handler: DiscordHandler = DiscordHandler(
+                new_discord_logging_handler: DiscordHandler = DiscordHandler(  # type: ignore[no-any-unimported]
                     (
                         existing_discord_logging_handler.name
                         if existing_discord_logging_handler.name != DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME  # noqa: E501

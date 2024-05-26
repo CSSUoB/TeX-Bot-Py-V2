@@ -17,9 +17,9 @@ class SlugKeyValidator(strictyaml.ScalarValidator):  # type: ignore[no-any-unimp
         return slugify.slugify(str(chunk.contents))
 
 
-class SlugKeyMap(strictyaml.Map):
+class SlugKeyMap(strictyaml.Map):  # type: ignore[no-any-unimported,misc]
     @override
-    def __init__(self, validator: dict[object, object], key_validator: strictyaml.Validator | None = None) -> None:  # noqa: E501
+    def __init__(self, validator: dict[object, object], key_validator: strictyaml.Validator | None = None) -> None:  # type: ignore[no-any-unimported,misc] # noqa: E501
         super().__init__(
             validator=validator,
             key_validator=key_validator if key_validator is not None else SlugKeyValidator()
