@@ -11,8 +11,8 @@ __all__: Sequence[str] = (
 
 from classproperties import classproperty
 
-from exceptions.base import BaseTeXBotError
-from exceptions.config_changes import ImproperlyConfiguredError
+from .base import BaseTeXBotError
+from .config_changes import ImproperlyConfiguredError
 
 
 class InvalidMessagesJSONFileError(BaseTeXBotError, ImproperlyConfiguredError):
