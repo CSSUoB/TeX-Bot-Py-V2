@@ -30,8 +30,6 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.12"
 py-cord = "~2.5"
-python-dotenv = "^1.0"
-validators = "^0.28"
 beautifulsoup4 = "^4.12"
 emoji = "^2.12"
 parsedatetime = "^2.6"
@@ -87,7 +85,6 @@ module = [
     "mplcyberpunk",
     "discord_logging.handler",
     "parsedatetime",
-    "validators",
     "strictyaml",
     "strictyaml.exceptions",
     "strictyaml.yamllocation",
