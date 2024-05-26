@@ -27,12 +27,12 @@ __all__: Sequence[str] = (
     "BotRequiresRestartAfterConfigChange",
 )
 
-from exceptions.base import BaseDoesNotExistError, BaseErrorWithErrorCode, BaseTeXBotError
-from exceptions.config_changes import (
+from .base import BaseDoesNotExistError, BaseErrorWithErrorCode, BaseTeXBotError
+from .config_changes import (
     BotRequiresRestartAfterConfigChange,
     ImproperlyConfiguredError,
 )
-from exceptions.does_not_exist import (
+from .does_not_exist import (
     ArchivistRoleDoesNotExistError,
     ChannelDoesNotExistError,
     CommitteeRoleDoesNotExistError,
@@ -44,13 +44,13 @@ from exceptions.does_not_exist import (
     RolesChannelDoesNotExistError,
     RulesChannelDoesNotExistError,
 )
-from exceptions.guild import (
+from .guild import (
     DiscordMemberNotInMainGuildError,
     EveryoneRoleCouldNotBeRetrievedError,
 )
-from exceptions.messages import (
+from .messages import (
     InvalidMessagesJSONFileError,
     MessagesJSONFileMissingKeyError,
     MessagesJSONFileValueError,
 )
-from exceptions.strike import NoAuditLogsStrikeTrackingError, StrikeTrackingError
+from .strike import NoAuditLogsStrikeTrackingError, StrikeTrackingError
