@@ -163,14 +163,20 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 )
                 continue
 
-            await member.send(
-                "Hey! It seems like you have been given the `@Guest` role "
-                f"on the {self.bot.group_short_name} Discord server "
-                " but have not yet nabbed yourself any opt-in roles.\n"
-                f"You can head to {roles_channel_mention} "
-                "and click on the icons to get optional roles like pronouns "
-                "and year group identifiers.",
-            )
+            try:
+                await member.send(
+                    "Hey! It seems like you have been given the `@Guest` role "
+                    f"on the {self.bot.group_short_name} Discord server "
+                    " but have not yet nabbed yourself any opt-in roles.\n"
+                    f"You can head to {roles_channel_mention} "
+                    "and click on the icons to get optional roles like pronouns "
+                    "and year group identifiers.",
+                )
+            except discord.Forbidden:
+                logger.info(
+                    "Failed to open DM channel to user, %s, so no role reminder was sent.",
+                    member,
+                )
 
             await SentGetRolesReminderMember.objects.acreate(discord_id=member.id)
 
