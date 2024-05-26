@@ -35,7 +35,7 @@ COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
 WORKDIR /app
 
-COPY LICENSE .en[v] exceptions.py main.py messages.json ./
+COPY LICENSE exceptions.py main.py ./
 RUN chmod +x main.py
 
 COPY utils/ ./utils/
