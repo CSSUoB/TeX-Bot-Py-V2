@@ -269,17 +269,17 @@ class TimeDeltaValidator(strictyaml.ScalarValidator):  # type: ignore[no-any-uni
         if strictyaml_utils.is_string(data):
             match: Match[str] | None = self.regex_matcher.match(str(data))
             if match is None:
-                INVALID_DATA_MESSAGE: Final[str] = (
+                INVALID_STRING_DATA_MESSAGE: Final[str] = (
                     f"when expecting a delay/interval string found {str(data)!r}."
                 )
-                raise YAMLSerializationError(INVALID_DATA_MESSAGE)
+                raise YAMLSerializationError(INVALID_STRING_DATA_MESSAGE)
             return str(data)
 
         if not hasattr(data, "total_seconds") or not callable(getattr(data, "total_seconds")):  # noqa: B009
-            INVALID_DATA_MESSAGE: Final[str] = (
+            INVALID_TIMEDELTA_DATA_MESSAGE: Final[str] = (
                 f"when expecting a time delta object found {str(data)!r}."
             )
-            raise YAMLSerializationError(INVALID_DATA_MESSAGE)
+            raise YAMLSerializationError(INVALID_TIMEDELTA_DATA_MESSAGE)
 
         total_seconds: object = getattr(data, "total_seconds")()  # noqa: B009
         if not isinstance(total_seconds, float):
