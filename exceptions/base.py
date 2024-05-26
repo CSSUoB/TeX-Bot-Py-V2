@@ -1,4 +1,4 @@
-"""Custom exceptions for the base cog."""
+"""Base exception classes inherited by other custom exceptions used within this project."""
 
 from collections.abc import Sequence
 

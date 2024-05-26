@@ -1,4 +1,4 @@
-"""Custom exceptions for the exceptions where things do not exist."""
+"""Custom exception classes to be raised when retrieved Discord objects do not exist."""
 
 from collections.abc import Sequence
 

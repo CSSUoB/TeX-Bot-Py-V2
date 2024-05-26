@@ -1,4 +1,4 @@
-"""Custom exceptions for the exceptions related to configuration changes."""
+"""Custom exception classes related to configuration changes."""
 
 from collections.abc import Sequence
 

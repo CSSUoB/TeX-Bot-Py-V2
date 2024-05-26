@@ -1,4 +1,4 @@
-"""Custom exceptions for the exceptions related to the messages file."""
+"""Custom exception classes to be raised when errors occur with retrieving messages from the JSON file."""
 
 from collections.abc import Sequence
 

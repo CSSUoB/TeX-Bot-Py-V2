@@ -1,4 +1,4 @@
-"""Custom exceptions for strike related cogs."""
+"""Custom exception classes to be raised when errors occur during use of the "/strike" command."""
 
 from collections.abc import Sequence
 
