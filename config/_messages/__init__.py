@@ -97,9 +97,11 @@ class MessagesAccessor:
             if not hasattr(raw_messages, "__getitem__"):
                 raise TypeError
 
-            cls._messages["WELCOME_MESSAGES"] = set(raw_messages["welcome-messages"])  # type: ignore[index]
+            # noinspection PyUnresolvedReferences
+            cls._messages["WELCOME_MESSAGES"] = set(raw_messages["welcome-messages"])
+            # noinspection PyUnresolvedReferences
             cls._messages["OPT_IN_ROLES_SELECTORS"] = tuple(
-                raw_messages["opt-in-roles-selectors"],  # type: ignore[index]
+                raw_messages["opt-in-roles-selectors"],
             )
 
         except (json.JSONDecodeError, TypeError, KeyError) as messages_load_error:
