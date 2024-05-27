@@ -15,10 +15,9 @@ from typing import TYPE_CHECKING, Final
 import discord
 from discord import Cog
 
-from exceptions import (
+from exceptions import CommitteeRoleDoesNotExistError, DiscordMemberNotInMainGuildError
+from exceptions.base import (
     BaseDoesNotExistError,
-    CommitteeRoleDoesNotExistError,
-    DiscordMemberNotInMainGuildError,
 )
 from .tex_bot import TeXBot
 from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext

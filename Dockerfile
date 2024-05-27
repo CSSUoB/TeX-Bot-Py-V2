@@ -35,9 +35,10 @@ COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
 WORKDIR /app
 
-COPY LICENSE exceptions.py main.py ./
+COPY LICENSE main.py ./
 RUN chmod +x main.py
 
+COPY exceptions/ ./exceptions/
 COPY utils/ ./utils/
 COPY db/ ./db/
 COPY config/ ./config/

@@ -9,7 +9,8 @@ import re
 
 import discord
 
-from exceptions import BaseDoesNotExistError, DiscordMemberNotInMainGuildError
+from exceptions import DiscordMemberNotInMainGuildError
+from exceptions.base import BaseDoesNotExistError
 from utils import (
     CommandChecks,
     TeXBotApplicationContext,
