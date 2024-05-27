@@ -94,7 +94,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         parameter_name="group_member_id",
     )
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_member(self, ctx: TeXBotApplicationContext, group_member_id: str) -> None:
+    async def make_member(self, ctx: TeXBotApplicationContext, group_member_id: str) -> None:  # noqa: PLR0915
         """
         Definition & callback response of the "make_member" command.
 
