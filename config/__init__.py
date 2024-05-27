@@ -15,6 +15,8 @@ __all__: Sequence[str] = (
     "settings",
     "check_for_deprecated_environment_variables",
     "messages",
+    "get_loaded_config_settings_names",
+    "view_single_config_setting_value",
 )
 
 
@@ -27,6 +29,7 @@ from logging import Logger
 from typing import Final
 
 from exceptions import BotRequiresRestartAfterConfigChange
+from strictyaml import YAML
 
 from ._messages import MessagesAccessor
 from ._settings import SettingsAccessor
@@ -147,3 +150,46 @@ def check_for_deprecated_environment_variables() -> None:
         )
         if deprecated_environment_variable_found:
             raise CONFIGURATION_VIA_ENVIRONMENT_VARIABLES_IS_DEPRECATED_ERROR
+
+
+def get_loaded_config_settings_names() -> set[str]:
+    return settings._loaded_config_settings_names
+
+
+def _get_scalar_config_setting_value(config_setting_name: str, config_settings: YAML) -> str | None:  # noqa: E501
+    scalar_config_setting: YAML | None = config_settings.get(config_setting_name, None)
+
+    if scalar_config_setting is None:
+        return scalar_config_setting
+
+    scalar_config_setting_value: object = scalar_config_setting.validator.to_yaml(
+        scalar_config_setting.data,
+    )
+
+    if isinstance(scalar_config_setting_value, str):
+        return scalar_config_setting_value
+
+    if isinstance(scalar_config_setting_value, Iterable):
+        return ", ".join(scalar_config_setting_value)
+
+    raise NotImplementedError
+
+
+def _get_mapping_config_setting_value(partial_config_setting_name: str, config_settings: YAML) -> str | None:  # noqa: E501
+    if ":" not in partial_config_setting_name:
+        return _get_scalar_config_setting_value(partial_config_setting_name, config_settings)
+
+    key: str
+    remainder: str
+    key, _, remainder = partial_config_setting_name.partition(":")
+
+    mapping_config_setting: YAML | None = config_settings.get(key, None)
+
+    if mapping_config_setting is not None and mapping_config_setting.is_mapping():
+        return _get_mapping_config_setting_value(remainder, mapping_config_setting)
+
+    return _get_scalar_config_setting_value(partial_config_setting_name, config_settings)
+
+
+def view_single_config_setting_value(config_setting_name: str) -> str | None:
+    return _get_mapping_config_setting_value(config_setting_name, settings._most_recent_yaml)

@@ -20,8 +20,8 @@ from exceptions import (
     CommitteeRoleDoesNotExistError,
     DiscordMemberNotInMainGuildError,
 )
-from utils.tex_bot import TeXBot
-from utils.tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
+from .tex_bot import TeXBot
+from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 if TYPE_CHECKING:
     from typing import TypeAlias

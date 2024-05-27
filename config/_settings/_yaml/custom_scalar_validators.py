@@ -297,7 +297,7 @@ class SendIntroductionRemindersFlagValidator(strictyaml.ScalarValidator):  # typ
             chunk.expecting_but_found(
                 (
                     "when expecting a send-introduction-reminders-flag "
-                    "(one of: \"Once\", \"Interval\" or \"False\")"
+                    "(one of: \"once\", \"interval\" or \"false\")"
                 ),
             )
             raise RuntimeError
@@ -314,18 +314,18 @@ class SendIntroductionRemindersFlagValidator(strictyaml.ScalarValidator):  # typ
     @override
     def to_yaml(self, data: object) -> str:  # type: ignore[misc]
         if isinstance(data, bool):
-            return "Once" if data else "False"
+            return "once" if data else "false"
 
         if str(data).lower() not in VALID_SEND_INTRODUCTION_REMINDERS_RAW_VALUES:
             INVALID_DATA_MESSAGE: Final[str] = (
-                f"Got {data} when expecting one of: \"Once\", \"Interval\" or \"False\"."
+                f"Got {data} when expecting one of: \"once\", \"interval\" or \"false\"."
             )
             raise YAMLSerializationError(INVALID_DATA_MESSAGE)
 
         if str(data).lower() in strictyaml_constants.TRUE_VALUES:
-            return "Once"
+            return "once"
 
         if str(data).lower() in strictyaml_constants.FALSE_VALUES:
-            return "False"
+            return "false"
 
-        return str(data).lower().title()
+        return str(data).lower()

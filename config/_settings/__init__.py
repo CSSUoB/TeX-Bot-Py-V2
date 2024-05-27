@@ -92,6 +92,7 @@ class SettingsAccessor:
 
     _settings: ClassVar[dict[str, object]] = {}
     _most_recent_yaml: ClassVar[YAML | None] = None  # type: ignore[no-any-unimported]
+    _loaded_config_settings_names: ClassVar[set[str]] = set()
 
     @classmethod
     def format_invalid_settings_key_message(cls, item: str) -> str:
@@ -243,6 +244,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("logging:console:log-level")
+
         CONSOLE_LOGGING_SETTINGS_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or console_logging_settings != cls._most_recent_yaml["logging"]["console"],
@@ -295,6 +298,10 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.update(
+            {"logging:discord-channel:log-level", "logging:discord-channel:webhook-url"}
+        )
+
         DISCORD_CHANNEL_LOGGING_SETTINGS_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or discord_channel_logging_settings != cls._most_recent_yaml["logging"].get(
@@ -406,6 +413,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("discord:bot-token")
+
         DISCORD_BOT_TOKEN_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or discord_bot_token != cls._most_recent_yaml["discord"]["bot-token"]
@@ -425,6 +434,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("discord:main-guild-id")
+
         DISCORD_MAIN_GUILD_ID_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or discord_main_guild_id != cls._most_recent_yaml["discord"]["main-guild-id"]
@@ -444,6 +455,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("community-group:full-name")
+
         GROUP_FULL_NAME_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or group_full_name != cls._most_recent_yaml["community-group"].get(
@@ -470,6 +483,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("community-group:short-name")
+
         GROUP_SHORT_NAME_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or group_short_name != cls._most_recent_yaml["community-group"].get(
@@ -496,6 +511,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("community-group:links:purchase-membership")
+
         PURCHASE_MEMBERSHIP_LINK_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or purchase_membership_link != cls._most_recent_yaml["community-group"][
@@ -521,6 +538,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("community-group:links:membership-perks")
+
         MEMBERSHIP_PERKS_LINK_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or membership_perks_link != cls._most_recent_yaml["community-group"][
@@ -546,6 +565,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("community-group:links:moderation-document")
+
         MODERATION_DOCUMENT_LINK_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or moderation_document_link != cls._most_recent_yaml["community-group"]["links"][
@@ -567,6 +588,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("community-group:members-list:url")
+
         MEMBERS_LIST_URL_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or members_list_url != cls._most_recent_yaml["community-group"]["members-list"][
@@ -588,6 +611,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("community-group:members-list:auth-session-cookie")
+
         MEMBERS_LIST_AUTH_SESSION_COOKIE_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or members_list_auth_session_cookie != cls._most_recent_yaml["community-group"][
@@ -611,6 +636,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("community-group:members-list:id-format")
+
         MEMBERS_LIST_ID_FORMAT_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or members_list_id_format != cls._most_recent_yaml["community-group"][
@@ -632,6 +659,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("commands:ping:easter-egg-probability")
+
         PING_COMMAND_EASTER_EGG_PROBABILITY_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or ping_command_easter_egg_probability != cls._most_recent_yaml["commands"][
@@ -655,6 +684,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("commands:stats:lookback-days")
+
         STATS_COMMAND_LOOKBACK_DAYS_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or stats_command_lookback_days != cls._most_recent_yaml["commands"][
@@ -678,6 +709,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("commands:stats:displayed-roles")
+
         STATS_COMMAND_DISPLAYED_ROLES_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or stats_command_displayed_roles != cls._most_recent_yaml["commands"][
@@ -699,6 +732,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("commands:strike:timeout-duration")
+
         STRIKE_COMMAND_TIMEOUT_DURATION_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or strike_command_timeout_duration != cls._most_recent_yaml["commands"][
@@ -720,6 +755,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("commands:strike:performed-manually-warning-location")
+
         STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or strike_performed_manually_warning_location != cls._most_recent_yaml["commands"][
@@ -743,6 +780,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("messages-locale-code")
+
         MESSAGES_LOCALE_CODE_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or messages_locale_code != cls._most_recent_yaml["messages-locale-code"]
@@ -762,6 +801,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("reminders:send-introduction-reminders:enabled")
+
         SEND_INTRODUCTION_REMINDERS_ENABLED_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or send_introduction_reminders_enabled != cls._most_recent_yaml["reminders"][
@@ -787,6 +828,8 @@ class SettingsAccessor:
 
         Waiting begins from the time that the user joined your community group's Discord guild.
         """
+        cls._loaded_config_settings_names.add("reminders:send-introduction-reminders:delay")
+
         SEND_INTRODUCTION_REMINDERS_DELAY_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or send_introduction_reminders_delay != cls._most_recent_yaml["reminders"][
@@ -810,6 +853,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("reminders:send-introduction-reminders:interval")
+
         SEND_INTRODUCTION_REMINDERS_INTERVAL_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or send_introduction_reminders_interval != cls._most_recent_yaml["reminders"][
@@ -833,6 +878,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("reminders:send-get-roles-reminders:enabled")
+
         SEND_GET_ROLES_REMINDERS_ENABLED_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or send_get_roles_reminders_enabled != cls._most_recent_yaml["reminders"][
@@ -859,6 +906,8 @@ class SettingsAccessor:
         Waiting begins from the time that the user was inducted as a guest
         into your community group's Discord guild.
         """
+        cls._loaded_config_settings_names.add("reminders:send-get-roles-reminders:delay")
+
         SEND_GET_ROLES_REMINDERS_DELAY_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or send_get_roles_reminders_delay != cls._most_recent_yaml["reminders"][
@@ -882,6 +931,8 @@ class SettingsAccessor:
 
         Returns the set of settings keys that have been changed.
         """
+        cls._loaded_config_settings_names.add("reminders:send-get-roles-reminders:interval")
+
         SEND_GET_ROLES_REMINDERS_INTERVAL_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or send_get_roles_reminders_interval != cls._most_recent_yaml["reminders"][

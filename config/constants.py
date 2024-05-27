@@ -68,6 +68,7 @@ REQUIRES_RESTART_SETTINGS: Final[frozenset[str]] = frozenset(
     {
         "discord:bot-token",
         "discord:guild-id",
+        "messages-locale-code",
         "reminders:send-introduction-reminders:enabled",
         "reminders:send-introduction-reminders:delay",
         "reminders:send-introduction-reminders:interval",

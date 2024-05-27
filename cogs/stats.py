@@ -160,8 +160,8 @@ class StatsCommandsCog(TeXBotBaseCog):
     } Discord server"""
 
     stats: discord.SlashCommandGroup = discord.SlashCommandGroup(
-        "stats",
-        f"Various statistics about {_DISCORD_SERVER_NAME}",
+        name="stats",
+        description=f"Various statistics about {_DISCORD_SERVER_NAME}",
     )
 
     # noinspection SpellCheckingInspection
