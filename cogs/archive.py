@@ -105,6 +105,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
                 ctx,
                 message=f"Category with ID {str(category_id)!r} does not exist.",
             )
+            logger.debug("Category with ID: %s could not be found!", str(category_id))
             return
 
         if "archive" in category.name:
@@ -114,6 +115,10 @@ class ArchiveCommandCog(TeXBotBaseCog):
                     "Category has already been archived. :information_source:"
                 ),
                 ephemeral=True,
+            )
+            logger.debug(
+                "Category %s was already archived when the archive command was run",
+                category.name,
             )
             return
 
@@ -216,3 +221,4 @@ class ArchiveCommandCog(TeXBotBaseCog):
                 return
 
         await ctx.respond("Category successfully archived", ephemeral=True)
+        logger.debug("Category %s has been successfully archived.", category.name)
