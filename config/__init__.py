@@ -158,8 +158,8 @@ def get_loaded_config_settings_names() -> set[str]:
     return settings._loaded_config_settings_names  # noqa: SLF001
 
 
-def _get_scalar_config_setting_value(config_setting_name: str, config_settings: YAML) -> str | None:  # noqa: E501
-    scalar_config_setting: YAML | None = config_settings.get(config_setting_name, None)
+def _get_scalar_config_setting_value(config_setting_name: str, config_settings: YAML) -> str | None:  # type: ignore[no-any-unimported] # noqa: E501
+    scalar_config_setting: YAML | None = config_settings.get(config_setting_name, None)  # type: ignore[no-any-unimported]
 
     if scalar_config_setting is None:
         return scalar_config_setting
@@ -177,7 +177,7 @@ def _get_scalar_config_setting_value(config_setting_name: str, config_settings: 
     raise NotImplementedError
 
 
-def _get_mapping_config_setting_value(partial_config_setting_name: str, config_settings: YAML) -> str | None:  # noqa: E501
+def _get_mapping_config_setting_value(partial_config_setting_name: str, config_settings: YAML) -> str | None:  # type: ignore[no-any-unimported] # noqa: E501
     if ":" not in partial_config_setting_name:
         return _get_scalar_config_setting_value(partial_config_setting_name, config_settings)
 
@@ -185,7 +185,7 @@ def _get_mapping_config_setting_value(partial_config_setting_name: str, config_s
     remainder: str
     key, _, remainder = partial_config_setting_name.partition(":")
 
-    mapping_config_setting: YAML | None = config_settings.get(key, None)
+    mapping_config_setting: YAML | None = config_settings.get(key, None)  # type: ignore[no-any-unimported]
 
     if mapping_config_setting is not None and mapping_config_setting.is_mapping():
         return _get_mapping_config_setting_value(remainder, mapping_config_setting)
