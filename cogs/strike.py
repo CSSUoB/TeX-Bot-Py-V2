@@ -17,8 +17,10 @@ __all__: Sequence[str] = (
 import asyncio
 import contextlib
 import datetime
+import logging
 import re
 from collections.abc import Mapping
+from logging import Logger
 from typing import Final
 
 import aiohttp
@@ -53,6 +55,8 @@ from utils.message_sender_components import (
     ResponseMessageSender,
 )
 
+logger: Logger = logging.getLogger("TeX-Bot")
+
 
 async def perform_moderation_action(strike_user: discord.Member, strikes: int, committee_member: discord.Member | discord.User) -> None:  # noqa: E501
     """
@@ -80,9 +84,17 @@ async def perform_moderation_action(strike_user: discord.Member, strikes: int, c
 
     elif strikes == 2:
         await strike_user.kick(reason=MODERATION_ACTION_REASON)
+        logger.debug(
+            "User %s has been automatically kicked for having 2 strikes.",
+            strike_user,
+        )
 
     elif strikes == 3:
         await strike_user.ban(reason=MODERATION_ACTION_REASON)
+        logger.debug(
+            "User %s has been automatically banned for having 3 strikes.",
+            strike_user,
+        )
 
 
 class ConfirmStrikeMemberView(View):
@@ -102,6 +114,7 @@ class ConfirmStrikeMemberView(View):
         The actual handling of the event is done by the command that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
+        logger.debug("Confirm strike button pressed.")
         await interaction.response.edit_message(view=None)
 
     @discord.ui.button(  # type: ignore[misc]
@@ -118,6 +131,7 @@ class ConfirmStrikeMemberView(View):
         The actual handling of the event is done by the command that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
+        logger.debug("Cancel strike button pressed.")
         await interaction.response.edit_message(view=None)
 
 
@@ -139,6 +153,7 @@ class ConfirmManualModerationView(View):
         the manual moderation tracker subroutine that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
+        logger.debug("Confirm manual moderation action button pressed.")
         await interaction.response.edit_message(view=None)
 
     @discord.ui.button(  # type: ignore[misc]
@@ -156,6 +171,7 @@ class ConfirmManualModerationView(View):
         the manual moderation tracker subroutine that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
+        logger.debug("Cancel manual moderation action button pressed.")
         await interaction.response.edit_message(view=None)
 
 
@@ -177,6 +193,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
         the manual moderation tracker subroutine that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
+        logger.debug("Confirm out of sync ban member.")
         await interaction.response.edit_message(view=None)
 
     @discord.ui.button(  # type: ignore[misc]
@@ -194,6 +211,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
         the manual moderation tracker subroutine that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
+        logger.debug("Cancel out of sync ban member.")
         await interaction.response.edit_message(view=None)
 
 
@@ -243,6 +261,7 @@ class BaseStrikeCog(TeXBotBaseCog):
             f"to them.{includes_ban_message}\n\nA committee member will be in contact "
             "with you shortly, to discuss this further.",
         )
+        logger.debug("Sent strike message to user %s", strike_user)
 
     async def _confirm_perform_moderation_action(self, message_sender_component: MessageSenderComponent, interaction_user: discord.User, strike_user: discord.Member, confirm_strike_message: str, actual_strike_amount: int, button_callback_channel: discord.TextChannel | discord.DMChannel) -> None:  # noqa: E501
         await message_sender_component.send(
@@ -269,6 +288,7 @@ class BaseStrikeCog(TeXBotBaseCog):
                     f"on {strike_user.mention}."
                 ),
             )
+            logger.debug("Cancelled strike action.")
             return
 
         if button_interaction.data["custom_id"] == "yes_strike_member":  # type: ignore[index, typeddict-item]
@@ -284,6 +304,7 @@ class BaseStrikeCog(TeXBotBaseCog):
                     f"action on {strike_user.mention}."
                 ),
             )
+            logger.debug("Strike action against %s completed successfully.", strike_user)
             return
 
         raise ValueError
@@ -340,6 +361,7 @@ class BaseStrikeCog(TeXBotBaseCog):
                     }"""
                 ),
             )
+            logger.debug("Sent strike confirmation message.")
             await asyncio.sleep(118)
             await message_sender_component.delete()
             return

@@ -114,6 +114,10 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 ),
                 ephemeral=True,
             )
+            logger.debug(
+                "User %s ran the makemember command but already had the member role!",
+                interaction_member,
+            )
             return
 
         if not re.match(r"\A\d{7}\Z", group_member_id):
@@ -145,6 +149,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 ),
                 ephemeral=True,
             )
+            logger.debug("Student ID %s has already been used.", group_member_id)
             return
 
         guild_member_ids: set[str] = set()
@@ -239,6 +244,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 raise
 
         await ctx.respond("Successfully made you a member!", ephemeral=True)
+        logger.debug("User %s used the make member command successfully.", interaction_member)
 
         try:
             guest_role: discord.Role = await self.bot.guest_role
@@ -254,6 +260,11 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                     guest_role,
                     reason="TeX Bot slash-command: \"/makemember\"",
                 )
+                logger.debug(
+                    "User %s has been given the Guest role as well as the "
+                    "member role as they had not yet been inducted.",
+                    interaction_member,
+                )
 
         applicant_role: discord.Role | None = discord.utils.get(
             self.bot.main_guild.roles,
@@ -263,4 +274,8 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             await interaction_member.remove_roles(
                 applicant_role,
                 reason="TeX Bot slash-command: \"/makemember\"",
+            )
+            logger.debug(
+                "Removed Applicant role from user %s after successful make member command",
+                interaction_member,
             )
