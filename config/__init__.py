@@ -15,8 +15,9 @@ __all__: Sequence[str] = (
     "settings",
     "check_for_deprecated_environment_variables",
     "messages",
-    "get_loaded_config_settings_names",
     "view_single_config_setting_value",
+    "CONFIG_SETTINGS_HELPS",
+    "ConfigSettingHelp",
 )
 
 
@@ -34,7 +35,13 @@ from exceptions import BotRequiresRestartAfterConfigChange
 
 from ._messages import MessagesAccessor
 from ._settings import SettingsAccessor
-from .constants import MESSAGES_LOCALE_CODES, PROJECT_ROOT, LogLevels
+from .constants import (
+    CONFIG_SETTINGS_HELPS,
+    MESSAGES_LOCALE_CODES,
+    PROJECT_ROOT,
+    ConfigSettingHelp,
+    LogLevels,
+)
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
@@ -153,11 +160,6 @@ def check_for_deprecated_environment_variables() -> None:
             raise CONFIGURATION_VIA_ENVIRONMENT_VARIABLES_IS_DEPRECATED_ERROR
 
 
-def get_loaded_config_settings_names() -> set[str]:
-    # noinspection PyProtectedMember
-    return settings._loaded_config_settings_names  # noqa: SLF001
-
-
 def _get_scalar_config_setting_value(config_setting_name: str, config_settings: YAML) -> str | None:  # type: ignore[no-any-unimported] # noqa: E501
     scalar_config_setting: YAML | None = config_settings.get(config_setting_name, None)  # type: ignore[no-any-unimported]
 
@@ -172,6 +174,10 @@ def _get_scalar_config_setting_value(config_setting_name: str, config_settings: 
         return scalar_config_setting_value
 
     if isinstance(scalar_config_setting_value, Iterable):
+        with contextlib.suppress(StopIteration):
+            if not isinstance(next(iter(scalar_config_setting_value)), str):
+                raise TypeError
+
         return ", ".join(scalar_config_setting_value)
 
     raise NotImplementedError
@@ -194,5 +200,6 @@ def _get_mapping_config_setting_value(partial_config_setting_name: str, config_s
 
 
 def view_single_config_setting_value(config_setting_name: str) -> str | None:
+    """Return the value of a single configuration setting."""
     # noinspection PyProtectedMember
     return _get_mapping_config_setting_value(config_setting_name, settings._most_recent_yaml)  # noqa: SLF001

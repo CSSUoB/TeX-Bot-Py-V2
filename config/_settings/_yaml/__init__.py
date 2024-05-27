@@ -21,6 +21,7 @@ from config.constants import (
     DEFAULT_CONSOLE_LOG_LEVEL,
     DEFAULT_DISCORD_LOGGING_LOG_LEVEL,
     DEFAULT_MEMBERS_LIST_ID_FORMAT,
+    DEFAULT_MESSAGE_LOCALE_CODE,
     DEFAULT_PING_COMMAND_EASTER_EGG_PROBABILITY,
     DEFAULT_SEND_GET_ROLES_REMINDERS_DELAY,
     DEFAULT_SEND_GET_ROLES_REMINDERS_ENABLED,
@@ -185,8 +186,8 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
                 ),
             },
         ),
-        strictyaml.Optional("messages-locale-code", default="en-GB"): strictyaml.Enum(
-            MESSAGES_LOCALE_CODES,
+        strictyaml.Optional("messages-locale-code", default=DEFAULT_MESSAGE_LOCALE_CODE): (
+            strictyaml.Enum(MESSAGES_LOCALE_CODES)
         ),
         strictyaml.Optional("reminders", default=_DEFAULT_REMINDERS_SETTINGS): SlugKeyMap(
             {
