@@ -299,7 +299,7 @@ class SettingsAccessor:
         Returns the set of settings keys that have been changed.
         """
         cls._loaded_config_settings_names.update(
-            {"logging:discord-channel:log-level", "logging:discord-channel:webhook-url"}
+            {"logging:discord-channel:log-level", "logging:discord-channel:webhook-url"},
         )
 
         DISCORD_CHANNEL_LOGGING_SETTINGS_CHANGED: Final[bool] = bool(

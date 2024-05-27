@@ -5,14 +5,16 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("ConfigChangeCommandsCog",)
 
 
-import discord
 from typing import Final
+
+import discord
+
 import config
 from utils import (
     CommandChecks,
+    TeXBotApplicationContext,
     TeXBotAutocompleteContext,
     TeXBotBaseCog,
-    TeXBotApplicationContext,
 )
 
 
@@ -53,7 +55,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def get_config_value(self, ctx: TeXBotApplicationContext, config_setting_name: str) -> None:
+    async def get_config_value(self, ctx: TeXBotApplicationContext, config_setting_name: str) -> None:  # noqa: E501
         """Definition & callback response of the "get_config_value" command."""
         if config_setting_name not in config.get_loaded_config_settings_names():
             await self.command_send_error(
@@ -72,7 +74,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         CONFIG_SETTING_NEEDS_HIDING: Final[bool] = bool(
             "token" in config_setting_name
             or "cookie" in config_setting_name
-            or "secret" in config_setting_name
+            or "secret" in config_setting_name  # noqa: COM812
         )
 
         await ctx.respond(

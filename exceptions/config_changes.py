@@ -5,9 +5,9 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("BotRequiresRestartAfterConfigChange",)
 
 
-from .base import BaseTeXBotError
-
 from classproperties import classproperty
+
+from .base import BaseTeXBotError
 
 
 class BotRequiresRestartAfterConfigChange(BaseTeXBotError):

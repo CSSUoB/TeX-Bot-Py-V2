@@ -28,8 +28,9 @@ from collections.abc import Iterable
 from logging import Logger
 from typing import Final
 
-from exceptions import BotRequiresRestartAfterConfigChange
 from strictyaml import YAML
+
+from exceptions import BotRequiresRestartAfterConfigChange
 
 from ._messages import MessagesAccessor
 from ._settings import SettingsAccessor
@@ -153,7 +154,8 @@ def check_for_deprecated_environment_variables() -> None:
 
 
 def get_loaded_config_settings_names() -> set[str]:
-    return settings._loaded_config_settings_names
+    # noinspection PyProtectedMember
+    return settings._loaded_config_settings_names  # noqa: SLF001
 
 
 def _get_scalar_config_setting_value(config_setting_name: str, config_settings: YAML) -> str | None:  # noqa: E501
@@ -192,4 +194,5 @@ def _get_mapping_config_setting_value(partial_config_setting_name: str, config_s
 
 
 def view_single_config_setting_value(config_setting_name: str) -> str | None:
-    return _get_mapping_config_setting_value(config_setting_name, settings._most_recent_yaml)
+    # noinspection PyProtectedMember
+    return _get_mapping_config_setting_value(config_setting_name, settings._most_recent_yaml)  # noqa: SLF001

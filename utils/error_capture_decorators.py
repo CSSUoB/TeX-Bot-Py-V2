@@ -20,6 +20,7 @@ from logging import Logger
 from typing import TYPE_CHECKING, Final, ParamSpec, TypeVar
 
 from exceptions import GuildDoesNotExistError, StrikeTrackingError
+
 from .tex_bot_base_cog import TeXBotBaseCog
 
 if TYPE_CHECKING:
