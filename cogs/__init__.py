@@ -37,9 +37,9 @@ __all__: Sequence[str] = (
 
 from typing import TYPE_CHECKING
 
-from cogs.committee_actions_tracking import CommitteeActionsTrackingCog
 from cogs.archive import ArchiveCommandCog
 from cogs.command_error import CommandErrorCog
+from cogs.committee_actions_tracking import CommitteeActionsTrackingCog
 from cogs.delete_all import DeleteAllCommandsCog
 from cogs.edit_message import EditMessageCommandCog
 from cogs.induct import (

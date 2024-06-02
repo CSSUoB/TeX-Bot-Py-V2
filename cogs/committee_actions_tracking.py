@@ -27,7 +27,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
     committee_actions: discord.SlashCommandGroup = discord.SlashCommandGroup(
         "committeeactions",
-        "Add, list & remove tracked committee-actions."
+        "Add, list & remove tracked committee-actions.",
     )
 
     @staticmethod
