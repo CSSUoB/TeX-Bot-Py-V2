@@ -76,7 +76,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         name="user",
         description="The user to action, if no user is specified, default to self",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(action_autocomplete_get_committee), # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members), # type: ignore[arg-type]
         required=True,
         parameter_name="str_action_member_id",
     )
@@ -128,7 +128,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         name="user",
         description="The user to list actions for.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(action_autocomplete_get_committee), # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members), # type: ignore[arg-type]
         required=True,
         parameter_name="str_action_member_id",
     )
@@ -207,7 +207,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         name="user",
         description="The user to list actions for.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(action_autocomplete_get_committee), # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members), # type: ignore[arg-type]
         required=True,
         parameter_name="str_action_member_id",
     )
