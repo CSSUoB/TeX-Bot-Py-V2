@@ -202,10 +202,7 @@ class BaseInductCog(TeXBotBaseCog):
                 ctx,
                 message="Member cannot be inducted because they are a bot.",
             )
-            logger.debug(
-                "Member %s could not be inducted because they are a bot.",
-                induction_member,
-            )
+            logger.debug("Command execution terminated with the above error.")
             return
 
         if guest_role in induction_member.roles:

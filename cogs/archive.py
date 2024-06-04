@@ -105,7 +105,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
                 ctx,
                 message=f"Category with ID {str(category_id)!r} does not exist.",
             )
-            logger.debug("Category with ID: %s could not be found!", str(category_id))
+            logger.debug("Command execution terminated with the above error.")
             return
 
         if "archive" in category.name:
