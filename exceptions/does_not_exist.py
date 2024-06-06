@@ -232,6 +232,29 @@ class ArchivistRoleDoesNotExistError(RoleDoesNotExistError):
         """The name of the Discord role that does not exist."""  # noqa: D401
         return "Archivist"
 
+class ApplicantRoleDoesNotExistError(RoleDoesNotExistError):
+    """Exception class to raise when the "Applicant" discord role is missing."""
+
+    @classproperty
+    def ERROR_CODE(cls) -> str:  # noqa: N802, N805
+        """The unique error code for users to tell admins about an error that occured."""  # noqa: D401
+        return "E1025"
+
+    @classproperty
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]: # noqa: N802, N805
+        """
+        The set of names of bot commands that require this Discord entity.
+
+        This set being empty could mean thta all bot commands require this entity,
+        or that none of them do.
+        """  # noqa: D401
+        return frozenset({"give_user_applicant_role"})
+
+    @classproperty
+    def ROLE_NAME(cls) -> str: # noqa: N802, N805
+        """The name of the Discord role that does not exist."""  # noqa: D401
+        return "Applicant"
+
 
 class ChannelDoesNotExistError(BaseDoesNotExistError):
     """Exception class to raise when a required Discord channel is missing."""
