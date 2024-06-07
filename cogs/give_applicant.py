@@ -40,7 +40,7 @@ class GiveApplicantCommandCog(TeXBotBaseCog):
                 reason=f"{ctx.user} used TeX Bot User Command \"give_user_applicant_role\"",
             )
 
-    @discord.MessageCommand(name="Give Applicant Role") # type: ignore[no-untyped-call, misc]
+    @discord.MessageCommand(name="Give Applicant Role")
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def give_message_author_applicant_role(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
