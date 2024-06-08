@@ -1,8 +1,8 @@
-"""Contains cog classes for giving the applicant role."""
+"""Contains cog classes for making the user an applicant."""
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ()
+__all__: Sequence[str] = ("BaseMakeApplicantCog","MakeApplicantCommandCog")
 
 import logging
 from logging import Logger
