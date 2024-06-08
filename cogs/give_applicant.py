@@ -80,8 +80,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
         await initial_response.edit(content=":white_check_mark: User inducted successfully.")
 
 
-
-class GiveApplicantCommandCog(BaseMakeApplicantCog):
+class MakeApplicantCommandCog(BaseMakeApplicantCog):
     """Cog class that defines the /make_applicant command."""
 
     @discord.user_command(name="Make User Applicant") #type: ignore[no-untyped-call, misc]
