@@ -83,6 +83,58 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
 class MakeApplicantCommandCog(BaseMakeApplicantCog):
     """Cog class that defines the /make_applicant command."""
 
+    @staticmethod
+    async def autocomplete_get_all_members(ctx: TeXBotApplicationContext) -> set[discord.OptionChoice]: # noqa: E501
+        """
+        Autocomplete callable that generates the set of all members in the server.
+
+        This list of selectable members is used in any of the make_applicant slash commands.
+        """
+        guild: discord.Guild = ctx.bot.main_guild
+
+        members: set[discord.Member] = {member for member in guild.members if not member.bot}
+
+        return {
+            discord.OptionChoice(name=member.name, value=str(member.id))
+            for member
+            in members
+        }
+
+
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+            name="make_user_applicant",
+            description=(
+                "Gives the user @Applicant role and removes the Guest if present."
+            ),
+    )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="user",
+        description="The user to make an Applicant",
+        input_type=str,
+        required=True,
+        parameter_name="str_applicant_member_id",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def make_applicant(self, ctx: TeXBotApplicationContext, str_applicant_member_id: str) -> None:  # noqa: E501
+        """
+        Definition & callback response of the "make_user_applicant" command.
+
+        This command gives the specified user the applicant role while
+        removing the guest role if they have it.
+        """
+        member_id_not_integer_error: ValueError
+        try:
+            applicant_member: discord.Member = await self.bot.get_member_from_str_id(
+                str_applicant_member_id,
+            )
+        except ValueError as member_id_not_integer_error:
+            await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
+            return
+
+        await self._perform_make_applicant(ctx, applicant_member)
+
+
     @discord.user_command(name="Make User Applicant") #type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
