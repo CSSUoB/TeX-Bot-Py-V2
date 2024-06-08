@@ -16,10 +16,10 @@ logger: Logger = logging.getLogger("TeX-Bot")
 class GiveApplicantCommandCog(TeXBotBaseCog):
     """Cog class that defines the /give_applicant command."""
 
-    @discord.user_command(name="Give Applicant Role") #type: ignore[no-untyped-call, misc]
+    @discord.user_command(name="Make User Applicant") #type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def give_user_applicant_role(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None: # noqa: E501
+    async def make_user_applicant(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None: # noqa: E501
         """
         Definition and callback response of the give_user_applicant_role user-context command.
 
@@ -31,21 +31,21 @@ class GiveApplicantCommandCog(TeXBotBaseCog):
 
         await member.add_roles(
             applicant_role,
-            reason=f"{ctx.user} used TeX Bot User Command \"give_user_applicant_role\"",
+            reason=f"{ctx.user} used TeX Bot User Command \"make_user_applicant\"",
         )
 
         if guest_role in member.roles:
             await member.remove_roles(
                 guest_role,
-                reason=f"{ctx.user} used TeX Bot User Command \"give_user_applicant_role\"",
+                reason=f"{ctx.user} used TeX Bot User Command \"make_user_applicant\"",
             )
 
-    @discord.MessageCommand(name="Give Applicant Role") # type: ignore[misc]
+    @discord.MessageCommand(name="Make Message Author Applicant") # type: ignore[misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def give_message_author_applicant_role(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
+    async def make_message_author_applicant(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
         """
-        Definition of the "give_message_author_applicant_role" message-context command.
+        Definition of the "make_message_author_applicant" message-context command.
 
         This command executes the same process as the user context command but will
         also react with a wave emoji to the message that was used.
@@ -94,11 +94,11 @@ class GiveApplicantCommandCog(TeXBotBaseCog):
 
         await member.add_roles(
             applicant_role,
-            reason=f"{ctx.user} used TeX Bot Message Command \"give_user_applicant_role\"",
+            reason=f"{ctx.user} used TeX Bot Message Command \"make_message_author_applicant\"",  # noqa: E501
         )
 
         if guest_role in member.roles:
             await member.remove_roles(
                 guest_role,
-                reason=f"{ctx.user} used TeX Bot User Command \"give_user_applicant_role\"",
+                reason=f"{ctx.user} used TeX Bot Message Command \"make_message_author_applicant\"",  # noqa: E501
             )
