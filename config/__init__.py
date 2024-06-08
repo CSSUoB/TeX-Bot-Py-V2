@@ -16,23 +16,24 @@ __all__: Sequence[str] = (
     "check_for_deprecated_environment_variables",
     "messages",
     "view_single_config_setting_value",
+    "assign_single_config_setting_value",
     "CONFIG_SETTINGS_HELPS",
     "ConfigSettingHelp",
 )
 
 
 import contextlib
+import functools
 import importlib
 import logging
 import os
 from collections.abc import Iterable
 from logging import Logger
-from typing import Final
-
-from strictyaml import YAML
+from typing import Final, Protocol
 
 from exceptions import BotRequiresRestartAfterConfigChange
 
+from . import _settings
 from ._messages import MessagesAccessor
 from ._settings import SettingsAccessor
 from .constants import (
@@ -160,46 +161,19 @@ def check_for_deprecated_environment_variables() -> None:
             raise CONFIGURATION_VIA_ENVIRONMENT_VARIABLES_IS_DEPRECATED_ERROR
 
 
-def _get_scalar_config_setting_value(config_setting_name: str, config_settings: YAML) -> str | None:  # type: ignore[no-any-unimported] # noqa: E501
-    scalar_config_setting: YAML | None = config_settings.get(config_setting_name, None)  # type: ignore[no-any-unimported]
-
-    if scalar_config_setting is None:
-        return scalar_config_setting
-
-    scalar_config_setting_value: object = scalar_config_setting.validator.to_yaml(
-        scalar_config_setting.data,
-    )
-
-    if isinstance(scalar_config_setting_value, str):
-        return scalar_config_setting_value
-
-    if isinstance(scalar_config_setting_value, Iterable):
-        with contextlib.suppress(StopIteration):
-            if not isinstance(next(iter(scalar_config_setting_value)), str):
-                raise TypeError
-
-        return ", ".join(scalar_config_setting_value)
-
-    raise NotImplementedError
+class _SingleSettingValueViewerFunc(Protocol):
+    def __call__(self, config_setting_name: str) -> str | None: ...
 
 
-def _get_mapping_config_setting_value(partial_config_setting_name: str, config_settings: YAML) -> str | None:  # type: ignore[no-any-unimported] # noqa: E501
-    if ":" not in partial_config_setting_name:
-        return _get_scalar_config_setting_value(partial_config_setting_name, config_settings)
-
-    key: str
-    remainder: str
-    key, _, remainder = partial_config_setting_name.partition(":")
-
-    mapping_config_setting: YAML | None = config_settings.get(key, None)  # type: ignore[no-any-unimported]
-
-    if mapping_config_setting is not None and mapping_config_setting.is_mapping():
-        return _get_mapping_config_setting_value(remainder, mapping_config_setting)
-
-    return _get_scalar_config_setting_value(partial_config_setting_name, config_settings)
+class _SingleSettingAssignerFunc(Protocol):
+    def __call__(self, config_setting_name: str) -> None: ...
 
 
-def view_single_config_setting_value(config_setting_name: str) -> str | None:
-    """Return the value of a single configuration setting."""
-    # noinspection PyProtectedMember
-    return _get_mapping_config_setting_value(config_setting_name, settings._most_recent_yaml)  # noqa: SLF001
+view_single_config_setting_value: _SingleSettingValueViewerFunc = functools.partial(
+    _settings.view_single_config_setting_value,
+    settings_accessor=settings
+)
+assign_single_config_setting_value: _SingleSettingAssignerFunc = functools.partial(
+    _settings.assign_single_config_setting_value,
+    settings_accessor=settings
+)

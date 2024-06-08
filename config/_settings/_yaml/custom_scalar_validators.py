@@ -8,6 +8,7 @@ __all__: Sequence[str] = (
     "ProbabilityValidator",
     "TimeDeltaValidator",
     "SendIntroductionRemindersFlagValidator",
+    "CustomBoolValidator",
 )
 
 
@@ -329,3 +330,18 @@ class SendIntroductionRemindersFlagValidator(strictyaml.ScalarValidator):  # typ
             return "false"
 
         return str(data).lower()
+
+
+class CustomBoolValidator(strictyaml.Bool):  # type: ignore[no-any-unimported,misc]
+    @override
+    def to_yaml(self, data: object) -> str:  # type: ignore[misc]
+        if isinstance(data, bool):
+            return "true" if data else "false"
+
+        if str(data).lower() in strictyaml_constants.TRUE_VALUES:
+            return "true"
+
+        if str(data).lower() in strictyaml_constants.FALSE_VALUES:
+            return "false"
+
+        raise YAMLSerializationError("Not a boolean")

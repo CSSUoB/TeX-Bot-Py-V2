@@ -10,7 +10,7 @@ from typing import Final
 import discord
 
 import config
-from config import ConfigSettingHelp
+from config import ConfigSettingHelp, LogLevels
 from utils import (
     CommandChecks,
     TeXBotApplicationContext,
@@ -42,6 +42,20 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             in config.CONFIG_SETTINGS_HELPS
         }
 
+    @staticmethod
+    async def autocomplete_get_example_setting_values(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice | str]:  # noqa: E501
+        """Autocomplete callable that generates example values for a configuration setting."""
+        if not ctx.interaction.user or "setting" not in ctx.options:
+            return set()
+
+        if not await ctx.bot.check_user_has_committee_role(ctx.interaction.user):
+            return set()
+
+        if ":log-level" in ctx.options["setting"]:
+            return set(log_level.value for log_level in LogLevels)
+
+        return {discord.OptionChoice("hi", "hi"), discord.OptionChoice("wow", "wow")}
+
     @change_config.command(
         name="get",
         description="Display the current value of a configuration setting.",
@@ -72,7 +86,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         if isinstance(config_setting_value, str):
             config_setting_value = config_setting_value.strip()
 
-        CONFIG_SETTING_NEEDS_HIDING: Final[bool] = bool(
+        CONFIG_SETTING_IS_SECRET: Final[bool] = bool(
             "token" in config_setting_name
             or "cookie" in config_setting_name
             or "secret" in config_setting_name  # noqa: COM812
@@ -82,17 +96,11 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             (
                 f"`{config_setting_name.replace("`", "\\`")}` "
                 f"{
-                    (
-                        f"**=** {
-                            "||" if CONFIG_SETTING_NEEDS_HIDING else ""
-                        }`{
-                            config_setting_value.replace("`", "\\`")
-                        }`{
-                            "||" if CONFIG_SETTING_NEEDS_HIDING else ""
-                        }"
+                    "**cannot be viewed**." if CONFIG_SETTING_IS_SECRET else (
+                        f"**=** `{config_setting_value.replace("`", "\\`")}`"
+                        if config_setting_value
+                        else "**is not set**."
                     )
-                    if config_setting_value
-                    else "**is not set**."
                 }"
             ),
             ephemeral=True,
@@ -158,6 +166,48 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                     if config_setting_help.default
                     else ""
                 }"
+            ),
+            ephemeral=True,
+        )
+
+    @change_config.command(
+        name="set",
+        description="Assign a new value to the specified configuration setting.",
+    )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="setting",
+        description="The name of the configuration setting to assign a new value to.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_settings_names),  # type: ignore[arg-type]
+        required=True,
+        parameter_name="config_setting_name",
+    )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="value",
+        description="The new value to assign to the specified configuration setting.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_example_setting_values),  # type: ignore[arg-type]
+        required=True,
+        parameter_name="new_config_value",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def set_config_value(self, ctx: TeXBotApplicationContext, config_setting_name: str, new_config_value: str) -> None:  # noqa: E501
+        """Definition & callback response of the "set_config_value" command."""
+        if config_setting_name not in config.CONFIG_SETTINGS_HELPS:
+            await self.command_send_error(
+                ctx,
+                f"Invalid setting: {config_setting_name!r}",
+            )
+            return
+
+        config.assign_single_config_setting_value(config_setting_name)
+
+        await ctx.respond(
+            (
+                f"Successfully updated setting: `{
+                    config_setting_name.replace("`", "\\`")
+                }`."
             ),
             ephemeral=True,
         )

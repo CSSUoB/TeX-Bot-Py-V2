@@ -47,6 +47,7 @@ from .custom_scalar_validators import (
     RegexMatcher,
     SendIntroductionRemindersFlagValidator,
     TimeDeltaValidator,
+    CustomBoolValidator,
 )
 
 _DEFAULT_CONSOLE_LOGGING_SETTINGS: Final[Mapping[str, LogLevels]] = {
@@ -204,7 +205,7 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
                 ),
                 strictyaml.Optional("send-get-roles-reminders", default=_DEFAULT_SEND_GET_ROLES_REMINDERS_SETTINGS): SlugKeyMap(  # noqa: E501
                     {
-                        "enabled": strictyaml.Bool(),
+                        "enabled": CustomBoolValidator(),
                         strictyaml.Optional("delay", default=DEFAULT_SEND_GET_ROLES_REMINDERS_DELAY): (  # noqa: E501
                             TimeDeltaValidator(minutes=True, hours=True, days=True, weeks=True)
                         ),

@@ -67,20 +67,20 @@ class ConfigSettingHelp(NamedTuple):
     required: bool = True
     default: str | None = None
 
-    @classmethod
-    def _selectable_required_format_message(cls, options: Iterable[str]) -> str:
-        return f"Must be one of: `{"`, `".join(options)}`."
 
-    @classmethod
-    def _custom_required_format_message(cls, type_value: str, info_link: str | None = None) -> str:  # noqa: E501
-        return (
-            f"Must be a valid {
-                type_value.lower().replace("discord", "Discord").replace(
-                    "id",
-                    "ID",
-                ).replace("url", "URL").strip(".")
-            }{f" (see <{info_link}>)" if info_link else ""}."
-        )
+def _selectable_required_format_message(options: Iterable[str]) -> str:
+    return f"Must be one of: `{"`, `".join(options)}`."
+
+
+def _custom_required_format_message(type_value: str, info_link: str | None = None) -> str:
+    return (
+        f"Must be a valid {
+            type_value.lower().replace("discord", "Discord").replace(
+                "id",
+                "ID",
+            ).replace("url", "URL").strip(".")
+        }{f" (see <{info_link}>)" if info_link else ""}."
+    )
 
 
 PROJECT_ROOT: Final[Path] = Path(__file__).parent.parent.resolve()
@@ -150,7 +150,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "The minimum level that logs must meet in order to be logged "
             "to the console output stream."
         ),
-        value_type_message=ConfigSettingHelp._selectable_required_format_message(LogLevels),  # noqa: SLF001
+        value_type_message=_selectable_required_format_message(LogLevels),
         required=False,
         default=DEFAULT_CONSOLE_LOG_LEVEL,
     ),
@@ -159,7 +159,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "The minimum level that logs must meet in order to be logged "
             "to the Discord log channel."
         ),
-        value_type_message=ConfigSettingHelp._selectable_required_format_message(LogLevels),  # noqa: SLF001
+        value_type_message=_selectable_required_format_message(LogLevels),
         required=False,
         default=DEFAULT_DISCORD_LOGGING_LOG_LEVEL,
     ),
@@ -169,7 +169,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "Error logs will always be sent to the console, "
             "this setting allows them to also be sent to a Discord log channel."
         ),
-        value_type_message=ConfigSettingHelp._custom_required_format_message(  # noqa: SLF001
+        value_type_message=_custom_required_format_message(
             "Discord webhook URL",
             "https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks",
         ),
@@ -181,7 +181,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "The Discord token for the bot you created "
             "(available on your bot page in the developer portal: <https://discord.com/developers/applications>)."
         ),
-        value_type_message=ConfigSettingHelp._custom_required_format_message(  # noqa: SLF001
+        value_type_message=_custom_required_format_message(
             "Discord bot token",
             "https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts",
         ),
@@ -190,7 +190,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
     ),
     "discord:main-guild-id": ConfigSettingHelp(
         description="The ID of your community group's main Discord guild.",
-        value_type_message=ConfigSettingHelp._custom_required_format_message(  # noqa: SLF001
+        value_type_message=_custom_required_format_message(
             "Discord guild ID",
             "https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id",
         ),
@@ -225,7 +225,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "The link to the page where guests can purchase a full membership "
             "to join your community group."
         ),
-        value_type_message=ConfigSettingHelp._custom_required_format_message("URL"),  # noqa: SLF001
+        value_type_message=_custom_required_format_message("URL"),
         required=False,
         default=None,
     ),
@@ -235,13 +235,13 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "about the perks that they will receive "
             "once they purchase a membership to your community group."
         ),
-        value_type_message=ConfigSettingHelp._custom_required_format_message("URL"),  # noqa: SLF001
+        value_type_message=_custom_required_format_message("URL"),
         required=False,
         default=None,
     ),
     "community-group:links:moderation-document": ConfigSettingHelp(
         description="The link to your group's Discord guild moderation document.",
-        value_type_message=ConfigSettingHelp._custom_required_format_message("URL"),  # noqa: SLF001
+        value_type_message=_custom_required_format_message("URL"),
         required=True,
         default=None,
     ),
@@ -254,7 +254,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "if your members-list is found on the UoB Guild of Students website, "
             "ensure the URL includes the \"sort by groups\" option)."
         ),
-        value_type_message=ConfigSettingHelp._custom_required_format_message("URL"),  # noqa: SLF001
+        value_type_message=_custom_required_format_message("URL"),
         required=True,
         default=None,
     ),
@@ -276,7 +276,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
     ),
     "community-group:members-list:id-format": ConfigSettingHelp(
         description="The format that IDs are stored in within your members-list.",
-        value_type_message=ConfigSettingHelp._custom_required_format_message(  # noqa: SLF001
+        value_type_message=_custom_required_format_message(
             "regex matcher string",
         ),
         required=False,
@@ -287,7 +287,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "The probability that the more rare ping command response will be sent "
             "instead of the normal one."
         ),
-        value_type_message=ConfigSettingHelp._custom_required_format_message(  # noqa: SLF001
+        value_type_message=_custom_required_format_message(
             "float, inclusively between 1 & 0",
         ),
         required=False,
@@ -297,7 +297,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
         description=(
             "The number of days to look over messages sent, to generate statistics data."
         ),
-        value_type_message=ConfigSettingHelp._custom_required_format_message(  # noqa: SLF001
+        value_type_message=_custom_required_format_message(
             "float representing the number of days to look back through",
         ),
         required=False,
@@ -308,7 +308,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "The names of the roles to gather statistics about, "
             "to display in bar chart graphs."
         ),
-        value_type_message=ConfigSettingHelp._custom_required_format_message(  # noqa: SLF001
+        value_type_message=_custom_required_format_message(
             "comma seperated list of strings of role names",
         ),
         required=False,
@@ -318,7 +318,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
         description=(
             "The amount of time to timeout a user when using the **`/strike`** command."
         ),
-        value_type_message=ConfigSettingHelp._custom_required_format_message(  # noqa: SLF001
+        value_type_message=_custom_required_format_message(
             (
                 "string of the seconds, minutes, hours, days or weeks "
                 "to timeout a user (format: `<seconds>s<minutes>m<hours>h<days>d<weeks>w`)"
@@ -336,7 +336,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "(so the offending person *will* be able to see these messages "
             "if a public channel is chosen)."
         ),
-        value_type_message=ConfigSettingHelp._custom_required_format_message(  # noqa: SLF001
+        value_type_message=_custom_required_format_message(
             (
                 "name of a Discord channel in your group's Discord guild, "
                 "or the value `DM` "
@@ -351,7 +351,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
         description=(
             "The locale code used to select the language response messages will be given in."
         ),
-        value_type_message=ConfigSettingHelp._selectable_required_format_message(  # noqa: SLF001
+        value_type_message=_selectable_required_format_message(
             MESSAGES_LOCALE_CODES,
         ),
         required=False,
@@ -363,7 +363,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "that are not inducted, "
             "saying that they need to send an introduction to be allowed access."
         ),
-        value_type_message=ConfigSettingHelp._selectable_required_format_message(  # noqa: SLF001
+        value_type_message=_selectable_required_format_message(
             (
                 str(flag_value).lower()
                 for flag_value
@@ -381,7 +381,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "Is ignored if `reminders:send-introduction-reminders:enabled` **=** `false`.\n"
             "The delay must be longer than or equal to 1 day (in any allowed format)."
         ),
-        value_type_message=ConfigSettingHelp._custom_required_format_message(  # noqa: SLF001
+        value_type_message=_custom_required_format_message(
             (
                 "string of the seconds, minutes, hours, days or weeks "
                 "before the first/only reminder is sent "
@@ -398,7 +398,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "saying that they need to send an introduction to be allowed access.\n"
             "Is ignored if `reminders:send-introduction-reminders:enabled` **=** `false`."
         ),
-        value_type_message=ConfigSettingHelp._custom_required_format_message(  # noqa: SLF001
+        value_type_message=_custom_required_format_message(
             (
                 "string of the seconds, minutes, or hours between reminders "
                 "(format: `<seconds>s<minutes>m<hours>h`)"
@@ -413,7 +413,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "saying that they can get opt-in roles. "
             "(This message will be only sent once per Discord member)."
         ),
-        value_type_message=ConfigSettingHelp._custom_required_format_message(  # noqa: SLF001
+        value_type_message=_custom_required_format_message(
             "boolean value (either `true` or `false`)",
         ),
         required=False,
@@ -426,7 +426,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "Is ignored if `reminders:send-get-roles-reminders:enabled` **=** `false`.\n"
             "The delay must be longer than or equal to 1 day (in any allowed format)."
         ),
-        value_type_message=ConfigSettingHelp._custom_required_format_message(  # noqa: SLF001
+        value_type_message=_custom_required_format_message(
             (
                 "string of the seconds, minutes, hours, days or weeks "
                 "before the first/only reminder is sent "
@@ -445,7 +445,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "the interval is just how often to check for new guests).\n"
             "Is ignored if `reminders:send-get-roles-reminders:enabled` **=** `false`."
         ),
-        value_type_message=ConfigSettingHelp._custom_required_format_message(  # noqa: SLF001
+        value_type_message=_custom_required_format_message(
             (
                 "string of the seconds, minutes, or hours between reminders "
                 "(format: `<seconds>s<minutes>m<hours>h`)"

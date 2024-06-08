@@ -7,17 +7,23 @@ These values are used to configure the functionality of the bot at run-time.
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("SettingsAccessor",)
+__all__: Sequence[str] = (
+    "get_settings_file_path",
+    "SettingsAccessor",
+    "view_single_config_setting_value",
+    "assign_single_config_setting_value",
+)
 
 
 import contextlib
 import logging
 import os
 import re
+from collections.abc import Iterable
 from datetime import timedelta
 from logging import Logger
 from pathlib import Path
-from typing import Any, ClassVar, Final, TextIO
+from typing import Any, ClassVar, Final, Literal, TextIO, overload
 
 from discord_logging.handler import DiscordHandler
 from strictyaml import YAML
@@ -35,7 +41,7 @@ from ._yaml import load_yaml
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
-def _get_settings_file_path() -> Path:
+def get_settings_file_path() -> Path:
     settings_file_not_found_message: str = (
         "No settings file was found. "
         "Please make sure you have created a `tex-bot-deployment.yaml` file."
@@ -153,7 +159,7 @@ class SettingsAccessor:
 
     @classmethod
     def reload(cls) -> None:
-        settings_file_path: Path = _get_settings_file_path()
+        settings_file_path: Path = get_settings_file_path()
         current_yaml: YAML = load_yaml(  # type: ignore[no-any-unimported] # TODO: better error messages when loading yaml
             settings_file_path.read_text(),
             file_name=settings_file_path.name,
@@ -897,3 +903,81 @@ class SettingsAccessor:
         )
 
         return {"reminders:send-get-roles-reminders:interval"}
+
+
+def _get_scalar_config_setting_value(config_setting_name: str, config_settings: YAML) -> str | None:  # type: ignore[no-any-unimported] # noqa: E501
+    scalar_config_setting: YAML | None = config_settings.get(config_setting_name, None)  # type: ignore[no-any-unimported]
+
+    if scalar_config_setting is None:
+        return scalar_config_setting
+
+    scalar_config_setting_value: object = scalar_config_setting.validator.to_yaml(
+        scalar_config_setting.data,
+    )
+
+    if isinstance(scalar_config_setting_value, str):
+        return scalar_config_setting_value
+
+    if isinstance(scalar_config_setting_value, Iterable):
+        with contextlib.suppress(StopIteration):
+            if not isinstance(next(iter(scalar_config_setting_value)), str):
+                raise TypeError
+
+        return ", ".join(scalar_config_setting_value)
+
+    raise NotImplementedError
+
+
+@overload
+def _get_mapping_config_setting_value(partial_config_setting_name: str, config_settings: YAML, *, use_setter: Literal[True]) -> None: ...  # type: ignore[no-any-unimported,misc] # noqa: E501
+
+
+@overload
+def _get_mapping_config_setting_value(partial_config_setting_name: str, config_settings: YAML, *, use_setter: Literal[False]) -> str | None: ...  # type: ignore[no-any-unimported,misc] # noqa: E501
+
+
+@overload
+def _get_mapping_config_setting_value(partial_config_setting_name: str, config_settings: YAML, *, use_setter: bool) -> str | None: ...  # type: ignore[no-any-unimported,misc] # noqa: E501
+
+
+def _get_mapping_config_setting_value(partial_config_setting_name: str, config_settings: YAML, *, use_setter: bool = False) -> str | None:  # type: ignore[no-any-unimported] # noqa: E501
+    if ":" not in partial_config_setting_name:
+        if use_setter:
+            raise NotImplementedError
+
+        return _get_scalar_config_setting_value(partial_config_setting_name, config_settings)
+
+    key: str
+    remainder: str
+    key, _, remainder = partial_config_setting_name.partition(":")
+
+    mapping_config_setting: YAML | None = config_settings.get(key, None)  # type: ignore[no-any-unimported]
+
+    if mapping_config_setting is not None and mapping_config_setting.is_mapping():
+        return _get_mapping_config_setting_value(
+            remainder,
+            mapping_config_setting,
+            use_setter=use_setter,
+        )
+
+    return _get_scalar_config_setting_value(partial_config_setting_name, config_settings)
+
+
+def view_single_config_setting_value(config_setting_name: str, settings_accessor: SettingsAccessor) -> str | None:  # noqa: E501
+    """Return the value of a single configuration setting from the setting tree hierarchy."""
+    # noinspection PyProtectedMember
+    return _get_mapping_config_setting_value(  # noqa: SLF001
+        config_setting_name,
+        settings_accessor._most_recent_yaml,  # noqa: SLF001
+        use_setter=False
+    )
+
+
+def assign_single_config_setting_value(config_setting_name: str, settings_accessor: SettingsAccessor) -> None:  # noqa: E501
+    """Set the value of a single configuration setting within the setting tree hierarchy."""
+    # noinspection PyProtectedMember
+    _get_mapping_config_setting_value(  # noqa: SLF001
+        config_setting_name,
+        settings_accessor._most_recent_yaml,  # noqa: SLF001
+        use_setter=True,
+    )
