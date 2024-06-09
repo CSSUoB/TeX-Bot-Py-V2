@@ -907,6 +907,8 @@ class SettingsAccessor:
         return {"reminders:send-get-roles-reminders:interval"}
 
 
+# TODO: Move to change_config cog
+
 def _get_scalar_config_setting_value(config_setting_name: str, yaml_settings_tree: YAML) -> str | None:  # noqa: E501
     single_yaml_scalar_setting: YAML | None = yaml_settings_tree.get(config_setting_name, None)
 
