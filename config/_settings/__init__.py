@@ -7,91 +7,32 @@ These values are used to configure the functionality of the bot at run-time.
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = (
-    "get_settings_file_path",
-    "SettingsAccessor",
-    "view_single_config_setting_value",
-    "assign_single_config_setting_value",
-)
+__all__: Sequence[str] = ("get_settings_file_path", "SettingsAccessor")
 
 
-import contextlib
+
 import logging
-import os
 import re
 from collections.abc import Iterable, Mapping
 from datetime import timedelta
 from logging import Logger
-from pathlib import Path
 from typing import Any, ClassVar, Final, TextIO, TypeAlias
 
 import strictyaml
+from aiopath import AsyncPath  # noqa: TCH002
 from discord_logging.handler import DiscordHandler
 from strictyaml import YAML
 
-from config.constants import (
-    DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME,
-    PROJECT_ROOT,
-)
-from exceptions import (
-    BotRequiresRestartAfterConfigChange,
-    ChangingSettingWithRequiredSiblingError,
-)
+from config.constants import DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME
+from exceptions import ChangingSettingWithRequiredSiblingError
 
 from . import utils
 from ._yaml import load_yaml
+from .utils import get_settings_file_path
 
 NestedMapping: TypeAlias = Mapping[str, "NestedMapping | str"]
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
-
-
-def get_settings_file_path() -> Path:
-    settings_file_not_found_message: str = (
-        "No settings file was found. "
-        "Please make sure you have created a `tex-bot-deployment.yaml` file."
-    )
-
-    raw_settings_file_path: str | None = (
-        os.getenv("TEX_BOT_SETTINGS_FILE_PATH", None)
-        or os.getenv("TEX_BOT_SETTINGS_FILE", None)
-        or os.getenv("TEX_BOT_SETTINGS_PATH", None)
-        or os.getenv("TEX_BOT_SETTINGS", None)
-        or os.getenv("TEX_BOT_CONFIG_FILE_PATH", None)
-        or os.getenv("TEX_BOT_CONFIG_FILE", None)
-        or os.getenv("TEX_BOT_CONFIG_PATH", None)
-        or os.getenv("TEX_BOT_CONFIG", None)
-        or os.getenv("TEX_BOT_DEPLOYMENT_FILE_PATH", None)
-        or os.getenv("TEX_BOT_DEPLOYMENT_FILE", None)
-        or os.getenv("TEX_BOT_DEPLOYMENT_PATH", None)
-        or os.getenv("TEX_BOT_DEPLOYMENT", None)
-    )
-
-    if raw_settings_file_path:
-        settings_file_not_found_message = (
-            "A path to the settings file location was provided by environment variable, "
-            "however this path does not refer to an existing file."
-        )
-    else:
-        logger.debug(
-            (
-                "Settings file location not supplied by environment variable, "
-                "falling back to `Tex-Bot-deployment.yaml`."
-            ),
-        )
-        raw_settings_file_path = "tex-bot-deployment.yaml"
-        if not (PROJECT_ROOT / raw_settings_file_path).exists():
-            raw_settings_file_path = "tex-bot-settings.yaml"
-
-            if not (PROJECT_ROOT / raw_settings_file_path).exists():
-                raw_settings_file_path = "tex-bot-config.yaml"
-
-    settings_file_path: Path = Path(raw_settings_file_path)
-
-    if not settings_file_path.is_file():
-        raise FileNotFoundError(settings_file_not_found_message)
-
-    return settings_file_path
 
 
 class SettingsAccessor:
@@ -122,8 +63,10 @@ class SettingsAccessor:
             raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
         if self._most_recent_yaml is None:
-            with contextlib.suppress(BotRequiresRestartAfterConfigChange):
-                self.reload()
+            YAML_NOT_LOADED_MESSAGE: Final[str] = (
+                "Configuration cannot be accessed before it is loaded."
+            )
+            raise RuntimeError(YAML_NOT_LOADED_MESSAGE)
 
         if item not in self._settings:
             INVALID_SETTINGS_KEY_MESSAGE: Final[str] = (
@@ -163,10 +106,10 @@ class SettingsAccessor:
             raise KeyError(key_error_message) from None
 
     @classmethod
-    def reload(cls) -> None:
-        settings_file_path: Path = get_settings_file_path()
-        current_yaml: YAML = load_yaml(  # TODO: better error messages when loading yaml
-            settings_file_path.read_text(),
+    async def reload(cls) -> None:
+        settings_file_path: AsyncPath = await utils.get_settings_file_path()
+        current_yaml: YAML = load_yaml(
+            await settings_file_path.read_text(),
             file_name=settings_file_path.name,
         )
 
@@ -253,7 +196,7 @@ class SettingsAccessor:
         """
         CONSOLE_LOGGING_SETTINGS_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
-            or console_logging_settings != cls._most_recent_yaml["logging"]["console"],
+            or console_logging_settings != cls._most_recent_yaml["logging"]["console"]  # noqa: COM812
         )
         if not CONSOLE_LOGGING_SETTINGS_CHANGED:
             return set()
@@ -305,11 +248,11 @@ class SettingsAccessor:
         """
         DISCORD_CHANNEL_LOGGING_SETTINGS_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "DISCORD_LOG_CHANNEL_WEBHOOK_URL" not in cls._settings
             or discord_channel_logging_settings != cls._most_recent_yaml["logging"].get(
                 "discord-channel",
                 None,
-            )
-            or "DISCORD_LOG_CHANNEL_WEBHOOK_URL" not in cls._settings,
+            )  # noqa: COM812
         )
         if not DISCORD_CHANNEL_LOGGING_SETTINGS_CHANGED:
             return set()
@@ -346,13 +289,13 @@ class SettingsAccessor:
                     for key, value
                     in discord_channel_logging_settings.items()
                     if key != "log-level"
-                ),
+                )  # noqa: COM812
             )
             if ONLY_DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED:
                 DISCORD_LOG_CHANNEL_LOG_LEVEL_IS_SAME: Final[bool] = bool(
                     discord_channel_logging_settings["log-level"] == cls._most_recent_yaml[  # type: ignore[index]
                         "logging"
-                    ]["discord-channel"]["log-level"],
+                    ]["discord-channel"]["log-level"]  # noqa: COM812
                 )
                 if DISCORD_LOG_CHANNEL_LOG_LEVEL_IS_SAME:
                     LOG_LEVEL_DIDNT_CHANGE_MESSAGE: Final[str] = (
@@ -400,7 +343,7 @@ class SettingsAccessor:
             or cls._most_recent_yaml["logging"].get("discord-channel", None) is None
             or discord_channel_logging_settings["log-level"] != cls._most_recent_yaml[
                 "logging"
-            ]["discord-channel"]["log-level"],
+            ]["discord-channel"]["log-level"]  # noqa: COM812
         )
         if DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED:
             changed_settings.add("logging:discord-channel:log-level")
@@ -416,8 +359,8 @@ class SettingsAccessor:
         """
         DISCORD_BOT_TOKEN_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
-            or discord_bot_token != cls._most_recent_yaml["discord"]["bot-token"]
-            or "DISCORD_BOT_TOKEN" not in cls._settings,
+            or "DISCORD_BOT_TOKEN" not in cls._settings
+            or discord_bot_token != cls._most_recent_yaml["discord"]["bot-token"]  # noqa: COM812
         )
         if not DISCORD_BOT_TOKEN_CHANGED:
             return set()
@@ -435,8 +378,8 @@ class SettingsAccessor:
         """
         DISCORD_MAIN_GUILD_ID_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
-            or discord_main_guild_id != cls._most_recent_yaml["discord"]["main-guild-id"]
-            or "_DISCORD_MAIN_GUILD_ID" not in cls._settings,
+            or "_DISCORD_MAIN_GUILD_ID" not in cls._settings
+            or discord_main_guild_id != cls._most_recent_yaml["discord"]["main-guild-id"]  # noqa: COM812
         )
         if not DISCORD_MAIN_GUILD_ID_CHANGED:
             return set()
@@ -454,11 +397,11 @@ class SettingsAccessor:
         """
         GROUP_FULL_NAME_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "_GROUP_FULL_NAME" not in cls._settings
             or group_full_name != cls._most_recent_yaml["community-group"].get(
                 "full-name",
                 None,
-            )
-            or "_GROUP_FULL_NAME" not in cls._settings,
+            )  # noqa: COM812
         )
         if not GROUP_FULL_NAME_CHANGED:
             return set()
@@ -480,11 +423,11 @@ class SettingsAccessor:
         """
         GROUP_SHORT_NAME_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "_GROUP_SHORT_NAME" not in cls._settings
             or group_short_name != cls._most_recent_yaml["community-group"].get(
                 "short-name",
                 None,
-            )
-            or "_GROUP_SHORT_NAME" not in cls._settings,
+            )  # noqa: COM812
         )
         if not GROUP_SHORT_NAME_CHANGED:
             return set()
@@ -506,10 +449,10 @@ class SettingsAccessor:
         """
         PURCHASE_MEMBERSHIP_LINK_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "PURCHASE_MEMBERSHIP_LINK" not in cls._settings
             or purchase_membership_link != cls._most_recent_yaml["community-group"][
                 "links"
-            ].get("purchase-membership", None)
-            or "PURCHASE_MEMBERSHIP_LINK" not in cls._settings,
+            ].get("purchase-membership", None)  # noqa: COM812
         )
         if not PURCHASE_MEMBERSHIP_LINK_CHANGED:
             return set()
@@ -531,10 +474,10 @@ class SettingsAccessor:
         """
         MEMBERSHIP_PERKS_LINK_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "MEMBERSHIP_PERKS_LINK" not in cls._settings
             or membership_perks_link != cls._most_recent_yaml["community-group"][
                 "links"
-            ].get("membership-perks", None)
-            or "MEMBERSHIP_PERKS_LINK" not in cls._settings,
+            ].get("membership-perks", None)  # noqa: COM812
         )
         if not MEMBERSHIP_PERKS_LINK_CHANGED:
             return set()
@@ -556,10 +499,10 @@ class SettingsAccessor:
         """
         MODERATION_DOCUMENT_LINK_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "MODERATION_DOCUMENT_LINK" not in cls._settings
             or moderation_document_link != cls._most_recent_yaml["community-group"]["links"][
                 "moderation-document"
-            ]
-            or "MODERATION_DOCUMENT_LINK" not in cls._settings,
+            ]  # noqa: COM812
         )
         if not MODERATION_DOCUMENT_LINK_CHANGED:
             return set()
@@ -577,10 +520,10 @@ class SettingsAccessor:
         """
         MEMBERS_LIST_URL_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "MEMBERS_LIST_URL" not in cls._settings
             or members_list_url != cls._most_recent_yaml["community-group"]["members-list"][
                 "url"
-            ]
-            or "MEMBERS_LIST_URL" not in cls._settings,
+            ]  # noqa: COM812
         )
         if not MEMBERS_LIST_URL_CHANGED:
             return set()
@@ -598,10 +541,10 @@ class SettingsAccessor:
         """
         MEMBERS_LIST_AUTH_SESSION_COOKIE_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "MEMBERS_LIST_AUTH_SESSION_COOKIE" not in cls._settings
             or members_list_auth_session_cookie != cls._most_recent_yaml["community-group"][
                 "members-list"
-            ]["auth-session-cookie"]
-            or "MEMBERS_LIST_AUTH_SESSION_COOKIE" not in cls._settings,
+            ]["auth-session-cookie"]  # noqa: COM812
         )
         if not MEMBERS_LIST_AUTH_SESSION_COOKIE_CHANGED:
             return set()
@@ -621,10 +564,10 @@ class SettingsAccessor:
         """
         MEMBERS_LIST_ID_FORMAT_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "MEMBERS_LIST_ID_FORMAT" not in cls._settings
             or members_list_id_format != cls._most_recent_yaml["community-group"][
                 "members-list"
-            ]["id-format"]
-            or "MEMBERS_LIST_ID_FORMAT" not in cls._settings,
+            ]["id-format"]  # noqa: COM812
         )
         if not MEMBERS_LIST_ID_FORMAT_CHANGED:
             return set()
@@ -642,10 +585,10 @@ class SettingsAccessor:
         """
         PING_COMMAND_EASTER_EGG_PROBABILITY_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "PING_COMMAND_EASTER_EGG_PROBABILITY" not in cls._settings
             or ping_command_easter_egg_probability != cls._most_recent_yaml["commands"][
                 "ping"
-            ]["easter-egg-probability"]
-            or "PING_COMMAND_EASTER_EGG_PROBABILITY" not in cls._settings,
+            ]["easter-egg-probability"]  # noqa: COM812
         )
         if not PING_COMMAND_EASTER_EGG_PROBABILITY_CHANGED:
             return set()
@@ -665,10 +608,10 @@ class SettingsAccessor:
         """
         STATS_COMMAND_LOOKBACK_DAYS_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "STATS_COMMAND_LOOKBACK_DAYS" not in cls._settings
             or stats_command_lookback_days != cls._most_recent_yaml["commands"][
                 "stats"
-            ]["lookback-days"]
-            or "STATS_COMMAND_LOOKBACK_DAYS" not in cls._settings,
+            ]["lookback-days"]  # noqa: COM812
         )
         if not STATS_COMMAND_LOOKBACK_DAYS_CHANGED:
             return set()
@@ -688,10 +631,10 @@ class SettingsAccessor:
         """
         STATS_COMMAND_DISPLAYED_ROLES_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "STATS_COMMAND_DISPLAYED_ROLES" not in cls._settings
             or stats_command_displayed_roles != cls._most_recent_yaml["commands"][
                 "stats"
-            ]["displayed-roles"]
-            or "STATS_COMMAND_DISPLAYED_ROLES" not in cls._settings,
+            ]["displayed-roles"]  # noqa: COM812
         )
         if not STATS_COMMAND_DISPLAYED_ROLES_CHANGED:
             return set()
@@ -709,10 +652,10 @@ class SettingsAccessor:
         """
         STRIKE_COMMAND_TIMEOUT_DURATION_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "STRIKE_COMMAND_TIMEOUT_DURATION" not in cls._settings
             or strike_command_timeout_duration != cls._most_recent_yaml["commands"][
                 "strike"
-            ]["timeout-duration"]
-            or "STRIKE_COMMAND_TIMEOUT_DURATION" not in cls._settings,
+            ]["timeout-duration"]  # noqa: COM812
         )
         if not STRIKE_COMMAND_TIMEOUT_DURATION_CHANGED:
             return set()
@@ -730,10 +673,10 @@ class SettingsAccessor:
         """
         STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION" not in cls._settings
             or strike_performed_manually_warning_location != cls._most_recent_yaml["commands"][
                 "strike"
-            ]["performed-manually-warning-location"]
-            or "STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION" not in cls._settings,
+            ]["performed-manually-warning-location"]  # noqa: COM812
         )
         if not STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_CHANGED:
             return set()
@@ -753,8 +696,8 @@ class SettingsAccessor:
         """
         MESSAGES_LOCALE_CODE_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
-            or messages_locale_code != cls._most_recent_yaml["messages-locale-code"]
-            or "MESSAGES_LOCALE_CODE" not in cls._settings,
+            or "MESSAGES_LOCALE_CODE" not in cls._settings
+            or messages_locale_code != cls._most_recent_yaml["messages-locale-code"]  # noqa: COM812
         )
         if not MESSAGES_LOCALE_CODE_CHANGED:
             return set()
@@ -772,10 +715,10 @@ class SettingsAccessor:
         """
         SEND_INTRODUCTION_REMINDERS_ENABLED_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "SEND_INTRODUCTION_REMINDERS_ENABLED" not in cls._settings
             or send_introduction_reminders_enabled != cls._most_recent_yaml["reminders"][
                 "send-introduction-reminders"
-            ]["enabled"]
-            or "SEND_INTRODUCTION_REMINDERS_ENABLED" not in cls._settings,
+            ]["enabled"]  # noqa: COM812
         )
         if not SEND_INTRODUCTION_REMINDERS_ENABLED_CHANGED:
             return set()
@@ -797,10 +740,10 @@ class SettingsAccessor:
         """
         SEND_INTRODUCTION_REMINDERS_DELAY_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "SEND_INTRODUCTION_REMINDERS_DELAY" not in cls._settings
             or send_introduction_reminders_delay != cls._most_recent_yaml["reminders"][
                 "send-introduction-reminders"
-            ]["delay"]
-            or "SEND_INTRODUCTION_REMINDERS_DELAY" not in cls._settings,
+            ]["delay"]  # noqa: COM812
         )
         if not SEND_INTRODUCTION_REMINDERS_DELAY_CHANGED:
             return set()
@@ -820,10 +763,10 @@ class SettingsAccessor:
         """
         SEND_INTRODUCTION_REMINDERS_INTERVAL_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "SEND_INTRODUCTION_REMINDERS_INTERVAL_SECONDS" not in cls._settings
             or send_introduction_reminders_interval != cls._most_recent_yaml["reminders"][
                 "send-introduction-reminders"
-            ]["interval"]
-            or "SEND_INTRODUCTION_REMINDERS_INTERVAL_SECONDS" not in cls._settings,
+            ]["interval"]  # noqa: COM812
         )
         if not SEND_INTRODUCTION_REMINDERS_INTERVAL_CHANGED:
             return set()
@@ -843,10 +786,10 @@ class SettingsAccessor:
         """
         SEND_GET_ROLES_REMINDERS_ENABLED_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "SEND_GET_ROLES_REMINDERS_ENABLED" not in cls._settings
             or send_get_roles_reminders_enabled != cls._most_recent_yaml["reminders"][
                 "send-get-roles-reminders"
-            ]["enabled"]
-            or "SEND_GET_ROLES_REMINDERS_ENABLED" not in cls._settings,
+            ]["enabled"]  # noqa: COM812
         )
         if not SEND_GET_ROLES_REMINDERS_ENABLED_CHANGED:
             return set()
@@ -869,10 +812,10 @@ class SettingsAccessor:
         """
         SEND_GET_ROLES_REMINDERS_DELAY_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "SEND_GET_ROLES_REMINDERS_DELAY" not in cls._settings
             or send_get_roles_reminders_delay != cls._most_recent_yaml["reminders"][
                 "send-get-roles-reminders"
-            ]["delay"]
-            or "SEND_GET_ROLES_REMINDERS_DELAY" not in cls._settings,
+            ]["delay"]  # noqa: COM812
         )
         if not SEND_GET_ROLES_REMINDERS_DELAY_CHANGED:
             return set()
@@ -892,10 +835,10 @@ class SettingsAccessor:
         """
         SEND_GET_ROLES_REMINDERS_INTERVAL_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
+            or "SEND_GET_ROLES_REMINDERS_INTERVAL_SECONDS" not in cls._settings
             or send_get_roles_reminders_interval != cls._most_recent_yaml["reminders"][
                 "send-get-roles-reminders"
-            ]["interval"]
-            or "SEND_GET_ROLES_REMINDERS_INTERVAL_SECONDS" not in cls._settings,
+            ]["interval"]  # noqa: COM812
         )
         if not SEND_GET_ROLES_REMINDERS_INTERVAL_CHANGED:
             return set()
@@ -906,226 +849,225 @@ class SettingsAccessor:
 
         return {"reminders:send-get-roles-reminders:interval"}
 
+    @classmethod
+    def _get_scalar_value(cls, config_setting_name: str, yaml_settings_tree: YAML) -> str | None:  # type: ignore[misc] # noqa: E501
+        single_yaml_scalar_setting: YAML | None = yaml_settings_tree.get(
+            config_setting_name,
+            None,
+        )
 
-# TODO: Move to change_config cog
+        if single_yaml_scalar_setting is None:
+            return single_yaml_scalar_setting
 
-def _get_scalar_config_setting_value(config_setting_name: str, yaml_settings_tree: YAML) -> str | None:  # noqa: E501
-    single_yaml_scalar_setting: YAML | None = yaml_settings_tree.get(config_setting_name, None)
+        CONFIG_SETTING_HAS_VALID_TYPE: Final[bool] = bool(
+            not single_yaml_scalar_setting.is_mapping()
+            and (
+                single_yaml_scalar_setting.is_scalar()
+                or single_yaml_scalar_setting.is_sequence()
+            )  # noqa: COM812
+        )
+        if not CONFIG_SETTING_HAS_VALID_TYPE:
+            MAPPING_TYPE_MESSAGE: Final[str] = "Got config mapping when scalar expected."
+            raise RuntimeError(MAPPING_TYPE_MESSAGE)
 
-    if single_yaml_scalar_setting is None:
-        return single_yaml_scalar_setting
+        scalar_config_setting_value: object = single_yaml_scalar_setting.validator.to_yaml(
+            single_yaml_scalar_setting.data,
+        )
 
-    CONFIG_SETTING_HAS_VALID_TYPE: Final[bool] = bool(
-        not single_yaml_scalar_setting.is_mapping()
-        and (
-            single_yaml_scalar_setting.is_scalar()
-            or single_yaml_scalar_setting.is_sequence()
-        )  # noqa: COM812
-    )
-    if not CONFIG_SETTING_HAS_VALID_TYPE:
-        MAPPING_TYPE_MESSAGE: Final[str] = "Got config mapping when scalar expected."
-        raise RuntimeError(MAPPING_TYPE_MESSAGE)
+        if isinstance(scalar_config_setting_value, str):
+            if not single_yaml_scalar_setting.is_scalar():
+                SCALAR_TYPE_MESSAGE: Final[str] = (
+                    "Got invalid config type when scalar expected."
+                )
+                raise RuntimeError(SCALAR_TYPE_MESSAGE)
 
-    scalar_config_setting_value: object = single_yaml_scalar_setting.validator.to_yaml(
-        single_yaml_scalar_setting.data,
-    )
+            return scalar_config_setting_value
 
-    if isinstance(scalar_config_setting_value, str):
-        if not single_yaml_scalar_setting.is_scalar():
-            SCALAR_TYPE_MESSAGE: Final[str] = "Got invalid config type when scalar expected."
-            raise RuntimeError(SCALAR_TYPE_MESSAGE)
+        if isinstance(scalar_config_setting_value, Iterable):
+            if not single_yaml_scalar_setting.is_sequence():
+                SEQUENCE_TYPE_MESSAGE: Final[str] = (
+                    "Got invalid config type when sequence expected."
+                )
+                raise RuntimeError(SEQUENCE_TYPE_MESSAGE)
 
-        return scalar_config_setting_value
+            if not all(inner_value.is_scalar() for inner_value in single_yaml_scalar_setting):
+                ONLY_SCALAR_SEQUENCES_SUPPORTED_MESSAGE: Final[str] = (
+                    "Only sequences of scalars are currently supported "
+                    "to be used in configuration."
+                )
+                raise NotImplementedError(ONLY_SCALAR_SEQUENCES_SUPPORTED_MESSAGE)
 
-    if isinstance(scalar_config_setting_value, Iterable):
-        if not single_yaml_scalar_setting.is_sequence():
-            SEQUENCE_TYPE_MESSAGE: Final[str] = (
-                "Got invalid config type when sequence expected."
+            return ",".join(scalar_config_setting_value)
+
+        raise NotImplementedError
+
+    @classmethod
+    def _get_mapping_value(cls, partial_config_setting_name: str, partial_yaml_settings_tree: YAML) -> str | None:  # type: ignore[misc] # noqa: E501
+        if ":" not in partial_config_setting_name:
+            return cls._get_scalar_value(
+                partial_config_setting_name,
+                partial_yaml_settings_tree,
             )
-            raise RuntimeError(SEQUENCE_TYPE_MESSAGE)
 
-        if not all(inner_value.is_scalar() for inner_value in single_yaml_scalar_setting):
-            ONLY_SCALAR_SEQUENCES_SUPPORTED_MESSAGE: Final[str] = (
-                "Only sequences of scalars are currently supported "
-                "to be used in configuration."
-            )
-            raise NotImplementedError(ONLY_SCALAR_SEQUENCES_SUPPORTED_MESSAGE)
-
-        return ",".join(scalar_config_setting_value)
-
-    raise NotImplementedError
-
-
-def _get_mapping_config_setting_value(partial_config_setting_name: str, partial_yaml_settings_tree: YAML) -> str | None:  # noqa: E501
-    if ":" not in partial_config_setting_name:
-        return _get_scalar_config_setting_value(
-            partial_config_setting_name,
-            partial_yaml_settings_tree,
-        )
-
-    key: str
-    remainder: str
-    key, _, remainder = partial_config_setting_name.partition(":")
-
-    single_yaml_mapping_setting: YAML | None = partial_yaml_settings_tree.get(key, None)
-
-    if single_yaml_mapping_setting is not None and single_yaml_mapping_setting.is_mapping():
-        return _get_mapping_config_setting_value(remainder, single_yaml_mapping_setting)
-
-    return _get_scalar_config_setting_value(
-        partial_config_setting_name,
-        partial_yaml_settings_tree,
-    )
-
-
-def view_single_config_setting_value(config_setting_name: str, settings_accessor: SettingsAccessor) -> str | None:  # noqa: E501
-    """Return the value of a single configuration setting from the setting tree hierarchy."""
-    # noinspection PyProtectedMember
-    current_yaml: YAML | None = settings_accessor._most_recent_yaml  # noqa: SLF001
-    if current_yaml is None:
-        YAML_NOT_LOADED_MESSAGE: Final[str] = (
-            "Invalid state: Config YAML has not yet been loaded."
-        )
-        raise RuntimeError(YAML_NOT_LOADED_MESSAGE)
-
-    # noinspection PyProtectedMember
-    return _get_mapping_config_setting_value(config_setting_name, current_yaml)
-
-
-def _set_scalar_or_sequence_config_setting_value(config_setting_name: str, new_config_setting_value: str, yaml_settings_tree: YAML) -> YAML:  # noqa: E501
-    if config_setting_name not in yaml_settings_tree:
-        yaml_settings_tree[config_setting_name] = new_config_setting_value
-        return yaml_settings_tree
-
-    if yaml_settings_tree[config_setting_name].is_mapping():
-        INVALID_MAPPING_CONFIG_TYPE_MESSAGE: Final[str] = (
-            "Got incongruent YAML object. Expected sequence or scalar, got mapping."
-        )
-        raise TypeError(INVALID_MAPPING_CONFIG_TYPE_MESSAGE)
-
-    if yaml_settings_tree[config_setting_name].is_scalar():
-        yaml_settings_tree[config_setting_name] = new_config_setting_value
-        return yaml_settings_tree
-
-    if yaml_settings_tree[config_setting_name].is_sequence():
-        yaml_settings_tree[config_setting_name] = [
-            sequence_value.strip()
-            for sequence_value
-            in new_config_setting_value.strip().split(",")
-        ]
-        return yaml_settings_tree
-
-    UNKNOWN_CONFIG_TYPE_MESSAGE: Final[str] = (
-        "Unknown YAML object type. Expected sequence or scalar."
-    )
-    raise RuntimeError(UNKNOWN_CONFIG_TYPE_MESSAGE)
-
-
-def _set_mapping_config_setting_value(partial_config_setting_name: str, new_config_setting_value: str, partial_yaml_settings_tree: YAML) -> YAML:  # noqa: E501
-    if ":" not in partial_config_setting_name:
-        return _set_scalar_or_sequence_config_setting_value(
-            partial_config_setting_name,
-            new_config_setting_value,
-            partial_yaml_settings_tree,
-        )
-
-    key: str
-    remainder: str
-    key, _, remainder = partial_config_setting_name.partition(":")
-
-    if key not in partial_yaml_settings_tree:
-        partial_yaml_settings_tree[key] = _set_required_value_from_validator_config(
-            remainder if ":" in partial_config_setting_name else None,
-            new_config_setting_value,
-            partial_yaml_settings_tree.validator.get_validator(key),
-        )
-        return partial_yaml_settings_tree
-
-    if partial_yaml_settings_tree[key].is_mapping():
-        partial_yaml_settings_tree[key] = _set_mapping_config_setting_value(
-            remainder,
-            new_config_setting_value,
-            partial_yaml_settings_tree[key],
-        )
-        return partial_yaml_settings_tree
-
-    return _set_scalar_or_sequence_config_setting_value(
-        partial_config_setting_name,
-        new_config_setting_value,
-        partial_yaml_settings_tree,
-    )
-
-
-def _set_required_value_from_validator_config(partial_config_setting_name: str | None, new_config_setting_value: str, yaml_validator: strictyaml.Validator) -> "NestedMapping | str | Sequence[str]":  # noqa: E501
-    VALIDATOR_IS_SCALAR_TYPE: Final[bool] = bool(
-        isinstance(yaml_validator, strictyaml.ScalarValidator)
-        and (partial_config_setting_name is None or ":" not in partial_config_setting_name)  # noqa: COM812
-    )
-    if VALIDATOR_IS_SCALAR_TYPE:
-        return new_config_setting_value
-
-    VALIDATOR_IS_SEQUENCE_TYPE: Final[bool] = bool(
-        isinstance(yaml_validator, strictyaml.validators.SeqValidator)
-        and (partial_config_setting_name is None or ":" not in partial_config_setting_name)  # noqa: COM812
-    )
-    if VALIDATOR_IS_SEQUENCE_TYPE:
-        return [
-            sequence_value.strip()
-            for sequence_value
-            in new_config_setting_value.strip().split(",")
-        ]
-
-    VALIDATOR_IS_MAPPING_TYPE: Final[bool] = bool(
-        isinstance(yaml_validator, strictyaml.validators.MapValidator)
-        and hasattr(yaml_validator, "_required_keys")
-        and partial_config_setting_name is not None  # noqa: COM812
-    )
-    if VALIDATOR_IS_MAPPING_TYPE:
         key: str
         remainder: str
-        key, _, remainder = partial_config_setting_name.partition(":")  # type: ignore[union-attr]
+        key, _, remainder = partial_config_setting_name.partition(":")
 
-        # noinspection PyProtectedMember,PyUnresolvedReferences
-        if set(yaml_validator._required_keys) - {key}:  # noqa: SLF001
-            raise ChangingSettingWithRequiredSiblingError
+        single_yaml_mapping_setting: YAML | None = partial_yaml_settings_tree.get(key, None)
 
-        # noinspection PyUnresolvedReferences
-        return {
-            key: _set_required_value_from_validator_config(  # type: ignore[dict-item]
-                remainder if ":" in partial_config_setting_name else None,  # type: ignore[operator]
+        YAML_CHILD_IS_MAPPING: Final[bool] = bool(
+            single_yaml_mapping_setting is not None
+            and single_yaml_mapping_setting.is_mapping(),
+        )
+        if YAML_CHILD_IS_MAPPING:
+            return cls._get_mapping_value(remainder, single_yaml_mapping_setting)
+
+        return cls._get_scalar_value(partial_config_setting_name, partial_yaml_settings_tree)
+
+    @classmethod
+    def view_single_raw_value(cls, config_setting_name: str) -> str | None:
+        """Return the value of a single configuration setting from settings tree hierarchy."""
+        current_yaml: YAML | None = cls._most_recent_yaml
+        if current_yaml is None:
+            YAML_NOT_LOADED_MESSAGE: Final[str] = (
+                "Invalid state: Config YAML has not yet been loaded."
+            )
+            raise RuntimeError(YAML_NOT_LOADED_MESSAGE)
+
+        return cls._get_mapping_value(config_setting_name, current_yaml)
+
+    @classmethod
+    def _set_scalar_or_sequence_value(cls, config_setting_name: str, new_config_setting_value: str, yaml_settings_tree: YAML) -> YAML:  # type: ignore[misc] # noqa: E501
+        if config_setting_name not in yaml_settings_tree:
+            yaml_settings_tree[config_setting_name] = new_config_setting_value
+            return yaml_settings_tree
+
+        if yaml_settings_tree[config_setting_name].is_mapping():
+            INVALID_MAPPING_CONFIG_TYPE_MESSAGE: Final[str] = (
+                "Got incongruent YAML object. Expected sequence or scalar, got mapping."
+            )
+            raise TypeError(INVALID_MAPPING_CONFIG_TYPE_MESSAGE)
+
+        if yaml_settings_tree[config_setting_name].is_scalar():
+            yaml_settings_tree[config_setting_name] = new_config_setting_value
+            return yaml_settings_tree
+
+        if yaml_settings_tree[config_setting_name].is_sequence():
+            yaml_settings_tree[config_setting_name] = [
+                sequence_value.strip()
+                for sequence_value
+                in new_config_setting_value.strip().split(",")
+            ]
+            return yaml_settings_tree
+
+        UNKNOWN_CONFIG_TYPE_MESSAGE: Final[str] = (
+            "Unknown YAML object type. Expected sequence or scalar."
+        )
+        raise RuntimeError(UNKNOWN_CONFIG_TYPE_MESSAGE)
+
+    @classmethod
+    def _set_mapping_value(cls, partial_config_setting_name: str, new_config_setting_value: str, partial_yaml_settings_tree: YAML) -> YAML:  # type: ignore[misc] # noqa: E501
+        if ":" not in partial_config_setting_name:
+            return cls._set_scalar_or_sequence_value(
+                partial_config_setting_name,
                 new_config_setting_value,
-                yaml_validator.get_validator(key),
-            ),
-        }
+                partial_yaml_settings_tree,
+            )
 
-    UNKNOWN_CONFIG_TYPE_MESSAGE: Final[str] = (
-        "Unknown YAML validator type. Expected mapping, sequence or scalar."
-    )
-    raise RuntimeError(UNKNOWN_CONFIG_TYPE_MESSAGE)
+        key: str
+        remainder: str
+        key, _, remainder = partial_config_setting_name.partition(":")
 
+        if key not in partial_yaml_settings_tree:
+            partial_yaml_settings_tree[key] = cls._set_required_value_from_validator(
+                remainder if ":" in partial_config_setting_name else None,
+                new_config_setting_value,
+                partial_yaml_settings_tree.validator.get_validator(key),
+            )
+            return partial_yaml_settings_tree
 
-def assign_single_config_setting_value(config_setting_name: str, new_config_setting_value: str, settings_accessor: SettingsAccessor) -> None:  # noqa: E501
-    """Set the value of a single configuration setting within the setting tree hierarchy."""
-    # noinspection PyProtectedMember
-    current_yaml: YAML | None = settings_accessor._most_recent_yaml  # noqa: SLF001
-    if current_yaml is None:
-        YAML_NOT_LOADED_MESSAGE: Final[str] = (
-            "Invalid state: Config YAML has not yet been loaded."
-        )
-        raise RuntimeError(YAML_NOT_LOADED_MESSAGE)
+        if partial_yaml_settings_tree[key].is_mapping():
+            partial_yaml_settings_tree[key] = cls._set_mapping_value(
+                remainder,
+                new_config_setting_value,
+                partial_yaml_settings_tree[key],
+            )
+            return partial_yaml_settings_tree
 
-    config_setting_error: ChangingSettingWithRequiredSiblingError
-    try:
-        settings_accessor = _set_mapping_config_setting_value(
-            config_setting_name,
+        return cls._set_scalar_or_sequence_value(
+            partial_config_setting_name,
             new_config_setting_value,
-            current_yaml,
+            partial_yaml_settings_tree,
         )
-    except ChangingSettingWithRequiredSiblingError as config_setting_error:
-        raise type(config_setting_error)(
-            config_setting_name=config_setting_name,
-        ) from config_setting_error
 
-    print(settings_accessor.as_yaml())
+    @classmethod
+    def _set_required_value_from_validator(cls, partial_config_setting_name: str | None, new_config_setting_value: str, yaml_validator: strictyaml.Validator) -> "NestedMapping | str | Sequence[str]":  # type: ignore[misc] # noqa: E501
+        VALIDATOR_IS_SCALAR_TYPE: Final[bool] = bool(
+            isinstance(yaml_validator, strictyaml.ScalarValidator)
+            and (partial_config_setting_name is None or ":" not in partial_config_setting_name)  # noqa: COM812
+        )
+        if VALIDATOR_IS_SCALAR_TYPE:
+            return new_config_setting_value
 
-    # TODO: save yaml
+        VALIDATOR_IS_SEQUENCE_TYPE: Final[bool] = bool(
+            isinstance(yaml_validator, strictyaml.validators.SeqValidator)
+            and (partial_config_setting_name is None or ":" not in partial_config_setting_name)  # noqa: COM812
+        )
+        if VALIDATOR_IS_SEQUENCE_TYPE:
+            return [
+                sequence_value.strip()
+                for sequence_value
+                in new_config_setting_value.strip().split(",")
+            ]
+
+        VALIDATOR_IS_MAPPING_TYPE: Final[bool] = bool(
+            isinstance(yaml_validator, strictyaml.validators.MapValidator)
+            and hasattr(yaml_validator, "_required_keys")
+            and partial_config_setting_name is not None  # noqa: COM812
+        )
+        if VALIDATOR_IS_MAPPING_TYPE:
+            key: str
+            remainder: str
+            key, _, remainder = partial_config_setting_name.partition(":")  # type: ignore[union-attr]
+
+            # noinspection PyProtectedMember,PyUnresolvedReferences
+            if set(yaml_validator._required_keys) - {key}:  # noqa: SLF001
+                raise ChangingSettingWithRequiredSiblingError
+
+            # noinspection PyUnresolvedReferences
+            return {
+                key: cls._set_required_value_from_validator(  # type: ignore[dict-item]
+                    remainder if ":" in partial_config_setting_name else None,  # type: ignore[operator]
+                    new_config_setting_value,
+                    yaml_validator.get_validator(key),
+                ),
+            }
+
+        UNKNOWN_CONFIG_TYPE_MESSAGE: Final[str] = (
+            "Unknown YAML validator type. Expected mapping, sequence or scalar."
+        )
+        raise RuntimeError(UNKNOWN_CONFIG_TYPE_MESSAGE)
+
+    @classmethod
+    async def assign_single_raw_value(cls, config_setting_name: str, new_config_setting_value: str) -> None:  # noqa: E501
+        """Set the value of a single configuration setting within settings tree hierarchy."""
+        current_yaml: YAML | None = cls._most_recent_yaml
+        if current_yaml is None:
+            YAML_NOT_LOADED_MESSAGE: Final[str] = (
+                "Invalid state: Config YAML has not yet been loaded."
+            )
+            raise RuntimeError(YAML_NOT_LOADED_MESSAGE)
+
+        config_setting_error: ChangingSettingWithRequiredSiblingError
+        try:
+            current_yaml = cls._set_mapping_value(
+                config_setting_name,
+                new_config_setting_value,
+                current_yaml,
+            )
+        except ChangingSettingWithRequiredSiblingError as config_setting_error:
+            raise type(config_setting_error)(
+                config_setting_name=config_setting_name,
+            ) from config_setting_error
+
+        await (await utils.get_settings_file_path()).write_text(current_yaml.as_yaml())

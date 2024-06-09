@@ -117,12 +117,20 @@ class InductSendMessageCog(TeXBotBaseCog):
                 await after.send(
                     f"You can also get yourself an annual membership "
                     f"to {self.bot.group_full_name} for only £5! "
-                    f"""Just head to {settings["PURCHASE_MEMBERSHIP_LINK"]}. """
+                    f"{
+                        f"Just head to {settings["PURCHASE_MEMBERSHIP_LINK"]}. "
+                        if settings["PURCHASE_MEMBERSHIP_LINK"]
+                        else ""
+                    }"
                     "You'll get awesome perks like a free T-shirt:shirt:, "
                     "access to member only events:calendar_spiral: "
-                    f"& a cool green name on the {self.bot.group_short_name} Discord server"
+                    f"and a cool green name on the {self.bot.group_short_name} Discord server"
                     ":green_square:! "
-                    f"Checkout all the perks at {settings["MEMBERSHIP_PERKS_LINKS"]}",
+                    f"{
+                        f"Checkout all the perks at {settings["MEMBERSHIP_PERKS_LINK"]}"
+                        if settings["MEMBERSHIP_PERKS_LINK"]
+                        else ""
+                    }",
                 )
         except discord.Forbidden:
             logger.info(

@@ -129,7 +129,6 @@ DEFAULT_SEND_GET_ROLES_REMINDERS_ENABLED: Final[bool] = True
 DEFAULT_SEND_GET_ROLES_REMINDERS_DELAY: Final[str] = "40h"
 DEFAULT_SEND_GET_ROLES_REMINDERS_INTERVAL: Final[str] = "6h"
 
-# noinspection PyProtectedMember
 CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
     "logging:console:log-level": ConfigSettingHelp(
         description=(

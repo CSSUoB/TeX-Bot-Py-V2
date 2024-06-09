@@ -48,7 +48,16 @@ class CommandErrorCog(TeXBotBaseCog):
                             str(error.original).startswith("\"")
                             or str(error.original).startswith("'")
                         )
-                        else error.original
+                        else (
+                            f"{
+                                f"{error.original.__class__.__name__}: "
+                                if isinstance(
+                                    error.original,
+                                    RuntimeError | NotImplementedError,
+                                )
+                                else ""
+                            }{error.original}"
+                        )
                     )
                 )
             )
@@ -80,23 +89,31 @@ class CommandErrorCog(TeXBotBaseCog):
             logging_message=logging_message,
         )
 
-        if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(error.original, GuildDoesNotExistError):  # noqa: E501
-            command_name: str = (
-                ctx.command.callback.__name__
-                if (hasattr(ctx.command, "callback")
-                    and not ctx.command.callback.__name__.startswith("_"))
-                else ctx.command.qualified_name
-            )
-            logger.critical(
-                " ".join(
-                    message_part
-                    for message_part
-                    in (
-                        error.original.ERROR_CODE,
-                        f"({command_name})" if command_name in self.ERROR_ACTIVITIES else "",
-                        str(error.original).rstrip(".:"),
-                    )
-                    if message_part
-                ),
-            )
-            await self.bot.close()
+        if isinstance(error, discord.ApplicationCommandInvokeError):
+            if isinstance(error.original, RuntimeError | NotImplementedError):
+                await self.bot.close()
+
+            elif isinstance(error.original, GuildDoesNotExistError):
+                command_name: str = (
+                    ctx.command.callback.__name__
+                    if (hasattr(ctx.command, "callback")
+                        and not ctx.command.callback.__name__.startswith("_"))
+                    else ctx.command.qualified_name
+                )
+                logger.critical(
+                    " ".join(
+                        message_part
+                        for message_part
+                        in (
+                            error.original.ERROR_CODE,
+                            (
+                                f"({command_name})"
+                                if command_name in self.ERROR_ACTIVITIES
+                                else ""
+                            ),
+                            str(error.original).rstrip(".:"),
+                        )
+                        if message_part
+                    ),
+                )
+                await self.bot.close()

@@ -5,12 +5,11 @@ __all__: Sequence[str] = ("MessagesAccessor",)
 
 import json
 import re
-from typing import TYPE_CHECKING, Any, ClassVar, Final
+from typing import Any, ClassVar, Final
+
+from aiopath import AsyncPath
 
 from config.constants import MESSAGES_LOCALE_CODES, PROJECT_ROOT
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 
 class MessagesAccessor:
@@ -61,7 +60,7 @@ class MessagesAccessor:
             raise KeyError(key_error_message) from None
 
     @classmethod
-    def load(cls, messages_locale_code: str) -> None:
+    async def load(cls, messages_locale_code: str) -> None:
         if messages_locale_code not in MESSAGES_LOCALE_CODES:
             INVALID_MESSAGES_LOCALE_CODE_MESSAGE: Final[str] = (
                 f"{"messages_locale_code"!r} must be one of "
@@ -78,21 +77,22 @@ class MessagesAccessor:
         )
 
         try:
-            messages_locale_file_path: Path = next(
+            # noinspection PyTypeChecker
+            messages_locale_file_path: AsyncPath = await anext(
                 path
-                for path
-                in (PROJECT_ROOT / "config/_messages/locales/").iterdir()
+                async for path
+                in (AsyncPath(PROJECT_ROOT) / "config/_messages/locales/").iterdir()
                 if path.stem == messages_locale_code
             )
         except StopIteration:
             raise NO_MESSAGES_FILE_FOUND_ERROR from None
 
-        if not messages_locale_file_path.is_file():
+        if not await messages_locale_file_path.is_file():
             raise NO_MESSAGES_FILE_FOUND_ERROR
 
         messages_load_error: Exception
         try:
-            raw_messages: object = json.loads(messages_locale_file_path.read_text())
+            raw_messages: object = json.loads(await messages_locale_file_path.read_text())
 
             if not hasattr(raw_messages, "__getitem__"):
                 raise TypeError

@@ -15,24 +15,26 @@ __all__: Sequence[str] = (
     "settings",
     "check_for_deprecated_environment_variables",
     "messages",
-    "view_single_config_setting_value",
-    "assign_single_config_setting_value",
     "CONFIG_SETTINGS_HELPS",
     "ConfigSettingHelp",
+    "get_settings_file_path",
+    "view_single_config_setting_value",
+    "assign_single_config_setting_value",
 )
 
 
-import functools
 import importlib
 import logging
 import os
 from collections.abc import Iterable
 from logging import Logger
-from typing import Final, Protocol
+from typing import Final
 
-from . import _settings
-from ._messages import MessagesAccessor
-from ._settings import SettingsAccessor
+from asgiref.sync import async_to_sync
+
+from ._messages import MessagesAccessor as _MessagesAccessor
+from ._settings import SettingsAccessor as _SettingsAccessor
+from ._settings import get_settings_file_path, utils
 from .constants import (
     CONFIG_SETTINGS_HELPS,
     MESSAGES_LOCALE_CODES,
@@ -43,17 +45,16 @@ from .constants import (
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
-settings: Final[SettingsAccessor] = SettingsAccessor()
-messages: Final[MessagesAccessor] = MessagesAccessor()
+settings: Final[_SettingsAccessor] = _SettingsAccessor()
+messages: Final[_MessagesAccessor] = _MessagesAccessor()
 
 
 def run_setup() -> None:
     """Execute the setup functions required, before other modules can be run."""
     check_for_deprecated_environment_variables()
 
-    settings.reload()
-
-    messages.load(settings["MESSAGES_LOCALE_CODE"])
+    async_to_sync(settings.reload)()
+    async_to_sync(messages.load)(settings["MESSAGES_LOCALE_CODE"])
 
     logger.debug("Begin database setup")
 
@@ -67,6 +68,12 @@ def run_setup() -> None:
 
 def check_for_deprecated_environment_variables() -> None:
     """Raise an error if the old method of configuration (environment variables) is used."""
+    if utils.is_running_in_async():
+        RUNNING_IN_ASYNC_MESSAGE: Final[str] = (
+            "Cannot check for deprecated environment variables while TeX-Bot is running."
+        )
+        raise RuntimeError(RUNNING_IN_ASYNC_MESSAGE)
+
     CONFIGURATION_VIA_ENVIRONMENT_VARIABLES_IS_DEPRECATED_ERROR: Final[DeprecationWarning] = (
         DeprecationWarning(
             (
@@ -157,19 +164,14 @@ def check_for_deprecated_environment_variables() -> None:
             raise CONFIGURATION_VIA_ENVIRONMENT_VARIABLES_IS_DEPRECATED_ERROR
 
 
-class _SingleSettingValueViewerFunc(Protocol):
-    def __call__(self, config_setting_name: str) -> str | None: ...
+def view_single_config_setting_value(config_setting_name: str) -> str | None:
+    """Return the value of a single configuration setting from settings tree hierarchy."""
+    return settings.view_single_raw_value(config_setting_name=config_setting_name)
 
 
-class _SingleSettingAssignerFunc(Protocol):
-    def __call__(self, config_setting_name: str, new_config_setting_value: str) -> None: ...
-
-
-view_single_config_setting_value: _SingleSettingValueViewerFunc = functools.partial(
-    _settings.view_single_config_setting_value,
-    settings_accessor=settings,
-)
-assign_single_config_setting_value: _SingleSettingAssignerFunc = functools.partial(
-    _settings.assign_single_config_setting_value,
-    settings_accessor=settings,
-)
+async def assign_single_config_setting_value(config_setting_name: str, new_config_setting_value: str) -> None:  # noqa: E501
+    """Set the value of a single configuration setting within settings tree hierarchy."""
+    return await settings.assign_single_raw_value(
+        config_setting_name=config_setting_name,
+        new_config_setting_value=new_config_setting_value,
+    )

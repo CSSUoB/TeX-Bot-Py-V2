@@ -147,7 +147,6 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             config_setting_name
         ]
 
-        # noinspection PyProtectedMember
         await ctx.respond(
             (
                 f"## `{
@@ -220,7 +219,10 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         yaml_error: StrictYAMLError
         changing_setting_error: ChangingSettingWithRequiredSiblingError
         try:
-            config.assign_single_config_setting_value(config_setting_name, new_config_value)
+            await config.assign_single_config_setting_value(
+                config_setting_name,
+                new_config_value,
+            )
         except StrictYAMLError as yaml_error:
             if str(yaml_error) != yaml_error.context:
                 INCONCLUSIVE_YAML_ERROR_MESSAGE: Final[str] = (
