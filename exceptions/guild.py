@@ -7,6 +7,9 @@ __all__: Sequence[str] = (
     "EveryoneRoleCouldNotBeRetrievedError",
 )
 
+
+from typing import override
+
 from classproperties import classproperty
 
 from .base import BaseErrorWithErrorCode, BaseTeXBotError
@@ -17,7 +20,8 @@ class DiscordMemberNotInMainGuildError(BaseTeXBotError, ValueError):
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802,N805
+    @override
+    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
         """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
         return "Given user ID does not represent any member of your group's Discord guild."
 
@@ -33,12 +37,14 @@ class EveryoneRoleCouldNotBeRetrievedError(BaseErrorWithErrorCode, ValueError):
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802,N805
+    @override
+    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
         """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
         return "The reference to the \"@everyone\" role could not be correctly retrieved."
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def ERROR_CODE(cls) -> str:  # noqa: N802,N805
+    @override
+    def ERROR_CODE(cls) -> str:  # noqa: N805
         """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
         return "E1042"

@@ -37,10 +37,19 @@ class CommandErrorCog(TeXBotBaseCog):
         if isinstance(error, discord.ApplicationCommandInvokeError):
             message = None
             logging_message = (
-                None if isinstance(error.original, GuildDoesNotExistError) else (
-                    error.original
-                    if str(error.original).strip()
-                    else f"{error.original.__class__.__name__} was raised."
+                None
+                if isinstance(error.original, GuildDoesNotExistError)
+                else (
+                    f"{error.original.__class__.__name__} was raised."
+                    if not str(error.original).strip(". -\"'")
+                    else (
+                        f"{error.original.__class__.__name__}: {error.original}"
+                        if (
+                            str(error.original).startswith("\"")
+                            or str(error.original).startswith("'")
+                        )
+                        else error.original
+                    )
                 )
             )
 

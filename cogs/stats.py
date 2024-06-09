@@ -8,6 +8,7 @@ __all__: Sequence[str] = ("amount_of_time_formatter", "plot_bar_chart", "StatsCo
 import io
 import math
 import re
+from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING, Final
 
 import discord
@@ -220,7 +221,7 @@ class StatsCommandsCog(TeXBotBaseCog):
             if discord.utils.get(guild.roles, name=role_name):
                 message_counts[f"@{role_name}"] = 0
 
-        message_history_period: discord.iterators.HistoryIterator = channel.history(
+        message_history_period: AsyncIterable[discord.Message] = channel.history(
             after=discord.utils.utcnow() - settings["STATISTICS_DAYS"],
         )
         message: discord.Message
@@ -326,7 +327,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
             message_counts["channels"][f"#{channel.name}"] = 0
 
-            message_history_period: discord.iterators.HistoryIterator = channel.history(
+            message_history_period: AsyncIterable[discord.Message] = channel.history(
                 after=discord.utils.utcnow() - settings["STATISTICS_DAYS"],
             )
             message: discord.Message
@@ -463,7 +464,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
             message_counts[f"#{channel.name}"] = 0
 
-            message_history_period: discord.iterators.HistoryIterator = channel.history(
+            message_history_period: AsyncIterable[discord.Message] = channel.history(
                 after=discord.utils.utcnow() - settings["STATISTICS_DAYS"],
             )
             message: discord.Message

@@ -40,6 +40,7 @@ from config.constants import (
 
 from .custom_map_validator import SlugKeyMap
 from .custom_scalar_validators import (
+    CustomBoolValidator,
     DiscordSnowflakeValidator,
     DiscordWebhookURLValidator,
     LogLevelValidator,
@@ -47,7 +48,6 @@ from .custom_scalar_validators import (
     RegexMatcher,
     SendIntroductionRemindersFlagValidator,
     TimeDeltaValidator,
-    CustomBoolValidator,
 )
 
 _DEFAULT_CONSOLE_LOGGING_SETTINGS: Final[Mapping[str, LogLevels]] = {
@@ -87,7 +87,7 @@ _DEFAULT_REMINDERS_SETTINGS: Final[Mapping[str, Mapping[str, bool | str] | Mappi
     "send-get-roles-reminders": _DEFAULT_SEND_GET_ROLES_REMINDERS_SETTINGS,
 }
 
-SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[no-any-unimported]
+SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(
     {
         strictyaml.Optional("logging", default=_DEFAULT_LOGGING_SETTINGS): SlugKeyMap(
             {
@@ -220,8 +220,8 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(  # type: ignore[
 )
 
 
-def load_yaml(raw_yaml: str, file_name: str = "tex-bot-deployment.yaml") -> YAML:  # type: ignore[no-any-unimported]
-    parsed_yaml: YAML = strictyaml.load(raw_yaml, SETTINGS_YAML_SCHEMA, label=file_name)  # type: ignore[no-any-unimported]
+def load_yaml(raw_yaml: str, file_name: str = "tex-bot-deployment.yaml") -> YAML:
+    parsed_yaml: YAML = strictyaml.load(raw_yaml, SETTINGS_YAML_SCHEMA, label=file_name)
 
     # noinspection SpellCheckingInspection
     if "guildofstudents" in parsed_yaml["community-group"]["members-list"]["url"]:

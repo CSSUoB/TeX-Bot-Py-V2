@@ -8,9 +8,11 @@ __all__: Sequence[str] = ("ConfigChangeCommandsCog",)
 from typing import Final
 
 import discord
+from strictyaml import StrictYAMLError
 
 import config
-from config import ConfigSettingHelp, LogLevels
+from config import CONFIG_SETTINGS_HELPS, ConfigSettingHelp, LogLevels
+from exceptions import ChangingSettingWithRequiredSiblingError
 from utils import (
     CommandChecks,
     TeXBotApplicationContext,
@@ -45,16 +47,19 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     @staticmethod
     async def autocomplete_get_example_setting_values(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice | str]:  # noqa: E501
         """Autocomplete callable that generates example values for a configuration setting."""
-        if not ctx.interaction.user or "setting" not in ctx.options:
+        HAS_CONTEXT: Final[bool] = bool(
+            ctx.interaction.user and "setting" in ctx.options and ctx.options["setting"],
+        )
+        if not HAS_CONTEXT:
             return set()
 
-        if not await ctx.bot.check_user_has_committee_role(ctx.interaction.user):
+        if not await ctx.bot.check_user_has_committee_role(ctx.interaction.user):  # type: ignore[arg-type]
             return set()
 
         if ":log-level" in ctx.options["setting"]:
-            return set(log_level.value for log_level in LogLevels)
+            return {log_level.value for log_level in LogLevels}
 
-        return {discord.OptionChoice("hi", "hi"), discord.OptionChoice("wow", "wow")}
+        return set()  # TODO: extra autocomplete suggestions
 
     @change_config.command(
         name="get",
@@ -99,7 +104,16 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                     "**cannot be viewed**." if CONFIG_SETTING_IS_SECRET else (
                         f"**=** `{config_setting_value.replace("`", "\\`")}`"
                         if config_setting_value
-                        else "**is not set**."
+                        else f"**is not set**.{
+                            f"\nThe default value is `{
+                                CONFIG_SETTINGS_HELPS[config_setting_name].default.replace(  # type: ignore[union-attr]
+                                    "`",
+                                    "\\`",
+                                )
+                            }`"
+                            if CONFIG_SETTINGS_HELPS[config_setting_name].default is not None
+                            else ""
+                        }"
                     )
                 }"
             ),
@@ -201,13 +215,69 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             )
             return
 
-        config.assign_single_config_setting_value(config_setting_name)
+        # TODO: Are you sure, if config has no default
+
+        yaml_error: StrictYAMLError
+        changing_setting_error: ChangingSettingWithRequiredSiblingError
+        try:
+            config.assign_single_config_setting_value(config_setting_name, new_config_value)
+        except StrictYAMLError as yaml_error:
+            if str(yaml_error) != yaml_error.context:
+                INCONCLUSIVE_YAML_ERROR_MESSAGE: Final[str] = (
+                    "Could not determine the error message from invalid YAML validation."
+                )
+                raise NotImplementedError(INCONCLUSIVE_YAML_ERROR_MESSAGE) from None
+
+            await self.command_send_error(
+                ctx,
+                message=(
+                    f"Changing setting value failed: "
+                    f"{str(yaml_error.context)[0].upper()}"
+                    f"{str(yaml_error.context)[1:].strip(" .")}."
+                ),
+            )
+            return
+        except ChangingSettingWithRequiredSiblingError as changing_setting_error:
+            await self.command_send_error(
+                ctx,
+                message=(
+                    f"{changing_setting_error} "
+                    f"It will be easier to make your changes "
+                    f"directly within the \"tex-bot-deployment.yaml\" file."
+                ),
+            )
+            return
+
+        changed_config_setting_value: str | None = config.view_single_config_setting_value(
+            config_setting_name,
+        )
+
+        if isinstance(changed_config_setting_value, str):
+            changed_config_setting_value = changed_config_setting_value.strip()
+
+        CONFIG_SETTING_IS_SECRET: Final[bool] = bool(
+            "token" in config_setting_name
+            or "cookie" in config_setting_name
+            or "secret" in config_setting_name  # noqa: COM812
+        )
 
         await ctx.respond(
             (
                 f"Successfully updated setting: `{
                     config_setting_name.replace("`", "\\`")
-                }`."
+                }`"
+                f"{
+                    "" if CONFIG_SETTING_IS_SECRET else (
+                        (
+                            f"**=** `{
+                                changed_config_setting_value.replace("`", "\\`")
+                            }`"
+                        )
+                        if changed_config_setting_value
+                        else "**to be not set**."
+                    )
+                }\n\n"
+                "Changes could take up to ??? to take effect."  # TODO: Retrieve update time from task
             ),
             ephemeral=True,
         )

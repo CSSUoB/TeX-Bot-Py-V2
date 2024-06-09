@@ -33,16 +33,16 @@ from config.constants import (
 )
 
 
-class LogLevelValidator(strictyaml.ScalarValidator):  # type: ignore[no-any-unimported,misc]
+class LogLevelValidator(strictyaml.ScalarValidator):  # type: ignore[misc]
     @override
-    def validate_scalar(self, chunk: YAMLChunk) -> LogLevels:  # type: ignore[no-any-unimported,misc]
-        val: str = str(chunk.contents).upper().strip().strip("-").strip("_").strip(".")
+    def validate_scalar(self, chunk: YAMLChunk) -> LogLevels:  # type: ignore[misc]
+        val: str = str(chunk.contents).upper().strip(" \n\t-_.")
 
         if val not in LogLevels:
             chunk.expecting_but_found(
                 (
                     "when expecting a valid log-level "
-                    f"(one of: \"{"\", \"".join(LogLevels)}\")"
+                    f"(one of: '{"', '".join(LogLevels)}')"
                 ),
             )
             raise RuntimeError
@@ -53,23 +53,24 @@ class LogLevelValidator(strictyaml.ScalarValidator):  # type: ignore[no-any-unim
     @override
     def to_yaml(self, data: object) -> str:  # type: ignore[misc]
         self.should_be_string(data, "expected a valid log-level.")
-        str_data: str = data.upper().strip().strip("-").strip("_").strip(".")  # type: ignore[attr-defined]
+        str_data: str = data.upper().strip(" \n\t-_.")  # type: ignore[attr-defined]
 
         if str_data not in LogLevels:
             INVALID_DATA_MESSAGE: Final[str] = (
-                f"Got {data} when expecting one of: \"{"\", \"".join(LogLevels)}\"."
+                f"Got '{data}' when expecting one of: '{"', '".join(LogLevels)}'."
             )
             raise YAMLSerializationError(INVALID_DATA_MESSAGE)
 
         return str_data
 
 
-class DiscordWebhookURLValidator(strictyaml.Url):  # type: ignore[no-any-unimported,misc]
+class DiscordWebhookURLValidator(strictyaml.Url):  # type: ignore[misc]
     @override
-    def validate_scalar(self, chunk: YAMLChunk) -> str:  # type: ignore[no-any-unimported,misc]
+    def validate_scalar(self, chunk: YAMLChunk) -> str:  # type: ignore[misc]
+        # noinspection PyUnresolvedReferences
         CHUNK_IS_VALID: Final[bool] = bool(
             (
-                self.__is_absolute_url(chunk.contents)
+                self._Url__is_absolute_url(chunk.contents)
                 and chunk.contents.startswith("https://discord.com/api/webhooks/")
             ),
         )
@@ -83,9 +84,10 @@ class DiscordWebhookURLValidator(strictyaml.Url):  # type: ignore[no-any-unimpor
     def to_yaml(self, data: object) -> str:  # type: ignore[misc]
         self.should_be_string(data, "expected a URL,")
 
+        # noinspection PyUnresolvedReferences
         DATA_IS_VALID: Final[bool] = bool(
             (
-                self.__is_absolute_url(data)
+                self._Url__is_absolute_url(data)
                 and data.startswith("https://discord.com/api/webhooks/")  # type: ignore[attr-defined]
             ),
         )
@@ -96,9 +98,9 @@ class DiscordWebhookURLValidator(strictyaml.Url):  # type: ignore[no-any-unimpor
         return data  # type: ignore[return-value]
 
 
-class DiscordSnowflakeValidator(strictyaml.Int):  # type: ignore[no-any-unimported,misc]
+class DiscordSnowflakeValidator(strictyaml.Int):  # type: ignore[misc]
     @override
-    def validate_scalar(self, chunk: YAMLChunk) -> int:  # type: ignore[no-any-unimported,misc]
+    def validate_scalar(self, chunk: YAMLChunk) -> int:  # type: ignore[misc]
         val: int = super().validate_scalar(chunk)
 
         if not re.match(r"\A\d{17,20}\Z", str(val)):
@@ -123,11 +125,11 @@ class DiscordSnowflakeValidator(strictyaml.Int):  # type: ignore[no-any-unimport
         return str(data)
 
 
-class RegexMatcher(strictyaml.ScalarValidator):  # type: ignore[no-any-unimported,misc]
+class RegexMatcher(strictyaml.ScalarValidator):  # type: ignore[misc]
     MATCHING_MESSAGE: str = "when expecting a regular expression matcher"
 
     @override
-    def validate_scalar(self, chunk: YAMLChunk) -> str:  # type: ignore[no-any-unimported,misc]
+    def validate_scalar(self, chunk: YAMLChunk) -> str:  # type: ignore[misc]
         try:
             re.compile(chunk.contents)
         except re.error:
@@ -153,12 +155,12 @@ class RegexMatcher(strictyaml.ScalarValidator):  # type: ignore[no-any-unimporte
         return data  # type: ignore[return-value]
 
 
-class ProbabilityValidator(strictyaml.Float):  # type: ignore[no-any-unimported,misc]
+class ProbabilityValidator(strictyaml.Float):  # type: ignore[misc]
     @override
-    def validate_scalar(self, chunk: YAMLChunk) -> float:  # type: ignore[no-any-unimported,misc]
-        val: float = 100 * super().validate_scalar(chunk)
+    def validate_scalar(self, chunk: YAMLChunk) -> float:  # type: ignore[misc]
+        val: float = super().validate_scalar(chunk)
 
-        if not 0 <= val <= 100:
+        if not 0 <= val <= 1:
             chunk.expecting_but_found("when expecting a probability")
             raise RuntimeError
 
@@ -166,35 +168,30 @@ class ProbabilityValidator(strictyaml.Float):  # type: ignore[no-any-unimported,
 
     @override
     def to_yaml(self, data: object) -> str:  # type: ignore[misc]
-        YAML_SERIALIZATION_ERROR: Final[YAMLSerializationError] = YAMLSerializationError(  # type: ignore[no-any-unimported]
+        YAML_SERIALIZATION_ERROR: Final[YAMLSerializationError] = YAMLSerializationError(
             f"'{data}' is not a probability.",
         )
 
-        if strictyaml_utils.has_number_type(data):
-            if not 0 <= data <= 100:  # type: ignore[operator]
-                raise YAML_SERIALIZATION_ERROR
-
-            if math.isnan(data):  # type: ignore[arg-type]
-                return "nan"
-            if data == float("inf"):
-                return "inf"
-            if data == float("-inf"):
-                return "-inf"
-
-            return str(data / 100)  # type: ignore[operator]
-
         if strictyaml_utils.is_string(data) and strictyaml_utils.is_decimal(data):
-            float_data: float = float(str(data))
+            data = float(str(data))
 
-            if not 0 <= float_data <= 100:
-                raise YAML_SERIALIZATION_ERROR
+        if not strictyaml_utils.has_number_type(data):
+            raise YAML_SERIALIZATION_ERROR
 
-            return str(float_data / 100)
+        if not 0 <= data <= 1:  # type: ignore[operator]
+            raise YAML_SERIALIZATION_ERROR
 
-        raise YAML_SERIALIZATION_ERROR
+        if math.isnan(data):  # type: ignore[arg-type]
+            return "nan"
+        if data == float("inf"):
+            return "inf"
+        if data == float("-inf"):
+            return "-inf"
+
+        return str(data)
 
 
-class TimeDeltaValidator(strictyaml.ScalarValidator):  # type: ignore[no-any-unimported,misc]
+class TimeDeltaValidator(strictyaml.ScalarValidator):  # type: ignore[misc]
     @override
     def __init__(self, *, minutes: bool = True, hours: bool = True, days: bool = False, weeks: bool = False) -> None:  # noqa: E501
         regex_matcher: str = r"\A"
@@ -242,7 +239,7 @@ class TimeDeltaValidator(strictyaml.ScalarValidator):  # type: ignore[no-any-uni
             raise float_conversion_error from float_conversion_error
 
     @override
-    def validate_scalar(self, chunk: YAMLChunk) -> timedelta:  # type: ignore[no-any-unimported,misc]
+    def validate_scalar(self, chunk: YAMLChunk) -> timedelta:  # type: ignore[misc]
         chunk_error_func: Callable[[], NoReturn] = functools.partial(
             chunk.expecting_but_found,
             expecting="when expecting a delay/interval string",
@@ -289,16 +286,16 @@ class TimeDeltaValidator(strictyaml.ScalarValidator):  # type: ignore[no-any-uni
         return f"{total_seconds}s"
 
 
-class SendIntroductionRemindersFlagValidator(strictyaml.ScalarValidator):  # type: ignore[no-any-unimported,misc]
+class SendIntroductionRemindersFlagValidator(strictyaml.ScalarValidator):  # type: ignore[misc]
     @override
-    def validate_scalar(self, chunk: YAMLChunk) -> SendIntroductionRemindersFlagType:  # type: ignore[no-any-unimported,misc]
+    def validate_scalar(self, chunk: YAMLChunk) -> SendIntroductionRemindersFlagType:  # type: ignore[misc]
         val: str = str(chunk.contents).lower()
 
         if val not in VALID_SEND_INTRODUCTION_REMINDERS_RAW_VALUES:
             chunk.expecting_but_found(
                 (
                     "when expecting a send-introduction-reminders-flag "
-                    "(one of: \"once\", \"interval\" or \"false\")"
+                    "(one of: 'once', 'interval' or 'false')"
                 ),
             )
             raise RuntimeError
@@ -319,7 +316,7 @@ class SendIntroductionRemindersFlagValidator(strictyaml.ScalarValidator):  # typ
 
         if str(data).lower() not in VALID_SEND_INTRODUCTION_REMINDERS_RAW_VALUES:
             INVALID_DATA_MESSAGE: Final[str] = (
-                f"Got {data} when expecting one of: \"once\", \"interval\" or \"false\"."
+                f"Got '{data}' when expecting one of: 'once', 'interval' or 'false'."
             )
             raise YAMLSerializationError(INVALID_DATA_MESSAGE)
 
@@ -332,7 +329,7 @@ class SendIntroductionRemindersFlagValidator(strictyaml.ScalarValidator):  # typ
         return str(data).lower()
 
 
-class CustomBoolValidator(strictyaml.Bool):  # type: ignore[no-any-unimported,misc]
+class CustomBoolValidator(strictyaml.Bool):  # type: ignore[misc]
     @override
     def to_yaml(self, data: object) -> str:  # type: ignore[misc]
         if isinstance(data, bool):
@@ -344,4 +341,5 @@ class CustomBoolValidator(strictyaml.Bool):  # type: ignore[no-any-unimported,mi
         if str(data).lower() in strictyaml_constants.FALSE_VALUES:
             return "false"
 
-        raise YAMLSerializationError("Not a boolean")
+        INVALID_TYPE_MESSAGE: Final[str] = "Not a boolean"
+        raise YAMLSerializationError(INVALID_TYPE_MESSAGE)

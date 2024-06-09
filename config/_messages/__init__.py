@@ -65,7 +65,7 @@ class MessagesAccessor:
         if messages_locale_code not in MESSAGES_LOCALE_CODES:
             INVALID_MESSAGES_LOCALE_CODE_MESSAGE: Final[str] = (
                 f"{"messages_locale_code"!r} must be one of "
-                f"\"{"\", \"".join(MESSAGES_LOCALE_CODES)}\""
+                f"'{"', '".join(MESSAGES_LOCALE_CODES)}'"
             )
             raise ValueError(INVALID_MESSAGES_LOCALE_CODE_MESSAGE)
 

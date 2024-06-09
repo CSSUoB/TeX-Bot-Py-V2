@@ -470,7 +470,7 @@ class TeXBot(discord.Bot):
 
         if not re.match(r"\A\d{17,20}\Z", str_member_id):
             INVALID_USER_ID_MESSAGE: Final[str] = (
-                f"\"{str_member_id}\" is not a valid user ID."
+                f"'{str_member_id}' is not a valid user ID."
             )
             raise ValueError(INVALID_USER_ID_MESSAGE)
 

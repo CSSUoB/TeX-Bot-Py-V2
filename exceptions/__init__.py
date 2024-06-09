@@ -18,10 +18,13 @@ __all__: Sequence[str] = (
     "StrikeTrackingError",
     "NoAuditLogsStrikeTrackingError",
     "BotRequiresRestartAfterConfigChange",
+    "ChangingSettingWithRequiredSiblingError",
 )
+
 
 from .config_changes import (
     BotRequiresRestartAfterConfigChange,
+    ChangingSettingWithRequiredSiblingError,
 )
 from .does_not_exist import (
     ArchivistRoleDoesNotExistError,

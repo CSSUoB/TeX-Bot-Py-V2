@@ -9,7 +9,6 @@ __all__: Sequence[str] = (
     "PROJECT_ROOT",
     "VALID_SEND_INTRODUCTION_REMINDERS_RAW_VALUES",
     "MESSAGES_LOCALE_CODES",
-    "REQUIRES_RESTART_SETTINGS",
     "DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME",
     "DEFAULT_PING_COMMAND_EASTER_EGG_PROBABILITY",
     "DEFAULT_DISCORD_LOGGING_LOG_LEVEL",
@@ -64,6 +63,7 @@ class ConfigSettingHelp(NamedTuple):
 
     description: str
     value_type_message: str | None
+    requires_restart_after_changed: bool
     required: bool = True
     default: str | None = None
 
@@ -90,20 +90,6 @@ MESSAGES_LOCALE_CODES: Final[frozenset[str]] = frozenset({"en-GB"})
 
 VALID_SEND_INTRODUCTION_REMINDERS_RAW_VALUES: Final[frozenset[str]] = frozenset(
     ({"once", "interval"} | set(strictyaml_constants.BOOL_VALUES)),
-)
-
-REQUIRES_RESTART_SETTINGS: Final[frozenset[str]] = frozenset(
-    {
-        "discord:bot-token",
-        "discord:guild-id",
-        "messages-locale-code",
-        "reminders:send-introduction-reminders:enabled",
-        "reminders:send-introduction-reminders:delay",
-        "reminders:send-introduction-reminders:interval",
-        "reminders:send-get-roles-reminders:enabled",
-        "reminders:send-get-roles-reminders:delay",
-        "reminders:send-get-roles-reminders:interval",
-    },
 )
 
 DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME: Final[str] = "TeX-Bot"
@@ -151,6 +137,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "to the console output stream."
         ),
         value_type_message=_selectable_required_format_message(LogLevels),
+        requires_restart_after_changed=False,
         required=False,
         default=DEFAULT_CONSOLE_LOG_LEVEL,
     ),
@@ -160,6 +147,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "to the Discord log channel."
         ),
         value_type_message=_selectable_required_format_message(LogLevels),
+        requires_restart_after_changed=False,
         required=False,
         default=DEFAULT_DISCORD_LOGGING_LOG_LEVEL,
     ),
@@ -173,6 +161,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "Discord webhook URL",
             "https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks",
         ),
+        requires_restart_after_changed=False,
         required=False,
         default=None,
     ),
@@ -185,6 +174,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "Discord bot token",
             "https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts",
         ),
+        requires_restart_after_changed=True,
         required=True,
         default=None,
     ),
@@ -194,6 +184,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "Discord guild ID",
             "https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id",
         ),
+        requires_restart_after_changed=True,
         required=True,
         default=None,
     ),
@@ -205,6 +196,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "If this is not set the group-full-name will be retrieved "
             "from the name of your group's Discord guild."
         ),
+        requires_restart_after_changed=False,
         value_type_message=None,
         required=False,
         default=None,
@@ -216,6 +208,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "If this is not set the group-short-name will be determined "
             "from your group's full name."
         ),
+        requires_restart_after_changed=False,
         value_type_message=None,
         required=False,
         default=None,
@@ -225,6 +218,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "The link to the page where guests can purchase a full membership "
             "to join your community group."
         ),
+        requires_restart_after_changed=False,
         value_type_message=_custom_required_format_message("URL"),
         required=False,
         default=None,
@@ -235,6 +229,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "about the perks that they will receive "
             "once they purchase a membership to your community group."
         ),
+        requires_restart_after_changed=False,
         value_type_message=_custom_required_format_message("URL"),
         required=False,
         default=None,
@@ -242,6 +237,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
     "community-group:links:moderation-document": ConfigSettingHelp(
         description="The link to your group's Discord guild moderation document.",
         value_type_message=_custom_required_format_message("URL"),
+        requires_restart_after_changed=False,
         required=True,
         default=None,
     ),
@@ -254,6 +250,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "if your members-list is found on the UoB Guild of Students website, "
             "ensure the URL includes the \"sort by groups\" option)."
         ),
+        requires_restart_after_changed=False,
         value_type_message=_custom_required_format_message("URL"),
         required=True,
         default=None,
@@ -270,15 +267,20 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "after manually logging in to view your members-list, "
             "it will probably be listed as a cookie named `.ASPXAUTH`."
         ),
+        requires_restart_after_changed=False,
         value_type_message=None,
         required=True,
         default=None,
     ),
     "community-group:members-list:id-format": ConfigSettingHelp(
-        description="The format that IDs are stored in within your members-list.",
+        description=(
+            "The format that IDs are stored in within your members-list.\n"
+            "Remember to double escape `\\` characters where necessary."
+        ),
         value_type_message=_custom_required_format_message(
             "regex matcher string",
         ),
+        requires_restart_after_changed=False,
         required=False,
         default=DEFAULT_MEMBERS_LIST_ID_FORMAT,
     ),
@@ -290,6 +292,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
         value_type_message=_custom_required_format_message(
             "float, inclusively between 1 & 0",
         ),
+        requires_restart_after_changed=False,
         required=False,
         default=str(DEFAULT_PING_COMMAND_EASTER_EGG_PROBABILITY),
     ),
@@ -300,6 +303,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
         value_type_message=_custom_required_format_message(
             "float representing the number of days to look back through",
         ),
+        requires_restart_after_changed=False,
         required=False,
         default=str(DEFAULT_STATS_COMMAND_LOOKBACK_DAYS),
     ),
@@ -311,6 +315,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
         value_type_message=_custom_required_format_message(
             "comma seperated list of strings of role names",
         ),
+        requires_restart_after_changed=False,
         required=False,
         default=",".join(DEFAULT_STATS_COMMAND_DISPLAYED_ROLES),
     ),
@@ -324,6 +329,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
                 "to timeout a user (format: `<seconds>s<minutes>m<hours>h<days>d<weeks>w`)"
             ),
         ),
+        requires_restart_after_changed=False,
         required=False,
         default=DEFAULT_STRIKE_COMMAND_TIMEOUT_DURATION,
     ),
@@ -344,6 +350,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
                 "in the committee-member's DMs)"
             ),
         ),
+        requires_restart_after_changed=False,
         required=False,
         default=DEFAULT_STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION,
     ),
@@ -354,6 +361,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
         value_type_message=_selectable_required_format_message(
             MESSAGES_LOCALE_CODES,
         ),
+        requires_restart_after_changed=False,
         required=False,
         default=DEFAULT_MESSAGE_LOCALE_CODE,
     ),
@@ -370,6 +378,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
                 in getattr(SendIntroductionRemindersFlagType, "__args__")  # noqa: B009
             ),
         ),
+        requires_restart_after_changed=True,
         required=False,
         default=str(DEFAULT_SEND_INTRODUCTION_REMINDERS_ENABLED).lower(),
     ),
@@ -388,6 +397,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
                 "(format: `<seconds>s<minutes>m<hours>h<days>d<weeks>w`)"
             ),
         ),
+        requires_restart_after_changed=True,
         required=False,
         default=DEFAULT_SEND_INTRODUCTION_REMINDERS_DELAY,
     ),
@@ -404,6 +414,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
                 "(format: `<seconds>s<minutes>m<hours>h`)"
             ),
         ),
+        requires_restart_after_changed=True,
         required=False,
         default=DEFAULT_SEND_INTRODUCTION_REMINDERS_INTERVAL,
     ),
@@ -416,6 +427,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
         value_type_message=_custom_required_format_message(
             "boolean value (either `true` or `false`)",
         ),
+        requires_restart_after_changed=True,
         required=False,
         default=str(DEFAULT_SEND_GET_ROLES_REMINDERS_ENABLED).lower(),
     ),
@@ -433,6 +445,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
                 "(format: `<seconds>s<minutes>m<hours>h<days>d<weeks>w`)"
             ),
         ),
+        requires_restart_after_changed=True,
         required=False,
         default=DEFAULT_SEND_GET_ROLES_REMINDERS_DELAY,
     ),
@@ -451,7 +464,15 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
                 "(format: `<seconds>s<minutes>m<hours>h`)"
             ),
         ),
+        requires_restart_after_changed=True,
         required=False,
         default=DEFAULT_SEND_GET_ROLES_REMINDERS_INTERVAL,
     ),
 }
+
+# {  # TODO: Use in config reloader
+#     config_setting_name
+#     for config_setting_name, config_setting_help
+#     in CONFIG_SETTINGS_HELPS.items()
+#     if config_setting_help.requires_restart_after_changed
+# }

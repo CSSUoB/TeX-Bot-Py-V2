@@ -10,7 +10,7 @@ __all__: Sequence[str] = (
 
 
 import abc
-from typing import Final
+from typing import Final, override
 
 from classproperties import classproperty
 
@@ -24,12 +24,14 @@ class BaseTeXBotError(BaseException, abc.ABC):
     def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802,N805
         """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
 
+    @override
     def __init__(self, message: str | None = None) -> None:
         """Initialize a new exception with the given error message."""
         self.message: str = message or self.DEFAULT_MESSAGE
 
         super().__init__(self.message)
 
+    @override
     def __repr__(self) -> str:
         """Generate a developer-focused representation of the exception's attributes."""
         formatted: str = self.message
@@ -191,4 +193,3 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
             partial_message += formatted_dependent_events
 
         return f"{partial_message}."
-

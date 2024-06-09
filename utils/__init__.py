@@ -67,5 +67,5 @@ def is_member_inducted(member: discord.Member) -> bool:
     The set of ignored roles is a tuple, to make the set easily expandable.
     """
     return any(
-        role.name.lower().strip().strip("@").strip() not in ("news",) for role in member.roles
+        role.name.lower().strip("@ \n\t") not in ("news",) for role in member.roles
     )

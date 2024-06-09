@@ -19,24 +19,29 @@ import contextlib
 import logging
 import os
 import re
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from datetime import timedelta
 from logging import Logger
 from pathlib import Path
-from typing import Any, ClassVar, Final, Literal, TextIO, overload
+from typing import Any, ClassVar, Final, TextIO, TypeAlias
 
+import strictyaml
 from discord_logging.handler import DiscordHandler
 from strictyaml import YAML
 
 from config.constants import (
     DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME,
     PROJECT_ROOT,
-    REQUIRES_RESTART_SETTINGS,
 )
-from exceptions import BotRequiresRestartAfterConfigChange
+from exceptions import (
+    BotRequiresRestartAfterConfigChange,
+    ChangingSettingWithRequiredSiblingError,
+)
 
 from . import utils
 from ._yaml import load_yaml
+
+NestedMapping: TypeAlias = Mapping[str, "NestedMapping | str"]
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
@@ -97,7 +102,7 @@ class SettingsAccessor:
     """
 
     _settings: ClassVar[dict[str, object]] = {}
-    _most_recent_yaml: ClassVar[YAML | None] = None  # type: ignore[no-any-unimported]
+    _most_recent_yaml: ClassVar[YAML | None] = None
 
     @classmethod
     def format_invalid_settings_key_message(cls, item: str) -> str:
@@ -160,7 +165,7 @@ class SettingsAccessor:
     @classmethod
     def reload(cls) -> None:
         settings_file_path: Path = get_settings_file_path()
-        current_yaml: YAML = load_yaml(  # type: ignore[no-any-unimported] # TODO: better error messages when loading yaml
+        current_yaml: YAML = load_yaml(  # TODO: better error messages when loading yaml
             settings_file_path.read_text(),
             file_name=settings_file_path.name,
         )
@@ -239,11 +244,8 @@ class SettingsAccessor:
 
         cls._most_recent_yaml = current_yaml
 
-        if changed_settings_keys & REQUIRES_RESTART_SETTINGS:
-            raise BotRequiresRestartAfterConfigChange(changed_settings=changed_settings_keys)
-
     @classmethod
-    def _reload_console_logging(cls, console_logging_settings: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
+    def _reload_console_logging(cls, console_logging_settings: YAML) -> set[str]:  # type: ignore[misc]
         """
         Reload the console logging configuration with the new given log level.
 
@@ -295,7 +297,7 @@ class SettingsAccessor:
         return {"logging:console:log-level"}
 
     @classmethod
-    def _reload_discord_log_channel_logging(cls, discord_channel_logging_settings: YAML | None) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
+    def _reload_discord_log_channel_logging(cls, discord_channel_logging_settings: YAML | None) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the Discord log channel logging configuration.
 
@@ -318,7 +320,7 @@ class SettingsAccessor:
             else discord_channel_logging_settings["webhook_url"].data
         )
 
-        discord_logging_handlers: set[DiscordHandler] = {  # type: ignore[no-any-unimported]
+        discord_logging_handlers: set[DiscordHandler] = {
             handler for handler in logger.handlers if isinstance(handler, DiscordHandler)
         }
         if len(discord_logging_handlers) > 1:
@@ -333,7 +335,7 @@ class SettingsAccessor:
         discord_logging_handler_avatar_url: str | None = None
 
         if len(discord_logging_handlers) == 1:
-            existing_discord_logging_handler: DiscordHandler = discord_logging_handlers.pop()  # type: ignore[no-any-unimported]
+            existing_discord_logging_handler: DiscordHandler = discord_logging_handlers.pop()
 
             ONLY_DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED: Final[bool] = bool(
                 discord_channel_logging_settings is not None
@@ -406,7 +408,7 @@ class SettingsAccessor:
         return changed_settings
 
     @classmethod
-    def _reload_discord_bot_token(cls, discord_bot_token: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
+    def _reload_discord_bot_token(cls, discord_bot_token: YAML) -> set[str]:  # type: ignore[misc]
         """
         Reload the Discord bot-token.
 
@@ -425,7 +427,7 @@ class SettingsAccessor:
         return {"discord:bot-token"}
 
     @classmethod
-    def _reload_discord_main_guild_id(cls, discord_main_guild_id: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
+    def _reload_discord_main_guild_id(cls, discord_main_guild_id: YAML) -> set[str]:  # type: ignore[misc]
         """
         Reload the Discord main-guild ID.
 
@@ -444,7 +446,7 @@ class SettingsAccessor:
         return {"discord:main-guild-id"}
 
     @classmethod
-    def _reload_group_full_name(cls, group_full_name: YAML | None) -> set[str]:  # type: ignore[no-any-unimported,misc]
+    def _reload_group_full_name(cls, group_full_name: YAML | None) -> set[str]:  # type: ignore[misc]
         """
         Reload the community-group full name.
 
@@ -470,7 +472,7 @@ class SettingsAccessor:
         return {"community-group:full-name"}
 
     @classmethod
-    def _reload_group_short_name(cls, group_short_name: YAML | None) -> set[str]:  # type: ignore[no-any-unimported,misc]
+    def _reload_group_short_name(cls, group_short_name: YAML | None) -> set[str]:  # type: ignore[misc]
         """
         Reload the community-group short name.
 
@@ -496,7 +498,7 @@ class SettingsAccessor:
         return {"community-group:short-name"}
 
     @classmethod
-    def _reload_purchase_membership_link(cls, purchase_membership_link: YAML | None) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
+    def _reload_purchase_membership_link(cls, purchase_membership_link: YAML | None) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the link to allow people to purchase a membership.
 
@@ -521,7 +523,7 @@ class SettingsAccessor:
         return {"community-group:links:purchase-membership"}
 
     @classmethod
-    def _reload_membership_perks_link(cls, membership_perks_link: YAML | None) -> set[str]:  # type: ignore[no-any-unimported,misc]
+    def _reload_membership_perks_link(cls, membership_perks_link: YAML | None) -> set[str]:  # type: ignore[misc]
         """
         Reload the link to view the perks of getting a membership to join your community group.
 
@@ -546,7 +548,7 @@ class SettingsAccessor:
         return {"community-group:links:membership-perks"}
 
     @classmethod
-    def _reload_moderation_document_link(cls, moderation_document_link: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
+    def _reload_moderation_document_link(cls, moderation_document_link: YAML) -> set[str]:  # type: ignore[misc]
         """
         Reload the link to view your community group's moderation document.
 
@@ -567,7 +569,7 @@ class SettingsAccessor:
         return {"community-group:links:moderation-document"}
 
     @classmethod
-    def _reload_members_list_url(cls, members_list_url: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
+    def _reload_members_list_url(cls, members_list_url: YAML) -> set[str]:  # type: ignore[misc]
         """
         Reload the url that points to the location of your community group's members-list.
 
@@ -588,7 +590,7 @@ class SettingsAccessor:
         return {"community-group:members-list:url"}
 
     @classmethod
-    def _reload_members_list_auth_session_cookie(cls, members_list_auth_session_cookie: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
+    def _reload_members_list_auth_session_cookie(cls, members_list_auth_session_cookie: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the auth session cookie used to authenticate to access your members-list.
 
@@ -611,7 +613,7 @@ class SettingsAccessor:
         return {"community-group:members-list:auth-session-cookie"}
 
     @classmethod
-    def _reload_members_list_id_format(cls, members_list_id_format: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
+    def _reload_members_list_id_format(cls, members_list_id_format: YAML) -> set[str]:  # type: ignore[misc]
         """
         Reload the format regex matcher for IDs in your community group's members-list.
 
@@ -632,7 +634,7 @@ class SettingsAccessor:
         return {"community-group:members-list:id-format"}
 
     @classmethod
-    def _reload_ping_command_easter_egg_probability(cls, ping_command_easter_egg_probability: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
+    def _reload_ping_command_easter_egg_probability(cls, ping_command_easter_egg_probability: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the probability that the rarer response will show when using the ping command.
 
@@ -655,7 +657,7 @@ class SettingsAccessor:
         return {"commands:ping:easter-egg-probability"}
 
     @classmethod
-    def _reload_stats_command_lookback_days(cls, stats_command_lookback_days: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
+    def _reload_stats_command_lookback_days(cls, stats_command_lookback_days: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the number of days to lookback for statistics.
 
@@ -678,7 +680,7 @@ class SettingsAccessor:
         return {"commands:stats:lookback-days"}
 
     @classmethod
-    def _reload_stats_command_displayed_roles(cls, stats_command_displayed_roles: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
+    def _reload_stats_command_displayed_roles(cls, stats_command_displayed_roles: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the set of roles used to display statistics about.
 
@@ -699,7 +701,7 @@ class SettingsAccessor:
         return {"commands:stats:displayed-roles"}
 
     @classmethod
-    def _reload_strike_command_timeout_duration(cls, strike_command_timeout_duration: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
+    def _reload_strike_command_timeout_duration(cls, strike_command_timeout_duration: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the duration to use when applying a timeout action for a strike increase.
 
@@ -720,7 +722,7 @@ class SettingsAccessor:
         return {"commands:strike:timeout-duration"}
 
     @classmethod
-    def _reload_strike_performed_manually_warning_location(cls, strike_performed_manually_warning_location: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
+    def _reload_strike_performed_manually_warning_location(cls, strike_performed_manually_warning_location: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the location to send warning messages when strikes are performed manually.
 
@@ -743,7 +745,7 @@ class SettingsAccessor:
         return {"commands:strike:performed-manually-warning-location"}
 
     @classmethod
-    def _reload_messages_locale_code(cls, messages_locale_code: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc]
+    def _reload_messages_locale_code(cls, messages_locale_code: YAML) -> set[str]:  # type: ignore[misc]
         """
         Reload the selected locale for messages to be sent in.
 
@@ -762,7 +764,7 @@ class SettingsAccessor:
         return {"messages-locale-code"}
 
     @classmethod
-    def _reload_send_introduction_reminders_enabled(cls, send_introduction_reminders_enabled: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
+    def _reload_send_introduction_reminders_enabled(cls, send_introduction_reminders_enabled: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the flag for whether the "send-introduction-reminders" task is enabled.
 
@@ -785,7 +787,7 @@ class SettingsAccessor:
         return {"reminders:send-introduction-reminders:enabled"}
 
     @classmethod
-    def _reload_send_introduction_reminders_delay(cls, send_introduction_reminders_delay: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
+    def _reload_send_introduction_reminders_delay(cls, send_introduction_reminders_delay: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the amount of time to wait before sending introduction-reminders to a user.
 
@@ -810,7 +812,7 @@ class SettingsAccessor:
         return {"reminders:send-introduction-reminders:delay"}
 
     @classmethod
-    def _reload_send_introduction_reminders_interval(cls, send_introduction_reminders_interval: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
+    def _reload_send_introduction_reminders_interval(cls, send_introduction_reminders_interval: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the interval of time between executing the task to send introduction-reminders.
 
@@ -833,7 +835,7 @@ class SettingsAccessor:
         return {"reminders:send-introduction-reminders:interval"}
 
     @classmethod
-    def _reload_send_get_roles_reminders_enabled(cls, send_get_roles_reminders_enabled: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
+    def _reload_send_get_roles_reminders_enabled(cls, send_get_roles_reminders_enabled: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the flag for whether the "send-get-roles-reminders" task is enabled.
 
@@ -856,7 +858,7 @@ class SettingsAccessor:
         return {"reminders:send-get-roles-reminders:enabled"}
 
     @classmethod
-    def _reload_send_get_roles_reminders_delay(cls, send_get_roles_reminders_delay: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
+    def _reload_send_get_roles_reminders_delay(cls, send_get_roles_reminders_delay: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the amount of time to wait before sending get-roles-reminders to a user.
 
@@ -882,7 +884,7 @@ class SettingsAccessor:
         return {"reminders:send-get-roles-reminders:delay"}
 
     @classmethod
-    def _reload_send_get_roles_reminders_interval(cls, send_get_roles_reminders_interval: YAML) -> set[str]:  # type: ignore[no-any-unimported,misc] # noqa: E501
+    def _reload_send_get_roles_reminders_interval(cls, send_get_roles_reminders_interval: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the interval of time between executing the task to send get-roles-reminders.
 
@@ -905,79 +907,223 @@ class SettingsAccessor:
         return {"reminders:send-get-roles-reminders:interval"}
 
 
-def _get_scalar_config_setting_value(config_setting_name: str, config_settings: YAML) -> str | None:  # type: ignore[no-any-unimported] # noqa: E501
-    scalar_config_setting: YAML | None = config_settings.get(config_setting_name, None)  # type: ignore[no-any-unimported]
+def _get_scalar_config_setting_value(config_setting_name: str, yaml_settings_tree: YAML) -> str | None:  # noqa: E501
+    single_yaml_scalar_setting: YAML | None = yaml_settings_tree.get(config_setting_name, None)
 
-    if scalar_config_setting is None:
-        return scalar_config_setting
+    if single_yaml_scalar_setting is None:
+        return single_yaml_scalar_setting
 
-    scalar_config_setting_value: object = scalar_config_setting.validator.to_yaml(
-        scalar_config_setting.data,
+    CONFIG_SETTING_HAS_VALID_TYPE: Final[bool] = bool(
+        not single_yaml_scalar_setting.is_mapping()
+        and (
+            single_yaml_scalar_setting.is_scalar()
+            or single_yaml_scalar_setting.is_sequence()
+        )  # noqa: COM812
+    )
+    if not CONFIG_SETTING_HAS_VALID_TYPE:
+        MAPPING_TYPE_MESSAGE: Final[str] = "Got config mapping when scalar expected."
+        raise RuntimeError(MAPPING_TYPE_MESSAGE)
+
+    scalar_config_setting_value: object = single_yaml_scalar_setting.validator.to_yaml(
+        single_yaml_scalar_setting.data,
     )
 
     if isinstance(scalar_config_setting_value, str):
+        if not single_yaml_scalar_setting.is_scalar():
+            SCALAR_TYPE_MESSAGE: Final[str] = "Got invalid config type when scalar expected."
+            raise RuntimeError(SCALAR_TYPE_MESSAGE)
+
         return scalar_config_setting_value
 
     if isinstance(scalar_config_setting_value, Iterable):
-        with contextlib.suppress(StopIteration):
-            if not isinstance(next(iter(scalar_config_setting_value)), str):
-                raise TypeError
+        if not single_yaml_scalar_setting.is_sequence():
+            SEQUENCE_TYPE_MESSAGE: Final[str] = (
+                "Got invalid config type when sequence expected."
+            )
+            raise RuntimeError(SEQUENCE_TYPE_MESSAGE)
 
-        return ", ".join(scalar_config_setting_value)
+        if not all(inner_value.is_scalar() for inner_value in single_yaml_scalar_setting):
+            ONLY_SCALAR_SEQUENCES_SUPPORTED_MESSAGE: Final[str] = (
+                "Only sequences of scalars are currently supported "
+                "to be used in configuration."
+            )
+            raise NotImplementedError(ONLY_SCALAR_SEQUENCES_SUPPORTED_MESSAGE)
+
+        return ",".join(scalar_config_setting_value)
 
     raise NotImplementedError
 
 
-@overload
-def _get_mapping_config_setting_value(partial_config_setting_name: str, config_settings: YAML, *, use_setter: Literal[True]) -> None: ...  # type: ignore[no-any-unimported,misc] # noqa: E501
-
-
-@overload
-def _get_mapping_config_setting_value(partial_config_setting_name: str, config_settings: YAML, *, use_setter: Literal[False]) -> str | None: ...  # type: ignore[no-any-unimported,misc] # noqa: E501
-
-
-@overload
-def _get_mapping_config_setting_value(partial_config_setting_name: str, config_settings: YAML, *, use_setter: bool) -> str | None: ...  # type: ignore[no-any-unimported,misc] # noqa: E501
-
-
-def _get_mapping_config_setting_value(partial_config_setting_name: str, config_settings: YAML, *, use_setter: bool = False) -> str | None:  # type: ignore[no-any-unimported] # noqa: E501
+def _get_mapping_config_setting_value(partial_config_setting_name: str, partial_yaml_settings_tree: YAML) -> str | None:  # noqa: E501
     if ":" not in partial_config_setting_name:
-        if use_setter:
-            raise NotImplementedError
-
-        return _get_scalar_config_setting_value(partial_config_setting_name, config_settings)
+        return _get_scalar_config_setting_value(
+            partial_config_setting_name,
+            partial_yaml_settings_tree,
+        )
 
     key: str
     remainder: str
     key, _, remainder = partial_config_setting_name.partition(":")
 
-    mapping_config_setting: YAML | None = config_settings.get(key, None)  # type: ignore[no-any-unimported]
+    single_yaml_mapping_setting: YAML | None = partial_yaml_settings_tree.get(key, None)
 
-    if mapping_config_setting is not None and mapping_config_setting.is_mapping():
-        return _get_mapping_config_setting_value(
-            remainder,
-            mapping_config_setting,
-            use_setter=use_setter,
-        )
+    if single_yaml_mapping_setting is not None and single_yaml_mapping_setting.is_mapping():
+        return _get_mapping_config_setting_value(remainder, single_yaml_mapping_setting)
 
-    return _get_scalar_config_setting_value(partial_config_setting_name, config_settings)
+    return _get_scalar_config_setting_value(
+        partial_config_setting_name,
+        partial_yaml_settings_tree,
+    )
 
 
 def view_single_config_setting_value(config_setting_name: str, settings_accessor: SettingsAccessor) -> str | None:  # noqa: E501
     """Return the value of a single configuration setting from the setting tree hierarchy."""
     # noinspection PyProtectedMember
-    return _get_mapping_config_setting_value(  # noqa: SLF001
-        config_setting_name,
-        settings_accessor._most_recent_yaml,  # noqa: SLF001
-        use_setter=False
+    current_yaml: YAML | None = settings_accessor._most_recent_yaml  # noqa: SLF001
+    if current_yaml is None:
+        YAML_NOT_LOADED_MESSAGE: Final[str] = (
+            "Invalid state: Config YAML has not yet been loaded."
+        )
+        raise RuntimeError(YAML_NOT_LOADED_MESSAGE)
+
+    # noinspection PyProtectedMember
+    return _get_mapping_config_setting_value(config_setting_name, current_yaml)
+
+
+def _set_scalar_or_sequence_config_setting_value(config_setting_name: str, new_config_setting_value: str, yaml_settings_tree: YAML) -> YAML:  # noqa: E501
+    if config_setting_name not in yaml_settings_tree:
+        yaml_settings_tree[config_setting_name] = new_config_setting_value
+        return yaml_settings_tree
+
+    if yaml_settings_tree[config_setting_name].is_mapping():
+        INVALID_MAPPING_CONFIG_TYPE_MESSAGE: Final[str] = (
+            "Got incongruent YAML object. Expected sequence or scalar, got mapping."
+        )
+        raise TypeError(INVALID_MAPPING_CONFIG_TYPE_MESSAGE)
+
+    if yaml_settings_tree[config_setting_name].is_scalar():
+        yaml_settings_tree[config_setting_name] = new_config_setting_value
+        return yaml_settings_tree
+
+    if yaml_settings_tree[config_setting_name].is_sequence():
+        yaml_settings_tree[config_setting_name] = [
+            sequence_value.strip()
+            for sequence_value
+            in new_config_setting_value.strip().split(",")
+        ]
+        return yaml_settings_tree
+
+    UNKNOWN_CONFIG_TYPE_MESSAGE: Final[str] = (
+        "Unknown YAML object type. Expected sequence or scalar."
+    )
+    raise RuntimeError(UNKNOWN_CONFIG_TYPE_MESSAGE)
+
+
+def _set_mapping_config_setting_value(partial_config_setting_name: str, new_config_setting_value: str, partial_yaml_settings_tree: YAML) -> YAML:  # noqa: E501
+    if ":" not in partial_config_setting_name:
+        return _set_scalar_or_sequence_config_setting_value(
+            partial_config_setting_name,
+            new_config_setting_value,
+            partial_yaml_settings_tree,
+        )
+
+    key: str
+    remainder: str
+    key, _, remainder = partial_config_setting_name.partition(":")
+
+    if key not in partial_yaml_settings_tree:
+        partial_yaml_settings_tree[key] = _set_required_value_from_validator_config(
+            remainder if ":" in partial_config_setting_name else None,
+            new_config_setting_value,
+            partial_yaml_settings_tree.validator.get_validator(key),
+        )
+        return partial_yaml_settings_tree
+
+    if partial_yaml_settings_tree[key].is_mapping():
+        partial_yaml_settings_tree[key] = _set_mapping_config_setting_value(
+            remainder,
+            new_config_setting_value,
+            partial_yaml_settings_tree[key],
+        )
+        return partial_yaml_settings_tree
+
+    return _set_scalar_or_sequence_config_setting_value(
+        partial_config_setting_name,
+        new_config_setting_value,
+        partial_yaml_settings_tree,
     )
 
 
-def assign_single_config_setting_value(config_setting_name: str, settings_accessor: SettingsAccessor) -> None:  # noqa: E501
+def _set_required_value_from_validator_config(partial_config_setting_name: str | None, new_config_setting_value: str, yaml_validator: strictyaml.Validator) -> "NestedMapping | str | Sequence[str]":  # noqa: E501
+    VALIDATOR_IS_SCALAR_TYPE: Final[bool] = bool(
+        isinstance(yaml_validator, strictyaml.ScalarValidator)
+        and (partial_config_setting_name is None or ":" not in partial_config_setting_name)  # noqa: COM812
+    )
+    if VALIDATOR_IS_SCALAR_TYPE:
+        return new_config_setting_value
+
+    VALIDATOR_IS_SEQUENCE_TYPE: Final[bool] = bool(
+        isinstance(yaml_validator, strictyaml.validators.SeqValidator)
+        and (partial_config_setting_name is None or ":" not in partial_config_setting_name)  # noqa: COM812
+    )
+    if VALIDATOR_IS_SEQUENCE_TYPE:
+        return [
+            sequence_value.strip()
+            for sequence_value
+            in new_config_setting_value.strip().split(",")
+        ]
+
+    VALIDATOR_IS_MAPPING_TYPE: Final[bool] = bool(
+        isinstance(yaml_validator, strictyaml.validators.MapValidator)
+        and hasattr(yaml_validator, "_required_keys")
+        and partial_config_setting_name is not None  # noqa: COM812
+    )
+    if VALIDATOR_IS_MAPPING_TYPE:
+        key: str
+        remainder: str
+        key, _, remainder = partial_config_setting_name.partition(":")  # type: ignore[union-attr]
+
+        # noinspection PyProtectedMember,PyUnresolvedReferences
+        if set(yaml_validator._required_keys) - {key}:  # noqa: SLF001
+            raise ChangingSettingWithRequiredSiblingError
+
+        # noinspection PyUnresolvedReferences
+        return {
+            key: _set_required_value_from_validator_config(  # type: ignore[dict-item]
+                remainder if ":" in partial_config_setting_name else None,  # type: ignore[operator]
+                new_config_setting_value,
+                yaml_validator.get_validator(key),
+            ),
+        }
+
+    UNKNOWN_CONFIG_TYPE_MESSAGE: Final[str] = (
+        "Unknown YAML validator type. Expected mapping, sequence or scalar."
+    )
+    raise RuntimeError(UNKNOWN_CONFIG_TYPE_MESSAGE)
+
+
+def assign_single_config_setting_value(config_setting_name: str, new_config_setting_value: str, settings_accessor: SettingsAccessor) -> None:  # noqa: E501
     """Set the value of a single configuration setting within the setting tree hierarchy."""
     # noinspection PyProtectedMember
-    _get_mapping_config_setting_value(  # noqa: SLF001
-        config_setting_name,
-        settings_accessor._most_recent_yaml,  # noqa: SLF001
-        use_setter=True,
-    )
+    current_yaml: YAML | None = settings_accessor._most_recent_yaml  # noqa: SLF001
+    if current_yaml is None:
+        YAML_NOT_LOADED_MESSAGE: Final[str] = (
+            "Invalid state: Config YAML has not yet been loaded."
+        )
+        raise RuntimeError(YAML_NOT_LOADED_MESSAGE)
+
+    config_setting_error: ChangingSettingWithRequiredSiblingError
+    try:
+        settings_accessor = _set_mapping_config_setting_value(
+            config_setting_name,
+            new_config_setting_value,
+            current_yaml,
+        )
+    except ChangingSettingWithRequiredSiblingError as config_setting_error:
+        raise type(config_setting_error)(
+            config_setting_name=config_setting_name,
+        ) from config_setting_error
+
+    print(settings_accessor.as_yaml())
+
+    # TODO: save yaml

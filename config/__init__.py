@@ -22,7 +22,6 @@ __all__: Sequence[str] = (
 )
 
 
-import contextlib
 import functools
 import importlib
 import logging
@@ -30,8 +29,6 @@ import os
 from collections.abc import Iterable
 from logging import Logger
 from typing import Final, Protocol
-
-from exceptions import BotRequiresRestartAfterConfigChange
 
 from . import _settings
 from ._messages import MessagesAccessor
@@ -54,8 +51,7 @@ def run_setup() -> None:
     """Execute the setup functions required, before other modules can be run."""
     check_for_deprecated_environment_variables()
 
-    with contextlib.suppress(BotRequiresRestartAfterConfigChange):
-        settings.reload()
+    settings.reload()
 
     messages.load(settings["MESSAGES_LOCALE_CODE"])
 
@@ -166,14 +162,14 @@ class _SingleSettingValueViewerFunc(Protocol):
 
 
 class _SingleSettingAssignerFunc(Protocol):
-    def __call__(self, config_setting_name: str) -> None: ...
+    def __call__(self, config_setting_name: str, new_config_setting_value: str) -> None: ...
 
 
 view_single_config_setting_value: _SingleSettingValueViewerFunc = functools.partial(
     _settings.view_single_config_setting_value,
-    settings_accessor=settings
+    settings_accessor=settings,
 )
 assign_single_config_setting_value: _SingleSettingAssignerFunc = functools.partial(
     _settings.assign_single_config_setting_value,
-    settings_accessor=settings
+    settings_accessor=settings,
 )

@@ -26,7 +26,7 @@ class PingCommandCog(TeXBotBaseCog):
                     "`64 bytes from TeX-Bot: icmp_seq=1 ttl=63 time=0.01 ms`",
                 ],
                 weights=(
-                    100 - settings["PING_COMMAND_EASTER_EGG_PROBABILITY"],
+                    1 - settings["PING_COMMAND_EASTER_EGG_PROBABILITY"],
                     settings["PING_COMMAND_EASTER_EGG_PROBABILITY"],
                 ),
             )[0],
