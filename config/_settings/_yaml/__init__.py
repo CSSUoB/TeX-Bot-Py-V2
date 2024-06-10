@@ -160,7 +160,7 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(
                     SlugKeyMap(
                         {
                             strictyaml.Optional("lookback-days", default=DEFAULT_STATS_COMMAND_LOOKBACK_DAYS): (  # noqa: E501
-                                strictyaml.Float()
+                                strictyaml.Float()  # TODO: Change to bounded float (min 5, max 1826)
                             ),
                             strictyaml.Optional("displayed-roles", default=DEFAULT_STATS_COMMAND_DISPLAYED_ROLES): (  # noqa: E501
                                 strictyaml.UniqueSeq(strictyaml.Str())

@@ -116,7 +116,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             )
             return
 
-        if not re.match(settings["MEMBERS_LIST_ID_FORMAT"], group_member_id):
+        if not re.fullmatch(settings["MEMBERS_LIST_ID_FORMAT"], group_member_id):
             await self.command_send_error(
                 ctx,
                 message=(

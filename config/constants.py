@@ -78,7 +78,7 @@ def _custom_required_format_message(type_value: str, info_link: str | None = Non
             type_value.lower().replace("discord", "Discord").replace(
                 "id",
                 "ID",
-            ).replace("url", "URL").strip(".")
+            ).replace("url", "URL").replace("dm", "DM").strip(".")
         }{f" (see <{info_link}>)" if info_link else ""}."
     )
 

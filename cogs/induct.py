@@ -289,7 +289,7 @@ class InductCommandCog(BaseInductCog):
     """Cog class that defines the "/induct" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+    async def autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice | str]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable members.
 
@@ -310,7 +310,7 @@ class InductCommandCog(BaseInductCog):
         else:
             members = {member for member in members if guest_role not in member.roles}
 
-        if not ctx.value or re.match(r"\A@.*\Z", ctx.value):
+        if not ctx.value or re.fullmatch(r"\A@.*\Z", ctx.value):
             return {
                 discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
                 for member

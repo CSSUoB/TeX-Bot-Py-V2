@@ -149,7 +149,7 @@ class TeXBotBaseCog(Cog):
             )
 
     @staticmethod
-    async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+    async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice | str]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable channels.
 
@@ -171,7 +171,7 @@ class TeXBotBaseCog(Cog):
                 ctx.interaction.user,
             )
 
-        if not ctx.value or re.match(r"\A#.*\Z", ctx.value):
+        if not ctx.value or re.fullmatch(r"\A#.*\Z", ctx.value):
             return {
                 discord.OptionChoice(name=f"#{channel.name}", value=str(channel.id))
                 for channel

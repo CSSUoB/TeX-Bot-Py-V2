@@ -5,6 +5,9 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("ConfigChangeCommandsCog",)
 
 
+import itertools
+import re
+import urllib.parse
 from typing import Final
 
 import discord
@@ -12,7 +15,8 @@ from strictyaml import StrictYAMLError
 
 import config
 from config import CONFIG_SETTINGS_HELPS, ConfigSettingHelp, LogLevels
-from exceptions import ChangingSettingWithRequiredSiblingError
+from exceptions import ChangingSettingWithRequiredSiblingError, DiscordMemberNotInMainGuildError
+from exceptions.base import BaseDoesNotExistError
 from utils import (
     CommandChecks,
     TeXBotApplicationContext,
@@ -30,19 +34,18 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     )
 
     @staticmethod
-    async def autocomplete_get_settings_names(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+    async def autocomplete_get_settings_names(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice | str]:  # noqa: E501
         """Autocomplete callable that generates the set of available settings names."""
         if not ctx.interaction.user:
             return set()
 
-        if not await ctx.bot.check_user_has_committee_role(ctx.interaction.user):
+        try:
+            if not await ctx.bot.check_user_has_committee_role(ctx.interaction.user):
+                return set()
+        except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
             return set()
 
-        return {
-            discord.OptionChoice(name=setting_name, value=setting_name)
-            for setting_name
-            in config.CONFIG_SETTINGS_HELPS
-        }
+        return set(config.CONFIG_SETTINGS_HELPS)
 
     @staticmethod
     async def autocomplete_get_example_setting_values(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice | str]:  # noqa: E501
@@ -53,11 +56,169 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         if not HAS_CONTEXT:
             return set()
 
-        if not await ctx.bot.check_user_has_committee_role(ctx.interaction.user):  # type: ignore[arg-type]
+        try:
+            if not await ctx.bot.check_user_has_committee_role(ctx.interaction.user):  # type: ignore[arg-type]
+                return set()
+        except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
             return set()
 
-        if ":log-level" in ctx.options["setting"]:
+        setting_name: str = ctx.options["setting"]
+
+        if "token" in setting_name or "cookie" in setting_name or "secret" in setting_name:
+            return set()
+
+        if ":log-level" in setting_name:
             return {log_level.value for log_level in LogLevels}
+
+        if "discord" in setting_name and ":webhook-url" in setting_name:
+            return {"https://discord.com/api/webhooks/"}
+
+        try:
+            main_guild: discord.Guild = ctx.bot.main_guild
+        except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
+            return set()
+
+        if "community" in setting_name:
+            SIMPLIFIED_FULL_NAME: Final[str] = (
+                main_guild.name.strip().removeprefix("the").removeprefix("The").strip()
+            )
+
+            if ":full-name" in setting_name:
+                return {
+                    main_guild.name.strip(),
+                    main_guild.name.strip().title(),
+                    SIMPLIFIED_FULL_NAME.split()[0].rsplit("'")[0],
+                    SIMPLIFIED_FULL_NAME.split()[0].rsplit("'")[0].capitalize(),
+                }
+
+            if ":short-name" in setting_name:
+                return {
+                    "".join(word[0].upper() for word in SIMPLIFIED_FULL_NAME.split()),
+                    "".join(word[0].lower() for word in SIMPLIFIED_FULL_NAME.split()),
+                }
+
+        if re.search(r":links:[^:]+\Z", setting_name) or setting_name.endswith(":url"):
+            if "purchase-membership" in setting_name or "membership-perks" in setting_name:
+                return {
+                    "https://",
+                    "https://www.guildofstudents.com/studentgroups/societies/",
+                    "https://www.guildofstudents.com/organisation/",
+                }
+
+            if "document" in setting_name:
+                return {
+                    "https://",
+                    "https://drive.google.com/file/d/",
+                    "https://docs.google.com/document/d/",
+                    "https://onedrive.live.com/edit.aspx?resid=",
+                    "https://1drv.ms/p/",
+                } | {
+                    f"https://{domain}.com/{path}"
+                    for domain, path
+                    in itertools.product(
+                        ("github", "raw.githubusercontent"),
+                        (f"{urllib.parse.quote(ctx.bot.group_short_name)}/", ""),
+                    )
+                } | {
+                    f"https://{subdomain}dropbox{domain_suffix}.com/{path}"
+                    for subdomain, domain_suffix, path
+                    in itertools.product(
+                        ("dl.", ""),
+                        ("usercontent", ""),
+                        ("shared/", "", "s/", "scl/fi/"),
+                    )
+                }
+
+            return {"https://"}
+
+        if "members-list:id-format" in setting_name:
+            return (
+                {r"\A[a-z0-9]{" + str(2 ** id_length) + r"}\Z" for id_length in range(2, 9)}
+                | {r"\A[A-F0-9]{" + str(2 ** id_length) + r"}\Z" for id_length in range(2, 9)}
+                | {r"\A[0-9]{" + str(2 ** id_length) + r"}\Z" for id_length in range(2, 9)}
+            )
+
+        if "probability" in setting_name:
+            return {
+                "0",
+                "0.01",
+                "0.025",
+                "0.05",
+                "0.1",
+                "0.125",
+                "0.15",
+                "0.20",
+                "0.25",
+                "0.4",
+                "0.45",
+                "0.5",
+                "0.6",
+                "0.65",
+                "0.7",
+                "0.75",
+                "0.8",
+                "0.85",
+                "0.9",
+                "0.95",
+                "0.975",
+                "0.99",
+                "0.999",
+                "1",
+            }
+
+        if ":lookback-days" in setting_name:
+            return {
+                "5",
+                "7",
+                "10",
+                "20",
+                "25",
+                "27",
+                "28",
+                "30",
+                "31",
+                "50",
+                "75",
+                "100",
+                "150",
+                "200",
+                "250",
+                "500",
+                "750",
+                "1000",
+                "1250",
+                "1500",
+                "1826",
+            }
+
+        if ":displayed-roles" in setting_name:
+            return {
+                "Committee,Member,Guest",
+                (
+                    "Foundation Year,First Year,Second Year,Final Year,Year In Industry,"
+                    "Year Abroad,PGT,PGR,Alumnus/Alumna,Postdoc"
+                ),
+            }
+
+        try:
+            interaction_user: discord.Member = await ctx.bot.get_main_guild_member(
+                ctx.interaction.user,
+            )
+        except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
+            return set()
+
+        if ":performed-manually-warning-location" in setting_name:
+            return (
+                {"DM"}
+                | {
+                    channel.name
+                    for channel
+                    in main_guild.text_channels
+                    if channel.permissions_for(interaction_user).is_superset(
+                        discord.Permissions(send_messages=True)
+                    )
+                }
+            )
 
         return set()  # TODO: extra autocomplete suggestions
 
@@ -214,6 +375,10 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             )
             return
 
+        previous_config_setting_value: str | None = config.view_single_config_setting_value(
+            config_setting_name,
+        )
+
         # TODO: Are you sure, if config has no default
 
         yaml_error: StrictYAMLError
@@ -254,6 +419,13 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             config_setting_name,
         )
 
+        if changed_config_setting_value == previous_config_setting_value:
+            await ctx.respond(
+                "No changes made. Provided value was the same as the previous value.",
+                ephemeral=True,
+            )
+            return
+
         if isinstance(changed_config_setting_value, str):
             changed_config_setting_value = changed_config_setting_value.strip()
 
@@ -283,3 +455,5 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             ),
             ephemeral=True,
         )
+
+    # TODO: Command to unset value (if it is optional)

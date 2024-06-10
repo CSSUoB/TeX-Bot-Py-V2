@@ -103,7 +103,7 @@ class DiscordSnowflakeValidator(strictyaml.Int):  # type: ignore[misc]
     def validate_scalar(self, chunk: YAMLChunk) -> int:  # type: ignore[misc]
         val: int = super().validate_scalar(chunk)
 
-        if not re.match(r"\A\d{17,20}\Z", str(val)):
+        if not re.fullmatch(r"\A\d{17,20}\Z", str(val)):
             chunk.expecting_but_found("when expecting a Discord snowflake ID")
             raise RuntimeError
 
@@ -115,7 +115,7 @@ class DiscordSnowflakeValidator(strictyaml.Int):  # type: ignore[misc]
             (
                 (strictyaml_utils.is_string(data) or isinstance(data, int))
                 and strictyaml_utils.is_integer(str(data))
-                and re.match(r"\A\d{17,20}\Z", str(data))
+                and re.fullmatch(r"\A\d{17,20}\Z", str(data))
             ),
         )
         if not DATA_IS_VALID:
