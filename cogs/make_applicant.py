@@ -10,6 +10,7 @@ from logging import Logger
 
 import discord
 
+from exceptions.does_not_exist import GuildDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 logger: Logger = logging.getLogger("TeX-Bot")
@@ -82,13 +83,17 @@ class MakeApplicantCommandCog(BaseMakeApplicantCog):
     """Cog class that defines the /make_applicant command."""
 
     @staticmethod
-    async def autocomplete_get_all_members(ctx: TeXBotApplicationContext) -> set[discord.OptionChoice]: # noqa: E501
+    async def autocomplete_get_members(ctx: TeXBotApplicationContext) -> set[discord.OptionChoice]: # noqa: E501
         """
-        Autocomplete callable that generates the set of all members in the server.
+        Autocomplete callable that generates the set of available selectable members.
 
-        This list of selectable members is used in any of the make_applicant slash commands.
+        This list of selectable members is used in any of the "make_applicant" slash-command
+        options that have a member input-type.
         """
-        guild: discord.Guild = ctx.bot.main_guild
+        try:
+            guild: discord.Guild = ctx.bot.main_guild
+        except GuildDoesNotExistError:
+            return set()
 
         members: set[discord.Member] = {member for member in guild.members if not member.bot}
 
@@ -109,6 +114,7 @@ class MakeApplicantCommandCog(BaseMakeApplicantCog):
         name="user",
         description="The user to make an Applicant",
         input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
         required=True,
         parameter_name="str_applicant_member_id",
     )
