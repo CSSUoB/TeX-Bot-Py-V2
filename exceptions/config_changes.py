@@ -22,7 +22,6 @@ class BotRequiresRestartAfterConfigChange(BaseTeXBotError, Exception):
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
-        """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
         return "TeX-Bot requires a restart due to configuration changes."
 
     @override
@@ -48,7 +47,6 @@ class ChangingSettingWithRequiredSiblingError(BaseTeXBotError, ValueError):
 
     @override
     def __init__(self, message: str | None = None, config_setting_name: str | None = None) -> None:  # noqa: E501
-        """Initialize a ValueError exception for a non-existent user ID."""
         self.config_setting_name: str | None = config_setting_name
 
         super().__init__(

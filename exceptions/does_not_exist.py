@@ -31,7 +31,6 @@ class RulesChannelDoesNotExistError(BaseTeXBotError, ValueError):
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
-        """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
         return "There is no channel marked as the rules channel."
 
 
@@ -42,21 +41,18 @@ class GuildDoesNotExistError(BaseDoesNotExistError):
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
-        """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
         return "Server with given ID does not exist or is not accessible to the bot."
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def ERROR_CODE(cls) -> str:  # noqa: N805
-        """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
         return "E1011"
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DOES_NOT_EXIST_TYPE(cls) -> str:  # noqa: N805
-        """The name of the Discord entity that this `DoesNotExistError` is associated with."""  # noqa: D401
         return "guild"
 
     @override
@@ -77,14 +73,12 @@ class RoleDoesNotExistError(BaseDoesNotExistError, abc.ABC):
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
-        """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
         return f"Role with name \"{cls.ROLE_NAME}\" does not exist."
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DOES_NOT_EXIST_TYPE(cls) -> str:  # noqa: N805
-        """The name of the Discord entity that this `DoesNotExistError` is associated with."""  # noqa: D401
         return "role"
 
     # noinspection PyMethodParameters,PyPep8Naming
@@ -113,19 +107,12 @@ class CommitteeRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     @override
     def ERROR_CODE(cls) -> str:  # noqa: N805
-        """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
         return "E1021"
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N805
-        """
-        The set of names of bot commands that require this Discord entity.
-
-        This set being empty could mean that all bot commands require this Discord entity,
-        or no bot commands require this Discord entity.
-        """  # noqa: D401
         # noinspection SpellCheckingInspection
         return frozenset(
             {
@@ -144,7 +131,6 @@ class CommitteeRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     @override
     def ROLE_NAME(cls) -> str:  # noqa: N805
-        """The name of the Discord role that does not exist."""  # noqa: D401
         return "Committee"
 
 
@@ -155,19 +141,12 @@ class GuestRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     @override
     def ERROR_CODE(cls) -> str:  # noqa: N805
-        """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
         return "E1022"
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N805
-        """
-        The set of names of bot commands that require this Discord entity.
-
-        This set being empty could mean that all bot commands require this Discord entity,
-        or no bot commands require this Discord entity.
-        """  # noqa: D401
         # noinspection SpellCheckingInspection
         return frozenset({"induct", "stats", "archive", "ensure-members-inducted"})
 
@@ -175,12 +154,6 @@ class GuestRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     @override
     def DEPENDENT_TASKS(cls) -> frozenset[str]:  # noqa: N805
-        """
-        The set of names of bot tasks that require this Discord entity.
-
-        This set being empty could mean that all bot tasks require this Discord entity,
-        or no bot tasks require this Discord entity.
-        """  # noqa: D401
         # noinspection SpellCheckingInspection
         return frozenset({"send_get_roles_reminders"})
 
@@ -188,7 +161,6 @@ class GuestRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     @override
     def ROLE_NAME(cls) -> str:  # noqa: N805
-        """The name of the Discord role that does not exist."""  # noqa: D401
         return "Guest"
 
 
@@ -199,19 +171,12 @@ class MemberRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     @override
     def ERROR_CODE(cls) -> str:  # noqa: N805
-        """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
         return "E1023"
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N805
-        """
-        The set of names of bot commands that require this Discord entity.
-
-        This set being empty could mean that all bot commands require this Discord entity,
-        or no bot commands require this Discord entity.
-        """  # noqa: D401
         # noinspection SpellCheckingInspection
         return frozenset({"makemember", "ensure-members-inducted"})
 
@@ -219,7 +184,6 @@ class MemberRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     @override
     def ROLE_NAME(cls) -> str:  # noqa: N805
-        """The name of the Discord role that does not exist."""  # noqa: D401
         return "Member"
 
 
@@ -230,19 +194,12 @@ class ArchivistRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     @override
     def ERROR_CODE(cls) -> str:  # noqa: N805
-        """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
         return "E1024"
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N805
-        """
-        The set of names of bot commands that require this Discord entity.
-
-        This set being empty could mean that all bot commands require this Discord entity,
-        or no bot commands require this Discord entity.
-        """  # noqa: D401
         # noinspection SpellCheckingInspection
         return frozenset({"archive"})
 
@@ -250,7 +207,6 @@ class ArchivistRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     @override
     def ROLE_NAME(cls) -> str:  # noqa: N805
-        """The name of the Discord role that does not exist."""  # noqa: D401
         return "Archivist"
 
 
@@ -261,14 +217,12 @@ class ChannelDoesNotExistError(BaseDoesNotExistError):
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
-        """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
         return f"Channel with name \"{cls.CHANNEL_NAME}\" does not exist."
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DOES_NOT_EXIST_TYPE(cls) -> str:  # noqa: N805
-        """The name of the Discord entity that this `DoesNotExistError` is associated with."""  # noqa: D401
         return "channel"
 
     # noinspection PyMethodParameters,PyPep8Naming
@@ -299,19 +253,12 @@ class RolesChannelDoesNotExistError(ChannelDoesNotExistError):
     @classproperty
     @override
     def ERROR_CODE(cls) -> str:  # noqa: N805
-        """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
         return "E1031"
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N805
-        """
-        The set of names of bot commands that require this Discord entity.
-
-        This set being empty could mean that all bot commands require this Discord entity,
-        or no bot commands require this Discord entity.
-        """  # noqa: D401
         # noinspection SpellCheckingInspection
         return frozenset({"writeroles"})
 
@@ -319,7 +266,6 @@ class RolesChannelDoesNotExistError(ChannelDoesNotExistError):
     @classproperty
     @override
     def CHANNEL_NAME(cls) -> str:  # noqa: N805
-        """The name of the Discord channel that does not exist."""  # noqa: D401
         return "roles"
 
 
@@ -330,19 +276,12 @@ class GeneralChannelDoesNotExistError(ChannelDoesNotExistError):
     @classproperty
     @override
     def ERROR_CODE(cls) -> str:  # noqa: N805
-        """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
         return "E1032"
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N805
-        """
-        The set of names of bot commands that require this Discord entity.
-
-        This set being empty could mean that all bot commands require this Discord entity,
-        or no bot commands require this Discord entity.
-        """  # noqa: D401
         # noinspection SpellCheckingInspection
         return frozenset({"induct"})
 
@@ -350,5 +289,4 @@ class GeneralChannelDoesNotExistError(ChannelDoesNotExistError):
     @classproperty
     @override
     def CHANNEL_NAME(cls) -> str:  # noqa: N805
-        """The name of the Discord channel that does not exist."""  # noqa: D401
         return "general"

@@ -5,8 +5,8 @@ from collections.abc import Sequence
 __all__: Sequence[str] = (
     "InductSendMessageCog",
     "BaseInductCog",
-    "InductCommandCog",
-    "InductUserCommandsCog",
+    "InductSlashCommandCog",
+    "InductContextCommandsCog",
     "EnsureMembersInductedCommandCog",
 )
 
@@ -285,7 +285,7 @@ class BaseInductCog(TeXBotBaseCog):
         await initial_response.edit(content=":white_check_mark: User inducted successfully.")
 
 
-class InductCommandCog(BaseInductCog):
+class InductSlashCommandCog(BaseInductCog):
     """Cog class that defines the "/induct" command and its call-back method."""
 
     @staticmethod
@@ -366,33 +366,34 @@ class InductCommandCog(BaseInductCog):
         await self._perform_induction(ctx, induct_member, silent=silent)
 
 
-class InductUserCommandsCog(BaseInductCog):
+class InductContextCommandsCog(BaseInductCog):
     """Cog class that defines the context menu induction commands & their call-back methods."""
 
     @discord.user_command(name="Induct User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def non_silent_induct(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:  # noqa: E501
+    async def non_silent_user_induct(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:  # noqa: E501
         """
         Definition & callback response of the "non_silent_induct" user-context-command.
 
-        The "non_silent_induct" command executes the same process as the
-        "induct" slash-command, and thus inducts a given member
-        into your group's Discord guild by giving them the "Guest" role,
-        only without broadcasting a welcome message.
+        The "non_silent_induct" command executes the same process
+        as the "induct" slash-command, using the user-context-menu.
+        Therefore, it will induct a given member into your group's Discord guild
+        by giving them the "Guest" role.
         """
         await self._perform_induction(ctx, member, silent=False)
 
     @discord.user_command(name="Silently Induct User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def silent_induct(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:  # noqa: E501
+    async def silent_user_induct(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:  # noqa: E501
         """
         Definition & callback response of the "silent_induct" user-context-command.
 
         The "silent_induct" command executes the same process as the "induct" slash-command,
-        and thus inducts a given member into your group's Discord guild by giving them the
-        "Guest" role.
+        using the user-context-menu.
+        Therefore, it will induct a given member into your group's Discord guild
+        by giving them the "Guest" role, only without broadcasting a welcome message.
         """
         await self._perform_induction(ctx, member, silent=True)
 
@@ -403,8 +404,10 @@ class InductUserCommandsCog(BaseInductCog):
         """
         Definition and callback response of the "non_silent_induct" message-context-command.
 
-        The non_silent_message_induct command executes the same process as the
-        induct slash command using the message-context-menu instead of the user-menu.
+        The "non_silent_induct" command executes the same process
+        as the "induct" slash-command, using the message-context-menu.
+        Therefore, it will induct a given member into your group's Discord guild
+        by giving them the "Guest" role.
         """
         try:
             member: discord.Member = await self.bot.get_member_from_str_id(
@@ -430,8 +433,10 @@ class InductUserCommandsCog(BaseInductCog):
         """
         Definition and callback response of the "silent_induct" message-context-command.
 
-        The silent_message_induct command executes the same process as the
-        induct slash command using the message-context-menu instead of the user-menu.
+        The "silent_induct" command executes the same process as the "induct" slash-command,
+        using the message-context-menu.
+        Therefore, it will induct a given member into your group's Discord guild
+        by giving them the "Guest" role, only without broadcasting a welcome message.
         """
         try:
             member: discord.Member = await self.bot.get_member_from_str_id(

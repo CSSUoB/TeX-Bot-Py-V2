@@ -31,7 +31,7 @@ logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class RemindMeCommandCog(TeXBotBaseCog):
-    """Cog class that defines the "/remindme" command and its call-back method."""
+    """Cog class that defines the "/remind-me" command and its call-back method."""
 
     @staticmethod
     async def autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> set[str]:  # noqa: C901, PLR0912, PLR0915
@@ -173,7 +173,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
         return {f"{ctx.value}{delay_choice}".casefold() for delay_choice in delay_choices}
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="remindme",
+        name="remind-me",
         description="Responds with the given message after the specified time.",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]

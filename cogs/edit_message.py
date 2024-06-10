@@ -21,7 +21,7 @@ from utils import (
 
 class EditMessageCommandCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
-    """Cog class that defines the "/editmessage" command and its call-back method."""
+    """Cog class that defines the "/edit-message" command and its call-back method."""
 
     @staticmethod
     async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice] | set[str]:  # noqa: E501
@@ -44,7 +44,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
 
     # noinspection SpellCheckingInspection
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="editmessage",
+        name="edit-message",
         description="Edits a message sent by TeX-Bot to the value supplied.",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
