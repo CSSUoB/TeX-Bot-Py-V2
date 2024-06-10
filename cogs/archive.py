@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("ArchiveCommandCog",)
+__all__: Sequence[str] = ("ArchiveSlashCommandCog",)
 
 
 import logging
@@ -23,7 +23,7 @@ from utils import (
 logger: Logger = logging.getLogger("TeX-Bot")
 
 
-class ArchiveCommandCog(TeXBotBaseCog):
+class ArchiveSlashCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/archive" command and its call-back method."""
 
     @staticmethod
