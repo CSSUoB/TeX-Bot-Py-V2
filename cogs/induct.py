@@ -7,7 +7,7 @@ __all__: Sequence[str] = (
     "BaseInductCog",
     "InductSlashCommandCog",
     "InductContextCommandsCog",
-    "EnsureMembersInductedCommandCog",
+    "EnsureMembersInductedSlashCommandCog",
 )
 
 
@@ -442,7 +442,7 @@ class InductContextCommandsCog(BaseInductCog):
         await self._perform_induction(ctx, member, silent=True)
 
 
-class EnsureMembersInductedCommandCog(TeXBotBaseCog):
+class EnsureMembersInductedSlashCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/ensure-members-inducted" command and call-back method."""
 
     # noinspection SpellCheckingInspection
