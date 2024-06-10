@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("KillCommandCog", "ConfirmKillView")
+__all__: Sequence[str] = ("KillSlashCommandCog", "ConfirmKillView")
 
 
 import contextlib
@@ -40,7 +40,7 @@ class ConfirmKillView(View):
         logger.debug("Cancel button pressed. %s", interaction)
 
 
-class KillCommandCog(TeXBotBaseCog):
+class KillSlashCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/kill" command and its call-back method."""
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]

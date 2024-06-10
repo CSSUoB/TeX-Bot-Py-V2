@@ -16,7 +16,7 @@ __all__: Sequence[str] = (
     "InductSlashCommandCog",
     "InductSendMessageCog",
     "InductContextCommandsCog",
-    "KillCommandCog",
+    "KillSlashCommandCog",
     "MakeMemberCommandCog",
     "PingCommandCog",
     "ClearRemindersBacklogTaskCog",
@@ -46,7 +46,7 @@ from cogs.induct import (
     InductSendMessageCog,
     InductSlashCommandCog,
 )
-from cogs.kill import KillCommandCog
+from cogs.kill import KillSlashCommandCog
 from cogs.make_member import MakeMemberCommandCog
 from cogs.ping import PingCommandCog
 from cogs.remind_me import ClearRemindersBacklogTaskCog, RemindMeCommandCog
@@ -76,7 +76,7 @@ def setup(bot: TeXBot) -> None:
         InductSlashCommandCog,
         InductSendMessageCog,
         InductContextCommandsCog,
-        KillCommandCog,
+        KillSlashCommandCog,
         MakeMemberCommandCog,
         PingCommandCog,
         ClearRemindersBacklogTaskCog,
