@@ -80,8 +80,8 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
         await initial_response.edit(content=":white_check_mark: User is now an applicant.")
 
 
-class MakeApplicantCommandCog(BaseMakeApplicantCog):
-    """Cog class that defines the /make_applicant command."""
+class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
+    """Cog class that defines the "/make_applicant" command."""
 
     @staticmethod
     async def autocomplete_get_members(ctx: TeXBotApplicationContext) -> set[discord.OptionChoice]: # noqa: E501
@@ -114,9 +114,9 @@ class MakeApplicantCommandCog(BaseMakeApplicantCog):
 
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="make_user_applicant",
+        name="make-applicant",
         description=(
-            "Gives the user @Applicant role and removes the Guest if present."
+            "Gives the user @Applicant role and removes the @Guest role if present."
         ),
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
@@ -131,10 +131,10 @@ class MakeApplicantCommandCog(BaseMakeApplicantCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def make_applicant(self, ctx: TeXBotApplicationContext, str_applicant_member_id: str) -> None:  # noqa: E501
         """
-        Definition & callback response of the "make_user_applicant" command.
+        Definition & callback response of the "make_applicant" command.
 
-        This command gives the specified user the applicant role while
-        removing the guest role if they have it.
+        The make_applicant command gives the specified user the "Applicant" role and
+        removes the "Guest" role if they have it.
         """
         member_id_not_integer_error: ValueError
         try:
@@ -148,10 +148,11 @@ class MakeApplicantCommandCog(BaseMakeApplicantCog):
         await self._perform_make_applicant(ctx, applicant_member)
 
 
-    @discord.user_command(name="Make User Applicant") #type: ignore[no-untyped-call, misc]
+class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
+    @discord.user_command(name="Make Applicant") #type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_user_applicant(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None: # noqa: E501
+    async def user_make_applicant(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None: # noqa: E501
         """
         Definition and callback response of the give_user_applicant_role user-context command.
 
