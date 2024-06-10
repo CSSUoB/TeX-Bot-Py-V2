@@ -10,7 +10,7 @@ from logging import Logger
 
 import discord
 
-from exceptions.does_not_exist import GuildDoesNotExistError
+from exceptions.does_not_exist import ApplicantRoleDoesNotExistError, GuildDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 logger: Logger = logging.getLogger("TeX-Bot")
@@ -92,10 +92,11 @@ class MakeApplicantCommandCog(BaseMakeApplicantCog):
         """
         try:
             guild: discord.Guild = ctx.bot.main_guild
-        except GuildDoesNotExistError:
+            applicant_role: discord.Role = await ctx.bot.applicant_role
+        except (GuildDoesNotExistError, ApplicantRoleDoesNotExistError):
             return set()
 
-        members: set[discord.Member] = {member for member in guild.members if not member.bot}
+        members: set[discord.Member] = {member for member in guild.members if not member.bot and applicant_role not in member.roles}  # noqa: E501
 
         return {
             discord.OptionChoice(name=member.name, value=str(member.id))
