@@ -41,7 +41,6 @@ from cogs.archive import ArchiveCommandCog
 from cogs.command_error import CommandErrorCog
 from cogs.delete_all import DeleteAllCommandsCog
 from cogs.edit_message import EditMessageCommandCog
-from cogs.give_applicant import MakeApplicantCommandCog
 from cogs.induct import (
     EnsureMembersInductedCommandCog,
     InductCommandCog,
@@ -49,6 +48,7 @@ from cogs.induct import (
     InductUserCommandsCog,
 )
 from cogs.kill import KillCommandCog
+from cogs.make_applicant import MakeApplicantCommandCog
 from cogs.make_member import MakeMemberCommandCog
 from cogs.ping import PingCommandCog
 from cogs.remind_me import ClearRemindersBacklogTaskCog, RemindMeCommandCog
