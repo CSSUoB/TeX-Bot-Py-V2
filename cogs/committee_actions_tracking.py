@@ -11,7 +11,7 @@ import discord
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 
 from db.core.models import Action
-from exceptions import BaseDoesNotExistError
+from exceptions.base import BaseDoesNotExistError
 from utils import (
     CommandChecks,
     TeXBotApplicationContext,
