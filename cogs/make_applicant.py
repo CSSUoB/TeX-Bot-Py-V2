@@ -1,4 +1,4 @@
-"""Contains cog classes for making the user an applicant."""
+"""Contains cog classes for making a user into an applicant."""
 
 from collections.abc import Sequence
 from typing import Final
@@ -40,13 +40,11 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
         )
 
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-            ":hourglass: Attempting to make user an Applicant... :hourglass:",
+            ":hourglass: Attempting to make user an applicant... :hourglass:",
             ephemeral=True,
         )
 
-
         AUDIT_MESSAGE: Final[str] = f"{ctx.user} used TeX Bot Command \"Make User Applicant\""
-
 
         await applicant_member.add_roles(applicant_role, reason=AUDIT_MESSAGE)
 
@@ -158,22 +156,24 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def user_make_applicant(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None: # noqa: E501
         """
-        Definition and callback response of the give_user_applicant_role user-context command.
+        Definition and callback response of the "make_applicant" user-context-command.
 
-        This command will simply give the user the applicant role if it exists.
-        If the user already has the guest role, this will be removed.
+        The "make_applicant" user-context-command executes the same process as
+        the "make_applicant" slash-command, and thus gives the specified user the
+        "Applicant" role and removes the "Guest" role if they have it.
         """
         await self._perform_make_applicant(ctx, member)
 
     @discord.MessageCommand(name="Make Message Author Applicant") # type: ignore[misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_message_author_applicant(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
+    async def message_make_applicant(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
         """
-        Definition of the "make_message_author_applicant" message-context command.
+        Definition of the "message_make_applicant" message-context-command.
 
-        This command executes the same process as the user context command but will
-        also react with a wave emoji to the message that was used.
+        The "make_applicant" message-context-command executes the same process as
+        the "make_applicant" slash-command, and thus gives the specified user the
+        "Applicant" role and removes the "Guest" role if they have it.
         """
         try:
             member: discord.Member = await self.bot.get_member_from_str_id(
@@ -181,9 +181,8 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
             )
         except ValueError:
             await ctx.respond((
-                ":information_source: No changes made. User cannot be given "
-                "the Applicant role because they have left the server"
-                ":information_source:"
+                ":information_source: No changes made. User cannot be made into an applicant "
+                "because they have left the server :information_source:"
                 ),
                 ephemeral=True,
             )

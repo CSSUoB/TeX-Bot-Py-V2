@@ -233,7 +233,7 @@ class ArchivistRoleDoesNotExistError(RoleDoesNotExistError):
         return "Archivist"
 
 class ApplicantRoleDoesNotExistError(RoleDoesNotExistError):
-    """Exception class to raise when the "Applicant" discord role is missing."""
+    """Exception class to raise when the "Applicant" Discord role is missing."""
 
     @classproperty
     def ERROR_CODE(cls) -> str:  # noqa: N802, N805
