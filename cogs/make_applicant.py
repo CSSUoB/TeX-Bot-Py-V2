@@ -3,7 +3,11 @@
 from collections.abc import Sequence
 from typing import Final
 
-__all__: Sequence[str] = ("BaseMakeApplicantCog","MakeApplicantCommandCog")
+__all__: Sequence[str] = (
+    "BaseMakeApplicantCog",
+    "MakeApplicantSlashCommandCog",
+    "MakeApplicantContextCommandsCog",
+)
 
 import logging
 import re
