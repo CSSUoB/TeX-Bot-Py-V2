@@ -59,7 +59,10 @@ class SettingsAccessor:
         if "_pytest" in item or item in ("__bases__", "__test__"):  # NOTE: Overriding __getattr__() leads to many edge-case issues where external libraries will attempt to call getattr() with peculiar values
             raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
-        if not re.fullmatch(r"\A(?!.*__.*)(?:[A-Z]|[A-Z_][A-Z]|[A-Z_][A-Z][A-Z_]*[A-Z])\Z", item):
+        IN_SETTING_KEY_FORMAT: Final[bool] = bool(
+            re.fullmatch(r"\A(?!.*__.*)(?:[A-Z]|[A-Z_][A-Z]|[A-Z_][A-Z][A-Z_]*[A-Z])\Z", item)  # noqa: COM812
+        )
+        if not IN_SETTING_KEY_FORMAT:
             raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
         if self._most_recent_yaml is None:

@@ -15,7 +15,10 @@ from strictyaml import StrictYAMLError
 
 import config
 from config import CONFIG_SETTINGS_HELPS, ConfigSettingHelp, LogLevels
-from exceptions import ChangingSettingWithRequiredSiblingError, DiscordMemberNotInMainGuildError
+from exceptions import (
+    ChangingSettingWithRequiredSiblingError,
+    DiscordMemberNotInMainGuildError,
+)
 from exceptions.base import BaseDoesNotExistError
 from utils import (
     CommandChecks,
@@ -34,7 +37,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     )
 
     @staticmethod
-    async def autocomplete_get_settings_names(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice | str]:  # noqa: E501
+    async def autocomplete_get_settings_names(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice] | set[str]:  # noqa: E501
         """Autocomplete callable that generates the set of available settings names."""
         if not ctx.interaction.user:
             return set()
@@ -48,7 +51,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         return set(config.CONFIG_SETTINGS_HELPS)
 
     @staticmethod
-    async def autocomplete_get_example_setting_values(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice | str]:  # noqa: E501
+    async def autocomplete_get_example_setting_values(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice] | set[str]:  # noqa: C901,PLR0911,PLR0912,E501
         """Autocomplete callable that generates example values for a configuration setting."""
         HAS_CONTEXT: Final[bool] = bool(
             ctx.interaction.user and "setting" in ctx.options and ctx.options["setting"],
@@ -72,64 +75,6 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
 
         if "discord" in setting_name and ":webhook-url" in setting_name:
             return {"https://discord.com/api/webhooks/"}
-
-        try:
-            main_guild: discord.Guild = ctx.bot.main_guild
-        except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
-            return set()
-
-        if "community" in setting_name:
-            SIMPLIFIED_FULL_NAME: Final[str] = (
-                main_guild.name.strip().removeprefix("the").removeprefix("The").strip()
-            )
-
-            if ":full-name" in setting_name:
-                return {
-                    main_guild.name.strip(),
-                    main_guild.name.strip().title(),
-                    SIMPLIFIED_FULL_NAME.split()[0].rsplit("'")[0],
-                    SIMPLIFIED_FULL_NAME.split()[0].rsplit("'")[0].capitalize(),
-                }
-
-            if ":short-name" in setting_name:
-                return {
-                    "".join(word[0].upper() for word in SIMPLIFIED_FULL_NAME.split()),
-                    "".join(word[0].lower() for word in SIMPLIFIED_FULL_NAME.split()),
-                }
-
-        if re.search(r":links:[^:]+\Z", setting_name) or setting_name.endswith(":url"):
-            if "purchase-membership" in setting_name or "membership-perks" in setting_name:
-                return {
-                    "https://",
-                    "https://www.guildofstudents.com/studentgroups/societies/",
-                    "https://www.guildofstudents.com/organisation/",
-                }
-
-            if "document" in setting_name:
-                return {
-                    "https://",
-                    "https://drive.google.com/file/d/",
-                    "https://docs.google.com/document/d/",
-                    "https://onedrive.live.com/edit.aspx?resid=",
-                    "https://1drv.ms/p/",
-                } | {
-                    f"https://{domain}.com/{path}"
-                    for domain, path
-                    in itertools.product(
-                        ("github", "raw.githubusercontent"),
-                        (f"{urllib.parse.quote(ctx.bot.group_short_name)}/", ""),
-                    )
-                } | {
-                    f"https://{subdomain}dropbox{domain_suffix}.com/{path}"
-                    for subdomain, domain_suffix, path
-                    in itertools.product(
-                        ("dl.", ""),
-                        ("usercontent", ""),
-                        ("shared/", "", "s/", "scl/fi/"),
-                    )
-                }
-
-            return {"https://"}
 
         if "members-list:id-format" in setting_name:
             return (
@@ -200,9 +145,70 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                 ),
             }
 
+        if "locale-code" in setting_name:
+            raise NotImplementedError  # TODO: retrieve from constant
+
+        if re.search(r":links:[^:]+\Z", setting_name) or setting_name.endswith(":url"):
+            if "purchase-membership" in setting_name or "membership-perks" in setting_name:
+                return {
+                    "https://",
+                    "https://www.guildofstudents.com/studentgroups/societies/",
+                    "https://www.guildofstudents.com/organisation/",
+                }
+
+            if "document" in setting_name:
+                return {
+                    "https://",
+                    "https://drive.google.com/file/d/",
+                    "https://docs.google.com/document/d/",
+                    "https://onedrive.live.com/edit.aspx?resid=",
+                    "https://1drv.ms/p/",
+                } | {
+                    f"https://{domain}.com/{path}"
+                    for domain, path
+                    in itertools.product(
+                        ("github", "raw.githubusercontent"),
+                        (f"{urllib.parse.quote(ctx.bot.group_short_name)}/", ""),
+                    )
+                } | {
+                    f"https://{subdomain}dropbox{domain_suffix}.com/{path}"
+                    for subdomain, domain_suffix, path
+                    in itertools.product(
+                        ("dl.", ""),
+                        ("usercontent", ""),
+                        ("shared/", "", "s/", "scl/fi/"),
+                    )
+                }
+
+            return {"https://"}
+
         try:
-            interaction_user: discord.Member = await ctx.bot.get_main_guild_member(
-                ctx.interaction.user,
+            main_guild: discord.Guild = ctx.bot.main_guild
+        except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
+            return set()
+
+        if "community" in setting_name:
+            SIMPLIFIED_FULL_NAME: Final[str] = (
+                main_guild.name.strip().removeprefix("the").removeprefix("The").strip()
+            )
+
+            if ":full-name" in setting_name:
+                return {
+                    main_guild.name.strip(),
+                    main_guild.name.strip().title(),
+                    SIMPLIFIED_FULL_NAME.split()[0].rsplit("'")[0],
+                    SIMPLIFIED_FULL_NAME.split()[0].rsplit("'")[0].capitalize(),
+                }
+
+            if ":short-name" in setting_name:
+                return {
+                    "".join(word[0].upper() for word in SIMPLIFIED_FULL_NAME.split()),
+                    "".join(word[0].lower() for word in SIMPLIFIED_FULL_NAME.split()),
+                }
+
+        try:
+            interaction_member: discord.Member = await ctx.bot.get_main_guild_member(
+                ctx.interaction.user,  # type: ignore[arg-type]
             )
         except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
             return set()
@@ -214,8 +220,8 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                     channel.name
                     for channel
                     in main_guild.text_channels
-                    if channel.permissions_for(interaction_user).is_superset(
-                        discord.Permissions(send_messages=True)
+                    if channel.permissions_for(interaction_member).is_superset(
+                        discord.Permissions(send_messages=True),
                     )
                 }
             )

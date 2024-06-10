@@ -721,7 +721,7 @@ class StrikeCommandCog(BaseStrikeCog):
     """Cog class that defines the "/strike" command and its call-back method."""
 
     @staticmethod
-    async def strike_autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice | str]:  # noqa: E501
+    async def strike_autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice] | set[str]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable members.
 
