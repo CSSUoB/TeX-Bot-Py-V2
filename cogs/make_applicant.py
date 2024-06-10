@@ -6,6 +6,7 @@ from typing import Final
 __all__: Sequence[str] = ("BaseMakeApplicantCog","MakeApplicantCommandCog")
 
 import logging
+import re
 from logging import Logger
 
 import discord
@@ -97,6 +98,13 @@ class MakeApplicantCommandCog(BaseMakeApplicantCog):
             return set()
 
         members: set[discord.Member] = {member for member in guild.members if not member.bot and applicant_role not in member.roles}  # noqa: E501
+
+        if not ctx.value or re.match(r"\A@.*\Z", ctx.value):
+            return {
+                discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
+                for member
+                in members
+            }
 
         return {
             discord.OptionChoice(name=member.name, value=str(member.id))
