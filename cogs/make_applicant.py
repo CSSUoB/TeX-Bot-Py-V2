@@ -100,10 +100,10 @@ class MakeApplicantCommandCog(BaseMakeApplicantCog):
 
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-            name="make_user_applicant",
-            description=(
-                "Gives the user @Applicant role and removes the Guest if present."
-            ),
+        name="make_user_applicant",
+        description=(
+            "Gives the user @Applicant role and removes the Guest if present."
+        ),
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="user",
