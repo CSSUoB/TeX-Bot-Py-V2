@@ -151,6 +151,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
 
 
 class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
+    """"""
     @discord.user_command(name="Make Applicant") #type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
