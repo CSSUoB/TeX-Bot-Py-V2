@@ -53,14 +53,10 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
             async with http_session.get(REQUEST_URL) as http_response:
                 response_html: str = await http_response.text()
 
-        TABLE_ID: str = "ulOrgs"
         parsed_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
             response_html,
             "html.parser",
-        ).find(
-            "ul",
-            {"id": TABLE_ID},
-        )
+        ).find("ul", {"id": "ulOrgs"})
 
         if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
             NO_ADMIN_DEBUG: Final[str] = (
@@ -71,39 +67,44 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
             await ctx.respond("The user token provided does not have any admin access!")
             return
 
-        orgs = [li.get_text(strip=True) for li in parsed_html.find_all("li")]
-
-        DIV_ID: Final[str] = "profile_main"
-        profile_section: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
+        profile_section_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
             response_html,
             "html.parser",
-        ).find(
-            "div",
-            {"id": DIV_ID},
-        )
+        ).find("div", {"id": "profile_main"})
 
-        if profile_section is None:
-            logger.warning("Couldn't find the profile of the user!")
-            logger.debug(response_html)
+        if profile_section_html is None:
+            logger.warning(
+                "Couldn't find the profile section of the user,"
+                "when scraping the website's HTML!",
+            )
+            logger.debug("Retrieved HTML: %s", response_html)
             await ctx.respond(
                 "Couldn't find the profile of the user!"
                 "This should never happen, please check the logs!",
             )
             return
 
-        user_name: bs4.Tag | bs4.NavigableString | int | None = profile_section.find("h1")
+        user_name: bs4.Tag | bs4.NavigableString | int | None = profile_section_html.find("h1")
 
         if type(user_name) is not bs4.Tag:
             logger.debug("Found user profile but couldn't find their name!")
             await ctx.respond("Found user profile but couldn't find the name!")
             return
 
+        organisations = [
+            list_item.get_text(strip=True)
+            for list_item
+            in parsed_html.find_all("li")
+        ]
+
         user_name_str: str = user_name.text
 
-        token_message: str = f"Admin token has access to the following MSL Organisations as {user_name_str}:\n{', \n'.join(org for org in orgs)}"  # noqa: E501
+        token_message: str = f"Admin token has access to the following MSL Organisations as {user_name_str}:\n{', \n'.join(organisation for organisation in organisations)}"  # noqa: E501
 
-        logger.debug("Admin Token has admin access to: %s as user %s", orgs, user_name_str)
+        logger.debug(
+            "Admin Token has admin access to: %s as user %s",
+            organisations,
+            user_name_str,
+        )
+
         await ctx.respond(token_message)
-
-
-
