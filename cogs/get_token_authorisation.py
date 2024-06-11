@@ -1,12 +1,13 @@
 """Contains cog classes for token authorisation check interactions."""
 
 from collections.abc import Sequence
-from typing import Final
 
 __all__: Sequence[str] = ("GetTokenAuthorisationCommand",)
 
+
 import logging
 from logging import Logger
+from typing import Final
 
 import aiohttp
 import bs4
@@ -20,20 +21,20 @@ logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class GetTokenAuthorisationCommand(TeXBotBaseCog):
-    """Cog class that defines the /get_token_authorisation command."""
+    """Cog class that defines the "/get_token_authorisation" command."""
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
-        name="get_token_authorisation",
+        name="get-token-authorisation",
         description="Checks the authorisations held by the token.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def get_token_authorisation(self, ctx: TeXBotApplicationContext) -> None:
         """
-        Definition of the get token authorisation command.
+        Definition of the "get_token_authorisation" command.
 
         The command will retrieve the profle for the user who owns the token.
-        The profile page will contain the users name and a list of the MSL organisations
+        The profile page will contain the user's name and a list of the MSL organisations
         the user has administrative access to.
         """
         request_headers: dict[str, str] = {
