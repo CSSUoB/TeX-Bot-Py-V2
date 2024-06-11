@@ -88,7 +88,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
 
 
 class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
-    """Cog class that defines the "/make_applicant" slash command."""
+    """Cog class that defines the "/make_applicant" slash-command."""
 
     @staticmethod
     async def autocomplete_get_members(ctx: TeXBotApplicationContext) -> set[discord.OptionChoice]: # noqa: E501
@@ -145,7 +145,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
         """
         Definition & callback response of the "make_applicant" command.
 
-        The make_applicant command gives the specified user the "Applicant" role and
+        The "make_applicant" command gives the specified user the "Applicant" role and
         removes the "Guest" role if they have it.
         """
         member_id_not_integer_error: ValueError
