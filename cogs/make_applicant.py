@@ -10,7 +10,6 @@ __all__: Sequence[str] = (
 
 
 import logging
-import re
 from logging import Logger
 from typing import Final
 
@@ -112,7 +111,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
             if not member.bot and applicant_role not in member.roles
         }
 
-        if not ctx.value or re.match(r"\A@.*\Z", ctx.value):
+        if not ctx.value or ctx.value.startswith("@"):
             return {
                 discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
                 for member
