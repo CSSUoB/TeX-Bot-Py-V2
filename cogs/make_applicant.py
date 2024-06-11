@@ -1,7 +1,6 @@
 """Contains cog classes for making a user into an applicant."""
 
 from collections.abc import Sequence
-from typing import Final
 
 __all__: Sequence[str] = (
     "BaseMakeApplicantCog",
@@ -9,9 +8,11 @@ __all__: Sequence[str] = (
     "MakeApplicantContextCommandsCog",
 )
 
+
 import logging
 import re
 from logging import Logger
+from typing import Final
 
 import discord
 
@@ -43,6 +44,11 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
             ":hourglass: Attempting to make user an applicant... :hourglass:",
             ephemeral=True,
         )
+
+        if applicant_member.bot:
+            await initial_response.edit(content="Cannot make a bot user an applicant!")
+            await self.command_send_error(ctx, message="Cannot make a bot user an applicant!")
+            return
 
         AUDIT_MESSAGE: Final[str] = f"{ctx.user} used TeX Bot Command \"Make User Applicant\""
 
@@ -99,7 +105,12 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
         except (GuildDoesNotExistError, ApplicantRoleDoesNotExistError):
             return set()
 
-        members: set[discord.Member] = {member for member in guild.members if not member.bot and applicant_role not in member.roles}  # noqa: E501
+        members: set[discord.Member] = {
+            member
+            for member
+            in guild.members
+            if not member.bot and applicant_role not in member.roles
+        }
 
         if not ctx.value or re.match(r"\A@.*\Z", ctx.value):
             return {
