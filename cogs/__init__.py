@@ -9,7 +9,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = (
     "ArchiveCommandCog",
-    "GetTokenAuthorisationSlashCommand",
+    "GetTokenAuthorisationCommand",
     "CommandErrorCog",
     "DeleteAllCommandsCog",
     "EditMessageCommandCog",
@@ -41,7 +41,7 @@ from cogs.archive import ArchiveCommandCog
 from cogs.command_error import CommandErrorCog
 from cogs.delete_all import DeleteAllCommandsCog
 from cogs.edit_message import EditMessageCommandCog
-from cogs.get_token_authorisation import GetTokenAuthorisationSlashCommand
+from cogs.get_token_authorisation import GetTokenAuthorisationCommand
 from cogs.induct import (
     EnsureMembersInductedCommandCog,
     InductCommandCog,
@@ -71,7 +71,7 @@ def setup(bot: TeXBot) -> None:
     """Add all the cogs to the bot, at bot startup."""
     cogs: Iterable[type[TeXBotBaseCog]] = (
         ArchiveCommandCog,
-        GetTokenAuthorisationSlashCommand,
+        GetTokenAuthorisationCommand,
         CommandErrorCog,
         DeleteAllCommandsCog,
         EditMessageCommandCog,

@@ -3,7 +3,7 @@
 from collections.abc import Sequence
 from typing import Final
 
-__all__: Sequence[str] = ("GetTokenAuthorisationSlashCommand",)
+__all__: Sequence[str] = ("GetTokenAuthorisationCommand",)
 
 import logging
 from logging import Logger
@@ -19,7 +19,7 @@ from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 logger: Logger = logging.getLogger("TeX-Bot")
 
 
-class GetTokenAuthorisationSlashCommand(TeXBotBaseCog):
+class GetTokenAuthorisationCommand(TeXBotBaseCog):
     """Cog class that defines the /get_token_authorisation command."""
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
