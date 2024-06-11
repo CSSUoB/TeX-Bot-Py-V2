@@ -14,7 +14,6 @@ __all__: Sequence[str] = (
 import contextlib
 import logging
 import random
-import re
 from logging import Logger
 from typing import Literal
 
@@ -298,7 +297,7 @@ class InductCommandCog(BaseInductCog):
         else:
             members = {member for member in members if guest_role not in member.roles}
 
-        if not ctx.value or re.match(r"\A@.*\Z", ctx.value):
+        if not ctx.value or ctx.value.startswith("@"):
             return {
                 discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
                 for member
