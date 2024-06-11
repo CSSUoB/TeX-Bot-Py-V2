@@ -12,7 +12,7 @@ __all__: Sequence[str] = (
     "CommandErrorCog",
     "DeleteAllCommandsCog",
     "EditMessageCommandCog",
-    "EnsureMembersInductedSlashCommandCog",
+    "EnsureMembersInductedCommandCog",
     "InductSlashCommandCog",
     "InductSendMessageCog",
     "InductContextCommandsCog",
@@ -41,7 +41,7 @@ from cogs.command_error import CommandErrorCog
 from cogs.delete_all import DeleteAllCommandsCog
 from cogs.edit_message import EditMessageCommandCog
 from cogs.induct import (
-    EnsureMembersInductedSlashCommandCog,
+    EnsureMembersInductedCommandCog,
     InductContextCommandsCog,
     InductSendMessageCog,
     InductSlashCommandCog,
@@ -72,7 +72,7 @@ def setup(bot: TeXBot) -> None:
         CommandErrorCog,
         DeleteAllCommandsCog,
         EditMessageCommandCog,
-        EnsureMembersInductedSlashCommandCog,
+        EnsureMembersInductedCommandCog,
         InductSlashCommandCog,
         InductSendMessageCog,
         InductContextCommandsCog,
