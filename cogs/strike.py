@@ -17,8 +17,10 @@ __all__: Sequence[str] = (
 import asyncio
 import contextlib
 import datetime
+import logging
 import re
 from collections.abc import Mapping
+from logging import Logger
 from typing import Final
 
 import aiohttp
@@ -52,6 +54,8 @@ from utils.message_sender_components import (
     MessageSenderComponent,
     ResponseMessageSender,
 )
+
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 async def perform_moderation_action(strike_user: discord.Member, strikes: int, committee_member: discord.Member | discord.User) -> None:  # noqa: E501
@@ -475,6 +479,10 @@ class ManualModerationCog(BaseStrikeCog):
             )
             raise NoAuditLogsStrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
 
+        confirmation_message_channel: discord.DMChannel | discord.TextChannel
+        if "automod" in audit_log_entry.reason:
+            logger.debug("Automod! Send to log channel")
+
         if not audit_log_entry.user:
             raise StrikeTrackingError
 
@@ -483,7 +491,7 @@ class ManualModerationCog(BaseStrikeCog):
         if applied_action_user == self.bot.user:
             return
 
-        confirmation_message_channel: discord.DMChannel | discord.TextChannel = (
+        confirmation_message_channel = (
             await self.get_confirmation_message_channel(applied_action_user)
         )
 
