@@ -357,7 +357,7 @@ class InductSlashCommandCog(BaseInductCog):
 
 
 class InductContextCommandsCog(BaseInductCog):
-    """Cog class that defines the context menu induction commands & their call-back methods."""
+    """Cog class that defines the context-menu induction commands & their call-back methods."""
 
     @discord.user_command(name="Induct User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
