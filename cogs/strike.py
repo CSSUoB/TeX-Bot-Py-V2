@@ -487,6 +487,10 @@ class ManualModerationCog(BaseStrikeCog):
             )
             raise NoAuditLogsStrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
 
+        confirmation_message_channel: discord.DMChannel | discord.TextChannel
+        if "automod" in audit_log_entry.reason:
+            logger.debug("Automod! Send to log channel")
+
         if not audit_log_entry.user:
             raise StrikeTrackingError
 
@@ -495,7 +499,7 @@ class ManualModerationCog(BaseStrikeCog):
         if applied_action_user == self.bot.user:
             return
 
-        confirmation_message_channel: discord.DMChannel | discord.TextChannel = (
+        confirmation_message_channel = (
             await self.get_confirmation_message_channel(applied_action_user)
         )
 
