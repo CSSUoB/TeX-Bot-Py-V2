@@ -313,6 +313,7 @@ class InductSlashCommandCog(BaseInductCog):
             in members
         }
 
+
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="induct",
         description=(
