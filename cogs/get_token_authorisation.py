@@ -7,7 +7,7 @@ __all__: Sequence[str] = ("GetTokenAuthorisationCommand",)
 
 import logging
 from logging import Logger
-from typing import Final, Mapping
+from typing import Final, Mapping  # noqa: UP035
 
 import aiohttp
 import bs4
