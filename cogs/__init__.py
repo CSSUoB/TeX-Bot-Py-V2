@@ -46,8 +46,8 @@ from cogs.induct import (
     InductSendMessageCog,
     InductSlashCommandCog,
 )
-from cogs.kill import KillSlashCommandCog
-from cogs.make_member import MakeMemberSlashCommandCog
+from cogs.kill import KillCommandCog
+from cogs.make_member import MakeMemberCommandCog
 from cogs.ping import PingCommandCog
 from cogs.remind_me import ClearRemindersBacklogTaskCog, RemindMeCommandCog
 from cogs.send_get_roles_reminders import SendGetRolesRemindersTaskCog
@@ -76,8 +76,8 @@ def setup(bot: TeXBot) -> None:
         InductSlashCommandCog,
         InductSendMessageCog,
         InductContextCommandsCog,
-        KillSlashCommandCog,
-        MakeMemberSlashCommandCog,
+        KillCommandCog,
+        MakeMemberCommandCog,
         PingCommandCog,
         ClearRemindersBacklogTaskCog,
         RemindMeCommandCog,
