@@ -9,7 +9,7 @@ import itertools
 import random
 import re
 import urllib.parse
-from collections.abc import Set, MutableSequence
+from collections.abc import MutableSequence, Set
 from typing import Final
 
 import discord
@@ -164,7 +164,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         SETTING_NAME_IS_TIMEDELTA: Final[bool] = (
             ":timeout-duration" in setting_name
             or ":delay" in setting_name
-            or ":interval" in setting_name  # noqa: COM812
+            or ":interval" in setting_name
         )
         if SETTING_NAME_IS_TIMEDELTA:
             timedelta_scales: MutableSequence[str] = ["s", "m", "h"]
