@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("MakeMemberSlashCommandCog",)
+__all__: Sequence[str] = ("MakeMemberCommandCog",)
 
 
 import contextlib
@@ -53,7 +53,7 @@ _GROUP_MEMBER_ID_ARGUMENT_NAME: Final[str] = (
 )
 
 
-class MakeMemberSlashCommandCog(TeXBotBaseCog):
+class MakeMemberCommandCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
     """Cog class that defines the "/makemember" command and its call-back method."""
 
