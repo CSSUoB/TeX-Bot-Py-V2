@@ -46,7 +46,7 @@ async def get_settings_file_path() -> AsyncPath:
         logger.debug(
             (
                 "Settings file location not supplied by environment variable, "
-                "falling back to `Tex-Bot-deployment.yaml`."
+                "falling back to `tex-bot-deployment.yaml`."
             ),
         )
         raw_settings_file_path = "tex-bot-deployment.yaml"

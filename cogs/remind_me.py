@@ -10,6 +10,7 @@ import functools
 import itertools
 import logging
 import re
+from collections.abc import Set
 from logging import Logger
 from typing import TYPE_CHECKING, Final
 
@@ -34,7 +35,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/remind-me" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> set[str]:  # noqa: C901, PLR0912, PLR0915
+    async def autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: C901, PLR0912, PLR0915
         """
         Autocomplete callable that generates the common delay input values.
 

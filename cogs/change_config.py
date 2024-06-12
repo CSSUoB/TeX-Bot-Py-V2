@@ -6,8 +6,10 @@ __all__: Sequence[str] = ("ConfigChangeCommandsCog",)
 
 
 import itertools
+import random
 import re
 import urllib.parse
+from collections.abc import Set, MutableSequence
 from typing import Final
 
 import discord
@@ -15,6 +17,7 @@ from strictyaml import StrictYAMLError
 
 import config
 from config import CONFIG_SETTINGS_HELPS, ConfigSettingHelp, LogLevels
+from config.constants import MESSAGES_LOCALE_CODES, SendIntroductionRemindersFlagType
 from exceptions import (
     ChangingSettingWithRequiredSiblingError,
     DiscordMemberNotInMainGuildError,
@@ -37,7 +40,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     )
 
     @staticmethod
-    async def autocomplete_get_settings_names(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice] | set[str]:  # noqa: E501
+    async def autocomplete_get_settings_names(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
         """Autocomplete callable that generates the set of available settings names."""
         if not ctx.interaction.user:
             return set()
@@ -51,7 +54,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         return set(config.CONFIG_SETTINGS_HELPS)
 
     @staticmethod
-    async def autocomplete_get_example_setting_values(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice] | set[str]:  # noqa: C901,PLR0911,PLR0912,E501
+    async def autocomplete_get_example_setting_values(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: C901,PLR0911,PLR0912,E501
         """Autocomplete callable that generates example values for a configuration setting."""
         HAS_CONTEXT: Final[bool] = bool(
             ctx.interaction.user and "setting" in ctx.options and ctx.options["setting"],
@@ -146,9 +149,71 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             }
 
         if "locale-code" in setting_name:
-            raise NotImplementedError  # TODO: retrieve from constant
+            return MESSAGES_LOCALE_CODES
 
-        if re.search(r":links:[^:]+\Z", setting_name) or setting_name.endswith(":url"):
+        if "send-introduction-reminders:enable" in setting_name:
+            return {
+                str(flag_value).lower()
+                for flag_value
+                in getattr(SendIntroductionRemindersFlagType, "__args__")  # noqa: B009
+            }
+
+        if "send-get-roles-reminders:enable" in setting_name:
+            return {"true", "false"}
+
+        SETTING_NAME_IS_TIMEDELTA: Final[bool] = (
+            ":timeout-duration" in setting_name
+            or ":delay" in setting_name
+            or ":interval" in setting_name  # noqa: COM812
+        )
+        if SETTING_NAME_IS_TIMEDELTA:
+            timedelta_scales: MutableSequence[str] = ["s", "m", "h"]
+
+            if ":timeout-duration" in setting_name or ":delay" in setting_name:
+                timedelta_scales.extend(["d", "w"])
+
+            return {
+                "".join(
+                    (
+                        (
+                            f"{
+                                (
+                                    f"{
+                                        str(
+                                            random.choice(
+                                                (
+                                                    random.randint(1, 110),
+                                                    round(
+                                                        random.random() * 110,
+                                                        random.randint(1, 3),
+                                                    ),
+                                                ),
+                                            ),
+                                        ).removesuffix(".0").removesuffix(".00").removesuffix(
+                                            ".000",
+                                        )
+                                    }{
+                                        selected_timedelta_scale
+                                    }"
+                                )
+                                if selected_timedelta_scale
+                                else ""
+                            }"
+                        )
+                        for selected_timedelta_scale
+                        in selected_timedelta_scales
+                    ),
+                )
+                for _
+                in range(4)
+                for selected_timedelta_scales
+                in itertools.product(
+                    *(("", timedelta_scale) for timedelta_scale in timedelta_scales),
+                )
+                if any(selected_timedelta_scales)
+            }
+
+        if setting_name.endswith(":url") or re.search(r":links:[^:]+\Z", setting_name):
             if "purchase-membership" in setting_name or "membership-perks" in setting_name:
                 return {
                     "https://",
@@ -226,7 +291,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                 }
             )
 
-        return set()  # TODO: extra autocomplete suggestions
+        return set()
 
     @change_config.command(
         name="get",

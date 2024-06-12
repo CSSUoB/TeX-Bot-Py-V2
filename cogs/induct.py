@@ -14,6 +14,7 @@ __all__: Sequence[str] = (
 import contextlib
 import logging
 import random
+from collections.abc import Set
 from logging import Logger
 from typing import Literal
 
@@ -288,7 +289,7 @@ class InductSlashCommandCog(BaseInductCog):
     """Cog class that defines the "/induct" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice] | set[str]:  # noqa: E501
+    async def autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable members.
 
