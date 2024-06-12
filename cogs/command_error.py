@@ -14,10 +14,10 @@ from discord import Forbidden
 from discord.ext.commands.errors import CheckAnyFailure
 
 from exceptions import (
-    BaseErrorWithErrorCode,
     CommitteeRoleDoesNotExistError,
     GuildDoesNotExistError,
 )
+from exceptions.base import BaseErrorWithErrorCode
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 logger: Logger = logging.getLogger("TeX-Bot")
