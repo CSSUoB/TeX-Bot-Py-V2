@@ -7,7 +7,7 @@ __all__: Sequence[str] = ("GetTokenAuthorisationCommand",)
 
 import logging
 from logging import Logger
-from typing import Final
+from typing import Final, Mapping
 
 import aiohttp
 import bs4
@@ -37,19 +37,19 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
         The profile page will contain the user's name and a list of the MSL organisations
         the user has administrative access to.
         """
-        request_headers: dict[str, str] = {
+        REQUEST_HEADERS: Mapping[str, str] = {
             "Cache-Control": "no-cache",
             "Pragma": "no-cache",
             "Expires": "0",
         }
 
-        request_cookies: dict[str, str] = {
+        REQUEST_COOKIES: Mapping[str, str] = {
             ".ASPXAUTH": settings["MEMBERS_LIST_URL_SESSION_COOKIE"],
         }
 
         REQUEST_URL: Final[str] = "https://guildofstudents.com/profile"
 
-        async with aiohttp.ClientSession(headers=request_headers, cookies=request_cookies) as http_session:  # noqa: E501, SIM117
+        async with aiohttp.ClientSession(headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES) as http_session:  # noqa: E501, SIM117
             async with http_session.get(REQUEST_URL) as http_response:
                 response_html: str = await http_response.text()
 
@@ -59,11 +59,10 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
         ).find("ul", {"id": "ulOrgs"})
 
         if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
-            NO_ADMIN_DEBUG: Final[str] = (
+            logger.debug(
                 "No admin table was found, meaning the token provided "
-                "does not have admin access to any societies."
+                "does not have admin access to any societies.",
             )
-            logger.debug(NO_ADMIN_DEBUG)
             await ctx.respond("The user token provided does not have any admin access!")
             return
 
@@ -74,7 +73,7 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
 
         if profile_section_html is None:
             logger.warning(
-                "Couldn't find the profile section of the user,"
+                "Couldn't find the profile section of the user"
                 "when scraping the website's HTML!",
             )
             logger.debug("Retrieved HTML: %s", response_html)
@@ -86,9 +85,11 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
 
         user_name: bs4.Tag | bs4.NavigableString | int | None = profile_section_html.find("h1")
 
-        if type(user_name) is not bs4.Tag:
-            logger.debug("Found user profile but couldn't find their name!")
-            await ctx.respond("Found user profile but couldn't find the name!")
+        NO_PROFILE_DEBUG_MESSAGE: Final[str] = "Found user profile but couldn't find their name!"  # noqa: E501
+
+        if not isinstance(user_name, bs4.Tag):
+            logger.debug(NO_PROFILE_DEBUG_MESSAGE)
+            await ctx.respond(NO_PROFILE_DEBUG_MESSAGE)
             return
 
         organisations = [
@@ -97,14 +98,15 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
             in parsed_html.find_all("li")
         ]
 
-        user_name_str: str = user_name.text
-
-        token_message: str = f"Admin token has access to the following MSL Organisations as {user_name_str}:\n{', \n'.join(organisation for organisation in organisations)}"  # noqa: E501
-
         logger.debug(
             "Admin Token has admin access to: %s as user %s",
             organisations,
-            user_name_str,
+            user_name.text,
         )
 
-        await ctx.respond(token_message)
+        await ctx.respond(
+            f"Admin token has access to the following MSL Organisations as "
+            f"{user_name.text}:\n{', \n'.join(
+                organisation for organisation in organisations
+            )}",
+        )
