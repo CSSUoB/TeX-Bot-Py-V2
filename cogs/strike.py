@@ -49,7 +49,7 @@ from utils.error_capture_decorators import (
 )
 from utils.message_sender_components import (
     ChannelMessageSender,
-    MessageSenderComponent,
+    MessageSavingSenderComponent,
     ResponseMessageSender,
 )
 
@@ -244,7 +244,7 @@ class BaseStrikeCog(TeXBotBaseCog):
             "with you shortly, to discuss this further.",
         )
 
-    async def _confirm_perform_moderation_action(self, message_sender_component: MessageSenderComponent, interaction_user: discord.User, strike_user: discord.Member, confirm_strike_message: str, actual_strike_amount: int, button_callback_channel: discord.TextChannel | discord.DMChannel) -> None:  # noqa: E501
+    async def _confirm_perform_moderation_action(self, message_sender_component: MessageSavingSenderComponent, interaction_user: discord.User, strike_user: discord.Member, confirm_strike_message: str, actual_strike_amount: int, button_callback_channel: discord.TextChannel | discord.DMChannel) -> None:  # noqa: E501
         await message_sender_component.send(
             content=confirm_strike_message,
             view=ConfirmStrikeMemberView(),
@@ -288,7 +288,7 @@ class BaseStrikeCog(TeXBotBaseCog):
 
         raise ValueError
 
-    async def _confirm_increase_strike(self, message_sender_component: MessageSenderComponent, interaction_user: discord.User, strike_user: discord.User | discord.Member, member_strikes: DiscordMemberStrikes, button_callback_channel: discord.TextChannel | discord.DMChannel, *, perform_action: bool) -> None:  # noqa: E501
+    async def _confirm_increase_strike(self, message_sender_component: MessageSavingSenderComponent, interaction_user: discord.User, strike_user: discord.User | discord.Member, member_strikes: DiscordMemberStrikes, button_callback_channel: discord.TextChannel | discord.DMChannel, *, perform_action: bool) -> None:  # noqa: E501
         if perform_action and isinstance(strike_user, discord.User):
             STRIKE_USER_TYPE_ERROR_MESSAGE: Final[str] = (
                 "Cannot perform moderation action on non-guild member."

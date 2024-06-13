@@ -20,6 +20,7 @@ from exceptions.base import (
     BaseDoesNotExistError,
 )
 
+from .message_sender_components import GenericResponderComponent, SenderResponseComponent
 from .tex_bot import TeXBot
 from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
 
@@ -66,25 +67,25 @@ class TeXBotBaseCog(Cog):
         """Initialize a new cog instance, storing a reference to the bot object."""
         self.bot: TeXBot = bot
 
-    async def command_send_error(self, ctx: TeXBotApplicationContext, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
+    async def command_send_error(self, ctx: TeXBotApplicationContext, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, responder_component: GenericResponderComponent | None = None) -> None:  # noqa: E501
         """
         Construct & format an error message from the given details.
 
         The constructed error message is then sent as the response to the given
         application command context.
         """
-        COMMAND_NAME: Final[str] = (
-            ctx.command.callback.__name__
-            if (
-                hasattr(ctx.command, "callback")
-                and not ctx.command.callback.__name__.startswith("_")
-            ) else ctx.command.qualified_name
-        )
-
-        await self.send_error(
+        await self._respond_with_error(
             self.bot,
-            ctx.interaction,
-            interaction_name=COMMAND_NAME,
+            responder=(
+                responder_component or SenderResponseComponent(ctx.interaction, ephemeral=True)
+            ),
+            interaction_name=(
+                ctx.command.callback.__name__
+                if (
+                    hasattr(ctx.command, "callback")
+                    and not ctx.command.callback.__name__.startswith("_")
+                ) else ctx.command.qualified_name
+            ),
             error_code=error_code,
             message=message,
             logging_message=logging_message,
@@ -97,6 +98,17 @@ class TeXBotBaseCog(Cog):
 
         The constructed error message is then sent as the response to the given interaction.
         """
+        await cls._respond_with_error(
+            bot=bot,
+            responder=SenderResponseComponent(interaction, ephemeral=True),
+            interaction_name=interaction_name,
+            error_code=error_code,
+            message=message,
+            logging_message=logging_message,
+        )
+
+    @classmethod
+    async def _respond_with_error(cls, bot: TeXBot, responder: GenericResponderComponent, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
         construct_error_message: str = ":warning:There was an error"
 
         if error_code:
@@ -132,7 +144,7 @@ class TeXBotBaseCog(Cog):
             )
             construct_error_message += f"\n`{message}`"
 
-        await interaction.respond(construct_error_message, ephemeral=True)
+        await responder.respond(content=construct_error_message, view=None)
 
         if logging_message:
             logger.error(

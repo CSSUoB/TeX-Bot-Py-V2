@@ -7,7 +7,10 @@ from config._settings import utils as config_utils
 
 __all__: Sequence[str] = (  # noqa: PLE0604
     "CommandChecks",
-    "MessageSenderComponent",
+    "MessageSavingSenderComponent",
+    "GenericResponderComponent",
+    "SenderResponseComponent",
+    "EditorResponseComponent",
     "SuppressTraceback",
     "TeXBot",
     "TeXBotExitReason",
@@ -26,7 +29,12 @@ import discord
 from config._settings.utils import *  # noqa: F403
 
 from .command_checks import CommandChecks
-from .message_sender_components import MessageSenderComponent
+from .message_sender_components import (
+    EditorResponseComponent,
+    GenericResponderComponent,
+    MessageSavingSenderComponent,
+    SenderResponseComponent,
+)
 from .suppress_traceback import SuppressTraceback
 from .tex_bot import TeXBot, TeXBotExitReason
 from .tex_bot_base_cog import TeXBotBaseCog

@@ -5,14 +5,15 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("ConfigChangeCommandsCog",)
 
 
+import contextlib
 import itertools
 import logging
 import random
 import re
 import urllib.parse
 from collections.abc import MutableSequence, Set
-from typing import Final
 from logging import Logger
+from typing import Final
 
 import discord
 from discord.ui import View
@@ -23,11 +24,15 @@ from config import CONFIG_SETTINGS_HELPS, ConfigSettingHelp, LogLevels
 from config.constants import MESSAGES_LOCALE_CODES, SendIntroductionRemindersFlagType
 from exceptions import (
     ChangingSettingWithRequiredSiblingError,
+    CommitteeRoleDoesNotExistError,
     DiscordMemberNotInMainGuildError,
 )
 from exceptions.base import BaseDoesNotExistError
 from utils import (
     CommandChecks,
+    EditorResponseComponent,
+    GenericResponderComponent,
+    SenderResponseComponent,
     TeXBotApplicationContext,
     TeXBotAutocompleteContext,
     TeXBotBaseCog,
@@ -46,7 +51,7 @@ class ConfirmSetConfigSettingValueView(View):
     )
     async def confirm_set_config_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """When the yes button is pressed, delete the message."""
-        logger.debug("Yes button pressed. %s", interaction)
+        logger.debug("\"Yes\" button pressed. %s", interaction)
 
     @discord.ui.button(  # type: ignore[misc]
         label="No",
@@ -55,7 +60,7 @@ class ConfirmSetConfigSettingValueView(View):
     )
     async def cancel_set_config_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """When the no button is pressed, delete the message."""
-        logger.debug("No button pressed. %s", interaction)
+        logger.debug("\"No\" button pressed. %s", interaction)
 
 
 class ConfigChangeCommandsCog(TeXBotBaseCog):
@@ -473,11 +478,69 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             )
             return
 
+        if config.CONFIG_SETTINGS_HELPS[config_setting_name].default is None:
+            response: discord.Message | discord.Interaction = await ctx.respond(
+                content=(
+                    f"Setting {config_setting_name.replace("`", "\\`")} "
+                    "has no default value."
+                    "If you overwrite it with a new value the old one will be lost "
+                    "and cannot be restored.\n"
+                    "Are you sure you want to overwrite the old value?\n\n"
+                    "Please confirm using the buttons below."
+                ),
+                view=ConfirmSetConfigSettingValueView(),
+                ephemeral=True,
+            )
+
+            committee_role: discord.Role | None = None
+            with contextlib.suppress(CommitteeRoleDoesNotExistError):
+                committee_role = await self.bot.committee_role
+
+            confirmation_message: discord.Message = (
+                response
+                if isinstance(response, discord.Message)
+                else await response.original_response()
+            )
+            button_interaction: discord.Interaction = await self.bot.wait_for(
+                "interaction",
+                check=lambda interaction: (
+                    interaction.type == discord.InteractionType.component
+                    and interaction.message.id == confirmation_message.id
+                    and (
+                        (committee_role in interaction.user.roles)
+                        if committee_role
+                        else True
+                    )
+                    and "custom_id" in interaction.data
+                    and interaction.data["custom_id"] in {
+                        "shutdown_confirm",
+                        "shutdown_cancel",
+                    }
+                ),
+            )
+
+            if button_interaction.data["custom_id"] == "set_config_cancel":  # type: ignore[index, typeddict-item]
+                await confirmation_message.edit(
+                    content=(
+                        "Aborting editing config setting: "
+                        f"{config_setting_name.replace("`", "\\`")}"
+                    ),
+                    view=None,
+                )
+                return
+
+            if button_interaction.data["custom_id"] != "set_config_confirm":  # type: ignore[index, typeddict-item]
+                raise ValueError
+
         previous_config_setting_value: str | None = config.view_single_config_setting_value(
             config_setting_name,
         )
 
-        # TODO: Are you sure, if config has no default
+        responder: GenericResponderComponent = (
+            EditorResponseComponent(ctx.interaction)
+            if config.CONFIG_SETTINGS_HELPS[config_setting_name].default is None
+            else SenderResponseComponent(ctx.interaction, ephemeral=True)
+        )
 
         yaml_error: StrictYAMLError
         changing_setting_error: ChangingSettingWithRequiredSiblingError
@@ -486,6 +549,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                 config_setting_name,
                 new_config_value,
             )
+
         except StrictYAMLError as yaml_error:
             if str(yaml_error) != yaml_error.context:
                 INCONCLUSIVE_YAML_ERROR_MESSAGE: Final[str] = (
@@ -500,8 +564,10 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                     f"{str(yaml_error.context)[0].upper()}"
                     f"{str(yaml_error.context)[1:].strip(" .")}."
                 ),
+                responder_component=responder,
             )
             return
+
         except ChangingSettingWithRequiredSiblingError as changing_setting_error:
             await self.command_send_error(
                 ctx,
@@ -510,6 +576,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                     f"It will be easier to make your changes "
                     f"directly within the \"tex-bot-deployment.yaml\" file."
                 ),
+                responder_component=responder,
             )
             return
 
@@ -518,9 +585,9 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         )
 
         if changed_config_setting_value == previous_config_setting_value:
-            await ctx.respond(
+            await responder.respond(
                 "No changes made. Provided value was the same as the previous value.",
-                ephemeral=True,
+                view=None,
             )
             return
 
@@ -532,9 +599,8 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             or "cookie" in config_setting_name
             or "secret" in config_setting_name  # noqa: COM812
         )
-
-        await ctx.respond(
-            (
+        await responder.respond(
+            content=(
                 f"Successfully updated setting: `{
                     config_setting_name.replace("`", "\\`")
                 }`"
@@ -551,7 +617,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                 }\n\n"
                 "Changes could take up to ??? to take effect."  # TODO: Retrieve update time from task
             ),
-            ephemeral=True,
+            view=None,
         )
 
     # TODO: Command to unset value (if it is optional)
