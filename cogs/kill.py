@@ -32,7 +32,7 @@ class ConfirmKillView(View):
 
     @discord.ui.button(  # type: ignore[misc]
         label="CANCEL",
-        style=discord.ButtonStyle.green,
+        style=discord.ButtonStyle.grey,
         custom_id="shutdown_cancel",
     )
     async def cancel_shutdown_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
@@ -88,11 +88,10 @@ class KillCommandCog(TeXBotBaseCog):
             ),
         )
 
-        await confirmation_message.edit(view=None)
-
         if button_interaction.data["custom_id"] == "shutdown_confirm":  # type: ignore[index, typeddict-item]
             await confirmation_message.edit(
                 content="My battery is low and it's getting dark...",
+                view=None,
             )
             await self.bot.perform_kill_and_close(initiated_by_user=ctx.interaction.user)
             return
@@ -100,6 +99,7 @@ class KillCommandCog(TeXBotBaseCog):
         if button_interaction.data["custom_id"] == "shutdown_cancel":  # type: ignore[index, typeddict-item]
             await confirmation_message.edit(
                 content="Shutdown has been cancelled.",
+                view=None,
             )
             logger.info("Manual shutdown cancelled by %s.", ctx.interaction.user)
             return
