@@ -41,9 +41,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
         )
 
         if applicant_member.bot:
-            ERROR_MESSAGE: str = "Cannot make a bot user an applicant!"
-            await ctx.respond(content=ERROR_MESSAGE)
-            await self.command_send_error(ctx, message=ERROR_MESSAGE)
+            await self.command_send_error(ctx, message="Cannot make a bot user an applicant!")
             return
 
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
