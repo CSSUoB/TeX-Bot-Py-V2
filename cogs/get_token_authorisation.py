@@ -6,7 +6,7 @@ __all__: Sequence[str] = ("GetTokenAuthorisationCommand",)
 
 
 import logging
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from logging import Logger
 from typing import Final
 
@@ -86,14 +86,13 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
 
         user_name: bs4.Tag | bs4.NavigableString | int | None = profile_section_html.find("h1")
 
-        NO_PROFILE_DEBUG_MESSAGE: Final[str] = "Found user profile but couldn't find their name!"  # noqa: E501
-
         if not isinstance(user_name, bs4.Tag):
+            NO_PROFILE_DEBUG_MESSAGE: Final[str] = "Found user profile but couldn't find their name!"  # noqa: E501
             logger.debug(NO_PROFILE_DEBUG_MESSAGE)
             await ctx.respond(NO_PROFILE_DEBUG_MESSAGE)
             return
 
-        organisations = [
+        organisations: Iterable[str] = [
             list_item.get_text(strip=True)
             for list_item
             in parsed_html.find_all("li")
