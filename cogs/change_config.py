@@ -6,13 +6,16 @@ __all__: Sequence[str] = ("ConfigChangeCommandsCog",)
 
 
 import itertools
+import logging
 import random
 import re
 import urllib.parse
 from collections.abc import MutableSequence, Set
 from typing import Final
+from logging import Logger
 
 import discord
+from discord.ui import View
 from strictyaml import StrictYAMLError
 
 import config
@@ -29,6 +32,30 @@ from utils import (
     TeXBotAutocompleteContext,
     TeXBotBaseCog,
 )
+
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
+
+
+class ConfirmSetConfigSettingValueView(View):
+    """A discord.View containing two buttons to confirm setting a given config setting."""
+
+    @discord.ui.button(  # type: ignore[misc]
+        label="Yes",
+        style=discord.ButtonStyle.red,
+        custom_id="set_config_confirm",
+    )
+    async def confirm_set_config_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
+        """When the yes button is pressed, delete the message."""
+        logger.debug("Yes button pressed. %s", interaction)
+
+    @discord.ui.button(  # type: ignore[misc]
+        label="No",
+        style=discord.ButtonStyle.green,
+        custom_id="set_config_cancel",
+    )
+    async def cancel_set_config_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
+        """When the no button is pressed, delete the message."""
+        logger.debug("No button pressed. %s", interaction)
 
 
 class ConfigChangeCommandsCog(TeXBotBaseCog):

@@ -4,7 +4,7 @@ __all__: Sequence[str] = (
     "DiscordWebhookURLValidator",
     "LogLevelValidator",
     "DiscordSnowflakeValidator",
-    "ProbabilityValidator",
+    "BoundedFloatValidator",
     "SendIntroductionRemindersFlagValidator",
     "SETTINGS_YAML_SCHEMA",
     "load_yaml",
@@ -40,11 +40,11 @@ from config.constants import (
 
 from .custom_map_validator import SlugKeyMap
 from .custom_scalar_validators import (
+    BoundedFloatValidator,
     CustomBoolValidator,
     DiscordSnowflakeValidator,
     DiscordWebhookURLValidator,
     LogLevelValidator,
-    ProbabilityValidator,
     RegexMatcher,
     SendIntroductionRemindersFlagValidator,
     TimeDeltaValidator,
@@ -152,7 +152,7 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(
                 strictyaml.Optional("ping", default=_DEFAULT_PING_COMMAND_SETTINGS): SlugKeyMap(  # noqa: E501
                     {
                         strictyaml.Optional("easter-egg-probability", default=DEFAULT_PING_COMMAND_EASTER_EGG_PROBABILITY): (  # noqa: E501
-                            ProbabilityValidator()
+                            BoundedFloatValidator(0, 1)
                         ),
                     },
                 ),
@@ -160,7 +160,7 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(
                     SlugKeyMap(
                         {
                             strictyaml.Optional("lookback-days", default=DEFAULT_STATS_COMMAND_LOOKBACK_DAYS): (  # noqa: E501
-                                strictyaml.Float()  # TODO: Change to bounded float (min 5, max 1826)
+                                BoundedFloatValidator(5, 1826)
                             ),
                             strictyaml.Optional("displayed-roles", default=DEFAULT_STATS_COMMAND_DISPLAYED_ROLES): (  # noqa: E501
                                 strictyaml.UniqueSeq(strictyaml.Str())

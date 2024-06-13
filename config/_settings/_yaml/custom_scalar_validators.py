@@ -5,7 +5,7 @@ __all__: Sequence[str] = (
     "LogLevelValidator",
     "DiscordSnowflakeValidator",
     "RegexMatcher",
-    "ProbabilityValidator",
+    "BoundedFloatValidator",
     "TimeDeltaValidator",
     "SendIntroductionRemindersFlagValidator",
     "CustomBoolValidator",
@@ -155,13 +155,25 @@ class RegexMatcher(strictyaml.ScalarValidator):  # type: ignore[misc]
         return data  # type: ignore[return-value]
 
 
-class ProbabilityValidator(strictyaml.Float):  # type: ignore[misc]
+class BoundedFloatValidator(strictyaml.Float):  # type: ignore[misc]
+    @override
+    def __init__(self, inclusive_minimum: float, inclusive_maximum: float) -> None:
+        self.inclusive_minimum: float = inclusive_minimum
+        self.inclusive_maximum: float = inclusive_maximum
+
+        super().__init__()
+
     @override
     def validate_scalar(self, chunk: YAMLChunk) -> float:  # type: ignore[misc]
         val: float = super().validate_scalar(chunk)
 
-        if not 0 <= val <= 1:
-            chunk.expecting_but_found("when expecting a probability")
+        if not self.inclusive_minimum <= val <= self.inclusive_maximum:
+            chunk.expecting_but_found(
+                (
+                    "when expecting a float "
+                    f"between {self.inclusive_minimum} & {self.inclusive_maximum}"
+                ),
+            )
             raise RuntimeError
 
         return val
@@ -169,7 +181,10 @@ class ProbabilityValidator(strictyaml.Float):  # type: ignore[misc]
     @override
     def to_yaml(self, data: object) -> str:  # type: ignore[misc]
         YAML_SERIALIZATION_ERROR: Final[YAMLSerializationError] = YAMLSerializationError(
-            f"'{data}' is not a probability.",
+            (
+                f"'{data}' is not a float "
+                f"between {self.inclusive_minimum} & {self.inclusive_maximum}."
+            ),
         )
 
         if strictyaml_utils.is_string(data) and strictyaml_utils.is_decimal(data):
@@ -178,7 +193,7 @@ class ProbabilityValidator(strictyaml.Float):  # type: ignore[misc]
         if not strictyaml_utils.has_number_type(data):
             raise YAML_SERIALIZATION_ERROR
 
-        if not 0 <= data <= 1:  # type: ignore[operator]
+        if not self.inclusive_minimum <= data <= self.inclusive_maximum:  # type: ignore[operator]
             raise YAML_SERIALIZATION_ERROR
 
         if math.isnan(data):  # type: ignore[arg-type]
