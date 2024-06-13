@@ -40,15 +40,16 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
             name="introductions",
         )
 
+        if applicant_member.bot:
+            ERROR_MESSAGE: str = "Cannot make a bot user an applicant!"
+            await ctx.respond(content=ERROR_MESSAGE)
+            await self.command_send_error(ctx, message=ERROR_MESSAGE)
+            return
+
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
             ":hourglass: Attempting to make user an applicant... :hourglass:",
             ephemeral=True,
         )
-
-        if applicant_member.bot:
-            await initial_response.edit(content="Cannot make a bot user an applicant!")
-            await self.command_send_error(ctx, message="Cannot make a bot user an applicant!")
-            return
 
         AUDIT_MESSAGE: Final[str] = f"{ctx.user} used TeX Bot Command \"Make User Applicant\""
 

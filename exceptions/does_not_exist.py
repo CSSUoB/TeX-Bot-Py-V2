@@ -248,7 +248,7 @@ class ApplicantRoleDoesNotExistError(RoleDoesNotExistError):
         This set being empty could mean thta all bot commands require this entity,
         or that none of them do.
         """  # noqa: D401
-        return frozenset({"make_applicant", "induct"})
+        return frozenset({"make_applicant"})
 
     @classproperty
     def ROLE_NAME(cls) -> str: # noqa: N802, N805
