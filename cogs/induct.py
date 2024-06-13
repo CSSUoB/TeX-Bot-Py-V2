@@ -5,8 +5,8 @@ from collections.abc import Sequence
 __all__: Sequence[str] = (
     "InductSendMessageCog",
     "BaseInductCog",
-    "InductCommandCog",
-    "InductUserCommandsCog",
+    "InductSlashCommandCog",
+    "InductContextCommandsCog",
     "EnsureMembersInductedCommandCog",
 )
 
@@ -272,7 +272,7 @@ class BaseInductCog(TeXBotBaseCog):
         await initial_response.edit(content=":white_check_mark: User inducted successfully.")
 
 
-class InductCommandCog(BaseInductCog):
+class InductSlashCommandCog(BaseInductCog):
     """Cog class that defines the "/induct" command and its call-back method."""
 
     @staticmethod
@@ -309,6 +309,7 @@ class InductCommandCog(BaseInductCog):
             for member
             in members
         }
+
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="induct",
@@ -353,8 +354,8 @@ class InductCommandCog(BaseInductCog):
         await self._perform_induction(ctx, induct_member, silent=silent)
 
 
-class InductUserCommandsCog(BaseInductCog):
-    """Cog class that defines the context menu induction commands & their call-back methods."""
+class InductContextCommandsCog(BaseInductCog):
+    """Cog class that defines the context-menu induction commands & their call-back methods."""
 
     @discord.user_command(name="Induct User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
