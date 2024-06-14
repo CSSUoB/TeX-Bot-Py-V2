@@ -81,7 +81,7 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
             )
             logger.debug("Retrieved HTML: %s", response_html)
             await ctx.respond(
-                "Couldn't find the profile of the user!"
+                "Couldn't find the profile of the user! "
                 "This should never happen, please check the logs!",
             )
             return
