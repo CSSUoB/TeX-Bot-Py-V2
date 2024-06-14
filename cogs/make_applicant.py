@@ -176,7 +176,7 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
         """
         await self._perform_make_applicant(ctx, member)
 
-    @discord.MessageCommand(name="Make Message Author Applicant") # type: ignore[misc]
+    @discord.message_command(name="Make Message Author Applicant") # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def message_make_applicant(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
