@@ -5,6 +5,7 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("GetTokenAuthorisationCommand",)
 
 
+import contextlib
 import logging
 from collections.abc import Iterable, Mapping
 from logging import Logger
@@ -16,6 +17,7 @@ import discord
 from bs4 import BeautifulSoup
 
 from config import settings
+from exceptions.does_not_exist import GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 logger: Logger = logging.getLogger("TeX-Bot")
@@ -106,9 +108,18 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
             user_name.text,
         )
 
+        guest_role: discord.Role | None = None
+        with contextlib.suppress(GuestRoleDoesNotExistError):
+            guest_role = await ctx.bot.guest_role
+
         await ctx.respond(
             f"Admin token has access to the following MSL Organisations as "
             f"{user_name.text}:\n{', \n'.join(
                 organisation for organisation in organisations
             )}",
+            ephemeral=bool(
+                (not guest_role) or ctx.channel.permissions_for(guest_role).is_superset(
+                    discord.Permissions(view_channel=True),
+                ),
+            ),
         )
