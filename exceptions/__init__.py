@@ -3,6 +3,7 @@
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
+    "ApplicantRoleDoesNotExistError",
     "ArchivistRoleDoesNotExistError",
     "ChannelDoesNotExistError",
     "CommitteeRoleDoesNotExistError",
@@ -27,6 +28,7 @@ from .config_changes import (
     ChangingSettingWithRequiredSiblingError,
 )
 from .does_not_exist import (
+    ApplicantRoleDoesNotExistError,
     ArchivistRoleDoesNotExistError,
     ChannelDoesNotExistError,
     CommitteeRoleDoesNotExistError,

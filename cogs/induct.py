@@ -23,6 +23,7 @@ import discord
 from config import messages, settings
 from db.core.models import IntroductionReminderOptOutMember
 from exceptions import (
+    ApplicantRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
     GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
@@ -247,10 +248,9 @@ class BaseInductCog(TeXBotBaseCog):
             reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\"",
         )
 
-        applicant_role: discord.Role | None = discord.utils.get(
-            main_guild.roles,
-            name="Applicant",
-        )
+        applicant_role: discord.Role | None = None
+        with contextlib.suppress(ApplicantRoleDoesNotExistError):
+            applicant_role = await ctx.bot.applicant_role
 
         if applicant_role and applicant_role in induction_member.roles:
             await induction_member.remove_roles(
