@@ -87,7 +87,9 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
         user_name: bs4.Tag | bs4.NavigableString | int | None = profile_section_html.find("h1")
 
         if not isinstance(user_name, bs4.Tag):
-            NO_PROFILE_DEBUG_MESSAGE: Final[str] = "Found user profile but couldn't find their name!"  # noqa: E501
+            NO_PROFILE_DEBUG_MESSAGE: Final[str] = (
+                "Found user profile but couldn't find their name!"
+            )
             logger.debug(NO_PROFILE_DEBUG_MESSAGE)
             await ctx.respond(NO_PROFILE_DEBUG_MESSAGE)
             return
