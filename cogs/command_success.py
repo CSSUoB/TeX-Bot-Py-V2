@@ -17,5 +17,5 @@ class CommandSuccessCog(TeXBotBaseCog):
     """Cog class that defines additional code to execute upon a command success."""
 
     @TeXBotBaseCog.listener()
-    async def on_application_command_completion(self, ctx: TeXBotApplicationContext) -> None:  # TODO: Check not run on failure
+    async def on_application_command_completion(self, ctx: TeXBotApplicationContext) -> None:
         logger.debug("Command execution complete.")  # TODO: Pass command name to logger's extra
