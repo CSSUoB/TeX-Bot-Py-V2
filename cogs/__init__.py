@@ -9,14 +9,17 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = (
     "ArchiveCommandCog",
+    "GetTokenAuthorisationCommand",
     "CommandErrorCog",
     "CommitteeActionsTrackingCog",
     "DeleteAllCommandsCog",
     "EditMessageCommandCog",
     "EnsureMembersInductedCommandCog",
-    "InductCommandCog",
+    "MakeApplicantSlashCommandCog",
+    "MakeApplicantContextCommandsCog",
+    "InductSlashCommandCog",
     "InductSendMessageCog",
-    "InductUserCommandsCog",
+    "InductContextCommandsCog",
     "KillCommandCog",
     "MakeMemberCommandCog",
     "PingCommandCog",
@@ -42,13 +45,15 @@ from cogs.command_error import CommandErrorCog
 from cogs.committee_actions_tracking import CommitteeActionsTrackingCog
 from cogs.delete_all import DeleteAllCommandsCog
 from cogs.edit_message import EditMessageCommandCog
+from cogs.get_token_authorisation import GetTokenAuthorisationCommand
 from cogs.induct import (
     EnsureMembersInductedCommandCog,
-    InductCommandCog,
+    InductContextCommandsCog,
     InductSendMessageCog,
-    InductUserCommandsCog,
+    InductSlashCommandCog,
 )
 from cogs.kill import KillCommandCog
+from cogs.make_applicant import MakeApplicantContextCommandsCog, MakeApplicantSlashCommandCog
 from cogs.make_member import MakeMemberCommandCog
 from cogs.ping import PingCommandCog
 from cogs.remind_me import ClearRemindersBacklogTaskCog, RemindMeCommandCog
@@ -71,15 +76,18 @@ def setup(bot: TeXBot) -> None:
     """Add all the cogs to the bot, at bot startup."""
     cogs: Iterable[type[TeXBotBaseCog]] = (
         ArchiveCommandCog,
+        GetTokenAuthorisationCommand,
         CommandErrorCog,
         CommitteeActionsTrackingCog,
         DeleteAllCommandsCog,
         EditMessageCommandCog,
         EnsureMembersInductedCommandCog,
-        InductCommandCog,
+        InductSlashCommandCog,
         InductSendMessageCog,
-        InductUserCommandsCog,
+        InductContextCommandsCog,
         KillCommandCog,
+        MakeApplicantSlashCommandCog,
+        MakeApplicantContextCommandsCog,
         MakeMemberCommandCog,
         PingCommandCog,
         ClearRemindersBacklogTaskCog,
