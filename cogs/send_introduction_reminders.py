@@ -100,10 +100,10 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
             member_needs_one_off_reminder: bool = (
                 settings["SEND_INTRODUCTION_REMINDERS"] == "once"
-                and not await SentOneOffIntroductionReminderMember.objects.filter(
-                    hashed_member_id=SentOneOffIntroductionReminderMember.hash_member_id(
-                        member.id,
-                    ),
+                and not await (
+                    await SentOneOffIntroductionReminderMember.objects.afilter(
+                        discord_id=member.id,
+                    )
                 ).aexists()
             )
             member_needs_recurring_reminder: bool = (
@@ -113,8 +113,10 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 (discord.utils.utcnow() - member.joined_at)
                 <= settings["SEND_INTRODUCTION_REMINDERS_DELAY"]
             )
-            member_opted_out_from_reminders: bool = await IntroductionReminderOptOutMember.objects.filter(  # noqa: E501
-                hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(member.id),
+            member_opted_out_from_reminders: bool = await (
+                await IntroductionReminderOptOutMember.objects.afilter(
+                    discord_id=member.id,
+                )
             ).aexists()
             member_needs_reminder: bool = (
                 (member_needs_one_off_reminder or member_needs_recurring_reminder)
@@ -146,23 +148,30 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 )
                 continue
 
-            await member.send(
-                content=(
-                    "Hey! It seems like you joined "
-                    f"the {self.bot.group_short_name} Discord server "
-                    "but have not yet introduced yourself.\n"
-                    "You will only get access to the rest of the server after sending "
-                    "an introduction message."
-                ),
-                view=(
-                    self.OptOutIntroductionRemindersView(self.bot)
-                    if settings["SEND_INTRODUCTION_REMINDERS"] == "interval"
-                    else None  # type: ignore[arg-type]
-                ),
-            )
+            try:
+                await member.send(
+                    content=(
+                        "Hey! It seems like you joined "
+                        f"the {self.bot.group_short_name} Discord server "
+                        "but have not yet introduced yourself.\n"
+                        "You will only get access to the rest of the server after sending "
+                        "an introduction message."
+                    ),
+                    view=(
+                        self.OptOutIntroductionRemindersView(self.bot)
+                        if settings["SEND_INTRODUCTION_REMINDERS"] == "interval"
+                        else None  # type: ignore[arg-type]
+                    ),
+                )
+            except discord.Forbidden:
+                logger.info(
+                    "Failed to open DM channel with user, %s, "
+                    "so no induction reminder was sent.",
+                    member,
+                )
 
             await SentOneOffIntroductionReminderMember.objects.acreate(
-                member_id=member.id,
+                discord_id=member.id,
             )
 
     class OptOutIntroductionRemindersView(View):
@@ -258,7 +267,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             if BUTTON_WILL_MAKE_OPT_OUT:
                 try:
                     await IntroductionReminderOptOutMember.objects.acreate(
-                        member_id=interaction_member.id,
+                        discord_id=interaction_member.id,
                     )
                 except ValidationError as create_introduction_reminder_opt_out_member_error:
                     error_is_already_exists: bool = (
@@ -284,10 +293,10 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
             else:
                 try:
-                    introduction_reminder_opt_out_member: IntroductionReminderOptOutMember = await IntroductionReminderOptOutMember.objects.aget(  # noqa: E501
-                        hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(
-                            interaction_member.id,
-                        ),
+                    introduction_reminder_opt_out_member: IntroductionReminderOptOutMember = (
+                        await IntroductionReminderOptOutMember.objects.aget(  # type: ignore[assignment]
+                            discord_id=interaction_member.id,
+                        )
                     )
                 except IntroductionReminderOptOutMember.DoesNotExist:
                     pass

@@ -12,8 +12,11 @@ __all__: Sequence[str] = (
     "TeXBotAutocompleteContext",
     "generate_invite_url",
     "is_member_inducted",
+    "is_running_in_async",
 )
 
+
+import asyncio
 
 import discord
 
@@ -43,6 +46,7 @@ def generate_invite_url(discord_bot_application_id: int, discord_guild_id: int) 
             ban_members=True,
             manage_channels=True,
             view_audit_log=True,
+            moderate_members=True,
         ),
         guild=discord.Object(id=discord_guild_id),
         scopes=("bot", "applications.commands"),
@@ -60,3 +64,13 @@ def is_member_inducted(member: discord.Member) -> bool:
     return any(
         role.name.lower().strip().strip("@").strip() not in ("news",) for role in member.roles
     )
+
+
+def is_running_in_async() -> bool:
+    """Determine whether the current context is asynchronous or not."""
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return False
+    else:
+        return True

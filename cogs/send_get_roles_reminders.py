@@ -123,10 +123,9 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
             if not member_requires_opt_in_roles_reminder:
                 continue
 
-            hashed_member_id: str = SentGetRolesReminderMember.hash_member_id(member.id)
             sent_get_roles_reminder_member_exists: bool = (
-                await SentGetRolesReminderMember.objects.filter(
-                    hashed_member_id=hashed_member_id,
+                await (
+                    await SentGetRolesReminderMember.objects.afilter(discord_id=member.id)
                 ).aexists()
             )
             if sent_get_roles_reminder_member_exists:
@@ -164,18 +163,22 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 )
                 continue
 
-            await member.send(
-                "Hey! It seems like you have been given the `@Guest` role "
-                f"on the {self.bot.group_short_name} Discord server "
-                " but have not yet nabbed yourself any opt-in roles.\n"
-                f"You can head to {roles_channel_mention} "
-                "and click on the icons to get optional roles like pronouns "
-                "and year group identifiers.",
-            )
+            try:
+                await member.send(
+                    "Hey! It seems like you have been given the `@Guest` role "
+                    f"on the {self.bot.group_short_name} Discord server "
+                    " but have not yet nabbed yourself any opt-in roles.\n"
+                    f"You can head to {roles_channel_mention} "
+                    "and click on the icons to get optional roles like pronouns "
+                    "and year group identifiers.",
+                )
+            except discord.Forbidden:
+                logger.info(
+                    "Failed to open DM channel to user, %s, so no role reminder was sent.",
+                    member,
+                )
 
-            await SentGetRolesReminderMember.objects.acreate(
-                hashed_member_id=hashed_member_id,
-            )
+            await SentGetRolesReminderMember.objects.acreate(discord_id=member.id)
 
     @send_get_roles_reminders.before_loop
     async def before_tasks(self) -> None:

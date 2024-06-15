@@ -8,12 +8,11 @@ __all__: Sequence[str] = ("KillCommandCog", "ConfirmKillView")
 import contextlib
 import logging
 from logging import Logger
-from typing import Final
 
 import discord
 from discord.ui import View
 
-from exceptions import BaseDoesNotExistError
+from exceptions import CommitteeRoleDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 logger: Logger = logging.getLogger("TeX-Bot")
@@ -22,19 +21,6 @@ logger: Logger = logging.getLogger("TeX-Bot")
 class ConfirmKillView(View):
     """A discord.View containing two buttons to confirm shutting down TeX-Bot."""
 
-    @classmethod
-    async def _delete_message(cls, response: discord.InteractionResponse) -> None:
-        e: discord.NotFound
-        try:
-            await response.edit_message(delete_after=0)
-        except discord.NotFound as e:
-            MESSAGE_WAS_ALREADY_DELETED: Final[bool] = (
-                e.code == 10008
-                or ("unknown" in e.text.lower() and "message" in e.text.lower())
-            )
-            if not MESSAGE_WAS_ALREADY_DELETED:
-                raise e from e
-
     @discord.ui.button(  # type: ignore[misc]
         label="SHUTDOWN",
         style=discord.ButtonStyle.red,
@@ -42,18 +28,16 @@ class ConfirmKillView(View):
     )
     async def confirm_shutdown_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """When the shutdown button is pressed, delete the message."""
-        # noinspection PyTypeChecker
-        await self._delete_message(interaction.response)
+        logger.debug("\"Confirm\" button pressed. %s", interaction)
 
     @discord.ui.button(  # type: ignore[misc]
         label="CANCEL",
-        style=discord.ButtonStyle.green,
+        style=discord.ButtonStyle.grey,
         custom_id="shutdown_cancel",
     )
     async def cancel_shutdown_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """When the cancel button is pressed, delete the message."""
-        # noinspection PyTypeChecker
-        await self._delete_message(interaction.response)
+        logger.debug("\"Cancel\" button pressed. %s", interaction)
 
 
 class KillCommandCog(TeXBotBaseCog):
@@ -73,7 +57,7 @@ class KillCommandCog(TeXBotBaseCog):
         but only after the user has confirmed that this is the action they wish to take.
         """
         committee_role: discord.Role | None = None
-        with contextlib.suppress(BaseDoesNotExistError):
+        with contextlib.suppress(CommitteeRoleDoesNotExistError):
             committee_role = await self.bot.committee_role
 
         response: discord.Message | discord.Interaction = await ctx.respond(
@@ -104,18 +88,18 @@ class KillCommandCog(TeXBotBaseCog):
             ),
         )
 
-        await confirmation_message.delete()
-
         if button_interaction.data["custom_id"] == "shutdown_confirm":  # type: ignore[index, typeddict-item]
-            await button_interaction.respond(
+            await confirmation_message.edit(
                 content="My battery is low and it's getting dark...",
+                view=None,
             )
             await self.bot.perform_kill_and_close(initiated_by_user=ctx.interaction.user)
             return
 
         if button_interaction.data["custom_id"] == "shutdown_cancel":  # type: ignore[index, typeddict-item]
-            await button_interaction.respond(
+            await confirmation_message.edit(
                 content="Shutdown has been cancelled.",
+                view=None,
             )
             logger.info("Manual shutdown cancelled by %s.", ctx.interaction.user)
             return

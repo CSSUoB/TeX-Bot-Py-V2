@@ -5,15 +5,16 @@ from collections.abc import Sequence
 __all__: Sequence[str] = (
     "InductSendMessageCog",
     "BaseInductCog",
-    "InductCommandCog",
-    "InductUserCommandsCog",
+    "InductSlashCommandCog",
+    "InductContextCommandsCog",
     "EnsureMembersInductedCommandCog",
 )
 
 
 import contextlib
+import logging
 import random
-import re
+from logging import Logger
 from typing import Literal
 
 import discord
@@ -21,6 +22,7 @@ import discord
 from config import settings
 from db.core.models import IntroductionReminderOptOutMember
 from exceptions import (
+    ApplicantRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
     GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
@@ -36,6 +38,7 @@ from utils import (
 )
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
+logger: Logger = logging.getLogger("TeX-Bot")
 
 class InductSendMessageCog(TeXBotBaseCog):
     """Cog class that defines the "/induct" command and its call-back method."""
@@ -63,16 +66,10 @@ class InductSendMessageCog(TeXBotBaseCog):
         if guest_role in before.roles or guest_role not in after.roles:
             return
 
-        try:
-            introduction_reminder_opt_out_member: IntroductionReminderOptOutMember = await IntroductionReminderOptOutMember.objects.aget(  # noqa: E501
-                hashed_member_id=IntroductionReminderOptOutMember.hash_member_id(
-                    before.id,
-                ),
-            )
-        except IntroductionReminderOptOutMember.DoesNotExist:
-            pass
-        else:
-            await introduction_reminder_opt_out_member.adelete()
+        with contextlib.suppress(IntroductionReminderOptOutMember.DoesNotExist):
+            await (
+                await IntroductionReminderOptOutMember.objects.aget(discord_id=before.id)
+            ).adelete()
 
         async for message in after.history():
             message_is_introduction_reminder: bool = (
@@ -102,30 +99,34 @@ class InductSendMessageCog(TeXBotBaseCog):
             if await self.bot.member_role in after.roles:
                 user_type = "member"
 
-        await after.send(
-            f"**Congrats on joining the {self.bot.group_short_name} Discord server "
-            f"as a {user_type}!** "
-            "You now have access to communicate in all the public channels.\n\n"
-            "Some things to do to get started:\n"
-            f"1. Check out our rules in {rules_channel_mention}\n"
-            f"2. Head to {roles_channel_mention} and click on the icons to get "
-            "optional roles like pronouns and year groups\n"
-            "3. Change your nickname to whatever you wish others to refer to you as "
-            "(You can do this by right-clicking your name in the members-list "
-            "to the right & selecting \"Edit Server Profile\").",
-        )
-        if user_type != "member":
-            # TODO @CarrotManMatt: Remove environment variables that are only used in messages. Messages will be extracted into the external JSON file.  # noqa: FIX002
-            # https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/90
+        try:
             await after.send(
-                f"You can also get yourself an annual membership "
-                f"to {self.bot.group_full_name} for only £5! "
-                f"""Just head to {settings["PURCHASE_MEMBERSHIP_URL"]}. """
-                "You'll get awesome perks like a free T-shirt:shirt:, "
-                "access to member only events:calendar_spiral: "
-                f"& a cool green name on the {self.bot.group_short_name} Discord server"
-                ":green_square:! "
-                f"Checkout all the perks at {settings["MEMBERSHIP_PERKS_URL"]}",
+                f"**Congrats on joining the {self.bot.group_short_name} Discord server "
+                f"as a {user_type}!** "
+                "You now have access to communicate in all the public channels.\n\n"
+                "Some things to do to get started:\n"
+                f"1. Check out our rules in {rules_channel_mention}\n"
+                f"2. Head to {roles_channel_mention} and click on the icons to get "
+                "optional roles like pronouns and year groups\n"
+                "3. Change your nickname to whatever you wish others to refer to you as "
+                "(You can do this by right-clicking your name in the members-list "
+                "to the right & selecting \"Edit Server Profile\").",
+            )
+            if user_type != "member":
+                await after.send(
+                    f"You can also get yourself an annual membership "
+                    f"to {self.bot.group_full_name} for only £5! "
+                    f"""Just head to {settings["PURCHASE_MEMBERSHIP_URL"]}. """
+                    "You'll get awesome perks like a free T-shirt:shirt:, "
+                    "access to member only events:calendar_spiral: "
+                    f"& a cool green name on the {self.bot.group_short_name} Discord server"
+                    ":green_square:! "
+                    f"Checkout all the perks at {settings["MEMBERSHIP_PERKS_URL"]}",
+                )
+        except discord.Forbidden:
+            logger.info(
+                "Failed to open DM channel to user %s so no welcome message was sent.",
+                after,
             )
 
 
@@ -189,6 +190,11 @@ class BaseInductCog(TeXBotBaseCog):
             name="introductions",
         )
 
+        initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
+            ":hourglass: Processing Induction... :hourglass:",
+            ephemeral=True,
+        )
+
         if induction_member.bot:
             await self.command_send_error(
                 ctx,
@@ -197,12 +203,11 @@ class BaseInductCog(TeXBotBaseCog):
             return
 
         if guest_role in induction_member.roles:
-            await ctx.respond(
-                (
-                    ":information_source: No changes made. User has already been inducted. "
-                    ":information_source:"
+            await initial_response.edit(
+                content=(
+                    ":information_source: No changes made. "
+                    "User has already been inducted. :information_source:"
                 ),
-                ephemeral=True,
             )
             return
 
@@ -233,10 +238,9 @@ class BaseInductCog(TeXBotBaseCog):
             reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\"",
         )
 
-        applicant_role: discord.Role | None = discord.utils.get(
-            main_guild.roles,
-            name="Applicant",
-        )
+        applicant_role: discord.Role | None = None
+        with contextlib.suppress(ApplicantRoleDoesNotExistError):
+            applicant_role = await ctx.bot.applicant_role
 
         if applicant_role and applicant_role in induction_member.roles:
             await induction_member.remove_roles(
@@ -252,15 +256,26 @@ class BaseInductCog(TeXBotBaseCog):
             recent_message: discord.Message
             for recent_message in await intro_channel.history(limit=30).flatten():
                 if recent_message.author.id == induction_member.id:
-                    if tex_emoji:
-                        await recent_message.add_reaction(tex_emoji)
-                    await recent_message.add_reaction("👋")
+                    forbidden_error: discord.Forbidden
+                    try:
+                        if tex_emoji:
+                            await recent_message.add_reaction(tex_emoji)
+                        await recent_message.add_reaction("👋")
+                    except discord.Forbidden as forbidden_error:
+                        if "90001" not in str(forbidden_error):
+                            raise forbidden_error from forbidden_error
+
+                        logger.info(
+                            "Failed to add reactions because the user, %s, "
+                            "has blocked the bot.",
+                            recent_message.author,
+                        )
                     break
 
-        await ctx.respond("User inducted successfully.", ephemeral=True)
+        await initial_response.edit(content=":white_check_mark: User inducted successfully.")
 
 
-class InductCommandCog(BaseInductCog):
+class InductSlashCommandCog(BaseInductCog):
     """Cog class that defines the "/induct" command and its call-back method."""
 
     @staticmethod
@@ -285,7 +300,7 @@ class InductCommandCog(BaseInductCog):
         else:
             members = {member for member in members if guest_role not in member.roles}
 
-        if not ctx.value or re.match(r"\A@.*\Z", ctx.value):
+        if not ctx.value or ctx.value.startswith("@"):
             return {
                 discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
                 for member
@@ -297,6 +312,7 @@ class InductCommandCog(BaseInductCog):
             for member
             in members
         }
+
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="induct",
@@ -328,20 +344,21 @@ class InductCommandCog(BaseInductCog):
         The "induct" command inducts a given member into your group's Discord guild
         by giving them the "Guest" role.
         """
+        member_id_not_integer_error: ValueError
         try:
             induct_member: discord.Member = await self.bot.get_member_from_str_id(
                 str_induct_member_id,
             )
-        except ValueError as e:
-            await self.command_send_error(ctx, message=e.args[0])
+        except ValueError as member_id_not_integer_error:
+            await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
             return
 
         # noinspection PyUnboundLocalVariable
         await self._perform_induction(ctx, induct_member, silent=silent)
 
 
-class InductUserCommandsCog(BaseInductCog):
-    """Cog class that defines the context menu induction commands & their call-back methods."""
+class InductContextCommandsCog(BaseInductCog):
+    """Cog class that defines the context-menu induction commands & their call-back methods."""
 
     @discord.user_command(name="Induct User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
@@ -373,12 +390,12 @@ class InductUserCommandsCog(BaseInductCog):
     @discord.message_command(name="Induct Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def non_silent_message_induct(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None: # noqa: E501
+    async def non_silent_message_induct(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
         """
         Definition and callback response of the "non_silent_induct" message-context-command.
 
         The non_silent_message_induct command executes the same process as the
-        induct slash command using the message context menu instead of the user menu.
+        induct slash command using the message-context-menu instead of the user-menu.
         """
         try:
             member: discord.Member = await self.bot.get_member_from_str_id(
@@ -393,17 +410,19 @@ class InductUserCommandsCog(BaseInductCog):
                 ),
                 ephemeral=True,
             )
+            return
+
         await self._perform_induction(ctx, member, silent=False)
 
     @discord.message_command(name="Silently Induct Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def silent_message_induct(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None: # noqa: E501
+    async def silent_message_induct(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
         """
         Definition and callback response of the "silent_induct" message-context-command.
 
         The silent_message_induct command executes the same process as the
-        induct slash command using the message context menu instead of the user menu.
+        induct slash command using the message-context-menu instead of the user-menu.
         """
         try:
             member: discord.Member = await self.bot.get_member_from_str_id(
@@ -418,6 +437,8 @@ class InductUserCommandsCog(BaseInductCog):
                 ),
                 ephemeral=True,
             )
+            return
+
         await self._perform_induction(ctx, member, silent=True)
 
 

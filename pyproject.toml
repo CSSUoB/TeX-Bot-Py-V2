@@ -33,10 +33,10 @@ py-cord = "~2.5"
 python-dotenv = "^1.0"
 validators = "^0.28"
 beautifulsoup4 = "^4.12"
-emoji = "^2.11"
+emoji = "^2.12"
 parsedatetime = "^2.6"
 django = "~5.0"
-matplotlib = "^3.8"
+matplotlib = "^3.9"
 mplcyberpunk = "^0.7"
 python-logging-discord-handler = "^0.1"
 classproperties = {git = "https://github.com/hottwaj/classproperties.git"}
@@ -48,11 +48,11 @@ pre-commit = "^3.7"
 mypy = "~1.10"
 django-stubs = {extras = ["compatible-mypy"], version = "~5.0"}
 types-beautifulsoup4 = "^4.12.0"
-pytest = "^8.1"
+pytest = "^8.2"
 ruff = "^0.4"
 gitpython = "^3.1"
 pymarkdownlnt = "^0.9"
-rcft-pymarkdown = "^1.0"
+ccft-pymarkdown = "^1.1"
 
 
 

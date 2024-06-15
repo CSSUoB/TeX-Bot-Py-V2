@@ -15,10 +15,9 @@ from typing import Final
 import discord
 from discord import Cog
 
-from exceptions import (
+from exceptions import CommitteeRoleDoesNotExistError, DiscordMemberNotInMainGuildError
+from exceptions.base import (
     BaseDoesNotExistError,
-    CommitteeRoleDoesNotExistError,
-    DiscordMemberNotInMainGuildError,
 )
 from utils.tex_bot import TeXBot
 from utils.tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
@@ -161,7 +160,7 @@ class TeXBotBaseCog(Cog):
         except BaseDoesNotExistError:
             return set()
 
-        with contextlib.suppress(BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
+        with contextlib.suppress(DiscordMemberNotInMainGuildError):
             channel_permissions_limiter = await ctx.bot.get_main_guild_member(
                 ctx.interaction.user,
             )
