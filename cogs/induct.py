@@ -5,8 +5,8 @@ from collections.abc import Sequence
 __all__: Sequence[str] = (
     "InductSendMessageCog",
     "BaseInductCog",
-    "InductCommandCog",
-    "InductUserCommandsCog",
+    "InductSlashCommandCog",
+    "InductContextCommandsCog",
     "EnsureMembersInductedCommandCog",
 )
 
@@ -14,7 +14,6 @@ __all__: Sequence[str] = (
 import contextlib
 import logging
 import random
-import re
 from logging import Logger
 from typing import Literal
 
@@ -23,6 +22,7 @@ import discord
 from config import settings
 from db.core.models import IntroductionReminderOptOutMember
 from exceptions import (
+    ApplicantRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
     GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
@@ -251,10 +251,9 @@ class BaseInductCog(TeXBotBaseCog):
         )
         logger.debug("Added guest role to %s", induction_member)
 
-        applicant_role: discord.Role | None = discord.utils.get(
-            main_guild.roles,
-            name="Applicant",
-        )
+        applicant_role: discord.Role | None = None
+        with contextlib.suppress(ApplicantRoleDoesNotExistError):
+            applicant_role = await ctx.bot.applicant_role
 
         if applicant_role and applicant_role in induction_member.roles:
             await induction_member.remove_roles(
@@ -292,7 +291,7 @@ class BaseInductCog(TeXBotBaseCog):
         logger.debug("Induction completed successfully for user %s", induction_member)
 
 
-class InductCommandCog(BaseInductCog):
+class InductSlashCommandCog(BaseInductCog):
     """Cog class that defines the "/induct" command and its call-back method."""
 
     @staticmethod
@@ -317,7 +316,7 @@ class InductCommandCog(BaseInductCog):
         else:
             members = {member for member in members if guest_role not in member.roles}
 
-        if not ctx.value or re.match(r"\A@.*\Z", ctx.value):
+        if not ctx.value or ctx.value.startswith("@"):
             return {
                 discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
                 for member
@@ -329,6 +328,7 @@ class InductCommandCog(BaseInductCog):
             for member
             in members
         }
+
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="induct",
@@ -373,8 +373,8 @@ class InductCommandCog(BaseInductCog):
         await self._perform_induction(ctx, induct_member, silent=silent)
 
 
-class InductUserCommandsCog(BaseInductCog):
-    """Cog class that defines the context menu induction commands & their call-back methods."""
+class InductContextCommandsCog(BaseInductCog):
+    """Cog class that defines the context-menu induction commands & their call-back methods."""
 
     @discord.user_command(name="Induct User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role

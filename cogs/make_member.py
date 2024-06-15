@@ -19,7 +19,11 @@ from django.core.exceptions import ValidationError
 
 from config import settings
 from db.core.models import GroupMadeMember
-from exceptions import CommitteeRoleDoesNotExistError, GuestRoleDoesNotExistError
+from exceptions import (
+    ApplicantRoleDoesNotExistError,
+    CommitteeRoleDoesNotExistError,
+    GuestRoleDoesNotExistError,
+)
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 logger: Logger = logging.getLogger("TeX-Bot")
@@ -266,10 +270,10 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                     interaction_member,
                 )
 
-        applicant_role: discord.Role | None = discord.utils.get(
-            self.bot.main_guild.roles,
-            name="Applicant",
-        )
+        applicant_role: discord.Role | None = None
+        with contextlib.suppress(ApplicantRoleDoesNotExistError):
+            applicant_role = await ctx.bot.applicant_role
+
         if applicant_role and applicant_role in interaction_member.roles:
             await interaction_member.remove_roles(
                 applicant_role,

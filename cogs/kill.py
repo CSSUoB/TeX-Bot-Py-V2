@@ -28,16 +28,16 @@ class ConfirmKillView(View):
     )
     async def confirm_shutdown_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """When the shutdown button is pressed, delete the message."""
-        logger.debug("Confirm button pressed. %s", interaction)
+        logger.debug("\"Confirm\" button pressed. %s", interaction)
 
     @discord.ui.button(  # type: ignore[misc]
         label="CANCEL",
-        style=discord.ButtonStyle.green,
+        style=discord.ButtonStyle.grey,
         custom_id="shutdown_cancel",
     )
     async def cancel_shutdown_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """When the cancel button is pressed, delete the message."""
-        logger.debug("Cancel button pressed. %s", interaction)
+        logger.debug("\"Cancel\" button pressed. %s", interaction)
 
 
 class KillCommandCog(TeXBotBaseCog):
@@ -89,13 +89,12 @@ class KillCommandCog(TeXBotBaseCog):
             ),
         )
 
-        logger.debug("Kill confirmation recieved: %s", button_interaction)
-
-        await confirmation_message.edit(view=None)
+        logger.debug("Kill confirmation received: %s", button_interaction)
 
         if button_interaction.data["custom_id"] == "shutdown_confirm":  # type: ignore[index, typeddict-item]
             await confirmation_message.edit(
                 content="My battery is low and it's getting dark...",
+                view=None,
             )
             await self.bot.perform_kill_and_close(initiated_by_user=ctx.interaction.user)
             return
@@ -103,6 +102,7 @@ class KillCommandCog(TeXBotBaseCog):
         if button_interaction.data["custom_id"] == "shutdown_cancel":  # type: ignore[index, typeddict-item]
             await confirmation_message.edit(
                 content="Shutdown has been cancelled.",
+                view=None,
             )
             logger.info("Manual shutdown cancelled by %s.", ctx.interaction.user)
             return
