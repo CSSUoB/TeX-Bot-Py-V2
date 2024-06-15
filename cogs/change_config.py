@@ -478,7 +478,11 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             )
             return
 
-        if config.CONFIG_SETTINGS_HELPS[config_setting_name].default is None:
+        SELECTED_SETTING_HAS_DEFAULT: Final[bool] = (
+            config.CONFIG_SETTINGS_HELPS[config_setting_name].default is not None
+        )
+
+        if not SELECTED_SETTING_HAS_DEFAULT:
             response: discord.Message | discord.Interaction = await ctx.respond(
                 content=(
                     f"Setting {config_setting_name.replace("`", "\\`")} "
@@ -538,7 +542,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
 
         responder: GenericResponderComponent = (
             EditorResponseComponent(ctx.interaction)
-            if config.CONFIG_SETTINGS_HELPS[config_setting_name].default is None
+            if not SELECTED_SETTING_HAS_DEFAULT
             else SenderResponseComponent(ctx.interaction, ephemeral=True)
         )
 
