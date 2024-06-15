@@ -148,10 +148,10 @@ class TeXBotBaseCog(Cog):
             )
 
         elif error_code or message:
-            cls.log_user_error(error_code, message)
+            cls.log_user_error(error_code=error_code, message=message)
 
     @classmethod
-    def log_user_error(cls, error_code: str | None = None, message: str | None = None) -> None:
+    def log_user_error(cls, *, error_code: str | None = None, message: str | None = None) -> None:
         if not error_code and not message:
             MISSING_ALL_PARAMETERS_MESSAGE: Final[str] = (
                 "At least one of 'error_code' or 'message' parameters must be provided "

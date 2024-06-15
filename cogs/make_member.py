@@ -118,9 +118,8 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 ),
                 ephemeral=True,
             )
-            logger.debug(
-                "User %s ran the makemember command but already had the member role!",
-                interaction_member,
+            self.log_user_error(
+                message=f"User {interaction_member} already had the member role!",
             )
             return
 
@@ -153,7 +152,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 ),
                 ephemeral=True,
             )
-            logger.debug("Student ID %s has already been used.", group_member_id)
+            self.log_user_error(message=f"Student ID {group_member_id} has already been used.")
             return
 
         guild_member_ids: set[str] = set()
@@ -248,7 +247,10 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 raise
 
         await ctx.respond("Successfully made you a member!", ephemeral=True)
-        logger.debug("User %s used the make member command successfully.", interaction_member)
+        logger.debug(
+            "User %s used the make member command successfully.",
+            interaction_member,
+        )
 
         try:
             guest_role: discord.Role = await self.bot.guest_role
@@ -270,6 +272,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                     interaction_member,
                 )
 
+        # noinspection PyUnusedLocal
         applicant_role: discord.Role | None = None
         with contextlib.suppress(ApplicantRoleDoesNotExistError):
             applicant_role = await ctx.bot.applicant_role
@@ -280,6 +283,8 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 reason="TeX Bot slash-command: \"/makemember\"",
             )
             logger.debug(
-                "Removed Applicant role from user %s after successful make member command",
+                (
+                    "Removed Applicant role from user %s after successful make-member command"
+                ),
                 interaction_member,
             )

@@ -246,7 +246,11 @@ class RemindMeCommandCog(TeXBotBaseCog):
             return
 
         await ctx.respond("Reminder set!", ephemeral=True)
-        logger.debug("Reminder %s set for user %s", message, ctx.interaction.user)
+        logger.debug(
+            "Reminder '%s' set for user %s",
+            f"{message[:15]}..." if len(message) > 15 else message,
+            ctx.interaction.user,
+        )
 
         await discord.utils.sleep_until(reminder.send_datetime)
 

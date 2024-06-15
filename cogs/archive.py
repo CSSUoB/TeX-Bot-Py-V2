@@ -115,7 +115,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
                 ),
                 ephemeral=True,
             )
-            self.log_user_error(f"Category {category.name} was already archived")
+            self.log_user_error(message=f"Category {category.name} was already archived")
             return
 
         # noinspection PyUnreachableCode

@@ -202,7 +202,6 @@ class BaseInductCog(TeXBotBaseCog):
                 ctx,
                 message="Member cannot be inducted because they are a bot.",
             )
-            logger.debug("Command execution terminated with the above error.")
             return
 
         if guest_role in induction_member.roles:
@@ -212,9 +211,11 @@ class BaseInductCog(TeXBotBaseCog):
                     "User has already been inducted. :information_source:"
                 ),
             )
-            logger.debug(
-                "User %s was not inducted because they already have the guest role.",
-                induction_member,
+            self.log_user_error(
+                message=(
+                    f"User {induction_member} was not inducted "
+                    f"because they already have the guest role."
+                ),
             )
             return
 
@@ -288,7 +289,10 @@ class BaseInductCog(TeXBotBaseCog):
                     break
 
         await initial_response.edit(content=":white_check_mark: User inducted successfully.")
-        logger.debug("Induction completed successfully for user %s", induction_member)
+        logger.debug(
+            "Induction completed successfully for user %s",
+            induction_member,
+        )
 
 
 class InductSlashCommandCog(BaseInductCog):
@@ -507,7 +511,8 @@ class EnsureMembersInductedCommandCog(TeXBotBaseCog):
             ),
             ephemeral=True,
         )
-        if changes_made:
-            logger.debug("Successfully inducted members.")
-        else:
-            logger.debug("No members have been inducted. ")
+        logger.debug(
+            "Successfully inducted members"
+            if changes_made
+            else "No members have been inducted"  # noqa: COM812
+        )

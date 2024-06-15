@@ -97,7 +97,6 @@ class EditMessageCommandCog(TeXBotBaseCog):
                 ctx,
                 message=f"{str_channel_id!r} is not a valid channel ID.",
             )
-            logger.debug("Channel ID %s was not valid.", str_channel_id)
             return
 
         channel_id: int = int(str_channel_id)
@@ -107,7 +106,6 @@ class EditMessageCommandCog(TeXBotBaseCog):
                 ctx,
                 message=f"{str_message_id!r} is not a valid message ID.",
             )
-            logger.debug("Message ID %s was not valid.", str_message_id)
             return
 
         message_id: int = int(str_message_id)
@@ -121,7 +119,6 @@ class EditMessageCommandCog(TeXBotBaseCog):
                 ctx,
                 message=f"Text channel with ID \"{channel_id}\" does not exist.",
             )
-            logger.debug("Channel ID %s is not a text channel.", channel_id)
             return
 
         try:
@@ -131,7 +128,6 @@ class EditMessageCommandCog(TeXBotBaseCog):
                 ctx,
                 message=f"Message with ID \"{message_id}\" does not exist.",
             )
-            logger.debug("Message ID %s could not be found.", message_id)
             return
 
         try:
@@ -143,10 +139,6 @@ class EditMessageCommandCog(TeXBotBaseCog):
                     f"Message with ID {str(message_id)!r} cannot be edited "
                     "because it belongs to another user."
                 ),
-            )
-            logger.debug(
-                "Message ID %s does not belong to the bot, so could not be edited.",
-                message_id,
             )
             return
         else:
