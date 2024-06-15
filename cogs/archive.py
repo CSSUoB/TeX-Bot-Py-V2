@@ -20,7 +20,7 @@ from utils import (
     TeXBotBaseCog,
 )
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Logger = logging.getLogger("TeX-Bot")  # TODO: Make logger with command name in formatter
 
 
 class ArchiveCommandCog(TeXBotBaseCog):
