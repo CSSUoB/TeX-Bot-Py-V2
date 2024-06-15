@@ -147,6 +147,26 @@ class TeXBotBaseCog(Cog):
                 ).rstrip(": ;"),
             )
 
+        elif error_code or message:
+            cls.log_user_error(error_code, message)
+
+    @classmethod
+    def log_user_error(cls, error_code: str | None = None, message: str | None = None) -> None:
+        if not error_code and not message:
+            MISSING_ALL_PARAMETERS_MESSAGE: Final[str] = (
+                "At least one of 'error_code' or 'message' parameters must be provided "
+                "to log_user_error()."
+            )
+            raise ValueError(MISSING_ALL_PARAMETERS_MESSAGE)
+
+        logger.debug(
+            "User error%s",
+            (
+                f"{f" ({error_code})" if error_code else ""}"
+                f"{f": {message}" if message else ""}"
+            ),
+        )
+
     @staticmethod
     async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
         """

@@ -105,7 +105,6 @@ class ArchiveCommandCog(TeXBotBaseCog):
                 ctx,
                 message=f"Category with ID {str(category_id)!r} does not exist.",
             )
-            logger.debug("Command execution terminated with the above error.")
             return
 
         if "archive" in category.name:
@@ -116,10 +115,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
                 ),
                 ephemeral=True,
             )
-            logger.debug(
-                "Category %s was already archived when the archive command was run",
-                category.name,
-            )
+            self.log_user_error(f"Category {category.name} was already archived")
             return
 
         # noinspection PyUnreachableCode
@@ -198,10 +194,6 @@ class ArchiveCommandCog(TeXBotBaseCog):
                         ctx,
                         message=f"Channel {channel.mention} had invalid permissions",
                     )
-                    logger.error(
-                        "Channel %s had invalid permissions, so could not be archived.",
-                        channel.name,
-                    )
                     return
 
             except discord.Forbidden:
@@ -210,13 +202,6 @@ class ArchiveCommandCog(TeXBotBaseCog):
                     message=(
                         "Bot does not have access to the channels in the selected category."
                     ),
-                )
-                logger.error(  # noqa: TRY400
-                    (
-                        "Bot did not have access to the channels in the selected category: "
-                        "%s."
-                    ),
-                    category.name,
                 )
                 return
 
