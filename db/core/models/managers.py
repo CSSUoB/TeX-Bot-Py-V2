@@ -9,7 +9,7 @@ import abc
 import logging
 from collections.abc import Callable, MutableMapping
 from logging import Logger
-from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar, final, override
+from typing import TYPE_CHECKING, Final, final, override
 
 from django.db.models import Manager, QuerySet
 
@@ -20,17 +20,13 @@ if TYPE_CHECKING:
 
     from .utils import AsyncBaseModel, BaseDiscordMemberWrapper, DiscordMember  # noqa: F401
 
-    T_model = TypeVar("T_model", bound=AsyncBaseModel)
+type Defaults = MutableMapping[str, object | Callable[[], object]] | None
 
-Defaults: TypeAlias = (
-    MutableMapping[str, object | Callable[[], object]]
-    | None
-)
 
 logger: Logger = logging.getLogger("TeX-Bot")
 
 
-class BaseHashedIDManager(Manager["T_model"], abc.ABC):
+class BaseHashedIDManager[T_model](Manager[T_model], abc.ABC):
     """Base manager class to remove a given unhashed ID before executing a query."""
 
     use_in_migrations: bool = True
@@ -57,68 +53,68 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
         """Remove any unhashed_id values from the kwargs dict before executing a query."""
 
     @override
-    def get(self, *args: object, **kwargs: object) -> "T_model":
+    def get(self, *args: object, **kwargs: object) -> T_model:
         return super().get(*args, **self._perform_remove_unhashed_id_from_kwargs(kwargs))
 
     @override
-    async def aget(self, *args: object, **kwargs: object) -> "T_model":
+    async def aget(self, *args: object, **kwargs: object) -> T_model:
         return await super().aget(
             *args,
             **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
         )
 
     @override
-    def filter(self, *args: object, **kwargs: object) -> QuerySet["T_model"]:
+    def filter(self, *args: object, **kwargs: object) -> QuerySet[T_model]:
         return super().filter(
             *args,
             **self._perform_remove_unhashed_id_from_kwargs(kwargs),
         )
 
-    async def afilter(self, *args: object, **kwargs: object) -> QuerySet["T_model"]:
+    async def afilter(self, *args: object, **kwargs: object) -> QuerySet[T_model]:
         return super().filter(
             *args,
             **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
         )
 
     @override
-    def exclude(self, *args: object, **kwargs: object) -> QuerySet["T_model"]:
+    def exclude(self, *args: object, **kwargs: object) -> QuerySet[T_model]:
         return super().exclude(
             *args,
             **self._perform_remove_unhashed_id_from_kwargs(kwargs),
         )
 
     # noinspection SpellCheckingInspection
-    async def aexclude(self, *args: object, **kwargs: object) -> QuerySet["T_model"]:
+    async def aexclude(self, *args: object, **kwargs: object) -> QuerySet[T_model]:
         return super().exclude(
             *args,
             **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
         )
 
     @override
-    def create(self, **kwargs: object) -> "T_model":
+    def create(self, **kwargs: object) -> T_model:
         return super().create(**self._perform_remove_unhashed_id_from_kwargs(kwargs))
 
     # noinspection SpellCheckingInspection
     @override
-    async def acreate(self, **kwargs: object) -> "T_model":
+    async def acreate(self, **kwargs: object) -> T_model:
         return await super().acreate(**(await self._aremove_unhashed_id_from_kwargs(kwargs)))
 
     @override
-    def get_or_create(self, defaults: Defaults = None, **kwargs: object) -> tuple["T_model", bool]:  # noqa: E501
+    def get_or_create(self, defaults: Defaults = None, **kwargs: object) -> tuple[T_model, bool]:  # noqa: E501
         return super().get_or_create(
             defaults=defaults,
             **self._perform_remove_unhashed_id_from_kwargs(kwargs),
         )
 
     @override
-    async def aget_or_create(self, defaults: Defaults = None, **kwargs: object) -> tuple["T_model", bool]:  # noqa: E501
+    async def aget_or_create(self, defaults: Defaults = None, **kwargs: object) -> tuple[T_model, bool]:  # noqa: E501
         return await super().aget_or_create(
             defaults=defaults,
             **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
         )
 
     @override
-    def update_or_create(self, defaults: Defaults = None, create_defaults: Defaults = None, **kwargs: object) -> tuple["T_model", bool]:  # noqa: E501
+    def update_or_create(self, defaults: Defaults = None, create_defaults: Defaults = None, **kwargs: object) -> tuple[T_model, bool]:  # noqa: E501
         return super().get_or_create(
             defaults=defaults,
             create_defaults=create_defaults,
@@ -127,7 +123,7 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
 
     # noinspection SpellCheckingInspection
     @override
-    async def aupdate_or_create(self, defaults: Defaults = None, create_defaults: Defaults = None, **kwargs: object) -> tuple["T_model", bool]:  # noqa: E501
+    async def aupdate_or_create(self, defaults: Defaults = None, create_defaults: Defaults = None, **kwargs: object) -> tuple[T_model, bool]:  # noqa: E501
         return await super().aupdate_or_create(
             defaults=defaults,
             create_defaults=create_defaults,
