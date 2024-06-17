@@ -18,8 +18,10 @@ import asyncio
 import contextlib
 import datetime
 import logging
+import logging
 import re
 from collections.abc import Mapping
+from logging import Logger
 from logging import Logger
 from typing import Final
 
@@ -54,6 +56,8 @@ from utils.message_sender_components import (
     MessageSenderComponent,
     ResponseMessageSender,
 )
+
+logger: Logger = logging.getLogger("TeX-Bot")
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
