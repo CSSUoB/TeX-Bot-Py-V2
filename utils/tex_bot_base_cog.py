@@ -67,12 +67,14 @@ class TeXBotBaseCog(Cog):
         """Initialize a new cog instance, storing a reference to the bot object."""
         self.bot: TeXBot = bot
 
-    async def command_send_error(self, ctx: TeXBotApplicationContext, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, responder_component: GenericResponderComponent | None = None) -> None:  # noqa: E501
+    async def command_send_error(self, ctx: TeXBotApplicationContext, *, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False, responder_component: GenericResponderComponent | None = None) -> None:  # noqa: E501
         """
         Construct & format an error message from the given details.
 
         The constructed error message is then sent as the response to the given
         application command context.
+        If `is_fatal` is set to True, this suggests that the reason for the error is unknown
+        and the bot will shortly close.
         """
         await self._respond_with_error(
             self.bot,
@@ -89,14 +91,17 @@ class TeXBotBaseCog(Cog):
             error_code=error_code,
             message=message,
             logging_message=logging_message,
+            is_fatal=is_fatal,
         )
 
     @classmethod
-    async def send_error(cls, bot: TeXBot, interaction: discord.Interaction, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
+    async def send_error(cls, bot: TeXBot, interaction: discord.Interaction, *, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False) -> None:  # noqa: PLR0913,E501
         """
         Construct & format an error message from the given details.
 
         The constructed error message is then sent as the response to the given interaction.
+        If `is_fatal` is set to True, this suggests that the reason for the error is unknown
+        and the bot will shortly close.
         """
         await cls._respond_with_error(
             bot=bot,
@@ -105,44 +110,66 @@ class TeXBotBaseCog(Cog):
             error_code=error_code,
             message=message,
             logging_message=logging_message,
+            is_fatal=is_fatal,
         )
 
     @classmethod
-    async def _respond_with_error(cls, bot: TeXBot, responder: GenericResponderComponent, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
-        construct_error_message: str = ":warning:There was an error"
+    async def _respond_with_error(cls, bot: TeXBot, responder: GenericResponderComponent, *, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False) -> None:  # noqa: PLR0913E501
+        construct_error_message: str = ":warning:"
 
-        if error_code:
+        if is_fatal:
             # noinspection PyUnusedLocal
-            committee_mention: str = "committee"
+            fatal_committee_mention: str = "committee"
 
             with contextlib.suppress(CommitteeRoleDoesNotExistError):
-                committee_mention = (await bot.committee_role).mention
+                fatal_committee_mention = (await bot.committee_role).mention
 
-            construct_error_message = (
-                f"**Contact a {committee_mention} member, referencing error code: "
-                f"{error_code}**\n"
-                + construct_error_message
-            )
-
-        if interaction_name in cls.ERROR_ACTIVITIES:
             construct_error_message += (
-                f" when trying to {cls.ERROR_ACTIVITIES[interaction_name]}"
+                "A fatal error occurred, "
+                f"please **contact a {fatal_committee_mention} member**.:warning:"
             )
 
-        if message:
-            construct_error_message += ":"
+            if message:
+                construct_error_message += message.strip()
+
         else:
-            construct_error_message += "."
+            construct_error_message += "There was an error"
 
-        construct_error_message += ":warning:"
+            if error_code:
+                # noinspection PyUnusedLocal
+                non_fatal_committee_mention: str = "committee"
 
-        if message:
-            message = re.sub(
-                r"<([@&#]?|(@[&#])?)\d+>",
-                lambda match: f"`{match.group(0)}`",
-                message.strip(),
-            )
-            construct_error_message += f"\n`{message}`"
+                with contextlib.suppress(CommitteeRoleDoesNotExistError):
+                    non_fatal_committee_mention = (await bot.committee_role).mention
+
+                construct_error_message = (
+                    f"**Contact a {non_fatal_committee_mention} member, "
+                    f"referencing error code: {error_code}**\n"
+                    + construct_error_message
+                )
+
+            if interaction_name in cls.ERROR_ACTIVITIES:
+                construct_error_message += (
+                    f" when trying to {cls.ERROR_ACTIVITIES[interaction_name]}"
+                )
+
+            if message:
+                construct_error_message += ":"
+            else:
+                construct_error_message += "."
+
+            construct_error_message += ":warning:"
+
+            if message:
+                construct_error_message += (
+                    f"\n`{
+                        re.sub(
+                            r"<([@&#]?|(@[&#])?)\d+>",
+                            lambda match: f"`{match.group(0)!s}`",
+                            message.strip(),
+                        )
+                    }`"
+                )
 
         await responder.respond(content=construct_error_message, view=None)
 
@@ -159,6 +186,13 @@ class TeXBotBaseCog(Cog):
                     if message_part
                 ).rstrip(": ;"),
             )
+
+        if is_fatal and error_code:
+            FATAL_AND_ERROR_CODE_MESSAGE: Final[str] = (
+                "Error message was requested to be sent with an error code, "
+                "despite being marked as a fatal error."
+            )
+            raise ValueError(FATAL_AND_ERROR_CODE_MESSAGE)
 
     @staticmethod
     async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501

@@ -107,7 +107,6 @@ class StartupCog(TeXBotBaseCog):
                 guild_id=settings["_DISCORD_MAIN_GUILD_ID"]),
             )
             await self.bot.close()
-            raise RuntimeError
 
     async def _check_strike_performed_manually_warning_location_exists(self) -> None:
         if settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] == "DM":

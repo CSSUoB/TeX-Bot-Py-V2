@@ -20,6 +20,8 @@ __all__: Sequence[str] = (
     "NoAuditLogsStrikeTrackingError",
     "BotRequiresRestartAfterConfigChange",
     "ChangingSettingWithRequiredSiblingError",
+    "ErrorCodeCouldNotBeIdentifiedError",
+    "UnknownDjangoError",
 )
 
 
@@ -27,6 +29,7 @@ from .config_changes import (
     BotRequiresRestartAfterConfigChange,
     ChangingSettingWithRequiredSiblingError,
 )
+from .custom_django import UnknownDjangoError
 from .does_not_exist import (
     ApplicantRoleDoesNotExistError,
     ArchivistRoleDoesNotExistError,
@@ -40,6 +43,7 @@ from .does_not_exist import (
     RolesChannelDoesNotExistError,
     RulesChannelDoesNotExistError,
 )
+from .error_message_generation import ErrorCodeCouldNotBeIdentifiedError
 from .guild import (
     DiscordMemberNotInMainGuildError,
     EveryoneRoleCouldNotBeRetrievedError,

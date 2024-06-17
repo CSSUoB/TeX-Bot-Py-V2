@@ -261,7 +261,7 @@ class TimeDeltaValidator(strictyaml.ScalarValidator):  # type: ignore[misc]
             found="found non-matching string",
         )
 
-        match: Match[str] | None = self.regex_matcher.match(chunk.contents)
+        match: Match[str] | None = self.regex_matcher.fullmatch(chunk.contents)
         if match is None:
             chunk_error_func()
 
@@ -280,7 +280,7 @@ class TimeDeltaValidator(strictyaml.ScalarValidator):  # type: ignore[misc]
     @override
     def to_yaml(self, data: object) -> str:  # type: ignore[misc]
         if strictyaml_utils.is_string(data):
-            match: Match[str] | None = self.regex_matcher.match(str(data))
+            match: Match[str] | None = self.regex_matcher.fullmatch(str(data))
             if match is None:
                 INVALID_STRING_DATA_MESSAGE: Final[str] = (
                     f"when expecting a delay/interval string found {str(data)!r}."

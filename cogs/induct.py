@@ -74,14 +74,14 @@ class InductSendMessageCog(TeXBotBaseCog):
             ).adelete()
 
         async for message in after.history():
-            message_is_introduction_reminder: bool = (
+            MESSAGE_IS_INTRODUCTION_REMINDER: bool = (
                 (
                     "joined the " in message.content
                 ) and (
                     " Discord guild but have not yet introduced" in message.content
                 ) and message.author.bot
             )
-            if message_is_introduction_reminder:
+            if MESSAGE_IS_INTRODUCTION_REMINDER:
                 await message.delete(
                     reason="Delete introduction reminders after member is inducted.",
                 )
@@ -248,6 +248,7 @@ class BaseInductCog(TeXBotBaseCog):
             reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\"",
         )
 
+        # noinspection PyUnusedLocal
         applicant_role: discord.Role | None = None
         with contextlib.suppress(ApplicantRoleDoesNotExistError):
             applicant_role = await ctx.bot.applicant_role
@@ -323,7 +324,6 @@ class InductSlashCommandCog(BaseInductCog):
             in members
         }
 
-
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="induct",
         description=(
@@ -363,7 +363,6 @@ class InductSlashCommandCog(BaseInductCog):
             await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
             return
 
-        # noinspection PyUnboundLocalVariable
         await self._perform_induction(ctx, induct_member, silent=silent)
 
 

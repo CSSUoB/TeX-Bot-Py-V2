@@ -21,6 +21,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 from db.core.models import DiscordMember, DiscordReminder
+from exceptions import UnknownDjangoError
 from utils import TeXBot, TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotBaseCog
 
 if TYPE_CHECKING:
@@ -223,7 +224,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                 channel_type=ctx.channel.type,
             )
         except ValidationError as create_discord_reminder_error:
-            error_is_already_exists: bool = (
+            ERROR_IS_ALREADY_EXISTS: Final[bool] = (
                 "__all__" in create_discord_reminder_error.message_dict
                 and any(
                     "already exists" in error
@@ -231,14 +232,13 @@ class RemindMeCommandCog(TeXBotBaseCog):
                     in create_discord_reminder_error.message_dict["__all__"]
                 )
             )
-            if not error_is_already_exists:
-                await self.command_send_error(ctx, message="An unrecoverable error occurred.")
-                logger.critical(
-                    "Error when creating DiscordReminder object: %s",
-                    create_discord_reminder_error,
-                )
-                await self.bot.close()
-                return
+            if not ERROR_IS_ALREADY_EXISTS:
+                raise UnknownDjangoError(
+                    message=(
+                        f"Error when creating DiscordReminder object: "
+                        f"{create_discord_reminder_error}"
+                    ),
+                ) from create_discord_reminder_error
 
             await self.command_send_error(
                 ctx,
@@ -334,7 +334,6 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                         ),
                     )
                     await self.bot.close()
-                    return
 
                 await channel.send(
                     "**Sorry it's a bit late! "

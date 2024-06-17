@@ -10,7 +10,7 @@ import re
 from collections.abc import Collection
 from enum import IntEnum
 from logging import Logger
-from typing import Final, TypeAlias
+from typing import Final, NoReturn, TypeAlias, override
 
 import discord
 
@@ -59,6 +59,7 @@ class TeXBot(discord.Bot):
     if these objects do not exist.
     """
 
+    @override
     def __init__(self, *args: object, **options: object) -> None:
         """Initialize a new discord.Bot subclass with empty shortcut accessors."""
         self._main_guild: discord.Guild | None = None
@@ -75,6 +76,11 @@ class TeXBot(discord.Bot):
         self._main_guild_set: bool = False
 
         super().__init__(*args, **options)  # type: ignore[no-untyped-call]
+
+    @override
+    async def close(self) -> NoReturn:
+        await super().close()
+        raise RuntimeError
 
     # noinspection PyPep8Naming
     @property
@@ -382,7 +388,7 @@ class TeXBot(discord.Bot):
 
         return text_channel
 
-    async def perform_kill_and_close(self, initiated_by_user: discord.User | discord.Member | None = None) -> None:  # noqa: E501
+    async def perform_kill_and_close(self, initiated_by_user: discord.User | discord.Member | None = None) -> NoReturn:  # noqa: E501
         """
         Shutdown TeX-Bot by using the "/kill" command.
 
@@ -400,7 +406,7 @@ class TeXBot(discord.Bot):
         self._exit_reason = TeXBotExitReason.KILL_COMMAND_USED
         await self.close()
 
-    async def perform_restart_after_config_changes(self) -> None:
+    async def perform_restart_after_config_changes(self) -> NoReturn:
         """Restart TeX-Bot after the config changes."""
         if self.EXIT_REASON is not TeXBotExitReason.UNKNOWN_ERROR:
             EXIT_REASON_ALREADY_SET_MESSAGE: Final[str] = (

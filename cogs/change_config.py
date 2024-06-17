@@ -344,7 +344,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         if config_setting_name not in config.CONFIG_SETTINGS_HELPS:
             await self.command_send_error(
                 ctx,
-                f"Invalid setting: {config_setting_name!r}",
+                message=f"Invalid setting: {config_setting_name!r}",
             )
             return
 
@@ -403,7 +403,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         if config_setting_name not in config.CONFIG_SETTINGS_HELPS:
             await self.command_send_error(
                 ctx,
-                f"Invalid setting: {config_setting_name!r}",
+                message=f"Invalid setting: {config_setting_name!r}",
             )
             return
 
@@ -474,7 +474,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         if config_setting_name not in config.CONFIG_SETTINGS_HELPS:
             await self.command_send_error(
                 ctx,
-                f"Invalid setting: {config_setting_name!r}",
+                message=f"Invalid setting: {config_setting_name!r}",
             )
             return
 
