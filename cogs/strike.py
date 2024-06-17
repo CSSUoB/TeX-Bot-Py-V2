@@ -55,8 +55,6 @@ from utils.message_sender_components import (
     ResponseMessageSender,
 )
 
-logger: Logger = logging.getLogger("TeX-Bot")
-
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
