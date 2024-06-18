@@ -872,11 +872,15 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             return
 
         try:
-            await config.remove_single_config_setting_value(config_setting_name)
+            await config.remove_single_config_setting_value(config_setting_name)  # TODO: Fix sibling not removed correctly (E.g. reminders enables/disabled)
         except KeyError:
-            await self.command_send_error(
-                ctx,
-                message=f"Setting {config_setting_name!r} already has the default value",
+            await ctx.respond(
+                content=(
+                    ":information_source: "
+                    f"Setting `{config_setting_name}` already has the default value"
+                    " :information_source:"
+                ),
+                ephemeral=True,
             )
             return
 
