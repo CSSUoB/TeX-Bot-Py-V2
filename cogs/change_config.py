@@ -2,25 +2,31 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("ConfigChangeCommandsCog",)
+__all__: Sequence[str] = ("CheckConfigFileChangedTaskCog", "ConfigChangeCommandsCog")
 
 
 import contextlib
 import itertools
 import logging
+import os
 import random
 import re
+import stat
 import urllib.parse
 from collections.abc import MutableSequence, Set
+from io import BytesIO
 from logging import Logger
-from typing import Final
+from typing import Final, NamedTuple, Self, override
 
 import discord
+from aiopath import AsyncPath
+from anyio import AsyncFile
+from discord.ext import tasks
 from discord.ui import View
 from strictyaml import StrictYAMLError
 
 import config
-from config import CONFIG_SETTINGS_HELPS, ConfigSettingHelp, LogLevels
+from config import CONFIG_SETTINGS_HELPS, ConfigSettingHelp, LogLevels, settings
 from config.constants import MESSAGES_LOCALE_CODES, SendIntroductionRemindersFlagType
 from exceptions import (
     ChangingSettingWithRequiredSiblingError,
@@ -33,12 +39,53 @@ from utils import (
     EditorResponseComponent,
     GenericResponderComponent,
     SenderResponseComponent,
+    TeXBot,
     TeXBotApplicationContext,
     TeXBotAutocompleteContext,
     TeXBotBaseCog,
 )
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
+
+
+class FileStats(NamedTuple):
+    """Container to hold stats information about a single file."""
+
+    type: int
+    size: int
+    modified_time: float
+
+    @classmethod
+    async def _public_from_file_path(cls, file_path: AsyncPath) -> Self:  # type: ignore[misc]
+        return cls._public_from_full_stats(await file_path.stat())
+
+    @classmethod
+    def _public_from_full_stats(cls, full_stats: os.stat_result) -> Self:
+        file_type: int = stat.S_IFMT(full_stats.st_mode)
+        if file_type != stat.S_IFREG:
+            INVALID_FILE_TYPE_MESSAGE: Final[str] = "File type must be 'S_IFREG'."
+            raise ValueError(INVALID_FILE_TYPE_MESSAGE)
+
+        return cls(
+            type=file_type,
+            size=full_stats.st_size,
+            modified_time=full_stats.st_mtime,
+        )
+
+
+class FileComparer(NamedTuple):
+    """Container to hold all the information to compare one file to another."""
+
+    stats: FileStats
+    raw_content: bytes
+
+    @classmethod
+    async def _public_from_file_path(cls, file_path: AsyncPath) -> Self:  # type: ignore[misc]
+        # noinspection PyProtectedMember
+        return cls(
+            stats=await FileStats._public_from_file_path(file_path),  # noqa: SLF001
+            raw_content=await file_path.read_bytes(),
+        )
 
 
 class ConfirmSetConfigSettingValueView(View):
@@ -63,6 +110,109 @@ class ConfirmSetConfigSettingValueView(View):
         logger.debug("\"No\" button pressed. %s", interaction)
 
 
+class CheckConfigFileChangedTaskCog(TeXBotBaseCog):
+    """Cog class that defines the check_config_file_changed task."""
+
+    _STATS_CACHE: Final[dict[tuple[FileStats, FileStats], bool]] = {}
+
+    @override
+    def __init__(self, bot: TeXBot) -> None:
+        """Start all task managers when this cog is initialised."""
+        self._previous_file_comparer: FileComparer | None = None
+
+        self.check_config_file_changed.start()
+
+        super().__init__(bot)
+
+    @override
+    def cog_unload(self) -> None:
+        """
+        Unload hook that ends all running tasks whenever the tasks cog is unloaded.
+
+        This may be run dynamically or when the bot closes.
+        """
+        self.check_config_file_changed.cancel()
+
+    @classmethod
+    async def _file_raw_contents_is_same(cls, current_file: AsyncFile[bytes], previous_raw_contents: bytes) -> bool:  # noqa: E501
+        BUFFER_SIZE: Final[int] = 8*1024
+
+        previous_file: BytesIO = BytesIO(previous_raw_contents)
+
+        while True:
+            partial_current_contents: bytes = await current_file.read(BUFFER_SIZE)
+            partial_previous_contents: bytes = previous_file.read(BUFFER_SIZE)
+
+            if partial_current_contents != partial_previous_contents:
+                return False
+            if not partial_current_contents:
+                return True
+
+    @classmethod
+    async def _check_config_actually_is_same(cls, previous_file_comparer: FileComparer) -> bool:  # noqa: E501
+        SETTINGS_FILE_PATH: Final[AsyncPath] = (
+            await config._settings.utils.get_settings_file_path()
+        )
+        # noinspection PyProtectedMember
+        current_file_stats: FileStats = await FileStats._public_from_file_path(  # noqa: SLF001
+            SETTINGS_FILE_PATH,
+        )
+
+        if current_file_stats.size != previous_file_comparer.stats.size:
+            return False
+
+        outcome: bool | None = cls._STATS_CACHE.get(
+            (current_file_stats, previous_file_comparer.stats),
+            None,
+        )
+        if outcome is not None:
+            return outcome
+
+        async with SETTINGS_FILE_PATH.open("rb") as current_file:
+            outcome = await cls._file_raw_contents_is_same(
+                current_file,
+                previous_file_comparer.raw_content,
+            )
+
+        if len(cls._STATS_CACHE) > 100:
+            cls._STATS_CACHE.clear()
+
+        cls._STATS_CACHE[(current_file_stats, previous_file_comparer.stats)] = outcome
+        return outcome
+
+    @tasks.loop(seconds=settings["CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS"])
+    async def check_config_file_changed(self) -> None:
+        """Recurring task to check whether the config settings file has changed."""
+        if self._previous_file_comparer is None:
+            # noinspection PyProtectedMember
+            self._previous_file_comparer = await FileComparer._public_from_file_path(  # noqa: SLF001
+                await config._settings.utils.get_settings_file_path(),
+            )
+            return
+
+        if await self._check_config_actually_is_same(self._previous_file_comparer):
+            return
+
+        # noinspection PyProtectedMember
+        self._previous_file_comparer = await FileComparer._public_from_file_path(  # noqa: SLF001
+            await config._settings.utils.get_settings_file_path(),
+        )
+
+        raise NotImplementedError  # TODO: reload/update changes
+
+        # {
+        #     config_setting_name
+        #     for config_setting_name, config_setting_help
+        #     in CONFIG_SETTINGS_HELPS.items()
+        #     if config_setting_help.requires_restart_after_changed
+        # }
+
+    @check_config_file_changed.before_loop
+    async def before_tasks(self) -> None:
+        """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
+        await self.bot.wait_until_ready()
+
+
 class ConfigChangeCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/config" command group and command call-back methods."""
 
@@ -70,6 +220,18 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         name="config",
         description="Display, edit and get help about TeX-Bot's configuration.",
     )
+
+    @classmethod
+    def get_formatted_change_delay_message(cls) -> str:
+        return (
+            f"Changes could take up to {
+                (
+                    str(int(settings["CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS"] * 2.1))
+                    if (settings["CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS"] * 2.1) % 1 == 0
+                    else f"{settings["CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS"] * 2.1:.2f}"
+                )
+            } seconds to take effect."
+        )
 
     @staticmethod
     async def autocomplete_get_settings_names(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
@@ -213,15 +375,40 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             return {"true", "false"}
 
         SETTING_NAME_IS_TIMEDELTA: Final[bool] = (
-            ":timeout-duration" in setting_name
-            or ":delay" in setting_name
-            or ":interval" in setting_name
+            any(
+                part in setting_name
+                for part
+                in (
+                    ":timeout-duration:",
+                    ":delay:",
+                    ":interval:",
+                    ":timeout-duration-",
+                    ":delay-",
+                    ":interval-",
+                    "-timeout-duration:",
+                    "-delay:",
+                    "-interval:",
+                )
+            )
+            or setting_name.endswith(
+                (
+                    ":timeout-duration",
+                    ":delay",
+                    ":interval",
+                    "-timeout-duration",
+                    "-delay",
+                    "-interval",
+                ),
+            )
         )
         if SETTING_NAME_IS_TIMEDELTA:
-            timedelta_scales: MutableSequence[str] = ["s", "m", "h"]
+            timedelta_scales: MutableSequence[str] = ["s", "m"]
 
-            if ":timeout-duration" in setting_name or ":delay" in setting_name:
-                timedelta_scales.extend(["d", "w"])
+            if setting_name != "check-if-config-changed-interval":
+                timedelta_scales.extend(["h"])
+
+                if any(part in setting_name for part in ("timeout-duration", "delay")):
+                    timedelta_scales.extend(["d", "w"])
 
             return {
                 "".join(
@@ -641,8 +828,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                         if changed_config_setting_value
                         else "**to be not set**."
                     )
-                }\n\n"
-                "Changes could take up to ??? to take effect."  # TODO: Retrieve update time from task
+                }\n\n{self.get_formatted_change_delay_message()}"
             ),
             view=None,
         )
@@ -698,7 +884,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             content=(
                 f"Successfully unset setting `{
                     config_setting_name.replace("`", "\\`")
-                }`"
+                }`\n\n{self.get_formatted_change_delay_message()}"
             ),
             ephemeral=True,
         )

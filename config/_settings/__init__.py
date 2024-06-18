@@ -185,6 +185,9 @@ class SettingsAccessor:
             cls._reload_send_get_roles_reminders_interval(
                 current_yaml["reminders"]["send-get-roles-reminders"]["interval"],
             ),
+            cls._reload_check_if_config_changed_interval(
+                current_yaml["check-if-config-changed-interval"],
+            ),
         )
 
         cls._most_recent_yaml = current_yaml
@@ -203,19 +206,24 @@ class SettingsAccessor:
         if not CONSOLE_LOGGING_SETTINGS_CHANGED:
             return set()
 
+        ALL_HANDLERS: Iterable[logging.Handler] = logger.handlers
+
+        console_logging_handler: logging.StreamHandler[TextIO] = logging.StreamHandler()
+
         stream_handlers: set[logging.StreamHandler[TextIO]] = {
             handler
             for handler
-            in logger.handlers
-            if isinstance(handler, logging.StreamHandler)
+            in ALL_HANDLERS
+            if (
+                isinstance(handler, type(console_logging_handler))
+                and handler.stream == console_logging_handler.stream
+            )
         }
         if len(stream_handlers) > 1:
             CANNOT_DETERMINE_LOGGING_HANDLER_MESSAGE: Final[str] = (
                 "Cannot determine which logging stream-handler to update."
             )
             raise ValueError(CANNOT_DETERMINE_LOGGING_HANDLER_MESSAGE)
-
-        console_logging_handler: logging.StreamHandler[TextIO] = logging.StreamHandler()
 
         if len(stream_handlers) == 0:
             # noinspection SpellCheckingInspection
@@ -850,6 +858,29 @@ class SettingsAccessor:
         )
 
         return {"reminders:send-get-roles-reminders:interval"}
+
+    @classmethod
+    def _reload_check_if_config_changed_interval(cls, check_if_config_changed_interval: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
+        """
+        Reload the interval of time between executing the task to send check if config changed.
+
+        Returns the set of settings keys that have been changed.
+        """
+        CHECK_IF_CONFIG_CHANGED_INTERVAL_CHANGED: Final[bool] = bool(
+            cls._most_recent_yaml is None
+            or "CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS" not in cls._settings
+            or check_if_config_changed_interval != cls._most_recent_yaml[
+                "check-if-config-changed-interval"
+            ]  # noqa: COM812
+        )
+        if not CHECK_IF_CONFIG_CHANGED_INTERVAL_CHANGED:
+            return set()
+
+        cls._settings["CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS"] = (
+            check_if_config_changed_interval.data.total_seconds()
+        )
+
+        return {"check-if-config-changed-interval"}
 
     @classmethod
     def _get_scalar_value(cls, config_setting_name: str, yaml_settings_tree: YAML) -> str | None:  # type: ignore[misc] # noqa: E501

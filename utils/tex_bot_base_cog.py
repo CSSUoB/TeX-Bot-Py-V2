@@ -10,7 +10,7 @@ import logging
 import re
 from collections.abc import Mapping, Set
 from logging import Logger
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Final, override
 
 import discord
 from discord import Cog
@@ -63,6 +63,7 @@ class TeXBotBaseCog(Cog):
         "write_roles": "send messages",
     }
 
+    @override
     def __init__(self, bot: TeXBot) -> None:
         """Initialize a new cog instance, storing a reference to the bot object."""
         self.bot: TeXBot = bot

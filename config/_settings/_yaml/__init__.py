@@ -18,6 +18,7 @@ import strictyaml
 from strictyaml import YAML
 
 from config.constants import (
+    DEFAULT_CHECK_IF_CONFIG_CHANGED_INTERVAL,
     DEFAULT_CONSOLE_LOG_LEVEL,
     DEFAULT_DISCORD_LOGGING_LOG_LEVEL,
     DEFAULT_MEMBERS_LIST_ID_FORMAT,
@@ -215,6 +216,9 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(
                     },
                 ),
             },
+        ),
+        strictyaml.Optional("check-if-config-changed-interval", default=DEFAULT_CHECK_IF_CONFIG_CHANGED_INTERVAL): (  # noqa: E501
+            TimeDeltaValidator(minutes=True)
         ),
     },
 )

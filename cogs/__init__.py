@@ -10,7 +10,7 @@ from collections.abc import Sequence
 __all__: Sequence[str] = (
     "ArchiveCommandCog",
     "ConfigChangeCommandsCog",
-    "GetTokenAuthorisationCommand",
+    "GetTokenAuthorisationCommandCog",
     "CommandErrorCog",
     "DeleteAllCommandsCog",
     "EditMessageCommandCog",
@@ -41,11 +41,11 @@ __all__: Sequence[str] = (
 from typing import TYPE_CHECKING
 
 from cogs.archive import ArchiveCommandCog
-from cogs.change_config import ConfigChangeCommandsCog
+from cogs.change_config import CheckConfigFileChangedTaskCog, ConfigChangeCommandsCog
 from cogs.command_error import CommandErrorCog
 from cogs.delete_all import DeleteAllCommandsCog
 from cogs.edit_message import EditMessageCommandCog
-from cogs.get_token_authorisation import GetTokenAuthorisationCommand
+from cogs.get_token_authorisation import GetTokenAuthorisationCommandCog
 from cogs.induct import (
     EnsureMembersInductedCommandCog,
     InductContextCommandsCog,
@@ -76,7 +76,8 @@ def setup(bot: TeXBot) -> None:
     """Add all the cogs to the bot, at bot startup."""
     cogs: Iterable[type[TeXBotBaseCog]] = (
         ArchiveCommandCog,
-        GetTokenAuthorisationCommand,
+        GetTokenAuthorisationCommandCog,
+        CheckConfigFileChangedTaskCog,
         ConfigChangeCommandsCog,
         CommandErrorCog,
         DeleteAllCommandsCog,

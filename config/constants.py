@@ -25,6 +25,7 @@ __all__: Sequence[str] = (
     "DEFAULT_SEND_GET_ROLES_REMINDERS_ENABLED",
     "DEFAULT_SEND_GET_ROLES_REMINDERS_DELAY",
     "DEFAULT_SEND_GET_ROLES_REMINDERS_INTERVAL",
+    "DEFAULT_CHECK_IF_CONFIG_CHANGED_INTERVAL",
     "CONFIG_SETTINGS_HELPS",
 )
 
@@ -128,6 +129,7 @@ DEFAULT_SEND_INTRODUCTION_REMINDERS_INTERVAL: Final[str] = "6h"
 DEFAULT_SEND_GET_ROLES_REMINDERS_ENABLED: Final[bool] = True
 DEFAULT_SEND_GET_ROLES_REMINDERS_DELAY: Final[str] = "40h"
 DEFAULT_SEND_GET_ROLES_REMINDERS_INTERVAL: Final[str] = "6h"
+DEFAULT_CHECK_IF_CONFIG_CHANGED_INTERVAL: Final[str] = "30s"
 
 CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
     "logging:console:log-level": ConfigSettingHelp(
@@ -467,11 +469,19 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
         required=False,
         default=DEFAULT_SEND_GET_ROLES_REMINDERS_INTERVAL,
     ),
+    "check-if-config-changed-interval": ConfigSettingHelp(
+        description=(
+            "The interval of time between checking whether the config values, "
+            "defined in the settings file, have changed."
+        ),
+        value_type_message=_custom_required_format_message(
+            (
+                "string of the seconds or minutes between checks "
+                "(format: `<seconds>s<minutes>m`)"
+            ),
+        ),
+        requires_restart_after_changed=True,
+        required=False,
+        default=DEFAULT_CHECK_IF_CONFIG_CHANGED_INTERVAL,
+    ),
 }
-
-# {  # TODO: Use in config reloader
-#     config_setting_name
-#     for config_setting_name, config_setting_help
-#     in CONFIG_SETTINGS_HELPS.items()
-#     if config_setting_help.requires_restart_after_changed
-# }

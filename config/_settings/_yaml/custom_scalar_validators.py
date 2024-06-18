@@ -18,7 +18,7 @@ import re
 from collections.abc import Callable
 from datetime import timedelta
 from re import Match
-from typing import Final, NoReturn, override
+from typing import Final, Literal, NoReturn, override
 
 import strictyaml
 from strictyaml import constants as strictyaml_constants
@@ -202,17 +202,13 @@ class BoundedFloatValidator(strictyaml.Float):  # type: ignore[misc]
 
 class TimeDeltaValidator(strictyaml.ScalarValidator):  # type: ignore[misc]
     @override
-    def __init__(self, *, minutes: bool = True, hours: bool = True, days: bool = False, weeks: bool = False) -> None:  # noqa: E501
+    def __init__(self, *, seconds: Literal[True] = True, minutes: bool = True, hours: bool = True, days: bool = False, weeks: bool = False) -> None:  # noqa: E501
         regex_matcher: str = r"\A"
 
         time_resolution_name: str
         for time_resolution_name in ("seconds", "minutes", "hours", "days", "weeks"):
             formatted_time_resolution_name: str = time_resolution_name.lower().strip()
-            time_resolution: object = (
-                True
-                if formatted_time_resolution_name == "seconds"
-                else locals()[formatted_time_resolution_name]
-            )
+            time_resolution: object = locals()[formatted_time_resolution_name]
 
             if not isinstance(time_resolution, bool):
                 raise TypeError

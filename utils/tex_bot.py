@@ -78,9 +78,8 @@ class TeXBot(discord.Bot):
         super().__init__(*args, **options)  # type: ignore[no-untyped-call]
 
     @override
-    async def close(self) -> NoReturn:
+    async def close(self) -> NoReturn:  # type: ignore[misc]
         await super().close()
-        raise RuntimeError
 
     # noinspection PyPep8Naming
     @property
