@@ -12,6 +12,8 @@ __all__: Sequence[str] = (
     "MESSAGES_LOCALE_CODES",
     "LogLevels",
     "run_setup",
+    "reload_settings",
+    "load_messages",
     "settings",
     "check_for_deprecated_environment_variables",
     "messages",
@@ -20,6 +22,7 @@ __all__: Sequence[str] = (
     "get_settings_file_path",
     "view_single_config_setting_value",
     "assign_single_config_setting_value",
+    "remove_single_config_setting_value",
 )
 
 
@@ -53,8 +56,8 @@ def run_setup() -> None:
     """Execute the setup functions required, before other modules can be run."""
     check_for_deprecated_environment_variables()
 
-    async_to_sync(settings.reload)()
-    async_to_sync(messages.load)(settings["MESSAGES_LOCALE_CODE"])
+    async_to_sync(reload_settings)()
+    async_to_sync(load_messages)(settings["MESSAGES_LOCALE_CODE"])
 
     logger.debug("Begin database setup")
 
@@ -152,26 +155,46 @@ def check_for_deprecated_environment_variables() -> None:
     )
     deprecated_environment_variable_name: str
     for deprecated_environment_variable_name in DEPRECATED_ENVIRONMENT_VARIABLE_NAMES:
-        deprecated_environment_variable_found: bool = bool(
-            (
-                deprecated_environment_variable_name.upper() in os.environ
-                or deprecated_environment_variable_name.lower() in os.environ
-                or f"TEX_BOT_{deprecated_environment_variable_name}".upper() in os.environ
-                or f"TEX_BOT_{deprecated_environment_variable_name}".lower() in os.environ
-            ),
+        DEPRECATED_ENVIRONMENT_VARIABLE_FOUND: bool = bool(
+            deprecated_environment_variable_name.upper() in os.environ
+            or deprecated_environment_variable_name.lower() in os.environ
+            or f"TEX_BOT_{deprecated_environment_variable_name}".upper() in os.environ
+            or f"TEX_BOT_{deprecated_environment_variable_name}".lower() in os.environ  # noqa: COM812
         )
-        if deprecated_environment_variable_found:
+        if DEPRECATED_ENVIRONMENT_VARIABLE_FOUND:
             raise CONFIGURATION_VIA_ENVIRONMENT_VARIABLES_IS_DEPRECATED_ERROR
+
+
+async def reload_settings() -> None:
+    """Reload any configuration settings into the settings tree."""
+    # noinspection PyProtectedMember
+    await settings._public_reload()  # noqa: SLF001
 
 
 def view_single_config_setting_value(config_setting_name: str) -> str | None:
     """Return the value of a single configuration setting from settings tree hierarchy."""
-    return settings.view_single_raw_value(config_setting_name=config_setting_name)
+    # noinspection PyProtectedMember
+    return settings._public_view_single_raw_value(config_setting_name=config_setting_name)  # noqa: SLF001
 
 
 async def assign_single_config_setting_value(config_setting_name: str, new_config_setting_value: str) -> None:  # noqa: E501
     """Set the value of a single configuration setting within settings tree hierarchy."""
-    return await settings.assign_single_raw_value(
+    # noinspection PyProtectedMember
+    return await settings._public_assign_single_raw_value(  # noqa: SLF001
         config_setting_name=config_setting_name,
         new_config_setting_value=new_config_setting_value,
     )
+
+
+async def remove_single_config_setting_value(config_setting_name: str) -> None:
+    """Unset the value of a single configuration setting within settings tree hierarchy."""
+    # noinspection PyProtectedMember
+    return await settings._public_remove_single_raw_value(  # noqa: SLF001
+        config_setting_name=config_setting_name,
+    )
+
+
+async def load_messages(messages_locale_code: str) -> None:
+    """Load the messages defined in the language file."""
+    # noinspection PyProtectedMember
+    await messages._public_load(messages_locale_code=messages_locale_code)  # noqa: SLF001

@@ -19,7 +19,6 @@ class PingCommandCog(TeXBotBaseCog):
     @discord.slash_command(description="Replies with Pong!")  # type: ignore[no-untyped-call, misc]
     async def ping(self, ctx: TeXBotApplicationContext) -> None:
         """Definition & callback response of the "ping" command."""
-        raise Exception
         await ctx.respond(
             random.choices(
                 [

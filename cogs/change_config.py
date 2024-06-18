@@ -86,10 +86,29 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         return set(config.CONFIG_SETTINGS_HELPS)
 
     @staticmethod
+    async def autocomplete_get_unsetable_settings_names(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
+        """Autocomplete callable that generates the set of unsetable settings names."""
+        if not ctx.interaction.user:
+            return set()
+
+        try:
+            if not await ctx.bot.check_user_has_committee_role(ctx.interaction.user):
+                return set()
+        except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
+            return set()
+
+        return {
+            setting_name
+            for setting_name, setting_help
+            in config.CONFIG_SETTINGS_HELPS.items()
+            if setting_help.default is not None
+        }
+
+    @staticmethod
     async def autocomplete_get_example_setting_values(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: C901,PLR0911,PLR0912,E501
         """Autocomplete callable that generates example values for a configuration setting."""
         HAS_CONTEXT: Final[bool] = bool(
-            ctx.interaction.user and "setting" in ctx.options and ctx.options["setting"],
+            ctx.interaction.user and "setting" in ctx.options and ctx.options["setting"]  # noqa: COM812
         )
         if not HAS_CONTEXT:
             return set()
@@ -523,18 +542,22 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                 ),
             )
 
-            if button_interaction.data["custom_id"] == "set_config_cancel":  # type: ignore[index, typeddict-item]
-                await confirmation_message.edit(
-                    content=(
-                        "Aborting editing config setting: "
-                        f"{config_setting_name.replace("`", "\\`")}"
-                    ),
-                    view=None,
-                )
-                return
+            match button_interaction.data["custom_id"]:  # type: ignore[index, typeddict-item]
+                case "set_config_cancel":
+                    await confirmation_message.edit(
+                        content=(
+                            "Aborting editing config setting: "
+                            f"{config_setting_name.replace("`", "\\`")}"
+                        ),
+                        view=None,
+                    )
+                    return
 
-            if button_interaction.data["custom_id"] != "set_config_confirm":  # type: ignore[index, typeddict-item]
-                raise ValueError
+                case "set_config_confirm":
+                    pass
+
+                case _:
+                    raise ValueError
 
         previous_config_setting_value: str | None = config.view_single_config_setting_value(
             config_setting_name,
@@ -624,4 +647,58 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             view=None,
         )
 
-    # TODO: Command to unset value (if it is optional)
+    @change_config.command(
+        name="unset",
+        description=(
+            "Unset the specified configuration setting, "
+            "so that it returns to its default value."
+        ),
+    )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="setting",
+        description="The name of the configuration setting to unset.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(
+            autocomplete_get_unsetable_settings_names,  # type: ignore[arg-type]
+        ),
+        required=True,
+        parameter_name="config_setting_name",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def unset_config_value(self, ctx: TeXBotApplicationContext, config_setting_name: str) -> None:  # noqa: E501
+        """Definition & callback response of the "unset_config_value" command."""
+        if config_setting_name not in config.CONFIG_SETTINGS_HELPS:
+            await self.command_send_error(
+                ctx,
+                message=f"Invalid setting: {config_setting_name!r}",
+            )
+            return
+
+        if config.CONFIG_SETTINGS_HELPS[config_setting_name].default is None:
+            await self.command_send_error(
+                ctx,
+                message=(
+                    f"Setting {config_setting_name!r} cannot be unset, "
+                    "because it has no default value"
+                ),
+            )
+            return
+
+        try:
+            await config.remove_single_config_setting_value(config_setting_name)
+        except KeyError:
+            await self.command_send_error(
+                ctx,
+                message=f"Setting {config_setting_name!r} already has the default value",
+            )
+            return
+
+        await ctx.respond(
+            content=(
+                f"Successfully unset setting `{
+                    config_setting_name.replace("`", "\\`")
+                }`"
+            ),
+            ephemeral=True,
+        )

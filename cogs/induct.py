@@ -231,7 +231,7 @@ class BaseInductCog(TeXBotBaseCog):
 
             message_already_sent: bool = False
             message: discord.Message
-            async for message in general_channel.history(limit=7):
+            async for message in general_channel.history(limit=10):
                 if message.author == self.bot.user and "grab your roles" in message.content:
                     message_already_sent = True
                     break

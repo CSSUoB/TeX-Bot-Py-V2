@@ -69,10 +69,8 @@ class DiscordWebhookURLValidator(strictyaml.Url):  # type: ignore[misc]
     def validate_scalar(self, chunk: YAMLChunk) -> str:  # type: ignore[misc]
         # noinspection PyUnresolvedReferences
         CHUNK_IS_VALID: Final[bool] = bool(
-            (
-                self._Url__is_absolute_url(chunk.contents)
-                and chunk.contents.startswith("https://discord.com/api/webhooks/")
-            ),
+            self._Url__is_absolute_url(chunk.contents)
+            and chunk.contents.startswith("https://discord.com/api/webhooks/")  # noqa: COM812
         )
         if not CHUNK_IS_VALID:
             chunk.expecting_but_found("when expecting a Discord webhook URL")
@@ -86,10 +84,8 @@ class DiscordWebhookURLValidator(strictyaml.Url):  # type: ignore[misc]
 
         # noinspection PyUnresolvedReferences
         DATA_IS_VALID: Final[bool] = bool(
-            (
-                self._Url__is_absolute_url(data)
-                and data.startswith("https://discord.com/api/webhooks/")  # type: ignore[attr-defined]
-            ),
+            self._Url__is_absolute_url(data)
+            and data.startswith("https://discord.com/api/webhooks/")  # type: ignore[attr-defined] # noqa: COM812
         )
         if not DATA_IS_VALID:
             INVALID_DATA_MESSAGE: Final[str] = f"'{data}' is not a Discord webhook URL."
@@ -112,11 +108,9 @@ class DiscordSnowflakeValidator(strictyaml.Int):  # type: ignore[misc]
     @override
     def to_yaml(self, data: object) -> str:  # type: ignore[misc]
         DATA_IS_VALID: Final[bool] = bool(
-            (
-                (strictyaml_utils.is_string(data) or isinstance(data, int))
-                and strictyaml_utils.is_integer(str(data))
-                and re.fullmatch(r"\A\d{17,20}\Z", str(data))
-            ),
+            (strictyaml_utils.is_string(data) or isinstance(data, int))
+            and strictyaml_utils.is_integer(str(data))
+            and re.fullmatch(r"\A\d{17,20}\Z", str(data))  # noqa: COM812
         )
         if not DATA_IS_VALID:
             INVALID_DATA_MESSAGE: Final[str] = f"'{data}' is not a Discord snowflake ID."
@@ -297,6 +291,12 @@ class TimeDeltaValidator(strictyaml.ScalarValidator):  # type: ignore[misc]
         total_seconds: object = getattr(data, "total_seconds")()  # noqa: B009
         if not isinstance(total_seconds, float):
             raise TypeError
+
+        if (total_seconds / 3600) % 1 == 0:
+            return f"{int(total_seconds / 3600)}h"
+
+        if total_seconds % 1 == 0:
+            return f"{int(total_seconds)}s"
 
         return f"{total_seconds}s"
 

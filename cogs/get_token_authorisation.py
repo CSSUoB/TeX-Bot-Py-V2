@@ -121,6 +121,6 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
             ephemeral=bool(
                 (not guest_role) or ctx.channel.permissions_for(guest_role).is_superset(
                     discord.Permissions(view_channel=True),
-                ),
+                )  # noqa: COM812
             ),
         )

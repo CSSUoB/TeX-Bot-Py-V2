@@ -116,7 +116,7 @@ class StartupCog(TeXBotBaseCog):
             discord.utils.get(
                 self.bot.main_guild.text_channels,
                 name=settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"],
-            ),
+            )  # noqa: COM812
         )
         if STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_EXISTS:
             return

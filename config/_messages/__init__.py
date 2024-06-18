@@ -17,7 +17,7 @@ class MessagesAccessor:
     _messages_already_loaded: ClassVar[bool] = False
 
     @classmethod
-    def format_invalid_message_id_message(cls, item: str) -> str:
+    def _format_invalid_message_id_message(cls, item: str) -> str:
         """Return the message to state that the given message ID is invalid."""
         return f"{item!r} is not a valid message ID."
 
@@ -63,7 +63,7 @@ class MessagesAccessor:
             raise KeyError(key_error_message) from None
 
     @classmethod
-    async def load(cls, messages_locale_code: str) -> None:
+    async def _public_load(cls, messages_locale_code: str) -> None:
         if messages_locale_code not in MESSAGES_LOCALE_CODES:
             INVALID_MESSAGES_LOCALE_CODE_MESSAGE: Final[str] = (
                 f"{"messages_locale_code"!r} must be one of "

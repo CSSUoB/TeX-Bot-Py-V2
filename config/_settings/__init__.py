@@ -10,7 +10,6 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("get_settings_file_path", "SettingsAccessor")
 
 
-
 import logging
 import re
 from collections.abc import Iterable, Mapping
@@ -46,7 +45,7 @@ class SettingsAccessor:
     _most_recent_yaml: ClassVar[YAML | None] = None
 
     @classmethod
-    def format_invalid_settings_key_message(cls, item: str) -> str:
+    def _get_invalid_settings_key_message(cls, item: str) -> str:
         """Return the message to state that the given settings key is invalid."""
         return f"{item!r} is not a valid settings key."
 
@@ -73,14 +72,14 @@ class SettingsAccessor:
 
         if item not in self._settings:
             INVALID_SETTINGS_KEY_MESSAGE: Final[str] = (
-                self.format_invalid_settings_key_message(item)
+                self._get_invalid_settings_key_message(item)
             )
             raise AttributeError(INVALID_SETTINGS_KEY_MESSAGE)
 
         ATTEMPTING_TO_ACCESS_BOT_TOKEN_WHEN_ALREADY_RUNNING: Final[bool] = bool(
             "bot" in item.lower()
             and "token" in item.lower()
-            and utils.is_running_in_async(),
+            and utils.is_running_in_async()  # noqa: COM812
         )
         if ATTEMPTING_TO_ACCESS_BOT_TOKEN_WHEN_ALREADY_RUNNING:
             TEX_BOT_ALREADY_RUNNING_MESSAGE: Final[str] = (
@@ -99,7 +98,7 @@ class SettingsAccessor:
             key_error_message: str = item
 
             ERROR_WAS_FROM_INVALID_KEY_NAME: Final[bool] = (
-                self.format_invalid_settings_key_message(item) in str(
+                self._get_invalid_settings_key_message(item) in str(
                     attribute_not_exist_error,
                 )
             )
@@ -109,7 +108,7 @@ class SettingsAccessor:
             raise KeyError(key_error_message) from None
 
     @classmethod
-    async def reload(cls) -> None:
+    async def _public_reload(cls) -> None:
         settings_file_path: AsyncPath = await utils.get_settings_file_path()
         current_yaml: YAML = load_yaml(
             await settings_file_path.read_text(),
@@ -920,7 +919,7 @@ class SettingsAccessor:
 
         YAML_CHILD_IS_MAPPING: Final[bool] = bool(
             single_yaml_mapping_setting is not None
-            and single_yaml_mapping_setting.is_mapping(),
+            and single_yaml_mapping_setting.is_mapping()  # noqa: COM812
         )
         if YAML_CHILD_IS_MAPPING:
             return cls._get_mapping_value(remainder, single_yaml_mapping_setting)
@@ -928,7 +927,7 @@ class SettingsAccessor:
         return cls._get_scalar_value(partial_config_setting_name, partial_yaml_settings_tree)
 
     @classmethod
-    def view_single_raw_value(cls, config_setting_name: str) -> str | None:
+    def _public_view_single_raw_value(cls, config_setting_name: str) -> str | None:
         """Return the value of a single configuration setting from settings tree hierarchy."""
         current_yaml: YAML | None = cls._most_recent_yaml
         if current_yaml is None:
@@ -1052,7 +1051,7 @@ class SettingsAccessor:
         raise RuntimeError(UNKNOWN_CONFIG_TYPE_MESSAGE)
 
     @classmethod
-    async def assign_single_raw_value(cls, config_setting_name: str, new_config_setting_value: str) -> None:  # noqa: E501
+    async def _public_assign_single_raw_value(cls, config_setting_name: str, new_config_setting_value: str) -> None:  # noqa: E501
         """Set the value of a single configuration setting within settings tree hierarchy."""
         current_yaml: YAML | None = cls._most_recent_yaml
         if current_yaml is None:
@@ -1072,5 +1071,44 @@ class SettingsAccessor:
             raise type(config_setting_error)(
                 config_setting_name=config_setting_name,
             ) from config_setting_error
+
+        await (await utils.get_settings_file_path()).write_text(current_yaml.as_yaml())
+
+    @classmethod
+    def _remove_value(cls, partial_config_setting_name: str, partial_yaml_settings_tree: YAML) -> YAML:  # type: ignore[misc] # noqa: E501
+        if ":" not in partial_config_setting_name:
+            del partial_yaml_settings_tree[partial_config_setting_name]
+            return partial_yaml_settings_tree
+
+        key: str
+        remainder: str
+        key, _, remainder = partial_config_setting_name.partition(":")
+
+        if not partial_yaml_settings_tree[key].is_mapping():
+            EXPECTED_MAPPING_IN_YAML_MESSAGE: Final[str] = "Found non-mapping."
+            raise RuntimeError(EXPECTED_MAPPING_IN_YAML_MESSAGE)
+
+        removed_value: YAML = cls._remove_value(
+            remainder,
+            partial_yaml_settings_tree[key],
+        )
+
+        if not removed_value.data:
+            del partial_yaml_settings_tree[key]
+        else:
+            partial_yaml_settings_tree[key] = removed_value.data
+        return partial_yaml_settings_tree
+
+    @classmethod
+    async def _public_remove_single_raw_value(cls, config_setting_name: str) -> None:
+        """Unset the value of a single configuration setting within settings tree hierarchy."""
+        current_yaml: YAML | None = cls._most_recent_yaml
+        if current_yaml is None:
+            YAML_NOT_LOADED_MESSAGE: Final[str] = (
+                "Invalid state: Config YAML has not yet been loaded."
+            )
+            raise RuntimeError(YAML_NOT_LOADED_MESSAGE)
+
+        current_yaml = cls._remove_value(config_setting_name, current_yaml)
 
         await (await utils.get_settings_file_path()).write_text(current_yaml.as_yaml())

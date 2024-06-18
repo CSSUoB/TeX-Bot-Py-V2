@@ -25,7 +25,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
     """
     Base making-applicant cog container class.
 
-    Defines the methods for making users into group-applicants, that are called by
+    Defines the methods for making users into group-applicants that are called by
     child cog container classes.
     """
 
@@ -59,7 +59,6 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
             await applicant_member.remove_roles(guest_role, reason=AUDIT_MESSAGE)
             logger.debug("Removed Guest role from user %s", applicant_member)
 
-
         tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
         if not tex_emoji:
             tex_emoji = discord.utils.get(main_guild.emojis, name="TeX")
@@ -91,7 +90,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
     """Cog class that defines the "/make_applicant" slash-command."""
 
     @staticmethod
-    async def autocomplete_get_members(ctx: TeXBotApplicationContext) -> set[discord.OptionChoice]: # noqa: E501
+    async def autocomplete_get_members(ctx: TeXBotApplicationContext) -> set[discord.OptionChoice]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable members.
 
@@ -123,7 +122,6 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
             for member
             in members
         }
-
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="make-applicant",
@@ -163,10 +161,10 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
 class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
     """Cog class that defines the "/make_applicant" context commands."""
 
-    @discord.user_command(name="Make Applicant") #type: ignore[no-untyped-call, misc]
+    @discord.user_command(name="Make Applicant")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def user_make_applicant(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None: # noqa: E501
+    async def user_make_applicant(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:  # noqa: E501
         """
         Definition and callback response of the "make_applicant" user-context-command.
 
@@ -176,7 +174,7 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
         """
         await self._perform_make_applicant(ctx, member)
 
-    @discord.message_command(name="Make Message Author Applicant") # type: ignore[no-untyped-call, misc]
+    @discord.message_command(name="Make Message Author Applicant")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def message_make_applicant(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
@@ -198,5 +196,6 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
                 ),
                 ephemeral=True,
             )
+            return
 
         await self._perform_make_applicant(ctx, member)
