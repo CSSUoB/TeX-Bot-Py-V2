@@ -462,6 +462,9 @@ class ManualModerationCog(BaseStrikeCog):
             raise StrikeTrackingError(CHANNEL_DOES_NOT_EXIST_MESSAGE)
 
         return guild_confirmation_message_channel
+    
+    async def _process_automod_moderation_action(self, strike_user: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501
+        logger.debug("Do some stuff")
 
     @capture_strike_tracking_error
     async def _confirm_manual_add_strike(self, strike_user: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501
@@ -487,9 +490,10 @@ class ManualModerationCog(BaseStrikeCog):
             )
             raise NoAuditLogsStrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
 
+        is_automod_action: bool = False
         confirmation_message_channel: discord.DMChannel | discord.TextChannel
-        if "automod" in audit_log_entry.reason:
-            logger.debug("Automod! Send to log channel")
+        if audit_log_entry.reason is not None and "automod" in audit_log_entry.reason:
+            is_automod_action = True
 
         if not audit_log_entry.user:
             raise StrikeTrackingError
