@@ -10,7 +10,7 @@ from logging import Logger
 import discord
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 
-from db.core.models import Action
+from db.core.models import Action, DiscordMember
 from exceptions.base import BaseDoesNotExistError
 from utils import (
     CommandChecks,
@@ -56,7 +56,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         Each action is identified by its description.
         """
         return {
-            discord.OptionChoice(name=str(action.description), value=str(action))
+            discord.OptionChoice(name=str(action.description), value=str(action)) # type: ignore[attr-defined]
             async for action
             in Action.objects.all()
         }
@@ -90,8 +90,8 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         we assume the action is aimed at the command issuer.
         """
         try:
-            action: Action = await Action.objects.acreate(
-                member_id=int(str_action_member_id),
+            action: Action = await Action.objects.acreate(   # type: ignore[assignment]
+                discord_id=int(str_action_member_id),
                 description=str_action_description,
             )
         except ValidationError as create_action_error:
@@ -146,15 +146,15 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             await ctx.respond("The user you supplied doesn't exist or isn't in the server.")
             return
 
-        user_actions = [action async for action in Action.objects.filter(
-            hashed_member_id=Action.hash_member_id(str_action_member_id),
+        user_actions = [action async for action in await Action.objects.afilter(
+            discord_id=int(str_action_member_id),
         )]
 
         if not user_actions:
             await ctx.respond(f"User: {action_member.mention} has no actions.")
             logger.debug(user_actions)
         else:
-            await ctx.respond(f"Found {len(user_actions)} actions for user {action_member.mention}:\n{"\n".join(str(action.description) for action in user_actions)}")  # noqa: E501
+            await ctx.respond(f"Found {len(user_actions)} actions for user {action_member.mention}:\n{"\n".join(str(action.description) for action in user_actions)}") # type: ignore[attr-defined]  # noqa: E501
 
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
@@ -182,10 +182,16 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         input_description = components[1].strip()
 
         try:
-            action = await Action.objects.aget(hashed_member_id=input_hashed_id, description=input_description)  # noqa: E501
+            action = await Action.objects.aget(
+                hashed_member_id=input_hashed_id,
+                description=input_description,
+            )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
             await ctx.respond("Provided action was either not unique or did not exist.")
-            logger.warning("Action object: %s could not be matched to a unique action.", str_action_object)  # noqa: E501
+            logger.warning(
+                "Action object: %s could not be matched to a unique action.",
+                str_action_object,
+            )
 
         await ctx.respond(f"Action: {action} found! Deleting.")
         await action.adelete()
@@ -225,11 +231,11 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             await ctx.respond("Provided action was either not unique or did not exist.")
             logger.warning("Action object: %s could not be matched to a unique action.", str_action_object)  # noqa: E501
 
-        if input_hashed_id == Action.hash_member_id(str_action_member_id):
+        if input_hashed_id == DiscordMember.hash_discord_id(str_action_member_id):
             await ctx.respond(f"HEY! Action: {input_description} is already assigned to user: <@{str_action_member_id}>\nNo action has been taken.")  # noqa: E501
             return
 
-        action_to_reassign.hashed_member_id = Action.hash_member_id(str_action_member_id)
+        action_to_reassign.discord_member.hashed_discord_id = DiscordMember.hash_discord_id(str(str_action_member_id))  # noqa: E501
 
         await ctx.respond("Action successfully reassigned!")
 
@@ -250,8 +256,8 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         committee_members: set[discord.Member] = {member for member in main_guild.members if not member.bot and committee_role in member.roles}  # noqa: E501
 
-        committee_actions = {committee: [action for action in actions if action.hashed_member_id == Action.hash_member_id(committee.id)] for committee in committee_members}  # noqa: E501
+        committee_actions = {committee: [action for action in actions if action.discord_member.hashed_discord_id == DiscordMember.hash_discord_id(committee.id)] for committee in committee_members}  # noqa: E501
 
-        all_actions_message = "\n".join([f"Listing all actions by committee member:\n{committee.mention}, Actions:\n{', \n'.join(str(action.description) for action in actions)}" for committee, actions in committee_actions.items()])  # noqa: E501
+        all_actions_message = "\n".join([f"Listing all actions by committee member:\n{committee.mention}, Actions:\n{', \n'.join(str(action.description) for action in actions)}" for committee, actions in committee_actions.items()])  # type: ignore[attr-defined]  # noqa: E501
 
         await ctx.respond(all_actions_message)
