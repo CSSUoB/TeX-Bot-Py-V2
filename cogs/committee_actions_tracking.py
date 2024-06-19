@@ -57,8 +57,8 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         """
         return {
             discord.OptionChoice(name=str(action.description), value=str(action)) # type: ignore[attr-defined]
-            async for action
-            in Action.objects.all()
+            for action
+            in list(repr(await Action.objects.aget()))
         }
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -238,7 +238,6 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         action_to_reassign.discord_member.hashed_discord_id = DiscordMember.hash_discord_id(str(str_action_member_id))  # noqa: E501
 
         await ctx.respond("Action successfully reassigned!")
-
 
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
