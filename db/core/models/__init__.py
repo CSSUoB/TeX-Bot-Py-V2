@@ -26,22 +26,19 @@ from django.db import models
 from .utils import AsyncBaseModel, BaseDiscordMemberWrapper, DiscordMember
 
 
-class Action(AsyncBaseModel):
+class Action(BaseDiscordMemberWrapper):
     """Model to represent an action item that has been assigned to a Discord Member."""
 
     INSTANCES_NAME_PLURAL: str = "Actions"
 
-    hashed_member_id = models.CharField(
-        "Hashed Discord Member ID",
-        null=False,
+    discord_member = models.ForeignKey(   # type: ignore[assignment]
+        DiscordMember,
+        on_delete=models.CASCADE,
+        related_name="action",
+        verbose_name="Discord Member",
         blank=False,
-        max_length=64,
-        validators=[
-            RegexValidator(
-                r"\A[A-Fa-f0-9]{64}\Z",
-                "hashed_member_id must be a valid sha256 hex-digest.",
-            ),
-        ],
+        null=False,
+        unique=False,
     )
     description = models.TextField(
         "Description of the action",
@@ -54,7 +51,7 @@ class Action(AsyncBaseModel):
         verbose_name_plural = "Actions for Discord Members"
         constraints = [  # noqa: RUF012
             models.UniqueConstraint(
-                fields=["hashed_member_id", "description"],
+                fields=["discord_member", "description"],
                 name="unique_user_action",
             ),
         ]
@@ -62,29 +59,26 @@ class Action(AsyncBaseModel):
     def __repr__(self) -> str:
         """Generate a developer-focused representation of this DiscordReminder's attributes."""
         return (
-            f"<{self._meta.verbose_name}: {self.hashed_member_id!r}, {str(self.description)!r}"
+            f"<{self._meta.verbose_name}: {self.discord_member!r}, {str(self.description)!r}" # type: ignore[has-type]
         )
 
     def __str__(self) -> str:
         """Generate the string representation of this DiscordReminder."""
-        construct_str: str = f"{self.hashed_member_id}"
+        construct_str: str = f"{self.discord_member}" # type: ignore[has-type]
 
         if self.description:
             construct_str += f": {self.description[:50]}"
 
         return construct_str
 
-    def get_formatted_message(self, user_mention: str | None) -> str:
+    def get_action_description(self) -> str:
         """
         Return the formatted description stored by this action.
 
         Adds a mention to the Discord member that was assigned the action,
         if passed in from the calling context.
         """
-        constructed_message: str = "This is your reminder"
-
-        if user_mention:
-            constructed_message += f", {user_mention}"
+        constructed_message: str = "This is your action"
 
         constructed_message += "!"
 
