@@ -109,10 +109,10 @@ class SettingsAccessor:
 
     @classmethod
     async def _public_reload(cls) -> None:
-        settings_file_path: AsyncPath = await utils.get_settings_file_path()
+        SETTINGS_FILE_PATH: Final[AsyncPath] = await utils.get_settings_file_path()
         current_yaml: YAML = load_yaml(
-            await settings_file_path.read_text(),
-            file_name=settings_file_path.name,
+            await SETTINGS_FILE_PATH.read_text(),
+            file_name=SETTINGS_FILE_PATH.name,
         )
 
         if current_yaml == cls._most_recent_yaml and cls._settings:

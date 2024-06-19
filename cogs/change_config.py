@@ -198,6 +198,12 @@ class CheckConfigFileChangedTaskCog(TeXBotBaseCog):
             await config._settings.utils.get_settings_file_path(),
         )
 
+        # 1. retrieve new yaml
+        # 2. recurse yaml and get changed values
+        # 3. if needs restart do total restart
+        # 4. if not needs restart do reload func
+        # 5. if is messages-code changed, reload messages
+
         raise NotImplementedError  # TODO: reload/update changes
 
         # {
