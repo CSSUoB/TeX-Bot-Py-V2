@@ -57,8 +57,8 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         """
         return {
             discord.OptionChoice(name=str(action.description), value=str(action)) # type: ignore[attr-defined]
-            for action
-            in list(repr(await Action.objects.aget()))
+            async for action
+            in await Action.objects.all()
         }
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
