@@ -8,6 +8,7 @@ import logging
 from logging import Logger
 
 import discord
+from asgiref.sync import sync_to_async
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 
 from db.core.models import Action, DiscordMember
@@ -55,10 +56,12 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         Each action is identified by its description.
         """
+        actions = await sync_to_async(Action.objects.all)()
+        logger.debug(actions)
         return {
             discord.OptionChoice(name=str(action.description), value=str(action)) # type: ignore[attr-defined]
-            async for action
-            in await Action.objects.all()
+            for action
+            in actions
         }
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -251,12 +254,10 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         main_guild: discord.Guild = self.bot.main_guild
         committee_role: discord.Role = await self.bot.committee_role
 
-        actions = [action async for action in Action.objects.all()]
-
         committee_members: set[discord.Member] = {member for member in main_guild.members if not member.bot and committee_role in member.roles}  # noqa: E501
 
-        committee_actions = {committee: [action for action in actions if action.discord_member.hashed_discord_id == DiscordMember.hash_discord_id(committee.id)] for committee in committee_members}  # noqa: E501
+        committee_actions: dict[discord.Member, list[Action]] = {committee: [action async for action in Action.objects.all() if action.discord_member.hashed_discord_id == DiscordMember.hash_discord_id(committee.id)] for committee in committee_members}  # noqa: E501
 
-        all_actions_message = "\n".join([f"Listing all actions by committee member:\n{committee.mention}, Actions:\n{', \n'.join(str(action.description) for action in actions)}" for committee, actions in committee_actions.items()])  # type: ignore[attr-defined]  # noqa: E501
+        all_actions_message: str = "\n".join([f"Listing all actions by committee member:\n{committee.mention}, Actions:\n{', \n'.join(str(action.description) for action in actions)}" for committee, actions in committee_actions.items()])  # type: ignore[attr-defined]  # noqa: E501
 
         await ctx.respond(all_actions_message)
