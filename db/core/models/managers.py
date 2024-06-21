@@ -15,17 +15,14 @@ from django.db.models import Manager, QuerySet
 
 import utils
 
-from .utils import BaseDiscordMemberWrapper
-
 if TYPE_CHECKING:
     from django.core.exceptions import ObjectDoesNotExist
 
-    from .utils import AsyncBaseModel, DiscordMember  # noqa: F401
+    from .utils import AsyncBaseModel, BaseDiscordMemberWrapper, DiscordMember  # noqa: F401
 
     T_model = TypeVar("T_model", bound=AsyncBaseModel)
 
-
-T_BaseDiscordMemberWrapper = TypeVar("T_BaseDiscordMemberWrapper", bound=BaseDiscordMemberWrapper)  # noqa: E501
+    T_BaseDiscordMemberWrapper = TypeVar("T_BaseDiscordMemberWrapper", bound=BaseDiscordMemberWrapper)  # noqa: E501
 
 Defaults: TypeAlias = (
     MutableMapping[str, object | Callable[[], object]]
