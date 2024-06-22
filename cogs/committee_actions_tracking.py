@@ -8,7 +8,6 @@ import logging
 from logging import Logger
 
 import discord
-from asgiref.sync import sync_to_async
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 
 from db.core.models import Action, DiscordMember
@@ -56,11 +55,10 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         Each action is identified by its description.
         """
-        actions = await sync_to_async(Action.objects.all)()
         return {
             discord.OptionChoice(name=str(action.description), value=str(action)) # type: ignore[attr-defined]
-            for action
-            in actions
+            async for action
+            in Action.objects.select_related().all()
         }
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -253,8 +251,6 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         committee_role: discord.Role = await self.bot.committee_role
 
         actions: list[Action] = [action async for action in Action.objects.select_related().all()]  # noqa: E501
-
-        logger.debug(repr(actions))
 
         committee_members: set[discord.Member] = {member for member in main_guild.members if not member.bot and committee_role in member.roles}  # noqa: E501
 
