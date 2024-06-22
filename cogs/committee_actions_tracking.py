@@ -237,7 +237,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             await ctx.respond(f"HEY! Action: {input_description} is already assigned to user: <@{str_action_member_id}>\nNo action has been taken.")  # noqa: E501
             return
 
-        action_to_reassign.discord_member.hashed_discord_id = DiscordMember.hash_discord_id(str(str_action_member_id))  # noqa: E501
+        action_to_reassign.discord_member.hashed_discord_id = DiscordMember.hash_discord_id(str(str_action_member_id))  # type: ignore[has-type] # noqa: E501
 
         await ctx.respond("Action successfully reassigned!")
 
@@ -252,12 +252,14 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         main_guild: discord.Guild = self.bot.main_guild
         committee_role: discord.Role = await self.bot.committee_role
 
-        actions: list[Action] = list(await sync_to_async(Action.objects.all)())
+        actions: list[Action] = [action async for action in Action.objects.select_related().all()]  # noqa: E501
+
+        logger.debug(repr(actions))
 
         committee_members: set[discord.Member] = {member for member in main_guild.members if not member.bot and committee_role in member.roles}  # noqa: E501
 
-        committee_actions: dict[discord.Member, list[Action]] = {committee: [action for action in actions if action.discord_member.hashed_discord_id == DiscordMember.hash_discord_id(committee.id)] for committee in committee_members}  # noqa: E501
+        committee_actions: dict[discord.Member, list[Action]] = {committee: [action for action in actions if action.discord_member.hashed_discord_id == DiscordMember.hash_discord_id(committee.id)] for committee in committee_members} # type: ignore [has-type] # noqa: E501
 
-        all_actions_message: str = "\n".join([f"Listing all actions by committee member:\n{committee.mention}, Actions:\n{', \n'.join(str(action.description) for action in actions)}" for committee, actions in committee_actions.items()])  # type: ignore[attr-defined]  # noqa: E501
+        all_actions_message: str = "\n".join([f"Listing all actions by committee member:\n{committee.mention}, Actions:\n{', \n'.join(str(action.description) for action in actions)}" for committee, actions in committee_actions.items()]) # noqa: E501
 
         await ctx.respond(all_actions_message)
