@@ -55,10 +55,18 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         Each action is identified by its description.
         """
+        all_actions: list[Action] = [action async for action in Action.objects.select_related().all()]  # noqa: E501
+
+        logger.debug(repr(all_actions))
+
+        if not all_actions:
+            logger.debug("User tried to autocomplete for Actions but no actions were found!")
+            return set()
+
         return {
-            discord.OptionChoice(name=str(action.description), value=str(action)) # type: ignore[attr-defined]
-            async for action
-            in Action.objects.select_related().all()
+            discord.OptionChoice(name=str(action.discord_member + ":" + action.description), value=str(action)) # type: ignore[attr-defined, has-type]  # noqa: E501
+            for action
+            in all_actions
         }
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
