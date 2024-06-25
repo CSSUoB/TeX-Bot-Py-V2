@@ -95,12 +95,11 @@ class ResetRolesCommandCog(TeXBotBaseCog):
             "Running reset roles!!",
         )
 
-        for member in main_guild.members:
-            if member_role in member.roles:
-                await member.remove_roles(
-                    member_role,
-                    reason=f"{ctx.user} used TeX Bot slash-command: \"/reset_roles\"",
-                )
+        for member in member_role.members:
+            await member.remove_roles(
+                member_role,
+                reason=f"{ctx.user} used TeX Bot slash-command: \"/reset_roles\"",
+            )
 
         logger.debug("Removed member role from all users!")
         initial_response.edit(content="Removed member role from all users!")
@@ -109,6 +108,21 @@ class ResetRolesCommandCog(TeXBotBaseCog):
 
         initial_response.edit(content="Deleted all members from the database!")
         logger.debug("Deleted all members from the database.")
+
+        year_role_names: list[str] = ["Foundation Year", "First Year", "Second Year", "Final Year", "Year In Industry", "Year Abroad"]  # noqa: E501
+        year_roles: list[discord.Role] = []
+
+        for role_name in year_role_names:
+            role: discord.Role | None = discord.utils.get(main_guild.roles, name=role_name)
+            if isinstance(role, discord.Role):
+                year_roles.append(role)
+
+        for role in year_roles:
+            for member in role.members:
+                await member.remove_roles(
+                    role,
+                    reason=f"{ctx.user} used TeX Bot slash-command: \"reset_roles\"",
+                )
 
         logger.debug("Execution of reset roles command complete!")
         initial_response.edit(content="Complete!")
