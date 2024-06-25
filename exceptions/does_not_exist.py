@@ -7,6 +7,7 @@ __all__: Sequence[str] = (
     "GuildDoesNotExistError",
     "RoleDoesNotExistError",
     "CommitteeRoleDoesNotExistError",
+    "CommitteeElectRoleDoesNotExistError",
     "GuestRoleDoesNotExistError",
     "MemberRoleDoesNotExistError",
     "ArchivistRoleDoesNotExistError",
@@ -135,6 +136,30 @@ class CommitteeRoleDoesNotExistError(RoleDoesNotExistError):
     def ROLE_NAME(cls) -> str:  # noqa: N802,N805
         """The name of the Discord role that does not exist."""  # noqa: D401
         return "Committee"
+
+
+class CommitteeElectRoleDoesNotExistError(RoleDoesNotExistError):
+    """Exception class to raise when the "Committee-Elect" discord role is missing."""
+
+    @classproperty
+    def ERROR_CODE(cls) -> str:  # noqa: N802,N805
+        """The Unique error code for users to tell admins about an error that occurred."""  # noqa: D401
+        return "E1026"
+
+    @classproperty
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]: # noqa: N802, N805
+        """
+        The set of names of bot commands that require this Discord entity.
+
+        This set being empty could mean that all bot commands require this Discord entity,
+        or none of them do.
+        """  # noqa: D401
+        return frozenset({"handover"})
+
+    @classproperty
+    def ROLE_NAME(cls) -> str: # noqa: N802, N805
+        """The name of the Discord role that does not exist.""" # noqa: D401
+        return "Committee-Elect"
 
 
 class GuestRoleDoesNotExistError(RoleDoesNotExistError):

@@ -16,6 +16,7 @@ from config import settings
 from exceptions import (
     ApplicantRoleDoesNotExistError,
     ArchivistRoleDoesNotExistError,
+    CommitteeElectRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
     DiscordMemberNotInMainGuildError,
     EveryoneRoleCouldNotBeRetrievedError,
@@ -52,6 +53,7 @@ class TeXBot(discord.Bot):
         """Initialize a new discord.Bot subclass with empty shortcut accessors."""
         self._main_guild: discord.Guild | None = None
         self._committee_role: discord.Role | None = None
+        self._committee_elect_role: discord.Role | None = None
         self._guest_role: discord.Role | None = None
         self._member_role: discord.Role | None = None
         self._archivist_role: discord.Role | None = None
@@ -108,6 +110,27 @@ class TeXBot(discord.Bot):
             raise CommitteeRoleDoesNotExistError
 
         return self._committee_role
+
+    @property
+    async def committee_elect_role(self) -> discord.Role:
+        """
+        Shortcut accessor to the committee-elect role.
+
+        The committee elect role is the role held by committee members
+        after they have been elected, but before the handover period has concluded.
+
+        Raises `CommitteeElectRoleDoesNotExist` if the role does not exist.
+        """
+        if not self._committee_elect_role or not self._guild_has_role(self._committee_elect_role):  # noqa: E501
+            self._committee_elect_role = discord.utils.get(
+                await self.main_guild.fetch_roles(),
+                name="Committee-Elect",
+            )
+
+        if not self._committee_elect_role:
+            raise CommitteeElectRoleDoesNotExistError
+
+        return self._committee_elect_role
 
     @property
     async def guest_role(self) -> discord.Role:

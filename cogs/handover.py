@@ -35,10 +35,20 @@ class HandoverCommandCog(TeXBotBaseCog):
         - Remove @Committee-Elect from anyone that has it
         - Remove permissions for @Committee-Elect from all channels except #Handover
         """
+        committee_role: discord.Role = await self.bot.committee_role
+        committee_elect_role: discord.Role = await self.bot.committee_elect_role
+        main_guild: discord.Guild = self.bot.main_guild
+
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
             "Running handover procedures!!",
         )
         logger.debug("Running the handover command!")
+
+        for member in main_guild.members:
+            if committee_elect_role in member.roles:
+                await member.add_roles(committee_role, reason="")
+
+
         initial_response.edit(content="Done!!")
 
 
