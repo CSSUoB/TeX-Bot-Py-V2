@@ -33,21 +33,40 @@ class HandoverCommandCog(TeXBotBaseCog):
         which will perform the following actions:
         - Give @Committee role to anyone with @Committee-Elect
         - Remove @Committee-Elect from anyone that has it
-        - Remove permissions for @Committee-Elect from all channels except #Handover
+        - Remove permissions for @Committee-Elect from all channels except #handover
         """
         committee_role: discord.Role = await self.bot.committee_role
         committee_elect_role: discord.Role = await self.bot.committee_elect_role
         main_guild: discord.Guild = self.bot.main_guild
+        handover_channel: discord.TextChannel = await self.bot.handover_channel
 
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
             "Running handover procedures!!",
         )
         logger.debug("Running the handover command!")
 
-        for member in main_guild.members:
-            if committee_elect_role in member.roles:
-                await member.add_roles(committee_role, reason="")
+        for channel in main_guild.channels:
+            if channel is handover_channel:
+                continue
+            await channel.set_permissions(committee_elect_role, overwrite=None)
 
+        for member in committee_role.members:
+            await handover_channel.set_permissions(
+                member,
+                read_messages=True,
+                send_messages=True,
+            )
+
+            await member.remove_roles(
+                committee_role,
+                reason=f"{ctx.user} used TeX Bot slash-command: \"handover\"",
+            )
+
+        for member in committee_elect_role.members:
+            await member.add_roles(
+                committee_role,
+                reason=f"{ctx.user} used TeX Bot slash-command: \"handover\"",
+            )
 
         initial_response.edit(content="Done!!")
 

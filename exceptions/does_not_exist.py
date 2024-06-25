@@ -14,6 +14,7 @@ __all__: Sequence[str] = (
     "ChannelDoesNotExistError",
     "RolesChannelDoesNotExistError",
     "GeneralChannelDoesNotExistError",
+    "HandoverChannelDoesNotExistError",
 )
 
 
@@ -372,8 +373,26 @@ class GeneralChannelDoesNotExistError(ChannelDoesNotExistError):
         return "general"
 
 
+class HandoverChannelDoesNotExistError(ChannelDoesNotExistError):
+    """Exception class to raise when the "handover" Discord channel is missing."""
 
+    @classproperty
+    def ERROR_CODE(cls) -> str: # noqa: N802, N805
+        """The unique error code for users to tell admins about an error that occured."""  # noqa: D401
+        return "E1033"
 
+    @classproperty
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]: # noqa: N802, N805
+        """
+        The set of names of bot commands that require this Discord entity.
 
+        The set being empty could mean that all bot commands require this Discord entity,
+        or that none of them do.
+        """  # noqa: D401
+        return frozenset({"handover"})
 
+    @classproperty
+    def CHANNEL_NAME(cls) -> str:  # noqa: N802, N805
+        """The name of the Discord channel that does not exist."""  # noqa: D401
+        return "handover"
 
