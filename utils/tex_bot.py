@@ -10,7 +10,7 @@ import re
 from collections.abc import Collection
 from enum import IntEnum
 from logging import Logger
-from typing import Final, NoReturn, TypeAlias, override
+from typing import Final, NoReturn, TYPE_CHECKING, override
 
 import discord
 
@@ -30,14 +30,8 @@ from exceptions import (
     RulesChannelDoesNotExistError,
 )
 
-ChannelTypes: TypeAlias = (
-    discord.VoiceChannel
-    | discord.StageChannel
-    | discord.TextChannel
-    | discord.ForumChannel
-    | discord.CategoryChannel
-    | None
-)
+if TYPE_CHECKING:
+    from utils import AllChannelTypes
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
@@ -373,7 +367,7 @@ class TeXBot(discord.Bot):
         return bool(discord.utils.get(self.main_guild.text_channels, id=channel.id))
 
     async def _fetch_text_channel(self, name: str) -> discord.TextChannel | None:
-        text_channel: ChannelTypes = discord.utils.get(
+        text_channel: AllChannelTypes | None = discord.utils.get(
             await self.main_guild.fetch_channels(),
             name=name,
             type=discord.ChannelType.text,

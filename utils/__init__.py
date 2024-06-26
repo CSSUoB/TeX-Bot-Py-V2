@@ -17,11 +17,14 @@ __all__: Sequence[str] = (  # noqa: PLE0604
     "TeXBotBaseCog",
     "TeXBotApplicationContext",
     "TeXBotAutocompleteContext",
+    "AllChannelTypes",
     "generate_invite_url",
     "is_member_inducted",
     *config_utils.__all__,
 )
 
+
+from typing import TypeAlias
 
 import discord
 
@@ -39,6 +42,14 @@ from .suppress_traceback import SuppressTraceback
 from .tex_bot import TeXBot, TeXBotExitReason
 from .tex_bot_base_cog import TeXBotBaseCog
 from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
+
+AllChannelTypes: TypeAlias = (
+    discord.VoiceChannel
+    | discord.StageChannel
+    | discord.TextChannel
+    | discord.ForumChannel
+    | discord.CategoryChannel
+)
 
 
 def generate_invite_url(discord_bot_application_id: int, discord_guild_id: int) -> str:

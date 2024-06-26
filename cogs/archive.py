@@ -10,13 +10,14 @@ import logging
 import re
 from collections.abc import Set
 from logging import Logger
-from typing import Final, Protocol, TypeAlias
+from typing import Final, Protocol
 
 import discord
 
 from exceptions import DiscordMemberNotInMainGuildError
 from exceptions.base import BaseDoesNotExistError
 from utils import (
+    AllChannelTypes,
     CommandChecks,
     TeXBotApplicationContext,
     TeXBotAutocompleteContext,
@@ -25,17 +26,9 @@ from utils import (
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
-AllowedChannelTypes: TypeAlias = (
-    discord.VoiceChannel
-    | discord.StageChannel
-    | discord.TextChannel
-    | discord.ForumChannel
-    | discord.CategoryChannel
-)
-
 
 class _SetPermissionsFunc(Protocol):
-    async def __call__(self, channel: AllowedChannelTypes) -> None: ...
+    async def __call__(self, channel: AllChannelTypes) -> None: ...
 
 
 class ArchiveCommandCog(TeXBotBaseCog):
@@ -72,7 +65,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
             )
         }
 
-    async def _set_permissions(self, channel: AllowedChannelTypes, ctx: TeXBotApplicationContext, interaction_member: discord.Member, *, committee_role: discord.Role, guest_role: discord.Role, member_role: discord.Role, archivist_role: discord.Role, everyone_role: discord.Role) -> None:  # noqa: PLR0913,E501
+    async def _set_permissions(self, channel: AllChannelTypes, ctx: TeXBotApplicationContext, interaction_member: discord.Member, *, committee_role: discord.Role, guest_role: discord.Role, member_role: discord.Role, archivist_role: discord.Role, everyone_role: discord.Role) -> None:  # noqa: PLR0913,E501
         CHANNEL_NEEDS_COMMITTEE_ARCHIVING: Final[bool] = (
             channel.permissions_for(committee_role).is_superset(
                 discord.Permissions(view_channel=True),
@@ -217,7 +210,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         )
 
         # noinspection PyUnreachableCode
-        channel: AllowedChannelTypes
+        channel: AllChannelTypes
         for channel in category.channels:
             try:
                 await set_permissions_func(channel=channel)
