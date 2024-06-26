@@ -47,33 +47,39 @@ class HandoverCommandCog(TeXBotBaseCog):
 
         for channel in main_guild.channels:
             if channel is handover_channel:
+                logger.debug("Found handover channel! Taking no action...")
                 continue
+            logger.debug("Resetting permissions for channel: %s", channel)
             await channel.set_permissions(committee_elect_role, overwrite=None)
 
         for member in committee_role.members:
+            logger.debug("Giving user: %s, access to #handover", member)
             await handover_channel.set_permissions(
                 member,
                 read_messages=True,
                 send_messages=True,
             )
 
+            logger.debug("Removing committee role from user: %s", member)
             await member.remove_roles(
                 committee_role,
                 reason=f"{ctx.user} used TeX Bot slash-command: \"handover\"",
             )
 
         for member in committee_elect_role.members:
+            logger.debug("Giving user: %s, the committee role.", member)
             await member.add_roles(
                 committee_role,
                 reason=f"{ctx.user} used TeX Bot slash-command: \"handover\"",
             )
 
+            logger.debug("Removing committee-elect role from user: %s", member)
             await member.remove_roles(
                 committee_elect_role,
                 reason=f"{ctx.user} used TeX Bot slash-command: \"handover\"",
             )
 
-        initial_response.edit(content=":white_check_mark: Handover procedure complete!")
+        await initial_response.edit(content=":white_check_mark: Handover procedure complete!")
 
 
 class ResetRolesCommandCog(TeXBotBaseCog):
