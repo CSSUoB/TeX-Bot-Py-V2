@@ -1,9 +1,9 @@
-"""Contains cog classes for handover functionality."""
+"""Contains cog classes for annual handover and role reset functionality."""
 
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("HandoverCommandCog", "ResetRolesCommandCog")
+__all__: Sequence[str] = ("HandoverCommandCog", "AnnualResetRolesCommandCog")
 
 import logging
 from logging import Logger
@@ -121,7 +121,7 @@ class HandoverCommandCog(TeXBotBaseCog):
         await initial_response.edit(content=":white_check_mark: Handover procedure complete!")
 
 
-class ResetRolesCommandCog(TeXBotBaseCog):
+class AnnualResetRolesCommandCog(TeXBotBaseCog):
     """Cog class that defines the reset_roles command."""
 
     YEAR_ROLE_NAMES: Final[frozenset[str]] = frozenset(
@@ -137,12 +137,12 @@ class ResetRolesCommandCog(TeXBotBaseCog):
     )
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="reset_roles",
+        name="annual_role_reset",
         description="Removes member and year roles from all users",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def reset_roles(self, ctx: TeXBotApplicationContext) -> None:
+    async def annual_role_reset(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "reset_roles" command.
 
