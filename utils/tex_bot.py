@@ -8,7 +8,7 @@ __all__: Sequence[str] = ("TeXBot",)
 import logging
 import re
 from logging import Logger
-from typing import Final, TypeAlias
+from typing import TYPE_CHECKING, Final
 
 import discord
 
@@ -27,14 +27,8 @@ from exceptions import (
     RulesChannelDoesNotExistError,
 )
 
-ChannelTypes: TypeAlias = (
-    discord.VoiceChannel
-    | discord.StageChannel
-    | discord.TextChannel
-    | discord.ForumChannel
-    | discord.CategoryChannel
-    | None
-)
+if TYPE_CHECKING:
+    from utils import AllChannelTypes
 
 logger: Logger = logging.getLogger("TeX-Bot")
 
@@ -357,7 +351,7 @@ class TeXBot(discord.Bot):
         return bool(discord.utils.get(self.main_guild.text_channels, id=channel.id))
 
     async def _fetch_text_channel(self, name: str) -> discord.TextChannel | None:
-        text_channel: ChannelTypes = discord.utils.get(
+        text_channel: AllChannelTypes | None = discord.utils.get(
             await self.main_guild.fetch_channels(),
             name=name,
             type=discord.ChannelType.text,
