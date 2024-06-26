@@ -17,7 +17,7 @@ logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class HandoverCommandCog(TeXBotBaseCog):
-    """Cog class thaat defines the handover command."""
+    """Cog class that defines the handover command."""
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
         name="handover",
