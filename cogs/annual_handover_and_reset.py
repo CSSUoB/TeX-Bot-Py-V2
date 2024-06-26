@@ -187,6 +187,7 @@ class AnnualResetRolesCommandCog(TeXBotBaseCog):
         }
 
         for role in year_roles:
+            logger.debug("Removing all members from role: %s", role)
             for member in role.members:
                 await member.remove_roles(
                     role,
