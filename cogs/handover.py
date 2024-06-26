@@ -43,7 +43,11 @@ class HandoverCommandCog(TeXBotBaseCog):
         main_guild: discord.Guild = self.bot.main_guild
         committee_role: discord.Role = await self.bot.committee_role
         committee_elect_role: discord.Role = await self.bot.committee_elect_role
-        handover_channel: discord.TextChannel = await self.bot.handover_channel
+
+        handover_channel: discord.TextChannel | discord.StageChannel | discord.ForumChannel | discord.VoiceChannel | discord.CategoryChannel | None = discord.utils.get(  # noqa: E501
+            main_guild.channels,
+            name="Handover",
+        )
 
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
             ":hourglass: Running handover procedures... :hourglass:",
@@ -80,12 +84,14 @@ class HandoverCommandCog(TeXBotBaseCog):
 
         committee_member: discord.Member
         for committee_member in committee_role.members:
-            logger.debug("Giving user: %s, access to #handover", committee_member)
-            await handover_channel.set_permissions(
-                committee_member,
-                read_messages=True,
-                send_messages=True,
-            )
+
+            if isinstance(handover_channel, discord.TextChannel):
+                logger.debug("Giving user: %s, access to #handover", committee_member)
+                await handover_channel.set_permissions(
+                    committee_member,
+                    read_messages=True,
+                    send_messages=True,
+                )
 
             logger.debug("Removing Committee role from user: %s", committee_member)
             await committee_member.remove_roles(
