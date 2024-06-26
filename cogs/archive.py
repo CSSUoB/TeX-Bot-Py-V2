@@ -14,6 +14,7 @@ import discord
 from exceptions import DiscordMemberNotInMainGuildError
 from exceptions.base import BaseDoesNotExistError
 from utils import (
+    AllChannelTypes,
     CommandChecks,
     TeXBotApplicationContext,
     TeXBotAutocompleteContext,
@@ -117,14 +118,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
             )
             return
 
-        # noinspection PyUnreachableCode
-        channel: (
-                discord.VoiceChannel
-                | discord.StageChannel
-                | discord.TextChannel
-                | discord.ForumChannel
-                | discord.CategoryChannel
-        )
+        channel: AllChannelTypes
         for channel in category.channels:
             try:
                 channel_needs_committee_archiving: bool = (
