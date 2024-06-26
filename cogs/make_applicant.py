@@ -31,6 +31,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
 
     async def _perform_make_applicant(self, ctx: TeXBotApplicationContext, applicant_member: discord.Member) -> None:  # noqa: E501
         """Perform the actual process of making the user into a group-applicant."""
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = ctx.bot.main_guild
         applicant_role: discord.Role = await ctx.bot.applicant_role
         guest_role: discord.Role = await ctx.bot.guest_role

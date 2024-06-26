@@ -187,6 +187,9 @@ class StatsCommandsCog(TeXBotBaseCog):
         The "channel_stats" command sends a graph of the stats about messages sent in the given
         channel.
         """
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        main_guild: discord.Guild = self.bot.main_guild
+
         channel_id: int = ctx.channel_id
 
         if str_channel_id:
@@ -199,8 +202,6 @@ class StatsCommandsCog(TeXBotBaseCog):
 
             channel_id = int(str_channel_id)
 
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.bot.main_guild
         channel: discord.TextChannel | None = discord.utils.get(
             main_guild.text_channels,
             id=channel_id,
