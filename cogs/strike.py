@@ -755,23 +755,22 @@ class StrikeCommandCog(BaseStrikeCog):
         that have a member input-type.
         """
         try:
-            guild: discord.Guild = ctx.bot.main_guild
+            main_guild: discord.Guild = ctx.bot.main_guild
         except GuildDoesNotExistError:
             return set()
 
-        members: set[discord.Member] = {member for member in guild.members if not member.bot}
-
-        if not ctx.value or re.fullmatch(r"\A@.*\Z", ctx.value):
-            return {
-                discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
-                for member
-                in members
-            }
-
         return {
-            discord.OptionChoice(name=member.name, value=str(member.id))
+            discord.OptionChoice(
+                name=(
+                    f"@{member.name}"
+                    if not ctx.value or re.fullmatch(r"\A@.*\Z", ctx.value)
+                    else member.name
+                ),
+                value=str(member.id),
+            )
             for member
-            in members
+            in main_guild.members
+            if not member.bot
         }
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]

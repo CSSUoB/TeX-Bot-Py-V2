@@ -98,29 +98,23 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
         options that have a member input-type.
         """
         try:
-            guild: discord.Guild = ctx.bot.main_guild
+            main_guild: discord.Guild = ctx.bot.main_guild
             applicant_role: discord.Role = await ctx.bot.applicant_role
         except (GuildDoesNotExistError, ApplicantRoleDoesNotExistError):
             return set()
 
-        members: set[discord.Member] = {
-            member
-            for member
-            in guild.members
-            if not member.bot and applicant_role not in member.roles
-        }
-
-        if not ctx.value or ctx.value.startswith("@"):
-            return {
-                discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
-                for member
-                in members
-            }
-
         return {
-            discord.OptionChoice(name=member.name, value=str(member.id))
+            discord.OptionChoice(
+                name=(
+                    f"@{member.name}"
+                    if not ctx.value or ctx.value.startswith("@")
+                    else member.name
+                ),
+                value=str(member.id),
+            )
             for member
-            in members
+            in main_guild.members
+            if not member.bot and applicant_role not in member.roles
         }
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]

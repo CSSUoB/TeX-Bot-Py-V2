@@ -55,9 +55,9 @@ class InductSendMessageCog(TeXBotBaseCog):
         a guest into your group's Discord guild.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        guild: discord.Guild = self.bot.main_guild
+        main_guild: discord.Guild = self.bot.main_guild
 
-        if before.guild != guild or after.guild != guild or before.bot or after.bot:
+        if before.guild != main_guild or after.guild != main_guild or before.bot or after.bot:
             return
 
         try:
@@ -192,8 +192,8 @@ class BaseInductCog(TeXBotBaseCog):
     async def _perform_induction(self, ctx: TeXBotApplicationContext, induction_member: discord.Member, *, silent: bool) -> None:  # noqa: E501
         """Perform the actual process of inducting a member by giving them the Guest role."""
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        guest_role: discord.Role = await self.bot.guest_role
         main_guild: discord.Guild = self.bot.main_guild
+        guest_role: discord.Role = await self.bot.guest_role
 
         intro_channel: discord.TextChannel | None = discord.utils.get(
             main_guild.text_channels,
@@ -298,30 +298,23 @@ class InductSlashCommandCog(BaseInductCog):
         that have a member input-type.
         """
         try:
-            guild: discord.Guild = ctx.bot.main_guild
-        except GuildDoesNotExistError:
-            return set()
-
-        members: set[discord.Member] = {member for member in guild.members if not member.bot}
-
-        try:
+            main_guild: discord.Guild = ctx.bot.main_guild
             guest_role: discord.Role = await ctx.bot.guest_role
-        except GuestRoleDoesNotExistError:
+        except (GuildDoesNotExistError, GuestRoleDoesNotExistError):
             return set()
-        else:
-            members = {member for member in members if guest_role not in member.roles}
-
-        if not ctx.value or ctx.value.startswith("@"):
-            return {
-                discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
-                for member
-                in members
-            }
 
         return {
-            discord.OptionChoice(name=member.name, value=str(member.id))
+            discord.OptionChoice(
+                name=(
+                    f"@{member.name}"
+                    if not ctx.value or ctx.value.startswith("@")
+                    else member.name
+                ),
+                value=str(member.id),
+            )
             for member
-            in members
+            in main_guild.members
+            if not member.bot and guest_role not in member.roles
         }
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]

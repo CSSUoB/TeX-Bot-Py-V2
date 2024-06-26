@@ -218,18 +218,15 @@ class TeXBotBaseCog(Cog):
                 ctx.interaction.user,
             )
 
-        if not ctx.value or re.fullmatch(r"\A#.*\Z", ctx.value):
-            return {
-                discord.OptionChoice(name=f"#{channel.name}", value=str(channel.id))
-                for channel
-                in main_guild.text_channels
-                if channel.permissions_for(channel_permissions_limiter).is_superset(
-                    discord.Permissions(send_messages=True, view_channel=True),
-                )
-            }
-
         return {
-            discord.OptionChoice(name=channel.name, value=str(channel.id))
+            discord.OptionChoice(
+                name=(
+                    f"#{channel.name}"
+                    if not ctx.value or re.fullmatch(r"\A#.*\Z", ctx.value)
+                    else channel.name
+                ),
+                value=str(channel.id),
+            )
             for channel
             in main_guild.text_channels
             if channel.permissions_for(channel_permissions_limiter).is_superset(
