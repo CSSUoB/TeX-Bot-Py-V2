@@ -48,7 +48,8 @@ class HandoverCommandCog(TeXBotBaseCog):
         logger.debug("Running the handover command!")
 
         for category in main_guild.categories:
-            if "committee" in category.name:
+            logger.debug("Found category: %s", category.name.lower())
+            if "committee" in category.name.lower() and "archive" not in category.name.lower():
                 for channel in category.channels:
                     logger.debug("Resetting channel permissions for channel: %s", channel)
                     await channel.set_permissions(committee_elect_role, overwrite=None)
