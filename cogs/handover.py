@@ -34,6 +34,8 @@ class HandoverCommandCog(TeXBotBaseCog):
         - Give @Committee role to anyone with @Committee-Elect
         - Remove @Committee-Elect from anyone that has it
         - Remove permissions for @Committee-Elect from all channels except #handover
+
+        In order to do this the bot will need to hold a role above that of the committee role.
         """
         committee_role: discord.Role = await self.bot.committee_role
         committee_elect_role: discord.Role = await self.bot.committee_elect_role
@@ -45,12 +47,11 @@ class HandoverCommandCog(TeXBotBaseCog):
         )
         logger.debug("Running the handover command!")
 
-        for channel in main_guild.channels:
-            if channel is handover_channel:
-                logger.debug("Found handover channel! Taking no action...")
-                continue
-            logger.debug("Resetting permissions for channel: %s", channel)
-            await channel.set_permissions(committee_elect_role, overwrite=None)
+        for category in main_guild.categories:
+            if "committee" in category.name:
+                for channel in category.channels:
+                    logger.debug("Resetting channel permissions for channel: %s", channel)
+                    await channel.set_permissions(committee_elect_role, overwrite=None)
 
         for member in committee_role.members:
             logger.debug("Giving user: %s, access to #handover", member)
