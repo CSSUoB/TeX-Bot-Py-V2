@@ -10,6 +10,7 @@ __all__: Sequence[str] = (
     "TeXBotBaseCog",
     "TeXBotApplicationContext",
     "TeXBotAutocompleteContext",
+    "AllChannelTypes",
     "generate_invite_url",
     "is_member_inducted",
     "is_running_in_async",
@@ -17,6 +18,7 @@ __all__: Sequence[str] = (
 
 
 import asyncio
+from typing import TypeAlias
 
 import discord
 
@@ -26,6 +28,15 @@ from utils.suppress_traceback import SuppressTraceback
 from utils.tex_bot import TeXBot
 from utils.tex_bot_base_cog import TeXBotBaseCog
 from utils.tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
+
+
+AllChannelTypes: TypeAlias = (
+    discord.VoiceChannel
+    | discord.StageChannel
+    | discord.TextChannel
+    | discord.ForumChannel
+    | discord.CategoryChannel
+)
 
 
 def generate_invite_url(discord_bot_application_id: int, discord_guild_id: int) -> str:
