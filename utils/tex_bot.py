@@ -23,7 +23,6 @@ from exceptions import (
     GeneralChannelDoesNotExistError,
     GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
-    HandoverChannelDoesNotExistError,
     MemberRoleDoesNotExistError,
     RolesChannelDoesNotExistError,
     RulesChannelDoesNotExistError,
@@ -62,7 +61,6 @@ class TeXBot(discord.Bot):
         self._roles_channel: discord.TextChannel | None = None
         self._general_channel: discord.TextChannel | None = None
         self._rules_channel: discord.TextChannel | None = None
-        self._handover_channel: discord.TextChannel | None = None
         self._exit_was_due_to_kill_command: bool = False
 
         self._main_guild_set: bool = False
@@ -272,25 +270,6 @@ class TeXBot(discord.Bot):
             raise RulesChannelDoesNotExistError
 
         return self._rules_channel
-
-    @property
-    async def handover_channel(self) -> discord.TextChannel:
-        """
-        Shortcut accessor to the handover text channel.
-
-        The handover channel is where current committee can communicate
-        with outgoing and incoming committee members.
-
-        Raises `HandoverChannelDoesNotExistError` if the channel does not exist.
-        """
-        if not self._handover_channel or not self._guild_has_channel(self._handover_channel):
-            self._handover_channel = await self._fetch_text_channel("handover")
-
-        if not self._handover_channel:
-            raise HandoverChannelDoesNotExistError
-
-        return self._handover_channel
-
 
     @property
     def group_full_name(self) -> str:
