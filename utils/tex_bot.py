@@ -116,9 +116,9 @@ class TeXBot(discord.Bot):
     @property
     async def committee_elect_role(self) -> discord.Role:
         """
-        Shortcut accessor to the committee-elect role.
+        Shortcut accessor to the "Committee-Elect" role.
 
-        The committee elect role is the role held by committee members
+        The "Committee-Elect role is the role held by committee members
         after they have been elected, but before the handover period has concluded.
 
         Raises `CommitteeElectRoleDoesNotExist` if the role does not exist.

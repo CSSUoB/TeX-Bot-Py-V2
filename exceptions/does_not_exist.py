@@ -140,15 +140,15 @@ class CommitteeRoleDoesNotExistError(RoleDoesNotExistError):
 
 
 class CommitteeElectRoleDoesNotExistError(RoleDoesNotExistError):
-    """Exception class to raise when the "Committee-Elect" discord role is missing."""
+    """Exception class to raise when the "Committee-Elect" Discord role is missing."""
 
     @classproperty
     def ERROR_CODE(cls) -> str:  # noqa: N802,N805
-        """The Unique error code for users to tell admins about an error that occurred."""  # noqa: D401
+        """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
         return "E1026"
 
     @classproperty
-    def DEPENDENT_COMMANDS(cls) -> frozenset[str]: # noqa: N802, N805
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802, N805
         """
         The set of names of bot commands that require this Discord entity.
 
@@ -158,8 +158,8 @@ class CommitteeElectRoleDoesNotExistError(RoleDoesNotExistError):
         return frozenset({"handover"})
 
     @classproperty
-    def ROLE_NAME(cls) -> str: # noqa: N802, N805
-        """The name of the Discord role that does not exist.""" # noqa: D401
+    def ROLE_NAME(cls) -> str:  # noqa: N802, N805
+        """The name of the Discord role that does not exist."""  # noqa: D401
         return "Committee-Elect"
 
 
