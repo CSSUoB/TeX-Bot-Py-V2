@@ -43,16 +43,37 @@ class HandoverCommandCog(TeXBotBaseCog):
         handover_channel: discord.TextChannel = await self.bot.handover_channel
 
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-            ":hourglass: Running the handover procedures... :hourglass:",
+            ":hourglass: Running handover procedures... :hourglass:",
         )
         logger.debug("Running the handover command!")
+
+        highest_role: discord.Role = main_guild.me.top_role
+        if highest_role.position < committee_role.position:
+            logger.debug(
+                ":warning: This command requires the bot to hold a role higher than that of "
+                "the committee role to perform this action. Aborting operation. :warning:",
+            )
+            await initial_response.edit(
+                content="This command requires the bot to hold a role higher than that "
+                "of the committee role to perform this action. Aborting operation.",
+            )
+            return
 
         for category in main_guild.categories:
             logger.debug("Found category: %s", category.name.lower())
             if "committee" in category.name.lower() and "archive" not in category.name.lower():
+                await initial_response.edit(
+                    content=f":hourglass: Updating channels in category: {category.name} "
+                    ":hourglass:",
+                )
                 for channel in category.channels:
                     logger.debug("Resetting channel permissions for channel: %s", channel)
                     await channel.set_permissions(committee_elect_role, overwrite=None)
+
+        await initial_response.edit(
+            content=":hourglass: Giving committee members access to #handover and "
+            "removing committee role... :hourglass:",
+        )
 
         for member in committee_role.members:
             logger.debug("Giving user: %s, access to #handover", member)
@@ -67,6 +88,11 @@ class HandoverCommandCog(TeXBotBaseCog):
                 committee_role,
                 reason=f"{ctx.user} used TeX Bot slash-command: \"handover\"",
             )
+
+        await initial_response.edit(
+            content=":hourglass: Giving committee-elect committee role and "
+            "removing committee-elect... :hourglass:",
+        )
 
         for member in committee_elect_role.members:
             logger.debug("Giving user: %s, the committee role.", member)
