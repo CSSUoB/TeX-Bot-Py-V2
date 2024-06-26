@@ -29,7 +29,6 @@ from utils.tex_bot import TeXBot
 from utils.tex_bot_base_cog import TeXBotBaseCog
 from utils.tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
 
-
 AllChannelTypes: TypeAlias = (
     discord.VoiceChannel
     | discord.StageChannel

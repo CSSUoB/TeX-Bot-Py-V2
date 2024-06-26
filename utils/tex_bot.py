@@ -8,7 +8,7 @@ __all__: Sequence[str] = ("TeXBot",)
 import logging
 import re
 from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import discord
 
@@ -26,7 +26,9 @@ from exceptions import (
     RolesChannelDoesNotExistError,
     RulesChannelDoesNotExistError,
 )
-from utils import AllChannelTypes
+
+if TYPE_CHECKING:
+    from utils import AllChannelTypes
 
 logger: Logger = logging.getLogger("TeX-Bot")
 
