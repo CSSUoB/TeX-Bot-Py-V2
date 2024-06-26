@@ -41,7 +41,7 @@ class HandoverCommandCog(TeXBotBaseCog):
         handover_channel: discord.TextChannel = await self.bot.handover_channel
 
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-            "Running handover procedures!!",
+            ":hourglass: Running the handover procedures... :hourglass:",
         )
         logger.debug("Running the handover command!")
 
@@ -73,7 +73,7 @@ class HandoverCommandCog(TeXBotBaseCog):
                 reason=f"{ctx.user} used TeX Bot slash-command: \"handover\"",
             )
 
-        initial_response.edit(content="Done!!")
+        initial_response.edit(content=":white_check_mark: Handover procedure complete!")
 
 
 class ResetRolesCommandCog(TeXBotBaseCog):
@@ -97,7 +97,7 @@ class ResetRolesCommandCog(TeXBotBaseCog):
 
         logger.debug("Reset roles command called.")
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-            "Running reset roles!!",
+            ":hourglass: Resetting membership and year roles... :hourglass:",
         )
 
         for member in member_role.members:
@@ -107,11 +107,13 @@ class ResetRolesCommandCog(TeXBotBaseCog):
             )
 
         logger.debug("Removed member role from all users!")
-        initial_response.edit(content="Removed member role from all users!")
+        initial_response.edit(content=":hourglass: Removed member role from all users...")
 
         await GroupMadeMember._default_manager.all().adelete()
 
-        initial_response.edit(content="Deleted all members from the database!")
+        initial_response.edit(
+            content=":white_check_mark: Deleted all members from the database...",
+        )
         logger.debug("Deleted all members from the database.")
 
         year_role_names: list[str] = ["Foundation Year", "First Year", "Second Year", "Final Year", "Year In Industry", "Year Abroad"]  # noqa: E501
@@ -130,5 +132,5 @@ class ResetRolesCommandCog(TeXBotBaseCog):
                 )
 
         logger.debug("Execution of reset roles command complete!")
-        initial_response.edit(content="Complete!")
+        initial_response.edit(content=":white_check_mark: Role reset complete!")
 
