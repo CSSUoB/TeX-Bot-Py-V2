@@ -50,17 +50,17 @@ class HandoverCommandCog(TeXBotBaseCog):
         highest_role: discord.Role = main_guild.me.top_role
         if highest_role.position < committee_role.position:
             logger.debug(
-                ":warning: This command requires the bot to hold a role higher than that of "
-                "the committee role to perform this action. Aborting operation. :warning:",
+                "Handover command aborted because the bot did not "
+                "hold a role above the committee role.",
             )
             await initial_response.edit(
-                content="This command requires the bot to hold a role higher than that "
-                "of the committee role to perform this action. Aborting operation.",
+                content=":warning: This command requires the bot to hold a role higher than "
+                "that of the committee role to perform this action. Operation aborted. "
+                ":warning:",
             )
             return
 
         for category in main_guild.categories:
-            logger.debug("Found category: %s", category.name.lower())
             if "committee" in category.name.lower() and "archive" not in category.name.lower():
                 await initial_response.edit(
                     content=f":hourglass: Updating channels in category: {category.name} "
