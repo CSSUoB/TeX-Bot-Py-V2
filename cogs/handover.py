@@ -113,16 +113,26 @@ class ResetRolesCommandCog(TeXBotBaseCog):
             )
 
         logger.debug("Removed member role from all users!")
-        initial_response.edit(content=":hourglass: Removed member role from all users...")
+        await initial_response.edit(
+            content=":hourglass: Removed member role from all users...",
+        )
 
         await GroupMadeMember._default_manager.all().adelete()
 
-        initial_response.edit(
+        await initial_response.edit(
             content=":white_check_mark: Deleted all members from the database...",
         )
         logger.debug("Deleted all members from the database.")
 
-        year_role_names: list[str] = ["Foundation Year", "First Year", "Second Year", "Final Year", "Year In Industry", "Year Abroad"]  # noqa: E501
+        year_role_names: list[str] = [
+            "Foundation Year",
+            "First Year",
+            "Second Year",
+            "Final Year",
+            "Year In Industry",
+            "Year Abroad",
+            "PGT",
+        ]
         year_roles: list[discord.Role] = []
 
         for role_name in year_role_names:
@@ -138,5 +148,5 @@ class ResetRolesCommandCog(TeXBotBaseCog):
                 )
 
         logger.debug("Execution of reset roles command complete!")
-        initial_response.edit(content=":white_check_mark: Role reset complete!")
+        await initial_response.edit(content=":white_check_mark: Role reset complete!")
 
