@@ -12,7 +12,7 @@ from typing import Final
 import discord
 
 from db.core.models import GroupMadeMember
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils import AllChannelTypes, CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 logger: Logger = logging.getLogger("TeX-Bot")
 
@@ -44,7 +44,7 @@ class HandoverCommandCog(TeXBotBaseCog):
         committee_role: discord.Role = await self.bot.committee_role
         committee_elect_role: discord.Role = await self.bot.committee_elect_role
 
-        handover_channel: discord.TextChannel | discord.StageChannel | discord.ForumChannel | discord.VoiceChannel | discord.CategoryChannel | None = discord.utils.get(  # noqa: E501
+        handover_channel: AllChannelTypes | None = discord.utils.get(
             main_guild.channels,
             name="Handover",
         )
