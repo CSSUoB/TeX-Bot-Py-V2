@@ -68,6 +68,11 @@ class HandoverCommandCog(TeXBotBaseCog):
                 reason=f"{ctx.user} used TeX Bot slash-command: \"handover\"",
             )
 
+            await member.remove_roles(
+                committee_elect_role,
+                reason=f"{ctx.user} used TeX Bot slash-command: \"handover\"",
+            )
+
         initial_response.edit(content="Done!!")
 
 
