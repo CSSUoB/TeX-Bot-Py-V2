@@ -29,7 +29,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         """
         Autocomplete callable that generates the set of available selectable channels.
 
-        The list of available selectable channels is unique to each member, and is used in any
+        The list of available selectable channels is unique to each member and is used in any
         of the "edit-message" slash-command options that have a channel input-type.
         """
         if not ctx.interaction.user:

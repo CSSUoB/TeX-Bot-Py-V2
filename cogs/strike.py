@@ -99,7 +99,7 @@ class ConfirmStrikeMemberView(View):
     )
     async def yes_strike_member_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """
-        Delete the message associated with the view, when the Yes button is pressed.
+        Delete the message associated with the view when the Yes button is pressed.
 
         This function is attached as a button's callback, so will run whenever the button
         is pressed.
@@ -116,7 +116,7 @@ class ConfirmStrikeMemberView(View):
     )
     async def no_strike_member_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """
-        Delete the message associated with the view, when the No button is pressed.
+        Delete the message associated with the view when the No button is pressed.
 
         This function is attached as a button's callback, so will run whenever the button
         is pressed.
@@ -137,7 +137,7 @@ class ConfirmManualModerationView(View):
     )
     async def yes_manual_moderation_action_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """
-        Delete the message associated with the view, when the Yes button is pressed.
+        Delete the message associated with the view when the Yes button is pressed.
 
         This function is attached as a button's callback, so will run whenever the button
         is pressed.
@@ -155,7 +155,7 @@ class ConfirmManualModerationView(View):
     )
     async def no_manual_moderation_action_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """
-        Delete the message associated with the view, when the No button is pressed.
+        Delete the message associated with the view when the No button is pressed.
 
         This function is attached as a button's callback, so will run whenever the button
         is pressed.
@@ -177,7 +177,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
     )
     async def yes_out_of_sync_ban_member_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """
-        Delete the message associated with the view, when the Yes button is pressed.
+        Delete the message associated with the view when the Yes button is pressed.
 
         This function is attached as a button's callback, so will run whenever the button
         is pressed.
@@ -195,7 +195,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
     )
     async def no_out_of_sync_ban_member_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """
-        Delete the message associated with the view, when the No button is pressed.
+        Delete the message associated with the view when the No button is pressed.
 
         This function is attached as a button's callback, so will run whenever the button
         is pressed.
@@ -340,6 +340,7 @@ class BaseStrikeCog(TeXBotBaseCog):
                 )
 
         if not perform_action:
+            # noinspection SpellCheckingInspection
             await message_sender_component.send(
                 content=(
                     f"{confirm_strike_message}\n"
@@ -560,6 +561,7 @@ class ManualModerationCog(BaseStrikeCog):
 
             match out_of_sync_ban_button_interaction.data["custom_id"]:  # type: ignore[index, typeddict-item]
                 case "no_out_of_sync_ban_member":
+                    # noinspection SpellCheckingInspection
                     await out_of_sync_ban_confirmation_message.edit(
                         content=(
                             f"Aborted performing ban action upon {strike_user.mention}. "
@@ -584,6 +586,7 @@ class ManualModerationCog(BaseStrikeCog):
                             "with number of strikes**"
                         ),
                     )
+                    # noinspection SpellCheckingInspection
                     await out_of_sync_ban_confirmation_message.edit(
                         content=(
                             f"Successfully banned {strike_user.mention}.\n"
@@ -648,6 +651,7 @@ class ManualModerationCog(BaseStrikeCog):
 
         match button_interaction.data["custom_id"]:  # type: ignore[index, typeddict-item]
             case "no_manual_moderation_action":
+                # noinspection SpellCheckingInspection
                 await confirmation_message.edit(
                     content=(
                         f"Aborted increasing {strike_user.mention}'s strikes "

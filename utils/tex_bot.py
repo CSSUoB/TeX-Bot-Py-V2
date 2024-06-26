@@ -10,7 +10,7 @@ import re
 from collections.abc import Collection
 from enum import IntEnum
 from logging import Logger
-from typing import Final, NoReturn, TYPE_CHECKING, override
+from typing import TYPE_CHECKING, Final, NoReturn, override
 
 import discord
 
@@ -55,7 +55,7 @@ class TeXBot(discord.Bot):
 
     @override
     def __init__(self, *args: object, **options: object) -> None:
-        """Initialize a new discord.Bot subclass with empty shortcut accessors."""
+        """Initialise a new discord.Bot subclass with empty shortcut accessors."""
         self._main_guild: discord.Guild | None = None
         self._committee_role: discord.Role | None = None
         self._guest_role: discord.Role | None = None
@@ -172,7 +172,7 @@ class TeXBot(discord.Bot):
         Shortcut accessor to the archivist role.
 
         The archivist role is the one that allows members to see channels & categories
-        that are no longer in use, which are hidden to all other members.
+        that are no longer in use, which are hidden from all other members.
 
         Raises `ArchivistRoleDoesNotExist` if the role does not exist.
         """
@@ -265,7 +265,7 @@ class TeXBot(discord.Bot):
 
         This is substituted into many error/welcome messages sent into your Discord guild,
         by the bot.
-        The group-full-name is either retrieved from the provided environment variable,
+        The group-full-name is either retrieved from the provided environment variable
         or automatically identified from the name of your group's Discord guild.
         """
         return (  # type: ignore[no-any-return]

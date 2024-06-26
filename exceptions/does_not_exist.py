@@ -58,7 +58,7 @@ class GuildDoesNotExistError(BaseDoesNotExistError):
 
     @override
     def __init__(self, message: str | None = None, guild_id: int | None = None) -> None:
-        """Initialize a new DoesNotExist exception for a guild not existing."""
+        """Initialise a new DoesNotExist exception for a guild not existing."""
         self.guild_id: int | None = guild_id
 
         if guild_id and not message:
@@ -90,7 +90,7 @@ class RoleDoesNotExistError(BaseDoesNotExistError, abc.ABC):
 
     @override
     def __init__(self, message: str | None = None) -> None:
-        """Initialize a new DoesNotExist exception for a role not existing."""
+        """Initialise a new DoesNotExist exception for a role not existing."""
         HAS_DEPENDANTS: Final[bool] = bool(
             self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS  # noqa: COM812
         )
@@ -210,26 +210,30 @@ class ArchivistRoleDoesNotExistError(RoleDoesNotExistError):
     def ROLE_NAME(cls) -> str:  # noqa: N805
         return "Archivist"
 
+
 class ApplicantRoleDoesNotExistError(RoleDoesNotExistError):
     """Exception class to raise when the "Applicant" Discord role is missing."""
 
+    # noinspection PyMethodParameters
     @classproperty
     def ERROR_CODE(cls) -> str:  # noqa: N802, N805
-        """The unique error code for users to tell admins about an error that occured."""  # noqa: D401
+        """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
         return "E1025"
 
+    # noinspection PyMethodParameters
     @classproperty
-    def DEPENDENT_COMMANDS(cls) -> frozenset[str]: # noqa: N802, N805
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802, N805
         """
         The set of names of bot commands that require this Discord entity.
 
-        This set being empty could mean thta all bot commands require this entity,
+        This set being empty could mean that all bot commands require this entity,
         or that none of them do.
         """  # noqa: D401
         return frozenset({"make_applicant"})
 
+    # noinspection PyMethodParameters
     @classproperty
-    def ROLE_NAME(cls) -> str: # noqa: N802, N805
+    def ROLE_NAME(cls) -> str:  # noqa: N802, N805
         """The name of the Discord role that does not exist."""  # noqa: D401
         return "Applicant"
 
@@ -257,7 +261,7 @@ class ChannelDoesNotExistError(BaseDoesNotExistError):
 
     @override
     def __init__(self, message: str | None = None) -> None:
-        """Initialize a new DoesNotExist exception for a role not existing."""
+        """Initialise a new DoesNotExist exception for a role not existing."""
         HAS_DEPENDANTS: Final[bool] = bool(
             self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS  # noqa: COM812
         )

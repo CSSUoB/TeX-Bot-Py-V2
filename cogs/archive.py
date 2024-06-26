@@ -39,7 +39,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         """
         Autocomplete callable that generates the set of available selectable categories.
 
-        The list of available selectable categories is unique to each member, and is used in
+        The list of available selectable categories is unique to each member and is used in
         any of the "archive" slash-command options that have a category input-type.
         """
         if not ctx.interaction.user:
@@ -156,8 +156,8 @@ class ArchiveCommandCog(TeXBotBaseCog):
         """
         Definition & callback response of the "archive" command.
 
-        The "archive" command hides a given category from view of casual members unless they
-        have the "Archivist" role.
+        The "archive" command hides a given category from the view of casual members
+        unless they have the "Archivist" role.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild

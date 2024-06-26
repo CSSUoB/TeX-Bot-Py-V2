@@ -65,7 +65,7 @@ class TeXBotBaseCog(Cog):
 
     @override
     def __init__(self, bot: TeXBot) -> None:
-        """Initialize a new cog instance, storing a reference to the bot object."""
+        """Initialise a new cog instance, storing a reference to the bot object."""
         self.bot: TeXBot = bot
 
     async def command_send_error(self, ctx: TeXBotApplicationContext, *, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False, responder_component: GenericResponderComponent | None = None) -> None:  # noqa: E501
@@ -200,7 +200,7 @@ class TeXBotBaseCog(Cog):
         """
         Autocomplete callable that generates the set of available selectable channels.
 
-        The list of available selectable channels is unique to each member, and is used in any
+        The list of available selectable channels is unique to each member and is used in any
         slash-command options that have a channel input-type.
         """
         if not ctx.interaction.user:

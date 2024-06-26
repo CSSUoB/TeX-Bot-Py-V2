@@ -26,7 +26,7 @@ class BotRequiresRestartAfterConfigChange(BaseTeXBotError, Exception):
 
     @override
     def __init__(self, message: str | None = None, changed_settings: set[str] | None = None) -> None:  # noqa: E501
-        """Initialize a ValueError exception for a non-existent user ID."""
+        """Initialise a ValueError exception for a non-existent user ID."""
         self.changed_settings: set[str] | None = changed_settings
 
         super().__init__(message)

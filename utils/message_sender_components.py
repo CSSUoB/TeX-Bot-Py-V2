@@ -41,7 +41,7 @@ class GenericResponderComponent(abc.ABC):
 
 class SenderResponseComponent(GenericResponderComponent):
     """
-    Concrete definition of a message sending response component.
+    Concrete definition of a message-sending response component.
 
     Defines the way to send a provided message content & optional view.
     """

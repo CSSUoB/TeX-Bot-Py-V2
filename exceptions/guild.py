@@ -26,7 +26,7 @@ class DiscordMemberNotInMainGuildError(BaseTeXBotError, ValueError):
         return "Given user ID does not represent any member of your group's Discord guild."
 
     def __init__(self, message: str | None = None, user_id: int | None = None) -> None:
-        """Initialize a ValueError exception for a non-existent user ID."""
+        """Initialise a ValueError exception for a non-existent user ID."""
         self.user_id: int | None = user_id
 
         super().__init__(message)

@@ -1,4 +1,4 @@
-"""Contains cog classes for any config changing interactions."""
+"""Contains cog classes for any config-changing interactions."""
 
 from collections.abc import Sequence
 
@@ -200,8 +200,8 @@ class CheckConfigFileChangedTaskCog(TeXBotBaseCog):
 
         # 1. retrieve new yaml
         # 2. recurse yaml and get changed values
-        # 3. if needs restart do total restart
-        # 4. if not needs restart do reload func
+        # 3. if it needs restart, do total restart
+        # 4. if not needs restart, do reload func
         # 5. if is messages-code changed, reload messages
 
         raise NotImplementedError  # TODO: reload/update changes
@@ -466,6 +466,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                 }
 
             if "document" in setting_name:
+                # noinspection SpellCheckingInspection
                 return {
                     "https://",
                     "https://drive.google.com/file/d/",

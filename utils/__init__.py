@@ -83,7 +83,7 @@ def is_member_inducted(member: discord.Member) -> bool:
     Util method to check if the supplied member has been inducted.
 
     Returns True if the member has any role other than "@News".
-    The set of ignored roles is a tuple, to make the set easily expandable.
+    The set of ignored roles is a tuple to make the set easily expandable.
     """
     return any(
         role.name.lower().strip("@ \n\t") not in ("news",) for role in member.roles
