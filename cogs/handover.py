@@ -89,7 +89,7 @@ class ResetRolesCommandCog(TeXBotBaseCog):
         """
         Definition & callback response of the "reset_roles" command.
 
-        The "reset_roles" command removes the mmeber and respective year roles from
+        The "reset_roles" command removes the memeber and respective year roles from
         anyone that has them and subsequently resets the GroupMadeMember database Model.
         """
         member_role: discord.Role = await self.bot.member_role
