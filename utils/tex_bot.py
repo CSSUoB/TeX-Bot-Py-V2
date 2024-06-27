@@ -110,7 +110,7 @@ class TeXBot(discord.Bot):
         """
         Shortcut accessor to the "Committee-Elect" role.
 
-        The "Committee-Elect role is the role held by committee members
+        The "Committee-Elect" role is the role held by committee members
         after they have been elected, but before the handover period has concluded.
 
         Raises `CommitteeElectRoleDoesNotExist` if the role does not exist.
