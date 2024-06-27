@@ -48,8 +48,8 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             if not member.bot and committee_role in member.roles
         }
 
-    @classmethod
-    async def action_autocomplete_get_all_actions(cls) -> set[discord.OptionChoice]:
+    @staticmethod
+    async def action_autocomplete_get_all_actions(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501, ARG004
         """
         Autocomplete callable that provides a set of selectable committee tracked-actions.
 
@@ -57,14 +57,12 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         """
         all_actions: list[Action] = [action async for action in Action.objects.select_related().all()]  # noqa: E501
 
-        logger.debug(repr(all_actions))
-
         if not all_actions:
             logger.debug("User tried to autocomplete for Actions but no actions were found!")
             return set()
 
         return {
-            discord.OptionChoice(name=str(action.discord_member + ":" + action.description), value=str(action)) # type: ignore[attr-defined, has-type]  # noqa: E501
+            discord.OptionChoice(name=str(action.description), value=str(action))
             for action
             in all_actions
         }
@@ -186,23 +184,30 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         Marks the specified action as complete by deleting it.
         """
         components = str_action_object.split(":")
-        input_hashed_id = components[0].strip()
         input_description = components[1].strip()
 
         try:
-            action = await Action.objects.aget(
-                hashed_member_id=input_hashed_id,
+            # NOTE: we only compare the description here because it is not possible, due to the hashing, to also check the discord user.
+            action: Action = await Action.objects.select_related().aget(
                 description=input_description,
             )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
-            await ctx.respond("Provided action was either not unique or did not exist.")
+            await ctx.respond(
+                ":warning: Provided action was either not unique or did not exist.",
+            )
             logger.warning(
                 "Action object: %s could not be matched to a unique action.",
                 str_action_object,
             )
 
-        await ctx.respond(f"Action: {action} found! Deleting.")
+        if not action:
+            logger.debug("Something went wrong and the action could not be retrieved.")
+            ctx.respond("Something went wrong and the action could not be retrieved.")
+            return
+
         await action.adelete()
+        await ctx.respond(f"Action: {action.description} deleted!")
+        logger.debug("Action: %s has been deleted.", action.description)
 
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
