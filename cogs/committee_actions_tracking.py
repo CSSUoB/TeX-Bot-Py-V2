@@ -96,7 +96,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         we assume the action is aimed at the command issuer.
         """
         try:
-            action: Action = await Action.objects.acreate(   # type: ignore[assignment]
+            action: Action = await Action.objects.acreate(
                 discord_id=int(str_action_member_id),
                 description=str_action_description,
             )
@@ -160,7 +160,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             await ctx.respond(f"User: {action_member.mention} has no actions.")
             logger.debug(user_actions)
         else:
-            await ctx.respond(f"Found {len(user_actions)} actions for user {action_member.mention}:\n{"\n".join(str(action.description) for action in user_actions)}") # type: ignore[attr-defined]  # noqa: E501
+            await ctx.respond(f"Found {len(user_actions)} actions for user {action_member.mention}:\n{"\n".join(str(action.description) for action in user_actions)}")  # noqa: E501
 
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]

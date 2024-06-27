@@ -214,7 +214,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
             message = re.sub(r"<@[&#]?\d+>", "@...", message.strip())
 
         try:
-            reminder: DiscordReminder = await DiscordReminder.objects.acreate(  # type: ignore[assignment]
+            reminder: DiscordReminder = await DiscordReminder.objects.acreate(
                 discord_id=ctx.user.id,
                 message=message or "",
                 channel_id=ctx.channel_id,
@@ -288,7 +288,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
         )
 
         reminder: DiscordReminder
-        async for reminder in DiscordReminder.objects.select_related("discord_member").all():  # type: ignore[assignment]
+        async for reminder in DiscordReminder.objects.select_related("discord_member").all():
             time_since_reminder_needed_to_be_sent: datetime.timedelta = (
                 discord.utils.utcnow() - reminder.send_datetime
             )
