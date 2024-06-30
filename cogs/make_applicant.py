@@ -143,7 +143,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
         """
         member_id_not_integer_error: ValueError
         try:
-            applicant_member: discord.Member = await self.bot.get_member_from_str_id(
+            applicant_member: discord.Member = await self.bot.get_main_guild_member(
                 str_applicant_member_id,
             )
         except ValueError as member_id_not_integer_error:
@@ -181,7 +181,7 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
         "Applicant" role and removes the "Guest" role if they have it.
         """
         try:
-            member: discord.Member = await self.bot.get_member_from_str_id(
+            member: discord.Member = await self.bot.get_main_guild_member(
                 str(message.author.id),
             )
         except ValueError:

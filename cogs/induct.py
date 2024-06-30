@@ -349,7 +349,7 @@ class InductSlashCommandCog(BaseInductCog):
         """
         member_id_not_integer_error: ValueError
         try:
-            induct_member: discord.Member = await self.bot.get_member_from_str_id(
+            induct_member: discord.Member = await self.bot.get_main_guild_member(
                 str_induct_member_id,
             )
         except ValueError as member_id_not_integer_error:
@@ -403,7 +403,7 @@ class InductContextCommandsCog(BaseInductCog):
         by giving them the "Guest" role.
         """
         try:
-            member: discord.Member = await self.bot.get_member_from_str_id(
+            member: discord.Member = await self.bot.get_main_guild_member(
                 str(message.author.id),
             )
         except ValueError:
@@ -432,7 +432,7 @@ class InductContextCommandsCog(BaseInductCog):
         by giving them the "Guest" role, only without broadcasting a welcome message.
         """
         try:
-            member: discord.Member = await self.bot.get_member_from_str_id(
+            member: discord.Member = await self.bot.get_main_guild_member(
                 str(message.author.id),
             )
         except ValueError:

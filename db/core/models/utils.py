@@ -177,9 +177,9 @@ class DiscordMember(AsyncBaseModel):
                 raise TypeError(MEMBER_ID_INVALID_TYPE_MESSAGE)
 
             self.hashed_discord_id = self.hash_discord_id(value)
+            return
 
-        else:
-            super().__setattr__(name, value)
+        super().__setattr__(name, value)
 
     @property
     def discord_id(self) -> NoReturn:

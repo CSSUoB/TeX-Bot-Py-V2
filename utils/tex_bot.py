@@ -466,7 +466,7 @@ class TeXBot(discord.Bot):
         self._main_guild = main_guild
         self._main_guild_set = True
 
-    async def get_main_guild_member(self, user: discord.Member | discord.User) -> discord.Member:  # noqa: E501
+    async def _get_main_guild_member_from_user(self, user: discord.Member | discord.User) -> discord.Member:  # noqa: E501
         """
         Util method to retrieve a member of your group's Discord guild from their User object.
 
@@ -477,14 +477,35 @@ class TeXBot(discord.Bot):
             raise DiscordMemberNotInMainGuildError(user_id=user.id)
         return main_guild_member
 
-    async def get_member_from_str_id(self, str_member_id: str) -> discord.Member:
+    async def _get_main_guild_member_from_id(self, member_id: int) -> discord.Member:
         """
-        Retrieve a member of your group's Discord guild by their ID.
+        Util method to retrieve a member of your group's Discord guild from their User ID.
 
-        Raises `ValueError` if the provided ID does not represent any member
-        of your group's Discord guild.
+        Raises `DiscordMemberNotInMainGuild` if the user is not in your group's Discord guild.
+        Raises `ValueError` if the provided ID is not a valid user ID.
         """
-        str_member_id = str_member_id.replace("<@", "").replace(">", "")
+        user: discord.User | None = self.get_user(member_id)
+        if not user:
+            raise ValueError(
+                DiscordMemberNotInMainGuildError(user_id=member_id).message,
+            )
+
+        return await self.get_main_guild_member(user)
+
+    async def get_main_guild_member(self, user: discord.Member | discord.User | str | int) -> discord.Member:  # noqa: E501
+        """
+        Util method to retrieve a member of your group's Discord guild from their ID or User.
+
+        Raises `DiscordMemberNotInMainGuild` if the user is not in your group's Discord guild.
+        Raises `ValueError` if the provided ID is not a valid user ID.
+        """
+        if isinstance(user, discord.Member | discord.User):
+            return await self._get_main_guild_member_from_user(user)
+
+        if isinstance(user, int):
+            return await self._get_main_guild_member_from_id(user)
+
+        str_member_id = user.replace("<@", "").replace(">", "")
 
         if not re.fullmatch(r"\A\d{17,20}\Z", str_member_id):
             INVALID_USER_ID_MESSAGE: Final[str] = (
@@ -492,16 +513,4 @@ class TeXBot(discord.Bot):
             )
             raise ValueError(INVALID_USER_ID_MESSAGE)
 
-        user: discord.User | None = self.get_user(int(str_member_id))
-        if not user:
-            raise ValueError(
-                DiscordMemberNotInMainGuildError(user_id=int(str_member_id)).message,
-            )
-
-        user_not_in_main_guild_error: DiscordMemberNotInMainGuildError
-        try:
-            member: discord.Member = await self.get_main_guild_member(user)
-        except DiscordMemberNotInMainGuildError as user_not_in_main_guild_error:
-            raise ValueError from user_not_in_main_guild_error
-
-        return member
+        return await self._get_main_guild_member_from_id(int(user))

@@ -803,7 +803,7 @@ class StrikeCommandCog(BaseStrikeCog):
         """
         member_id_not_integer_error: ValueError
         try:
-            strike_member: discord.Member = await self.bot.get_member_from_str_id(
+            strike_member: discord.Member = await self.bot.get_main_guild_member(
                 str_strike_member_id,
             )
         except ValueError as member_id_not_integer_error:
