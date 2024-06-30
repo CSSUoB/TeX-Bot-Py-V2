@@ -45,7 +45,7 @@ class HandoverCommandCog(TeXBotBaseCog):
         committee_elect_role: discord.Role = await self.bot.committee_elect_role
 
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-            ":hourglass: Running handover procedures... :hourglass:",
+            content=":hourglass: Running handover procedures... :hourglass:",
         )
         logger.debug("Running the handover command!")
 
@@ -69,9 +69,12 @@ class HandoverCommandCog(TeXBotBaseCog):
                 continue
 
             await initial_response.edit(
-                content=f":hourglass: Updating channels in category: {category.name} "
-                ":hourglass:",
+                content=(
+                    f":hourglass: Updating channels in category: {category.name} "
+                    ":hourglass:"
+                ),
             )
+
             channel: AllChannelTypes
             for channel in category.channels:
                 logger.debug("Resetting channel permissions for channel: %s", channel)
@@ -106,8 +109,10 @@ class HandoverCommandCog(TeXBotBaseCog):
             )
 
         await initial_response.edit(
-            content=":hourglass: Giving committee-elect users the \"Committee\" role "
-            "and removing their \"Committee-Elect\" role... :hourglass:",
+            content=(
+                ":hourglass: Giving committee-elect users the \"Committee\" role "
+                "and removing their \"Committee-Elect\" role... :hourglass:"
+            ),
         )
 
         committee_elect_member: discord.Member
@@ -162,7 +167,7 @@ class AnnualResetRolesCommandCog(TeXBotBaseCog):
 
         logger.debug("Reset roles command called.")
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-            ":hourglass: Resetting membership and year roles... :hourglass:",
+            content=":hourglass: Resetting membership and year roles... :hourglass:",
         )
 
         member: discord.Member
@@ -188,10 +193,7 @@ class AnnualResetRolesCommandCog(TeXBotBaseCog):
             role
             for role_name
             in self.ACADEMIC_YEAR_ROLE_NAMES
-            if isinstance(
-                (role := discord.utils.get(main_guild.roles, name=role_name)),
-                discord.Role,
-            )
+            if (role := discord.utils.get(main_guild.roles, name=role_name))
         }
 
         year_role: discord.Role
