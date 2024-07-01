@@ -486,6 +486,7 @@ class ManualModerationCog(BaseStrikeCog):
                 f"on user {str(strike_user)!r}"
             )
             logger.debug("Printing 5 most recent audit logs:")
+            log: discord.AuditLogEntry
             async for log in main_guild.audit_logs(limit=5):
                 logger.debug(log)
             raise NoAuditLogsStrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
