@@ -98,6 +98,7 @@ class HandoverCommandCog(TeXBotBaseCog):
         for committee_member in committee_role.members:
             if committee_member.bot:
                 continue
+
             if handover_channel:
                 logger.debug("Giving user: %s, access to #handover", committee_member)
                 await handover_channel.set_permissions(
