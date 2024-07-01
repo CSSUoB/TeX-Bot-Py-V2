@@ -485,6 +485,9 @@ class ManualModerationCog(BaseStrikeCog):
                 f"Unable to retrieve audit log entry of {str(action)!r} action "
                 f"on user {str(strike_user)!r}"
             )
+            logger.debug("Printing 5 most recent audit logs:")
+            async for log in main_guild.audit_logs(limit=5):
+                logger.debug(log)
             raise NoAuditLogsStrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
 
         if not audit_log_entry.user:
