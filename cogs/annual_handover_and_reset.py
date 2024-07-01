@@ -92,10 +92,7 @@ class HandoverCommandCog(TeXBotBaseCog):
             name="Handover",
         )
 
-        automod_role: discord.Role | None = discord.utils.get(
-            main_guild.roles,
-            name="Automod",
-        )
+        automod_role: discord.Role | None = discord.utils.get(main_guild.roles, name="Automod")
 
         committee_member: discord.Member
         for committee_member in committee_role.members:
