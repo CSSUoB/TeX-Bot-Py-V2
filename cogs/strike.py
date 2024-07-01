@@ -485,8 +485,10 @@ class ManualModerationCog(BaseStrikeCog):
                 f"Unable to retrieve audit log entry of {str(action)!r} action "
                 f"on user {str(strike_user)!r}"
             )
-            async for log in main_guild.audit_logs(limit=10):
-                logger.debug(log)
+            logger.debug("Printing 5 most recent audit logs:")
+            debug_audit_log_entry: discord.AuditLogEntry
+            async for debug_audit_log_entry in main_guild.audit_logs(limit=5):
+                logger.debug(debug_audit_log_entry)
             raise NoAuditLogsStrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
 
         is_automod_action: bool = False
@@ -701,10 +703,19 @@ class ManualModerationCog(BaseStrikeCog):
         if not after.timed_out or before.timed_out == after.timed_out:
             return
 
+        action: discord.AuditLogAction
+        async for audit_log in main_guild.audit_logs(limit=5):
+            audit_log_action: discord.AuditLogAction = audit_log.action
+            if "auto_moderation_user_communication_disabled" in str(audit_log_action):
+                action = discord.AuditLogAction.auto_moderation_user_communication_disabled
+
+        if not action:
+            action = discord.AuditLogAction.member_update
+
         # noinspection PyArgumentList
         await self._confirm_manual_add_strike(
             strike_user=after,
-            action=discord.AuditLogAction.member_update,
+            action=action,
         )
 
     @TeXBotBaseCog.listener()
