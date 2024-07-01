@@ -491,11 +491,6 @@ class ManualModerationCog(BaseStrikeCog):
                 logger.debug(debug_audit_log_entry)
             raise NoAuditLogsStrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
 
-        is_automod_action: bool = False
-        confirmation_message_channel: discord.DMChannel | discord.TextChannel
-        if audit_log_entry.reason is not None and "automod" in audit_log_entry.reason.lower():
-            is_automod_action = True
-
         if not audit_log_entry.user:
             raise StrikeTrackingError
 
