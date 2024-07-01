@@ -485,6 +485,10 @@ class ManualModerationCog(BaseStrikeCog):
                 f"Unable to retrieve audit log entry of {str(action)!r} action "
                 f"on user {str(strike_user)!r}"
             )
+            logger.debug("Printing 5 most recent audit logs:")
+            debug_audit_log_entry: discord.AuditLogEntry
+            async for debug_audit_log_entry in main_guild.audit_logs(limit=5):
+                logger.debug(debug_audit_log_entry)
             raise NoAuditLogsStrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
 
         if not audit_log_entry.user:
