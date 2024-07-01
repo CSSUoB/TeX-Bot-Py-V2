@@ -3,7 +3,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("HandoverCommandCog", "AnnualResetRolesCommandCog")
+__all__: Sequence[str] = ("CommitteeHandoverCommandCog", "AnnualResetRolesCommandCog")
 
 import logging
 from logging import Logger
@@ -17,7 +17,7 @@ from utils import AllChannelTypes, CommandChecks, TeXBotApplicationContext, TeXB
 logger: Logger = logging.getLogger("TeX-Bot")
 
 
-class HandoverCommandCog(TeXBotBaseCog):
+class CommitteeHandoverCommandCog(TeXBotBaseCog):
     """Cog class that defines the handover command."""
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
