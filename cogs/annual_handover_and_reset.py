@@ -92,8 +92,15 @@ class HandoverCommandCog(TeXBotBaseCog):
             name="Handover",
         )
 
+        automod_role: discord.Role | None = discord.utils.get(
+            main_guild.roles,
+            name="Automod",
+        )
+
         committee_member: discord.Member
         for committee_member in committee_role.members:
+            if committee_member.bot:
+                continue
             if handover_channel:
                 logger.debug("Giving user: %s, access to #handover", committee_member)
                 await handover_channel.set_permissions(
@@ -108,6 +115,12 @@ class HandoverCommandCog(TeXBotBaseCog):
                 reason=f"{ctx.user} used TeX-Bot slash-command: \"handover\"",
             )
 
+            if automod_role and automod_role in committee_member.roles:
+                await committee_member.remove_roles(
+                    automod_role,
+                    reason=f"{ctx.user} used TeX-Bot slash-command: \"handover\"",
+                )
+
         await initial_response.edit(
             content=(
                 ":hourglass: Giving committee-elect users the \"Committee\" role "
@@ -117,6 +130,8 @@ class HandoverCommandCog(TeXBotBaseCog):
 
         committee_elect_member: discord.Member
         for committee_elect_member in committee_elect_role.members:
+            if committee_elect_member.bot:
+                continue
             logger.debug("Giving user: %s, the committee role.", committee_elect_member)
             await committee_elect_member.add_roles(
                 committee_role,
@@ -148,7 +163,7 @@ class AnnualResetRolesCommandCog(TeXBotBaseCog):
     )
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="annual_role_reset",
+        name="annual-roles-reset",
         description="Removes the @Member role and academic year roles from all users",
     )
     @CommandChecks.check_interaction_user_has_committee_role

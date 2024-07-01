@@ -115,7 +115,11 @@ class TeXBot(discord.Bot):
 
         Raises `CommitteeElectRoleDoesNotExist` if the role does not exist.
         """
-        if not self._committee_elect_role or not self._guild_has_role(self._committee_elect_role):  # noqa: E501
+        COMMITTEE_ELECT_ROLE_NEEDS_FETCHING: Final[bool] = bool(
+            not self._committee_elect_role
+            or not self._guild_has_role(self._committee_elect_role),
+        )
+        if COMMITTEE_ELECT_ROLE_NEEDS_FETCHING:
             self._committee_elect_role = discord.utils.get(
                 await self.main_guild.fetch_roles(),
                 name="Committee-Elect",
