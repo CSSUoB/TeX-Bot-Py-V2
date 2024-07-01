@@ -3,7 +3,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("CommitteeHandoverCommandCog", "AnnualResetRolesCommandCog")
+__all__: Sequence[str] = ("CommitteeHandoverCommandCog", "AnnualRolesResetCommandCog")
 
 import logging
 from logging import Logger
@@ -18,17 +18,17 @@ logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class CommitteeHandoverCommandCog(TeXBotBaseCog):
-    """Cog class that defines the handover command."""
+    """Cog class that defines the "/committee-handover" command."""
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="handover",
+        name="committee-handover",
         description="Initiates the annual Discord handover procedure for new committee",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def handover(self, ctx: TeXBotApplicationContext) -> None:
+    async def committee_handover(self, ctx: TeXBotApplicationContext) -> None:
         """
-        Definition & callback response of the "handover" command.
+        Definition & callback response of the "committee-handover" command.
 
         The "handover" command runs the relevant handover methods
         which will perform the following actions:
@@ -37,7 +37,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
         - Remove the permissions for the "Committee-Elect" role
           from all channels except "#handover"
 
-        To do this, TeX-Bot will need to hold a role above that of the committee role.
+        To do this, TeX-Bot will need to hold a role above that of the "Committee" role.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
@@ -110,13 +110,13 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
             logger.debug("Removing Committee role from user: %s", committee_member)
             await committee_member.remove_roles(
                 committee_role,
-                reason=f"{ctx.user} used TeX-Bot slash-command: \"handover\"",
+                reason=f"{ctx.user} used TeX-Bot slash-command: \"committee-handover\"",
             )
 
             if automod_role and automod_role in committee_member.roles:
                 await committee_member.remove_roles(
                     automod_role,
-                    reason=f"{ctx.user} used TeX-Bot slash-command: \"handover\"",
+                    reason=f"{ctx.user} used TeX-Bot slash-command: \"committee-handover\"",
                 )
 
         await initial_response.edit(
@@ -133,20 +133,20 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
             logger.debug("Giving user: %s, the committee role.", committee_elect_member)
             await committee_elect_member.add_roles(
                 committee_role,
-                reason=f"{ctx.user} used TeX-Bot slash-command: \"handover\"",
+                reason=f"{ctx.user} used TeX-Bot slash-command: \"committee-handover\"",
             )
 
             logger.debug("Removing Committee-Elect role from user: %s", committee_elect_member)
             await committee_elect_member.remove_roles(
                 committee_elect_role,
-                reason=f"{ctx.user} used TeX-Bot slash-command: \"handover\"",
+                reason=f"{ctx.user} used TeX-Bot slash-command: \"committee-handover\"",
             )
 
         await initial_response.edit(content=":white_check_mark: Handover procedure complete!")
 
 
-class AnnualResetRolesCommandCog(TeXBotBaseCog):
-    """Cog class that defines the reset_roles command."""
+class AnnualRolesResetCommandCog(TeXBotBaseCog):
+    """Cog class that defines the "/annual_roles_reset" command."""
 
     ACADEMIC_YEAR_ROLE_NAMES: Final[frozenset[str]] = frozenset(
         {
@@ -166,11 +166,11 @@ class AnnualResetRolesCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def annual_role_reset(self, ctx: TeXBotApplicationContext) -> None:
+    async def annual_roles_reset(self, ctx: TeXBotApplicationContext) -> None:
         """
-        Definition & callback response of the "reset_roles" command.
+        Definition & callback response of the "annual_roles_reset" command.
 
-        The "reset_roles" command removes the "Member" and academic year roles
+        The "annual_roles_reset" command removes the "Member" and academic year roles
         from any user that has them and subsequently deletes all instances of
         the GroupMadeMember database model.
         """
@@ -187,7 +187,7 @@ class AnnualResetRolesCommandCog(TeXBotBaseCog):
         for member in member_role.members:
             await member.remove_roles(
                 member_role,
-                reason=f"{ctx.user} used TeX-Bot slash-command: \"/reset_roles\"",
+                reason=f"{ctx.user} used TeX-Bot slash-command: \"/annual_roles_reset\"",
             )
 
         logger.debug("Removed Member role from all users!")
@@ -216,7 +216,7 @@ class AnnualResetRolesCommandCog(TeXBotBaseCog):
             for year_role_member in year_role.members:
                 await year_role_member.remove_roles(
                     year_role,
-                    reason=f"{ctx.user} used TeX-Bot slash-command: \"reset_roles\"",
+                    reason=f"{ctx.user} used TeX-Bot slash-command: \"annual_roles_reset\"",
                 )
 
         logger.debug("Execution of reset roles command complete!")

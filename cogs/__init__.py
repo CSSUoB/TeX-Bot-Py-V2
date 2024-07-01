@@ -17,7 +17,7 @@ __all__: Sequence[str] = (
     "MakeApplicantSlashCommandCog",
     "MakeApplicantContextCommandsCog",
     "CommitteeHandoverCommandCog",
-    "AnnualResetRolesCommandCog",
+    "AnnualRolesResetCommandCog",
     "InductSlashCommandCog",
     "InductSendMessageCog",
     "InductContextCommandsCog",
@@ -42,7 +42,7 @@ __all__: Sequence[str] = (
 from typing import TYPE_CHECKING
 
 from cogs.annual_handover_and_reset import (
-    AnnualResetRolesCommandCog,
+    AnnualRolesResetCommandCog,
     CommitteeHandoverCommandCog,
 )
 from cogs.archive import ArchiveCommandCog
@@ -86,7 +86,7 @@ def setup(bot: TeXBot) -> None:
         EditMessageCommandCog,
         EnsureMembersInductedCommandCog,
         CommitteeHandoverCommandCog,
-        AnnualResetRolesCommandCog,
+        AnnualRolesResetCommandCog,
         InductSlashCommandCog,
         InductSendMessageCog,
         InductContextCommandsCog,
