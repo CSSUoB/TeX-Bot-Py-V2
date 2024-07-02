@@ -175,9 +175,9 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         Takes no arguments and simply returns the actions for the user that ran the command.
         """
-        command_user: discord.Member = await ctx.user
+        command_user: discord.Member = ctx.user
 
-        user_actions = [action async for action in await Action.objects.afilter(
+        user_actions: list[Action] = [action async for action in await Action.objects.afilter(
             discord_id=int(command_user.id),
         )]
 
