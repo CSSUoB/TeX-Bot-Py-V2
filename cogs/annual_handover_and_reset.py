@@ -28,7 +28,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def committee_handover(self, ctx: TeXBotApplicationContext) -> None:
         """
-        Definition & callback response of the "committee-handover" command.
+        Definition & callback response of the "committeee_handover" command.
 
         The "handover" command runs the relevant handover methods
         which will perform the following actions:
@@ -146,7 +146,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
 
 
 class AnnualRolesResetCommandCog(TeXBotBaseCog):
-    """Cog class that defines the "/annual_roles_reset" command."""
+    """Cog class that defines the "/annual-roles-reset" command."""
 
     ACADEMIC_YEAR_ROLE_NAMES: Final[frozenset[str]] = frozenset(
         {
