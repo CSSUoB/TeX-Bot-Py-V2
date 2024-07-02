@@ -30,7 +30,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
         """
         Definition & callback response of the "committeee_handover" command.
 
-        The "handover" command runs the relevant handover methods
+        The "committeee_handover" command runs the relevant handover methods
         which will perform the following actions:
         - Give the "Committee" role to any users that have the "Committee-Elect" role
         - Remove the "Committee-Elect" role from any user that has it
