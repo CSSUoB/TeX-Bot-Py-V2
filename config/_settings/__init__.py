@@ -206,7 +206,7 @@ class SettingsAccessor:
         if not CONSOLE_LOGGING_SETTINGS_CHANGED:
             return set()
 
-        ALL_HANDLERS: Iterable[logging.Handler] = logger.handlers
+        ALL_HANDLERS: Final[Iterable[logging.Handler]] = logger.handlers  # NOTE: The collection of handlers needs to be retrieved before the new StreamHandler is created
 
         console_logging_handler: logging.StreamHandler[TextIO] = logging.StreamHandler()
 
