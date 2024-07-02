@@ -465,6 +465,7 @@ class ManualModerationCog(BaseStrikeCog):
 
         return guild_confirmation_message_channel
 
+    # noinspection PyTypeHints
     @capture_strike_tracking_error
     async def _confirm_manual_add_strike(self, strike_user: discord.User | discord.Member, action: Literal[discord.AuditLogAction.member_update | discord.AuditLogAction.kick | discord.AuditLogAction.ban]) -> None:  # noqa: E501
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
@@ -748,7 +749,7 @@ class ManualModerationCog(BaseStrikeCog):
         # noinspection PyArgumentList
         await self._confirm_manual_add_strike(
             strike_user=user,
-            action=discord.AuditLogAction.channel_create,
+            action=discord.AuditLogAction.ban,
         )
 
 
