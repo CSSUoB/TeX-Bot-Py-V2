@@ -71,6 +71,7 @@ class KillCommandCog(TeXBotBaseCog):
             ),
             view=ConfirmKillView(),
         )
+        logger.debug("Sent kill confirmation message.")
         confirmation_message: discord.Message = (
             response
             if isinstance(response, discord.Message)
@@ -87,6 +88,8 @@ class KillCommandCog(TeXBotBaseCog):
                 and interaction.data["custom_id"] in {"shutdown_confirm", "shutdown_cancel"}
             ),
         )
+
+        logger.debug("Kill confirmation received: %s", button_interaction)
 
         if button_interaction.data["custom_id"] == "shutdown_confirm":  # type: ignore[index, typeddict-item]
             await confirmation_message.edit(

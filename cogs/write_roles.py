@@ -5,10 +5,15 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("WriteRolesCommandCog",)
 
 
+import logging
+from logging import Logger
+
 import discord
 
 from config import settings
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class WriteRolesCommandCog(TeXBotBaseCog):
@@ -39,3 +44,4 @@ class WriteRolesCommandCog(TeXBotBaseCog):
             )
 
         await ctx.respond("All messages sent successfully.", ephemeral=True)
+        logger.debug("Sent role messages!")

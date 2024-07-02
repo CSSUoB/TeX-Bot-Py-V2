@@ -5,7 +5,9 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("EditMessageCommandCog",)
 
 
+import logging
 import re
+from logging import Logger
 
 import discord
 
@@ -17,6 +19,8 @@ from utils import (
     TeXBotAutocompleteContext,
     TeXBotBaseCog,
 )
+
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class EditMessageCommandCog(TeXBotBaseCog):
@@ -139,3 +143,4 @@ class EditMessageCommandCog(TeXBotBaseCog):
             return
         else:
             await ctx.respond("Message edited successfully.", ephemeral=True)
+            logger.debug("Message ID %s has been edited successfully.", message_id)
