@@ -28,7 +28,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def committee_handover(self, ctx: TeXBotApplicationContext) -> None:
         """
-        Definition & callback response of the "committeee_handover" command.
+        Definition & callback response of the "committee_handover" command.
 
         The "committee_handover" command runs the relevant handover methods
         which will perform the following actions:
