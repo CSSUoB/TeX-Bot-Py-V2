@@ -16,8 +16,10 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/delete-all" command group and command call-back methods."""
 
     delete_all: discord.SlashCommandGroup = discord.SlashCommandGroup(
-        "delete-all",
-        "Delete all instances of the selected object type from the backend database",
+        name="delete-all",
+        description=(
+            "Delete all instances of the selected object type from the backend database"
+        ),
     )
 
     @staticmethod

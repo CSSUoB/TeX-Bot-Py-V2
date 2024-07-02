@@ -2,16 +2,19 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("TeXBot",)
+__all__: Sequence[str] = ("TeXBot", "TeXBotExitReason")
 
 
 import logging
 import re
+from collections.abc import Collection
+from enum import IntEnum
 from logging import Logger
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Final, NoReturn, override
 
 import discord
 
+import utils
 from config import settings
 from exceptions import (
     ApplicantRoleDoesNotExistError,
@@ -30,7 +33,15 @@ from exceptions import (
 if TYPE_CHECKING:
     from utils import AllChannelTypes
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
+
+
+class TeXBotExitReason(IntEnum):
+    """Enum flag for the reason for TeX-Bot exiting."""
+
+    UNKNOWN_ERROR = -1
+    KILL_COMMAND_USED = 0
+    RESTART_REQUIRED_DUE_TO_CHANGED_CONFIG = 1
 
 
 class TeXBot(discord.Bot):
@@ -42,8 +53,9 @@ class TeXBot(discord.Bot):
     if these objects do not exist.
     """
 
+    @override
     def __init__(self, *args: object, **options: object) -> None:
-        """Initialize a new discord.Bot subclass with empty shortcut accessors."""
+        """Initialise a new discord.Bot subclass with empty shortcut accessors."""
         self._main_guild: discord.Guild | None = None
         self._committee_role: discord.Role | None = None
         self._guest_role: discord.Role | None = None
@@ -53,17 +65,21 @@ class TeXBot(discord.Bot):
         self._roles_channel: discord.TextChannel | None = None
         self._general_channel: discord.TextChannel | None = None
         self._rules_channel: discord.TextChannel | None = None
-        self._exit_was_due_to_kill_command: bool = False
+        self._exit_reason: TeXBotExitReason = TeXBotExitReason.UNKNOWN_ERROR
 
         self._main_guild_set: bool = False
 
         super().__init__(*args, **options)  # type: ignore[no-untyped-call]
 
+    @override
+    async def close(self) -> NoReturn:  # type: ignore[misc]
+        await super().close()
+
     # noinspection PyPep8Naming
     @property
-    def EXIT_WAS_DUE_TO_KILL_COMMAND(self) -> bool:  # noqa: N802
-        """Return whether the TeX-Bot exited due to the kill command being used."""
-        return self._exit_was_due_to_kill_command
+    def EXIT_REASON(self) -> TeXBotExitReason:  # noqa: N802
+        """Return the reason for TeX-Bot's last exit."""
+        return self._exit_reason
 
     @property
     def main_guild(self) -> discord.Guild:
@@ -76,8 +92,8 @@ class TeXBot(discord.Bot):
 
         Raises `GuildDoesNotExist` if the given ID does not link to a valid Discord guild.
         """
-        if not self._main_guild or not self._bot_has_guild(settings["DISCORD_GUILD_ID"]):
-            raise GuildDoesNotExistError(guild_id=settings["DISCORD_GUILD_ID"])
+        if not self._main_guild or not self._bot_has_guild(settings["_DISCORD_MAIN_GUILD_ID"]):
+            raise GuildDoesNotExistError(guild_id=settings["_DISCORD_MAIN_GUILD_ID"])
 
         return self._main_guild
 
@@ -156,7 +172,7 @@ class TeXBot(discord.Bot):
         Shortcut accessor to the archivist role.
 
         The archivist role is the one that allows members to see channels & categories
-        that are no longer in use, which are hidden to all other members.
+        that are no longer in use, which are hidden from all other members.
 
         Raises `ArchivistRoleDoesNotExist` if the role does not exist.
         """
@@ -249,7 +265,7 @@ class TeXBot(discord.Bot):
 
         This is substituted into many error/welcome messages sent into your Discord guild,
         by the bot.
-        The group-full-name is either retrieved from the provided environment variable,
+        The group-full-name is either retrieved from the provided environment variable
         or automatically identified from the name of your group's Discord guild.
         """
         return (  # type: ignore[no-any-return]
@@ -365,23 +381,56 @@ class TeXBot(discord.Bot):
 
         return text_channel
 
-    async def perform_kill_and_close(self, initiated_by_user: discord.User | discord.Member | None = None) -> None:  # noqa: E501
+    async def perform_kill_and_close(self, initiated_by_user: discord.User | discord.Member | None = None) -> NoReturn:  # noqa: E501
         """
         Shutdown TeX-Bot by using the "/kill" command.
 
         A log message will also be sent, announcing the user that requested the shutdown.
         """
-        if self.EXIT_WAS_DUE_TO_KILL_COMMAND:
-            EXIT_FLAG_ALREADY_SET_MESSAGE: Final[str] = (
+        if self.EXIT_REASON is not TeXBotExitReason.UNKNOWN_ERROR:
+            EXIT_REASON_ALREADY_SET_MESSAGE: Final[str] = (
                 "The kill & close command has already been used. Invalid state."
             )
-            raise RuntimeError(EXIT_FLAG_ALREADY_SET_MESSAGE)
+            raise RuntimeError(EXIT_REASON_ALREADY_SET_MESSAGE)
 
         if initiated_by_user:
             logger.info("Manual shutdown initiated by %s.", initiated_by_user)
 
-        self._exit_was_due_to_kill_command = True
+        self._exit_reason = TeXBotExitReason.KILL_COMMAND_USED
         await self.close()
+
+    async def perform_restart_after_config_changes(self) -> NoReturn:
+        """Restart TeX-Bot after the config changes."""
+        if self.EXIT_REASON is not TeXBotExitReason.UNKNOWN_ERROR:
+            EXIT_REASON_ALREADY_SET_MESSAGE: Final[str] = (
+                "TeX-Bot cannot be restarted as the exit reason has already been set. "
+                "Invalid state."
+            )
+            raise RuntimeError(EXIT_REASON_ALREADY_SET_MESSAGE)
+
+        self._exit_reason = TeXBotExitReason.RESTART_REQUIRED_DUE_TO_CHANGED_CONFIG
+        await self.close()
+
+    def reset_exit_reason(self) -> None:
+        """Reset the exit reason of TeX-Bot back to `UNKNOWN_ERROR`."""
+        if utils.is_running_in_async():
+            TEX_BOT_STILL_RUNNING_MESSAGE: Final[str] = (
+                "Cannot reset exit reason when TeX-Bot is currently running."
+            )
+            raise RuntimeError(TEX_BOT_STILL_RUNNING_MESSAGE)
+
+        RESETABLE_EXIT_REASONS: Collection[TeXBotExitReason] = (
+            TeXBotExitReason.UNKNOWN_ERROR,
+            TeXBotExitReason.RESTART_REQUIRED_DUE_TO_CHANGED_CONFIG,
+        )
+        if self.EXIT_REASON not in RESETABLE_EXIT_REASONS:
+            CURRENT_EXIT_REASON_IS_INVALID_MESSAGE: Final[str] = (
+                "Cannot reset exit reason, due to incorrect current exit reason. "
+                "Invalid state."
+            )
+            raise RuntimeError(CURRENT_EXIT_REASON_IS_INVALID_MESSAGE)
+
+        self._exit_reason = TeXBotExitReason.UNKNOWN_ERROR
 
     async def get_everyone_role(self) -> discord.Role:
         """
@@ -417,7 +466,7 @@ class TeXBot(discord.Bot):
         self._main_guild = main_guild
         self._main_guild_set = True
 
-    async def get_main_guild_member(self, user: discord.Member | discord.User) -> discord.Member:  # noqa: E501
+    async def _get_main_guild_member_from_user(self, user: discord.Member | discord.User) -> discord.Member:  # noqa: E501
         """
         Util method to retrieve a member of your group's Discord guild from their User object.
 
@@ -428,31 +477,40 @@ class TeXBot(discord.Bot):
             raise DiscordMemberNotInMainGuildError(user_id=user.id)
         return main_guild_member
 
-    async def get_member_from_str_id(self, str_member_id: str) -> discord.Member:
+    async def _get_main_guild_member_from_id(self, member_id: int) -> discord.Member:
         """
-        Retrieve a member of your group's Discord guild by their ID.
+        Util method to retrieve a member of your group's Discord guild from their User ID.
 
-        Raises `ValueError` if the provided ID does not represent any member
-        of your group's Discord guild.
+        Raises `DiscordMemberNotInMainGuild` if the user is not in your group's Discord guild.
+        Raises `ValueError` if the provided ID is not a valid user ID.
         """
-        str_member_id = str_member_id.replace("<@", "").replace(">", "")
+        user: discord.User | None = self.get_user(member_id)
+        if not user:
+            raise ValueError(
+                DiscordMemberNotInMainGuildError(user_id=member_id).message,
+            )
 
-        if not re.match(r"\A\d{17,20}\Z", str_member_id):
+        return await self.get_main_guild_member(user)
+
+    async def get_main_guild_member(self, user: discord.Member | discord.User | str | int) -> discord.Member:  # noqa: E501
+        """
+        Util method to retrieve a member of your group's Discord guild from their ID or User.
+
+        Raises `DiscordMemberNotInMainGuild` if the user is not in your group's Discord guild.
+        Raises `ValueError` if the provided ID is not a valid user ID.
+        """
+        if isinstance(user, discord.Member | discord.User):
+            return await self._get_main_guild_member_from_user(user)
+
+        if isinstance(user, int):
+            return await self._get_main_guild_member_from_id(user)
+
+        str_member_id = user.replace("<@", "").replace(">", "")
+
+        if not re.fullmatch(r"\A\d{17,20}\Z", str_member_id):
             INVALID_USER_ID_MESSAGE: Final[str] = (
-                f"\"{str_member_id}\" is not a valid user ID."
+                f"'{str_member_id}' is not a valid user ID."
             )
             raise ValueError(INVALID_USER_ID_MESSAGE)
 
-        user: discord.User | None = self.get_user(int(str_member_id))
-        if not user:
-            raise ValueError(
-                DiscordMemberNotInMainGuildError(user_id=int(str_member_id)).message,
-            )
-
-        user_not_in_main_guild_error: DiscordMemberNotInMainGuildError
-        try:
-            member: discord.Member = await self.get_main_guild_member(user)
-        except DiscordMemberNotInMainGuildError as user_not_in_main_guild_error:
-            raise ValueError from user_not_in_main_guild_error
-
-        return member
+        return await self._get_main_guild_member_from_id(int(user))

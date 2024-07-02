@@ -21,7 +21,7 @@ import logging
 import re
 from collections.abc import Mapping
 from logging import Logger
-from typing import Final
+from typing import Final, Literal
 
 import aiohttp
 import discord
@@ -51,7 +51,7 @@ from utils.error_capture_decorators import (
 )
 from utils.message_sender_components import (
     ChannelMessageSender,
-    MessageSenderComponent,
+    MessageSavingSenderComponent,
     ResponseMessageSender,
 )
 
@@ -78,7 +78,7 @@ async def perform_moderation_action(strike_user: discord.Member, strikes: int, c
 
     if strikes == 1:
         await strike_user.timeout_for(
-            datetime.timedelta(hours=24),
+            settings["STRIKE_COMMAND_TIMEOUT_DURATION"],
             reason=MODERATION_ACTION_REASON,
         )
 
@@ -99,7 +99,7 @@ class ConfirmStrikeMemberView(View):
     )
     async def yes_strike_member_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """
-        Delete the message associated with the view, when the Yes button is pressed.
+        Delete the message associated with the view when the Yes button is pressed.
 
         This function is attached as a button's callback, so will run whenever the button
         is pressed.
@@ -116,7 +116,7 @@ class ConfirmStrikeMemberView(View):
     )
     async def no_strike_member_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """
-        Delete the message associated with the view, when the No button is pressed.
+        Delete the message associated with the view when the No button is pressed.
 
         This function is attached as a button's callback, so will run whenever the button
         is pressed.
@@ -137,7 +137,7 @@ class ConfirmManualModerationView(View):
     )
     async def yes_manual_moderation_action_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """
-        Delete the message associated with the view, when the Yes button is pressed.
+        Delete the message associated with the view when the Yes button is pressed.
 
         This function is attached as a button's callback, so will run whenever the button
         is pressed.
@@ -155,7 +155,7 @@ class ConfirmManualModerationView(View):
     )
     async def no_manual_moderation_action_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """
-        Delete the message associated with the view, when the No button is pressed.
+        Delete the message associated with the view when the No button is pressed.
 
         This function is attached as a button's callback, so will run whenever the button
         is pressed.
@@ -177,7 +177,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
     )
     async def yes_out_of_sync_ban_member_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """
-        Delete the message associated with the view, when the Yes button is pressed.
+        Delete the message associated with the view when the Yes button is pressed.
 
         This function is attached as a button's callback, so will run whenever the button
         is pressed.
@@ -195,7 +195,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
     )
     async def no_out_of_sync_ban_member_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """
-        Delete the message associated with the view, when the No button is pressed.
+        Delete the message associated with the view when the No button is pressed.
 
         This function is attached as a button's callback, so will run whenever the button
         is pressed.
@@ -219,7 +219,7 @@ class BaseStrikeCog(TeXBotBaseCog):
 
     async def _send_strike_user_message(self, strike_user: discord.User | discord.Member, member_strikes: DiscordMemberStrikes) -> None:  # noqa: E501
         # noinspection PyUnusedLocal
-        rules_channel_mention: str = "`#welcome`"
+        rules_channel_mention: str = "**`#welcome`**"
         with contextlib.suppress(RulesChannelDoesNotExistError):
             rules_channel_mention = (await self.bot.rules_channel).mention
 
@@ -248,13 +248,13 @@ class BaseStrikeCog(TeXBotBaseCog):
             "the corresponding moderation action will soon be applied to you. "
             "To find what moderation action corresponds to which strike level, "
             f"you can view the {self.bot.group_short_name} Discord server moderation document "
-            f"[here](<{settings.MODERATION_DOCUMENT_URL}>)\nPlease ensure you have read "
+            f"[here](<{settings.MODERATION_DOCUMENT_LINK}>)\nPlease ensure you have read "
             f"the rules in {rules_channel_mention} so that your future behaviour adheres "
             f"to them.{includes_ban_message}\n\nA committee member will be in contact "
             "with you shortly, to discuss this further.",
         )
 
-    async def _confirm_perform_moderation_action(self, message_sender_component: MessageSenderComponent, interaction_user: discord.User, strike_user: discord.Member, confirm_strike_message: str, actual_strike_amount: int, button_callback_channel: discord.TextChannel | discord.DMChannel) -> None:  # noqa: E501
+    async def _confirm_perform_moderation_action(self, message_sender_component: MessageSavingSenderComponent, interaction_user: discord.User, strike_user: discord.Member, confirm_strike_message: str, actual_strike_amount: int, button_callback_channel: discord.TextChannel | discord.DMChannel) -> None:  # noqa: E501
         await message_sender_component.send(
             content=confirm_strike_message,
             view=ConfirmStrikeMemberView(),
@@ -271,36 +271,37 @@ class BaseStrikeCog(TeXBotBaseCog):
             ),
         )
 
-        if button_interaction.data["custom_id"] == "no_strike_member":  # type: ignore[index, typeddict-item]
-            await button_interaction.edit_original_response(
-                content=(
-                    "Aborted performing "
-                    f"{self.SUGGESTED_ACTIONS[actual_strike_amount]} action "
-                    f"on {strike_user.mention}."
-                ),
-                view=None,
-            )
-            return
+        match button_interaction.data["custom_id"]:  # type: ignore[index, typeddict-item]
+            case "no_strike_member":
+                await button_interaction.edit_original_response(
+                    content=(
+                        "Aborted performing "
+                        f"{self.SUGGESTED_ACTIONS[actual_strike_amount]} action "
+                        f"on {strike_user.mention}."
+                    ),
+                    view=None,
+                )
 
-        if button_interaction.data["custom_id"] == "yes_strike_member":  # type: ignore[index, typeddict-item]
-            await perform_moderation_action(
-                strike_user,
-                actual_strike_amount,
-                committee_member=interaction_user,
-            )
+            case "yes_strike_member":
+                await perform_moderation_action(
+                    strike_user,
+                    actual_strike_amount,
+                    committee_member=interaction_user,
+                )
 
-            await button_interaction.edit_original_response(
-                content=(
-                    f"Successfully performed {self.SUGGESTED_ACTIONS[actual_strike_amount]} "
-                    f"action on {strike_user.mention}."
-                ),
-                view=None,
-            )
-            return
+                await button_interaction.edit_original_response(
+                    content=(
+                        "Successfully performed "
+                        f"{self.SUGGESTED_ACTIONS[actual_strike_amount]} "
+                        f"action on {strike_user.mention}."
+                    ),
+                    view=None,
+                )
 
-        raise ValueError
+            case _:
+                raise ValueError
 
-    async def _confirm_increase_strike(self, message_sender_component: MessageSenderComponent, interaction_user: discord.User, strike_user: discord.User | discord.Member, member_strikes: DiscordMemberStrikes, button_callback_channel: discord.TextChannel | discord.DMChannel, *, perform_action: bool) -> None:  # noqa: E501
+    async def _confirm_increase_strike(self, message_sender_component: MessageSavingSenderComponent, interaction_user: discord.User, strike_user: discord.User | discord.Member, member_strikes: DiscordMemberStrikes, button_callback_channel: discord.TextChannel | discord.DMChannel, *, perform_action: bool) -> None:  # noqa: E501
         if perform_action and isinstance(strike_user, discord.User):
             STRIKE_USER_TYPE_ERROR_MESSAGE: Final[str] = (
                 "Cannot perform moderation action on non-guild member."
@@ -339,6 +340,7 @@ class BaseStrikeCog(TeXBotBaseCog):
                 )
 
         if not perform_action:
+            # noinspection SpellCheckingInspection
             await message_sender_component.send(
                 content=(
                     f"{confirm_strike_message}\n"
@@ -414,9 +416,9 @@ class ManualModerationCog(BaseStrikeCog):
         """
         Retrieve the correct channel to send the strike confirmation message to.
 
-        This is based upon the MANUAL_MODERATION_WARNING_MESSAGE_LOCATION config setting value.
+        This is based upon the STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION config setting value.
         """
-        if settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] == "DM":
+        if settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] == "DM":
             if user.bot:
                 session: aiohttp.ClientSession
                 with aiohttp.ClientSession() as session:  # type: ignore[assignment]
@@ -450,12 +452,12 @@ class ManualModerationCog(BaseStrikeCog):
 
         guild_confirmation_message_channel: discord.TextChannel | None = discord.utils.get(
             self.bot.main_guild.text_channels,
-            name=settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"],
+            name=settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"],
         )
         if not guild_confirmation_message_channel:
             CHANNEL_DOES_NOT_EXIST_MESSAGE: Final[str] = (
                 "The channel "
-                f"""{settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"]!r} """
+                f"""{settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"]!r} """
                 "does not exist, so cannot be used as the location "
                 "for sending manual-moderation warning messages"
             )
@@ -463,8 +465,9 @@ class ManualModerationCog(BaseStrikeCog):
 
         return guild_confirmation_message_channel
 
+    # noinspection PyTypeHints
     @capture_strike_tracking_error
-    async def _confirm_manual_add_strike(self, strike_user: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501
+    async def _confirm_manual_add_strike(self, strike_user: discord.User | discord.Member, action: Literal[discord.AuditLogAction.member_update | discord.AuditLogAction.kick | discord.AuditLogAction.ban]) -> None:  # noqa: E501
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         committee_role: discord.Role = await self.bot.committee_role
@@ -481,14 +484,15 @@ class ManualModerationCog(BaseStrikeCog):
                 if _audit_log_entry.target == strike_user
             )
         except (StopIteration, StopAsyncIteration):
-            IRRETRIEVABLE_AUDIT_LOG_MESSAGE: Final[str] = (
-                f"Unable to retrieve audit log entry of {str(action)!r} action "
-                f"on user {str(strike_user)!r}"
-            )
             logger.debug("Printing 5 most recent audit logs:")
             debug_audit_log_entry: discord.AuditLogEntry
             async for debug_audit_log_entry in main_guild.audit_logs(limit=5):
                 logger.debug(debug_audit_log_entry)
+
+            IRRETRIEVABLE_AUDIT_LOG_MESSAGE: Final[str] = (
+                f"Unable to retrieve audit log entry of {str(action)!r} action "
+                f"on user {str(strike_user)!r}"
+            )
             raise NoAuditLogsStrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
 
         if not audit_log_entry.user:
@@ -515,11 +519,11 @@ class ManualModerationCog(BaseStrikeCog):
             )
         )[0]
 
-        strikes_out_of_sync_with_ban: bool = bool(
+        STRIKES_OUT_OF_SYNC_WITH_BAN: Final[bool] = bool(
             (action != discord.AuditLogAction.ban and member_strikes.strikes >= 3)
-            or (action == discord.AuditLogAction.ban and member_strikes.strikes > 3),
+            or (action == discord.AuditLogAction.ban and member_strikes.strikes > 3)  # noqa: COM812
         )
-        if strikes_out_of_sync_with_ban:
+        if STRIKES_OUT_OF_SYNC_WITH_BAN:
             out_of_sync_ban_confirmation_message: discord.Message = await confirmation_message_channel.send(  # noqa: E501
                 content=(
                     f"""Hi {
@@ -561,53 +565,55 @@ class ManualModerationCog(BaseStrikeCog):
                 ),
             )
 
-            if out_of_sync_ban_button_interaction.data["custom_id"] == "no_out_of_sync_ban_member":  # type: ignore[index, typeddict-item] # noqa: E501
-                await out_of_sync_ban_confirmation_message.edit(
-                    content=(
-                        f"Aborted performing ban action upon {strike_user.mention}. "
-                        "(This manual moderation action has not been tracked.)\n"
-                        "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
-                        f"""{
-                            discord.utils.format_dt(
-                                discord.utils.utcnow() + datetime.timedelta(minutes=2),
-                                "R"
-                            )
-                        }"""
-                    ),
-                    view=None,
-                )
-                await asyncio.sleep(118)
-                await out_of_sync_ban_confirmation_message.delete()
-                return
+            match out_of_sync_ban_button_interaction.data["custom_id"]:  # type: ignore[index, typeddict-item]
+                case "no_out_of_sync_ban_member":
+                    # noinspection SpellCheckingInspection
+                    await out_of_sync_ban_confirmation_message.edit(
+                        content=(
+                            f"Aborted performing ban action upon {strike_user.mention}. "
+                            "(This manual moderation action has not been tracked.)\n"
+                            "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
+                            f"""{
+                                discord.utils.format_dt(
+                                    discord.utils.utcnow() + datetime.timedelta(minutes=2),
+                                    "R"
+                                )
+                            }"""
+                        ),
+                        view=None,
+                    )
 
-            if out_of_sync_ban_button_interaction.data["custom_id"] == "yes_out_of_sync_ban_member":  # type: ignore[index, typeddict-item] # noqa: E501
-                await self._send_strike_user_message(strike_user, member_strikes)
-                await main_guild.ban(
-                    strike_user,
-                    reason=(
-                        f"**{applied_action_user.display_name} synced moderation action "
-                        "with number of strikes**"
-                    ),
-                )
-                await out_of_sync_ban_confirmation_message.edit(
-                    content=(
-                        f"Successfully banned {strike_user.mention}.\n"
-                        "**Please ensure you use the `/strike` command in future!**"
-                        "\nᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
-                        f"""{
-                            discord.utils.format_dt(
-                                discord.utils.utcnow() + datetime.timedelta(minutes=2),
-                                "R"
-                            )
-                        }"""
-                    ),
-                    view=None,
-                )
-                await asyncio.sleep(118)
-                await out_of_sync_ban_confirmation_message.delete()
-                return
+                case "yes_out_of_sync_ban_member":
+                    await self._send_strike_user_message(strike_user, member_strikes)
+                    await main_guild.ban(
+                        strike_user,
+                        reason=(
+                            f"**{applied_action_user.display_name} synced moderation action "
+                            "with number of strikes**"
+                        ),
+                    )
+                    # noinspection SpellCheckingInspection
+                    await out_of_sync_ban_confirmation_message.edit(
+                        content=(
+                            f"Successfully banned {strike_user.mention}.\n"
+                            "**Please ensure you use the `/strike` command in future!**"
+                            "\nᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
+                            f"""{
+                                discord.utils.format_dt(
+                                    discord.utils.utcnow() + datetime.timedelta(minutes=2),
+                                    "R"
+                                )
+                            }"""
+                        ),
+                        view=None,
+                    )
 
-            raise ValueError
+                case _:
+                    raise ValueError
+
+            await asyncio.sleep(118)
+            await out_of_sync_ban_confirmation_message.delete()
+            return
 
         confirmation_message: discord.Message = await confirmation_message_channel.send(
             content=(
@@ -649,41 +655,46 @@ class ManualModerationCog(BaseStrikeCog):
             ),
         )
 
-        if button_interaction.data["custom_id"] == "no_manual_moderation_action":  # type: ignore[index, typeddict-item]
-            await confirmation_message.edit(
-                content=(
-                    f"Aborted increasing {strike_user.mention}'s strikes "
-                    "& sending moderation alert message. "
-                    "(This manual moderation action has not been tracked.)\n"
-                    "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
-                    f"""{
-                        discord.utils.format_dt(
-                            discord.utils.utcnow() + datetime.timedelta(minutes=2),
-                            "R"
-                        )
-                    }"""
-                ),
-                view=None,
-            )
-            await asyncio.sleep(118)
-            await confirmation_message.delete()
-            return
+        match button_interaction.data["custom_id"]:  # type: ignore[index, typeddict-item]
+            case "no_manual_moderation_action":
+                # noinspection SpellCheckingInspection
+                await confirmation_message.edit(
+                    content=(
+                        f"Aborted increasing {strike_user.mention}'s strikes "
+                        "& sending moderation alert message. "
+                        "(This manual moderation action has not been tracked.)\n"
+                        "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
+                        f"""{
+                            discord.utils.format_dt(
+                                discord.utils.utcnow() + datetime.timedelta(minutes=2),
+                                "R"
+                            )
+                        }"""
+                    ),
+                    view=None,
+                )
+                await asyncio.sleep(118)
+                await confirmation_message.delete()
 
-        if button_interaction.data["custom_id"] == "yes_manual_moderation_action":  # type: ignore[index, typeddict-item]
-            interaction_user: discord.User | None = self.bot.get_user(applied_action_user.id)
-            if not interaction_user:
-                raise StrikeTrackingError
+            case "yes_manual_moderation_action":
+                interaction_user: discord.User | None = self.bot.get_user(
+                    applied_action_user.id,
+                )
+                if not interaction_user:
+                    raise StrikeTrackingError
 
-            await self._confirm_increase_strike(
-                message_sender_component=ChannelMessageSender(confirmation_message_channel),
-                interaction_user=interaction_user,
-                strike_user=strike_user,
-                member_strikes=member_strikes,
-                button_callback_channel=confirmation_message_channel,
-                perform_action=False,
-            )
+                await self._confirm_increase_strike(
+                    message_sender_component=ChannelMessageSender(confirmation_message_channel),
+                    interaction_user=interaction_user,
+                    strike_user=strike_user,
+                    member_strikes=member_strikes,
+                    button_callback_channel=confirmation_message_channel,
+                    perform_action=False,
+                )
+                # NOTE: Message deletion is performed within self._confirm_increase_strike()
 
-        raise ValueError
+            case _:
+                raise ValueError
 
     @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
@@ -716,7 +727,7 @@ class ManualModerationCog(BaseStrikeCog):
             and not member.bot
             and not await asyncany(
                 ban.user == member async for ban in main_guild.bans()
-            ),
+            )  # noqa: COM812
         )
         if not MEMBER_REMOVED_BECAUSE_OF_MANUALLY_APPLIED_KICK:
             return
@@ -746,7 +757,7 @@ class StrikeCommandCog(BaseStrikeCog):
     """Cog class that defines the "/strike" command and its call-back method."""
 
     @staticmethod
-    async def strike_autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+    async def strike_autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice] | set[str]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable members.
 
@@ -754,23 +765,22 @@ class StrikeCommandCog(BaseStrikeCog):
         that have a member input-type.
         """
         try:
-            guild: discord.Guild = ctx.bot.main_guild
+            main_guild: discord.Guild = ctx.bot.main_guild
         except GuildDoesNotExistError:
             return set()
 
-        members: set[discord.Member] = {member for member in guild.members if not member.bot}
-
-        if not ctx.value or re.match(r"\A@.*\Z", ctx.value):
-            return {
-                discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
-                for member
-                in members
-            }
-
         return {
-            discord.OptionChoice(name=member.name, value=str(member.id))
+            discord.OptionChoice(
+                name=(
+                    f"@{member.name}"
+                    if not ctx.value or re.fullmatch(r"\A@.*\Z", ctx.value)
+                    else member.name
+                ),
+                value=str(member.id),
+            )
             for member
-            in members
+            in main_guild.members
+            if not member.bot
         }
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -799,7 +809,7 @@ class StrikeCommandCog(BaseStrikeCog):
         """
         member_id_not_integer_error: ValueError
         try:
-            strike_member: discord.Member = await self.bot.get_member_from_str_id(
+            strike_member: discord.Member = await self.bot.get_main_guild_member(
                 str_strike_member_id,
             )
         except ValueError as member_id_not_integer_error:

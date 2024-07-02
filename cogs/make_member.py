@@ -26,7 +26,7 @@ from exceptions import (
 )
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: Final[str] = (
     f"""{
@@ -120,7 +120,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             )
             return
 
-        if not re.match(r"\A\d{7}\Z", group_member_id):
+        if not re.fullmatch(settings["MEMBERS_LIST_ID_FORMAT"], group_member_id):
             await self.command_send_error(
                 ctx,
                 message=(
@@ -159,7 +159,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             "Expires": "0",
         }
         request_cookies: dict[str, str] = {
-            ".ASPXAUTH": settings["MEMBERS_LIST_URL_SESSION_COOKIE"],
+            ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
         }
         async with aiohttp.ClientSession(headers=request_headers, cookies=request_cookies) as http_session:  # noqa: E501, SIM117
             async with http_session.get(url=settings["MEMBERS_LIST_URL"]) as http_response:
@@ -259,6 +259,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                     reason="TeX Bot slash-command: \"/makemember\"",
                 )
 
+        # noinspection PyUnusedLocal
         applicant_role: discord.Role | None = None
         with contextlib.suppress(ApplicantRoleDoesNotExistError):
             applicant_role = await ctx.bot.applicant_role

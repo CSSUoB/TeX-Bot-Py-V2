@@ -18,17 +18,18 @@ __all__: Sequence[str] = (
     "EveryoneRoleCouldNotBeRetrievedError",
     "StrikeTrackingError",
     "NoAuditLogsStrikeTrackingError",
-    "MessagesJSONFileMissingKeyError",
-    "MessagesJSONFileValueError",
-    "InvalidMessagesJSONFileError",
-    "ImproperlyConfiguredError",
     "BotRequiresRestartAfterConfigChange",
+    "ChangingSettingWithRequiredSiblingError",
+    "ErrorCodeCouldNotBeIdentifiedError",
+    "UnknownDjangoError",
 )
+
 
 from .config_changes import (
     BotRequiresRestartAfterConfigChange,
-    ImproperlyConfiguredError,
+    ChangingSettingWithRequiredSiblingError,
 )
+from .custom_django import UnknownDjangoError
 from .does_not_exist import (
     ApplicantRoleDoesNotExistError,
     ArchivistRoleDoesNotExistError,
@@ -42,13 +43,9 @@ from .does_not_exist import (
     RolesChannelDoesNotExistError,
     RulesChannelDoesNotExistError,
 )
+from .error_message_generation import ErrorCodeCouldNotBeIdentifiedError
 from .guild import (
     DiscordMemberNotInMainGuildError,
     EveryoneRoleCouldNotBeRetrievedError,
-)
-from .messages import (
-    InvalidMessagesJSONFileError,
-    MessagesJSONFileMissingKeyError,
-    MessagesJSONFileValueError,
 )
 from .strike import NoAuditLogsStrikeTrackingError, StrikeTrackingError

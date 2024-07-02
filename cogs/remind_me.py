@@ -10,8 +10,9 @@ import functools
 import itertools
 import logging
 import re
+from collections.abc import Set
 from logging import Logger
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Final, override
 
 import discord
 import parsedatetime
@@ -20,6 +21,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 from db.core.models import DiscordMember, DiscordReminder
+from exceptions import UnknownDjangoError
 from utils import TeXBot, TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotBaseCog
 
 if TYPE_CHECKING:
@@ -27,14 +29,14 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class RemindMeCommandCog(TeXBotBaseCog):
-    """Cog class that defines the "/remindme" command and its call-back method."""
+    """Cog class that defines the "/remind-me" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> set[str]:  # noqa: C901, PLR0912, PLR0915
+    async def autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: C901,PLR0912,PLR0915,E501
         """
         Autocomplete callable that generates the common delay input values.
 
@@ -69,7 +71,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
 
         delay_choices: set[str] = set()
 
-        if re.match(r"\Ain? ?\Z", ctx.value):
+        if re.fullmatch(r"\Ain? ?\Z", ctx.value):
             FORMATTED_TIME_NUMS: Final[Iterator[tuple[int, str, str]]] = itertools.product(
                 range(1, 150),
                 {"", " "},
@@ -89,7 +91,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
             return {f"in {delay_choice}" for delay_choice in delay_choices}
 
         match: re.Match[str] | None
-        if match := re.match(r"\Ain (?P<partial_date>\d{0,3})\Z", ctx.value):
+        if match := re.fullmatch(r"\Ain (?P<partial_date>\d{0,3})\Z", ctx.value):
             for joiner, has_s in itertools.product({"", " "}, {"", "s"}):
                 delay_choices.update(
                     f"""{match.group("partial_date")}{joiner}{time_choice}{has_s}"""
@@ -102,7 +104,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
 
         current_year: int = discord.utils.utcnow().year
 
-        if re.match(r"\A\d{1,3}\Z", ctx.value):
+        if re.fullmatch(r"\A\d{1,3}\Z", ctx.value):
             for joiner, has_s in itertools.product({"", " "}, {"", "s"}):
                 delay_choices.update(
                     f"{joiner}{time_choice}{has_s}"
@@ -124,7 +126,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                     if month < 10:
                         delay_choices.add(f"{joiner}0{month}{joiner}{year}")
 
-        elif match := re.match(r"\A\d{1,3}(?P<ctx_time_choice> ?[A-Za-z]*)\Z", ctx.value):
+        elif match := re.fullmatch(r"\A\d{1,3}(?P<ctx_time_choice> ?[A-Za-z]*)\Z", ctx.value):
             FORMATTED_TIME_CHOICES: Final[Iterator[tuple[str, str, str]]] = itertools.product(
                 {"", " "},
                 TIME_CHOICES,
@@ -142,7 +144,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                     if match.group("ctx_time_choice").casefold() == formatted_time_choice[:slice_size]:  # noqa: E501
                         delay_choices.add(formatted_time_choice[slice_size:])
 
-        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?\Z", ctx.value):
+        elif match := re.fullmatch(r"\A(?P<date>\d{1,2}) ?[/\-.] ?\Z", ctx.value):
             if 1 <= int(match.group("date")) <= 31:
                 FORMATTED_DAY_AND_JOINER_DATE_CHOICES: Final[Iterator[tuple[int, int, str]]] = itertools.product(  # noqa: E501
                     range(1, 12),
@@ -154,18 +156,18 @@ class RemindMeCommandCog(TeXBotBaseCog):
                     if month < 10:
                         delay_choices.add(f"0{month}{joiner}{year}")
 
-        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2})\Z", ctx.value):  # noqa: E501
+        elif match := re.fullmatch(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2})\Z", ctx.value):  # noqa: E501
             if 1 <= int(match.group("date")) <= 31 and 1 <= int(match.group("month")) <= 12:
                 for year in range(current_year, current_year + 40):
                     for joiner in ("/", " / ", "-", " - ", ".", " . "):
                         delay_choices.add(f"{joiner}{year}")
 
-        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?\Z", ctx.value):  # noqa: E501
+        elif match := re.fullmatch(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?\Z", ctx.value):  # noqa: E501
             if 1 <= int(match.group("date")) <= 31 and 1 <= int(match.group("month")) <= 12:
                 for year in range(current_year, current_year + 40):
                     delay_choices.add(f"{year}")
 
-        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?(?P<partial_year>\d{1,3})\Z", ctx.value):  # noqa: E501
+        elif match := re.fullmatch(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?(?P<partial_year>\d{1,3})\Z", ctx.value):  # noqa: E501
             if 1 <= int(match.group("date")) <= 31 and 1 <= int(match.group("month")) <= 12:
                 for year in range(current_year, current_year + 40):
                     delay_choices.add(f"{year}"[len(match.group("partial_year")):])
@@ -173,7 +175,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
         return {f"{ctx.value}{delay_choice}".casefold() for delay_choice in delay_choices}
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="remindme",
+        name="remind-me",
         description="Responds with the given message after the specified time.",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
@@ -222,7 +224,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                 channel_type=ctx.channel.type,
             )
         except ValidationError as create_discord_reminder_error:
-            error_is_already_exists: bool = (
+            ERROR_IS_ALREADY_EXISTS: Final[bool] = (
                 "__all__" in create_discord_reminder_error.message_dict
                 and any(
                     "already exists" in error
@@ -230,14 +232,13 @@ class RemindMeCommandCog(TeXBotBaseCog):
                     in create_discord_reminder_error.message_dict["__all__"]
                 )
             )
-            if not error_is_already_exists:
-                await self.command_send_error(ctx, message="An unrecoverable error occurred.")
-                logger.critical(
-                    "Error when creating DiscordReminder object: %s",
-                    create_discord_reminder_error,
-                )
-                await self.bot.close()
-                return
+            if not ERROR_IS_ALREADY_EXISTS:
+                raise UnknownDjangoError(
+                    message=(
+                        f"Error when creating DiscordReminder object: "
+                        f"{create_discord_reminder_error}"
+                    ),
+                ) from create_discord_reminder_error
 
             await self.command_send_error(
                 ctx,
@@ -261,12 +262,14 @@ class RemindMeCommandCog(TeXBotBaseCog):
 class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
     """Cog class that defines the clear_reminders_backlog task."""
 
+    @override
     def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
         self.clear_reminders_backlog.start()
 
         super().__init__(bot)
 
+    @override
     def cog_unload(self) -> None:
         """
         Unload hook that ends all running tasks whenever the tasks cog is unloaded.
@@ -312,6 +315,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                     await reminder.adelete()
                     continue
 
+                # noinspection PyUnresolvedReferences
                 channel: discord.PartialMessageable = self.bot.get_partial_messageable(
                     reminder.channel_id,
                     type=(
@@ -332,7 +336,6 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                         ),
                     )
                     await self.bot.close()
-                    return
 
                 await channel.send(
                     "**Sorry it's a bit late! "
