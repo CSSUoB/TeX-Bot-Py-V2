@@ -159,8 +159,36 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         if not user_actions:
             await ctx.respond(f"User: {action_member.mention} has no actions.")
             logger.debug(user_actions)
-        else:
-            await ctx.respond(f"Found {len(user_actions)} actions for user {action_member.mention}:\n{"\n".join(str(action.description) for action in user_actions)}")  # noqa: E501
+            return
+
+        await ctx.respond(f"Found {len(user_actions)} actions for user {action_member.mention}:\n{"\n".join(str(action.description) for action in user_actions)}")  # noqa: E501
+
+
+    @discord.slash_command( # type: ignore[no-untyped-call, misc]
+        name="list-my-actions",
+        description="Lists all actions for the user that ran the command",
+    )
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def list_my_actions(self, ctx: TeXBotApplicationContext) -> None:
+        """
+        Definition and callback of the list my actions command.
+
+        Takes no arguments and simply returns the actions for the user that ran the command.
+        """
+        command_user: discord.Member = await ctx.user
+
+        user_actions = [action async for action in await Action.objects.afilter(
+            discord_id=int(command_user.id),
+        )]
+
+        if not user_actions:
+            await ctx.respond(content=":warning: You do not have any actions!")
+            logger.debug(
+                "User: %s ran the list-my-actions slash-command but no actions were found!",
+            )
+            return
+
+        await ctx.respond(content=f"You have {len(user_actions)} actions: \n{"\n".join(str(action.description) for action in user_actions)}")  # noqa: E501
 
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
