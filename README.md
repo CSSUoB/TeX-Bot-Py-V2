@@ -59,7 +59,7 @@ The meaning of each error code is given here:
 (This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/writeroles`, `/editmessage`, `/induct`, `/strike`, `/archive`, `/kill`, `/delete-all` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
 
 * `E1022` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-object) with the name "@**Guest**".
-(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/induct`, `/stats`, `/archive` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands)
+(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/induct`, `/stats`, `/archive` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
 
 * `E1023` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-object) with the name "@**Member**".
 (This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/makemember` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
@@ -68,6 +68,9 @@ The meaning of each error code is given here:
 (This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/archive` [command](https://discord.com/developers/docs/interactions/application-commands))
 
 * `E1025` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-object) with the name "**@Applicant**". (This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/make-applicant` [command](https://discord.com/developers/docs/interactions/application-commands) and respective user and message commands)
+
+* `E1026` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-objec) with the name "@**Committee-Elect**".
+(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/handover` [command](https://discord.com/developers/docs/interactions/application-commands))
 
 * `E1031` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [text channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel) with the name "#**roles**".
 (This [text channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel) is required for the `/writeroles` [command](https://discord.com/developers/docs/interactions/application-commands))
