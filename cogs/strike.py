@@ -505,6 +505,7 @@ class ManualModerationCog(BaseStrikeCog):
 
         MODERATION_ACTIONS: Final[Mapping[discord.AuditLogAction, str]] = {
             discord.AuditLogAction.member_update: "timed-out",
+            discord.AuditLogAction.auto_moderation_user_communication_disabled: "timed-out",
             discord.AuditLogAction.kick: "kicked",
             discord.AuditLogAction.ban: "banned",
         }
