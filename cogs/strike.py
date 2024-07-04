@@ -698,19 +698,19 @@ class ManualModerationCog(BaseStrikeCog):
         if not after.timed_out or before.timed_out == after.timed_out:
             return
 
-        action: discord.AuditLogAction
-        async for audit_log in main_guild.audit_logs(limit=5):
-            audit_log_action: discord.AuditLogAction = audit_log.action
+        audit_log_entry: discord.AuditLogEntry
+        async for audit_log_entry in main_guild.audit_logs(limit=5):
+            audit_log_action: discord.AuditLogAction = audit_log_entry.action
             if "auto_moderation_user_communication_disabled" in str(audit_log_action):
-                action = discord.AuditLogAction.auto_moderation_user_communication_disabled
-
-        if not action:
-            action = discord.AuditLogAction.member_update
+                await self._confirm_manual_add_strike(
+                    strike_user=after,
+                    action=discord.AuditLogAction.auto_moderation_user_communication_disabled,
+                )
 
         # noinspection PyArgumentList
         await self._confirm_manual_add_strike(
             strike_user=after,
-            action=action,
+            action=discord.AuditLogAction.member_update,
         )
 
     @TeXBotBaseCog.listener()
