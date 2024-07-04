@@ -499,7 +499,7 @@ class ManualModerationCog(BaseStrikeCog):
         if applied_action_user == self.bot.user:
             return
 
-        confirmation_message_channel = (
+        confirmation_message_channel: discord.DMChannel | discord.TextChannel = (
             await self.get_confirmation_message_channel(applied_action_user)
         )
 
