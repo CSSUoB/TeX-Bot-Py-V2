@@ -5,6 +5,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("CommitteeHandoverCommandCog", "AnnualRolesResetCommandCog")
 
+import datetime
 import logging
 from logging import Logger
 from typing import Final
@@ -222,3 +223,94 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
 
         logger.debug("Execution of reset roles command complete!")
         await initial_response.edit(content=":white_check_mark: Role reset complete!")
+
+class IterateYearChannelsCommandCog(TeXBotBaseCog):
+    """Cog class that defines the "/iterate-year-channels" command."""
+
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        name="iterate-year-channels",
+        description="Iterates the year channels, archiving and creating channels as needed",
+    )
+    async def iterate_year_channels(self, ctx: TeXBotApplicationContext) -> None:
+        """
+        Definition and callback response of the "iterate-year-channels" command.
+
+        This command:
+        - Archives the current final-years channel
+        - Renames the current second year channel to final-years
+        - Renames the current first year channel to second-years
+        - Creates a new first years channel
+        """
+        main_guild: discord.Guild = self.bot.main_guild
+        guest_role: discord.Role = await self.bot.guest_role
+
+        initial_message: discord.Interaction | discord.WebhookMessage = await ctx.respond(
+            content="Processing year channel iteration...",
+        )
+
+        final_year_channel: discord.TextChannel | None = discord.utils.get(
+            main_guild.text_channels,
+            name="final-years",
+        )
+
+        if final_year_channel:
+            archivist_role: discord.Role = await self.bot.archivist_role
+
+            await final_year_channel.set_permissions(guest_role, overwrite=None)
+            await final_year_channel.set_permissions(archivist_role, read_messages=True)
+
+            await final_year_channel.edit(
+                name="final-years" + str(datetime.datetime.now(tz=datetime.UTC).year),
+            )
+
+            archived_category: discord.CategoryChannel | None = discord.utils.get(
+                main_guild.categories,
+                name="Archived",
+            )
+
+            if archived_category:
+                await final_year_channel.edit(category=archived_category)
+
+        second_year_channel: discord.TextChannel | None = discord.utils.get(
+            main_guild.text_channels,
+            name="second-years",
+        )
+
+        if second_year_channel:
+            await second_year_channel.edit(name="final-years")
+
+        first_year_channel: discord.TextChannel | None = discord.utils.get(
+            main_guild.text_channels,
+            name="first-years",
+        )
+
+        if first_year_channel:
+            await first_year_channel.edit(name="second-years")
+
+        year_channels_category: discord.CategoryChannel | None = discord.utils.get(
+            main_guild.categories,
+            name="Year Chats",
+        )
+
+        new_first_year_channel: discord.TextChannel = await main_guild.create_text_channel(
+            name="first-years",
+        )
+
+        if year_channels_category:
+            await new_first_year_channel.edit(
+                category=year_channels_category,
+                sync_permissions=True,
+            )
+
+            await initial_message.edit(content="Year channel iterations complete!")
+            return
+
+        await new_first_year_channel.set_permissions(
+            guest_role,
+            read_messages=True,
+            send_messages=True,
+        )
+
+        await initial_message.edit(
+            content="Year channel iterations complete but no year channel category was found!",
+        )
