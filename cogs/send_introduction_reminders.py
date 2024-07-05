@@ -28,6 +28,7 @@ from utils import TeXBot, TeXBotBaseCog
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
     capture_guild_does_not_exist_error,
+    capture_message_send_forbidden_error,
 )
 
 logger: Logger = logging.getLogger("TeX-Bot")
@@ -68,6 +69,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         close_func=ErrorCaptureDecorators.critical_error_close_func,
     )
     @capture_guild_does_not_exist_error
+    @capture_message_send_forbidden_error
     async def send_introduction_reminders(self) -> None:
         """
         Recurring task to send an introduction reminder message to Discord members' DMs.

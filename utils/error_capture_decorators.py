@@ -115,7 +115,7 @@ def capture_strike_tracking_error(func: "WrapperInputFunc[P, T]") -> "WrapperOut
         close_func=ErrorCaptureDecorators.strike_tracking_error_close_func,
     )
 
-def capture_403_forbidden_message_failure(func: "WrapperInputFunc[P, T]") -> "WrapperOutputFunc[P, T]":  # noqa: E501
+def capture_message_send_forbidden_error(func: "WrapperInputFunc[P, T]") -> "WrapperOutputFunc[P, T]":  # noqa: E501
     """
     Decorator to send an error message to the log when a 403 Forbidden error is raised.
 

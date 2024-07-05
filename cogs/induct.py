@@ -36,7 +36,10 @@ from utils import (
     TeXBotAutocompleteContext,
     TeXBotBaseCog,
 )
-from utils.error_capture_decorators import capture_guild_does_not_exist_error
+from utils.error_capture_decorators import (
+    capture_guild_does_not_exist_error,
+    capture_message_send_forbidden_error,
+)
 
 logger: Logger = logging.getLogger("TeX-Bot")
 
@@ -45,6 +48,7 @@ class InductSendMessageCog(TeXBotBaseCog):
 
     @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
+    @capture_message_send_forbidden_error
     async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
         """
         Send a welcome message to this member's DMs & remove introduction reminder flags.

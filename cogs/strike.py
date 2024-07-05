@@ -47,6 +47,7 @@ from utils import (
 )
 from utils.error_capture_decorators import (
     capture_guild_does_not_exist_error,
+    capture_message_send_forbidden_error,
     capture_strike_tracking_error,
 )
 from utils.message_sender_components import (
@@ -464,6 +465,7 @@ class ManualModerationCog(BaseStrikeCog):
         return guild_confirmation_message_channel
 
     @capture_strike_tracking_error
+    @capture_message_send_forbidden_error
     async def _confirm_manual_add_strike(self, strike_user: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
