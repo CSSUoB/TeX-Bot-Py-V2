@@ -6,6 +6,7 @@ __all__: Sequence[str] = (
     "InvalidMessagesJSONFileError",
     "MessagesJSONFileMissingKeyError",
     "MessagesJSONFileValueError",
+    "MessageSendForbiddenError",
 )
 
 
@@ -68,4 +69,26 @@ class MessagesJSONFileValueError(InvalidMessagesJSONFileError):
         self.invalid_value: object | None = invalid_value
 
         super().__init__(message, dict_key)
+
+
+class MessageSendForbiddenError(BaseTeXBotError):
+    """
+    Exception class to raise when the bot has failed to send a message to a user.
+
+    When the bot recieves a 403 Forbidden error when attempting to send a message
+    this could be a for a number of reasons:
+    - The user has blocked the bot
+    - The user does not share any servers with the bot
+    - The user has their privacy settings to prevent DMs with non-friends
+    - Some other, unkowable, error.
+    """
+
+    @classproperty
+    def DEFAULT_MESSAGE(cls) -> str:   # noqa: N802,N805
+        """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
+        return "The bot has been unable to send a DM to the specified user."
+
+    def __init__(self, message: str | None = None) -> None:
+        """Initialise a new MessageSendForbiddenError exception."""
+        super().__init__(message)
 

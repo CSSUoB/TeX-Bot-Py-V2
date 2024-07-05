@@ -24,6 +24,7 @@ __all__: Sequence[str] = (
     "InvalidMessagesJSONFileError",
     "ImproperlyConfiguredError",
     "BotRequiresRestartAfterConfigChange",
+    "MessageSendForbiddenError",
 )
 
 from .config_changes import (
@@ -50,6 +51,7 @@ from .guild import (
 )
 from .messages import (
     InvalidMessagesJSONFileError,
+    MessageSendForbiddenError,
     MessagesJSONFileMissingKeyError,
     MessagesJSONFileValueError,
 )

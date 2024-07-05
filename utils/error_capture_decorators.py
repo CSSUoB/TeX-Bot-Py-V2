@@ -19,7 +19,7 @@ from collections.abc import Callable, Coroutine
 from logging import Logger
 from typing import TYPE_CHECKING, Final, ParamSpec, TypeVar
 
-from exceptions import GuildDoesNotExistError, StrikeTrackingError
+from exceptions import GuildDoesNotExistError, MessageSendForbiddenError, StrikeTrackingError
 from utils.tex_bot_base_cog import TeXBotBaseCog
 
 if TYPE_CHECKING:
@@ -83,6 +83,12 @@ class ErrorCaptureDecorators:
         cls.critical_error_close_func(error)
         logger.warning("Critical errors are likely to lead to untracked moderation actions")
 
+    @classmethod
+    def message_send_forbidden_close_func(cls, error: BaseException) -> None:
+        """Component function to send logging messages when a MessageSendForbiddenError is raised."""  # noqa: E501, W505
+        cls.critical_error_close_func(error)
+        logger.warning("The bot has attempted to send a message to a user but this has failed.")  # noqa: E501
+
 
 def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T]") -> "WrapperOutputFunc[P, T]":  # noqa: E501
     """
@@ -107,4 +113,16 @@ def capture_strike_tracking_error(func: "WrapperInputFunc[P, T]") -> "WrapperOut
         func,  # type: ignore[arg-type]
         error_type=StrikeTrackingError,
         close_func=ErrorCaptureDecorators.strike_tracking_error_close_func,
+    )
+
+def capture_403_forbidden_message_failure(func: "WrapperInputFunc[P, T]") -> "WrapperOutputFunc[P, T]":  # noqa: E501
+    """
+    Decorator to send an error message to the log when a 403 Forbidden error is raised.
+
+    The raised exception is then supressed.
+    """  # noqa: D401
+    return ErrorCaptureDecorators.capture_error_and_close(
+        func, # type: ignore[arg-type]
+        error_type=MessageSendForbiddenError,
+        close_func=ErrorCaptureDecorators.message_send_forbidden_close_func,
     )
