@@ -313,6 +313,11 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         Creates a new action assigned to the message author
         using the message content as the description of the action.
         """
+        if ctx.message.author.bot:
+            await ctx.respond(content="Actions cannot be assigned to bots you melon!")
+            logger.debug("User: %s, attempted to action a bot. silly billy.", ctx.user)
+            return
+
         actioned_message_text: str = ctx.message.content
         actioned_message_user: discord.Member = ctx.message.author
 
