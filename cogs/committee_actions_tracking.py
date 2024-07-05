@@ -92,8 +92,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         """
         Definition and callback response of the "action" command.
 
-        The action command adds an action to the specified user. If no user is specified
-        we assume the action is aimed at the command issuer.
+        The action command adds an action to the specified user.
         """
         try:
             action: Action = await Action.objects.acreate(
@@ -300,3 +299,52 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         all_actions_message: str = "\n".join([f"Listing all actions by committee member:\n{committee.mention}, Actions:\n{', \n'.join(str(action.description) for action in actions)}" for committee, actions in committee_actions.items()]) # noqa: E501
 
         await ctx.respond(all_actions_message)
+
+    @discord.message_command( # type: ignore[no-untyped-call, misc]
+        name="action-message-author",
+        description="Creates a new action for the message author using the message content.",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def action_message_author(self, ctx: TeXBotApplicationContext) -> None:
+        """
+        Definition and callback response of the "action-message-author" message command.
+
+        Creates a new action assigned to the message author
+        using the message content as the description of the action.
+        """
+        actioned_message_text: str = ctx.message.content
+        actioned_message_user: discord.Member = ctx.message.author
+
+        try:
+            action: Action = await Action.objects.acreate(
+                discord_id=int(actioned_message_user.id),
+                description=actioned_message_text,
+            )
+        except ValidationError as create_action_error:
+            error_is_already_exits: bool = (
+                "__all__" in create_action_error.message_dict
+                and any (
+                    "already exists" in error
+                    for error
+                    in create_action_error.message_dict["__all__"]
+                )
+            )
+            if not error_is_already_exits:
+                await self.command_send_error(ctx, message="An unrecoverable error occured.")
+                logger.critical(
+                    "Error upon creating Action object: %s",
+                    create_action_error,
+                )
+                await self.bot.close()
+                return
+
+            await self.command_send_error(
+                ctx,
+                message="You already have an action with that description!",
+            )
+            return
+
+        await ctx.respond(
+            content=f"Successfully actioned {actioned_message_user} to: {action.description}",
+        )
