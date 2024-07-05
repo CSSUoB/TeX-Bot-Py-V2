@@ -3,7 +3,11 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("CommitteeHandoverCommandCog", "AnnualRolesResetCommandCog")
+__all__: Sequence[str] = (
+    "CommitteeHandoverCommandCog",
+    "AnnualRolesResetCommandCog",
+    "IterateYearChannelsCommandCog",
+)
 
 import datetime
 import logging

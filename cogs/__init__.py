@@ -23,6 +23,7 @@ __all__: Sequence[str] = (
     "InductContextCommandsCog",
     "KillCommandCog",
     "MakeMemberCommandCog",
+    "IterateYearChannelsCommandCog",
     "PingCommandCog",
     "ClearRemindersBacklogTaskCog",
     "RemindMeCommandCog",
@@ -44,6 +45,7 @@ from typing import TYPE_CHECKING
 from cogs.annual_handover_and_reset import (
     AnnualRolesResetCommandCog,
     CommitteeHandoverCommandCog,
+    IterateYearChannelsCommandCog,
 )
 from cogs.archive import ArchiveCommandCog
 from cogs.command_error import CommandErrorCog
@@ -89,6 +91,7 @@ def setup(bot: TeXBot) -> None:
         AnnualRolesResetCommandCog,
         InductSlashCommandCog,
         InductSendMessageCog,
+        IterateYearChannelsCommandCog,
         InductContextCommandsCog,
         KillCommandCog,
         MakeApplicantSlashCommandCog,
