@@ -464,7 +464,7 @@ class ManualModerationCog(BaseStrikeCog):
         return guild_confirmation_message_channel
 
     @capture_strike_tracking_error
-    async def _confirm_manual_add_strike(self, strike_user: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501
+    async def _confirm_manual_add_strike(self, strike_user: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501, PLR0915
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         committee_role: discord.Role = await self.bot.committee_role
@@ -478,17 +478,19 @@ class ManualModerationCog(BaseStrikeCog):
                     after=discord.utils.utcnow() - datetime.timedelta(minutes=1),
                     action=action,
                 )
-                if _audit_log_entry.target == strike_user
+                if _audit_log_entry.target.id == strike_user.id
             )
         except (StopIteration, StopAsyncIteration):
             IRRETRIEVABLE_AUDIT_LOG_MESSAGE: Final[str] = (
                 f"Unable to retrieve audit log entry of {str(action)!r} action "
                 f"on user {str(strike_user)!r}"
             )
+
             logger.debug("Printing 5 most recent audit logs:")
             debug_audit_log_entry: discord.AuditLogEntry
             async for debug_audit_log_entry in main_guild.audit_logs(limit=5):
                 logger.debug(debug_audit_log_entry)
+
             raise NoAuditLogsStrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
 
         if not audit_log_entry.user:
@@ -499,9 +501,32 @@ class ManualModerationCog(BaseStrikeCog):
         if applied_action_user == self.bot.user:
             return
 
-        confirmation_message_channel: discord.DMChannel | discord.TextChannel = (
-            await self.get_confirmation_message_channel(applied_action_user)
-        )
+        confirmation_message_channel: discord.DMChannel | discord.TextChannel
+        if applied_action_user != strike_user:
+            confirmation_message_channel = (
+                await self.get_confirmation_message_channel(applied_action_user)
+            )
+        else:
+            session: aiohttp.ClientSession
+            async with aiohttp.ClientSession() as session:
+                log_confirmation_message_channel: discord.Webhook | None = (
+                    await Webhook.from_url(
+                        settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
+                        session=session,
+                    ).fetch()
+                )
+
+                if log_confirmation_message_channel:
+                    logger.debug("vars: %s", vars(log_confirmation_message_channel))
+                    logger.debug("dir: %s", log_confirmation_message_channel.__dir__())
+                    logger.debug("slots: %s", log_confirmation_message_channel.__slots__)
+                    logger.debug("Found the webhook... converting to channel...")
+                    log_confirmation_message_channel_t: discord.TextChannel | None = log_confirmation_message_channel.channel  # noqa: E501
+
+                if not log_confirmation_message_channel_t:
+                    logger.debug("Couldn't get the discord log channel!!")
+                    raise StrikeTrackingError
+            confirmation_message_channel = log_confirmation_message_channel_t
 
         MODERATION_ACTIONS: Final[Mapping[discord.AuditLogAction, str]] = {
             discord.AuditLogAction.member_update: "timed-out",
@@ -701,21 +726,18 @@ class ManualModerationCog(BaseStrikeCog):
 
         audit_log_entry: discord.AuditLogEntry
         async for audit_log_entry in main_guild.audit_logs(limit=5):
-            logger.debug("Checking audit log entry: %s", str(audit_log_entry))
             FOUND_CORRECT_AUDIT_LOG_ENTRY: bool = (
-                audit_log_entry.target == after
+                audit_log_entry.target.id == after.id
                 and audit_log_entry.action == (
                     discord.AuditLogAction.auto_moderation_user_communication_disabled
                 )
             )
             if FOUND_CORRECT_AUDIT_LOG_ENTRY:
-                logger.debug("Found it!")
                 await self._confirm_manual_add_strike(
                     strike_user=after,
                     action=audit_log_entry.action,
                 )
                 return
-            logger.debug("Above audit log entry did not match...")
 
         # noinspection PyArgumentList
         await self._confirm_manual_add_strike(
