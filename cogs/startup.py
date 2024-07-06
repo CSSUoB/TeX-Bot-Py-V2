@@ -47,7 +47,7 @@ class StartupCog(TeXBotBaseCog):
                     else None
                 ),
             )
-            discord_logging_handler.setLevel(logging.DEBUG)
+            discord_logging_handler.setLevel(logging.WARNING)
             # noinspection SpellCheckingInspection
             discord_logging_handler.setFormatter(
                 logging.Formatter("{levelname} | {message}", style="{"),
