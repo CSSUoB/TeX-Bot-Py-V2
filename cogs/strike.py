@@ -509,24 +509,34 @@ class ManualModerationCog(BaseStrikeCog):
         else:
             session: aiohttp.ClientSession
             async with aiohttp.ClientSession() as session:
-                log_confirmation_message_channel: discord.Webhook | None = (
-                    await Webhook.from_url(
+                partial_webhook: discord.Webhook | None = (
+                    Webhook.from_url(
                         settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
                         session=session,
-                    ).fetch()
+                    )
                 )
 
-                if log_confirmation_message_channel:
-                    logger.debug("vars: %s", vars(log_confirmation_message_channel))
-                    logger.debug("dir: %s", log_confirmation_message_channel.__dir__())
-                    logger.debug("slots: %s", log_confirmation_message_channel.__slots__)
-                    logger.debug("Found the webhook... converting to channel...")
-                    log_confirmation_message_channel_t: discord.TextChannel | None = log_confirmation_message_channel.channel  # noqa: E501
-
-                if not log_confirmation_message_channel_t:
-                    logger.debug("Couldn't get the discord log channel!!")
+                if not partial_webhook:
+                    logger.debug("Failed to get partial webhook from url!")
                     raise StrikeTrackingError
-            confirmation_message_channel = log_confirmation_message_channel_t
+
+                full_webhook: discord.Webhook = await self.bot.fetch_webhook(
+                    partial_webhook.id,
+                )
+
+                if not full_webhook:
+                    logger.debug("Failed to get full webhook from partial!")
+                    raise StrikeTrackingError
+
+                log_confirmation_message_channel: discord.TextChannel | None = (
+                    full_webhook.channel
+                )
+
+                if not log_confirmation_message_channel:
+                    logger.debug("Failed to get log channel from webhook!")
+                    raise StrikeTrackingError
+
+            confirmation_message_channel = log_confirmation_message_channel
 
         MODERATION_ACTIONS: Final[Mapping[discord.AuditLogAction, str]] = {
             discord.AuditLogAction.member_update: "timed-out",
