@@ -701,15 +701,18 @@ class ManualModerationCog(BaseStrikeCog):
 
         audit_log_entry: discord.AuditLogEntry
         async for audit_log_entry in main_guild.audit_logs(limit=5):
+            logger.debug("Checking audit log entry: %s", str(audit_log_entry))
             AUDIT_LOG_ENTRY_IS_AUTOMOD_ACTION: bool = audit_log_entry.action == (
                 discord.AuditLogAction.auto_moderation_user_communication_disabled
             )
             if AUDIT_LOG_ENTRY_IS_AUTOMOD_ACTION:
+                logger.debug("Matched auto mod log entry!")
                 await self._confirm_manual_add_strike(
                     strike_user=after,
                     action=audit_log_entry.action,
                 )
                 return
+            logger.debug("Above audit log entry did not match...")
 
         # noinspection PyArgumentList
         await self._confirm_manual_add_strike(
