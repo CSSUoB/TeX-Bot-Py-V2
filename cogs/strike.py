@@ -701,6 +701,7 @@ class ManualModerationCog(BaseStrikeCog):
 
         audit_log_entry: discord.AuditLogEntry
         async for audit_log_entry in main_guild.audit_logs(limit=5):
+            logger.debug("Checking audit log entry: %s", str(audit_log_entry))
             FOUND_CORRECT_AUDIT_LOG_ENTRY: bool = (
                 audit_log_entry.target == after
                 and audit_log_entry.action == (
@@ -708,11 +709,13 @@ class ManualModerationCog(BaseStrikeCog):
                 )
             )
             if FOUND_CORRECT_AUDIT_LOG_ENTRY:
+                logger.debug("Found it!")
                 await self._confirm_manual_add_strike(
                     strike_user=after,
                     action=audit_log_entry.action,
                 )
                 return
+            logger.debug("Above audit log entry did not match...")
 
         # noinspection PyArgumentList
         await self._confirm_manual_add_strike(
