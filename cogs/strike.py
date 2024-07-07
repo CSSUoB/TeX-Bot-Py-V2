@@ -560,7 +560,7 @@ class ManualModerationCog(BaseStrikeCog):
                 content=(
                     f"""Hi {
                         applied_action_user.display_name
-                        if not applied_action_user.bot
+                        if not applied_action_user.bot and applied_action_user != strike_user
                         else committee_role.mention
                     }, """
                     f"""I just noticed that {
@@ -649,7 +649,7 @@ class ManualModerationCog(BaseStrikeCog):
             content=(
                 f"""Hi {
                     applied_action_user.display_name
-                    if not applied_action_user.bot
+                    if not applied_action_user.bot and applied_action_user != strike_user
                     else committee_role.mention
                 }, """
                 f"""I just noticed that {
