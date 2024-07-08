@@ -27,6 +27,7 @@ from exceptions import (
     GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
     MemberRoleDoesNotExistError,
+    MessageSendForbiddenError,
     RolesChannelDoesNotExistError,
     RulesChannelDoesNotExistError,
 )
@@ -127,11 +128,11 @@ class InductSendMessageCog(TeXBotBaseCog):
                     ":green_square:! "
                     f"Checkout all the perks at {settings["MEMBERSHIP_PERKS_URL"]}",
                 )
-        except discord.Forbidden:
-            logger.info(
-                "Failed to open DM channel to user %s so no welcome message was sent.",
-                after,
+        except discord.Forbidden as forbidden_error:
+            message_send_fail_message: str = (
+                f"Failed to open DM channel to user {after}, so no welcome message was sent."
             )
+            raise MessageSendForbiddenError(message_send_fail_message) from forbidden_error
 
 
 class BaseInductCog(TeXBotBaseCog):

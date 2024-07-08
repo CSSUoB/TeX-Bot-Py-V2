@@ -18,7 +18,11 @@ from discord.ext import tasks
 import utils
 from config import settings
 from db.core.models import SentGetRolesReminderMember
-from exceptions import GuestRoleDoesNotExistError, RolesChannelDoesNotExistError
+from exceptions import (
+    GuestRoleDoesNotExistError,
+    MessageSendForbiddenError,
+    RolesChannelDoesNotExistError,
+)
 from utils import TeXBot, TeXBotBaseCog
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
@@ -174,11 +178,11 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                     "and click on the icons to get optional roles like pronouns "
                     "and year group identifiers.",
                 )
-            except discord.Forbidden:
-                logger.info(
-                    "Failed to open DM channel to user, %s, so no role reminder was sent.",
-                    member,
+            except discord.Forbidden as forbidden_error:
+                message_send_fail_message: str = (
+                    f"Failed to open DM channel to {member}, so role reminder was not sent."
                 )
+                raise MessageSendForbiddenError(message_send_fail_message) from forbidden_error
 
             await SentGetRolesReminderMember.objects.acreate(discord_id=member.id)
 

@@ -23,7 +23,11 @@ from db.core.models import (
     IntroductionReminderOptOutMember,
     SentOneOffIntroductionReminderMember,
 )
-from exceptions import DiscordMemberNotInMainGuildError, GuestRoleDoesNotExistError
+from exceptions import (
+    DiscordMemberNotInMainGuildError,
+    GuestRoleDoesNotExistError,
+    MessageSendForbiddenError,
+)
 from utils import TeXBot, TeXBotBaseCog
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
@@ -165,12 +169,12 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                         else None  # type: ignore[arg-type]
                     ),
                 )
-            except discord.Forbidden:
-                logger.info(
-                    "Failed to open DM channel with user, %s, "
-                    "so no induction reminder was sent.",
-                    member,
+            except discord.Forbidden as forbidden_error:
+                message_send_fail_message: str = (
+                    f"Failed to open DM channel to {member}, "
+                    "so introduction reminder was not sent."
                 )
+                raise MessageSendForbiddenError(message_send_fail_message) from forbidden_error
 
             await SentOneOffIntroductionReminderMember.objects.acreate(
                 discord_id=member.id,

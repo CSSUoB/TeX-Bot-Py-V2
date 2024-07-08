@@ -35,6 +35,7 @@ from config import settings
 from db.core.models import DiscordMemberStrikes
 from exceptions import (
     GuildDoesNotExistError,
+    MessageSendForbiddenError,
     NoAuditLogsStrikeTrackingError,
     RulesChannelDoesNotExistError,
     StrikeTrackingError,
@@ -466,10 +467,15 @@ class ManualModerationCog(BaseStrikeCog):
 
     @capture_strike_tracking_error
     @capture_message_send_forbidden_error
-    async def _confirm_manual_add_strike(self, strike_user: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501
+    async def _confirm_manual_add_strike(self, strike_user: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501, PLR0915
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         committee_role: discord.Role = await self.bot.committee_role
+
+        message_send_fail_message: str = (
+            f"Failed to open DM channel to {strike_user}, "
+            "so strike confirmation message was not sent."
+        )
 
         try:
             # noinspection PyTypeChecker
@@ -523,28 +529,32 @@ class ManualModerationCog(BaseStrikeCog):
             or (action == discord.AuditLogAction.ban and member_strikes.strikes > 3),
         )
         if strikes_out_of_sync_with_ban:
-            out_of_sync_ban_confirmation_message: discord.Message = await confirmation_message_channel.send(  # noqa: E501
-                content=(
-                    f"""Hi {
-                        applied_action_user.display_name
-                        if not applied_action_user.bot
-                        else committee_role.mention
-                    }, """
-                    f"""I just noticed that {
-                        "you"
-                        if not applied_action_user.bot
-                        else f"one of your other bots (namely {applied_action_user.mention})"
-                    } {MODERATION_ACTIONS[action]} {strike_user.mention}. """
-                    "Because this moderation action was done manually "
-                    "(rather than using my `/strike` command), I could not automatically "
-                    f"keep track of the moderation action to apply. "
-                    f"My records show that {strike_user.mention} previously had 3 strikes. "
-                    f"This suggests that {strike_user.mention} should be banned. "
-                    "Would you like me to send them the moderation alert message "
-                    "and perform this action for you?"
-                ),
-                view=ConfirmStrikesOutOfSyncWithBanView(),
-            )
+            try:
+                out_of_sync_ban_confirmation_message: discord.Message = await confirmation_message_channel.send(  # noqa: E501
+                    content=(
+                        f"""Hi {
+                            applied_action_user.display_name
+                            if not applied_action_user.bot
+                            else committee_role.mention
+                        }, """
+                        f"""I just noticed that {
+                            "you"
+                            if not applied_action_user.bot
+                            else f"one of your other bots (namely {applied_action_user.mention})"
+                        } {MODERATION_ACTIONS[action]} {strike_user.mention}. """  # noqa: E501
+                        "Because this moderation action was done manually "
+                        "(rather than using my `/strike` command), I could not automatically "
+                        f"keep track of the moderation action to apply. "
+                        f"My records show that {strike_user.mention} previously had 3 strikes."
+                        f" This suggests that {strike_user.mention} should be banned. "
+                        "Would you like me to send them the moderation alert message "
+                        "and perform this action for you?"
+                    ),
+                    view=ConfirmStrikesOutOfSyncWithBanView(),
+                )
+            except discord.Forbidden as forbidden_error:
+                raise MessageSendForbiddenError(message_send_fail_message) from forbidden_error
+
 
             out_of_sync_ban_button_interaction: discord.Interaction = await self.bot.wait_for(
                 "interaction",
@@ -612,27 +622,30 @@ class ManualModerationCog(BaseStrikeCog):
 
             raise ValueError
 
-        confirmation_message: discord.Message = await confirmation_message_channel.send(
-            content=(
-                f"""Hi {
-                    applied_action_user.display_name
-                    if not applied_action_user.bot
-                    else committee_role.mention
-                }, """
-                f"""I just noticed that {
-                    "you"
-                    if not applied_action_user.bot
-                    else f"one of your other bots (namely {applied_action_user.mention})"
-                } {MODERATION_ACTIONS[action]} {strike_user.mention}. """
-                "Because this moderation action was done manually "
-                "(rather than using my `/strike` command), I could not automatically "
-                f"keep track of the correct moderation action to apply. "
-                f"Would you like me to increase {strike_user.mention}'s strikes "
-                f"from {member_strikes.strikes} to {member_strikes.strikes + 1} "
-                "and send them the moderation alert message?"
-            ),
-            view=ConfirmManualModerationView(),
-        )
+        try:
+            confirmation_message: discord.Message = await confirmation_message_channel.send(
+                content=(
+                    f"""Hi {
+                        applied_action_user.display_name
+                        if not applied_action_user.bot
+                        else committee_role.mention
+                    }, """
+                    f"""I just noticed that {
+                        "you"
+                        if not applied_action_user.bot
+                        else f"one of your other bots (namely {applied_action_user.mention})"
+                    } {MODERATION_ACTIONS[action]} {strike_user.mention}. """
+                    "Because this moderation action was done manually "
+                    "(rather than using my `/strike` command), I could not automatically "
+                    f"keep track of the correct moderation action to apply. "
+                    f"Would you like me to increase {strike_user.mention}'s strikes "
+                    f"from {member_strikes.strikes} to {member_strikes.strikes + 1} "
+                    "and send them the moderation alert message?"
+                ),
+                view=ConfirmManualModerationView(),
+            )
+        except discord.Forbidden as forbidden_error:
+            raise MessageSendForbiddenError(message_send_fail_message) from forbidden_error
 
         button_interaction: discord.Interaction = await self.bot.wait_for(
             "interaction",
