@@ -5,6 +5,7 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("CommitteeActionsTrackingCog",)
 
 import logging
+import random
 from logging import Logger
 
 import discord
@@ -67,6 +68,42 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             in all_actions
         }
 
+    async def _create_action(self, ctx: TeXBotApplicationContext, action_user: discord.Member, description: str) -> None:  # noqa: E501
+        """Create the action object with the given description for the given user."""
+        try:
+            action: Action = await Action.objects.acreate(
+                discord_id=int(action_user.id),
+                description=description,
+            )
+        except ValidationError as create_action_error:
+            error_is_already_exits: bool = (
+                "__all__" in create_action_error.message_dict
+                and any (
+                    "already exists" in error
+                    for error
+                    in create_action_error.message_dict["__all__"]
+                )
+            )
+            if not error_is_already_exits:
+                await self.command_send_error(ctx, message="An unrecoverable error occured.")
+                logger.critical(
+                    "Error upon creating Action object: %s",
+                    create_action_error,
+                )
+                await self.bot.close()
+                return
+
+            await self.command_send_error(
+                ctx,
+                message="You already have an action with that description!",
+            )
+            return
+
+        await ctx.respond(content=(
+            f"Action: {action.description} created for user: {action_user.mention}"
+        ))
+
+
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="action",
         description="Adds a new action with the specified description",
@@ -94,36 +131,90 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         The action command adds an action to the specified user.
         """
-        try:
-            action: Action = await Action.objects.acreate(
-                discord_id=int(str_action_member_id),
-                description=str_action_description,
-            )
-        except ValidationError as create_action_error:
-            error_is_already_exits: bool = (
-                "__all__" in create_action_error.message_dict
-                and any (
-                    "already exists" in error
-                    for error
-                    in create_action_error.message_dict["__all__"]
-                )
-            )
-            if not error_is_already_exits:
-                await self.command_send_error(ctx, message="An unrecoverable error occured.")
-                logger.critical(
-                    "Error upon creating Action object: %s",
-                    create_action_error,
-                )
-                await self.bot.close()
-                return
+        action_user: discord.Member = await self.bot.get_member_from_str_id(str_action_member_id)  # noqa: E501
 
-            await self.command_send_error(
-                ctx,
-                message="You already have an action with that description!",
+        if not action_user:
+            await ctx.respond(content=(
+                    f"The user you supplied, <@{str_action_member_id}> doesn't "
+                    "exist or is not in the sever."
+                ),
             )
             return
 
-        await ctx.respond(f"Action: {action.description} created for user: <@{str_action_member_id}>")  # noqa: E501
+        await self._create_action(ctx, action_user, str_action_description)
+
+
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        name="action-random-user",
+        description="Creates an action object with the specified description and random user.",
+    )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="description",
+        description="The description to be used for the action",
+        input_type=str,
+        required=True,
+        parameter_name="str_action_description",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def action_random_user(self, ctx: TeXBotApplicationContext, str_action_description: str) -> None:  # noqa: E501
+        """
+        Definition and callback response of the "action-random-user" command.
+
+        Creates an action object with the specified description
+        but randomises the committee member.
+        """
+        committee_role: discord.Role = await self.bot.committee_role
+        committee_members: list[discord.Member] = committee_role.members
+
+        if not committee_members:
+            await ctx.respond(content=(
+                "No committee members were found to randomly select from! Command aborted."
+            ))
+            return
+
+        action_user: discord.Member = committee_members[random.randint(0, len(committee_members))]  # noqa: E501
+
+        if not action_user:
+            await ctx.respond(
+                "Something went wrong and TeX-Bot was unable to randomly select someone.",
+            )
+            return
+
+        await self._create_action(ctx, action_user, str_action_description)
+
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        name="action-all-committee",
+        description="Creates an action with the description for every committee member",
+    )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="description",
+        description="The description to be used for the actions",
+        input_type=str,
+        required=True,
+        parameter_name="str_action_description",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def action_all_committee(self, ctx: TeXBotApplicationContext, str_action_description: str) -> None: # noqa: E501
+        """
+        Definition and callback response of the "action-all-committee" command.
+
+        Creates an action object with the specified description for all committee members.
+        """
+        committee_role: discord.Role = await self.bot.committee_role
+        committee_members: list[discord.Member] = committee_role.members
+
+        if not committee_members:
+            await ctx.respond(content="No committee members were found! Command aborted.")
+            return
+
+        committee_member: discord.Member
+        for committee_member in committee_members:
+            await self._create_action(ctx, committee_member, str_action_description)
+
+        await ctx.respond(content="Done!")
+
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
         name="list-user-actions",
@@ -306,50 +397,23 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def action_message_author(self, ctx: TeXBotApplicationContext) -> None:
+    async def action_message_author(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
         """
         Definition and callback response of the "action-message-author" message command.
 
         Creates a new action assigned to the message author
         using the message content as the description of the action.
         """
-        if ctx.message.author.bot:
+        if message.author.bot:
             await ctx.respond(content="Actions cannot be assigned to bots you melon!")
             logger.debug("User: %s, attempted to action a bot. silly billy.", ctx.user)
             return
 
-        actioned_message_text: str = ctx.message.content
-        actioned_message_user: discord.Member = ctx.message.author
+        actioned_message_text: str = message.content
+        actioned_message_user: discord.Member | discord.User = message.author
 
-        try:
-            action: Action = await Action.objects.acreate(
-                discord_id=int(actioned_message_user.id),
-                description=actioned_message_text,
-            )
-        except ValidationError as create_action_error:
-            error_is_already_exits: bool = (
-                "__all__" in create_action_error.message_dict
-                and any (
-                    "already exists" in error
-                    for error
-                    in create_action_error.message_dict["__all__"]
-                )
-            )
-            if not error_is_already_exits:
-                await self.command_send_error(ctx, message="An unrecoverable error occured.")
-                logger.critical(
-                    "Error upon creating Action object: %s",
-                    create_action_error,
-                )
-                await self.bot.close()
-                return
-
-            await self.command_send_error(
-                ctx,
-                message="You already have an action with that description!",
-            )
+        if isinstance(actioned_message_user, discord.User):
+            await ctx.respond("Message author is not in the server!")
             return
 
-        await ctx.respond(
-            content=f"Successfully actioned {actioned_message_user} to: {action.description}",
-        )
+        await self._create_action(ctx, actioned_message_user, actioned_message_text)
