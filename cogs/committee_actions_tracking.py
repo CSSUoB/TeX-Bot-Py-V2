@@ -68,7 +68,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             in all_actions
         }
 
-    async def _create_action(self, ctx: TeXBotApplicationContext, action_user: discord.Member, description: str) -> None:  # noqa: E501
+    async def _create_action(self, ctx: TeXBotApplicationContext, action_user: discord.Member, description: str) -> bool:  # noqa: E501
         """Create the action object with the given description for the given user."""
         try:
             action: Action = await Action.objects.acreate(
@@ -91,17 +91,18 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                     create_action_error,
                 )
                 await self.bot.close()
-                return
+                return False
 
             await self.command_send_error(
                 ctx,
                 message="You already have an action with that description!",
             )
-            return
+            return False
 
         await ctx.respond(content=(
             f"Action: {action.description} created for user: {action_user.mention}"
         ))
+        return True
 
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
