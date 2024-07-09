@@ -66,7 +66,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             discord.OptionChoice(name=str(action.description), value=str(action))
             for action
             in all_actions
-        }
+        } # TODO: try and add username to string in autocomplete so it's easy to see who the action belongs to
 
     async def _create_action(self, ctx: TeXBotApplicationContext, action_user: discord.Member, description: str) -> Action | None:  # noqa: E501
         """Create the action object with the given description for the given user."""
