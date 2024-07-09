@@ -388,7 +388,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         committee_actions: dict[discord.Member, list[Action]] = {committee: [action for action in actions if action.discord_member.hashed_discord_id == DiscordMember.hash_discord_id(committee.id)] for committee in committee_members} # type: ignore [has-type] # noqa: E501
 
-        all_actions_message: str = "\n".join([f"Listing all actions by committee member:\n{committee.mention}, Actions:\n{', \n'.join(str(action.description) for action in actions)}" for committee, actions in committee_actions.items()]) # noqa: E501
+        all_actions_message: str = "\n".join([f"\n{committee.mention}, Actions:\n{', \n'.join(str(action.description) for action in actions)}" for committee, actions in committee_actions.items()]) # noqa: E501
 
         await ctx.respond(all_actions_message)
 
