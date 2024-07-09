@@ -68,7 +68,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             in all_actions
         }
 
-    async def _create_action(self, ctx: TeXBotApplicationContext, action_user: discord.Member, description: str) -> bool:  # noqa: E501
+    async def _create_action(self, ctx: TeXBotApplicationContext, action_user: discord.Member, description: str) -> Action | None:  # noqa: E501
         """Create the action object with the given description for the given user."""
         try:
             action: Action = await Action.objects.acreate(
@@ -91,18 +91,23 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                     create_action_error,
                 )
                 await self.bot.close()
-                return False
+                return None
 
             await self.command_send_error(
                 ctx,
-                message="You already have an action with that description!",
+                message=(
+                    f"User: {action_user} already has an action "
+                    f"with description: {description}!"
+                ),
             )
-            return False
-
-        await ctx.respond(content=(
-            f"Action: {action.description} created for user: {action_user.mention}"
-        ))
-        return True
+            logger.debug(
+                "Action creation for user: %s, failed because an action "
+                "with description: %s, already exists.",
+                action_user,
+                description,
+            )
+            return None
+        return action
 
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -357,17 +362,27 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         input_hashed_id = components[0].strip()
         input_description = components[1].strip()
 
+        logger.debug("Hashed input ID: %s", input_hashed_id)
+        logger.debug("Input description: %s", input_description)
+
         try:
-            action_to_reassign = await Action.objects.aget(hashed_member_id=input_hashed_id, description=input_description)  # noqa: E501
+            action_to_reassign = await Action.objects.aget(
+                discord_member_id=input_hashed_id, # NOTE: this shit broke fr fr
+                description=input_description,
+            )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
             await ctx.respond("Provided action was either not unique or did not exist.")
             logger.warning("Action object: %s could not be matched to a unique action.", str_action_object)  # noqa: E501
+
+        logger.debug("Found the action! %s", action_to_reassign)
 
         if input_hashed_id == DiscordMember.hash_discord_id(str_action_member_id):
             await ctx.respond(f"HEY! Action: {input_description} is already assigned to user: <@{str_action_member_id}>\nNo action has been taken.")  # noqa: E501
             return
 
-        action_to_reassign.discord_member.hashed_discord_id = DiscordMember.hash_discord_id(str(str_action_member_id))  # type: ignore[has-type] # noqa: E501
+        logger.debug("Action specified does not already belong to the user... proceeding.")
+
+        action_to_reassign.discord_member = DiscordMember.hash_discord_id(str(str_action_member_id))  # type: ignore[has-type] # noqa: E501
 
         await ctx.respond("Action successfully reassigned!")
 
@@ -379,12 +394,11 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def list_all_actions(self, ctx:TeXBotApplicationContext) -> None:
         """List all actions."""
-        main_guild: discord.Guild = self.bot.main_guild
         committee_role: discord.Role = await self.bot.committee_role
 
         actions: list[Action] = [action async for action in Action.objects.select_related().all()]  # noqa: E501
 
-        committee_members: set[discord.Member] = {member for member in main_guild.members if not member.bot and committee_role in member.roles}  # noqa: E501
+        committee_members: list[discord.Member] = committee_role.members
 
         committee_actions: dict[discord.Member, list[Action]] = {committee: [action for action in actions if action.discord_member.hashed_discord_id == DiscordMember.hash_discord_id(committee.id)] for committee in committee_members} # type: ignore [has-type] # noqa: E501
 
@@ -392,8 +406,9 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         await ctx.respond(all_actions_message)
 
+
     @discord.message_command( # type: ignore[no-untyped-call, misc]
-        name="action-message-author",
+        name="Action Message Author",
         description="Creates a new action for the message author using the message content.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
@@ -417,4 +432,9 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             await ctx.respond("Message author is not in the server!")
             return
 
-        await self._create_action(ctx, actioned_message_user, actioned_message_text)
+        if (await self._create_action(ctx, actioned_message_user, actioned_message_text)):
+            await ctx.respond(content=(
+                f"Action: {actioned_message_text} created "
+                f"for user: {actioned_message_user.mention}"
+            ))
+            return
