@@ -107,6 +107,10 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                 description,
             )
             return None
+        await ctx.respond(content=(
+                f"Action: {action.description} created "
+                f"for user: {action_user.mention}"
+            ))
         return action
 
 
@@ -432,9 +436,4 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             await ctx.respond("Message author is not in the server!")
             return
 
-        if (await self._create_action(ctx, actioned_message_user, actioned_message_text)):
-            await ctx.respond(content=(
-                f"Action: {actioned_message_text} created "
-                f"for user: {actioned_message_user.mention}"
-            ))
-            return
+        await self._create_action(ctx, actioned_message_user, actioned_message_text)
