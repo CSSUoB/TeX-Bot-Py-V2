@@ -293,7 +293,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
         name="complete-action",
-        description="Deletes the specified action as being completed.",
+        description="Marks the specified action as being completed.",
     )
     @discord.option( # type: ignore[no-untyped-call, misc]
         name="action",
@@ -305,21 +305,30 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def complete_action(self, ctx:TeXBotApplicationContext, str_action_object: str) -> None:  # noqa: E501
+    async def complete_action(self, ctx: TeXBotApplicationContext, str_action_object: str) -> None:  # noqa: E501
         """
         Definition and callback of the complete action command.
 
         Marks the specified action as complete by deleting it.
         """
+        action_user: discord.Member = ctx.user
+
+        if ":" not in str_action_object:
+            await ctx.respond(
+                content="Action provided was not valid, please use the auto complete!",
+            )
+            logger.debug("%s tried to mark an invalid Action as completed.", action_user)
+            return
+
         components = str_action_object.split(":")
         input_description = components[1].strip()
 
         try:
-            # NOTE: we only compare the description here because it is not possible, due to the hashing, to also check the discord user.
             action: Action = await Action.objects.select_related().aget(
-                description=input_description,
+                discord_member_id=action_user.id,
+                description=input_description, # TODO: implement user check as well cos this is fucked
             )
-        except (MultipleObjectsReturned, ObjectDoesNotExist):
+        except (MultipleObjectsReturned, ObjectDoesNotExist) as get_action_failure:
             await ctx.respond(
                 ":warning: Provided action was either not unique or did not exist.",
             )
@@ -327,10 +336,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                 "Action object: %s could not be matched to a unique action.",
                 str_action_object,
             )
-
-        if not action:
-            logger.debug("Something went wrong and the action could not be retrieved.")
-            ctx.respond("Something went wrong and the action could not be retrieved.")
+            logger.debug(get_action_failure)
             return
 
         await action.adelete()
