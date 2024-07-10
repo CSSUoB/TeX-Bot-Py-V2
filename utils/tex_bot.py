@@ -487,6 +487,17 @@ class TeXBot(discord.Bot):
         return member
 
     async def fetch_log_channel(self) -> discord.TextChannel:
+        """
+        Retrieve the Discord log channel.
+
+        If no DISCORD_LOG_CHANNEL_WEBHOOK_URL is specified,
+        a ValueError exception will be raised.
+        """
+        if not settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
+            NO_LOG_CHANNEL_MESSAGE: Final[str] = (
+                "Cannot fetch log channel, when no DISCORD_LOG_CHANNEL_WEBHOOK_URL has been set."
+            )
+            raise ValueError(NO_LOG_CHANNEL_MESSAGE)
         session: aiohttp.ClientSession
         with aiohttp.ClientSession() as session:  # type: ignore[assignment]
             partial_webhook: Webhook = Webhook.from_url(
