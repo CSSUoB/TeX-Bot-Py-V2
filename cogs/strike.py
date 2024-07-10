@@ -471,6 +471,7 @@ class ManualModerationCog(BaseStrikeCog):
                     action=action,
                 )
                 if _audit_log_entry.target.id == strike_user.id
+                # NOTE: IDs are checked here rather than the objects themselves as the audit log provides an unusual object type in some cases.
             )
         except (StopIteration, StopAsyncIteration):
             IRRETRIEVABLE_AUDIT_LOG_MESSAGE: Final[str] = (
