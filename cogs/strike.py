@@ -23,12 +23,10 @@ from collections.abc import Mapping
 from logging import Logger
 from typing import Final
 
-import aiohttp
 import discord
 
 # noinspection SpellCheckingInspection
 from asyncstdlib.builtins import any as asyncany
-from discord import Webhook
 from discord.ui import View
 
 from config import settings
@@ -418,19 +416,13 @@ class ManualModerationCog(BaseStrikeCog):
         """
         if settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] == "DM":
             if user.bot:
-                session: aiohttp.ClientSession
-                with aiohttp.ClientSession() as session:  # type: ignore[assignment]
-                    log_confirmation_message_channel: discord.TextChannel | None = (
-                        await Webhook.from_url(
-                            settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
-                            session=session,
-                        ).fetch()
-                    ).channel
-
-                    if not log_confirmation_message_channel:
-                        raise StrikeTrackingError
-
-                    return log_confirmation_message_channel
+                fetch_log_channel_error: RuntimeError
+                try:
+                    return await self.bot.fetch_log_channel()
+                except RuntimeError as fetch_log_channel_error:
+                    raise StrikeTrackingError(
+                        str(fetch_log_channel_error),
+                    ) from fetch_log_channel_error
 
             raw_user: discord.User | None = (
                 self.bot.get_user(user.id)
@@ -501,42 +493,17 @@ class ManualModerationCog(BaseStrikeCog):
         if applied_action_user == self.bot.user:
             return
 
-        confirmation_message_channel: discord.DMChannel | discord.TextChannel
-        if applied_action_user != strike_user:
-            confirmation_message_channel = (
+        fetch_log_channel_error: RuntimeError
+        try:
+            confirmation_message_channel: discord.DMChannel | discord.TextChannel = (
                 await self.get_confirmation_message_channel(applied_action_user)
+                if applied_action_user != strike_user
+                else await self.bot.fetch_log_channel()
             )
-        else:
-            session: aiohttp.ClientSession
-            async with aiohttp.ClientSession() as session:
-                partial_webhook: discord.Webhook | None = (
-                    Webhook.from_url(
-                        settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
-                        session=session,
-                    )
-                )
-
-                if not partial_webhook:
-                    logger.debug("Failed to get partial webhook from url!")
-                    raise StrikeTrackingError
-
-                full_webhook: discord.Webhook = await self.bot.fetch_webhook(
-                    partial_webhook.id,
-                )
-
-                if not full_webhook:
-                    logger.debug("Failed to get full webhook from partial!")
-                    raise StrikeTrackingError
-
-                log_confirmation_message_channel: discord.TextChannel | None = (
-                    full_webhook.channel
-                )
-
-                if not log_confirmation_message_channel:
-                    logger.debug("Failed to get log channel from webhook!")
-                    raise StrikeTrackingError
-
-            confirmation_message_channel = log_confirmation_message_channel
+        except RuntimeError as fetch_log_channel_error:
+            raise StrikeTrackingError(
+                str(fetch_log_channel_error),
+            ) from fetch_log_channel_error
 
         MODERATION_ACTIONS: Final[Mapping[discord.AuditLogAction, str]] = {
             discord.AuditLogAction.member_update: "timed-out",

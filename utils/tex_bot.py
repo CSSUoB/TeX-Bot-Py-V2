@@ -10,7 +10,9 @@ import re
 from logging import Logger
 from typing import TYPE_CHECKING, Final
 
+import aiohttp
 import discord
+from discord import Webhook
 
 from config import settings
 from exceptions import (
@@ -483,3 +485,21 @@ class TeXBot(discord.Bot):
             raise ValueError from user_not_in_main_guild_error
 
         return member
+
+    async def fetch_log_channel(self) -> discord.TextChannel:
+        session: aiohttp.ClientSession
+        with aiohttp.ClientSession() as session:  # type: ignore[assignment]
+            partial_webhook: Webhook = Webhook.from_url(
+                settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
+                session=session,
+            )
+
+            full_webhook: Webhook = await partial_webhook.fetch()
+            if not full_webhook.channel:
+                full_webhook = await self.fetch_webhook(partial_webhook.id)
+
+            if not full_webhook.channel:
+                LOG_CHANNEL_NOT_FOUND_MESSAGE: Final[str] = "Failed to fetch log channel."
+                raise RuntimeError(LOG_CHANNEL_NOT_FOUND_MESSAGE)
+
+            return full_webhook.channel
