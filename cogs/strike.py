@@ -23,12 +23,10 @@ from collections.abc import Mapping
 from logging import Logger
 from typing import Final
 
-import aiohttp
 import discord
 
 # noinspection SpellCheckingInspection
 from asyncstdlib.builtins import any as asyncany
-from discord import Webhook
 from discord.ui import View
 
 from config import settings
@@ -420,19 +418,13 @@ class ManualModerationCog(BaseStrikeCog):
         """
         if settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] == "DM":
             if user.bot:
-                session: aiohttp.ClientSession
-                with aiohttp.ClientSession() as session:  # type: ignore[assignment]
-                    log_confirmation_message_channel: discord.TextChannel | None = (
-                        await Webhook.from_url(
-                            settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
-                            session=session,
-                        ).fetch()
-                    ).channel
-
-                    if not log_confirmation_message_channel:
-                        raise StrikeTrackingError
-
-                    return log_confirmation_message_channel
+                fetch_log_channel_error: RuntimeError
+                try:
+                    return await self.bot.fetch_log_channel()
+                except RuntimeError as fetch_log_channel_error:
+                    raise StrikeTrackingError(
+                        str(fetch_log_channel_error),
+                    ) from fetch_log_channel_error
 
             raw_user: discord.User | None = (
                 self.bot.get_user(user.id)
@@ -486,17 +478,19 @@ class ManualModerationCog(BaseStrikeCog):
                     after=discord.utils.utcnow() - datetime.timedelta(minutes=1),
                     action=action,
                 )
-                if _audit_log_entry.target == strike_user
+                if _audit_log_entry.target.id == strike_user.id  # NOTE: IDs are checked here rather than the objects themselves as the audit log provides an unusual object type in some cases.
             )
         except (StopIteration, StopAsyncIteration):
             IRRETRIEVABLE_AUDIT_LOG_MESSAGE: Final[str] = (
                 f"Unable to retrieve audit log entry of {str(action)!r} action "
                 f"on user {str(strike_user)!r}"
             )
+
             logger.debug("Printing 5 most recent audit logs:")
             debug_audit_log_entry: discord.AuditLogEntry
             async for debug_audit_log_entry in main_guild.audit_logs(limit=5):
                 logger.debug(debug_audit_log_entry)
+
             raise NoAuditLogsStrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
 
         if not audit_log_entry.user:
@@ -507,9 +501,17 @@ class ManualModerationCog(BaseStrikeCog):
         if applied_action_user == self.bot.user:
             return
 
-        confirmation_message_channel: discord.DMChannel | discord.TextChannel = (
-            await self.get_confirmation_message_channel(applied_action_user)
-        )
+        fetch_log_channel_error: RuntimeError
+        try:
+            confirmation_message_channel: discord.DMChannel | discord.TextChannel = (
+                await self.get_confirmation_message_channel(applied_action_user)
+                if applied_action_user != strike_user
+                else await self.bot.fetch_log_channel()
+            )
+        except RuntimeError as fetch_log_channel_error:
+            raise StrikeTrackingError(
+                str(fetch_log_channel_error),
+            ) from fetch_log_channel_error
 
         MODERATION_ACTIONS: Final[Mapping[discord.AuditLogAction, str]] = {
             discord.AuditLogAction.member_update: "timed-out",
@@ -530,31 +532,35 @@ class ManualModerationCog(BaseStrikeCog):
         )
         if strikes_out_of_sync_with_ban:
             try:
-                out_of_sync_ban_confirmation_message: discord.Message = await confirmation_message_channel.send(  # noqa: E501
-                    content=(
-                        f"""Hi {
-                            applied_action_user.display_name
-                            if not applied_action_user.bot
-                            else committee_role.mention
-                        }, """
-                        f"""I just noticed that {
-                            "you"
-                            if not applied_action_user.bot
-                            else f"one of your other bots (namely {applied_action_user.mention})"
-                        } {MODERATION_ACTIONS[action]} {strike_user.mention}. """  # noqa: E501
-                        "Because this moderation action was done manually "
-                        "(rather than using my `/strike` command), I could not automatically "
-                        f"keep track of the moderation action to apply. "
-                        f"My records show that {strike_user.mention} previously had 3 strikes."
-                        f" This suggests that {strike_user.mention} should be banned. "
-                        "Would you like me to send them the moderation alert message "
-                        "and perform this action for you?"
-                    ),
-                    view=ConfirmStrikesOutOfSyncWithBanView(),
+                out_of_sync_ban_confirmation_message: discord.Message = (
+                    await confirmation_message_channel.send(
+                        content=(
+                            f"""Hi {
+                                applied_action_user.display_name
+                                if (
+                                    not applied_action_user.bot
+                                    and applied_action_user != strike_user
+                                )
+                                else committee_role.mention
+                            }, """
+                            f"""I just noticed that {
+                                "you"
+                                if not applied_action_user.bot
+                                else f"one of your other bots (namely {applied_action_user.mention})"
+                            } {MODERATION_ACTIONS[action]} {strike_user.mention}. """
+                            "Because this moderation action was done manually "
+                            "(rather than using my `/strike` command), I could not automatically "
+                            f"keep track of the moderation action to apply. "
+                            f"My records show that {strike_user.mention} previously had 3 strikes. "
+                            f"This suggests that {strike_user.mention} should be banned. "
+                            "Would you like me to send them the moderation alert message "
+                            "and perform this action for you?"
+                        ),
+                        view=ConfirmStrikesOutOfSyncWithBanView(),
+                    )
                 )
             except discord.Forbidden as forbidden_error:
                 raise MessageSendForbiddenError(message_send_fail_message) from forbidden_error
-
 
             out_of_sync_ban_button_interaction: discord.Interaction = await self.bot.wait_for(
                 "interaction",
@@ -627,7 +633,10 @@ class ManualModerationCog(BaseStrikeCog):
                 content=(
                     f"""Hi {
                         applied_action_user.display_name
-                        if not applied_action_user.bot
+                        if (
+                            not applied_action_user.bot
+                            and applied_action_user != strike_user
+                        )
                         else committee_role.mention
                     }, """
                     f"""I just noticed that {
@@ -716,21 +725,18 @@ class ManualModerationCog(BaseStrikeCog):
 
         audit_log_entry: discord.AuditLogEntry
         async for audit_log_entry in main_guild.audit_logs(limit=5):
-            logger.debug("Checking audit log entry: %s", str(audit_log_entry))
             FOUND_CORRECT_AUDIT_LOG_ENTRY: bool = (
-                audit_log_entry.target == after
+                audit_log_entry.target.id == after.id
                 and audit_log_entry.action == (
                     discord.AuditLogAction.auto_moderation_user_communication_disabled
                 )
             )
             if FOUND_CORRECT_AUDIT_LOG_ENTRY:
-                logger.debug("Found it!")
                 await self._confirm_manual_add_strike(
                     strike_user=after,
                     action=audit_log_entry.action,
                 )
                 return
-            logger.debug("Above audit log entry did not match...")
 
         # noinspection PyArgumentList
         await self._confirm_manual_add_strike(
