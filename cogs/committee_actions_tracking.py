@@ -456,7 +456,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def list_all_actions(self, ctx:TeXBotApplicationContext) -> None:
-        """List all actions."""
+        """List all actions.""" # NOTE: this doesn't actually list *all* actions as it is possible for non-committee to be actioned.
         committee_role: discord.Role = await self.bot.committee_role
 
         actions: list[Action] = [action async for action in Action.objects.select_related().all()]  # noqa: E501
@@ -470,7 +470,9 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             ] for committee in committee_members
         }
 
-        filtered_committee_actions = {committee: actions for committee, actions in committee_actions.items() if actions}
+        filtered_committee_actions = {
+            committee: actions for committee, actions in committee_actions.items() if actions
+        }
 
         if not filtered_committee_actions:
             await ctx.respond("No one has any actions!")
