@@ -284,7 +284,9 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         Takes in a user and lists out their current actions.
         """
-        action_member: discord.Member = await self.bot.get_member_from_str_id(str_action_member_id)  # noqa: E501
+        action_member: discord.Member = await self.bot.get_member_from_str_id(
+            str_action_member_id,
+        )
 
         user_actions = [action async for action in await Action.objects.afilter(
             discord_id=int(str_action_member_id),
