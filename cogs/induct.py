@@ -37,7 +37,7 @@ from utils import (
     TeXBotAutocompleteContext,
     TeXBotBaseCog,
 )
-from utils.closing_error_capture_decorators import capture_guild_does_not_exist_error
+from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 logger: Logger = logging.getLogger("TeX-Bot")
 

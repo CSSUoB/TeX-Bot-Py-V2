@@ -26,8 +26,8 @@ from db.core.models import (
 )
 from exceptions import DiscordMemberNotInMainGuildError, GuestRoleDoesNotExistError
 from utils import TeXBot, TeXBotBaseCog
-from utils.closing_error_capture_decorators import (
-    ClosingErrorCaptureDecorators,
+from utils.error_capture_decorators import (
+    ErrorCaptureDecorators,
     capture_guild_does_not_exist_error,
 )
 
@@ -94,9 +94,9 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
     @tasks.loop(seconds=settings["SEND_INTRODUCTION_REMINDERS_INTERVAL_SECONDS"])  # type: ignore[misc]
     @functools.partial(
-        ClosingErrorCaptureDecorators.capture_error_and_close,
+        ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExistError,
-        close_func=ClosingErrorCaptureDecorators.critical_error_close_func,
+        close_func=ErrorCaptureDecorators.critical_error_close_func,
     )
     @capture_guild_does_not_exist_error
     async def send_introduction_reminders(self) -> None:

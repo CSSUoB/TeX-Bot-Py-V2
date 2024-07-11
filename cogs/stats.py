@@ -18,7 +18,7 @@ import mplcyberpunk
 from config import settings
 from db.core.models import LeftDiscordMember
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
-from utils.closing_error_capture_decorators import capture_guild_does_not_exist_error
+from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 if TYPE_CHECKING:
     from collections.abc import Collection

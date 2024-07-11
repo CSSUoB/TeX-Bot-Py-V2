@@ -1,5 +1,5 @@
 """
-Common decorator utilities to capture & suppress errors, then shutdown TeX-Bot.
+Common decorator utilities to capture & suppress errors.
 
 Capturing errors is necessary in contexts where exceptions are not already suppressed.
 """
@@ -7,7 +7,7 @@ Capturing errors is necessary in contexts where exceptions are not already suppr
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
-    "ClosingErrorCaptureDecorators",
+    "ErrorCaptureDecorators",
     "capture_guild_does_not_exist_error",
     "capture_strike_tracking_error",
 )
@@ -43,9 +43,9 @@ if TYPE_CHECKING:
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
-class ClosingErrorCaptureDecorators:
+class ErrorCaptureDecorators:
     """
-    Common decorator utilities to capture & suppress errors, then shutdown TeX-Bot.
+    Common decorator utilities to capture & suppress errors.
 
     Capturing errors is necessary in contexts where exceptions are not already suppressed.
     """
@@ -90,10 +90,10 @@ def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T]") -> "Wrapp
 
     The raised exception is then suppressed.
     """  # noqa: D401
-    return ClosingErrorCaptureDecorators.capture_error_and_close(
+    return ErrorCaptureDecorators.capture_error_and_close(
         func,  # type: ignore[arg-type]
         error_type=GuildDoesNotExistError,
-        close_func=ClosingErrorCaptureDecorators.critical_error_close_func,
+        close_func=ErrorCaptureDecorators.critical_error_close_func,
     )
 
 
@@ -103,8 +103,8 @@ def capture_strike_tracking_error(func: "WrapperInputFunc[P, T]") -> "WrapperOut
 
     The raised exception is then suppressed.
     """  # noqa: D401
-    return ClosingErrorCaptureDecorators.capture_error_and_close(
+    return ErrorCaptureDecorators.capture_error_and_close(
         func,  # type: ignore[arg-type]
         error_type=StrikeTrackingError,
-        close_func=ClosingErrorCaptureDecorators.strike_tracking_error_close_func,
+        close_func=ErrorCaptureDecorators.strike_tracking_error_close_func,
     )
