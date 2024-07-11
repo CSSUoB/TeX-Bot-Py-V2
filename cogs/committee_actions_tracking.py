@@ -120,7 +120,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             in user_actions
         }
 
-    async def _create_action(self, ctx: TeXBotApplicationContext, action_user: discord.Member, description: str) -> Action | None:  # noqa: E501
+    async def _create_action(self, ctx: TeXBotApplicationContext, action_user: discord.Member, description: str, *, silent: bool) -> Action | str:  # noqa: E501
         """Create the action object with the given description for the given user."""
         try:
             action: Action = await Action.objects.acreate(
@@ -143,26 +143,29 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                     create_action_error,
                 )
                 await self.bot.close()
-                return None
+                return ""  # NOTE: this should never be called due to the close() call above, but is here just to be absolutely certain nothing else will be executed.
 
-            await self.command_send_error(
-                ctx,
-                message=(
+            if not silent:
+                DUPLICATE_ACTION_MESSAGE: Final[str] = (
                     f"User: {action_user} already has an action "
                     f"with description: {description}!"
-                ),
-            )
+                )
+                await self.command_send_error(
+                    ctx,
+                    message=(DUPLICATE_ACTION_MESSAGE),
+                )
             logger.debug(
                 "Action creation for user: %s, failed because an action "
                 "with description: %s, already exists.",
                 action_user,
                 description,
             )
-            return None
-        await ctx.respond(content=(
-                f"Action: {action.description} created "
-                f"for user: {action_user.mention}"
-            ))
+            return DUPLICATE_ACTION_MESSAGE
+        if not silent:
+            await ctx.respond(content=(
+                    f"Action: {action.description} created "
+                    f"for user: {action_user.mention}"
+                ))
         return action
 
 
@@ -197,7 +200,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             str_action_member_id,
         )
 
-        await self._create_action(ctx, action_user, str_action_description)
+        await self._create_action(ctx, action_user, str_action_description, silent=False)
 
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -233,7 +236,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             random.randint(0, len(committee_members))
         ]
 
-        await self._create_action(ctx, action_user, str_action_description)
+        await self._create_action(ctx, action_user, str_action_description, silent=False)
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="action-all-committee",
@@ -261,11 +264,33 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             await ctx.respond(content="No committee members were found! Command aborted.")
             return
 
+        success_members: list[discord.Member] = []
+        failed_members: str = ""
+
         committee_member: discord.Member
         for committee_member in committee_members:
-            await self._create_action(ctx, committee_member, str_action_description)
+            action_or_error_message: Action | str = await self._create_action(
+                ctx,
+                committee_member,
+                str_action_description,
+                silent=True,
+            )
+            if isinstance(action_or_error_message, Action):
+                success_members.append(committee_member)
+            else:
+                failed_members += action_or_error_message + "\n"
 
-        await ctx.respond(content="Done!")
+        response_message: str = (
+            f"Successfully created action: {str_action_description} for users: \n"
+            f"".join(f"{success_member.mention}" for success_member in success_members)
+        )
+
+
+
+        if len(failed_members) > 1:
+            response_message += "The following errors were also raised: \n" + failed_members
+
+        await ctx.respond(content=response_message)
 
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
@@ -304,17 +329,17 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         )]
 
         if not user_actions:
-            await ctx.respond(
+            await ctx.respond(content=(
                 f"User: {action_member.mention if ping else action_member} has no actions.",
-            )
+            ))
             logger.debug(user_actions)
             return
 
-        await ctx.respond(
+        await ctx.respond(content=(
             f"Found {len(user_actions)} actions for user "
             f"{action_member.mention if ping else action_member}:"
             f"\n{"\n".join(str(action.description) for action in user_actions)}",
-        )
+        ))
 
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
@@ -389,7 +414,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                 f"No actions found for user: {action_user}, "
                 f"with description: {input_description}"
             )
-            await ctx.respond(NO_ACTIONS_FOUND_MESSAGE)
+            await ctx.respond(content=NO_ACTIONS_FOUND_MESSAGE)
             logger.debug(NO_ACTIONS_FOUND_MESSAGE)
             return
 
@@ -398,7 +423,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                 f"Found {len(actions)} for user: {action_user} "
                 f"with description: {input_description}, this shouldn't be possible!!"
             )
-            await ctx.respond(MULTIPLE_ACTIONS_FOUND)
+            await ctx.respond(content=MULTIPLE_ACTIONS_FOUND)
             logger.error(MULTIPLE_ACTIONS_FOUND)
             logger.debug(actions)
             return
@@ -406,7 +431,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         action: Action = actions[0]
 
         await action.adelete()
-        await ctx.respond(f"Action: {action.description} deleted!")
+        await ctx.respond(content=f"Action: {action.description} deleted!")
         logger.debug("Action: %s has been deleted.", action.description)
 
 
@@ -467,33 +492,25 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                 description=input_description,
             )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
-            await ctx.respond("Provided action was either not unique or did not exist.")
+            await ctx.respond(content="Provided action was either not unique or did not exist.")
             logger.warning(
                 "Action object: %s could not be matched to a unique action.",
                 str_action_object,
             )
 
         if str(action_to_reassign.discord_member) == new_user_to_action_hash: # type: ignore[has-type]
-            await ctx.respond(
+            await ctx.respond(content=(
                 f"HEY! Action: {action_to_reassign.description} is already assigned "
                 f"to user: {new_user_to_action.mention}\nNo action has been taken.",
-            )
+            ))
             return
 
-        reassigned_action: Action | None = await self._create_action(
+        await self._create_action(
             ctx,
             new_user_to_action,
             action_to_reassign.description,
+            silent=False,
         )
-
-        if not reassigned_action:
-            await ctx.respond("Something went wrong and the action couldn't be reassigned!")
-            logger.debug(
-                "The action: %s could not be re-assigned to user: %s",
-                action_to_reassign,
-                new_user_to_action,
-            )
-            return
 
         await action_to_reassign.adelete()
 
@@ -533,7 +550,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         }
 
         if not filtered_committee_actions:
-            await ctx.respond("No one has any actions!")
+            await ctx.respond(content="No one has any actions!")
             return
 
         all_actions_message: str = "\n".join([
@@ -543,7 +560,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             ],
         )
 
-        await ctx.respond(all_actions_message)
+        await ctx.respond(content=all_actions_message)
 
 
     @discord.message_command( # type: ignore[no-untyped-call, misc]
@@ -568,7 +585,12 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         actioned_message_user: discord.Member | discord.User = message.author
 
         if isinstance(actioned_message_user, discord.User):
-            await ctx.respond("Message author is not in the server!")
+            await ctx.respond(content="Message author is not in the server!")
             return
 
-        await self._create_action(ctx, actioned_message_user, actioned_message_text)
+        await self._create_action(
+            ctx,
+            actioned_message_user,
+            actioned_message_text,
+            silent=False,
+        )
