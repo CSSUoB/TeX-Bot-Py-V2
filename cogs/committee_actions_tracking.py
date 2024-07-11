@@ -145,11 +145,11 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                 await self.bot.close()
                 return ""  # NOTE: this should never be called due to the close() call above, but is here just to be absolutely certain nothing else will be executed.
 
+            DUPLICATE_ACTION_MESSAGE: Final[str] = (
+                f"User: {action_user} already has an action "
+                f"with description: {description}!"
+            )
             if not silent:
-                DUPLICATE_ACTION_MESSAGE: Final[str] = (
-                    f"User: {action_user} already has an action "
-                    f"with description: {description}!"
-                )
                 await self.command_send_error(
                     ctx,
                     message=(DUPLICATE_ACTION_MESSAGE),
@@ -280,15 +280,28 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             else:
                 failed_members += action_or_error_message + "\n"
 
-        response_message: str = (
-            f"Successfully created action: {str_action_description} for users: \n"
-            f"".join(f"{success_member.mention}" for success_member in success_members)
-        )
+        response_message: str = ""
 
+        if success_members:
+            response_message += (
+                f"Successfully created action: {str_action_description} for users: \n"
+            )
 
+            response_message += (
+                "\n".join(f"{success_member.mention}" for success_member in success_members)
+            )
 
-        if len(failed_members) > 1:
-            response_message += "The following errors were also raised: \n" + failed_members
+            if len(failed_members) > 1:
+                response_message += (
+                    "\n\nThe following errors were also raised: \n" + failed_members
+                )
+        else:
+            response_message += (
+                "Could not create any actions! See errors below: \n"
+            )
+
+            response_message += failed_members
+
 
         await ctx.respond(content=response_message)
 
@@ -492,7 +505,9 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                 description=input_description,
             )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
-            await ctx.respond(content="Provided action was either not unique or did not exist.")
+            await ctx.respond(
+                content="Provided action was either not unique or did not exist.",
+            )
             logger.warning(
                 "Action object: %s could not be matched to a unique action.",
                 str_action_object,
