@@ -46,11 +46,11 @@ class ArchiveCommandCog(TeXBotBaseCog):
             return set()
 
         try:
-            if not await ctx.bot.check_user_has_committee_role(ctx.interaction.user):
+            if not await ctx.tex_bot.check_user_has_committee_role(ctx.interaction.user):
                 return set()
 
-            main_guild: discord.Guild = ctx.bot.main_guild
-            interaction_user: discord.Member = await ctx.bot.get_main_guild_member(
+            main_guild: discord.Guild = ctx.tex_bot.main_guild
+            interaction_user: discord.Member = await ctx.tex_bot.get_main_guild_member(
                 ctx.interaction.user,
             )
         except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
@@ -160,13 +160,13 @@ class ArchiveCommandCog(TeXBotBaseCog):
         unless they have the "Archivist" role.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.bot.main_guild
-        interaction_member: discord.Member = await self.bot.get_main_guild_member(ctx.user)
-        committee_role: discord.Role = await self.bot.committee_role
-        guest_role: discord.Role = await self.bot.guest_role
-        member_role: discord.Role = await self.bot.member_role
-        archivist_role: discord.Role = await self.bot.archivist_role
-        everyone_role: discord.Role = await self.bot.get_everyone_role()
+        main_guild: discord.Guild = self.tex_bot.main_guild
+        interaction_member: discord.Member = await self.tex_bot.get_main_guild_member(ctx.user)
+        committee_role: discord.Role = await self.tex_bot.committee_role
+        guest_role: discord.Role = await self.tex_bot.guest_role
+        member_role: discord.Role = await self.tex_bot.member_role
+        archivist_role: discord.Role = await self.tex_bot.archivist_role
+        everyone_role: discord.Role = await self.tex_bot.get_everyone_role()
 
         if not re.fullmatch(r"\A\d{17,20}\Z", str_category_id):
             await self.command_send_error(

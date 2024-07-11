@@ -32,9 +32,9 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
     async def _perform_make_applicant(self, ctx: TeXBotApplicationContext, applicant_member: discord.Member) -> None:  # noqa: E501
         """Perform the actual process of making the user into a group-applicant."""
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = ctx.bot.main_guild
-        applicant_role: discord.Role = await ctx.bot.applicant_role
-        guest_role: discord.Role = await ctx.bot.guest_role
+        main_guild: discord.Guild = ctx.tex_bot.main_guild
+        applicant_role: discord.Role = await ctx.tex_bot.applicant_role
+        guest_role: discord.Role = await ctx.tex_bot.guest_role
 
         intro_channel: discord.TextChannel | None = discord.utils.get(
             main_guild.text_channels,
@@ -60,7 +60,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
             await applicant_member.remove_roles(guest_role, reason=AUDIT_MESSAGE)
             logger.debug("Removed Guest role from user %s", applicant_member)
 
-        tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
+        tex_emoji: discord.Emoji | None = self.tex_bot.get_emoji(743218410409820213)
         if not tex_emoji:
             tex_emoji = discord.utils.get(main_guild.emojis, name="TeX")
 
@@ -99,8 +99,8 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
         options that have a member input-type.
         """
         try:
-            main_guild: discord.Guild = ctx.bot.main_guild
-            applicant_role: discord.Role = await ctx.bot.applicant_role
+            main_guild: discord.Guild = ctx.tex_bot.main_guild
+            applicant_role: discord.Role = await ctx.tex_bot.applicant_role
         except (GuildDoesNotExistError, ApplicantRoleDoesNotExistError):
             return set()
 
@@ -126,7 +126,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="user",
-        description="The user to make an Applicant",
+        description="The user to make an Applicant.",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
         required=True,
@@ -143,7 +143,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
         """
         member_id_not_integer_error: ValueError
         try:
-            applicant_member: discord.Member = await self.bot.get_main_guild_member(
+            applicant_member: discord.Member = await self.tex_bot.get_main_guild_member(
                 str_applicant_member_id,
             )
         except ValueError as member_id_not_integer_error:
@@ -181,7 +181,7 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
         "Applicant" role and removes the "Guest" role if they have it.
         """
         try:
-            member: discord.Member = await self.bot.get_main_guild_member(
+            member: discord.Member = await self.tex_bot.get_main_guild_member(
                 str(message.author.id),
             )
         except ValueError:

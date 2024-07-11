@@ -59,14 +59,14 @@ class StartupCog(TeXBotBaseCog):
                         existing_discord_logging_handler.name
                         if existing_discord_logging_handler.name != DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME  # noqa: E501
                         else (
-                            self.bot.user.name
-                            if self.bot.user
+                            self.tex_bot.user.name
+                            if self.tex_bot.user
                             else DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME)
                     ),
                     settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
                     avatar_url=(
-                        self.bot.user.avatar.url
-                        if self.bot.user and self.bot.user.avatar
+                        self.tex_bot.user.avatar.url
+                        if self.tex_bot.user and self.tex_bot.user.avatar
                         else None
                     ),
                 )
@@ -89,24 +89,24 @@ class StartupCog(TeXBotBaseCog):
 
     async def _initialise_main_guild(self) -> None:
         try:
-            main_guild: discord.Guild | None = self.bot.main_guild
+            main_guild: discord.Guild | None = self.tex_bot.main_guild
         except GuildDoesNotExistError:
-            main_guild = self.bot.get_guild(settings["_DISCORD_MAIN_GUILD_ID"])
+            main_guild = self.tex_bot.get_guild(settings["_DISCORD_MAIN_GUILD_ID"])
             if main_guild:
-                self.bot.set_main_guild(main_guild)
+                self.tex_bot.set_main_guild(main_guild)
 
         if not main_guild:
-            if self.bot.application_id:
+            if self.tex_bot.application_id:
                 logger.info(
                     "Invite URL: %s",
                     utils.generate_invite_url(
-                        self.bot.application_id,
+                        self.tex_bot.application_id,
                         settings["_DISCORD_MAIN_GUILD_ID"]),
                     )
             logger.critical(GuildDoesNotExistError(
                 guild_id=settings["_DISCORD_MAIN_GUILD_ID"]),
             )
-            await self.bot.close()
+            await self.tex_bot.close()
 
     async def _check_strike_performed_manually_warning_location_exists(self) -> None:
         if settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] == "DM":
@@ -114,7 +114,7 @@ class StartupCog(TeXBotBaseCog):
 
         STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_EXISTS: Final[bool] = bool(
             discord.utils.get(
-                self.bot.main_guild.text_channels,
+                self.tex_bot.main_guild.text_channels,
                 name=settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"],
             )  # noqa: COM812
         )
@@ -144,10 +144,10 @@ class StartupCog(TeXBotBaseCog):
                 repr("DM"),
             )
 
-        await self.bot.close()
+        await self.tex_bot.close()
 
     async def _check_all_shortcut_accessors(self) -> None:
-        main_guild: discord.Guild = self.bot.main_guild
+        main_guild: discord.Guild = self.tex_bot.main_guild
 
         if not discord.utils.get(main_guild.roles, name="Committee"):
             logger.warning(CommitteeRoleDoesNotExistError())
@@ -180,14 +180,14 @@ class StartupCog(TeXBotBaseCog):
 
         await self._initialise_main_guild()
 
-        if self.bot.application_id:
+        if self.tex_bot.application_id:
             logger.debug(
                 "Invite URL: %s",
                 utils.generate_invite_url(
-                    self.bot.application_id,
+                    self.tex_bot.application_id,
                     settings["_DISCORD_MAIN_GUILD_ID"]),
             )
 
         await self._check_all_shortcut_accessors()
 
-        logger.info("Ready! Logged in as %s", self.bot.user)
+        logger.info("Ready! Logged in as %s", self.tex_bot.user)

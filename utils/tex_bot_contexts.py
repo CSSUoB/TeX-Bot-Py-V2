@@ -24,7 +24,7 @@ class TeXBotAutocompleteContext(discord.AutocompleteContext):
     should be used in cogs instead.
     """
 
-    bot: TeXBot
+    tex_bot: TeXBot
 
 
 class TeXBotApplicationContext(discord.ApplicationContext):
@@ -36,4 +36,4 @@ class TeXBotApplicationContext(discord.ApplicationContext):
     should be used in cogs instead.
     """
 
-    bot: TeXBot
+    tex_bot: TeXBot

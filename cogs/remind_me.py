@@ -181,7 +181,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="delay",
         input_type=str,
-        description="The amount of time to wait before reminding you",
+        description="The amount of time to wait before reminding you.",
         required=True,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_delays),  # type: ignore[arg-type]
     )
@@ -304,7 +304,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                         ),
                         _reminder=reminder,
                     ),
-                    self.bot.users,
+                    self.tex_bot.users,
                 )
 
                 if not user:
@@ -316,7 +316,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                     continue
 
                 # noinspection PyUnresolvedReferences
-                channel: discord.PartialMessageable = self.bot.get_partial_messageable(
+                channel: discord.PartialMessageable = self.tex_bot.get_partial_messageable(
                     reminder.channel_id,
                     type=(
                         discord.ChannelType(reminder.channel_type.value)
@@ -335,7 +335,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                             "Reminder's channel_id must refer to a valid text channel/DM.",
                         ),
                     )
-                    await self.bot.close()
+                    await self.tex_bot.close()
 
                 await channel.send(
                     "**Sorry it's a bit late! "
@@ -348,4 +348,4 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
     @clear_reminders_backlog.before_loop
     async def before_tasks(self) -> None:
         """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
-        await self.bot.wait_until_ready()
+        await self.tex_bot.wait_until_ready()

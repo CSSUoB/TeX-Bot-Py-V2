@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 """
-The main entrypoint into the running of the bot.
+The main entrypoint into the running of TeX-Bot.
 
 It loads the settings values from the .env file/the environment variables,
 then ensures the Django database is correctly migrated to the latest version and finally begins
-the asynchronous running process for the Discord bot.
+the asynchronous running process for TeX-Bot.
 """
 
 from collections.abc import Sequence
@@ -27,12 +27,12 @@ with SuppressTraceback():
     # noinspection PyDunderSlots,PyUnresolvedReferences
     intents.members = True
 
-    bot = TeXBot(intents=intents)
+    bot: TeXBot = TeXBot(intents=intents)
 
     bot.load_extension("cogs")
 
 
-def _run_bot() -> NoReturn:
+def _run_tex_bot() -> NoReturn:
     bot.run(settings["DISCORD_BOT_TOKEN"])
 
     if bot.EXIT_REASON is TeXBotExitReason.RESTART_REQUIRED_DUE_TO_CHANGED_CONFIG:
@@ -40,10 +40,10 @@ def _run_bot() -> NoReturn:
             bot.reset_exit_reason()
             config.run_setup()
             bot.reload_extension("cogs")
-            _run_bot()
+            _run_tex_bot()
 
     raise SystemExit(bot.EXIT_REASON.value)
 
 
 if __name__ == "__main__":
-    _run_bot()
+    _run_tex_bot()

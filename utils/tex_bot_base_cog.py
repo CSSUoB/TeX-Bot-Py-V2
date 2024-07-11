@@ -64,9 +64,9 @@ class TeXBotBaseCog(Cog):
     }
 
     @override
-    def __init__(self, bot: TeXBot) -> None:
+    def __init__(self, tex_bot: TeXBot) -> None:
         """Initialise a new cog instance, storing a reference to the bot object."""
-        self.bot: TeXBot = bot
+        self.tex_bot: TeXBot = tex_bot
 
     async def command_send_error(self, ctx: TeXBotApplicationContext, *, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False, responder_component: GenericResponderComponent | None = None) -> None:  # noqa: E501
         """
@@ -78,7 +78,7 @@ class TeXBotBaseCog(Cog):
         and the bot will shortly close.
         """
         await self._respond_with_error(
-            self.bot,
+            self.tex_bot,
             responder=(
                 responder_component or SenderResponseComponent(ctx.interaction, ephemeral=True)
             ),
@@ -207,14 +207,14 @@ class TeXBotBaseCog(Cog):
             return set()
 
         try:
-            main_guild: discord.Guild = ctx.bot.main_guild
+            main_guild: discord.Guild = ctx.tex_bot.main_guild
             # noinspection PyUnusedLocal
-            channel_permissions_limiter: MentionableMember = await ctx.bot.guest_role
+            channel_permissions_limiter: MentionableMember = await ctx.tex_bot.guest_role
         except BaseDoesNotExistError:
             return set()
 
         with contextlib.suppress(DiscordMemberNotInMainGuildError):
-            channel_permissions_limiter = await ctx.bot.get_main_guild_member(
+            channel_permissions_limiter = await ctx.tex_bot.get_main_guild_member(
                 ctx.interaction.user,
             )
 

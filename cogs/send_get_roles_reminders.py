@@ -69,13 +69,13 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         reminders are sent.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.bot.main_guild
-        guest_role: discord.Role = await self.bot.guest_role
+        main_guild: discord.Guild = self.tex_bot.main_guild
+        guest_role: discord.Role = await self.tex_bot.guest_role
 
         # noinspection PyUnusedLocal
         roles_channel_mention: str = "**`#roles`**"
         with contextlib.suppress(RolesChannelDoesNotExistError):
-            roles_channel_mention = (await self.bot.roles_channel).mention
+            roles_channel_mention = (await self.tex_bot.roles_channel).mention
 
         # noinspection SpellCheckingInspection
         OPT_IN_ROLE_NAMES: Final[frozenset[str]] = frozenset(
@@ -168,7 +168,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
             try:
                 await member.send(
                     "Hey! It seems like you have been given the `@Guest` role "
-                    f"on the {self.bot.group_short_name} Discord server "
+                    f"on the {self.tex_bot.group_short_name} Discord server "
                     " but have not yet nabbed yourself any opt-in roles.\n"
                     f"You can head to {roles_channel_mention} "
                     "and click on the icons to get optional roles like pronouns "
@@ -185,4 +185,4 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
     @send_get_roles_reminders.before_loop
     async def before_tasks(self) -> None:
         """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
-        await self.bot.wait_until_ready()
+        await self.tex_bot.wait_until_ready()

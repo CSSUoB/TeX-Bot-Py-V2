@@ -30,12 +30,12 @@ class WriteRolesCommandCog(TeXBotBaseCog):
         defined in the messages.json file.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        roles_channel: discord.TextChannel = await self.bot.roles_channel
+        roles_channel: discord.TextChannel = await self.tex_bot.roles_channel
 
         roles_message: str
         for roles_message in messages["OPT_IN_ROLES_SELECTORS"]:
             await roles_channel.send(
-                roles_message.replace("<Group_Name>", self.bot.group_short_name),
+                roles_message.replace("<Group_Name>", self.tex_bot.group_short_name),
             )
 
         await ctx.respond("All messages sent successfully.", ephemeral=True)
