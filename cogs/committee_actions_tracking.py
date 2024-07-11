@@ -67,7 +67,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             discord.OptionChoice(name=str(action.description), value=str(action))
             for action
             in all_actions
-        } # TODO: try and add username to string in autocomplete so it's easy to see who the action belongs to
+        }
 
     @staticmethod
     async def action_autocomplete_get_user_actions(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
