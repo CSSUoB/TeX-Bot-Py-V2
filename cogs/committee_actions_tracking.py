@@ -86,7 +86,9 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             str(ctx.interaction.user.id),
         )
 
-        all_discord_members = [discord_member async for discord_member in DiscordMember.objects.all()]
+        all_discord_members = [
+            discord_member async for discord_member in DiscordMember.objects.all()
+        ]
 
         hashed_interaction_user_id: str = DiscordMember.hash_discord_id(interaction_user.id)
         interaction_user_internal_id: str
