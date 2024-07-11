@@ -12,7 +12,9 @@ from enum import IntEnum
 from logging import Logger
 from typing import TYPE_CHECKING, Final, NoReturn, override
 
+import aiohttp
 import discord
+from discord import Webhook
 
 import utils
 from config import settings
@@ -541,3 +543,33 @@ class TeXBot(discord.Bot):
             raise ValueError(INVALID_USER_ID_MESSAGE)
 
         return await self._get_main_guild_member_from_id(int(user))
+
+    async def fetch_log_channel(self) -> discord.TextChannel:
+        """
+        Retrieve the Discord log channel.
+
+        If no DISCORD_LOG_CHANNEL_WEBHOOK_URL is specified,
+        a ValueError exception will be raised.
+        """
+        if not settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
+            NO_LOG_CHANNEL_MESSAGE: Final[str] = (
+                "Cannot fetch log channel, "
+                "when no DISCORD_LOG_CHANNEL_WEBHOOK_URL has been set."
+            )
+            raise ValueError(NO_LOG_CHANNEL_MESSAGE)
+        session: aiohttp.ClientSession
+        with aiohttp.ClientSession() as session:  # type: ignore[assignment]
+            partial_webhook: Webhook = Webhook.from_url(
+                settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
+                session=session,
+            )
+
+            full_webhook: Webhook = await partial_webhook.fetch()
+            if not full_webhook.channel:
+                full_webhook = await self.fetch_webhook(partial_webhook.id)
+
+            if not full_webhook.channel:
+                LOG_CHANNEL_NOT_FOUND_MESSAGE: Final[str] = "Failed to fetch log channel."
+                raise RuntimeError(LOG_CHANNEL_NOT_FOUND_MESSAGE)
+
+            return full_webhook.channel

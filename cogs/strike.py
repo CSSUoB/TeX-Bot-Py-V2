@@ -23,12 +23,10 @@ from collections.abc import Mapping
 from logging import Logger
 from typing import Final, Literal
 
-import aiohttp
 import discord
 
 # noinspection SpellCheckingInspection
 from asyncstdlib.builtins import any as asyncany
-from discord import Webhook
 from discord.ui import View
 
 from config import settings
@@ -420,19 +418,13 @@ class ManualModerationCog(BaseStrikeCog):
         """
         if settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] == "DM":
             if user.bot:
-                session: aiohttp.ClientSession
-                with aiohttp.ClientSession() as session:  # type: ignore[assignment]
-                    log_confirmation_message_channel: discord.TextChannel | None = (
-                        await Webhook.from_url(
-                            settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
-                            session=session,
-                        ).fetch()
-                    ).channel
-
-                    if not log_confirmation_message_channel:
-                        raise StrikeTrackingError
-
-                    return log_confirmation_message_channel
+                fetch_log_channel_error: RuntimeError
+                try:
+                    return await self.bot.fetch_log_channel()
+                except RuntimeError as fetch_log_channel_error:
+                    raise StrikeTrackingError(
+                        str(fetch_log_channel_error),
+                    ) from fetch_log_channel_error
 
             raw_user: discord.User | None = (
                 self.bot.get_user(user.id)
@@ -481,7 +473,7 @@ class ManualModerationCog(BaseStrikeCog):
                     after=discord.utils.utcnow() - datetime.timedelta(minutes=1),
                     action=action,
                 )
-                if _audit_log_entry.target == strike_user
+                if _audit_log_entry.target.id == strike_user.id  # NOTE: IDs are checked here rather than the objects themselves as the audit log provides an unusual object type in some cases.
             )
         except (StopIteration, StopAsyncIteration):
             logger.debug("Printing 5 most recent audit logs:")
@@ -503,12 +495,21 @@ class ManualModerationCog(BaseStrikeCog):
         if applied_action_user == self.bot.user:
             return
 
-        confirmation_message_channel: discord.DMChannel | discord.TextChannel = (
-            await self.get_confirmation_message_channel(applied_action_user)
-        )
+        fetch_log_channel_error: RuntimeError
+        try:
+            confirmation_message_channel: discord.DMChannel | discord.TextChannel = (
+                await self.get_confirmation_message_channel(applied_action_user)
+                if applied_action_user != strike_user
+                else await self.bot.fetch_log_channel()
+            )
+        except RuntimeError as fetch_log_channel_error:
+            raise StrikeTrackingError(
+                str(fetch_log_channel_error),
+            ) from fetch_log_channel_error
 
         MODERATION_ACTIONS: Final[Mapping[discord.AuditLogAction, str]] = {
             discord.AuditLogAction.member_update: "timed-out",
+            discord.AuditLogAction.auto_moderation_user_communication_disabled: "timed-out",
             discord.AuditLogAction.kick: "kicked",
             discord.AuditLogAction.ban: "banned",
         }
@@ -528,7 +529,7 @@ class ManualModerationCog(BaseStrikeCog):
                 content=(
                     f"""Hi {
                         applied_action_user.display_name
-                        if not applied_action_user.bot
+                        if not applied_action_user.bot and applied_action_user != strike_user
                         else committee_role.mention
                     }, """
                     f"""I just noticed that {
@@ -619,7 +620,7 @@ class ManualModerationCog(BaseStrikeCog):
             content=(
                 f"""Hi {
                     applied_action_user.display_name
-                    if not applied_action_user.bot
+                    if not applied_action_user.bot and applied_action_user != strike_user
                     else committee_role.mention
                 }, """
                 f"""I just noticed that {
@@ -708,6 +709,21 @@ class ManualModerationCog(BaseStrikeCog):
 
         if not after.timed_out or before.timed_out == after.timed_out:
             return
+
+        audit_log_entry: discord.AuditLogEntry
+        async for audit_log_entry in main_guild.audit_logs(limit=5):
+            FOUND_CORRECT_AUDIT_LOG_ENTRY: bool = (
+                audit_log_entry.target.id == after.id
+                and audit_log_entry.action == (
+                    discord.AuditLogAction.auto_moderation_user_communication_disabled
+                )
+            )
+            if FOUND_CORRECT_AUDIT_LOG_ENTRY:
+                await self._confirm_manual_add_strike(
+                    strike_user=after,
+                    action=audit_log_entry.action,
+                )
+                return
 
         # noinspection PyArgumentList
         await self._confirm_manual_add_strike(

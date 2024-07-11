@@ -157,6 +157,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
             "Year In Industry",
             "Year Abroad",
             "PGT",
+            "Student Rep",
         },
     )
 
