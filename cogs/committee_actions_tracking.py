@@ -412,6 +412,13 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def reassign_action(self, ctx:TeXBotApplicationContext, str_action_object: str, str_action_member_id: str) -> None:  # noqa: E501
         """Reassign the specified action to the specified user."""
+        if ":" not in str_action_object:
+            await ctx.respond(
+                content="Action provided was not valid, please use the auto complete!",
+            )
+            logger.debug("%s tried to reassign an Action that didn't exist.", ctx.user)
+            return
+
         components = str_action_object.split(":")
         input_hashed_id = components[0].strip()
         input_description = components[1].strip()
