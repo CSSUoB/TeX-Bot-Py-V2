@@ -102,9 +102,11 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             logger.debug("fuckin cry or something idk bro")
             return set()
 
-        user_actions: list[Action] = [action async for action in Action.objects.select_related().filter(  # noqa: E501
-            discord_member_id=interaction_user_internal_id,
-        )]
+        user_actions: list[Action] = [
+            action async for action in Action.objects.select_related().filter(
+                discord_member_id=interaction_user_internal_id,
+            )
+        ]
 
         if not user_actions:
             logger.debug("No actions were found!!")
