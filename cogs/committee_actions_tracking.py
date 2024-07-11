@@ -276,9 +276,16 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         required=True,
         parameter_name="str_action_member_id",
     )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="ping",
+        description="Triggers whether the message pings users or not.",
+        input_type=bool,
+        default=False,
+        required=False,
+    )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def list_user_actions(self, ctx:TeXBotApplicationContext, str_action_member_id: str) -> None:  # noqa: E501
+    async def list_user_actions(self, ctx:TeXBotApplicationContext, str_action_member_id: str, *, ping: bool) -> None:  # noqa: E501
         """
         Definition and callback of the list user actions command.
 
@@ -293,11 +300,17 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         )]
 
         if not user_actions:
-            await ctx.respond(f"User: {action_member.mention} has no actions.")
+            await ctx.respond(
+                f"User: {action_member.mention if ping else action_member} has no actions.",
+            )
             logger.debug(user_actions)
             return
 
-        await ctx.respond(f"Found {len(user_actions)} actions for user {action_member.mention}:\n{"\n".join(str(action.description) for action in user_actions)}")  # noqa: E501
+        await ctx.respond(
+            f"Found {len(user_actions)} actions for user "
+            f"{action_member.mention if ping else action_member}:"
+            f"\n{"\n".join(str(action.description) for action in user_actions)}",
+        )
 
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
@@ -482,9 +495,16 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         name="list-all-actions",
         description="List all current actions.",
     )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="ping",
+        description="Triggers whether the message pings users or not.",
+        input_type=bool,
+        default=False,
+        required=False,
+    )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def list_all_actions(self, ctx:TeXBotApplicationContext) -> None:
+    async def list_all_actions(self, ctx:TeXBotApplicationContext, *, ping: bool) -> None:
         """List all actions.""" # NOTE: this doesn't actually list *all* actions as it is possible for non-committee to be actioned.
         committee_role: discord.Role = await self.bot.committee_role
 
@@ -508,7 +528,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             return
 
         all_actions_message: str = "\n".join([
-                f"\n{committee.mention}, Actions:"
+                f"\n{committee.mention if ping else committee}, Actions:"
                 f"\n{', \n'.join(str(action.description) for action in actions)}"
                 for committee, actions in filtered_committee_actions.items()
             ],
