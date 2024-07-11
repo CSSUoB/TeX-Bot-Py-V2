@@ -424,7 +424,10 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         components = str_action_object.split(":")
         input_hashed_id = components[0].strip()
         input_description = components[1].strip()
-        new_user_hash: str = DiscordMember.hash_discord_id(str_action_member_id)
+        new_user_to_action: discord.Member = await self.bot.get_member_from_str_id(
+            str_action_member_id,
+        )
+        new_user_to_action_hash: str = DiscordMember.hash_discord_id(new_user_to_action.id)
 
         all_discord_members: list[DiscordMember] = [
             discord_member async for discord_member in DiscordMember.objects.all()
@@ -450,13 +453,30 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                 str_action_object,
             )
 
-        if str(action_to_reassign.discord_member) == new_user_hash: # type: ignore[has-type]
-            await ctx.respond(f"HEY! Action: {input_description} is already assigned to user: <@{str_action_member_id}>\nNo action has been taken.")  # noqa: E501
+        if str(action_to_reassign.discord_member) == new_user_to_action_hash: # type: ignore[has-type]
+            await ctx.respond(
+                f"HEY! Action: {action_to_reassign.description} is already assigned "
+                f"to user: {new_user_to_action.mention}\nNo action has been taken.",
+            )
             return
 
-        action_to_reassign.discord_member = DiscordMember(str_action_member_id)  # type: ignore[has-type]
+        reassigned_action: Action | None = await self._create_action(
+            ctx,
+            new_user_to_action,
+            action_to_reassign.description,
+        )
 
-        await ctx.respond("Action successfully reassigned!")
+        if not reassigned_action:
+            await ctx.respond("Something went wrong and the action couldn't be reassigned!")
+            logger.debug(
+                "The action: %s could not be re-assigned to user: %s",
+                action_to_reassign,
+                new_user_to_action,
+            )
+            return
+
+        await action_to_reassign.adelete()
+
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
         name="list-all-actions",
