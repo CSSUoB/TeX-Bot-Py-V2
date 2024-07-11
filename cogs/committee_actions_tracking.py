@@ -7,6 +7,7 @@ __all__: Sequence[str] = ("CommitteeActionsTrackingCog",)
 import logging
 import random
 from logging import Logger
+from typing import Final
 
 import discord
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
@@ -67,6 +68,53 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             for action
             in all_actions
         } # TODO: try and add username to string in autocomplete so it's easy to see who the action belongs to
+
+    @staticmethod
+    async def action_autocomplete_get_user_actions(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+        """
+        Autocomplete callable that provides a set of actions that belong to the user.
+
+        Returns the set of actions that belong to the user using the command,
+        giving the user a list of action descriptions to choose from.
+        """
+        # NOTE: this entire method is fucking insane because django is shit and makes me want to kill myself
+        if not ctx.interaction.user:
+            logger.debug("User actions autocomplete did not have an interaction user!!")
+            return set()
+
+        interaction_user: discord.Member = await ctx.bot.get_member_from_str_id(
+            str(ctx.interaction.user.id),
+        )
+
+        all_actions = [action async for action in Action.objects.select_related().all()]
+
+        hashed_interaction_user_id: str = DiscordMember.hash_discord_id(interaction_user.id)
+        interaction_user_internal_id: str
+
+        action: Action
+        for action in all_actions:
+            action_discord_member: DiscordMember = action.discord_member # type: ignore[has-type]
+            if str(action_discord_member) == hashed_interaction_user_id:
+                interaction_user_internal_id = str(action_discord_member.id)
+                break
+
+        if not interaction_user_internal_id:
+            logger.debug("fuckin cry or something idk bro")
+            return set()
+
+        user_actions: list[Action] = [action async for action in Action.objects.select_related().filter(  # noqa: E501
+            discord_member_id=interaction_user_internal_id,
+        )]
+
+        if not user_actions:
+            logger.debug("No actions were found!!")
+            return set()
+
+        return {
+            discord.OptionChoice(name=action.description, value=(str(action)))
+            for action
+            in user_actions
+        }
 
     async def _create_action(self, ctx: TeXBotApplicationContext, action_user: discord.Member, description: str) -> Action | None:  # noqa: E501
         """Create the action object with the given description for the given user."""
@@ -185,12 +233,6 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         action_user: discord.Member = committee_members[random.randint(0, len(committee_members))]  # noqa: E501
 
-        if not action_user:
-            await ctx.respond(
-                "Something went wrong and TeX-Bot was unable to randomly select someone.",
-            )
-            return
-
         await self._create_action(ctx, action_user, str_action_description)
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -248,10 +290,6 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         """
         action_member: discord.Member = await self.bot.get_member_from_str_id(str_action_member_id)  # noqa: E501
 
-        if not action_member:
-            await ctx.respond("The user you supplied doesn't exist or isn't in the server.")
-            return
-
         user_actions = [action async for action in await Action.objects.afilter(
             discord_id=int(str_action_member_id),
         )]
@@ -299,7 +337,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         name="action",
         description="The action to mark as completed.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(action_autocomplete_get_all_actions), # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(action_autocomplete_get_user_actions), # type: ignore[arg-type]
         required=True,
         parameter_name="str_action_object",
     )
@@ -323,21 +361,31 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         components = str_action_object.split(":")
         input_description = components[1].strip()
 
-        try:
-            action: Action = await Action.objects.select_related().aget(
-                discord_member_id=action_user.id,
-                description=input_description, # TODO: implement user check as well cos this is fucked
+        actions: list[Action] = [action async for action in await Action.objects.afilter(
+            discord_id=int(action_user.id),
+            description=input_description,
+        )]
+
+        if not actions:
+            NO_ACTIONS_FOUND_MESSAGE: Final[str] = (
+                f"No actions found for user: {action_user}, "
+                f"with description: {input_description}"
             )
-        except (MultipleObjectsReturned, ObjectDoesNotExist) as get_action_failure:
-            await ctx.respond(
-                ":warning: Provided action was either not unique or did not exist.",
-            )
-            logger.warning(
-                "Action object: %s could not be matched to a unique action.",
-                str_action_object,
-            )
-            logger.debug(get_action_failure)
+            await ctx.respond(NO_ACTIONS_FOUND_MESSAGE)
+            logger.debug(NO_ACTIONS_FOUND_MESSAGE)
             return
+
+        if len(actions) > 1:
+            MULTIPLE_ACTIONS_FOUND: Final[str] = (
+                f"Found {len(actions)} for user: {action_user} "
+                f"with description: {input_description}, this shouldn't be possible!!"
+            )
+            await ctx.respond(MULTIPLE_ACTIONS_FOUND)
+            logger.error(MULTIPLE_ACTIONS_FOUND)
+            logger.debug(actions)
+            return
+
+        action: Action = actions[0]
 
         await action.adelete()
         await ctx.respond(f"Action: {action.description} deleted!")
