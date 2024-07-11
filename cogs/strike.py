@@ -45,7 +45,7 @@ from utils import (
     TeXBotAutocompleteContext,
     TeXBotBaseCog,
 )
-from utils.error_capture_decorators import (
+from utils.closing_error_capture_decorators import (
     capture_guild_does_not_exist_error,
     capture_strike_tracking_error,
 )

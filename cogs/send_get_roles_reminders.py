@@ -20,8 +20,8 @@ from config import settings
 from db.core.models import SentGetRolesReminderMember
 from exceptions import GuestRoleDoesNotExistError, RolesChannelDoesNotExistError
 from utils import TeXBot, TeXBotBaseCog
-from utils.error_capture_decorators import (
-    ErrorCaptureDecorators,
+from utils.closing_error_capture_decorators import (
+    ClosingErrorCaptureDecorators,
     capture_guild_does_not_exist_error,
 )
 
@@ -53,9 +53,9 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
 
     @tasks.loop(seconds=settings["SEND_GET_ROLES_REMINDERS_INTERVAL_SECONDS"])  # type: ignore[misc]
     @functools.partial(
-        ErrorCaptureDecorators.capture_error_and_close,
+        ClosingErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExistError,
-        close_func=ErrorCaptureDecorators.critical_error_close_func,
+        close_func=ClosingErrorCaptureDecorators.critical_error_close_func,
     )
     @capture_guild_does_not_exist_error
     async def send_get_roles_reminders(self) -> None:
