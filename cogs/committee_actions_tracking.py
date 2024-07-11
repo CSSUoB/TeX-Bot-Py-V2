@@ -57,7 +57,9 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         Each action is identified by its description.
         """
-        all_actions: list[Action] = [action async for action in Action.objects.select_related().all()]  # noqa: E501
+        all_actions: list[Action] = [
+            action async for action in Action.objects.select_related().all()
+        ]
 
         if not all_actions:
             logger.debug("User tried to autocomplete for Actions but no actions were found!")
@@ -227,7 +229,9 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             ))
             return
 
-        action_user: discord.Member = committee_members[random.randint(0, len(committee_members))]  # noqa: E501
+        action_user: discord.Member = committee_members[
+            random.randint(0, len(committee_members))
+        ]
 
         await self._create_action(ctx, action_user, str_action_description)
 
@@ -337,7 +341,10 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             )
             return
 
-        await ctx.respond(content=f"You have {len(user_actions)} actions: \n{"\n".join(str(action.description) for action in user_actions)}")  # noqa: E501
+        await ctx.respond(content=(
+            f"You have {len(user_actions)} actions: "
+            f"\n{"\n".join(str(action.description) for action in user_actions)}"),
+        )
 
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
@@ -508,7 +515,9 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         """List all actions.""" # NOTE: this doesn't actually list *all* actions as it is possible for non-committee to be actioned.
         committee_role: discord.Role = await self.bot.committee_role
 
-        actions: list[Action] = [action async for action in Action.objects.select_related().all()]  # noqa: E501
+        actions: list[Action] = [
+            action async for action in Action.objects.select_related().all()
+        ]
 
         committee_members: list[discord.Member] = committee_role.members
 
