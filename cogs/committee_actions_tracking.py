@@ -86,16 +86,14 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             str(ctx.interaction.user.id),
         )
 
-        all_actions = [action async for action in Action.objects.select_related().all()]
+        all_discord_members = [discord_member async for discord_member in DiscordMember.objects.all()]
 
         hashed_interaction_user_id: str = DiscordMember.hash_discord_id(interaction_user.id)
         interaction_user_internal_id: str
 
-        action: Action
-        for action in all_actions:
-            action_discord_member: DiscordMember = action.discord_member # type: ignore[has-type]
-            if str(action_discord_member) == hashed_interaction_user_id:
-                interaction_user_internal_id = str(action_discord_member.id)
+        for discord_member in all_discord_members:
+            if str(discord_member) == hashed_interaction_user_id:
+                interaction_user_internal_id = str(discord_member.id)
                 break
 
         if not interaction_user_internal_id:
