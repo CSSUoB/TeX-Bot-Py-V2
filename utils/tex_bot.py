@@ -10,12 +10,15 @@ import re
 from logging import Logger
 from typing import TYPE_CHECKING, Final
 
+import aiohttp
 import discord
+from discord import Webhook
 
 from config import settings
 from exceptions import (
     ApplicantRoleDoesNotExistError,
     ArchivistRoleDoesNotExistError,
+    CommitteeElectRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
     DiscordMemberNotInMainGuildError,
     EveryoneRoleCouldNotBeRetrievedError,
@@ -46,6 +49,7 @@ class TeXBot(discord.Bot):
         """Initialize a new discord.Bot subclass with empty shortcut accessors."""
         self._main_guild: discord.Guild | None = None
         self._committee_role: discord.Role | None = None
+        self._committee_elect_role: discord.Role | None = None
         self._guest_role: discord.Role | None = None
         self._member_role: discord.Role | None = None
         self._archivist_role: discord.Role | None = None
@@ -102,6 +106,31 @@ class TeXBot(discord.Bot):
             raise CommitteeRoleDoesNotExistError
 
         return self._committee_role
+
+    @property
+    async def committee_elect_role(self) -> discord.Role:
+        """
+        Shortcut accessor to the "Committee-Elect" role.
+
+        The "Committee-Elect" role is the role held by committee members
+        after they have been elected, but before the handover period has concluded.
+
+        Raises `CommitteeElectRoleDoesNotExist` if the role does not exist.
+        """
+        COMMITTEE_ELECT_ROLE_NEEDS_FETCHING: Final[bool] = bool(
+            not self._committee_elect_role
+            or not self._guild_has_role(self._committee_elect_role),
+        )
+        if COMMITTEE_ELECT_ROLE_NEEDS_FETCHING:
+            self._committee_elect_role = discord.utils.get(
+                await self.main_guild.fetch_roles(),
+                name="Committee-Elect",
+            )
+
+        if not self._committee_elect_role:
+            raise CommitteeElectRoleDoesNotExistError
+
+        return self._committee_elect_role
 
     @property
     async def guest_role(self) -> discord.Role:
@@ -456,3 +485,33 @@ class TeXBot(discord.Bot):
             raise ValueError from user_not_in_main_guild_error
 
         return member
+
+    async def fetch_log_channel(self) -> discord.TextChannel:
+        """
+        Retrieve the Discord log channel.
+
+        If no DISCORD_LOG_CHANNEL_WEBHOOK_URL is specified,
+        a ValueError exception will be raised.
+        """
+        if not settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
+            NO_LOG_CHANNEL_MESSAGE: Final[str] = (
+                "Cannot fetch log channel, "
+                "when no DISCORD_LOG_CHANNEL_WEBHOOK_URL has been set."
+            )
+            raise ValueError(NO_LOG_CHANNEL_MESSAGE)
+        session: aiohttp.ClientSession
+        with aiohttp.ClientSession() as session:  # type: ignore[assignment]
+            partial_webhook: Webhook = Webhook.from_url(
+                settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
+                session=session,
+            )
+
+            full_webhook: Webhook = await partial_webhook.fetch()
+            if not full_webhook.channel:
+                full_webhook = await self.fetch_webhook(partial_webhook.id)
+
+            if not full_webhook.channel:
+                LOG_CHANNEL_NOT_FOUND_MESSAGE: Final[str] = "Failed to fetch log channel."
+                raise RuntimeError(LOG_CHANNEL_NOT_FOUND_MESSAGE)
+
+            return full_webhook.channel
