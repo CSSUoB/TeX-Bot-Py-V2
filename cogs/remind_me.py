@@ -179,7 +179,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="delay",
         input_type=str,
-        description="The amount of time to wait before reminding you",
+        description="The amount of time to wait before reminding you.",
         required=True,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_delays),  # type: ignore[arg-type]
     )

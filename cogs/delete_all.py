@@ -17,7 +17,7 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
 
     delete_all: discord.SlashCommandGroup = discord.SlashCommandGroup(
         "delete-all",
-        "Delete all instances of the selected object type from the backend database",
+        "Delete all instances of the selected object type from the backend database.",
     )
 
     @staticmethod
