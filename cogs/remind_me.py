@@ -312,6 +312,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                     await reminder.adelete()
                     continue
 
+                # noinspection PyUnresolvedReferences
                 channel: discord.PartialMessageable = self.bot.get_partial_messageable(
                     reminder.channel_id,
                     type=(

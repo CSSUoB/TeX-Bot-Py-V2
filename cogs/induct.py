@@ -238,6 +238,7 @@ class BaseInductCog(TeXBotBaseCog):
             reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\"",
         )
 
+        # noinspection PyUnusedLocal
         applicant_role: discord.Role | None = None
         with contextlib.suppress(ApplicantRoleDoesNotExistError):
             applicant_role = await ctx.bot.applicant_role
@@ -353,7 +354,6 @@ class InductSlashCommandCog(BaseInductCog):
             await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
             return
 
-        # noinspection PyUnboundLocalVariable
         await self._perform_induction(ctx, induct_member, silent=silent)
 
 

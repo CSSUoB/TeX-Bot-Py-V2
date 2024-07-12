@@ -337,6 +337,7 @@ class BaseStrikeCog(TeXBotBaseCog):
                 )
 
         if not perform_action:
+            # noinspection SpellCheckingInspection
             await message_sender_component.send(
                 content=(
                     f"{confirm_strike_message}\n"
@@ -455,6 +456,7 @@ class ManualModerationCog(BaseStrikeCog):
 
         return guild_confirmation_message_channel
 
+    # noinspection PyTypeHints
     @capture_strike_tracking_error
     async def _confirm_manual_add_strike(self, strike_user: discord.User | discord.Member, action: discord.AuditLogAction) -> None:  # noqa: E501
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
@@ -592,6 +594,7 @@ class ManualModerationCog(BaseStrikeCog):
                         "with number of strikes**"
                     ),
                 )
+                # noinspection SpellCheckingInspection
                 await out_of_sync_ban_confirmation_message.edit(
                     content=(
                         f"Successfully banned {strike_user.mention}.\n"
@@ -653,6 +656,7 @@ class ManualModerationCog(BaseStrikeCog):
         )
 
         if button_interaction.data["custom_id"] == "no_manual_moderation_action":  # type: ignore[index, typeddict-item]
+            # noinspection SpellCheckingInspection
             await confirmation_message.edit(
                 content=(
                     f"Aborted increasing {strike_user.mention}'s strikes "
@@ -716,7 +720,6 @@ class ManualModerationCog(BaseStrikeCog):
                 )
                 return
 
-        # noinspection PyArgumentList
         await self._confirm_manual_add_strike(
             strike_user=after,
             action=discord.AuditLogAction.member_update,
@@ -734,13 +737,12 @@ class ManualModerationCog(BaseStrikeCog):
             and not member.bot
             and not await asyncany(
                 ban.user == member async for ban in main_guild.bans()
-            ),
+            )  # noqa: COM812
         )
         if not MEMBER_REMOVED_BECAUSE_OF_MANUALLY_APPLIED_KICK:
             return
 
         with contextlib.suppress(NoAuditLogsStrikeTrackingError):
-            # noinspection PyArgumentList
             await self._confirm_manual_add_strike(
                 strike_user=member,
                 action=discord.AuditLogAction.kick,
@@ -753,7 +755,6 @@ class ManualModerationCog(BaseStrikeCog):
         if guild != self.bot.main_guild or user.bot:
             return
 
-        # noinspection PyArgumentList
         await self._confirm_manual_add_strike(
             strike_user=user,
             action=discord.AuditLogAction.ban,

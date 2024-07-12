@@ -260,11 +260,13 @@ class ArchivistRoleDoesNotExistError(RoleDoesNotExistError):
 class ApplicantRoleDoesNotExistError(RoleDoesNotExistError):
     """Exception class to raise when the "Applicant" Discord role is missing."""
 
+    # noinspection PyMethodParameters
     @classproperty
     def ERROR_CODE(cls) -> str:  # noqa: N802, N805
         """The unique error code for users to tell admins about an error that occured."""  # noqa: D401
         return "E1025"
 
+    # noinspection PyMethodParameters
     @classproperty
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]: # noqa: N802, N805
         """
@@ -275,6 +277,7 @@ class ApplicantRoleDoesNotExistError(RoleDoesNotExistError):
         """  # noqa: D401
         return frozenset({"make_applicant"})
 
+    # noinspection PyMethodParameters
     @classproperty
     def ROLE_NAME(cls) -> str: # noqa: N802, N805
         """The name of the Discord role that does not exist."""  # noqa: D401
