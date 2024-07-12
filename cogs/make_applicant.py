@@ -31,9 +31,9 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
 
     async def _perform_make_applicant(self, ctx: TeXBotApplicationContext, applicant_member: discord.Member) -> None:  # noqa: E501
         """Perform the actual process of making the user into a group-applicant."""
-        main_guild: discord.Guild = ctx.bot.main_guild
-        applicant_role: discord.Role = await ctx.bot.applicant_role
-        guest_role: discord.Role = await ctx.bot.guest_role
+        main_guild: discord.Guild = ctx.tex_bot.main_guild
+        applicant_role: discord.Role = await ctx.tex_bot.applicant_role
+        guest_role: discord.Role = await ctx.tex_bot.guest_role
 
         intro_channel: discord.TextChannel | None = discord.utils.get(
             main_guild.text_channels,
@@ -49,7 +49,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
             ephemeral=True,
         )
 
-        AUDIT_MESSAGE: Final[str] = f"{ctx.user} used TeX Bot Command \"Make User Applicant\""
+        AUDIT_MESSAGE: Final[str] = f"{ctx.user} used TeX-Bot Command \"Make User Applicant\""
 
         await applicant_member.add_roles(applicant_role, reason=AUDIT_MESSAGE)
 
@@ -60,7 +60,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
             logger.debug("Removed Guest role from user %s", applicant_member)
 
 
-        tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
+        tex_emoji: discord.Emoji | None = self.tex_bot.get_emoji(743218410409820213)
         if not tex_emoji:
             tex_emoji = discord.utils.get(main_guild.emojis, name="TeX")
 
@@ -79,7 +79,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
 
                         logger.info(
                             "Failed to add reactions because the user, %s, "
-                            "has blocked the bot.",
+                            "has blocked TeX-Bot.",
                             recent_message.author,
                         )
                     break
@@ -99,8 +99,8 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
         options that have a member input-type.
         """
         try:
-            guild: discord.Guild = ctx.bot.main_guild
-            applicant_role: discord.Role = await ctx.bot.applicant_role
+            guild: discord.Guild = ctx.tex_bot.main_guild
+            applicant_role: discord.Role = await ctx.tex_bot.applicant_role
         except (GuildDoesNotExistError, ApplicantRoleDoesNotExistError):
             return set()
 
@@ -150,7 +150,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
         """
         member_id_not_integer_error: ValueError
         try:
-            applicant_member: discord.Member = await self.bot.get_member_from_str_id(
+            applicant_member: discord.Member = await self.tex_bot.get_member_from_str_id(
                 str_applicant_member_id,
             )
         except ValueError as member_id_not_integer_error:
@@ -188,7 +188,7 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
         "Applicant" role and removes the "Guest" role if they have it.
         """
         try:
-            member: discord.Member = await self.bot.get_member_from_str_id(
+            member: discord.Member = await self.tex_bot.get_member_from_str_id(
                 str(message.author.id),
             )
         except ValueError:

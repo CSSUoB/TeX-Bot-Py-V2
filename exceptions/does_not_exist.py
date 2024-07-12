@@ -42,7 +42,7 @@ class GuildDoesNotExistError(BaseDoesNotExistError):
     @classproperty
     def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802,N805
         """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
-        return "Server with given ID does not exist or is not accessible to the bot."
+        return "Server with given ID does not exist or is not accessible to TeX-Bot."
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
@@ -112,10 +112,10 @@ class CommitteeRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802,N805
         """
-        The set of names of bot commands that require this Discord entity.
+        The set of names of commands that require this Discord entity.
 
-        This set being empty could mean that all bot commands require this Discord entity,
-        or no bot commands require this Discord entity.
+        This set being empty could mean that all commands require this Discord entity,
+        or no commands require this Discord entity.
         """  # noqa: D401
         # noinspection SpellCheckingInspection
         return frozenset(
@@ -149,9 +149,9 @@ class CommitteeElectRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802, N805
         """
-        The set of names of bot commands that require this Discord entity.
+        The set of names of commands that require this Discord entity.
 
-        This set being empty could mean that all bot commands require this Discord entity,
+        This set being empty could mean that all commands require this Discord entity,
         or none of them do.
         """  # noqa: D401
         return frozenset({"handover"})
@@ -175,10 +175,10 @@ class GuestRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802,N805
         """
-        The set of names of bot commands that require this Discord entity.
+        The set of names of commands that require this Discord entity.
 
-        This set being empty could mean that all bot commands require this Discord entity,
-        or no bot commands require this Discord entity.
+        This set being empty could mean that all commands require this Discord entity,
+        or no commands require this Discord entity.
         """  # noqa: D401
         # noinspection SpellCheckingInspection
         return frozenset({"induct", "stats", "archive", "ensure-members-inducted"})
@@ -187,10 +187,10 @@ class GuestRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     def DEPENDENT_TASKS(cls) -> frozenset[str]:  # noqa: N802,N805
         """
-        The set of names of bot tasks that require this Discord entity.
+        The set of names of tasks that require this Discord entity.
 
-        This set being empty could mean that all bot tasks require this Discord entity,
-        or no bot tasks require this Discord entity.
+        This set being empty could mean that all tasks require this Discord entity,
+        or no tasks require this Discord entity.
         """  # noqa: D401
         # noinspection SpellCheckingInspection
         return frozenset({"send_get_roles_reminders"})
@@ -215,10 +215,10 @@ class MemberRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802,N805
         """
-        The set of names of bot commands that require this Discord entity.
+        The set of names of commands that require this Discord entity.
 
-        This set being empty could mean that all bot commands require this Discord entity,
-        or no bot commands require this Discord entity.
+        This set being empty could mean that all commands require this Discord entity,
+        or no commands require this Discord entity.
         """  # noqa: D401
         # noinspection SpellCheckingInspection
         return frozenset({"makemember", "ensure-members-inducted"})
@@ -243,10 +243,10 @@ class ArchivistRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802,N805
         """
-        The set of names of bot commands that require this Discord entity.
+        The set of names of commands that require this Discord entity.
 
-        This set being empty could mean that all bot commands require this Discord entity,
-        or no bot commands require this Discord entity.
+        This set being empty could mean that all commands require this Discord entity,
+        or no commands require this Discord entity.
         """  # noqa: D401
         # noinspection SpellCheckingInspection
         return frozenset({"archive"})
@@ -270,9 +270,9 @@ class ApplicantRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]: # noqa: N802, N805
         """
-        The set of names of bot commands that require this Discord entity.
+        The set of names of commands that require this Discord entity.
 
-        This set being empty could mean thta all bot commands require this entity,
+        This set being empty could mean thta all commands require this entity,
         or that none of them do.
         """  # noqa: D401
         return frozenset({"make_applicant"})
@@ -332,10 +332,10 @@ class RolesChannelDoesNotExistError(ChannelDoesNotExistError):
     @classproperty
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802,N805
         """
-        The set of names of bot commands that require this Discord entity.
+        The set of names of commands that require this Discord entity.
 
-        This set being empty could mean that all bot commands require this Discord entity,
-        or no bot commands require this Discord entity.
+        This set being empty could mean that all commands require this Discord entity,
+        or no commands require this Discord entity.
         """  # noqa: D401
         # noinspection SpellCheckingInspection
         return frozenset({"writeroles"})
@@ -360,10 +360,10 @@ class GeneralChannelDoesNotExistError(ChannelDoesNotExistError):
     @classproperty
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802,N805
         """
-        The set of names of bot commands that require this Discord entity.
+        The set of names of commands that require this Discord entity.
 
-        This set being empty could mean that all bot commands require this Discord entity,
-        or no bot commands require this Discord entity.
+        This set being empty could mean that all commands require this Discord entity,
+        or no commands require this Discord entity.
         """  # noqa: D401
         # noinspection SpellCheckingInspection
         return frozenset({"induct"})

@@ -67,10 +67,10 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
     @classproperty
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802,N805
         """
-        The set of names of bot commands that require this Discord entity.
+        The set of names of commands that require this Discord entity.
 
-        This set being empty could mean that all bot commands require this Discord entity,
-        or no bot commands require this Discord entity.
+        This set being empty could mean that all commands require this Discord entity,
+        or no commands require this Discord entity.
         """  # noqa: D401
         return frozenset()
 
@@ -78,10 +78,10 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
     @classproperty
     def DEPENDENT_TASKS(cls) -> frozenset[str]:  # noqa: N802,N805
         """
-        The set of names of bot tasks that require this Discord entity.
+        The set of names of tasks that require this Discord entity.
 
-        This set being empty could mean that all bot tasks require this Discord entity,
-        or no bot tasks require this Discord entity.
+        This set being empty could mean that all tasks require this Discord entity,
+        or no tasks require this Discord entity.
         """  # noqa: D401
         return frozenset()
 
@@ -89,10 +89,10 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
     @classproperty
     def DEPENDENT_EVENTS(cls) -> frozenset[str]:  # noqa: N802,N805
         """
-        The set of names of bot events that require this Discord entity.
+        The set of names of event listeners that require this Discord entity.
 
-        This set being empty could mean that all bot events require this Discord entity,
-        or no bot events require this Discord entity.
+        This set being empty could mean that all event listeners require this Discord entity,
+        or no event listeners require this Discord entity.
         """  # noqa: D401
         return frozenset()
 
@@ -191,4 +191,3 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
             partial_message += formatted_dependent_events
 
         return f"{partial_message}."
-

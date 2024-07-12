@@ -40,9 +40,9 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
         To do this, TeX-Bot will need to hold a role above that of the "Committee" role.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.bot.main_guild
-        committee_role: discord.Role = await self.bot.committee_role
-        committee_elect_role: discord.Role = await self.bot.committee_elect_role
+        main_guild: discord.Guild = self.tex_bot.main_guild
+        committee_role: discord.Role = await self.tex_bot.committee_role
+        committee_elect_role: discord.Role = await self.tex_bot.committee_elect_role
 
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
             content=":hourglass: Running handover procedures... :hourglass:",
@@ -176,8 +176,8 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
         the GroupMadeMember database model.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.bot.main_guild
-        member_role: discord.Role = await self.bot.member_role
+        main_guild: discord.Guild = self.tex_bot.main_guild
+        member_role: discord.Role = await self.tex_bot.member_role
 
         logger.debug("Reset roles command called.")
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(

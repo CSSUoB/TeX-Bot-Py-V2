@@ -35,13 +35,13 @@ class EditMessageCommandCog(TeXBotBaseCog):
             return set()
 
         try:
-            interaction_user: discord.Member = await ctx.bot.get_main_guild_member(
+            interaction_user: discord.Member = await ctx.tex_bot.get_main_guild_member(
                 ctx.interaction.user,
             )
         except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
             return set()
 
-        if not await ctx.bot.check_user_has_committee_role(interaction_user):
+        if not await ctx.tex_bot.check_user_has_committee_role(interaction_user):
             return set()
 
         return await TeXBotBaseCog.autocomplete_get_text_channels(ctx)
@@ -86,7 +86,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         The "write_roles" command edits a message sent by TeX-Bot to the value supplied.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.bot.main_guild
+        main_guild: discord.Guild = self.tex_bot.main_guild
 
         if not re.match(r"\A\d{17,20}\Z", str_channel_id):
             await self.command_send_error(

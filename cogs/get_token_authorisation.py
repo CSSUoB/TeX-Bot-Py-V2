@@ -111,7 +111,7 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
         # noinspection PyUnusedLocal
         guest_role: discord.Role | None = None
         with contextlib.suppress(GuestRoleDoesNotExistError):
-            guest_role = await ctx.bot.guest_role
+            guest_role = await ctx.tex_bot.guest_role
 
         await ctx.respond(
             f"Admin token has access to the following MSL Organisations as "

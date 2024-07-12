@@ -33,17 +33,17 @@ class StartupCog(TeXBotBaseCog):
     @TeXBotBaseCog.listener()
     async def on_ready(self) -> None:
         """
-        Populate the shortcut accessors of the bot after initialisation.
+        Populate the shortcut accessors of TeX-Bot after initialisation.
 
-        Shortcut accessors should only be populated once the bot is ready to make API requests.
+        Shortcut accessors should only be populated onceTeX-Bot is ready to make API requests.
         """
         if settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
             discord_logging_handler: logging.Handler = DiscordHandler(
-                self.bot.user.name if self.bot.user else "TeXBot",
+                self.tex_bot.user.name if self.tex_bot.user else "TeXBot",
                 settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
                 avatar_url=(
-                    self.bot.user.avatar.url
-                    if self.bot.user and self.bot.user.avatar
+                    self.tex_bot.user.avatar.url
+                    if self.tex_bot.user and self.tex_bot.user.avatar
                     else None
                 ),
             )
@@ -62,29 +62,29 @@ class StartupCog(TeXBotBaseCog):
             )
 
         try:
-            main_guild: discord.Guild | None = self.bot.main_guild
+            main_guild: discord.Guild | None = self.tex_bot.main_guild
         except GuildDoesNotExistError:
-            main_guild = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
+            main_guild = self.tex_bot.get_guild(settings["DISCORD_GUILD_ID"])
             if main_guild:
-                self.bot.set_main_guild(main_guild)
+                self.tex_bot.set_main_guild(main_guild)
 
         if not main_guild:
-            if self.bot.application_id:
+            if self.tex_bot.application_id:
                 logger.info(
                     "Invite URL: %s",
                     utils.generate_invite_url(
-                        self.bot.application_id,
+                        self.tex_bot.application_id,
                         settings["DISCORD_GUILD_ID"]),
                     )
             logger.critical(GuildDoesNotExistError(guild_id=settings["DISCORD_GUILD_ID"]))
-            await self.bot.close()
+            await self.tex_bot.close()
             return
 
-        if self.bot.application_id:
+        if self.tex_bot.application_id:
             logger.debug(
                 "Invite URL: %s",
                 utils.generate_invite_url(
-                    self.bot.application_id,
+                    self.tex_bot.application_id,
                     settings["DISCORD_GUILD_ID"]),
             )
 
@@ -135,7 +135,7 @@ class StartupCog(TeXBotBaseCog):
                         ),
                         repr("DM"),
                     )
-                await self.bot.close()
+                await self.tex_bot.close()
                 return
 
-        logger.info("Ready! Logged in as %s", self.bot.user)
+        logger.info("Ready! Logged in as %s", self.tex_bot.user)
