@@ -264,7 +264,7 @@ class IterateYearChannelsCommandCog(TeXBotBaseCog):
             await final_year_channel.set_permissions(archivist_role, read_messages=True)
 
             await final_year_channel.edit(
-                name="final-years" + str(datetime.datetime.now(tz=datetime.UTC).year),
+                name="final-years-" + str(datetime.datetime.now(tz=datetime.UTC).year),
             )
 
             archived_category: discord.CategoryChannel | None = discord.utils.get(
@@ -304,6 +304,7 @@ class IterateYearChannelsCommandCog(TeXBotBaseCog):
             await new_first_year_channel.edit(
                 category=year_channels_category,
                 sync_permissions=True,
+                position=0,
             )
 
             await initial_message.edit(content="Year channel iterations complete!")
