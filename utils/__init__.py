@@ -4,7 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = (
     "CommandChecks",
-    "MessageSenderComponent",
+    "MessageSavingSenderComponent",
     "SuppressTraceback",
     "TeXBot",
     "TeXBotBaseCog",
@@ -23,7 +23,7 @@ from typing import TypeAlias
 import discord
 
 from utils.command_checks import CommandChecks
-from utils.message_sender_components import MessageSenderComponent
+from utils.message_sender_components import MessageSavingSenderComponent
 from utils.suppress_traceback import SuppressTraceback
 from utils.tex_bot import TeXBot
 from utils.tex_bot_base_cog import TeXBotBaseCog
