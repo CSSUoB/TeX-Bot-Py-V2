@@ -110,7 +110,7 @@ class Settings(abc.ABC):
         if item in self._settings:
             return self._settings[item]
 
-        if re.match(r"\A[A-Z](?:[A-Z_]*[A-Z])?\Z", item):
+        if re.fullmatch(r"\A[A-Z](?:[A-Z_]*[A-Z])?\Z", item):
             INVALID_SETTINGS_KEY_MESSAGE: Final[str] = self.get_invalid_settings_key_message(
                 item,
             )
@@ -160,7 +160,7 @@ class Settings(abc.ABC):
 
         DISCORD_BOT_TOKEN_IS_VALID: Final[bool] = bool(
             raw_discord_bot_token
-            and re.match(
+            and re.fullmatch(
                 r"\A([A-Za-z0-9]{24,26})\.([A-Za-z0-9]{6})\.([A-Za-z0-9_-]{27,38})\Z",
                 raw_discord_bot_token,
             ),
@@ -205,7 +205,7 @@ class Settings(abc.ABC):
 
         DISCORD_GUILD_ID_IS_VALID: Final[bool] = bool(
             raw_discord_guild_id
-            and re.match(r"\A\d{17,20}\Z", raw_discord_guild_id),
+            and re.fullmatch(r"\A\d{17,20}\Z", raw_discord_guild_id),
         )
         if not DISCORD_GUILD_ID_IS_VALID:
             INVALID_DISCORD_GUILD_ID_MESSAGE: Final[str] = (
@@ -222,7 +222,7 @@ class Settings(abc.ABC):
 
         GROUP_FULL_NAME_IS_VALID: Final[bool] = bool(
             not raw_group_full_name
-            or re.match(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", raw_group_full_name),
+            or re.fullmatch(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", raw_group_full_name),
         )
         if not GROUP_FULL_NAME_IS_VALID:
             INVALID_GROUP_FULL_NAME: Final[str] = (
@@ -237,7 +237,7 @@ class Settings(abc.ABC):
 
         GROUP_SHORT_NAME_IS_VALID: Final[bool] = bool(
             not raw_group_short_name
-            or re.match(r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", raw_group_short_name),
+            or re.fullmatch(r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", raw_group_short_name),
         )
         if not GROUP_SHORT_NAME_IS_VALID:
             INVALID_GROUP_SHORT_NAME: Final[str] = (
@@ -401,7 +401,7 @@ class Settings(abc.ABC):
 
         MEMBERS_LIST_URL_SESSION_COOKIE_IS_VALID: Final[bool] = bool(
             raw_members_list_url_session_cookie
-            and re.match(r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_url_session_cookie),
+            and re.fullmatch(r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_url_session_cookie),
         )
         if not MEMBERS_LIST_URL_SESSION_COOKIE_IS_VALID:
             INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
@@ -441,7 +441,7 @@ class Settings(abc.ABC):
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        raw_send_introduction_reminders_delay: Match[str] | None = re.match(
+        raw_send_introduction_reminders_delay: Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
             str(os.getenv("SEND_INTRODUCTION_REMINDERS_DELAY", "40h")),
         )
@@ -489,7 +489,7 @@ class Settings(abc.ABC):
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        raw_send_introduction_reminders_interval: Match[str] | None = re.match(
+        raw_send_introduction_reminders_interval: Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
             str(os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h")),
         )
@@ -544,7 +544,7 @@ class Settings(abc.ABC):
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        raw_send_get_roles_reminders_delay: Match[str] | None = re.match(
+        raw_send_get_roles_reminders_delay: Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
             str(os.getenv("SEND_GET_ROLES_REMINDERS_DELAY", "40h")),
         )
@@ -592,7 +592,7 @@ class Settings(abc.ABC):
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        raw_advanced_send_get_roles_reminders_interval: Match[str] | None = re.match(
+        raw_advanced_send_get_roles_reminders_interval: Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
             str(os.getenv("ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL", "24h")),
         )

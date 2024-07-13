@@ -174,7 +174,7 @@ class TeXBotBaseCog(Cog):
                 ctx.interaction.user,
             )
 
-        if not ctx.value or re.match(r"\A#.*\Z", ctx.value):
+        if not ctx.value or re.fullmatch(r"\A#.*\Z", ctx.value):
             return {
                 discord.OptionChoice(name=f"#{channel.name}", value=str(channel.id))
                 for channel

@@ -90,7 +90,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         archivist_role: discord.Role = await self.tex_bot.archivist_role
         everyone_role: discord.Role = await self.tex_bot.get_everyone_role()
 
-        if not re.match(r"\A\d{17,20}\Z", str_category_id):
+        if not re.fullmatch(r"\A\d{17,20}\Z", str_category_id):
             await self.command_send_error(
                 ctx,
                 message=f"{str_category_id!r} is not a valid category ID.",

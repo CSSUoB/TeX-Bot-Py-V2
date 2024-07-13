@@ -176,7 +176,7 @@ class GroupMadeMember(AsyncBaseModel):
         that hashed_group_member_ids are stored in the database
         when new GroupMadeMember objects are created.
         """
-        if not re.match(r"\A\d{7}\Z", str(group_member_id)):
+        if not re.fullmatch(r"\A\d{7}\Z", str(group_member_id)):
             INVALID_GROUP_MEMBER_ID_MESSAGE: Final[str] = (
                 f"{group_member_id!r} is not a valid {group_member_id_type} ID."
             )

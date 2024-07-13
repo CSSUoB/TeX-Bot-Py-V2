@@ -95,7 +95,13 @@ class TestGenerateInviteURL:
             DISCORD_BOT_APPLICATION_ID, DISCORD_GUILD_ID,
         )
 
-        assert re.match(
-            f"https://discord.com/.*={DISCORD_BOT_APPLICATION_ID}.*={DISCORD_GUILD_ID}",
+        assert re.fullmatch(
+            (
+                r"\Ahttps://discord.com/.*="
+                + str(DISCORD_BOT_APPLICATION_ID)
+                + r".*="
+                + str(DISCORD_GUILD_ID)
+                + r".*\Z"
+            ),
             invite_url,
         )

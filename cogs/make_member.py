@@ -120,7 +120,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             )
             return
 
-        if not re.match(r"\A\d{7}\Z", group_member_id):
+        if not re.fullmatch(r"\A\d{7}\Z", group_member_id):
             await self.command_send_error(
                 ctx,
                 message=(

@@ -189,7 +189,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         channel_id: int = ctx.channel_id
 
         if str_channel_id:
-            if not re.match(r"\A\d{17,20}\Z", str_channel_id):
+            if not re.fullmatch(r"\A\d{17,20}\Z", str_channel_id):
                 await self.command_send_error(
                     ctx,
                     message=f"{str_channel_id!r} is not a valid channel ID.",

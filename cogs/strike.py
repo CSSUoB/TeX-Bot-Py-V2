@@ -782,7 +782,7 @@ class StrikeCommandCog(BaseStrikeCog):
 
         members: set[discord.Member] = {member for member in guild.members if not member.bot}
 
-        if not ctx.value or re.match(r"\A@.*\Z", ctx.value):
+        if not ctx.value or re.fullmatch(r"\A@.*\Z", ctx.value):
             return {
                 discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
                 for member

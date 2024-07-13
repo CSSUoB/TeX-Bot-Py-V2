@@ -89,7 +89,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.tex_bot.main_guild
 
-        if not re.match(r"\A\d{17,20}\Z", str_channel_id):
+        if not re.fullmatch(r"\A\d{17,20}\Z", str_channel_id):
             await self.command_send_error(
                 ctx,
                 message=f"{str_channel_id!r} is not a valid channel ID.",
@@ -98,7 +98,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
 
         channel_id: int = int(str_channel_id)
 
-        if not re.match(r"\A\d{17,20}\Z", str_message_id):
+        if not re.fullmatch(r"\A\d{17,20}\Z", str_message_id):
             await self.command_send_error(
                 ctx,
                 message=f"{str_message_id!r} is not a valid message ID.",

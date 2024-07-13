@@ -70,7 +70,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
 
         delay_choices: set[str] = set()
 
-        if re.match(r"\Ain? ?\Z", ctx.value):
+        if re.fullmatch(r"\Ain? ?\Z", ctx.value):
             FORMATTED_TIME_NUMS: Final[Iterator[tuple[int, str, str]]] = itertools.product(
                 range(1, 150),
                 {"", " "},
@@ -90,7 +90,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
             return {f"in {delay_choice}" for delay_choice in delay_choices}
 
         match: re.Match[str] | None
-        if match := re.match(r"\Ain (?P<partial_date>\d{0,3})\Z", ctx.value):
+        if match := re.fullmatch(r"\Ain (?P<partial_date>\d{0,3})\Z", ctx.value):
             for joiner, has_s in itertools.product({"", " "}, {"", "s"}):
                 delay_choices.update(
                     f"""{match.group("partial_date")}{joiner}{time_choice}{has_s}"""
@@ -103,7 +103,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
 
         current_year: int = discord.utils.utcnow().year
 
-        if re.match(r"\A\d{1,3}\Z", ctx.value):
+        if re.fullmatch(r"\A\d{1,3}\Z", ctx.value):
             for joiner, has_s in itertools.product({"", " "}, {"", "s"}):
                 delay_choices.update(
                     f"{joiner}{time_choice}{has_s}"
@@ -125,7 +125,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                     if month < 10:
                         delay_choices.add(f"{joiner}0{month}{joiner}{year}")
 
-        elif match := re.match(r"\A\d{1,3}(?P<ctx_time_choice> ?[A-Za-z]*)\Z", ctx.value):
+        elif match := re.fullmatch(r"\A\d{1,3}(?P<ctx_time_choice> ?[A-Za-z]*)\Z", ctx.value):
             FORMATTED_TIME_CHOICES: Final[Iterator[tuple[str, str, str]]] = itertools.product(
                 {"", " "},
                 TIME_CHOICES,
@@ -143,7 +143,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                     if match.group("ctx_time_choice").casefold() == formatted_time_choice[:slice_size]:  # noqa: E501
                         delay_choices.add(formatted_time_choice[slice_size:])
 
-        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?\Z", ctx.value):
+        elif match := re.fullmatch(r"\A(?P<date>\d{1,2}) ?[/\-.] ?\Z", ctx.value):
             if 1 <= int(match.group("date")) <= 31:
                 FORMATTED_DAY_AND_JOINER_DATE_CHOICES: Final[Iterator[tuple[int, int, str]]] = itertools.product(  # noqa: E501
                     range(1, 12),
@@ -155,18 +155,18 @@ class RemindMeCommandCog(TeXBotBaseCog):
                     if month < 10:
                         delay_choices.add(f"0{month}{joiner}{year}")
 
-        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2})\Z", ctx.value):  # noqa: E501
+        elif match := re.fullmatch(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2})\Z", ctx.value):  # noqa: E501
             if 1 <= int(match.group("date")) <= 31 and 1 <= int(match.group("month")) <= 12:
                 for year in range(current_year, current_year + 40):
                     for joiner in ("/", " / ", "-", " - ", ".", " . "):
                         delay_choices.add(f"{joiner}{year}")
 
-        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?\Z", ctx.value):  # noqa: E501
+        elif match := re.fullmatch(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?\Z", ctx.value):  # noqa: E501
             if 1 <= int(match.group("date")) <= 31 and 1 <= int(match.group("month")) <= 12:
                 for year in range(current_year, current_year + 40):
                     delay_choices.add(f"{year}")
 
-        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?(?P<partial_year>\d{1,3})\Z", ctx.value):  # noqa: E501
+        elif match := re.fullmatch(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?(?P<partial_year>\d{1,3})\Z", ctx.value):  # noqa: E501
             if 1 <= int(match.group("date")) <= 31 and 1 <= int(match.group("month")) <= 12:
                 for year in range(current_year, current_year + 40):
                     delay_choices.add(f"{year}"[len(match.group("partial_year")):])
