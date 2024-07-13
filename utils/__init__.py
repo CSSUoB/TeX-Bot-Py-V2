@@ -22,12 +22,12 @@ from typing import TypeAlias
 
 import discord
 
-from utils.command_checks import CommandChecks
-from utils.message_sender_components import MessageSavingSenderComponent
-from utils.suppress_traceback import SuppressTraceback
-from utils.tex_bot import TeXBot
-from utils.tex_bot_base_cog import TeXBotBaseCog
-from utils.tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
+from .command_checks import CommandChecks
+from .message_sender_components import MessageSavingSenderComponent
+from .suppress_traceback import SuppressTraceback
+from .tex_bot import TeXBot
+from .tex_bot_base_cog import TeXBotBaseCog
+from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 AllChannelTypes: TypeAlias = (
     discord.VoiceChannel

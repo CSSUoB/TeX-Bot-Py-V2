@@ -14,7 +14,7 @@ from typing import override
 
 import discord
 
-from utils.tex_bot import TeXBot
+from .tex_bot import TeXBot
 
 
 class TeXBotAutocompleteContext(discord.AutocompleteContext):

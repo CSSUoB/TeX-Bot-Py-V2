@@ -15,7 +15,7 @@ from typing import Final, TypedDict, final, override
 import discord
 from discord.ui import View
 
-from utils.tex_bot_contexts import TeXBotApplicationContext
+from .tex_bot_contexts import TeXBotApplicationContext
 
 
 class MessageSavingSenderComponent(abc.ABC):
