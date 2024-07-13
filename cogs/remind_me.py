@@ -12,7 +12,7 @@ import logging
 import re
 from collections.abc import Set
 from logging import Logger
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Final, override
 
 import discord
 import parsedatetime

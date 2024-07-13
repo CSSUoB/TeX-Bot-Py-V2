@@ -11,6 +11,7 @@ __all__: Sequence[str] = (
     "GuestRoleDoesNotExistError",
     "MemberRoleDoesNotExistError",
     "ArchivistRoleDoesNotExistError",
+    "ApplicantRoleDoesNotExistError",
     "ChannelDoesNotExistError",
     "RolesChannelDoesNotExistError",
     "GeneralChannelDoesNotExistError",
