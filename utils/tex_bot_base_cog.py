@@ -8,7 +8,7 @@ __all__: Sequence[str] = ("TeXBotBaseCog",)
 import contextlib
 import logging
 import re
-from collections.abc import Mapping
+from collections.abc import Mapping, Set
 from logging import Logger
 from typing import TYPE_CHECKING, Final
 
@@ -152,7 +152,7 @@ class TeXBotBaseCog(Cog):
             )
 
     @staticmethod
-    async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+    async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable channels.
 

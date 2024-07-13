@@ -7,6 +7,7 @@ __all__: Sequence[str] = ("ArchiveCommandCog",)
 
 import logging
 import re
+from collections.abc import Set
 from logging import Logger
 from typing import Final
 
@@ -29,7 +30,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/archive" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_categories(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+    async def autocomplete_get_categories(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable categories.
 

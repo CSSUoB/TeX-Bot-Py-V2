@@ -68,4 +68,3 @@ class MessagesJSONFileValueError(InvalidMessagesJSONFileError):
         self.invalid_value: object | None = invalid_value
 
         super().__init__(message, dict_key)
-
