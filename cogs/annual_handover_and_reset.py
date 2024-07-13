@@ -249,7 +249,7 @@ class IterateYearChannelsCommandCog(TeXBotBaseCog):
         guest_role: discord.Role = await self.bot.guest_role
 
         initial_message: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-            content="Processing year channel iteration...",
+            content=":hourglass: Processing year channel iteration... :hourglass:",
         )
 
         final_year_channel: discord.TextChannel | None = discord.utils.get(
@@ -258,6 +258,9 @@ class IterateYearChannelsCommandCog(TeXBotBaseCog):
         )
 
         if final_year_channel:
+            await initial_message.edit(
+                content=":hourglass: Archiving final year channel... :hourglass:",
+            )
             archivist_role: discord.Role = await self.bot.archivist_role
 
             await final_year_channel.set_permissions(guest_role, overwrite=None)
@@ -273,7 +276,10 @@ class IterateYearChannelsCommandCog(TeXBotBaseCog):
             )
 
             if archived_category:
-                await final_year_channel.edit(category=archived_category)
+                await final_year_channel.edit(
+                    category=archived_category,
+                    sync_permissions=True,
+                )
 
         second_year_channel: discord.TextChannel | None = discord.utils.get(
             main_guild.text_channels,
@@ -296,6 +302,11 @@ class IterateYearChannelsCommandCog(TeXBotBaseCog):
             name="Year Chats",
         )
 
+        await initial_message.edit(content=(
+            ":hourglass: Creating new first year channel and setting permissions... "
+            ":hourglass:"
+        ))
+
         new_first_year_channel: discord.TextChannel = await main_guild.create_text_channel(
             name="first-years",
         )
@@ -307,7 +318,9 @@ class IterateYearChannelsCommandCog(TeXBotBaseCog):
                 position=0,
             )
 
-            await initial_message.edit(content="Year channel iterations complete!")
+            await initial_message.edit(
+                content=":white_check_mark: Year channel iterations complete!",
+            )
             return
 
         await new_first_year_channel.set_permissions(
@@ -316,6 +329,7 @@ class IterateYearChannelsCommandCog(TeXBotBaseCog):
             send_messages=True,
         )
 
-        await initial_message.edit(
-            content="Year channel iterations complete but no year channel category was found!",
-        )
+        await initial_message.edit(content=(
+            ":white_check_mark: Year channel iterations complete "
+            "but no year channel category was found!"
+        ))
