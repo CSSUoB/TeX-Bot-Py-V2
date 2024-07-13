@@ -215,7 +215,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                     f"You must be a member of {self.tex_bot.group_full_name} "
                     "to use this command.\n"
                     f"The provided {_GROUP_MEMBER_ID_ARGUMENT_NAME} must match "
-                    f"the {self.bot.group_member_id_type} ID "
+                    f"the {self.tex_bot.group_member_id_type} ID "
                     f"that you purchased your {self.tex_bot.group_short_name} membership with."
                 ),
             )

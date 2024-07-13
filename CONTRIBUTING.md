@@ -34,13 +34,13 @@ We recommend also reading the following if you're unsure or not confident:
 * [How To Make A Pull Request](https://makeapullrequest.com)
 * [Contributing To An Open Source Project For The First Time](https://firsttimersonly.com)
 
-This bot is written in [Python](https://python.org) using [Pycord](https://pycord.dev) and uses Discord's [slash-commands](https://support.discord.com/hc/articles/1500000368501-Slash-Commands-FAQ) & [user-commands](https://guide.pycord.dev/interactions/application-commands/context-menus).
+TeX-Bot is written in [Python](https://python.org) using [Pycord](https://pycord.dev) and uses Discord's [slash-commands](https://support.discord.com/hc/articles/1500000368501-Slash-Commands-FAQ) & [user-commands](https://guide.pycord.dev/interactions/application-commands/context-menus).
 We would recommend being somewhat familiar with the [Pycord library](https://docs.pycord.dev), [Python language](https://docs.python.org/3/reference/index) & [project terminology](README.md#terminology) before contributing.
 
 ## Using the Issue Tracker
 
 We use [GitHub issues](https://docs.github.com/issues) to track bugs and feature requests.
-If you find an issue with the bot, the best place to report it is through the issue tracker.
+If you find an issue with TeX-Bot, the best place to report it is through the issue tracker.
 If you are looking for issues to contribute code to, it's a good idea to look at the [issues labelled "good-first-issue"](https://github.com/CSSUoB/TeX-Bot-Py-V2/issues?q=label%3A%22good+first+issue%22)!
 
 When submitting an issue, please be as descriptive as possible.
