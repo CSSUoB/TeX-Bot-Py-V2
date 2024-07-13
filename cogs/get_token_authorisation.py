@@ -36,7 +36,7 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
         """
         Definition of the "get_token_authorisation" command.
 
-        The "get_token_authorisation" command will retrieve the profle for the token user.
+        The "get_token_authorisation" command will retrieve the profile for the token user.
         The profile page will contain the user's name and a list of the MSL organisations
         the user has administrative access to.
         """

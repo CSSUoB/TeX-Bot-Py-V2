@@ -64,9 +64,9 @@ class TeXBotBaseCog(Cog):
     @override
     def __init__(self, tex_bot: TeXBot) -> None:
         """
-        Initialize a new cog instance.
+        Initialise a new cog instance.
 
-        During initialization, a reference to the currently running TeXBot instance is stored.
+        During initialisation, a reference to the currently running TeXBot instance is stored.
         """
         self.tex_bot: TeXBot = tex_bot
 
@@ -157,7 +157,7 @@ class TeXBotBaseCog(Cog):
         """
         Autocomplete callable that generates the set of available selectable channels.
 
-        The list of available selectable channels is unique to each member, and is used in any
+        The list of available selectable channels is unique to each member and is used in any
         slash-command options that have a channel input-type.
         """
         if not ctx.interaction.user:

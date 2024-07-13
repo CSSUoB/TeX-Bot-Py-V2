@@ -47,7 +47,7 @@ class TeXBot(discord.Bot):
 
     @override
     def __init__(self, *args: object, **options: object) -> None:
-        """Initialize a new Pycord Bot subclass with empty shortcut accessors."""
+        """Initialise a new Pycord Bot subclass with empty shortcut accessors."""
         self._main_guild: discord.Guild | None = None
         self._committee_role: discord.Role | None = None
         self._committee_elect_role: discord.Role | None = None
@@ -186,7 +186,7 @@ class TeXBot(discord.Bot):
         Shortcut accessor to the archivist role.
 
         The archivist role is the one that allows members to see channels & categories
-        that are no longer in use, which are hidden to all other members.
+        that are no longer in use, which are hidden from all other members.
 
         Raises `ArchivistRoleDoesNotExist` if the role does not exist.
         """

@@ -25,7 +25,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
     """
     Base making-applicant cog container class.
 
-    Defines the methods for making users into group-applicants, that are called by
+    Defines the methods for making users into group-applicants that are called by
     child cog container classes.
     """
 
@@ -171,7 +171,7 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
         Definition and callback response of the "make_applicant" user-context-command.
 
         The "make_applicant" user-context-command executes the same process as
-        the "make_applicant" slash-command, and thus gives the specified user the
+        the "make_applicant" slash-command and thus gives the specified user the
         "Applicant" role and removes the "Guest" role if they have it.
         """
         await self._perform_make_applicant(ctx, member)
@@ -184,7 +184,7 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
         Definition of the "message_make_applicant" message-context-command.
 
         The "make_applicant" message-context-command executes the same process as
-        the "make_applicant" slash-command, and thus gives the specified user the
+        the "make_applicant" slash-command and thus gives the specified user the
         "Applicant" role and removes the "Guest" role if they have it.
         """
         try:

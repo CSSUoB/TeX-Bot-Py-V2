@@ -97,7 +97,7 @@ class ConfirmStrikeMemberView(View):
     )
     async def yes_strike_member_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """
-        Delete the message associated with the view, when the Yes button is pressed.
+        Delete the message associated with the view when the Yes button is pressed.
 
         This function is attached as a button's callback, so will run whenever the button
         is pressed.
@@ -114,7 +114,7 @@ class ConfirmStrikeMemberView(View):
     )
     async def no_strike_member_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """
-        Delete the message associated with the view, when the No button is pressed.
+        Delete the message associated with the view when the No button is pressed.
 
         This function is attached as a button's callback, so will run whenever the button
         is pressed.
@@ -135,7 +135,7 @@ class ConfirmManualModerationView(View):
     )
     async def yes_manual_moderation_action_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """
-        Delete the message associated with the view, when the Yes button is pressed.
+        Delete the message associated with the view when the Yes button is pressed.
 
         This function is attached as a button's callback, so will run whenever the button
         is pressed.
@@ -153,7 +153,7 @@ class ConfirmManualModerationView(View):
     )
     async def no_manual_moderation_action_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """
-        Delete the message associated with the view, when the No button is pressed.
+        Delete the message associated with the view when the No button is pressed.
 
         This function is attached as a button's callback, so will run whenever the button
         is pressed.
@@ -175,7 +175,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
     )
     async def yes_out_of_sync_ban_member_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """
-        Delete the message associated with the view, when the Yes button is pressed.
+        Delete the message associated with the view when the Yes button is pressed.
 
         This function is attached as a button's callback, so will run whenever the button
         is pressed.
@@ -193,7 +193,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
     )
     async def no_out_of_sync_ban_member_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
         """
-        Delete the message associated with the view, when the No button is pressed.
+        Delete the message associated with the view when the No button is pressed.
 
         This function is attached as a button's callback, so will run whenever the button
         is pressed.

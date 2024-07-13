@@ -59,7 +59,7 @@ class GuildDoesNotExistError(BaseDoesNotExistError):
 
     @override
     def __init__(self, message: str | None = None, guild_id: int | None = None) -> None:
-        """Initialize a new DoesNotExist exception for a guild not existing."""
+        """Initialise a new DoesNotExist exception for a guild not existing."""
         self.guild_id: int | None = guild_id
 
         if guild_id and not message:
@@ -91,7 +91,7 @@ class RoleDoesNotExistError(BaseDoesNotExistError, abc.ABC):
 
     @override
     def __init__(self, message: str | None = None) -> None:
-        """Initialize a new DoesNotExist exception for a role not existing."""
+        """Initialise a new DoesNotExist exception for a role not existing."""
         HAS_DEPENDANTS: Final[bool] = bool(
             self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS,
         )
@@ -278,7 +278,7 @@ class ChannelDoesNotExistError(BaseDoesNotExistError):
 
     @override
     def __init__(self, message: str | None = None) -> None:
-        """Initialize a new DoesNotExist exception for a role not existing."""
+        """Initialise a new DoesNotExist exception for a role not existing."""
         HAS_DEPENDANTS: Final[bool] = bool(
             self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS,
         )

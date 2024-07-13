@@ -85,7 +85,7 @@ class SentGetRolesReminderMember(BaseDiscordMemberWrapper):
     """
     Represents a Discord member that has already been sent an opt-in roles reminder.
 
-    The opt-in roles reminder suggests to the Discord member to visit the #roles channel
+    The opt-in roles reminder suggests the Discord member visit the #roles channel
     to claim some opt-in roles within your group's Discord guild.
     The Discord member is identified by their hashed Discord member ID.
 

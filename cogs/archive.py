@@ -34,7 +34,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         """
         Autocomplete callable that generates the set of available selectable categories.
 
-        The list of available selectable categories is unique to each member, and is used in
+        The list of available selectable categories is unique to each member and is used in
         any of the "archive" slash-command options that have a category input-type.
         """
         if not ctx.interaction.user:

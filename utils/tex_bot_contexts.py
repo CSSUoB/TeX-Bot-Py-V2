@@ -1,7 +1,7 @@
 """
 Type-hinting classes that override the Pycord Context classes.
 
-These custom overriden classes contain a reference to the custom bot class TeXBot,
+These custom overridden classes contain a reference to the custom bot class TeXBot,
 rather than Pycord's default Bot class.
 """
 

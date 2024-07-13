@@ -183,13 +183,13 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         This discord.View contains a single button that can change the state of whether the
         member will be sent reminders to send an introduction message in
         your group's Discord guild.
-        The view object will be sent to the member's DMs, after a delay period after
+        The view object will be sent to the member's DMs after a delay period after
         joining your group's Discord guild.
         """
 
         @override
         def __init__(self, tex_bot: TeXBot) -> None:
-            """Initialize a new discord.View, to opt-in/out of introduction reminders."""
+            """Initialise a new discord.View, to opt-in/out of introduction reminders."""
             self.tex_bot: TeXBot = tex_bot
 
             super().__init__(timeout=None)

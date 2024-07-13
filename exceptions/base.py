@@ -26,7 +26,7 @@ class BaseTeXBotError(BaseException, abc.ABC):
 
     @override
     def __init__(self, message: str | None = None) -> None:
-        """Initialize a new exception with the given error message."""
+        """Initialise a new exception with the given error message."""
         self.message: str = message or self.DEFAULT_MESSAGE
 
         super().__init__(self.message)
