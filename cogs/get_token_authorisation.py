@@ -26,7 +26,7 @@ logger: Logger = logging.getLogger("TeX-Bot")
 class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/get_token_authorisation" command."""
 
-    @discord.slash_command( # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="get-token-authorisation",
         description="Checks the authorisations held by the token.",
     )

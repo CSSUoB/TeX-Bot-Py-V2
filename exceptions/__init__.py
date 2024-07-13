@@ -26,6 +26,7 @@ __all__: Sequence[str] = (
     "RestartRequiredDueToConfigChange",
 )
 
+
 from .config_changes import (
     RestartRequiredDueToConfigChange,
     ImproperlyConfiguredError,

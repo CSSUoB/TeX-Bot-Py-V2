@@ -233,6 +233,7 @@ class ArchivistRoleDoesNotExistError(RoleDoesNotExistError):
     def ROLE_NAME(cls) -> str:  # noqa: N805
         return "Archivist"
 
+
 class ApplicantRoleDoesNotExistError(RoleDoesNotExistError):
     """Exception class to raise when the "Applicant" Discord role is missing."""
 
