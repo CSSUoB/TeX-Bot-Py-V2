@@ -86,12 +86,12 @@ class InductSendMessageCog(TeXBotBaseCog):
                 )
 
         # noinspection PyUnusedLocal
-        rules_channel_mention: str = "`#welcome`"
+        rules_channel_mention: str = "**`#welcome`**"
         with contextlib.suppress(RulesChannelDoesNotExistError):
             rules_channel_mention = (await self.tex_bot.rules_channel).mention
 
         # noinspection PyUnusedLocal
-        roles_channel_mention: str = "#roles"
+        roles_channel_mention: str = "**`#roles`**"
         with contextlib.suppress(RolesChannelDoesNotExistError):
             roles_channel_mention = (await self.tex_bot.roles_channel).mention
 
@@ -215,7 +215,7 @@ class BaseInductCog(TeXBotBaseCog):
             general_channel: discord.TextChannel = await self.tex_bot.general_channel
 
             # noinspection PyUnusedLocal
-            roles_channel_mention: str = "#roles"
+            roles_channel_mention: str = "**`#roles`**"
             with contextlib.suppress(RolesChannelDoesNotExistError):
                 roles_channel_mention = (await self.tex_bot.roles_channel).mention
 

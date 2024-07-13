@@ -71,7 +71,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         guest_role: discord.Role = await self.tex_bot.guest_role
 
         # noinspection PyUnusedLocal
-        roles_channel_mention: str = "#roles"
+        roles_channel_mention: str = "**`#roles`**"
         with contextlib.suppress(RolesChannelDoesNotExistError):
             roles_channel_mention = (await self.tex_bot.roles_channel).mention
 
