@@ -12,6 +12,8 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("tex_bot",)
 
 
+from typing import NoReturn
+
 import discord
 
 import config
@@ -27,12 +29,17 @@ with SuppressTraceback():
 
     tex_bot: TeXBot = TeXBot(intents=intents)
 
-tex_bot.load_extension("cogs")
+    tex_bot.load_extension("cogs")
 
-if __name__ == "__main__":
+
+def _run_tex_bot() -> NoReturn:
     tex_bot.run(settings["DISCORD_BOT_TOKEN"])
 
     if tex_bot.EXIT_WAS_DUE_TO_KILL_COMMAND:
         raise SystemExit(0)
 
     raise SystemExit(1)
+
+
+if __name__ == "__main__":
+    _run_tex_bot()
