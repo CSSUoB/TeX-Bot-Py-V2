@@ -20,8 +20,9 @@ class SourceCommandCog(TeXBotBaseCog):
         """Definition & callback response of the "source" command."""
         await ctx.respond(
             (
-                "TeX-Bot is an open-source project "
-                "made specifically for the CSS Discord server!\n"
+                f"{self.tex_bot.user.mention if self.tex_bot.user else "**`@TeX-Bot`**"} "
+                "is an open-source project, "
+                "originally made to help manage [the UoB CSS Discord server](https://cssbham.com/discord)!\n"
                 "You can see and contribute to the source code at [CSSUoB/TeX-Bot-Py-V2](https://github.com/CSSUoB/TeX-Bot-Py-V2)."
             ),
             ephemeral=True,
