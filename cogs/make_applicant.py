@@ -197,5 +197,6 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
                 ),
                 ephemeral=True,
             )
+            return
 
         await self._perform_make_applicant(ctx, member)
