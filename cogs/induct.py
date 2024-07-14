@@ -293,17 +293,16 @@ class InductSlashCommandCog(BaseInductCog):
         """
         try:
             main_guild: discord.Guild = ctx.tex_bot.main_guild
-        except GuildDoesNotExistError:
-            return set()
-
-        members: set[discord.Member] = {member for member in main_guild.members if not member.bot}
-
-        try:
             guest_role: discord.Role = await ctx.tex_bot.guest_role
-        except GuestRoleDoesNotExistError:
+        except (GuildDoesNotExistError, GuestRoleDoesNotExistError):
             return set()
-        else:
-            members = {member for member in members if guest_role not in member.roles}
+
+        members: set[discord.Member] = {
+            member
+            for member
+            in main_guild.members
+            if not member.bot and guest_role not in member.roles
+        }
 
         if not ctx.value or ctx.value.startswith("@"):
             return {

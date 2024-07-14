@@ -36,13 +36,9 @@ class EditMessageCommandCog(TeXBotBaseCog):
             return set()
 
         try:
-            interaction_user: discord.Member = await ctx.tex_bot.get_main_guild_member(
-                ctx.interaction.user,
-            )
+            if not await ctx.tex_bot.check_user_has_committee_role(ctx.interaction.user):
+                return set()
         except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
-            return set()
-
-        if not await ctx.tex_bot.check_user_has_committee_role(interaction_user):
             return set()
 
         return await TeXBotBaseCog.autocomplete_get_text_channels(ctx)
