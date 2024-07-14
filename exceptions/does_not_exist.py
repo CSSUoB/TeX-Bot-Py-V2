@@ -93,7 +93,7 @@ class RoleDoesNotExistError(BaseDoesNotExistError, abc.ABC):
     def __init__(self, message: str | None = None) -> None:
         """Initialise a new DoesNotExist exception for a role not existing."""
         HAS_DEPENDANTS: Final[bool] = bool(
-            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS,
+            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS  # noqa: COM812
         )
 
         if not message and HAS_DEPENDANTS:
@@ -281,7 +281,7 @@ class ChannelDoesNotExistError(BaseDoesNotExistError):
     def __init__(self, message: str | None = None) -> None:
         """Initialise a new DoesNotExist exception for a role not existing."""
         HAS_DEPENDANTS: Final[bool] = bool(
-            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS,
+            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS  # noqa: COM812
         )
 
         if not message and HAS_DEPENDANTS:

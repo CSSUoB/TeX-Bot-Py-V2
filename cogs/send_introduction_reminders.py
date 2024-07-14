@@ -228,19 +228,17 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             BUTTON_WILL_MAKE_OPT_OUT: Final[bool] = bool(
                 button.style == discord.ButtonStyle.red
                 or str(button.emoji) == emoji.emojize(":no_good:", language="alias")
-                or (button.label and "Opt-out" in button.label),
+                or (button.label and "Opt-out" in button.label)  # noqa: COM812
             )
 
             BUTTON_WILL_MAKE_OPT_IN: Final[bool] = bool(
-                    button.style == discord.ButtonStyle.green
-                    or str(button.emoji) == emoji.emojize(
-                        ":raised_hand:",
-                        language="alias",
-                    )
-                    or button.label and "Opt back in" in button.label)
+                button.style == discord.ButtonStyle.green
+                or str(button.emoji) == emoji.emojize(":raised_hand:", language="alias")
+                or (button.label and "Opt back in" in button.label)  # noqa: COM812
+            )
             INCOMPATIBLE_BUTTONS: Final[bool] = bool(
                 (BUTTON_WILL_MAKE_OPT_OUT and BUTTON_WILL_MAKE_OPT_IN)
-                or (not BUTTON_WILL_MAKE_OPT_OUT and not BUTTON_WILL_MAKE_OPT_IN),
+                or (not BUTTON_WILL_MAKE_OPT_OUT and not BUTTON_WILL_MAKE_OPT_IN)  # noqa: COM812
             )
             if INCOMPATIBLE_BUTTONS:
                 INCOMPATIBLE_BUTTONS_MESSAGE: Final[str] = "Conflicting buttons pressed"
