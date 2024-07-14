@@ -95,7 +95,6 @@ class KillCommandCog(TeXBotBaseCog):
                 view=None,
             )
             await self.tex_bot.perform_kill_and_close(initiated_by_user=ctx.interaction.user)
-            return
 
         if button_interaction.data["custom_id"] == "shutdown_cancel":  # type: ignore[index, typeddict-item]
             await confirmation_message.edit(

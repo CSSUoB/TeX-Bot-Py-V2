@@ -25,6 +25,7 @@ class StrikeTrackingError(BaseTeXBotError, RuntimeError):
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
+    @override
     def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
         return "An error occurred while trying to track manually applied moderation actions."
 

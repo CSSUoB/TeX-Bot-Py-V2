@@ -237,8 +237,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                     "Error when creating DiscordReminder object: %s",
                     create_discord_reminder_error,
                 )
-                await self.bot.close()
-                return
+                await self.tex_bot.close()
 
             await self.command_send_error(
                 ctx,

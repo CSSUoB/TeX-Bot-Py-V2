@@ -19,6 +19,7 @@ from exceptions import CommitteeRoleDoesNotExistError, DiscordMemberNotInMainGui
 from exceptions.base import (
     BaseDoesNotExistError,
 )
+
 from .tex_bot import TeXBot
 from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
 

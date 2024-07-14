@@ -81,7 +81,6 @@ class StartupCog(TeXBotBaseCog):
                 guild_id=settings["_DISCORD_MAIN_GUILD_ID"]),
             )
             await self.tex_bot.close()
-            return
 
         if self.tex_bot.application_id:
             logger.debug(
@@ -139,6 +138,5 @@ class StartupCog(TeXBotBaseCog):
                         repr("DM"),
                     )
                 await self.tex_bot.close()
-                return
 
         logger.info("Ready! Logged in as %s", self.tex_bot.user)

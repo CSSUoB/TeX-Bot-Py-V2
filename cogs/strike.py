@@ -19,7 +19,7 @@ import contextlib
 import datetime
 import logging
 import re
-from collections.abc import Mapping
+from collections.abc import Mapping, Set
 from logging import Logger
 from typing import Final
 
@@ -679,7 +679,9 @@ class ManualModerationCog(BaseStrikeCog):
             return
 
         if button_interaction.data["custom_id"] == "yes_manual_moderation_action":  # type: ignore[index, typeddict-item]
-            interaction_user: discord.User | None = self.tex_bot.get_user(applied_action_user.id)
+            interaction_user: discord.User | None = self.tex_bot.get_user(
+                applied_action_user.id,
+            )
             if not interaction_user:
                 raise StrikeTrackingError
 
@@ -779,7 +781,9 @@ class StrikeCommandCog(BaseStrikeCog):
         except GuildDoesNotExistError:
             return set()
 
-        members: set[discord.Member] = {member for member in main_guild.members if not member.bot}
+        members: set[discord.Member] = {
+            member for member in main_guild.members if not member.bot
+        }
 
         if not ctx.value or re.fullmatch(r"\A@.*\Z", ctx.value):
             return {

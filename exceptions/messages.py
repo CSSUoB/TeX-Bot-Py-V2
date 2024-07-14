@@ -13,11 +13,10 @@ from typing import override
 
 from classproperties import classproperty
 
-from .base import BaseTeXBotError
 from .config_changes import ImproperlyConfiguredError
 
 
-class InvalidMessagesJSONFileError(BaseTeXBotError, ImproperlyConfiguredError):
+class InvalidMessagesJSONFileError(ImproperlyConfiguredError):
     """Exception class to raise when the messages.json file has an invalid structure."""
 
     # noinspection PyMethodParameters,PyPep8Naming

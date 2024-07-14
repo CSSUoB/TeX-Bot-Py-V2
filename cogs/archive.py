@@ -199,12 +199,14 @@ class ArchiveCommandCog(TeXBotBaseCog):
                 await self.command_send_error(
                     ctx,
                     message=(
-                        "TeX-Bot does not have access to the channels in the selected category."
+                        "TeX-Bot does not have access to "
+                        "the channels in the selected category."
                     ),
                 )
                 logger.error(  # noqa: TRY400
                     (
-                        "TeX-Bot did not have access to the channels in the selected category: "
+                        "TeX-Bot did not have access to "
+                        "the channels in the selected category: "
                         "%s."
                     ),
                     category.name,

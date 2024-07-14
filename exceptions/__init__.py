@@ -28,8 +28,8 @@ __all__: Sequence[str] = (
 
 
 from .config_changes import (
-    RestartRequiredDueToConfigChange,
     ImproperlyConfiguredError,
+    RestartRequiredDueToConfigChange,
 )
 from .does_not_exist import (
     ApplicantRoleDoesNotExistError,
