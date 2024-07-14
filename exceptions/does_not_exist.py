@@ -63,7 +63,7 @@ class GuildDoesNotExistError(BaseDoesNotExistError):
         self.guild_id: int | None = guild_id
 
         if guild_id and not message:
-            message = self.DEFAULT_MESSAGE.replace("given ID", f"ID \"{self.guild_id}\"")
+            message = self.DEFAULT_MESSAGE.replace("given ID", f"ID '{self.guild_id}'")
 
         super().__init__(message)
 
