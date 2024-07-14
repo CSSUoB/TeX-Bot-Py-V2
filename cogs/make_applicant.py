@@ -91,7 +91,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
     """Cog class that defines the "/make_applicant" slash-command."""
 
     @staticmethod
-    async def autocomplete_get_members(ctx: TeXBotApplicationContext) -> set[discord.OptionChoice]: # noqa: E501
+    async def autocomplete_get_members(ctx: TeXBotApplicationContext) -> set[discord.OptionChoice]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable members.
 

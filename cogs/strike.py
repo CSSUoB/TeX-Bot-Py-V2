@@ -522,7 +522,7 @@ class ManualModerationCog(BaseStrikeCog):
 
         STRIKES_OUT_OF_SYNC_WITH_BAN: Final[bool] = bool(
             (action != discord.AuditLogAction.ban and member_strikes.strikes >= 3)
-            or (action == discord.AuditLogAction.ban and member_strikes.strikes > 3),
+            or (action == discord.AuditLogAction.ban and member_strikes.strikes > 3)  # noqa: COM812
         )
         if STRIKES_OUT_OF_SYNC_WITH_BAN:
             out_of_sync_ban_confirmation_message: discord.Message = await confirmation_message_channel.send(  # noqa: E501
