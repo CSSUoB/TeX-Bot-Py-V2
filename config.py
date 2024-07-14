@@ -214,7 +214,7 @@ class Settings(abc.ABC):
             )
             raise ImproperlyConfiguredError(INVALID_DISCORD_GUILD_ID_MESSAGE)
 
-        cls._settings["DISCORD_GUILD_ID"] = int(raw_discord_guild_id)  # type: ignore[arg-type]
+        cls._settings["_DISCORD_MAIN_GUILD_ID"] = int(raw_discord_guild_id)  # type: ignore[arg-type]
 
     @classmethod
     def _setup_group_full_name(cls) -> None:

@@ -98,7 +98,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
         options that have a member input-type.
         """
         try:
-            guild: discord.Guild = ctx.tex_bot.main_guild
+            main_guild: discord.Guild = ctx.tex_bot.main_guild
             applicant_role: discord.Role = await ctx.tex_bot.applicant_role
         except (GuildDoesNotExistError, ApplicantRoleDoesNotExistError):
             return set()
@@ -106,7 +106,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
         members: set[discord.Member] = {
             member
             for member
-            in guild.members
+            in main_guild.members
             if not member.bot and applicant_role not in member.roles
         }
 

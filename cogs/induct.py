@@ -55,9 +55,9 @@ class InductSendMessageCog(TeXBotBaseCog):
         a guest into your group's Discord guild.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        guild: discord.Guild = self.tex_bot.main_guild
+        main_guild: discord.Guild = self.tex_bot.main_guild
 
-        if before.guild != guild or after.guild != guild or before.bot or after.bot:
+        if before.guild != main_guild or after.guild != main_guild or before.bot or after.bot:
             return
 
         try:
@@ -183,8 +183,8 @@ class BaseInductCog(TeXBotBaseCog):
     async def _perform_induction(self, ctx: TeXBotApplicationContext, induction_member: discord.Member, *, silent: bool) -> None:  # noqa: E501
         """Perform the actual process of inducting a member by giving them the Guest role."""
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        guest_role: discord.Role = await self.tex_bot.guest_role
         main_guild: discord.Guild = self.tex_bot.main_guild
+        guest_role: discord.Role = await self.tex_bot.guest_role
 
         intro_channel: discord.TextChannel | None = discord.utils.get(
             main_guild.text_channels,
@@ -292,11 +292,11 @@ class InductSlashCommandCog(BaseInductCog):
         that have a member input-type.
         """
         try:
-            guild: discord.Guild = ctx.tex_bot.main_guild
+            main_guild: discord.Guild = ctx.tex_bot.main_guild
         except GuildDoesNotExistError:
             return set()
 
-        members: set[discord.Member] = {member for member in guild.members if not member.bot}
+        members: set[discord.Member] = {member for member in main_guild.members if not member.bot}
 
         try:
             guest_role: discord.Role = await ctx.tex_bot.guest_role

@@ -41,7 +41,7 @@ class TeXBot(discord.Bot):
     Subclass of the default Bot class provided by Pycord.
 
     This subclass allows for storing commonly accessed roles & channels
-    from your group's main Discord guild, while also raising the correct errors
+    from your group's Discord guild, while also raising the correct errors
     if these objects do not exist.
     """
 
@@ -73,16 +73,16 @@ class TeXBot(discord.Bot):
     @property
     def main_guild(self) -> discord.Guild:
         """
-        Shortcut accessor to your group's main Discord guild object.
+        Shortcut accessor to your group's Discord guild object.
 
         This shortcut accessor provides a consistent way of accessing
-        your group's main Discord guild object without having to repeatedly search for it,
-        in the set of known guilds, by its ID.
+        your group's Discord guild object without having to repeatedly search for it,
+        in the bot's list of guilds, by its ID.
 
         Raises `GuildDoesNotExist` if the given ID does not link to a valid Discord guild.
         """
-        if not self._main_guild or not self._tex_bot_has_guild(settings["DISCORD_GUILD_ID"]):
-            raise GuildDoesNotExistError(guild_id=settings["DISCORD_GUILD_ID"])
+        if not self._main_guild or not self._tex_bot_has_guild(settings["_DISCORD_MAIN_GUILD_ID"]):
+            raise GuildDoesNotExistError(guild_id=settings["_DISCORD_MAIN_GUILD_ID"])
 
         return self._main_guild
 
@@ -277,10 +277,10 @@ class TeXBot(discord.Bot):
         """
         The full name of your community group.
 
-        This is substituted into many error/welcome messages sent into the main Discord guild,
+        This is substituted into many error/welcome messages sent into your Discord guild,
         by TeX-Bot.
-        The group-full-name is either retrieved from the provided environment variable,
-        or automatically identified from the name of your group's main Discord guild.
+        The group-full-name is either retrieved from the provided environment variable
+        or automatically identified from the name of your group's Discord guild.
         """
         return (  # type: ignore[no-any-return]
             settings["_GROUP_FULL_NAME"]
