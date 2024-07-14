@@ -139,24 +139,22 @@ class CommitteeRoleDoesNotExistError(RoleDoesNotExistError):
 class CommitteeElectRoleDoesNotExistError(RoleDoesNotExistError):
     """Exception class to raise when the "Committee-Elect" Discord role is missing."""
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def ERROR_CODE(cls) -> str:  # noqa: N802,N805
-        """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
+    @override
+    def ERROR_CODE(cls) -> str:  # noqa: N805
         return "E1026"
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802, N805
-        """
-        The set of names of bot commands that require this Discord entity.
-
-        This set being empty could mean that all bot commands require this Discord entity,
-        or none of them do.
-        """  # noqa: D401
+    @override
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N805
         return frozenset({"handover"})
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def ROLE_NAME(cls) -> str:  # noqa: N802, N805
-        """The name of the Discord role that does not exist."""  # noqa: D401
+    @override
+    def ROLE_NAME(cls) -> str:  # noqa: N805
         return "Committee-Elect"
 
 
@@ -241,25 +239,20 @@ class ApplicantRoleDoesNotExistError(RoleDoesNotExistError):
 
     # noinspection PyMethodParameters
     @classproperty
-    def ERROR_CODE(cls) -> str:  # noqa: N802, N805
-        """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
+    @override
+    def ERROR_CODE(cls) -> str:  # noqa: N805
         return "E1025"
 
     # noinspection PyMethodParameters
     @classproperty
-    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802, N805
-        """
-        The set of names of bot commands that require this Discord entity.
-
-        This set being empty could mean that all bot commands require this entity,
-        or that none of them do.
-        """  # noqa: D401
+    @override
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]: # noqa: N805
         return frozenset({"make_applicant"})
 
     # noinspection PyMethodParameters
     @classproperty
-    def ROLE_NAME(cls) -> str:  # noqa: N802, N805
-        """The name of the Discord role that does not exist."""  # noqa: D401
+    @override
+    def ROLE_NAME(cls) -> str: # noqa: N805
         return "Applicant"
 
 

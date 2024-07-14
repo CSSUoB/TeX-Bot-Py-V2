@@ -158,11 +158,11 @@ class StatsCommandsCog(TeXBotBaseCog):
             ).replace("the", "").replace("THE", "").replace("The", "").strip()
         )
         else "our community group's"
-    } Discord server"""
+    }"""
 
     stats: discord.SlashCommandGroup = discord.SlashCommandGroup(
         name="stats",
-        description=f"Various statistics about {_DISCORD_SERVER_NAME}",
+        description=f"Various statistics about {_DISCORD_SERVER_NAME} Discord server",
     )
 
     # noinspection SpellCheckingInspection

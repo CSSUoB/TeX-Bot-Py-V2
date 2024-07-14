@@ -3,11 +3,12 @@
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
-    "BotRequiresRestartAfterConfigChange",
+    "RestartRequiredDueToConfigChange",
     "ChangingSettingWithRequiredSiblingError",
 )
 
 
+from collections.abc import Set
 from typing import override
 
 from classproperties import classproperty
@@ -15,19 +16,19 @@ from classproperties import classproperty
 from .base import BaseTeXBotError
 
 
-class BotRequiresRestartAfterConfigChange(BaseTeXBotError, Exception):
-    """Exception class to raise to enforce handling of bot restarts after config changes."""
+class RestartRequiredDueToConfigChange(BaseTeXBotError, Exception):
+    """Exception class to raise when a restart is required to apply config changes."""
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
-        return "TeX-Bot requires a restart due to configuration changes."
+        return "TeX-Bot requires a restart to apply configuration changes."
 
     @override
-    def __init__(self, message: str | None = None, changed_settings: set[str] | None = None) -> None:  # noqa: E501
-        """Initialise a ValueError exception for a non-existent user ID."""
-        self.changed_settings: set[str] | None = changed_settings
+    def __init__(self, message: str | None = None, changed_settings: Set[str] | None = None) -> None:  # noqa: E501
+        """Initialise an Exception to apply configuration changes."""
+        self.changed_settings: Set[str] | None = changed_settings if changed_settings else set()
 
         super().__init__(message)
 

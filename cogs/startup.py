@@ -172,9 +172,9 @@ class StartupCog(TeXBotBaseCog):
     @TeXBotBaseCog.listener()
     async def on_ready(self) -> None:
         """
-        Populate the shortcut accessors of the bot after initialisation.
+        Populate the shortcut accessors of TeX-Bot after initialisation.
 
-        Shortcut accessors should only be populated once the bot is ready to make API requests.
+        Shortcut accessors should only be populated once TeX-Bot is ready to make API requests.
         """
         self._setup_discord_log_channel()
 

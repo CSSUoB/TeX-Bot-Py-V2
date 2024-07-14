@@ -35,7 +35,7 @@ logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class TeXBotBaseCog(Cog):
-    """Base Cog subclass that stores a reference to the currently running bot."""
+    """Base Cog subclass that stores a reference to the currently running TeXBot instance."""
 
     ERROR_ACTIVITIES: Final[Mapping[str, str]] = {
         "archive": "archive the selected category",
@@ -65,7 +65,11 @@ class TeXBotBaseCog(Cog):
 
     @override
     def __init__(self, tex_bot: TeXBot) -> None:
-        """Initialise a new cog instance, storing a reference to the bot object."""
+        """
+        Initialise a new cog instance.
+
+        During initialisation, a reference to the currently running TeXBot instance is stored.
+        """
         self.tex_bot: TeXBot = tex_bot
 
     async def command_send_error(self, ctx: TeXBotApplicationContext, *, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False, responder_component: GenericResponderComponent | None = None) -> None:  # noqa: E501
@@ -96,7 +100,7 @@ class TeXBotBaseCog(Cog):
         )
 
     @classmethod
-    async def send_error(cls, bot: TeXBot, interaction: discord.Interaction, *, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False) -> None:  # noqa: PLR0913,E501
+    async def send_error(cls, tex_bot: TeXBot, interaction: discord.Interaction, *, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False) -> None:  # noqa: PLR0913,E501
         """
         Construct & format an error message from the given details.
 
@@ -105,7 +109,7 @@ class TeXBotBaseCog(Cog):
         and the bot will shortly close.
         """
         await cls._respond_with_error(
-            bot=bot,
+            bot=tex_bot,
             responder=SenderResponseComponent(interaction, ephemeral=True),
             interaction_name=interaction_name,
             error_code=error_code,
@@ -115,7 +119,7 @@ class TeXBotBaseCog(Cog):
         )
 
     @classmethod
-    async def _respond_with_error(cls, bot: TeXBot, responder: GenericResponderComponent, *, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False) -> None:  # noqa: PLR0913E501
+    async def _respond_with_error(cls, tex_bot: TeXBot, responder: GenericResponderComponent, *, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False) -> None:  # noqa: PLR0913,E501
         construct_error_message: str = ":warning:"
 
         if is_fatal:
@@ -123,7 +127,7 @@ class TeXBotBaseCog(Cog):
             fatal_committee_mention: str = "committee"
 
             with contextlib.suppress(CommitteeRoleDoesNotExistError):
-                fatal_committee_mention = (await bot.committee_role).mention
+                fatal_committee_mention = (await tex_bot.committee_role).mention
 
             construct_error_message += (
                 "A fatal error occurred, "
@@ -141,7 +145,7 @@ class TeXBotBaseCog(Cog):
                 non_fatal_committee_mention: str = "committee"
 
                 with contextlib.suppress(CommitteeRoleDoesNotExistError):
-                    non_fatal_committee_mention = (await bot.committee_role).mention
+                    non_fatal_committee_mention = (await tex_bot.committee_role).mention
 
                 construct_error_message = (
                     f"**Contact a {non_fatal_committee_mention} member, "

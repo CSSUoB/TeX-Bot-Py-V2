@@ -50,7 +50,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
             ephemeral=True,
         )
 
-        AUDIT_MESSAGE: Final[str] = f"{ctx.user} used TeX Bot Command \"Make User Applicant\""
+        AUDIT_MESSAGE: Final[str] = f"{ctx.user} used TeX-Bot Command \"Make User Applicant\""
 
         await applicant_member.add_roles(applicant_role, reason=AUDIT_MESSAGE)
 
@@ -79,7 +79,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
 
                         logger.info(
                             "Failed to add reactions because the user, %s, "
-                            "has blocked the bot.",
+                            "has blocked TeX-Bot.",
                             recent_message.author,
                         )
                     break

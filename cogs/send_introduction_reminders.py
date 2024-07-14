@@ -191,9 +191,9 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         """
 
         @override
-        def __init__(self, bot: TeXBot) -> None:
+        def __init__(self, tex_bot: TeXBot) -> None:
             """Initialise a new discord.View, to opt-in/out of introduction reminders."""
-            self.tex_bot: TeXBot = bot
+            self.tex_bot: TeXBot = tex_bot
 
             super().__init__(timeout=None)
 

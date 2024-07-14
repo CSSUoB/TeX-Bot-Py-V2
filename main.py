@@ -9,7 +9,7 @@ the asynchronous running process for TeX-Bot.
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("bot",)
+__all__: Sequence[str] = ("tex_bot",)
 
 
 from typing import NoReturn
@@ -27,22 +27,22 @@ with SuppressTraceback():
     # noinspection PyDunderSlots,PyUnresolvedReferences
     intents.members = True
 
-    bot: TeXBot = TeXBot(intents=intents)
+    tex_bot: TeXBot = TeXBot(intents=intents)
 
-    bot.load_extension("cogs")
+    tex_bot.load_extension("cogs")
 
 
 def _run_tex_bot() -> NoReturn:
-    bot.run(settings["DISCORD_BOT_TOKEN"])
+    tex_bot.run(settings["DISCORD_BOT_TOKEN"])
 
-    if bot.EXIT_REASON is TeXBotExitReason.RESTART_REQUIRED_DUE_TO_CHANGED_CONFIG:
+    if tex_bot.EXIT_REASON is TeXBotExitReason.RESTART_REQUIRED_DUE_TO_CHANGED_CONFIG:
         with SuppressTraceback():
-            bot.reset_exit_reason()
+            tex_bot.reset_exit_reason()
             config.run_setup()
-            bot.reload_extension("cogs")
+            tex_bot.reload_extension("cogs")
             _run_tex_bot()
 
-    raise SystemExit(bot.EXIT_REASON.value)
+    raise SystemExit(tex_bot.EXIT_REASON.value)
 
 
 if __name__ == "__main__":

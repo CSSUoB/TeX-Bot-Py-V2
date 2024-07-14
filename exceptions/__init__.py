@@ -19,7 +19,7 @@ __all__: Sequence[str] = (
     "EveryoneRoleCouldNotBeRetrievedError",
     "StrikeTrackingError",
     "NoAuditLogsStrikeTrackingError",
-    "BotRequiresRestartAfterConfigChange",
+    "RestartRequiredDueToConfigChange",
     "ChangingSettingWithRequiredSiblingError",
     "ErrorCodeCouldNotBeIdentifiedError",
     "UnknownDjangoError",
@@ -27,8 +27,8 @@ __all__: Sequence[str] = (
 
 
 from .config_changes import (
-    BotRequiresRestartAfterConfigChange,
     ChangingSettingWithRequiredSiblingError,
+    RestartRequiredDueToConfigChange,
 )
 from .custom_django import UnknownDjangoError
 from .does_not_exist import (

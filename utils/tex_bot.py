@@ -1,4 +1,4 @@
-"""Custom bot implementation to override the default bot class provided by Pycord."""
+"""Custom Pycord Bot class implementation."""
 
 from collections.abc import Sequence
 
@@ -58,7 +58,7 @@ class TeXBot(discord.Bot):
 
     @override
     def __init__(self, *args: object, **options: object) -> None:
-        """Initialise a new discord.Bot subclass with empty shortcut accessors."""
+        """Initialise a new Pycord Bot subclass with empty shortcut accessors."""
         self._main_guild: discord.Guild | None = None
         self._committee_role: discord.Role | None = None
         self._committee_elect_role: discord.Role | None = None
@@ -96,7 +96,7 @@ class TeXBot(discord.Bot):
 
         Raises `GuildDoesNotExist` if the given ID does not link to a valid Discord guild.
         """
-        if not self._main_guild or not self._bot_has_guild(settings["_DISCORD_MAIN_GUILD_ID"]):
+        if not self._main_guild or not self._tex_bot_has_guild(settings["_DISCORD_MAIN_GUILD_ID"]):
             raise GuildDoesNotExistError(guild_id=settings["_DISCORD_MAIN_GUILD_ID"])
 
         return self._main_guild
@@ -293,7 +293,7 @@ class TeXBot(discord.Bot):
         The full name of your community group.
 
         This is substituted into many error/welcome messages sent into your Discord guild,
-        by the bot.
+        by TeX-Bot.
         The group-full-name is either retrieved from the provided environment variable
         or automatically identified from the name of your group's Discord guild.
         """
@@ -386,7 +386,7 @@ class TeXBot(discord.Bot):
             else "our community moderators"
         )
 
-    def _bot_has_guild(self, guild_id: int) -> bool:
+    def _tex_bot_has_guild(self, guild_id: int) -> bool:
         return bool(discord.utils.get(self.guilds, id=guild_id))
 
     def _guild_has_role(self, role: discord.Role) -> bool:
@@ -482,13 +482,13 @@ class TeXBot(discord.Bot):
 
     def set_main_guild(self, main_guild: discord.Guild) -> None:
         """
-        Set the main_guild value that the bot will reference in the future.
+        Set the main_guild value that TeX-Bot will reference in the future.
 
         This can only be set once.
         """
         if self._main_guild_set:
             MAIN_GUILD_SET_MESSAGE: Final[str] = (
-                "The bot's main_guild property has already been set, it cannot be changed."
+                "TeX-Bot's main_guild property has already been set, it cannot be changed."
             )
             raise RuntimeError(MAIN_GUILD_SET_MESSAGE)
 

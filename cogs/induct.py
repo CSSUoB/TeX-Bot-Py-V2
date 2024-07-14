@@ -280,7 +280,7 @@ class BaseInductCog(TeXBotBaseCog):
 
                         logger.info(
                             "Failed to add reactions because the user, %s, "
-                            "has blocked the bot.",
+                            "has blocked TeX-Bot.",
                             recent_message.author,
                         )
                     break

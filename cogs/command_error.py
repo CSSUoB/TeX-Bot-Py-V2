@@ -126,12 +126,12 @@ class CommandErrorCog(TeXBotBaseCog):
                     ),
                 )
 
-            BOT_NEEDS_CLOSING: Final[bool] = (
+            TEX_BOT_NEEDS_CLOSING: Final[bool] = (
                 isinstance(
                     error.original,
                     RuntimeError | NotImplementedError | GuildDoesNotExistError,
                 )
                 or type(error.original) is Exception
             )
-            if BOT_NEEDS_CLOSING:
+            if TEX_BOT_NEEDS_CLOSING:
                 await self.tex_bot.close()

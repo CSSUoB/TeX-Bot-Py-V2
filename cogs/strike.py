@@ -19,7 +19,7 @@ import contextlib
 import datetime
 import logging
 import re
-from collections.abc import Mapping
+from collections.abc import Mapping, Set
 from logging import Logger
 from typing import Final, Literal, TypeAlias
 
@@ -782,7 +782,7 @@ class StrikeCommandCog(BaseStrikeCog):
     """Cog class that defines the "/strike" command and its call-back method."""
 
     @staticmethod
-    async def strike_autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice] | set[str]:  # noqa: E501
+    async def autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable members.
 
@@ -819,7 +819,7 @@ class StrikeCommandCog(BaseStrikeCog):
         name="user",
         description="The user to give a strike to.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(strike_autocomplete_get_members),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
         required=True,
         parameter_name="str_strike_member_id",
     )

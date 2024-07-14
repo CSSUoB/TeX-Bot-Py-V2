@@ -21,6 +21,7 @@ from discord.ui import View
 from .tex_bot_contexts import TeXBotApplicationContext
 
 
+# noinspection PyPep8Naming
 class _VIEW_NOT_PROVIDED:  # noqa: N801
     pass
 
