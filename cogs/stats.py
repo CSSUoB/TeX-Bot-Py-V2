@@ -513,7 +513,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
     # noinspection SpellCheckingInspection
     @stats.command(
-        name="leftmembers",
+        name="left-members",
         description=f"Displays the stats about members that have left {_DISCORD_SERVER_NAME}",
     )
     async def left_member_stats(self, ctx: TeXBotApplicationContext) -> None:
