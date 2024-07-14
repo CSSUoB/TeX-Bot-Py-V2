@@ -186,6 +186,9 @@ class StatsCommandsCog(TeXBotBaseCog):
         The "channel_stats" command sends a graph of the stats about messages sent in the given
         channel.
         """
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        main_guild: discord.Guild = self.tex_bot.main_guild
+
         channel_id: int = ctx.channel_id
 
         if str_channel_id:
@@ -198,10 +201,8 @@ class StatsCommandsCog(TeXBotBaseCog):
 
             channel_id = int(str_channel_id)
 
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        guild: discord.Guild = self.tex_bot.main_guild
         channel: discord.TextChannel | None = discord.utils.get(
-            guild.text_channels,
+            main_guild.text_channels,
             id=channel_id,
         )
         if not channel:
@@ -217,7 +218,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
         role_name: str
         for role_name in settings["STATISTICS_ROLES"]:
-            if discord.utils.get(guild.roles, name=role_name):
+            if discord.utils.get(main_guild.roles, name=role_name):
                 message_counts[f"@{role_name}"] = 0
 
         message_history_period: discord.iterators.HistoryIterator = channel.history(
@@ -299,7 +300,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         of your group's Discord guild.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        guild: discord.Guild = self.tex_bot.main_guild
+        main_guild: discord.Guild = self.tex_bot.main_guild
         guest_role: discord.Role = await self.tex_bot.guest_role
 
         await ctx.defer(ephemeral=True)
@@ -311,11 +312,11 @@ class StatsCommandsCog(TeXBotBaseCog):
 
         role_name: str
         for role_name in settings["STATISTICS_ROLES"]:
-            if discord.utils.get(guild.roles, name=role_name):
+            if discord.utils.get(main_guild.roles, name=role_name):
                 message_counts["roles"][f"@{role_name}"] = 0
 
         channel: discord.TextChannel
-        for channel in guild.text_channels:
+        for channel in main_guild.text_channels:
             member_has_access_to_channel: bool = channel.permissions_for(
                 guest_role,
             ).is_superset(
@@ -434,7 +435,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         member.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        guild: discord.Guild = self.tex_bot.main_guild
+        main_guild: discord.Guild = self.tex_bot.main_guild
         interaction_member: discord.Member = await self.tex_bot.get_main_guild_member(ctx.user)
         guest_role: discord.Role = await self.tex_bot.guest_role
 
@@ -454,7 +455,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         message_counts: dict[str, int] = {"Total": 0}
 
         channel: discord.TextChannel
-        for channel in guild.text_channels:
+        for channel in main_guild.text_channels:
             member_has_access_to_channel: bool = channel.permissions_for(
                 guest_role,
             ).is_superset(
@@ -522,7 +523,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         had when they left your group's Discord guild.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        guild: discord.Guild = self.tex_bot.main_guild
+        main_guild: discord.Guild = self.tex_bot.main_guild
 
         await ctx.defer(ephemeral=True)
 
@@ -532,7 +533,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
         role_name: str
         for role_name in settings["STATISTICS_ROLES"]:
-            if discord.utils.get(guild.roles, name=role_name):
+            if discord.utils.get(main_guild.roles, name=role_name):
                 left_member_counts[f"@{role_name}"] = 0
 
         left_member: LeftDiscordMember

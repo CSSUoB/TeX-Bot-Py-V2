@@ -775,11 +775,11 @@ class StrikeCommandCog(BaseStrikeCog):
         that have a member input-type.
         """
         try:
-            guild: discord.Guild = ctx.tex_bot.main_guild
+            main_guild: discord.Guild = ctx.tex_bot.main_guild
         except GuildDoesNotExistError:
             return set()
 
-        members: set[discord.Member] = {member for member in guild.members if not member.bot}
+        members: set[discord.Member] = {member for member in main_guild.members if not member.bot}
 
         if not ctx.value or re.fullmatch(r"\A@.*\Z", ctx.value):
             return {
