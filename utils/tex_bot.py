@@ -8,7 +8,7 @@ __all__: Sequence[str] = ("TeXBot",)
 import logging
 import re
 from logging import Logger
-from typing import TYPE_CHECKING, Final, override
+from typing import TYPE_CHECKING, Final, NoReturn, override
 
 import aiohttp
 import discord
@@ -63,6 +63,10 @@ class TeXBot(discord.Bot):
         self._main_guild_set: bool = False
 
         super().__init__(*args, **options)  # type: ignore[no-untyped-call]
+
+    @override
+    async def close(self) -> NoReturn:  # type: ignore[misc]
+        await super().close()
 
     # noinspection PyPep8Naming
     @property
@@ -395,7 +399,7 @@ class TeXBot(discord.Bot):
 
         return text_channel
 
-    async def perform_kill_and_close(self, initiated_by_user: discord.User | discord.Member | None = None) -> None:  # noqa: E501
+    async def perform_kill_and_close(self, initiated_by_user: discord.User | discord.Member | None = None) -> NoReturn:  # noqa: E501
         """
         Shutdown TeX-Bot by using the "/kill" command.
 

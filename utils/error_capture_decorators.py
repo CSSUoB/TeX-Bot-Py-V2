@@ -70,7 +70,6 @@ class ErrorCaptureDecorators:
             except error_type as error:
                 close_func(error)
                 await self.tex_bot.close()
-                return None
         return wrapper  # type: ignore[return-value]
 
     @staticmethod

@@ -336,7 +336,6 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                         ),
                     )
                     await self.tex_bot.close()
-                    return
 
                 await channel.send(
                     "**Sorry it's a bit late! "
