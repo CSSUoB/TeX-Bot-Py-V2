@@ -223,7 +223,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                 channel_type=ctx.channel.type,
             )
         except ValidationError as create_discord_reminder_error:
-            error_is_already_exists: bool = (
+            ERROR_IS_ALREADY_EXISTS: Final[bool] = (
                 "__all__" in create_discord_reminder_error.message_dict
                 and any(
                     "already exists" in error
@@ -231,7 +231,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                     in create_discord_reminder_error.message_dict["__all__"]
                 )
             )
-            if not error_is_already_exists:
+            if not ERROR_IS_ALREADY_EXISTS:
                 await self.command_send_error(ctx, message="An unrecoverable error occurred.")
                 logger.critical(
                     "Error when creating DiscordReminder object: %s",

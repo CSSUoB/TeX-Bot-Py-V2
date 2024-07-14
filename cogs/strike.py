@@ -55,6 +55,13 @@ from utils.message_sender_components import (
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
+FORMATTED_MODERATION_ACTIONS: Final[Mapping[discord.AuditLogAction, str]] = {
+    discord.AuditLogAction.member_update: "timed-out",
+    discord.AuditLogAction.kick: "kicked",
+    discord.AuditLogAction.ban: "banned",
+    discord.AuditLogAction.auto_moderation_user_communication_disabled: "timed-out",
+}
+
 
 async def perform_moderation_action(strike_user: discord.Member, strikes: int, committee_member: discord.Member | discord.User) -> None:  # noqa: E501
     """
@@ -476,16 +483,15 @@ class ManualModerationCog(BaseStrikeCog):
                 if _audit_log_entry.target.id == strike_user.id  # NOTE: IDs are checked here rather than the objects themselves as the audit log provides an unusual object type in some cases.
             )
         except (StopIteration, StopAsyncIteration):
-            IRRETRIEVABLE_AUDIT_LOG_MESSAGE: Final[str] = (
-                f"Unable to retrieve audit log entry of {str(action)!r} action "
-                f"on user {str(strike_user)!r}"
-            )
-
             logger.debug("Printing 5 most recent audit logs:")
             debug_audit_log_entry: discord.AuditLogEntry
             async for debug_audit_log_entry in main_guild.audit_logs(limit=5):
                 logger.debug(debug_audit_log_entry)
 
+            IRRETRIEVABLE_AUDIT_LOG_MESSAGE: Final[str] = (
+                f"Unable to retrieve audit log entry of {str(action)!r} action "
+                f"on user {str(strike_user)!r}"
+            )
             raise NoAuditLogsStrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
 
         if not audit_log_entry.user:
@@ -508,24 +514,17 @@ class ManualModerationCog(BaseStrikeCog):
                 str(fetch_log_channel_error),
             ) from fetch_log_channel_error
 
-        MODERATION_ACTIONS: Final[Mapping[discord.AuditLogAction, str]] = {
-            discord.AuditLogAction.member_update: "timed-out",
-            discord.AuditLogAction.auto_moderation_user_communication_disabled: "timed-out",
-            discord.AuditLogAction.kick: "kicked",
-            discord.AuditLogAction.ban: "banned",
-        }
-
         member_strikes: DiscordMemberStrikes = (  # type: ignore[assignment]
             await DiscordMemberStrikes.objects.aget_or_create(
                 discord_id=strike_user.id,
             )
         )[0]
 
-        strikes_out_of_sync_with_ban: bool = bool(
+        STRIKES_OUT_OF_SYNC_WITH_BAN: Final[bool] = bool(
             (action != discord.AuditLogAction.ban and member_strikes.strikes >= 3)
             or (action == discord.AuditLogAction.ban and member_strikes.strikes > 3),
         )
-        if strikes_out_of_sync_with_ban:
+        if STRIKES_OUT_OF_SYNC_WITH_BAN:
             out_of_sync_ban_confirmation_message: discord.Message = await confirmation_message_channel.send(  # noqa: E501
                 content=(
                     f"""Hi {
@@ -537,7 +536,7 @@ class ManualModerationCog(BaseStrikeCog):
                         "you"
                         if not applied_action_user.bot
                         else f"one of your other bots (namely {applied_action_user.mention})"
-                    } {MODERATION_ACTIONS[action]} {strike_user.mention}. """
+                    } {FORMATTED_MODERATION_ACTIONS[action]} {strike_user.mention}. """
                     "Because this moderation action was done manually "
                     "(rather than using my `/strike` command), I could not automatically "
                     f"keep track of the moderation action to apply. "
@@ -629,7 +628,7 @@ class ManualModerationCog(BaseStrikeCog):
                     "you"
                     if not applied_action_user.bot
                     else f"one of your other bots (namely {applied_action_user.mention})"
-                } {MODERATION_ACTIONS[action]} {strike_user.mention}. """
+                } {FORMATTED_MODERATION_ACTIONS[action]} {strike_user.mention}. """
                 "Because this moderation action was done manually "
                 "(rather than using my `/strike` command), I could not automatically "
                 f"keep track of the correct moderation action to apply. "

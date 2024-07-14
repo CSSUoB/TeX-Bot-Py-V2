@@ -131,13 +131,13 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
             async for message in member.history():
                 # noinspection PyUnresolvedReferences
-                message_contains_opt_in_out_button: bool = (
+                MESSAGE_CONTAINS_OPT_IN_OUT_BUTTON: bool = (
                     bool(message.components)
                     and isinstance(message.components[0], discord.ActionRow)
                     and isinstance(message.components[0].children[0], discord.Button)
                     and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button"  # noqa: E501
                 )
-                if message_contains_opt_in_out_button:
+                if MESSAGE_CONTAINS_OPT_IN_OUT_BUTTON:
                     await message.edit(view=None)
 
             if member not in main_guild.members:  # HACK: Caching errors can cause the member to no longer be part of the guild at this point, so this check must be performed before sending that member a message # noqa: FIX004
@@ -231,7 +231,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 or (button.label and "Opt-out" in button.label),
             )
 
-            _BUTTON_WILL_MAKE_OPT_IN: Final[bool] = bool(
+            BUTTON_WILL_MAKE_OPT_IN: Final[bool] = bool(
                     button.style == discord.ButtonStyle.green
                     or str(button.emoji) == emoji.emojize(
                         ":raised_hand:",
@@ -239,12 +239,14 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     )
                     or button.label and "Opt back in" in button.label)
             INCOMPATIBLE_BUTTONS: Final[bool] = bool(
-                (BUTTON_WILL_MAKE_OPT_OUT and _BUTTON_WILL_MAKE_OPT_IN)
-                or (not BUTTON_WILL_MAKE_OPT_OUT and not _BUTTON_WILL_MAKE_OPT_IN),
+                (BUTTON_WILL_MAKE_OPT_OUT and BUTTON_WILL_MAKE_OPT_IN)
+                or (not BUTTON_WILL_MAKE_OPT_OUT and not BUTTON_WILL_MAKE_OPT_IN),
             )
             if INCOMPATIBLE_BUTTONS:
                 INCOMPATIBLE_BUTTONS_MESSAGE: Final[str] = "Conflicting buttons pressed"
                 raise ValueError(INCOMPATIBLE_BUTTONS_MESSAGE)
+
+            del BUTTON_WILL_MAKE_OPT_IN
 
             if not interaction.user:
                 await self.send_error(interaction)
