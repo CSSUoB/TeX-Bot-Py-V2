@@ -123,19 +123,19 @@ class ArchiveCommandCog(TeXBotBaseCog):
         channel: AllChannelTypes
         for channel in category.channels:
             try:
-                channel_needs_committee_archiving: bool = (
+                CHANNEL_NEEDS_COMMITTEE_ARCHIVING: bool = (
                     channel.permissions_for(committee_role).is_superset(
                         discord.Permissions(view_channel=True),
                     ) and not channel.permissions_for(guest_role).is_superset(
                         discord.Permissions(view_channel=True),
                     )
                 )
-                channel_needs_normal_archiving: bool = channel.permissions_for(
-                    guest_role,
-                ).is_superset(
-                    discord.Permissions(view_channel=True),
+                CHANNEL_NEEDS_NORMAL_ARCHIVING: bool = (
+                    channel.permissions_for(guest_role).is_superset(
+                        discord.Permissions(view_channel=True),
+                    )
                 )
-                if channel_needs_committee_archiving:
+                if CHANNEL_NEEDS_COMMITTEE_ARCHIVING:
                     await channel.set_permissions(
                         everyone_role,
                         reason=f"{interaction_member.display_name} used \"/archive\".",
@@ -157,7 +157,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
                         reason=f"{interaction_member.display_name} used \"/archive\".",
                     )
 
-                elif channel_needs_normal_archiving:
+                elif CHANNEL_NEEDS_NORMAL_ARCHIVING:
                     await channel.set_permissions(
                         everyone_role,
                         reason=f"{interaction_member.display_name} used \"/archive\".",
