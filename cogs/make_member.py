@@ -124,7 +124,8 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             await self.command_send_error(
                 ctx,
                 message=(
-                    f"{group_member_id!r} is not a valid {self.tex_bot.group_member_id_type} ID."
+                    f"{group_member_id!r} is not a valid "
+                    f"{self.tex_bot.group_member_id_type} ID."
                 ),
             )
             return

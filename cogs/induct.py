@@ -118,7 +118,7 @@ class InductSendMessageCog(TeXBotBaseCog):
                 await after.send(
                     f"You can also get yourself an annual membership "
                     f"to {self.tex_bot.group_full_name} for only £5! "
-                    f"""Just head to {settings["PURCHASE_MEMBERSHIP_URL"]}. """
+                    f"Just head to {settings["PURCHASE_MEMBERSHIP_URL"]}. "
                     "You'll get awesome perks like a free T-shirt:shirt:, "
                     "access to member only events:calendar_spiral: and a cool green name on "
                     f"the {self.tex_bot.group_short_name} Discord server:green_square:! "
