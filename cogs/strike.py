@@ -421,9 +421,9 @@ class ManualModerationCog(BaseStrikeCog):
         """
         Retrieve the correct channel to send the strike confirmation message to.
 
-        This is based upon the MANUAL_MODERATION_WARNING_MESSAGE_LOCATION config setting value.
+        This is based upon the STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION config setting value.
         """
-        if settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] == "DM":
+        if settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] == "DM":
             if user.bot:
                 fetch_log_channel_error: RuntimeError
                 try:
@@ -451,12 +451,12 @@ class ManualModerationCog(BaseStrikeCog):
 
         guild_confirmation_message_channel: discord.TextChannel | None = discord.utils.get(
             self.tex_bot.main_guild.text_channels,
-            name=settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"],
+            name=settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"],
         )
         if not guild_confirmation_message_channel:
             CHANNEL_DOES_NOT_EXIST_MESSAGE: Final[str] = (
                 "The channel "
-                f"""{settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"]!r} """
+                f"""{settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"]!r} """
                 "does not exist, so cannot be used as the location "
                 "for sending manual-moderation warning messages"
             )

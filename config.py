@@ -394,22 +394,22 @@ class Settings(abc.ABC):
         cls._settings["MEMBERS_LIST_URL"] = raw_members_list_url
 
     @classmethod
-    def _setup_members_list_url_session_cookie(cls) -> None:
-        raw_members_list_url_session_cookie: str | None = os.getenv(
+    def _setup_members_list_auth_session_cookie(cls) -> None:
+        raw_members_list_auth_session_cookie: str | None = os.getenv(
             "MEMBERS_LIST_URL_SESSION_COOKIE",
         )
 
-        MEMBERS_LIST_URL_SESSION_COOKIE_IS_VALID: Final[bool] = bool(
-            raw_members_list_url_session_cookie
-            and re.fullmatch(r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_url_session_cookie),
+        MEMBERS_LIST_AUTH_SESSION_COOKIE_IS_VALID: Final[bool] = bool(
+            raw_members_list_auth_session_cookie
+            and re.fullmatch(r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_auth_session_cookie),
         )
-        if not MEMBERS_LIST_URL_SESSION_COOKIE_IS_VALID:
-            INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
+        if not MEMBERS_LIST_AUTH_SESSION_COOKIE_IS_VALID:
+            INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE: Final[str] = (
                 "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
             )
-            raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE)
 
-        cls._settings["MEMBERS_LIST_URL_SESSION_COOKIE"] = raw_members_list_url_session_cookie
+        cls._settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"] = raw_members_list_auth_session_cookie
 
     @classmethod
     def _setup_send_introduction_reminders(cls) -> None:
@@ -667,20 +667,20 @@ class Settings(abc.ABC):
         cls._settings["MODERATION_DOCUMENT_URL"] = raw_moderation_document_url
 
     @classmethod
-    def _setup_manual_moderation_warning_message_location(cls) -> None:
-        raw_manual_moderation_warning_message_location: str = os.getenv(
+    def _setup_strike_performed_manually_warning_location(cls) -> None:
+        raw_strike_performed_manually_warning_location: str = os.getenv(
             "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION",
             "DM",
         )
-        if not raw_manual_moderation_warning_message_location:
-            MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE: Final[str] = (
+        if not raw_strike_performed_manually_warning_location:
+            STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_MESSAGE: Final[str] = (
                 "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION must be a valid name "
                 "of a channel in your group's Discord guild."
             )
-            raise ImproperlyConfiguredError(MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE)
+            raise ImproperlyConfiguredError(STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_MESSAGE)
 
-        cls._settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] = (
-            raw_manual_moderation_warning_message_location
+        cls._settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] = (
+            raw_strike_performed_manually_warning_location
         )
 
     @classmethod
@@ -707,7 +707,7 @@ class Settings(abc.ABC):
         cls._setup_welcome_messages()
         cls._setup_roles_messages()
         cls._setup_members_list_url()
-        cls._setup_members_list_url_session_cookie()
+        cls._setup_members_list_auth_session_cookie()
         cls._setup_membership_perks_url()
         cls._setup_purchase_membership_url()
         cls._setup_send_introduction_reminders()
@@ -719,7 +719,7 @@ class Settings(abc.ABC):
         cls._setup_statistics_days()
         cls._setup_statistics_roles()
         cls._setup_moderation_document_url()
-        cls._setup_manual_moderation_warning_message_location()
+        cls._setup_strike_performed_manually_warning_location()
 
         cls._is_env_variables_setup = True
 
