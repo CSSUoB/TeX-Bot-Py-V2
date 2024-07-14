@@ -37,7 +37,7 @@ class RestartRequiredDueToConfigChange(BaseTeXBotError, Exception):
 
     @override
     def __init__(self, message: str | None = None, changed_settings: Set[str] | None = None) -> None:  # noqa: E501
-        """Initialise an Exception to apply configuration changes.."""
+        """Initialise an Exception to apply configuration changes."""
         self.changed_settings: Set[str] | None = changed_settings if changed_settings else set()
 
         super().__init__(message)

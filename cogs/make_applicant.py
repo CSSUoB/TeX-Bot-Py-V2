@@ -132,7 +132,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="user",
-        description="The user to make an Applicant",
+        description="The user to make an Applicant.",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
         required=True,
