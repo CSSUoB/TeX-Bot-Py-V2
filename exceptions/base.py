@@ -21,7 +21,7 @@ class BaseTeXBotError(BaseException, abc.ABC):
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802,N805
+    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802, N805
         """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
 
     @override
@@ -58,7 +58,7 @@ class BaseErrorWithErrorCode(BaseTeXBotError, abc.ABC):
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def ERROR_CODE(cls) -> str:  # noqa: N802,N805
+    def ERROR_CODE(cls) -> str:  # noqa: N802, N805
         """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
 
 
@@ -67,7 +67,7 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802,N805
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802, N805
         """
         The set of names of commands that require this Discord entity.
 
@@ -78,7 +78,7 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def DEPENDENT_TASKS(cls) -> frozenset[str]:  # noqa: N802,N805
+    def DEPENDENT_TASKS(cls) -> frozenset[str]:  # noqa: N802, N805
         """
         The set of names of tasks that require this Discord entity.
 
@@ -89,7 +89,7 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def DEPENDENT_EVENTS(cls) -> frozenset[str]:  # noqa: N802,N805
+    def DEPENDENT_EVENTS(cls) -> frozenset[str]:  # noqa: N802, N805
         """
         The set of names of event listeners that require this Discord entity.
 
@@ -101,7 +101,7 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def DOES_NOT_EXIST_TYPE(cls) -> str:  # noqa: N802,N805
+    def DOES_NOT_EXIST_TYPE(cls) -> str:  # noqa: N802, N805
         """The name of the Discord entity that this `DoesNotExistError` is associated with."""  # noqa: D401
 
     @classmethod

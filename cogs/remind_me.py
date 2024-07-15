@@ -35,7 +35,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/remind-me" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: C901,PLR0912,PLR0915,E501
+    async def autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: C901, PLR0912, PLR0915, E501
         """
         Autocomplete callable that generates the common delay input values.
 
