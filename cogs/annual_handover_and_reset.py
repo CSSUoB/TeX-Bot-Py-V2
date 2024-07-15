@@ -6,7 +6,7 @@ from collections.abc import Sequence
 __all__: Sequence[str] = (
     "CommitteeHandoverCommandCog",
     "AnnualRolesResetCommandCog",
-    "IterateYearChannelsCommandCog",
+    "AnnualYearChannelsIncrementCommandCog",
 )
 
 import datetime
@@ -228,7 +228,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
         logger.debug("Execution of reset roles command complete!")
         await initial_response.edit(content=":white_check_mark: Role reset complete!")
 
-class IterateYearChannelsCommandCog(TeXBotBaseCog):
+class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/iterate-year-channels" command."""
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
