@@ -233,13 +233,13 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="increment-year-channels",
-        description="Iterates the year channels, archiving and creating channels as needed.",
+        description="Increments the year channels, archiving and creating channels as needed.",
     )
     async def increment_year_channels(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition and callback response of the "increment_year_channels" command.
 
-        The increment_year_channels command:
+        The "increment_year_channels" command:
         - Archives the current "final-years" channel
         - Renames the current "second-years" channel to "final-years"
         - Renames the current "first-years" channel to "second-years"
@@ -307,8 +307,8 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
             content=(
                 ":hourglass: Creating new \"first-years\" channel and setting permissions... "
                 ":hourglass:"
-                ),
-            )
+            ),
+        )
 
         new_first_years_channel: discord.TextChannel = await main_guild.create_text_channel(
             name="first-years",
