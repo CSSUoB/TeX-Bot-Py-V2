@@ -240,16 +240,17 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
         Definition and callback response of the "increment_year_channels" command.
 
         The increment_year_channels command:
-        - Archives the current final-years channel
-        - Renames the current second year channel to final-years
-        - Renames the current first year channel to second-years
-        - Creates a new first years channel
+        - Archives the current "final-years" channel
+        - Renames the current "second-years" channel to "final-years"
+        - Renames the current "first-years" channel to "second-years"
+        - Creates a new "first-years" channel
         """
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
         initial_message: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-            content=":hourglass: Processing year channel iteration... :hourglass:",
+            content=":hourglass: Incrementing year channels... :hourglass:",
         )
 
         final_year_channel: discord.TextChannel | None = discord.utils.get(
@@ -259,7 +260,7 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
 
         if final_year_channel:
             await initial_message.edit(
-                content=":hourglass: Archiving final year channel... :hourglass:",
+                content=":hourglass: Archiving \"final-years\" channel... :hourglass:",
             )
             archivist_role: discord.Role = await self.bot.archivist_role
 
@@ -267,7 +268,7 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
             await final_year_channel.set_permissions(archivist_role, read_messages=True)
 
             await final_year_channel.edit(
-                name="final-years-" + str(datetime.datetime.now(tz=datetime.UTC).year),
+                name=f"final-years-{datetime.datetime.now(tz=datetime.UTC).year}",
             )
 
             archived_category: discord.CategoryChannel | None = discord.utils.get(
@@ -281,13 +282,13 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                     sync_permissions=True,
                 )
 
-        second_year_channel: discord.TextChannel | None = discord.utils.get(
+        second_years_channel: discord.TextChannel | None = discord.utils.get(
             main_guild.text_channels,
             name="second-years",
         )
 
-        if second_year_channel:
-            await second_year_channel.edit(name="final-years")
+        if second_years_channel:
+            await second_years_channel.edit(name="final-years")
 
         first_year_channel: discord.TextChannel | None = discord.utils.get(
             main_guild.text_channels,
@@ -302,34 +303,37 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
             name="Year Chats",
         )
 
-        await initial_message.edit(content=(
-            ":hourglass: Creating new first year channel and setting permissions... "
-            ":hourglass:"
-        ))
+        await initial_message.edit(
+            content=(
+                ":hourglass: Creating new \"first-years\" channel and setting permissions... "
+                ":hourglass:"
+                ),
+            )
 
-        new_first_year_channel: discord.TextChannel = await main_guild.create_text_channel(
+        new_first_years_channel: discord.TextChannel = await main_guild.create_text_channel(
             name="first-years",
         )
 
         if year_channels_category:
-            await new_first_year_channel.edit(
+            await new_first_years_channel.edit(
                 category=year_channels_category,
                 sync_permissions=True,
                 position=0,
             )
-
-            await initial_message.edit(
-                content=":white_check_mark: Year channel iterations complete!",
+        else:
+            await new_first_years_channel.set_permissions(
+                guest_role,
+                read_messages=True,
+                send_messages=True,
             )
-            return
 
-        await new_first_year_channel.set_permissions(
-            guest_role,
-            read_messages=True,
-            send_messages=True,
+        await initial_message.edit(
+            content=(
+                ":white_check_mark: Year channels were successfully incremented"
+                f"{
+                    ". However, no \"Year Chats\" category was found."
+                    if not year_channels_category else
+                    ""
+                }. :white_check_mark:"
+            ),
         )
-
-        await initial_message.edit(content=(
-            ":white_check_mark: Year channel iterations complete "
-            "but no year channel category was found!"
-        ))
