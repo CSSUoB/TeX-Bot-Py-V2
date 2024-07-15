@@ -514,7 +514,7 @@ class TeXBot(discord.Bot):
             )
             raise ValueError(NO_LOG_CHANNEL_MESSAGE)
         session: aiohttp.ClientSession
-        with aiohttp.ClientSession() as session:  # type: ignore[assignment]
+        async with aiohttp.ClientSession() as session:
             partial_webhook: Webhook = Webhook.from_url(
                 settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
                 session=session,
