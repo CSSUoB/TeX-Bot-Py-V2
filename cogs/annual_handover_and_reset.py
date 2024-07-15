@@ -229,17 +229,17 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
         await initial_response.edit(content=":white_check_mark: Role reset complete!")
 
 class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
-    """Cog class that defines the "/iterate-year-channels" command."""
+    """Cog class that defines the "/increment-year-channels" command."""
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="iterate-year-channels",
-        description="Iterates the year channels, archiving and creating channels as needed",
+        name="increment-year-channels",
+        description="Iterates the year channels, archiving and creating channels as needed.",
     )
-    async def iterate_year_channels(self, ctx: TeXBotApplicationContext) -> None:
+    async def increment_year_channels(self, ctx: TeXBotApplicationContext) -> None:
         """
-        Definition and callback response of the "iterate-year-channels" command.
+        Definition and callback response of the "increment_year_channels" command.
 
-        This command:
+        The increment_year_channels command:
         - Archives the current final-years channel
         - Renames the current second year channel to final-years
         - Renames the current first year channel to second-years
