@@ -246,8 +246,8 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
         - Creates a new "first-years" channel
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.bot.main_guild
-        guest_role: discord.Role = await self.bot.guest_role
+        main_guild: discord.Guild = self.tex_bot.main_guild
+        guest_role: discord.Role = await self.tex_bot.guest_role
 
         initial_message: discord.Interaction | discord.WebhookMessage = await ctx.respond(
             content=":hourglass: Incrementing year channels... :hourglass:",
@@ -262,7 +262,7 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
             await initial_message.edit(
                 content=":hourglass: Archiving \"final-years\" channel... :hourglass:",
             )
-            archivist_role: discord.Role = await self.bot.archivist_role
+            archivist_role: discord.Role = await self.tex_bot.archivist_role
 
             await final_year_channel.set_permissions(guest_role, overwrite=None)
             await final_year_channel.set_permissions(archivist_role, read_messages=True)
