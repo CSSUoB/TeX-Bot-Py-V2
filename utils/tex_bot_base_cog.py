@@ -8,9 +8,9 @@ __all__: Sequence[str] = ("TeXBotBaseCog",)
 import contextlib
 import logging
 import re
-from collections.abc import Mapping
+from collections.abc import Mapping, Set
 from logging import Logger
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Final, override
 
 import discord
 from discord import Cog
@@ -19,8 +19,9 @@ from exceptions import CommitteeRoleDoesNotExistError, DiscordMemberNotInMainGui
 from exceptions.base import (
     BaseDoesNotExistError,
 )
-from utils.tex_bot import TeXBot
-from utils.tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
+
+from .tex_bot import TeXBot
+from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 if TYPE_CHECKING:
     from typing import TypeAlias
@@ -29,11 +30,11 @@ if TYPE_CHECKING:
 if TYPE_CHECKING:
     MentionableMember: TypeAlias = discord.Member | discord.Role
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class TeXBotBaseCog(Cog):
-    """Base Cog subclass that stores a reference to the currently running bot."""
+    """Base Cog subclass that stores a reference to the currently running TeXBot instance."""
 
     ERROR_ACTIVITIES: Final[Mapping[str, str]] = {
         "archive": "archive the selected category",
@@ -61,9 +62,14 @@ class TeXBotBaseCog(Cog):
         "write_roles": "send messages",
     }
 
-    def __init__(self, bot: TeXBot) -> None:
-        """Initialize a new cog instance, storing a reference to the bot object."""
-        self.bot: TeXBot = bot
+    @override
+    def __init__(self, tex_bot: TeXBot) -> None:
+        """
+        Initialise a new cog instance.
+
+        During initialisation, a reference to the currently running TeXBot instance is stored.
+        """
+        self.tex_bot: TeXBot = tex_bot
 
     async def command_send_error(self, ctx: TeXBotApplicationContext, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
         """
@@ -81,7 +87,7 @@ class TeXBotBaseCog(Cog):
         )
 
         await self.send_error(
-            self.bot,
+            self.tex_bot,
             ctx.interaction,
             interaction_name=COMMAND_NAME,
             error_code=error_code,
@@ -90,7 +96,7 @@ class TeXBotBaseCog(Cog):
         )
 
     @classmethod
-    async def send_error(cls, bot: TeXBot, interaction: discord.Interaction, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
+    async def send_error(cls, tex_bot: TeXBot, interaction: discord.Interaction, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
         """
         Construct & format an error message from the given details.
 
@@ -103,7 +109,7 @@ class TeXBotBaseCog(Cog):
             committee_mention: str = "committee"
 
             with contextlib.suppress(CommitteeRoleDoesNotExistError):
-                committee_mention = (await bot.committee_role).mention
+                committee_mention = (await tex_bot.committee_role).mention
 
             construct_error_message = (
                 f"**Contact a {committee_mention} member, referencing error code: "
@@ -148,29 +154,29 @@ class TeXBotBaseCog(Cog):
             )
 
     @staticmethod
-    async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+    async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable channels.
 
-        The list of available selectable channels is unique to each member, and is used in any
+        The list of available selectable channels is unique to each member and is used in any
         slash-command options that have a channel input-type.
         """
         if not ctx.interaction.user:
             return set()
 
         try:
-            main_guild: discord.Guild = ctx.bot.main_guild
+            main_guild: discord.Guild = ctx.tex_bot.main_guild
             # noinspection PyUnusedLocal
-            channel_permissions_limiter: MentionableMember = await ctx.bot.guest_role
+            channel_permissions_limiter: MentionableMember = await ctx.tex_bot.guest_role
         except BaseDoesNotExistError:
             return set()
 
         with contextlib.suppress(DiscordMemberNotInMainGuildError):
-            channel_permissions_limiter = await ctx.bot.get_main_guild_member(
+            channel_permissions_limiter = await ctx.tex_bot.get_main_guild_member(
                 ctx.interaction.user,
             )
 
-        if not ctx.value or re.match(r"\A#.*\Z", ctx.value):
+        if not ctx.value or re.fullmatch(r"\A#.*\Z", ctx.value):
             return {
                 discord.OptionChoice(name=f"#{channel.name}", value=str(channel.id))
                 for channel
