@@ -23,7 +23,7 @@ class CommandChecks:
     @staticmethod
     async def _check_interaction_user_in_main_guild(ctx: TeXBotApplicationContext) -> bool:
         try:
-            await ctx.bot.get_main_guild_member(ctx.user)
+            await ctx.tex_bot.get_main_guild_member(ctx.user)
         except DiscordMemberNotInMainGuildError:
             return False
         return True
@@ -38,7 +38,7 @@ class CommandChecks:
 
     @staticmethod
     async def _check_interaction_user_has_committee_role(ctx: TeXBotApplicationContext) -> bool:  # noqa: E501
-        return await ctx.bot.check_user_has_committee_role(ctx.user)
+        return await ctx.tex_bot.check_user_has_committee_role(ctx.user)
 
     check_interaction_user_has_committee_role: Callable[[T], T]
     """
@@ -50,11 +50,13 @@ class CommandChecks:
 
     @classmethod
     def is_interaction_user_in_main_guild_failure(cls, check: CheckFailure) -> bool:
+        # noinspection GrazieInspection
         """Whether check failed due to the interaction user not being in your Discord guild."""
         return bool(check.__name__ == cls._check_interaction_user_in_main_guild.__name__)  # type: ignore[attr-defined]
 
     @classmethod
     def is_interaction_user_has_committee_role_failure(cls, check: CheckFailure) -> bool:
+        # noinspection GrazieInspection
         """Whether check failed due to the interaction user not having the committee role."""
         return bool(check.__name__ == cls._check_interaction_user_has_committee_role.__name__)  # type: ignore[attr-defined]
 

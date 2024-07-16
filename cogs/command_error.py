@@ -8,6 +8,7 @@ __all__: Sequence[str] = ("CommandErrorCog",)
 import contextlib
 import logging
 from logging import Logger
+from typing import Final
 
 import discord
 from discord import Forbidden
@@ -20,7 +21,7 @@ from exceptions import (
 from exceptions.base import BaseErrorWithErrorCode
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class CommandErrorCog(TeXBotBaseCog):
@@ -48,7 +49,8 @@ class CommandErrorCog(TeXBotBaseCog):
         elif isinstance(error, CheckAnyFailure):
             if CommandChecks.is_interaction_user_in_main_guild_failure(error.checks[0]):
                 message = (
-                    f"You must be a member of the {self.bot.group_short_name} Discord server "
+                    "You must be a member of "
+                    f"the {self.tex_bot.group_short_name} Discord server "
                     "to use this command."
                 )
 
@@ -56,7 +58,7 @@ class CommandErrorCog(TeXBotBaseCog):
                 # noinspection PyUnusedLocal
                 committee_role_mention: str = "@Committee"
                 with contextlib.suppress(CommitteeRoleDoesNotExistError):
-                    committee_role_mention = (await self.bot.committee_role).mention
+                    committee_role_mention = (await self.tex_bot.committee_role).mention
                 message = f"Only {committee_role_mention} members can run this command."
 
         await self.command_send_error(
@@ -85,4 +87,4 @@ class CommandErrorCog(TeXBotBaseCog):
                     if message_part
                 ),
             )
-            await self.bot.close()
+            await self.tex_bot.close()
