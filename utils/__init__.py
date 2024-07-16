@@ -4,7 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = (
     "CommandChecks",
-    "MessageSenderComponent",
+    "MessageSavingSenderComponent",
     "SuppressTraceback",
     "TeXBot",
     "TeXBotBaseCog",
@@ -22,12 +22,12 @@ from typing import TypeAlias
 
 import discord
 
-from utils.command_checks import CommandChecks
-from utils.message_sender_components import MessageSenderComponent
-from utils.suppress_traceback import SuppressTraceback
-from utils.tex_bot import TeXBot
-from utils.tex_bot_base_cog import TeXBotBaseCog
-from utils.tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
+from .command_checks import CommandChecks
+from .message_sender_components import MessageSavingSenderComponent
+from .suppress_traceback import SuppressTraceback
+from .tex_bot import TeXBot
+from .tex_bot_base_cog import TeXBotBaseCog
+from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 AllChannelTypes: TypeAlias = (
     discord.VoiceChannel
@@ -69,10 +69,10 @@ def is_member_inducted(member: discord.Member) -> bool:
     Util method to check if the supplied member has been inducted.
 
     Returns True if the member has any role other than "@News".
-    The set of ignored roles is a tuple, to make the set easily expandable.
+    The set of ignored roles is a tuple to make the set easily expandable.
     """
     return any(
-        role.name.lower().strip().strip("@").strip() not in ("news",) for role in member.roles
+        role.name.lower().strip("@ \n\t") not in ("news",) for role in member.roles
     )
 
 
