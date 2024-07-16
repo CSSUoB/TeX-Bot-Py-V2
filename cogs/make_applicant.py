@@ -51,14 +51,19 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
 
         AUDIT_MESSAGE: Final[str] = f"{ctx.user} used TeX Bot Command \"Make User Applicant\""
 
-        await applicant_member.add_roles(applicant_role, reason=AUDIT_MESSAGE)
-
-        logger.debug("Applicant role given to user %s", applicant_member)
-
         if guest_role in applicant_member.roles:
             await applicant_member.remove_roles(guest_role, reason=AUDIT_MESSAGE)
             logger.debug("Removed Guest role from user %s", applicant_member)
 
+
+        if applicant_role not in applicant_member.roles:
+            await applicant_member.add_roles(applicant_role, reason=AUDIT_MESSAGE)
+            logger.debug("Applicant role given to user %s", applicant_member)
+            await initial_response.edit(
+                content=(
+                    ":hourglass: User already has the applicant role!"
+                ),
+            )
 
         tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
         if not tex_emoji:
