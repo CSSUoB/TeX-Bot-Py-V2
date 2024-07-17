@@ -128,6 +128,7 @@ class CommitteeRoleDoesNotExistError(RoleDoesNotExistError):
                 "delete-all",
                 "ensure-members-inducted",
                 "kill",
+                "committee-handover",
             },
         )
 
@@ -181,7 +182,15 @@ class GuestRoleDoesNotExistError(RoleDoesNotExistError):
         or no bot commands require this Discord entity.
         """  # noqa: D401
         # noinspection SpellCheckingInspection
-        return frozenset({"induct", "stats", "archive", "ensure-members-inducted"})
+        return frozenset(
+            {
+                "induct",
+                "stats",
+                "archive",
+                "ensure-members-inducted",
+                "increment-year-channels",
+            },
+        )
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
@@ -221,7 +230,7 @@ class MemberRoleDoesNotExistError(RoleDoesNotExistError):
         or no bot commands require this Discord entity.
         """  # noqa: D401
         # noinspection SpellCheckingInspection
-        return frozenset({"makemember", "ensure-members-inducted"})
+        return frozenset({"makemember", "ensure-members-inducted", "annual-roles-reset"})
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
@@ -249,7 +258,7 @@ class ArchivistRoleDoesNotExistError(RoleDoesNotExistError):
         or no bot commands require this Discord entity.
         """  # noqa: D401
         # noinspection SpellCheckingInspection
-        return frozenset({"archive"})
+        return frozenset({"archive", "increment-year-channels"})
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
