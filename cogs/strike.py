@@ -853,8 +853,8 @@ class StrikeContextCommandsCog(BaseStrikeCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def strike_message_author(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
         """Call the _strike command on the author of the message."""
+        main_guild: discord.Guild = self.bot.main_guild
         message_author: discord.Member | discord.User = message.author
         strike_user: discord.Member = ctx.user
-
-        
+        discord_channel: discord.TextChannel = discord.utils.get()
 
