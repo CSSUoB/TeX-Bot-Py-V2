@@ -849,5 +849,16 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         main_guild: discord.Guild = self.bot.main_guild
         message_author: discord.Member | discord.User = message.author
         strike_user: discord.Member = ctx.user
-        discord_channel: discord.TextChannel = discord.utils.get()
+        discord_channel: discord.TextChannel | None = discord.utils.get(
+            main_guild.text_channels,
+            name="discord",
+        )
+
+        if not discord_channel:
+            await ctx.respond("Couldn't find the discord channel!! major L")
+            return
+        
+        await discord_channel.send(f"User: {message_author}\n{message.content}\nReported by: {strike_user}")
+
+        await ctx.respond(content=":white_check_mark: Successfully reported message to committee channels!",ephemeral=True)
 
