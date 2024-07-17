@@ -41,7 +41,7 @@ jobs:
           python-version: 3.12
 
       - name: Run Ruff
-        run: poetry run ruff check . --no-fix
+        run: poetry run ruff check . --no-fix --extend-select TD002,TD003
 
   poetry-check:
     runs-on: ubuntu-latest

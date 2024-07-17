@@ -27,7 +27,7 @@ Defaults: TypeAlias = (
     | None
 )
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class BaseHashedIDManager(Manager["T_model"], abc.ABC):
@@ -149,7 +149,7 @@ class HashedDiscordMemberManager(BaseHashedIDManager["DiscordMember"]):
     Manager class to create & retrieve DiscordMember model instances.
 
     This manager implements extra functionality to filter/create instances
-    using a given discord_id that with be automatically hashed before saved to the database.
+    using a given discord_id that with be automatically hashed, before saved to the database.
     """
 
     # noinspection SpellCheckingInspection
@@ -202,7 +202,7 @@ class RelatedDiscordMemberManager(BaseHashedIDManager["BaseDiscordMemberWrapper"
     Manager class to create & retrieve instances of any concrete `BaseDiscordMemberWrapper`.
 
     This manager implements extra functionality to filter/create instances
-    using a given discord_id that with be automatically hashed before saved to the database.
+    using a given discord_id that with be automatically hashed, before saved to the database.
     """
 
     # noinspection SpellCheckingInspection

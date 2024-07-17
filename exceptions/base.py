@@ -10,7 +10,7 @@ __all__: Sequence[str] = (
 
 
 import abc
-from typing import Final, override
+from typing import Final
 
 from classproperties import classproperty
 
@@ -21,17 +21,15 @@ class BaseTeXBotError(BaseException, abc.ABC):
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802, N805
+    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802,N805
         """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
 
-    @override
     def __init__(self, message: str | None = None) -> None:
-        """Initialise a new exception with the given error message."""
+        """Initialize a new exception with the given error message."""
         self.message: str = message or self.DEFAULT_MESSAGE
 
         super().__init__(self.message)
 
-    @override
     def __repr__(self) -> str:
         """Generate a developer-focused representation of the exception's attributes."""
         formatted: str = self.message
@@ -58,7 +56,7 @@ class BaseErrorWithErrorCode(BaseTeXBotError, abc.ABC):
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def ERROR_CODE(cls) -> str:  # noqa: N802, N805
+    def ERROR_CODE(cls) -> str:  # noqa: N802,N805
         """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
 
 
@@ -67,41 +65,41 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802, N805
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802,N805
         """
-        The set of names of commands that require this Discord entity.
+        The set of names of bot commands that require this Discord entity.
 
-        This set being empty could mean that all commands require this Discord entity,
-        or no commands require this Discord entity.
+        This set being empty could mean that all bot commands require this Discord entity,
+        or no bot commands require this Discord entity.
         """  # noqa: D401
         return frozenset()
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def DEPENDENT_TASKS(cls) -> frozenset[str]:  # noqa: N802, N805
+    def DEPENDENT_TASKS(cls) -> frozenset[str]:  # noqa: N802,N805
         """
-        The set of names of tasks that require this Discord entity.
+        The set of names of bot tasks that require this Discord entity.
 
-        This set being empty could mean that all tasks require this Discord entity,
-        or no tasks require this Discord entity.
+        This set being empty could mean that all bot tasks require this Discord entity,
+        or no bot tasks require this Discord entity.
         """  # noqa: D401
         return frozenset()
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def DEPENDENT_EVENTS(cls) -> frozenset[str]:  # noqa: N802, N805
+    def DEPENDENT_EVENTS(cls) -> frozenset[str]:  # noqa: N802,N805
         """
-        The set of names of event listeners that require this Discord entity.
+        The set of names of bot events that require this Discord entity.
 
-        This set being empty could mean that all event listeners require this Discord entity,
-        or no event listeners require this Discord entity.
+        This set being empty could mean that all bot events require this Discord entity,
+        or no bot events require this Discord entity.
         """  # noqa: D401
         return frozenset()
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def DOES_NOT_EXIST_TYPE(cls) -> str:  # noqa: N802, N805
+    def DOES_NOT_EXIST_TYPE(cls) -> str:  # noqa: N802,N805
         """The name of the Discord entity that this `DoesNotExistError` is associated with."""  # noqa: D401
 
     @classmethod
@@ -193,3 +191,4 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
             partial_message += formatted_dependent_events
 
         return f"{partial_message}."
+

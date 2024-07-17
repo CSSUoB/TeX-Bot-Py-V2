@@ -177,9 +177,9 @@ class DiscordMember(AsyncBaseModel):
                 raise TypeError(MEMBER_ID_INVALID_TYPE_MESSAGE)
 
             self.hashed_discord_id = self.hash_discord_id(value)
-            return
 
-        super().__setattr__(name, value)
+        else:
+            super().__setattr__(name, value)
 
     @property
     def discord_id(self) -> NoReturn:
@@ -225,7 +225,7 @@ class DiscordMember(AsyncBaseModel):
         into the format that hashed_discord_ids are stored in the database
         when new objects of this class are created.
         """
-        if not re.fullmatch(r"\A\d{17,20}\Z", str(discord_id)):
+        if not re.match(r"\A\d{17,20}\Z", str(discord_id)):
             INVALID_MEMBER_ID_MESSAGE: Final[str] = (
                 f"{discord_id!r} is not a valid Discord member ID "
                 "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
