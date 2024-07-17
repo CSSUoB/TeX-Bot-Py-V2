@@ -10,7 +10,7 @@ __all__: Sequence[str] = (
     "BaseStrikeCog",
     "ManualModerationCog",
     "StrikeCommandCog",
-    "StrikeUserCommandCog",
+    "StrikeContextCommandsCog",
 )
 
 
@@ -834,7 +834,7 @@ class StrikeCommandCog(BaseStrikeCog):
         await self._command_perform_strike(ctx, strike_member)
 
 
-class StrikeUserCommandCog(BaseStrikeCog):
+class StrikeContextCommandsCog(BaseStrikeCog):
     """Cog class that defines the context menu strike command & its call-back method."""
 
     @discord.user_command(name="Strike User")  # type: ignore[no-untyped-call, misc]
@@ -843,3 +843,18 @@ class StrikeUserCommandCog(BaseStrikeCog):
     async def user_strike(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:
         """Call the _strike command, providing the required command arguments."""
         await self._command_perform_strike(ctx, member)
+
+
+    @discord.message_command(  # type: ignore[no-untyped-call, misc]
+        name="Strike Message Author",
+        description="Add a strike to the author of the message.",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def strike_message_author(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
+        """Call the _strike command on the author of the message."""
+        message_author: discord.Member | discord.User = message.author
+        strike_user: discord.Member = ctx.user
+
+        
+
