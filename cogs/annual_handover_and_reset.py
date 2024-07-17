@@ -27,7 +27,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="committee-handover",
-        description="Initiates the annual Discord handover procedure for new committee.",
+        description="Initiates the annual Discord handover procedure for new committee",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -45,9 +45,9 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
         To do this, TeX-Bot will need to hold a role above that of the "Committee" role.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.tex_bot.main_guild
-        committee_role: discord.Role = await self.tex_bot.committee_role
-        committee_elect_role: discord.Role = await self.tex_bot.committee_elect_role
+        main_guild: discord.Guild = self.bot.main_guild
+        committee_role: discord.Role = await self.bot.committee_role
+        committee_elect_role: discord.Role = await self.bot.committee_elect_role
 
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
             content=":hourglass: Running handover procedures... :hourglass:",
@@ -168,7 +168,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="annual-roles-reset",
-        description="Removes the @Member role and academic year roles from all users.",
+        description="Removes the @Member role and academic year roles from all users",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -181,8 +181,8 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
         the GroupMadeMember database model.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.tex_bot.main_guild
-        member_role: discord.Role = await self.tex_bot.member_role
+        main_guild: discord.Guild = self.bot.main_guild
+        member_role: discord.Role = await self.bot.member_role
 
         logger.debug("Reset roles command called.")
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
@@ -246,8 +246,8 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
         - Creates a new "first-years" channel
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.tex_bot.main_guild
-        guest_role: discord.Role = await self.tex_bot.guest_role
+        main_guild: discord.Guild = self.bot.main_guild
+        guest_role: discord.Role = await self.bot.guest_role
 
         initial_message: discord.Interaction | discord.WebhookMessage = await ctx.respond(
             content=":hourglass: Incrementing year channels... :hourglass:",
@@ -262,7 +262,7 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
             await initial_message.edit(
                 content=":hourglass: Archiving \"final-years\" channel... :hourglass:",
             )
-            archivist_role: discord.Role = await self.tex_bot.archivist_role
+            archivist_role: discord.Role = await self.bot.archivist_role
 
             await final_year_channel.set_permissions(guest_role, overwrite=None)
             await final_year_channel.set_permissions(archivist_role, read_messages=True)

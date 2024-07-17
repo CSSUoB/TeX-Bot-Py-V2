@@ -23,13 +23,12 @@ __all__: Sequence[str] = (
     "MessagesJSONFileValueError",
     "InvalidMessagesJSONFileError",
     "ImproperlyConfiguredError",
-    "RestartRequiredDueToConfigChange",
+    "BotRequiresRestartAfterConfigChange",
 )
 
-
 from .config_changes import (
+    BotRequiresRestartAfterConfigChange,
     ImproperlyConfiguredError,
-    RestartRequiredDueToConfigChange,
 )
 from .does_not_exist import (
     ApplicantRoleDoesNotExistError,
