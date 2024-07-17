@@ -11,7 +11,6 @@ __all__: Sequence[str] = ("SuppressTraceback",)
 
 import sys
 from types import TracebackType
-from typing import override
 
 
 class SuppressTraceback:
@@ -21,7 +20,6 @@ class SuppressTraceback:
     The previous traceback limit is returned when exiting the context manager.
     """
 
-    @override
     def __init__(self) -> None:
         # noinspection SpellCheckingInspection
         """

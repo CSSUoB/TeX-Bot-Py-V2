@@ -87,21 +87,15 @@ class TestGenerateInviteURL:
         DISCORD_BOT_APPLICATION_ID: Final[int] = random.randint(
             10000000000000000, 99999999999999999999,
         )
-        DISCORD_MAIN_GUILD_ID: Final[int] = random.randint(
+        DISCORD_GUILD_ID: Final[int] = random.randint(
             10000000000000000, 99999999999999999999,
         )
 
         invite_url: str = utils.generate_invite_url(
-            DISCORD_BOT_APPLICATION_ID, DISCORD_MAIN_GUILD_ID,
+            DISCORD_BOT_APPLICATION_ID, DISCORD_GUILD_ID,
         )
 
-        assert re.fullmatch(
-            (
-                r"\Ahttps://discord.com/.*="
-                + str(DISCORD_BOT_APPLICATION_ID)
-                + r".*="
-                + str(DISCORD_MAIN_GUILD_ID)
-                + r".*\Z"
-            ),
+        assert re.match(
+            f"https://discord.com/.*={DISCORD_BOT_APPLICATION_ID}.*={DISCORD_GUILD_ID}",
             invite_url,
         )

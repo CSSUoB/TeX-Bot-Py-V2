@@ -8,7 +8,6 @@ __all__: Sequence[str] = ("KillCommandCog", "ConfirmKillView")
 import contextlib
 import logging
 from logging import Logger
-from typing import Final
 
 import discord
 from discord.ui import View
@@ -16,7 +15,7 @@ from discord.ui import View
 from exceptions import CommitteeRoleDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class ConfirmKillView(View):
@@ -59,7 +58,7 @@ class KillCommandCog(TeXBotBaseCog):
         """
         committee_role: discord.Role | None = None
         with contextlib.suppress(CommitteeRoleDoesNotExistError):
-            committee_role = await self.tex_bot.committee_role
+            committee_role = await self.bot.committee_role
 
         response: discord.Message | discord.Interaction = await ctx.respond(
             content=(
@@ -78,7 +77,7 @@ class KillCommandCog(TeXBotBaseCog):
             else await response.original_response()
         )
 
-        button_interaction: discord.Interaction = await self.tex_bot.wait_for(
+        button_interaction: discord.Interaction = await self.bot.wait_for(
             "interaction",
             check=lambda interaction: (
                 interaction.type == discord.InteractionType.component
@@ -94,7 +93,8 @@ class KillCommandCog(TeXBotBaseCog):
                 content="My battery is low and it's getting dark...",
                 view=None,
             )
-            await self.tex_bot.perform_kill_and_close(initiated_by_user=ctx.interaction.user)
+            await self.bot.perform_kill_and_close(initiated_by_user=ctx.interaction.user)
+            return
 
         if button_interaction.data["custom_id"] == "shutdown_cancel":  # type: ignore[index, typeddict-item]
             await confirmation_message.edit(

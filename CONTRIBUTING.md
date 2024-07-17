@@ -34,13 +34,13 @@ We recommend also reading the following if you're unsure or not confident:
 * [How To Make A Pull Request](https://makeapullrequest.com)
 * [Contributing To An Open Source Project For The First Time](https://firsttimersonly.com)
 
-TeX-Bot is written in [Python](https://python.org) using [Pycord](https://pycord.dev) and uses Discord's [slash-commands](https://support.discord.com/hc/articles/1500000368501-Slash-Commands-FAQ) & [user-commands](https://guide.pycord.dev/interactions/application-commands/context-menus).
+This bot is written in [Python](https://python.org) using [Pycord](https://pycord.dev) and uses Discord's [slash-commands](https://support.discord.com/hc/articles/1500000368501-Slash-Commands-FAQ) & [user-commands](https://guide.pycord.dev/interactions/application-commands/context-menus).
 We would recommend being somewhat familiar with the [Pycord library](https://docs.pycord.dev), [Python language](https://docs.python.org/3/reference/index) & [project terminology](README.md#terminology) before contributing.
 
 ## Using the Issue Tracker
 
 We use [GitHub issues](https://docs.github.com/issues) to track bugs and feature requests.
-If you find an issue with TeX-Bot, the best place to report it is through the issue tracker.
+If you find an issue with the bot, the best place to report it is through the issue tracker.
 If you are looking for issues to contribute code to, it's a good idea to look at the [issues labelled "good-first-issue"](https://github.com/CSSUoB/TeX-Bot-Py-V2/issues?q=label%3A%22good+first+issue%22)!
 
 When submitting an issue, please be as descriptive as possible.
@@ -79,7 +79,7 @@ There are separate cog files for each activity, and one [`__init__.py`](cogs/__i
 
 * [`cogs/delete_all.py`](cogs/delete_all.py): cogs for deleting all permanent data stored in a specific object's table in the database
 
-* [`cogs/edit_message.py`](cogs/edit_message.py): cogs for editing messages that were previously sent by TeX-Bot
+* [`cogs/edit_message.py`](cogs/edit_message.py): cogs for editing messages that were previously sent by the bot
 
 * [`cogs/induct.py`](cogs/induct.py): cogs for inducting people into your group's Discord guild
 
@@ -89,7 +89,7 @@ There are separate cog files for each activity, and one [`__init__.py`](cogs/__i
 
 * [`cogs/ping.py`](cogs/ping.py): cog to request a [ping](https://wikipedia.org/wiki/Ping-pong_scheme#Internet) response
 
-* [`cogs/remind_me.py`](cogs/remind_me.py): cogs to ask TeX-Bot to send a reminder message at a later date
+* [`cogs/remind_me.py`](cogs/remind_me.py): cogs to ask the bot to send a reminder message at a later date
 
 * [`cogs/send_get_roles_reminders.py`](cogs/send_get_roles_reminders.py): cogs relating to sending reminders, to Discord members, about opt-in roles.
 (See [Repeated Tasks Conditions](README.md#repeated-tasks-conditions) for which conditions are required to be met, to execute this task)

@@ -20,8 +20,7 @@ from logging import Logger
 from typing import TYPE_CHECKING, Final, ParamSpec, TypeVar
 
 from exceptions import GuildDoesNotExistError, StrikeTrackingError
-
-from .tex_bot_base_cog import TeXBotBaseCog
+from utils.tex_bot_base_cog import TeXBotBaseCog
 
 if TYPE_CHECKING:
     from typing import Concatenate, TypeAlias
@@ -40,7 +39,7 @@ if TYPE_CHECKING:
         Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T]]
     )
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class ErrorCaptureDecorators:
@@ -69,7 +68,8 @@ class ErrorCaptureDecorators:
                 return await func(self, *args, **kwargs)
             except error_type as error:
                 close_func(error)
-                await self.tex_bot.close()
+                await self.bot.close()
+                return None
         return wrapper  # type: ignore[return-value]
 
     @staticmethod
