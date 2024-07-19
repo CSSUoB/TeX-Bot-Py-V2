@@ -18,7 +18,7 @@ import discord
 from exceptions.does_not_exist import ApplicantRoleDoesNotExistError, GuildDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class BaseMakeApplicantCog(TeXBotBaseCog):

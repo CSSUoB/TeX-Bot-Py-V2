@@ -19,7 +19,7 @@ import discord
 from db.core.models import GroupMadeMember
 from utils import AllChannelTypes, CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class CommitteeHandoverCommandCog(TeXBotBaseCog):

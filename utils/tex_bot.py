@@ -33,7 +33,7 @@ from exceptions import (
 if TYPE_CHECKING:
     from utils import AllChannelTypes
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class TeXBot(discord.Bot):
