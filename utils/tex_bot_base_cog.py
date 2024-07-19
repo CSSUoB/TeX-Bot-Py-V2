@@ -10,7 +10,7 @@ import logging
 import re
 from collections.abc import Mapping
 from logging import Logger
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Final, override
 
 import discord
 from discord import Cog

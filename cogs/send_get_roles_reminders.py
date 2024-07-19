@@ -9,7 +9,7 @@ import contextlib
 import functools
 import logging
 from logging import Logger
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Final, override
 
 import discord
 from discord import AuditLogAction
@@ -34,6 +34,7 @@ logger: Logger = logging.getLogger("TeX-Bot")
 class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
     """Cog class that defines the send_get_roles_reminders task."""
 
+    @override
     def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
         if settings["SEND_GET_ROLES_REMINDERS"]:
@@ -41,6 +42,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
 
         super().__init__(bot)
 
+    @override
     def cog_unload(self) -> None:
         """
         Unload hook that ends all running tasks whenever the tasks cog is unloaded.
