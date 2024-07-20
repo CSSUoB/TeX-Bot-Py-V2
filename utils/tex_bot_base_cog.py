@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 if TYPE_CHECKING:
     MentionableMember: TypeAlias = discord.Member | discord.Role
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class TeXBotBaseCog(Cog):

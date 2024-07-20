@@ -27,7 +27,7 @@ Defaults: TypeAlias = (
     | None
 )
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class BaseHashedIDManager(Manager["T_model"], abc.ABC):
