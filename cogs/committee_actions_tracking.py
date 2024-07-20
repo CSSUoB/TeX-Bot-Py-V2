@@ -67,7 +67,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             return set()
 
         return {
-            discord.OptionChoice(name=str(action.description), value=str(action))
+            discord.OptionChoice(name=action.description, value=str(action.id))
             for action
             in all_actions
         }
@@ -439,7 +439,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_all_actions), # type: ignore[arg-type]
         required=True,
-        parameter_name="str_action_object",
+        parameter_name="action_id",
     )
     @discord.option( # type: ignore[no-untyped-call, misc]
         name="user",
@@ -451,40 +451,15 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def reassign_action(self, ctx:TeXBotApplicationContext, str_action_object: str, str_action_member_id: str) -> None:  # noqa: E501
+    async def reassign_action(self, ctx:TeXBotApplicationContext, action_id: str, str_action_member_id: str) -> None:  # noqa: E501
         """Reassign the specified action to the specified user."""
-        if ":" not in str_action_object:
-            await ctx.respond(
-                content="Action provided was not valid, please use the auto complete!",
-            )
-            logger.debug("%s tried to reassign an Action that didn't exist.", ctx.user)
-            return
-
-        components = str_action_object.split(":")
-        input_hashed_id = components[0].strip()
-        input_description = components[1].strip()
         new_user_to_action: discord.Member = await self.bot.get_member_from_str_id(
             str_action_member_id,
         )
         new_user_to_action_hash: str = DiscordMember.hash_discord_id(new_user_to_action.id)
 
-        all_discord_members: list[DiscordMember] = [
-            discord_member async for discord_member in DiscordMember.objects.all()
-        ]
-
-        input_user_internal_id: str
-
-        discord_member: DiscordMember
-        for discord_member in all_discord_members:
-            if str(discord_member) == input_hashed_id:
-                input_user_internal_id = str(discord_member.id)
-                break
-
         try:
-            action_to_reassign = await Action.objects.select_related().aget(
-                discord_member_id=input_user_internal_id,
-                description=input_description,
-            )
+            action_to_reassign: Action = await Action.objects.select_related().aget(id=action_id)
         except (MultipleObjectsReturned, ObjectDoesNotExist):
             await self.command_send_error(
                 ctx,
@@ -493,20 +468,23 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             return
 
         if str(action_to_reassign.discord_member) == new_user_to_action_hash: # type: ignore[has-type]
-            await ctx.respond(content=(
-                f"HEY! Action: {action_to_reassign.description} is already assigned "
-                f"to user: {new_user_to_action.mention}\nNo action has been taken.",
-            ))
+            await ctx.respond(
+                content=(
+                    f"HEY! Action: {action_to_reassign.description} is already assigned "
+                    f"to user: {new_user_to_action.mention}\nNo action has been taken."
+                ),
+            )
             return
 
-        await self._create_action(
+        new_action: Action | str = await self._create_action(
             ctx,
             new_user_to_action,
             action_to_reassign.description,
             silent=False,
         )
 
-        await action_to_reassign.adelete()
+        if isinstance(new_action, Action):
+            await action_to_reassign.adelete()
 
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
