@@ -8,7 +8,7 @@ __all__: Sequence[str] = ("TeXBot",)
 import logging
 import re
 from logging import Logger
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Final, override
 
 import aiohttp
 import discord
@@ -45,6 +45,7 @@ class TeXBot(discord.Bot):
     if these objects do not exist.
     """
 
+    @override
     def __init__(self, *args: object, **options: object) -> None:
         """Initialize a new discord.Bot subclass with empty shortcut accessors."""
         self._main_guild: discord.Guild | None = None
