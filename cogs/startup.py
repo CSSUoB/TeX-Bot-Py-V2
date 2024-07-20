@@ -7,6 +7,7 @@ __all__: Sequence[str] = ("StartupCog",)
 
 import logging
 from logging import Logger
+from typing import Final
 
 import discord
 from discord_logging.handler import DiscordHandler
@@ -24,7 +25,7 @@ from exceptions import (
 )
 from utils import TeXBotBaseCog
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class StartupCog(TeXBotBaseCog):
