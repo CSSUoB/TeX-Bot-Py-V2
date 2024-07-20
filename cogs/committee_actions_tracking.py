@@ -21,7 +21,7 @@ from utils import (
     TeXBotBaseCog,
 )
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class CommitteeActionsTrackingCog(TeXBotBaseCog):
