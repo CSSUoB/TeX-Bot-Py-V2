@@ -71,22 +71,6 @@ class Action(BaseDiscordMemberWrapper):
 
         return construct_str
 
-    def get_action_description(self) -> str:
-        """
-        Return the formatted description stored by this action.
-
-        Adds a mention to the Discord member that was assigned the action,
-        if passed in from the calling context.
-        """
-        constructed_message: str = "This is your action"
-
-        constructed_message += "!"
-
-        if self.description:
-            constructed_message = f"**{constructed_message}**\n{self.description}"
-
-        return constructed_message
-
 
 class IntroductionReminderOptOutMember(BaseDiscordMemberWrapper):
     """
