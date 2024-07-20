@@ -29,8 +29,8 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
     """Cog class that defines the committee-actions tracking functionality."""
 
     committee_actions: discord.SlashCommandGroup = discord.SlashCommandGroup(
-        "committeeactions",
-        "Add, list & remove tracked committee-actions.",
+        name="committee-actions",
+        description="Add, list, remove and reassign tracked committee-actions.",
     )
 
     @staticmethod
@@ -175,19 +175,19 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         description="Adds a new action with the specified description",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
-        name="description",
-        description="The description of the action to assign.",
-        input_type=str,
-        required=True,
-        parameter_name="str_action_description",
-    )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
         name="user",
         description="The user to action, if no user is specified, default to self",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members), # type: ignore[arg-type]
         required=True,
         parameter_name="str_action_member_id",
+    )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="description",
+        description="The description of the action to assign.",
+        input_type=str,
+        required=True,
+        parameter_name="str_action_description",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
