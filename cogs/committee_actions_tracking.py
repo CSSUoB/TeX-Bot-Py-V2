@@ -430,40 +430,6 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
-        name="complete-action",
-        description="Marks the specified action as being completed.",
-    )
-    @discord.option( # type: ignore[no-untyped-call, misc]
-        name="action",
-        description="The action to mark as completed.",
-        input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids), # type: ignore[arg-type]
-        required=True,
-        parameter_name="action_id",
-    )
-    @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_main_guild
-    async def complete_action(self, ctx: TeXBotApplicationContext, action_id: str) -> None:
-        """
-        Definition and callback of the complete action command.
-
-        Marks the specified action as complete by deleting it.
-        """
-        try:
-            action: Action = await Action.objects.select_related().aget(id=action_id)
-        except (MultipleObjectsReturned, ObjectDoesNotExist):
-            await self.command_send_error(
-                ctx,
-                message="Action provided was either not unique or could not be found.",
-            )
-            return
-
-        await action.adelete()
-        await ctx.respond(content=f"Action: {action.description} deleted!")
-        logger.debug("Action: %s has been deleted.", action.description)
-
-
-    @discord.slash_command( # type: ignore[no-untyped-call, misc]
             name="reassign-action",
             description="Reassign the specified action to another user.",
     )
