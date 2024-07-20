@@ -52,7 +52,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         }
 
     @staticmethod
-    async def action_autocomplete_get_all_actions(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501, ARG004
+    async def autocomplete_get_all_actions(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501, ARG004
         """
         Autocomplete callable that provides a set of selectable committee tracked-actions.
 
@@ -458,7 +458,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         name="action",
         description="The action to reassign.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(action_autocomplete_get_all_actions), # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_all_actions), # type: ignore[arg-type]
         required=True,
         parameter_name="str_action_object",
     )
@@ -507,13 +507,11 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                 description=input_description,
             )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
-            await ctx.respond(
-                content="Provided action was either not unique or did not exist.",
+            await self.command_send_error(
+                ctx,
+                message="Action provided was either not unique or could not be found.",
             )
-            logger.warning(
-                "Action object: %s could not be matched to a unique action.",
-                str_action_object,
-            )
+            return
 
         if str(action_to_reassign.discord_member) == new_user_to_action_hash: # type: ignore[has-type]
             await ctx.respond(content=(
