@@ -176,7 +176,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="user",
-        description="The user to action, if no user is specified, default to self",
+        description="The user to assign the action to",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members), # type: ignore[arg-type]
         required=True,
