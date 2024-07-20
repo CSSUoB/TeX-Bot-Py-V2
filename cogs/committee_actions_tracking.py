@@ -161,10 +161,12 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             )
             return DUPLICATE_ACTION_MESSAGE
         if not silent:
-            await ctx.respond(content=(
+            await ctx.respond(
+                content=(
                     f"Action: {action.description} created "
                     f"for user: {action_user.mention}"
-                ))
+                ),
+            )
         return action
 
 
@@ -530,7 +532,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         all_actions_message: str = "\n".join([
                 f"\n{committee.mention if ping else committee}, Actions:"
-                f"\n{', \n'.join(str(action.description) + f"({action.status})" for action in actions)}"
+                f"\n{', \n'.join(str(action.description) + f"({action.status})" for action in actions)}"  # noqa: E501
                 for committee, actions in filtered_committee_actions.items()
             ],
         )
