@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("CommitteeActionsTrackingCog",)
 
+
 import logging
 import random
 from logging import Logger
