@@ -187,11 +187,11 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         description="The description of the action to assign.",
         input_type=str,
         required=True,
-        parameter_name="str_action_description",
+        parameter_name="action_description",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def action(self, ctx: TeXBotApplicationContext, str_action_member_id: str, str_action_description: str) -> None:  # noqa: E501
+    async def action(self, ctx: TeXBotApplicationContext, str_action_member_id: str, action_description: str) -> None:  # noqa: E501
         """
         Definition and callback response of the "action" command.
 
@@ -201,7 +201,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             str_action_member_id,
         )
 
-        await self._create_action(ctx, action_user, str_action_description, silent=False)
+        await self._create_action(ctx, action_user, action_description, silent=False)
 
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -213,11 +213,11 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         description="The description to be used for the action",
         input_type=str,
         required=True,
-        parameter_name="str_action_description",
+        parameter_name="action_description",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def action_random_user(self, ctx: TeXBotApplicationContext, str_action_description: str) -> None:  # noqa: E501
+    async def action_random_user(self, ctx: TeXBotApplicationContext, action_description: str) -> None:  # noqa: E501
         """
         Definition and callback response of the "action-random-user" command.
 
@@ -237,7 +237,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             random.randint(0, len(committee_members))
         ]
 
-        await self._create_action(ctx, action_user, str_action_description, silent=False)
+        await self._create_action(ctx, action_user, action_description, silent=False)
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="action-all-committee",
@@ -248,11 +248,11 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         description="The description to be used for the actions",
         input_type=str,
         required=True,
-        parameter_name="str_action_description",
+        parameter_name="action_description",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def action_all_committee(self, ctx: TeXBotApplicationContext, str_action_description: str) -> None: # noqa: E501
+    async def action_all_committee(self, ctx: TeXBotApplicationContext, action_description: str) -> None: # noqa: E501
         """
         Definition and callback response of the "action-all-committee" command.
 
@@ -273,7 +273,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             action_or_error_message: Action | str = await self._create_action(
                 ctx,
                 committee_member,
-                str_action_description,
+                action_description,
                 silent=True,
             )
             if isinstance(action_or_error_message, Action):
@@ -285,7 +285,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         if success_members:
             response_message += (
-                f"Successfully created action: {str_action_description} for users: \n"
+                f"Successfully created action: {action_description} for users: \n"
             )
 
             response_message += (
