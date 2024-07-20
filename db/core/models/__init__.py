@@ -22,12 +22,20 @@ import discord
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from .utils import AsyncBaseModel, BaseDiscordMemberWrapper, DiscordMember
 
 
 class Action(BaseDiscordMemberWrapper):
     """Model to represent an action item that has been assigned to a Discord Member."""
+
+    class Status(models.TextChoices):
+        CANCELLED = "X", _("Cancelled")
+        BLOCKED = "B", _("Blocked")
+        COMPLETE = "C", _("Complete")
+        IN_PROGRESS = "IP", _("In Progress")
+        NOT_STARTED = "NS", _("Not Started")
 
     INSTANCES_NAME_PLURAL: str = "Actions"
 
@@ -45,6 +53,11 @@ class Action(BaseDiscordMemberWrapper):
         max_length=1500,
         null=False,
         blank=False,
+    )
+    status = models.CharField(
+        max_length=2,
+        choices=Status,
+        default=Status.NOT_STARTED,
     )
     class Meta:
         verbose_name = "An Action for a Discord Member"

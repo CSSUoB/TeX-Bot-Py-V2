@@ -12,6 +12,7 @@ from typing import Final
 
 import discord
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
+from django.db.models.query import QuerySet  # noqa: TCH002
 
 from db.core.models import Action, DiscordMember
 from exceptions.base import BaseDoesNotExistError
@@ -73,7 +74,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         }
 
     @staticmethod
-    async def action_autocomplete_get_user_actions(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+    async def autocomplete_get_user_actions(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
         """
         Autocomplete callable that provides a set of actions that belong to the user.
 
@@ -121,8 +122,57 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             in user_actions
         }
 
+    @staticmethod
+    async def autocomplete_get_user_action_ids(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+        """Autocomplete callable that provides a set of actions that belong to the user."""
+        if not ctx.interaction.user:
+            logger.debug("User actions autocomplete did not have an interaction user!!")
+            return set()
+
+        interaction_user: discord.Member = await ctx.bot.get_member_from_str_id(
+            str(ctx.interaction.user.id),
+        )
+
+        filtered_user_actions: list[Action] = [
+            action async for action in await Action.objects.afilter(
+                discord_id=int(interaction_user.id),
+            )
+        ]
+
+        for action in filtered_user_actions:
+            logger.debug(action.id)
+
+        return {
+            discord.OptionChoice(name=action.description, value=str(action.id))
+            for action
+            in filtered_user_actions
+        }
+
+
+    @staticmethod
+    async def autocomplete_get_action_status(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501, ARG004
+        """Autocomplete callable that provides the set of possible Status'of actions."""
+        status_options: list[tuple[str, str]] = (
+            Action._meta.get_field("status").__dict__["_choices"]
+        )
+
+        if not status_options:
+            return set()
+
+        return {
+            discord.OptionChoice(name=value, value=code)
+            for code, value
+            in status_options
+        }
+
+
     async def _create_action(self, ctx: TeXBotApplicationContext, action_user: discord.Member, description: str, *, silent: bool) -> Action | str:  # noqa: E501
-        """Create the action object with the given description for the given user."""
+        """
+        Create the action object with the given description for the given user.
+
+        If action creation is successful, the Action object will be returned.
+        If unsuccessful, a string explaining the error will be returned.
+        """
         try:
             action: Action = await Action.objects.acreate(
                 discord_id=int(action_user.id),
@@ -202,6 +252,50 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         )
 
         await self._create_action(ctx, action_user, action_description, silent=False)
+
+    @discord.slash_command( # type: ignore[no-untyped-call, misc]
+        name="update-status",
+        description="Update the status of the provided action.",
+    )
+    @discord.option( # type: ignore[no-untyped-call, misc]
+        name="action",
+        description="The action to mark as completed.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids), # type: ignore[arg-type]
+        required=True,
+        parameter_name="action_id",
+    )
+    @discord.option( # type: ignore[no-untyped-call, misc]
+        name="status",
+        description="The desired status of the action.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_action_status), # type: ignore[arg-type]
+        required=True,
+        parameter_name="status",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def update_status(self, ctx: TeXBotApplicationContext, action_id: str, status: str) -> None:  # noqa: E501
+        """
+        Update the status of the given action to the given status.
+
+        Takes in an action object and a Status string,
+        sets the status of the provided action to be the provided status.
+        """
+        try:
+            action: Action = await Action.objects.select_related().aget(id=action_id)
+        except (MultipleObjectsReturned, ObjectDoesNotExist):
+            await self.command_send_error(
+                ctx,
+                message="Action provided was either not unique or could not be found.",
+            )
+            return
+
+        action.status = status
+
+        await ctx.respond(
+            content=f"Updated action: {action.description} status to be: {action.status}",
+        )
 
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -395,7 +489,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         name="action",
         description="The action to mark as completed.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(action_autocomplete_get_user_actions), # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_actions), # type: ignore[arg-type]
         required=True,
         parameter_name="str_action_object",
     )
