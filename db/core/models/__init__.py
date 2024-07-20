@@ -44,7 +44,7 @@ class Action(BaseDiscordMemberWrapper):
         "Description of the action",
         max_length=1500,
         null=False,
-        blank=True,
+        blank=False,
     )
     class Meta:
         verbose_name = "An Action for a Discord Member"
