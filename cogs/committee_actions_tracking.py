@@ -459,7 +459,9 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         new_user_to_action_hash: str = DiscordMember.hash_discord_id(new_user_to_action.id)
 
         try:
-            action_to_reassign: Action = await Action.objects.select_related().aget(id=action_id)
+            action_to_reassign: Action = (
+                await Action.objects.select_related().aget(id=action_id)
+            )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
             await self.command_send_error(
                 ctx,
