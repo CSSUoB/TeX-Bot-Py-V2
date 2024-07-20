@@ -169,7 +169,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="action",
+        name="create",
         description="Adds a new action with the specified description",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
@@ -189,11 +189,11 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def action(self, ctx: TeXBotApplicationContext, str_action_member_id: str, action_description: str) -> None:  # noqa: E501
+    async def create(self, ctx: TeXBotApplicationContext, str_action_member_id: str, action_description: str) -> None:  # noqa: E501
         """
-        Definition and callback response of the "action" command.
+        Definition and callback response of the "create" command.
 
-        The action command adds an action to the specified user.
+        The "create" command creates an action assigned the specified user.
         """
         action_user: discord.Member = await self.bot.get_member_from_str_id(
             str_action_member_id,
@@ -516,6 +516,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             committee: [
                 action for action in actions
                 if str(action.discord_member) == DiscordMember.hash_discord_id(committee.id) # type: ignore[has-type]
+                and action.status != "X" or action.status != "C"
             ] for committee in committee_members
         }
 
@@ -529,7 +530,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         all_actions_message: str = "\n".join([
                 f"\n{committee.mention if ping else committee}, Actions:"
-                f"\n{', \n'.join(str(action.description) for action in actions)}"
+                f"\n{', \n'.join(str(action.description) + f"({action.status})" for action in actions)}"
                 for committee, actions in filtered_committee_actions.items()
             ],
         )
