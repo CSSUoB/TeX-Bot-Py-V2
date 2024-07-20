@@ -12,7 +12,6 @@ from typing import Final
 
 import discord
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
-from django.db.models.query import QuerySet  # noqa: TCH002
 
 from db.core.models import Action, DiscordMember
 from exceptions.base import BaseDoesNotExistError
