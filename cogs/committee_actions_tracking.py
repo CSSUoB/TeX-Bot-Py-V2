@@ -139,9 +139,6 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             )
         ]
 
-        for action in filtered_user_actions:
-            logger.debug(action.id)
-
         return {
             discord.OptionChoice(name=action.description, value=str(action.id))
             for action
@@ -489,55 +486,26 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         name="action",
         description="The action to mark as completed.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_actions), # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids), # type: ignore[arg-type]
         required=True,
-        parameter_name="str_action_object",
+        parameter_name="action_id",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def complete_action(self, ctx: TeXBotApplicationContext, str_action_object: str) -> None:  # noqa: E501
+    async def complete_action(self, ctx: TeXBotApplicationContext, action_id: str) -> None:
         """
         Definition and callback of the complete action command.
 
         Marks the specified action as complete by deleting it.
         """
-        action_user: discord.Member = ctx.user
-
-        if ":" not in str_action_object:
-            await ctx.respond(
-                content="Action provided was not valid, please use the auto complete!",
+        try:
+            action: Action = await Action.objects.select_related().aget(id=action_id)
+        except (MultipleObjectsReturned, ObjectDoesNotExist):
+            await self.command_send_error(
+                ctx,
+                message="Action provided was either not unique or could not be found.",
             )
-            logger.debug("%s tried to mark an invalid Action as completed.", action_user)
             return
-
-        components = str_action_object.split(":")
-        input_description = components[1].strip()
-
-        actions: list[Action] = [action async for action in await Action.objects.afilter(
-            discord_id=int(action_user.id),
-            description=input_description,
-        )]
-
-        if not actions:
-            NO_ACTIONS_FOUND_MESSAGE: Final[str] = (
-                f"No actions found for user: {action_user}, "
-                f"with description: {input_description}"
-            )
-            await ctx.respond(content=NO_ACTIONS_FOUND_MESSAGE)
-            logger.debug(NO_ACTIONS_FOUND_MESSAGE)
-            return
-
-        if len(actions) > 1:
-            MULTIPLE_ACTIONS_FOUND: Final[str] = (
-                f"Found {len(actions)} for user: {action_user} "
-                f"with description: {input_description}, this shouldn't be possible!!"
-            )
-            await ctx.respond(content=MULTIPLE_ACTIONS_FOUND)
-            logger.error(MULTIPLE_ACTIONS_FOUND)
-            logger.debug(actions)
-            return
-
-        action: Action = actions[0]
 
         await action.adelete()
         await ctx.respond(content=f"Action: {action.description} deleted!")
