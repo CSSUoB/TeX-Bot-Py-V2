@@ -72,54 +72,6 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             in all_actions
         }
 
-    @staticmethod
-    async def autocomplete_get_user_actions(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
-        """
-        Autocomplete callable that provides a set of actions that belong to the user.
-
-        Returns the set of actions that belong to the user using the command,
-        giving the user a list of action descriptions to choose from.
-        """
-        # NOTE: this entire method is fucking insane because django is shit and makes me want to kill myself
-        if not ctx.interaction.user:
-            logger.debug("User actions autocomplete did not have an interaction user!!")
-            return set()
-
-        interaction_user: discord.Member = await ctx.bot.get_member_from_str_id(
-            str(ctx.interaction.user.id),
-        )
-
-        all_discord_members = [
-            discord_member async for discord_member in DiscordMember.objects.all()
-        ]
-
-        hashed_interaction_user_id: str = DiscordMember.hash_discord_id(interaction_user.id)
-        interaction_user_internal_id: str
-
-        for discord_member in all_discord_members:
-            if str(discord_member) == hashed_interaction_user_id:
-                interaction_user_internal_id = str(discord_member.id)
-                break
-
-        if not interaction_user_internal_id:
-            logger.debug("fuckin cry or something idk bro")
-            return set()
-
-        user_actions: list[Action] = [
-            action async for action in Action.objects.select_related().filter(
-                discord_member_id=interaction_user_internal_id,
-            )
-        ]
-
-        if not user_actions:
-            logger.debug("No actions were found!!")
-            return set()
-
-        return {
-            discord.OptionChoice(name=action.description, value=(str(action)))
-            for action
-            in user_actions
-        }
 
     @staticmethod
     async def autocomplete_get_user_action_ids(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
