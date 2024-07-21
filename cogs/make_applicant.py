@@ -35,11 +35,6 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
         applicant_role: discord.Role = await ctx.bot.applicant_role
         guest_role: discord.Role = await ctx.bot.guest_role
 
-        intro_channel: discord.TextChannel | None = discord.utils.get(
-            main_guild.text_channels,
-            name="introductions",
-        )
-
         if applicant_member.bot:
             await self.command_send_error(ctx, message="Cannot make a bot user an applicant!")
             return
@@ -63,6 +58,11 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
         tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
         if not tex_emoji:
             tex_emoji = discord.utils.get(main_guild.emojis, name="TeX")
+
+        intro_channel: discord.TextChannel | None = discord.utils.get(
+            main_guild.text_channels,
+            name="introductions",
+        )
 
         if intro_channel:
             recent_message: discord.Message
