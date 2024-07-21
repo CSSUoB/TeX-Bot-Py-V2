@@ -123,6 +123,15 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         If action creation is successful, the Action object will be returned.
         If unsuccessful, a string explaining the error will be returned.
         """
+        if action_user.bot:
+            if not silent:
+                await self.command_send_error(
+                    ctx,
+                    message=(
+                        "Action creation aborted because actions cannot be assigned to bots!"
+                    ),
+                )
+            return f"Actions cannot be assigned to bots! ({action_user})"
         try:
             action: Action = await Action.objects.acreate(
                 discord_id=int(action_user.id),
