@@ -42,35 +42,36 @@ __all__: Sequence[str] = (
 
 from typing import TYPE_CHECKING
 
-from cogs.annual_handover_and_reset import (
+from utils import TeXBot
+
+from .annual_handover_and_reset import (
     AnnualRolesResetCommandCog,
     AnnualYearChannelsIncrementCommandCog,
     CommitteeHandoverCommandCog,
 )
-from cogs.archive import ArchiveCommandCog
-from cogs.command_error import CommandErrorCog
-from cogs.delete_all import DeleteAllCommandsCog
-from cogs.edit_message import EditMessageCommandCog
-from cogs.get_token_authorisation import GetTokenAuthorisationCommand
-from cogs.induct import (
+from .archive import ArchiveCommandCog
+from .command_error import CommandErrorCog
+from .delete_all import DeleteAllCommandsCog
+from .edit_message import EditMessageCommandCog
+from .get_token_authorisation import GetTokenAuthorisationCommand
+from .induct import (
     EnsureMembersInductedCommandCog,
     InductContextCommandsCog,
     InductSendMessageCog,
     InductSlashCommandCog,
 )
-from cogs.kill import KillCommandCog
-from cogs.make_applicant import MakeApplicantContextCommandsCog, MakeApplicantSlashCommandCog
-from cogs.make_member import MakeMemberCommandCog
-from cogs.ping import PingCommandCog
-from cogs.remind_me import ClearRemindersBacklogTaskCog, RemindMeCommandCog
-from cogs.send_get_roles_reminders import SendGetRolesRemindersTaskCog
-from cogs.send_introduction_reminders import SendIntroductionRemindersTaskCog
-from cogs.source import SourceCommandCog
-from cogs.startup import StartupCog
-from cogs.stats import StatsCommandsCog
-from cogs.strike import ManualModerationCog, StrikeCommandCog, StrikeUserCommandCog
-from cogs.write_roles import WriteRolesCommandCog
-from utils import TeXBot
+from .kill import KillCommandCog
+from .make_applicant import MakeApplicantContextCommandsCog, MakeApplicantSlashCommandCog
+from .make_member import MakeMemberCommandCog
+from .ping import PingCommandCog
+from .remind_me import ClearRemindersBacklogTaskCog, RemindMeCommandCog
+from .send_get_roles_reminders import SendGetRolesRemindersTaskCog
+from .send_introduction_reminders import SendIntroductionRemindersTaskCog
+from .source import SourceCommandCog
+from .startup import StartupCog
+from .stats import StatsCommandsCog
+from .strike import ManualModerationCog, StrikeCommandCog, StrikeUserCommandCog
+from .write_roles import WriteRolesCommandCog
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
