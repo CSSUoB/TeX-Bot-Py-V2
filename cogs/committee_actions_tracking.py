@@ -241,7 +241,15 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             )
             return
 
-        action.status = status
+        try:
+            new_status: Action.Status = Action.Status(status)
+        except KeyError as key_error:
+            await self.command_send_error(ctx, message=f"Invalid Action Status: {key_error}")
+            return
+
+        action.status = new_status
+
+        await action.asave()
 
         await ctx.respond(
             content=f"Updated action: {action.description} status to be: {action.status}",
@@ -424,9 +432,12 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             )
             return
 
-        await ctx.respond(content=(
-            f"You have {len(user_actions)} actions: "
-            f"\n{"\n".join(str(action.description) for action in user_actions)}"),
+        await ctx.respond(
+            content=(
+                f"You have {len(user_actions)} actions: "
+                f"\n{"\n".join(str(action.description) + f" ({Action.Status(action.status).label})"
+                for action in user_actions)}"  # noqa: E501
+            ),
             ephemeral=True,
         )
 
@@ -518,7 +529,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             committee: [
                 action for action in actions
                 if str(action.discord_member) == DiscordMember.hash_discord_id(committee.id) # type: ignore[has-type]
-                and action.status != "X" or action.status != "C"
+                and action.status != "X" and action.status != "C"
             ] for committee in committee_members
         }
 
@@ -532,7 +543,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         all_actions_message: str = "\n".join([
                 f"\n{committee.mention if ping else committee}, Actions:"
-                f"\n{', \n'.join(str(action.description) + f"({action.status})" for action in actions)}"  # noqa: E501
+                f"\n{', \n'.join(str(action.description) + f"({Action.Status(action.status).label})" for action in actions)}"  # noqa: E501
                 for committee, actions in filtered_committee_actions.items()
             ],
         )
