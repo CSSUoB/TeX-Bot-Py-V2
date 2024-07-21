@@ -443,9 +443,13 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         )]
 
         if not user_actions:
-            await ctx.respond(content=":warning: You do not have any actions!", ephemeral=True)
+            await ctx.respond(
+                content=":information: You do not have any actions!",
+                ephemeral=True,
+            )
             logger.debug(
                 "User: %s ran the list-my-actions slash-command but no actions were found!",
+                command_user,
             )
             return
 
