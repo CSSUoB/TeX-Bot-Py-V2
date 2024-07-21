@@ -40,6 +40,7 @@ from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
+
 class InductSendMessageCog(TeXBotBaseCog):
     """Cog class that defines the "/induct" command and its call-back method."""
 
@@ -73,11 +74,9 @@ class InductSendMessageCog(TeXBotBaseCog):
 
         async for message in after.history():
             message_is_introduction_reminder: bool = (
-                (
-                    "joined the " in message.content
-                ) and (
-                    " Discord guild but have not yet introduced" in message.content
-                ) and message.author.bot
+                ("joined the " in message.content)
+                and (" Discord guild but have not yet introduced" in message.content)
+                and message.author.bot
             )
             if message_is_introduction_reminder:
                 await message.delete(
@@ -110,7 +109,7 @@ class InductSendMessageCog(TeXBotBaseCog):
                 "optional roles like pronouns and year groups\n"
                 "3. Change your nickname to whatever you wish others to refer to you as "
                 "(You can do this by right-clicking your name in the members-list "
-                "to the right & selecting \"Edit Server Profile\").",
+                'to the right & selecting "Edit Server Profile").',
             )
             if user_type != "member":
                 await after.send(
@@ -235,7 +234,7 @@ class BaseInductCog(TeXBotBaseCog):
 
         await induction_member.add_roles(
             guest_role,
-            reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\"",
+            reason=f'{ctx.user} used TeX Bot slash-command: "/induct"',
         )
 
         applicant_role: discord.Role | None = None
@@ -245,7 +244,7 @@ class BaseInductCog(TeXBotBaseCog):
         if applicant_role and applicant_role in induction_member.roles:
             await induction_member.remove_roles(
                 applicant_role,
-                reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\"",
+                reason=f'{ctx.user} used TeX Bot slash-command: "/induct"',
             )
 
         tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
@@ -303,16 +302,12 @@ class InductSlashCommandCog(BaseInductCog):
         if not ctx.value or ctx.value.startswith("@"):
             return {
                 discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
-                for member
-                in members
+                for member in members
             }
 
         return {
-            discord.OptionChoice(name=member.name, value=str(member.id))
-            for member
-            in members
+            discord.OptionChoice(name=member.name, value=str(member.id)) for member in members
         }
-
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="induct",
@@ -479,7 +474,7 @@ class EnsureMembersInductedCommandCog(TeXBotBaseCog):
                 await member.add_roles(
                     guest_role,
                     reason=(
-                        f"{ctx.user} used TeX Bot slash-command: \"/ensure-members-inducted\""
+                        f'{ctx.user} used TeX Bot slash-command: "/ensure-members-inducted"'
                     ),
                 )
 
