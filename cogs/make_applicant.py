@@ -35,6 +35,10 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
         applicant_role: discord.Role = await ctx.bot.applicant_role
         guest_role: discord.Role = await ctx.bot.guest_role
 
+        if applicant_role in applicant_member.roles:
+            await ctx.respond("User is already an applicant! Command aborted.")
+            return
+
         intro_channel: discord.TextChannel | None = discord.utils.get(
             main_guild.text_channels,
             name="introductions",
@@ -55,15 +59,8 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
             await applicant_member.remove_roles(guest_role, reason=AUDIT_MESSAGE)
             logger.debug("Removed Guest role from user %s", applicant_member)
 
-
-        if applicant_role not in applicant_member.roles:
-            await applicant_member.add_roles(applicant_role, reason=AUDIT_MESSAGE)
-            logger.debug("Applicant role given to user %s", applicant_member)
-            await initial_response.edit(
-                content=(
-                    ":hourglass: User already has the applicant role!"
-                ),
-            )
+        await applicant_member.add_roles(applicant_role, reason=AUDIT_MESSAGE)
+        logger.debug("Applicant role given to user %s", applicant_member)
 
         tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
         if not tex_emoji:
