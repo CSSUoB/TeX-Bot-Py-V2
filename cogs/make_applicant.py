@@ -49,7 +49,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
             ephemeral=True,
         )
 
-        AUDIT_MESSAGE: Final[str] = f"{ctx.user} used TeX Bot Command \"Make User Applicant\""
+        AUDIT_MESSAGE: Final[str] = f'{ctx.user} used TeX Bot Command "Make User Applicant"'
 
         await applicant_member.add_roles(applicant_role, reason=AUDIT_MESSAGE)
 
@@ -58,7 +58,6 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
         if guest_role in applicant_member.roles:
             await applicant_member.remove_roles(guest_role, reason=AUDIT_MESSAGE)
             logger.debug("Removed Guest role from user %s", applicant_member)
-
 
         tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
         if not tex_emoji:
@@ -106,30 +105,23 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
 
         members: set[discord.Member] = {
             member
-            for member
-            in guild.members
+            for member in guild.members
             if not member.bot and applicant_role not in member.roles
         }
 
         if not ctx.value or ctx.value.startswith("@"):
             return {
                 discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
-                for member
-                in members
+                for member in members
             }
 
         return {
-            discord.OptionChoice(name=member.name, value=str(member.id))
-            for member
-            in members
+            discord.OptionChoice(name=member.name, value=str(member.id)) for member in members
         }
-
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="make-applicant",
-        description=(
-            "Gives the user @Applicant role and removes the @Guest role if present."
-        ),
+        description="Gives the user @Applicant role and removes the @Guest role if present.",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="user",
@@ -163,7 +155,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
 class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
     """Cog class that defines the "/make_applicant" context commands."""
 
-    @discord.user_command(name="Make Applicant") #type: ignore[no-untyped-call, misc]
+    @discord.user_command(name="Make Applicant")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def user_make_applicant(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None: # noqa: E501
@@ -176,7 +168,7 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
         """
         await self._perform_make_applicant(ctx, member)
 
-    @discord.message_command(name="Make Message Author Applicant") # type: ignore[no-untyped-call, misc]
+    @discord.message_command(name="Make Message Author Applicant")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def message_make_applicant(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
@@ -192,9 +184,11 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
                 str(message.author.id),
             )
         except ValueError:
-            await ctx.respond((
-                ":information_source: No changes made. User cannot be made into an applicant "
-                "because they have left the server :information_source:"
+            await ctx.respond(
+                content=(
+                    ":information_source: "
+                    "No changes made. User cannot be made into an applicant "
+                    "because they have left the server :information_source:"
                 ),
                 ephemeral=True,
             )
