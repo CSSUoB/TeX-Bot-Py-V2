@@ -39,7 +39,7 @@ if TYPE_CHECKING:
         Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T]]
     )
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class ErrorCaptureDecorators:

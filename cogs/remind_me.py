@@ -11,7 +11,7 @@ import itertools
 import logging
 import re
 from logging import Logger
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Final, override
 
 import discord
 import parsedatetime
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class RemindMeCommandCog(TeXBotBaseCog):
@@ -266,12 +266,14 @@ class RemindMeCommandCog(TeXBotBaseCog):
 class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
     """Cog class that defines the clear_reminders_backlog task."""
 
+    @override
     def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
         self.clear_reminders_backlog.start()
 
         super().__init__(bot)
 
+    @override
     def cog_unload(self) -> None:
         """
         Unload hook that ends all running tasks whenever the tasks cog is unloaded.
