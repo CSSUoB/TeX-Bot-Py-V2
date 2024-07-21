@@ -255,6 +255,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         await ctx.respond(
             content=f"Updated action: {action.description} status to be: {action.status}",
+            ephemeral=True,
         )
 
 
@@ -404,13 +405,14 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             logger.debug(user_actions)
             return
 
-        await ctx.respond(
-            content=(
-                f"Found {len(user_actions)} actions for user "
-                f"{action_member.mention if ping else action_member}:"
-                f"\n{"\n".join(str(action.description) for action in user_actions)}",
-            ),
+        actions_message: str = (
+            f"Found {len(user_actions)} actions for user "
+            f"{action_member.mention if ping else action_member}:"
+            f"\n{"\n".join(str(action.description) + f" ({Action.Status(action.status).label})"
+            for action in user_actions)}"
         )
+
+        await ctx.respond(content=actions_message)
 
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
