@@ -26,7 +26,7 @@ logger: Final[Logger] = logging.getLogger("TeX-Bot")
 class GetTokenAuthorisationCommand(TeXBotBaseCog):
     """Cog class that defines the "/get_token_authorisation" command."""
 
-    @discord.slash_command( # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="get-token-authorisation",
         description="Checks the authorisations held by the token.",
     )
@@ -52,9 +52,14 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
 
         REQUEST_URL: Final[str] = "https://guildofstudents.com/profile"
 
-        async with aiohttp.ClientSession(headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES) as http_session:  # noqa: E501, SIM117
-            async with http_session.get(REQUEST_URL) as http_response:
-                response_html: str = await http_response.text()
+        async with (
+            aiohttp.ClientSession(
+                headers=REQUEST_HEADERS,
+                cookies=REQUEST_COOKIES,
+            ) as http_session,
+            http_session.get(REQUEST_URL) as http_response,
+        ):
+            response_html: str = await http_response.text()
 
         parsed_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
             response_html,
@@ -97,9 +102,7 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
             return
 
         organisations: Iterable[str] = [
-            list_item.get_text(strip=True)
-            for list_item
-            in parsed_html.find_all("li")
+            list_item.get_text(strip=True) for list_item in parsed_html.find_all("li")
         ]
 
         logger.debug(
