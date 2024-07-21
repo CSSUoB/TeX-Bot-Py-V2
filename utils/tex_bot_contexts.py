@@ -12,7 +12,7 @@ __all__: Sequence[str] = ("TeXBotAutocompleteContext", "TeXBotApplicationContext
 
 import discord
 
-from .tex_bot import TeXBot
+from utils.tex_bot import TeXBot
 
 
 class TeXBotAutocompleteContext(discord.AutocompleteContext):

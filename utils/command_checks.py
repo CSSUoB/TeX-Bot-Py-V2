@@ -14,8 +14,7 @@ from discord.ext.commands import CheckFailure
 from discord.ext.commands.core import T
 
 from exceptions import DiscordMemberNotInMainGuildError
-
-from .tex_bot_contexts import TeXBotApplicationContext
+from utils.tex_bot_contexts import TeXBotApplicationContext
 
 
 class CommandChecks:

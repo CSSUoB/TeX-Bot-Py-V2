@@ -19,9 +19,8 @@ from exceptions import CommitteeRoleDoesNotExistError, DiscordMemberNotInMainGui
 from exceptions.base import (
     BaseDoesNotExistError,
 )
-
-from .tex_bot import TeXBot
-from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
+from utils.tex_bot import TeXBot
+from utils.tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 if TYPE_CHECKING:
     from typing import TypeAlias
