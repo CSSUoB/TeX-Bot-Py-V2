@@ -1,4 +1,4 @@
-"""Custom Pycord Bot class implementation."""
+"""Custom bot implementation to override the default bot class provided by Pycord."""
 
 from collections.abc import Sequence
 
@@ -8,7 +8,7 @@ __all__: Sequence[str] = ("TeXBot",)
 import logging
 import re
 from logging import Logger
-from typing import TYPE_CHECKING, Final, NoReturn, override
+from typing import TYPE_CHECKING, Final, override
 
 import aiohttp
 import discord
@@ -47,7 +47,7 @@ class TeXBot(discord.Bot):
 
     @override
     def __init__(self, *args: object, **options: object) -> None:
-        """Initialise a new Pycord Bot subclass with empty shortcut accessors."""
+        """Initialize a new discord.Bot subclass with empty shortcut accessors."""
         self._main_guild: discord.Guild | None = None
         self._committee_role: discord.Role | None = None
         self._committee_elect_role: discord.Role | None = None
@@ -63,15 +63,6 @@ class TeXBot(discord.Bot):
         self._main_guild_set: bool = False
 
         super().__init__(*args, **options)  # type: ignore[no-untyped-call]
-
-    @override
-    async def close(self) -> NoReturn:
-        await super().close()
-
-        TEX_BOT_NOT_CLOSED_CORRECTLY_MESSAGE: Final[str] = (
-            "TeX-Bot did not shutdown correctly."
-        )
-        raise RuntimeError(TEX_BOT_NOT_CLOSED_CORRECTLY_MESSAGE)
 
     # noinspection PyPep8Naming
     @property
@@ -90,14 +81,10 @@ class TeXBot(discord.Bot):
 
         Raises `GuildDoesNotExist` if the given ID does not link to a valid Discord guild.
         """
-        MAIN_GUILD_EXISTS: Final[bool] = bool(
-            self._main_guild
-            and self._tex_bot_has_guild(settings["_DISCORD_MAIN_GUILD_ID"])  # noqa: COM812
-        )
-        if not MAIN_GUILD_EXISTS:
-            raise GuildDoesNotExistError(guild_id=settings["_DISCORD_MAIN_GUILD_ID"])
+        if not self._main_guild or not self._bot_has_guild(settings["DISCORD_GUILD_ID"]):
+            raise GuildDoesNotExistError(guild_id=settings["DISCORD_GUILD_ID"])
 
-        return self._main_guild  # type: ignore[return-value]
+        return self._main_guild
 
     @property
     async def committee_role(self) -> discord.Role:
@@ -199,7 +186,7 @@ class TeXBot(discord.Bot):
         Shortcut accessor to the archivist role.
 
         The archivist role is the one that allows members to see channels & categories
-        that are no longer in use, which are hidden from all other members.
+        that are no longer in use, which are hidden to all other members.
 
         Raises `ArchivistRoleDoesNotExist` if the role does not exist.
         """
@@ -291,8 +278,8 @@ class TeXBot(discord.Bot):
         The full name of your community group.
 
         This is substituted into many error/welcome messages sent into your Discord guild,
-        by TeX-Bot.
-        The group-full-name is either retrieved from the provided environment variable
+        by the bot.
+        The group-full-name is either retrieved from the provided environment variable,
         or automatically identified from the name of your group's Discord guild.
         """
         return (  # type: ignore[no-any-return]
@@ -384,7 +371,7 @@ class TeXBot(discord.Bot):
             else "our community moderators"
         )
 
-    def _tex_bot_has_guild(self, guild_id: int) -> bool:
+    def _bot_has_guild(self, guild_id: int) -> bool:
         return bool(discord.utils.get(self.guilds, id=guild_id))
 
     def _guild_has_role(self, role: discord.Role) -> bool:
@@ -408,7 +395,7 @@ class TeXBot(discord.Bot):
 
         return text_channel
 
-    async def perform_kill_and_close(self, initiated_by_user: discord.User | discord.Member | None = None) -> NoReturn:  # noqa: E501
+    async def perform_kill_and_close(self, initiated_by_user: discord.User | discord.Member | None = None) -> None:  # noqa: E501
         """
         Shutdown TeX-Bot by using the "/kill" command.
 
@@ -447,13 +434,13 @@ class TeXBot(discord.Bot):
 
     def set_main_guild(self, main_guild: discord.Guild) -> None:
         """
-        Set the main_guild value that TeX-Bot will reference in the future.
+        Set the main_guild value that the bot will reference in the future.
 
         This can only be set once.
         """
         if self._main_guild_set:
             MAIN_GUILD_SET_MESSAGE: Final[str] = (
-                "TeX-Bot's main_guild property has already been set, it cannot be changed."
+                "The bot's main_guild property has already been set, it cannot be changed."
             )
             raise RuntimeError(MAIN_GUILD_SET_MESSAGE)
 
@@ -480,9 +467,9 @@ class TeXBot(discord.Bot):
         """
         str_member_id = str_member_id.replace("<@", "").replace(">", "")
 
-        if not re.fullmatch(r"\A\d{17,20}\Z", str_member_id):
+        if not re.match(r"\A\d{17,20}\Z", str_member_id):
             INVALID_USER_ID_MESSAGE: Final[str] = (
-                f"'{str_member_id}' is not a valid user ID."
+                f"\"{str_member_id}\" is not a valid user ID."
             )
             raise ValueError(INVALID_USER_ID_MESSAGE)
 

@@ -11,7 +11,6 @@ __all__: Sequence[str] = (
     "GuestRoleDoesNotExistError",
     "MemberRoleDoesNotExistError",
     "ArchivistRoleDoesNotExistError",
-    "ApplicantRoleDoesNotExistError",
     "ChannelDoesNotExistError",
     "RolesChannelDoesNotExistError",
     "GeneralChannelDoesNotExistError",
@@ -59,11 +58,11 @@ class GuildDoesNotExistError(BaseDoesNotExistError):
 
     @override
     def __init__(self, message: str | None = None, guild_id: int | None = None) -> None:
-        """Initialise a new DoesNotExist exception for a guild not existing."""
+        """Initialize a new DoesNotExist exception for a guild not existing."""
         self.guild_id: int | None = guild_id
 
         if guild_id and not message:
-            message = self.DEFAULT_MESSAGE.replace("given ID", f"ID '{self.guild_id}'")
+            message = self.DEFAULT_MESSAGE.replace("given ID", f"ID \"{self.guild_id}\"")
 
         super().__init__(message)
 
@@ -86,14 +85,14 @@ class RoleDoesNotExistError(BaseDoesNotExistError, abc.ABC):
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def ROLE_NAME(cls) -> str:  # noqa: N802, N805
+    def ROLE_NAME(cls) -> str:  # noqa: N802,N805
         """The name of the Discord role that does not exist."""  # noqa: D401
 
     @override
     def __init__(self, message: str | None = None) -> None:
-        """Initialise a new DoesNotExist exception for a role not existing."""
+        """Initialize a new DoesNotExist exception for a role not existing."""
         HAS_DEPENDANTS: Final[bool] = bool(
-            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS  # noqa: COM812
+            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS,
         )
 
         if not message and HAS_DEPENDANTS:
@@ -242,23 +241,19 @@ class ArchivistRoleDoesNotExistError(RoleDoesNotExistError):
     def ROLE_NAME(cls) -> str:  # noqa: N805
         return "Archivist"
 
-
 class ApplicantRoleDoesNotExistError(RoleDoesNotExistError):
     """Exception class to raise when the "Applicant" Discord role is missing."""
 
-    # noinspection PyMethodParameters
     @classproperty
     @override
     def ERROR_CODE(cls) -> str:  # noqa: N805
         return "E1025"
 
-    # noinspection PyMethodParameters
     @classproperty
     @override
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]: # noqa: N805
         return frozenset({"make_applicant"})
 
-    # noinspection PyMethodParameters
     @classproperty
     @override
     def ROLE_NAME(cls) -> str: # noqa: N805
@@ -283,14 +278,14 @@ class ChannelDoesNotExistError(BaseDoesNotExistError):
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def CHANNEL_NAME(cls) -> str:  # noqa: N802, N805
+    def CHANNEL_NAME(cls) -> str:  # noqa: N802,N805
         """The name of the Discord channel that does not exist."""  # noqa: D401
 
     @override
     def __init__(self, message: str | None = None) -> None:
-        """Initialise a new DoesNotExist exception for a role not existing."""
+        """Initialize a new DoesNotExist exception for a role not existing."""
         HAS_DEPENDANTS: Final[bool] = bool(
-            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS  # noqa: COM812
+            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS,
         )
 
         if not message and HAS_DEPENDANTS:

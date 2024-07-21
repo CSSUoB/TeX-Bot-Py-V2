@@ -26,7 +26,7 @@ class DiscordMemberNotInMainGuildError(BaseTeXBotError, ValueError):
 
     @override
     def __init__(self, message: str | None = None, user_id: int | None = None) -> None:
-        """Initialise a ValueError exception for a non-existent user ID."""
+        """Initialize a ValueError exception for a non-existent user ID."""
         self.user_id: int | None = user_id
 
         super().__init__(message)

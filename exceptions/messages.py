@@ -13,10 +13,11 @@ from typing import override
 
 from classproperties import classproperty
 
+from .base import BaseTeXBotError
 from .config_changes import ImproperlyConfiguredError
 
 
-class InvalidMessagesJSONFileError(ImproperlyConfiguredError):
+class InvalidMessagesJSONFileError(BaseTeXBotError, ImproperlyConfiguredError):
     """Exception class to raise when the messages.json file has an invalid structure."""
 
     # noinspection PyMethodParameters,PyPep8Naming
@@ -27,7 +28,7 @@ class InvalidMessagesJSONFileError(ImproperlyConfiguredError):
 
     @override
     def __init__(self, message: str | None = None, dict_key: str | None = None) -> None:
-        """Initialise an ImproperlyConfigured exception for an invalid messages.json file."""
+        """Initialize an ImproperlyConfigured exception for an invalid messages.json file."""
         self.dict_key: str | None = dict_key
 
         super().__init__(message)
@@ -44,7 +45,7 @@ class MessagesJSONFileMissingKeyError(InvalidMessagesJSONFileError):
 
     @override
     def __init__(self, message: str | None = None, missing_key: str | None = None) -> None:
-        """Initialise a new InvalidMessagesJSONFile exception for a missing key."""
+        """Initialize a new InvalidMessagesJSONFile exception for a missing key."""
         super().__init__(message, dict_key=missing_key)
 
     @property
@@ -68,7 +69,8 @@ class MessagesJSONFileValueError(InvalidMessagesJSONFileError):
 
     @override
     def __init__(self, message: str | None = None, dict_key: str | None = None, invalid_value: object | None = None) -> None:  # noqa: E501
-        """Initialise a new InvalidMessagesJSONFile exception for a key's invalid value."""
+        """Initialize a new InvalidMessagesJSONFile exception for a key's invalid value."""
         self.invalid_value: object | None = invalid_value
 
         super().__init__(message, dict_key)
+
