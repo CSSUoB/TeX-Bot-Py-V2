@@ -10,7 +10,7 @@ import logging
 import re
 from collections.abc import Mapping
 from logging import Logger
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Final, override
 
 import discord
 from discord import Cog
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 if TYPE_CHECKING:
     MentionableMember: TypeAlias = discord.Member | discord.Role
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class TeXBotBaseCog(Cog):
@@ -61,6 +61,7 @@ class TeXBotBaseCog(Cog):
         "write_roles": "send messages",
     }
 
+    @override
     def __init__(self, bot: TeXBot) -> None:
         """Initialize a new cog instance, storing a reference to the bot object."""
         self.bot: TeXBot = bot
