@@ -12,6 +12,7 @@ from typing import Final
 
 import discord
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
+from django.db.models import Q
 
 from db.core.models import Action, DiscordMember
 from exceptions.base import BaseDoesNotExistError
@@ -86,6 +87,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         filtered_user_actions: list[Action] = [
             action async for action in await Action.objects.afilter(
+                Q(status="IP") | Q(status="B") | Q(status="NS"),
                 discord_id=int(interaction_user.id),
             )
         ]
@@ -391,6 +393,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         )
 
         user_actions = [action async for action in await Action.objects.afilter(
+            Q(status="IP") | Q(status="B") | Q(status="NS"),
             discord_id=int(str_action_member_id),
         )]
 
@@ -401,11 +404,13 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             logger.debug(user_actions)
             return
 
-        await ctx.respond(content=(
-            f"Found {len(user_actions)} actions for user "
-            f"{action_member.mention if ping else action_member}:"
-            f"\n{"\n".join(str(action.description) for action in user_actions)}",
-        ))
+        await ctx.respond(
+            content=(
+                f"Found {len(user_actions)} actions for user "
+                f"{action_member.mention if ping else action_member}:"
+                f"\n{"\n".join(str(action.description) for action in user_actions)}",
+            ),
+        )
 
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
@@ -422,6 +427,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         command_user: discord.Member = ctx.user
 
         user_actions: list[Action] = [action async for action in await Action.objects.afilter(
+            Q(status="IP") | Q(status="B") | Q(status="NS"),
             discord_id=int(command_user.id),
         )]
 
