@@ -535,7 +535,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             committee: [
                 action for action in actions
                 if str(action.discord_member) == DiscordMember.hash_discord_id(committee.id) # type: ignore[has-type]
-                and action.status != "X" and action.status != "C"
+                and action.status not in ("X", "C")
             ] for committee in committee_members
         }
 
@@ -549,7 +549,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         all_actions_message: str = "\n".join([
                 f"\n{committee.mention if ping else committee}, Actions:"
-                f"\n{', \n'.join(str(action.description) + f"({Action.Status(action.status).label})" for action in actions)}"  # noqa: E501
+                f"\n{', \n'.join(str(action.description) + f" ({Action.Status(action.status).label})" for action in actions)}"  # noqa: E501
                 for committee, actions in filtered_committee_actions.items()
             ],
         )
