@@ -28,7 +28,7 @@ from .utils import AsyncBaseModel, BaseDiscordMemberWrapper, DiscordMember
 
 
 class AssinedCommitteeAction(BaseDiscordMemberWrapper):
-    """Model to represent an action item that has been assigned to a Discord Member."""
+    """Model to represent an action that has been assigned to a Discord committee-member."""
 
     class Status(models.TextChoices):
         CANCELLED = "X", _("Cancelled")
@@ -37,19 +37,19 @@ class AssinedCommitteeAction(BaseDiscordMemberWrapper):
         IN_PROGRESS = "IP", _("In Progress")
         NOT_STARTED = "NS", _("Not Started")
 
-    INSTANCES_NAME_PLURAL: str = "Actions"
+    INSTANCES_NAME_PLURAL: str = "Assigned Committee Actions"
 
     discord_member = models.ForeignKey(   # type: ignore[assignment]
         DiscordMember,
         on_delete=models.CASCADE,
-        related_name="action",
+        related_name="assigned_committee_actions",
         verbose_name="Discord Member",
         blank=False,
         null=False,
         unique=False,
     )
     description = models.TextField(
-        "Description of the action",
+        "Description",
         max_length=1500,
         null=False,
         blank=False,
@@ -60,8 +60,7 @@ class AssinedCommitteeAction(BaseDiscordMemberWrapper):
         default=Status.NOT_STARTED,
     )
     class Meta:
-        verbose_name = "An Action for a Discord Member"
-        verbose_name_plural = "Actions for Discord Members"
+        verbose_name = "Assigned Committee Action"
         constraints = [  # noqa: RUF012
             models.UniqueConstraint(
                 fields=["discord_member", "description"],
@@ -70,19 +69,14 @@ class AssinedCommitteeAction(BaseDiscordMemberWrapper):
         ]
 
     def __repr__(self) -> str:
-        """Generate a developer-focused representation of this DiscordReminder's attributes."""
+        """Generate a developer-focused representation of this Assigned Committee Action's attributes."""  # noqa: E501, W505
         return (
-            f"<{self._meta.verbose_name}: {self.discord_member!r}, {str(self.description)!r}" # type: ignore[has-type]
+            f"<{self._meta.verbose_name}: {self.discord_member}, {self.description}" # type: ignore[has-type]
         )
 
     def __str__(self) -> str:
-        """Generate the string representation of this DiscordReminder."""
-        construct_str: str = f"{self.discord_member}" # type: ignore[has-type]
-
-        if self.description:
-            construct_str += f": {self.description[:50]}"
-
-        return construct_str
+        """Generate the string representation of this Assigned Committee Action."""
+        return f"{self.discord_member}: {self.description}"  # type: ignore[has-type]
 
 
 class IntroductionReminderOptOutMember(BaseDiscordMemberWrapper):
