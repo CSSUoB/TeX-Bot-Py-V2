@@ -27,7 +27,7 @@ from django.utils.translation import gettext_lazy as _
 from .utils import AsyncBaseModel, BaseDiscordMemberWrapper, DiscordMember
 
 
-class Action(BaseDiscordMemberWrapper):
+class AssinedCommitteeAction(BaseDiscordMemberWrapper):
     """Model to represent an action item that has been assigned to a Discord Member."""
 
     class Status(models.TextChoices):

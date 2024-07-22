@@ -14,7 +14,7 @@ import discord
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 from django.db.models import Q
 
-from db.core.models import Action, DiscordMember
+from db.core.models import AssinedCommitteeAction, DiscordMember
 from exceptions.base import BaseDoesNotExistError
 from utils import (
     CommandChecks,
@@ -59,8 +59,8 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         Each action is identified by its description.
         """
-        all_actions: list[Action] = [
-            action async for action in Action.objects.select_related().all()
+        all_actions: list[AssinedCommitteeAction] = [
+            action async for action in AssinedCommitteeAction.objects.select_related().all()
         ]
 
         if not all_actions:
@@ -85,8 +85,8 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             str(ctx.interaction.user.id),
         )
 
-        filtered_user_actions: list[Action] = [
-            action async for action in await Action.objects.afilter(
+        filtered_user_actions: list[AssinedCommitteeAction] = [
+            action async for action in await AssinedCommitteeAction.objects.afilter(
                 Q(status="IP") | Q(status="B") | Q(status="NS"),
                 discord_id=int(interaction_user.id),
             )
@@ -103,7 +103,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
     async def autocomplete_get_action_status(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501, ARG004
         """Autocomplete callable that provides the set of possible Status'of actions."""
         status_options: list[tuple[str, str]] = (
-            Action._meta.get_field("status").__dict__["_choices"]
+            AssinedCommitteeAction._meta.get_field("status").__dict__["_choices"]
         )
 
         if not status_options:
@@ -116,7 +116,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         }
 
 
-    async def _create_action(self, ctx: TeXBotApplicationContext, action_user: discord.Member, description: str, *, silent: bool) -> Action | str:  # noqa: E501
+    async def _create_action(self, ctx: TeXBotApplicationContext, action_user: discord.Member, description: str, *, silent: bool) -> AssinedCommitteeAction | str:  # noqa: E501
         """
         Create the action object with the given description for the given user.
 
@@ -133,7 +133,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                 )
             return f"Actions cannot be assigned to bots! ({action_user})"
         try:
-            action: Action = await Action.objects.acreate(
+            action: AssinedCommitteeAction = await AssinedCommitteeAction.objects.acreate(
                 discord_id=int(action_user.id),
                 description=description,
             )
@@ -250,7 +250,9 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         sets the status of the provided action to be the provided status.
         """
         try:
-            action: Action = await Action.objects.select_related().aget(id=action_id)
+            action: AssinedCommitteeAction = (
+                await AssinedCommitteeAction.objects.select_related().aget(id=action_id)
+            )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
             await self.command_send_error(
                 ctx,
@@ -259,7 +261,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             return
 
         try:
-            new_status: Action.Status = Action.Status(status)
+            new_status: AssinedCommitteeAction.Status = AssinedCommitteeAction.Status(status)
         except KeyError as key_error:
             await self.command_send_error(ctx, message=f"Invalid Action Status: {key_error}")
             return
@@ -340,13 +342,13 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         committee_member: discord.Member
         for committee_member in committee_members:
-            action_or_error_message: Action | str = await self._create_action(
+            action_or_error_message: AssinedCommitteeAction | str = await self._create_action(
                 ctx,
                 committee_member,
                 action_description,
                 silent=True,
             )
-            if isinstance(action_or_error_message, Action):
+            if isinstance(action_or_error_message, AssinedCommitteeAction):
                 success_members.append(committee_member)
             else:
                 failed_members += action_or_error_message + "\n"
@@ -423,16 +425,18 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         else:
             action_member = ctx.user
 
-        user_actions: list[Action]
+        user_actions: list[AssinedCommitteeAction]
 
         if not status:
-            user_actions = [action async for action in await Action.objects.afilter(
-                Q(status="IP") | Q(status="B") | Q(status="NS"),
-                discord_id=int(action_member.id),
-            )]
+            user_actions = [
+                action async for action in await AssinedCommitteeAction.objects.afilter(
+                    Q(status="IP") | Q(status="B") | Q(status="NS"),
+                    discord_id=int(action_member.id),
+                )
+            ]
         else:
             user_actions=[
-                action async for action in await Action.objects.afilter(
+                action async for action in await AssinedCommitteeAction.objects.afilter(
                     Q(status=status),
                     discord_id=int(action_member.id),
                 )
@@ -450,8 +454,8 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         actions_message: str = (
             f"Found {len(user_actions)} actions for user "
             f"{action_member.mention if ping else action_member}:"
-            f"\n{"\n".join(str(action.description) + f" ({Action.Status(action.status).label})"
-            for action in user_actions)}"
+            f"\n{"\n".join(str(action.description) + f" ({AssinedCommitteeAction.Status(action.status).label})"
+            for action in user_actions)}"  # noqa: E501
         )
 
         await ctx.respond(content=actions_message)
@@ -487,8 +491,8 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         new_user_to_action_hash: str = DiscordMember.hash_discord_id(new_user_to_action.id)
 
         try:
-            action_to_reassign: Action = (
-                await Action.objects.select_related().aget(id=action_id)
+            action_to_reassign: AssinedCommitteeAction = (
+                await AssinedCommitteeAction.objects.select_related().aget(id=action_id)
             )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
             await self.command_send_error(
@@ -506,14 +510,14 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             )
             return
 
-        new_action: Action | str = await self._create_action(
+        new_action: AssinedCommitteeAction | str = await self._create_action(
             ctx,
             new_user_to_action,
             action_to_reassign.description,
             silent=False,
         )
 
-        if isinstance(new_action, Action):
+        if isinstance(new_action, AssinedCommitteeAction):
             await action_to_reassign.adelete()
 
 
@@ -543,8 +547,8 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         """List all actions.""" # NOTE: this doesn't actually list *all* actions as it is possible for non-committee to be actioned.
         committee_role: discord.Role = await self.bot.committee_role
 
-        actions: list[Action] = [
-            action async for action in Action.objects.select_related().all()
+        actions: list[AssinedCommitteeAction] = [
+            action async for action in AssinedCommitteeAction.objects.select_related().all()
         ]
 
         desired_status: list[str] = []
@@ -556,7 +560,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         committee_members: list[discord.Member] = committee_role.members
 
-        committee_actions: dict[discord.Member, list[Action]] = {
+        committee_actions: dict[discord.Member, list[AssinedCommitteeAction]] = {
             committee: [
                 action for action in actions
                 if str(action.discord_member) == DiscordMember.hash_discord_id(committee.id) # type: ignore[has-type]
@@ -574,7 +578,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         all_actions_message: str = "\n".join([
                 f"\n{committee.mention if ping else committee}, Actions:"
-                f"\n{', \n'.join(str(action.description) + f" ({Action.Status(action.status).label})" for action in actions)}"  # noqa: E501
+                f"\n{', \n'.join(str(action.description) + f" ({AssinedCommitteeAction.Status(action.status).label})" for action in actions)}"  # noqa: E501
                 for committee, actions in filtered_committee_actions.items()
             ],
         )
