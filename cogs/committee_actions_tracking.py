@@ -386,8 +386,9 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         description="The user to list actions for.",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members), # type: ignore[arg-type]
-        required=True,
-        parameter_name="str_action_member_id",
+        required=False,
+        default=None,
+        parameter_name="action_member_id",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="ping",
@@ -407,15 +408,20 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def list_user_actions(self, ctx: TeXBotApplicationContext, str_action_member_id: str, *, ping: bool, status: str) -> None:  # noqa: E501
+    async def list_user_actions(self, ctx: TeXBotApplicationContext, *, action_member_id: str, ping: bool, status: str) -> None:  # noqa: E501
         """
         Definition and callback of the list user actions command.
 
         Takes in a user and lists out their current actions.
         """
-        action_member: discord.Member = await self.bot.get_member_from_str_id(
-            str_action_member_id,
-        )
+        action_member: discord.Member | discord.User
+
+        if action_member_id:
+            action_member = await self.bot.get_member_from_str_id(
+                action_member_id,
+            )
+        else:
+            action_member = ctx.user
 
         user_actions: list[Action]
 
@@ -449,45 +455,6 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         )
 
         await ctx.respond(content=actions_message)
-
-
-    @discord.slash_command( # type: ignore[no-untyped-call, misc]
-        name="list-my-actions",
-        description="Lists all actions for the user that ran the command",
-    )
-    @CommandChecks.check_interaction_user_in_main_guild
-    async def list_my_actions(self, ctx: TeXBotApplicationContext) -> None:
-        """
-        Definition and callback of the list my actions command.
-
-        Takes no arguments and simply returns the actions for the user that ran the command.
-        """
-        command_user: discord.Member = ctx.user
-
-        user_actions: list[Action] = [action async for action in await Action.objects.afilter(
-            Q(status="IP") | Q(status="B") | Q(status="NS"),
-            discord_id=int(command_user.id),
-        )]
-
-        if not user_actions:
-            await ctx.respond(
-                content=":information: You do not have any actions!",
-                ephemeral=True,
-            )
-            logger.debug(
-                "User: %s ran the list-my-actions slash-command but no actions were found!",
-                command_user,
-            )
-            return
-
-        await ctx.respond(
-            content=(
-                f"You have {len(user_actions)} actions: "
-                f"\n{"\n".join(str(action.description) + f" ({Action.Status(action.status).label})"
-                for action in user_actions)}"  # noqa: E501
-            ),
-            ephemeral=True,
-        )
 
 
     @discord.slash_command( # type: ignore[no-untyped-call, misc]
