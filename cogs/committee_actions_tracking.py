@@ -183,15 +183,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="create",
-        description="Adds a new action with the specified description",
-    )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
-        name="user",
-        description="The user to assign the action to",
-        input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members), # type: ignore[arg-type]
-        required=True,
-        parameter_name="str_action_member_id",
+        description="Adds a new action with the specified description.",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="description",
@@ -200,16 +192,30 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         required=True,
         parameter_name="action_description",
     )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="user",
+        description="The user to assign the action to.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members), # type: ignore[arg-type]
+        required=False,
+        default=None,
+        parameter_name="action_member_id",
+    )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def create(self, ctx: TeXBotApplicationContext, str_action_member_id: str, action_description: str) -> None:  # noqa: E501
+    async def create(self, ctx: TeXBotApplicationContext, action_description: str, *, action_member_id: str) -> None:  # noqa: E501
         """
         Definition and callback response of the "create" command.
 
-        The "create" command creates an action assigned the specified user.
+        The "create" command creates an action with the specified description.
+        If no user is specified, the user issuing the command will be actioned.
         """
+        member_id: str = ""
+
+        member_id = action_member_id if action_member_id else str(ctx.user.id)
+
         action_user: discord.Member = await self.bot.get_member_from_str_id(
-            str_action_member_id,
+            member_id,
         )
 
         await self._create_action(ctx, action_user, action_description, silent=False)
