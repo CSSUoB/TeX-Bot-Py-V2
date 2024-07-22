@@ -390,9 +390,18 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         default=False,
         required=False,
     )
+    @discord.option( # type: ignore[no-untyped-call, misc]
+        name="status",
+        description="The desired status of the action.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_action_status), # type: ignore[arg-type]
+        required=False,
+        default=None,
+        parameter_name="status",
+    )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def list_user_actions(self, ctx:TeXBotApplicationContext, str_action_member_id: str, *, ping: bool) -> None:  # noqa: E501
+    async def list_user_actions(self, ctx: TeXBotApplicationContext, str_action_member_id: str, *, ping: bool, status: str) -> None:  # noqa: E501
         """
         Definition and callback of the list user actions command.
 
@@ -402,16 +411,28 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             str_action_member_id,
         )
 
-        user_actions = [action async for action in await Action.objects.afilter(
-            Q(status="IP") | Q(status="B") | Q(status="NS"),
-            discord_id=int(str_action_member_id),
-        )]
+        user_actions: list[Action]
+
+        if not status:
+            user_actions = [action async for action in await Action.objects.afilter(
+                Q(status="IP") | Q(status="B") | Q(status="NS"),
+                discord_id=int(action_member.id),
+            )]
+        else:
+            user_actions=[
+                action async for action in await Action.objects.afilter(
+                    Q(status=status),
+                    discord_id=int(action_member.id),
+                )
+            ]
 
         if not user_actions:
-            await ctx.respond(content=(
-                f"User: {action_member.mention if ping else action_member} has no actions.",
-            ))
-            logger.debug(user_actions)
+            await ctx.respond(
+                content=(
+                    f"User: {action_member.mention if ping else action_member} has no "
+                    "in progress actions." if not status else " actions matching given filter."
+                ),
+            )
             return
 
         actions_message: str = (
@@ -534,9 +555,18 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         default=False,
         required=False,
     )
+    @discord.option( # type: ignore[no-untyped-call, misc]
+        name="status",
+        description="The desired status of the action.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_action_status), # type: ignore[arg-type]
+        required=False,
+        default=None,
+        parameter_name="status",
+    )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def list_all_actions(self, ctx:TeXBotApplicationContext, *, ping: bool) -> None:
+    async def list_all_actions(self, ctx:TeXBotApplicationContext, *, ping: bool, status: str) -> None:  # noqa: E501
         """List all actions.""" # NOTE: this doesn't actually list *all* actions as it is possible for non-committee to be actioned.
         committee_role: discord.Role = await self.bot.committee_role
 
@@ -544,13 +574,20 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             action async for action in Action.objects.select_related().all()
         ]
 
+        desired_status: list[str] = []
+
+        if status:
+            desired_status += status
+        else:
+            desired_status += "NS", "IP", "B"
+
         committee_members: list[discord.Member] = committee_role.members
 
         committee_actions: dict[discord.Member, list[Action]] = {
             committee: [
                 action for action in actions
                 if str(action.discord_member) == DiscordMember.hash_discord_id(committee.id) # type: ignore[has-type]
-                and action.status not in ("X", "C")
+                and action.status in desired_status
             ] for committee in committee_members
         }
 
