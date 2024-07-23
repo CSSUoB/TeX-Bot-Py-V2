@@ -123,6 +123,17 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         If action creation is successful, the Action object will be returned.
         If unsuccessful, a string explaining the error will be returned.
         """
+        if len(description) >= 200:
+            if not silent:
+                await self.command_send_error(
+                    ctx,
+                    message=(
+                        "Action description was too long! "
+                        "Max description length is 200 characters."
+                    ),
+                )
+            return "Action description exceeded the maximum character limit!"
+
         if action_user.bot:
             if not silent:
                 await self.command_send_error(
@@ -132,6 +143,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                     ),
                 )
             return f"Actions cannot be assigned to bots! ({action_user})"
+
         try:
             action: AssinedCommitteeAction = await AssinedCommitteeAction.objects.acreate(
                 discord_id=int(action_user.id),
@@ -224,7 +236,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         name="update-status",
         description="Update the status of the provided action.",
     )
-    @discord.option( # type: ignore[no-untyped-call, misc]
+    @discord.option(  # type: ignore[no-untyped-call, misc]
         name="action",
         description="The action to mark as completed.",
         input_type=str,
@@ -232,7 +244,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         required=True,
         parameter_name="action_id",
     )
-    @discord.option( # type: ignore[no-untyped-call, misc]
+    @discord.option(  # type: ignore[no-untyped-call, misc]
         name="status",
         description="The desired status of the action.",
         input_type=str,
@@ -274,6 +286,55 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             content=f"Updated action: {action.description} status to be: {action.status}",
             ephemeral=True,
         )
+
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+            name="update-description",
+            description="Update the description of the provided action.",
+    )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="action",
+        description="The action to mark as completed.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids), # type: ignore[arg-type]
+        required=True,
+        parameter_name="action_id",
+    )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="description",
+        description="The description to be used for the action",
+        input_type=str,
+        required=True,
+        parameter_name="action_description",
+    )
+    async def update_description(self, ctx: TeXBotApplicationContext, action_id: str, description: str) -> None:  # noqa: E501
+        """
+        Definition and callback response of the "update-description" command.
+
+        Takes in an action id and description, retrieves the action from the ID
+        and updates the action to with the new description.
+        """
+        if len(description) >= 200:
+            await ctx.respond(
+                content=":warning: The provided description was too long! No action taken.",
+            )
+            return
+
+        try:
+            action: AssinedCommitteeAction = (
+                await AssinedCommitteeAction.objects.select_related().aget(id=action_id)
+            )
+        except (MultipleObjectsReturned, ObjectDoesNotExist):
+            await self.command_send_error(
+                ctx,
+                message="Action provided was either not unique or could not be found.",
+            )
+            return
+
+        action.description = description
+
+        await action.asave()
+
+        await ctx.respond(content="Action description updated!")
 
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]

@@ -50,7 +50,7 @@ class AssinedCommitteeAction(BaseDiscordMemberWrapper):
     )
     description = models.TextField(
         "Description",
-        max_length=1500,
+        max_length=200,
         null=False,
         blank=False,
     )
