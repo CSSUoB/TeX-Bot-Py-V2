@@ -15,7 +15,6 @@ from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, 
 from django.db.models import Q
 
 from db.core.models import AssinedCommitteeAction, DiscordMember
-from exceptions.base import BaseDoesNotExistError
 from utils import (
     CommandChecks,
     TeXBotApplicationContext,
@@ -34,43 +33,17 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         description="Add, list, remove and reassign tracked committee-actions.",
     )
 
+
     @staticmethod
     async def autocomplete_get_committee_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
         """Autocomplete callable that generates a set of selectable committee members."""
-        shortcut_accessors_failed_error: BaseDoesNotExistError
-        try:
-            main_guild: discord.Guild = ctx.bot.main_guild
-            committee_role: discord.Role = await ctx.bot.committee_role
-        except BaseDoesNotExistError as shortcut_accessors_failed_error:
-            logger.warning(shortcut_accessors_failed_error.message)
-            return set()
+        committee_role: discord.Role = await ctx.bot.committee_role
 
         return {
             discord.OptionChoice(name=member.name, value=str(member.id))
             for member
-            in main_guild.members
-            if not member.bot and committee_role in member.roles
-        }
-
-    @staticmethod
-    async def autocomplete_get_all_actions(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501, ARG004
-        """
-        Autocomplete callable that provides a set of selectable committee tracked-actions.
-
-        Each action is identified by its description.
-        """
-        all_actions: list[AssinedCommitteeAction] = [
-            action async for action in AssinedCommitteeAction.objects.select_related().all()
-        ]
-
-        if not all_actions:
-            logger.debug("User tried to autocomplete for Actions but no actions were found!")
-            return set()
-
-        return {
-            discord.OptionChoice(name=action.description, value=str(action.id))
-            for action
-            in all_actions
+            in committee_role.members
+            if not member.bot
         }
 
 
@@ -107,6 +80,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         )
 
         if not status_options:
+            logger.error("The autocomplete could not find any action Status'!")
             return set()
 
         return {
@@ -221,10 +195,10 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         The "create" command creates an action with the specified description.
         If no user is specified, the user issuing the command will be actioned.
+        In normal use the autocomplete should be used, but a discord ID can be
+        used directly if the user wishes to action a user not included in the autocomplete.
         """
-        member_id: str = ""
-
-        member_id = action_member_id if action_member_id else str(ctx.user.id)
+        member_id: str = action_member_id if action_member_id else str(ctx.user.id)
 
         action_user: discord.Member = await self.bot.get_member_from_str_id(
             member_id,
@@ -256,7 +230,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def update_status(self, ctx: TeXBotApplicationContext, action_id: str, status: str) -> None:  # noqa: E501
         """
-        Update the status of the given action to the given status.
+        Definition and callback of the "update-status" command.
 
         Takes in an action object and a Status string,
         sets the status of the provided action to be the provided status.
@@ -286,6 +260,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             content=f"Updated action: {action.description} status to be: {action.status}",
             ephemeral=True,
         )
+
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
             name="update-description",
@@ -530,7 +505,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         name="action",
         description="The action to reassign.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_all_actions), # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids), # type: ignore[arg-type]
         required=True,
         parameter_name="action_id",
     )
