@@ -71,7 +71,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
     @staticmethod
     async def autocomplete_get_action_status(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501, ARG004
-        """Autocomplete callable that provides the set of possible Status'of actions."""
+        """Autocomplete callable that provides the set of possible Status' of actions."""
         status_options: list[tuple[str, str]] = (
             AssinedCommitteeAction._meta.get_field("status").__dict__["_choices"]
         )
