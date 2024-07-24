@@ -23,6 +23,6 @@ jobs:
     - uses: docker/build-push-action@v6
       with:
         push: true
-        tags: ghcr.io/cssuob/tex-bot-py-v2:dev-${{ github.ref }}
+        tags: ghcr.io/cssuob/tex-bot-py-v2:pr-${{ github.head_ref }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
