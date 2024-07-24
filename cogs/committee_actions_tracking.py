@@ -33,6 +33,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         description="Add, list, remove and reassign tracked committee-actions.",
     )
 
+
     @staticmethod
     async def autocomplete_get_committee_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
         """Autocomplete callable that generates a set of selectable committee members."""
@@ -42,6 +43,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             discord.OptionChoice(name=member.name, value=str(member.id))
             for member in committee_role.members if not member.bot
         }
+
 
     @staticmethod
     async def autocomplete_get_user_action_ids(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
@@ -65,6 +67,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             discord.OptionChoice(name=action.description, value=str(action.id))
             for action in filtered_user_actions
         }
+
 
     @staticmethod
     async def autocomplete_get_action_status(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501, ARG004
@@ -154,6 +157,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             )
         return action
 
+
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="create",
         description="Adds a new action with the specified description.",
@@ -192,6 +196,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         )
 
         await self._create_action(ctx, action_user, action_description, silent=False)
+
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="update-status",
@@ -248,6 +253,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             ephemeral=True,
         )
 
+
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="update-description",
         description="Update the description of the provided action.",
@@ -297,6 +303,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         await ctx.respond(content="Action description updated!")
 
+
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="action-random-user",
         description="Creates an action object with the specified description and random user.",
@@ -333,6 +340,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         ]
 
         await self._create_action(ctx, action_user, action_description, silent=False)
+
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="action-all-committee",
@@ -397,6 +405,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             response_message += failed_members
 
         await ctx.respond(content=response_message)
+
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="list-user-actions",
@@ -481,6 +490,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         await ctx.respond(content=actions_message)
 
+
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="reassign-action",
         description="Reassign the specified action to another user.",
@@ -539,6 +549,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         if isinstance(new_action, AssinedCommitteeAction):
             await action_to_reassign.adelete()
+
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="list-all-actions",
@@ -605,6 +616,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         )
 
         await ctx.respond(content=all_actions_message)
+
 
     @discord.message_command(  # type: ignore[no-untyped-call, misc]
         name="Action Message Author",
