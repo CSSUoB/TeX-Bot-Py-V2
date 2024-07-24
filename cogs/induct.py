@@ -16,7 +16,7 @@ import logging
 import random
 from collections.abc import Set
 from logging import Logger
-from typing import Literal
+from typing import Final, Literal
 
 import discord
 
@@ -39,7 +39,7 @@ from utils import (
 )
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class InductSendMessageCog(TeXBotBaseCog):
