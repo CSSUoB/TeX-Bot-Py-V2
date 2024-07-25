@@ -146,42 +146,33 @@ class RemindMeCommandCog(TeXBotBaseCog):
 
         elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?\Z", ctx.value):
             if 1 <= int(match.group("date")) <= 31:
-                FORMATTED_DAY_AND_JOINER_DATE_CHOICES: Final[
-                    Iterator[tuple[int, int, str]]
-                ] = itertools.product(
-                    range(1, 12),
-                    range(current_year, current_year + 40),
-                    ("/", " / ", "-", " - ", ".", " . "),
+                FORMATTED_DAY_AND_JOINER_DATE_CHOICES: Final[Iterator[tuple[int, int, str]]] = (  # noqa: E501
+                        itertools.product(
+                        range(1, 12),
+                        range(current_year, current_year + 40),
+                        ("/", " / ", "-", " - ", ".", " . "),
+                    )
                 )
                 for month, year, joiner in FORMATTED_DAY_AND_JOINER_DATE_CHOICES:
                     delay_choices.add(f"{month}{joiner}{year}")
                     if month < 10:
                         delay_choices.add(f"0{month}{joiner}{year}")
 
-        elif match := re.match(
-            r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2})\Z",
-            ctx.value,
-        ):
+        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2})\Z", ctx.value):  # noqa: E501
             if 1 <= int(match.group("date")) <= 31 and 1 <= int(match.group("month")) <= 12:
                 for year in range(current_year, current_year + 40):
                     for joiner in ("/", " / ", "-", " - ", ".", " . "):
                         delay_choices.add(f"{joiner}{year}")
 
-        elif match := re.match(
-            r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?\Z",
-            ctx.value,
-        ):
+        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?\Z", ctx.value):  # noqa: E501
             if 1 <= int(match.group("date")) <= 31 and 1 <= int(match.group("month")) <= 12:
                 for year in range(current_year, current_year + 40):
                     delay_choices.add(f"{year}")
 
-        elif match := re.match(
-            r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?(?P<partial_year>\d{1,3})\Z",  # noqa: E501
-            ctx.value,
-        ):
+        elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?(?P<month>\d{1,2}) ?[/\-.] ?(?P<partial_year>\d{1,3})\Z", ctx.value):  # noqa: E501
             if 1 <= int(match.group("date")) <= 31 and 1 <= int(match.group("month")) <= 12:
                 for year in range(current_year, current_year + 40):
-                    delay_choices.add(f"{year}"[len(match.group("partial_year")) :])
+                    delay_choices.add(f"{year}"[len(match.group("partial_year")):])
 
         return {f"{ctx.value}{delay_choice}".casefold() for delay_choice in delay_choices}
 
@@ -310,8 +301,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                     functools.partial(
                         lambda _user, _reminder: (
                             not _user.bot
-                            and DiscordMember.hash_discord_id(_user.id)
-                            == _reminder.discord_member.hashed_discord_id
+                            and DiscordMember.hash_discord_id(_user.id) == _reminder.discord_member.hashed_discord_id  # noqa: E501
                         ),
                         _reminder=reminder,
                     ),
