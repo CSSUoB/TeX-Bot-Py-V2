@@ -73,7 +73,7 @@ class InductSendMessageCog(TeXBotBaseCog):
             ).adelete()
 
         async for message in after.history():
-            message_is_introduction_reminder: bool = bool (
+            message_is_introduction_reminder: bool = bool(
                 ("joined the " in message.content)
                 and (" Discord guild but have not yet introduced" in message.content)
                 and message.author.bot  # noqa: COM812
