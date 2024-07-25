@@ -36,7 +36,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
             return set()
 
         try:
-            if not await ctx.tex_bot.check_user_has_committee_role(ctx.interaction.user):
+            if not await ctx.bot.check_user_has_committee_role(ctx.interaction.user):
                 return set()
         except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
             return set()

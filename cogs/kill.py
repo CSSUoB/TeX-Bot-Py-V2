@@ -95,7 +95,7 @@ class KillCommandCog(TeXBotBaseCog):
                     content="My battery is low and it's getting dark...",
                     view=None,
                 )
-                await self.tex_bot.perform_kill_and_close(
+                await self.bot.perform_kill_and_close(
                     initiated_by_user=ctx.interaction.user,
                 )
 

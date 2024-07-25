@@ -36,7 +36,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/remind-me" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: C901,PLR0912,PLR0915,E501
+    async def autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: C901, PLR0912, PLR0915, E501
         """
         Autocomplete callable that generates the common delay input values.
 
@@ -316,7 +316,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                     continue
 
                 # noinspection PyUnresolvedReferences
-                channel: discord.PartialMessageable = self.tex_bot.get_partial_messageable(
+                channel: discord.PartialMessageable = self.bot.get_partial_messageable(
                     reminder.channel_id,
                     type=(
                         discord.ChannelType(reminder.channel_type.value)

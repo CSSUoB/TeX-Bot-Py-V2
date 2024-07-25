@@ -69,8 +69,8 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         reminders are sent.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.tex_bot.main_guild
-        guest_role: discord.Role = await self.tex_bot.guest_role
+        main_guild: discord.Guild = self.bot.main_guild
+        guest_role: discord.Role = await self.bot.guest_role
 
         # noinspection PyUnusedLocal
         roles_channel_mention: str = "**`#roles`**"

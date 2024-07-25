@@ -70,6 +70,9 @@ class TeXBotBaseCog(Cog):
 
         During initialisation, a reference to the currently running TeXBot instance is stored.
         """
+        # NOTE: The attribute/variable name `bot` is used here for consistency.
+        # NOTE: `tex_bot` would be preferred but would be inconsitent with the required attribute name of Pycord's context classes
+        # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
         self.bot: TeXBot = bot
 
     async def command_send_error(self, ctx: TeXBotApplicationContext, *, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False, responder_component: GenericResponderComponent | None = None) -> None:  # noqa: E501

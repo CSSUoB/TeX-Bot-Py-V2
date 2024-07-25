@@ -86,7 +86,7 @@ class RoleDoesNotExistError(BaseDoesNotExistError, abc.ABC):
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def ROLE_NAME(cls) -> str:  # noqa: N802,N805
+    def ROLE_NAME(cls) -> str:  # noqa: N802, N805
         """The name of the Discord role that does not exist."""  # noqa: D401
 
     @override
@@ -283,7 +283,7 @@ class ChannelDoesNotExistError(BaseDoesNotExistError):
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def CHANNEL_NAME(cls) -> str:  # noqa: N802,N805
+    def CHANNEL_NAME(cls) -> str:  # noqa: N802, N805
         """The name of the Discord channel that does not exist."""  # noqa: D401
 
     @override

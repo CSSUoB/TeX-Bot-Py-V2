@@ -266,7 +266,7 @@ class BaseStrikeCog(TeXBotBaseCog):
             "the corresponding moderation action will soon be applied to you. "
             "To find what moderation action corresponds to which strike level, "
             "you can view "
-            f"the {self.tex_bot.group_short_name} Discord server moderation document "
+            f"the {self.bot.group_short_name} Discord server moderation document "
             f"[here](<{settings.MODERATION_DOCUMENT_LINK}>)\nPlease ensure you have read "
             f"the rules in {rules_channel_mention} so that your future behaviour adheres "
             f"to them.{includes_ban_message}\n\nA committee member will be in contact "
@@ -464,7 +464,7 @@ class ManualModerationCog(BaseStrikeCog):
             return dm_confirmation_message_channel
 
         guild_confirmation_message_channel: discord.TextChannel | None = discord.utils.get(
-            self.tex_bot.main_guild.text_channels,
+            self.bot.main_guild.text_channels,
             name=settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"],
         )
         if not guild_confirmation_message_channel:
@@ -563,7 +563,7 @@ class ManualModerationCog(BaseStrikeCog):
             )
 
             out_of_sync_ban_button_interaction: discord.Interaction = (
-                await self.tex_bot.wait_for(
+                await self.bot.wait_for(
                     "interaction",
                     check=lambda interaction: (
                         interaction.type == discord.InteractionType.component
@@ -654,7 +654,7 @@ class ManualModerationCog(BaseStrikeCog):
             view=ConfirmManualModerationView(),
         )
 
-        button_interaction: discord.Interaction = await self.tex_bot.wait_for(
+        button_interaction: discord.Interaction = await self.bot.wait_for(
             "interaction",
             check=lambda interaction: (
                 interaction.type == discord.InteractionType.component
@@ -694,7 +694,7 @@ class ManualModerationCog(BaseStrikeCog):
                 await confirmation_message.delete()
 
             case "yes_manual_moderation_action":
-                interaction_user: discord.User | None = self.tex_bot.get_user(
+                interaction_user: discord.User | None = self.bot.get_user(
                     applied_action_user.id,
                 )
                 if not interaction_user:
@@ -790,7 +790,7 @@ class StrikeCommandCog(BaseStrikeCog):
         that have a member input-type.
         """
         try:
-            main_guild: discord.Guild = ctx.tex_bot.main_guild
+            main_guild: discord.Guild = ctx.bot.main_guild
         except GuildDoesNotExistError:
             return set()
 

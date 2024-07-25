@@ -188,7 +188,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         channel.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.tex_bot.main_guild
+        main_guild: discord.Guild = self.bot.main_guild
 
         channel_id: int = ctx.channel_id
 
@@ -301,8 +301,8 @@ class StatsCommandsCog(TeXBotBaseCog):
         of your group's Discord guild.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.tex_bot.main_guild
-        guest_role: discord.Role = await self.tex_bot.guest_role
+        main_guild: discord.Guild = self.bot.main_guild
+        guest_role: discord.Role = await self.bot.guest_role
 
         await ctx.defer(ephemeral=True)
 
@@ -386,7 +386,7 @@ class StatsCommandsCog(TeXBotBaseCog):
                     ),
                     title=(
                         "Most Active Roles in "
-                        f"the {self.tex_bot.group_short_name} Discord Server"
+                        f"the {self.bot.group_short_name} Discord Server"
                     ),
                     filename="roles_server_stats.png",
                     description=(
@@ -436,16 +436,16 @@ class StatsCommandsCog(TeXBotBaseCog):
         member.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.tex_bot.main_guild
-        interaction_member: discord.Member = await self.tex_bot.get_main_guild_member(ctx.user)
-        guest_role: discord.Role = await self.tex_bot.guest_role
+        main_guild: discord.Guild = self.bot.main_guild
+        interaction_member: discord.Member = await self.bot.get_main_guild_member(ctx.user)
+        guest_role: discord.Role = await self.bot.guest_role
 
         if guest_role not in interaction_member.roles:
             await self.command_send_error(
                 ctx,
                 message=(
                     "You must be inducted as a guest member "
-                    f"of the {self.tex_bot.group_short_name} Discord server "
+                    f"of the {self.bot.group_short_name} Discord server "
                     "to use this command."
                 ),
             )
@@ -506,7 +506,7 @@ class StatsCommandsCog(TeXBotBaseCog):
                 description=(
                     f"Bar chart of the number of messages sent by {ctx.user} "
                     "in different channels in "
-                    f"the {self.tex_bot.group_short_name} Discord server."
+                    f"the {self.bot.group_short_name} Discord server."
                 ),
             ),
         )
@@ -524,7 +524,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         had when they left your group's Discord guild.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.tex_bot.main_guild
+        main_guild: discord.Guild = self.bot.main_guild
 
         await ctx.defer(ephemeral=True)
 

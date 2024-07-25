@@ -82,7 +82,7 @@ class CommandErrorCog(TeXBotBaseCog):
             if CommandChecks.is_interaction_user_in_main_guild_failure(error.checks[0]):
                 message = (
                     "You must be a member of "
-                    f"the {self.tex_bot.group_short_name} Discord server "
+                    f"the {self.bot.group_short_name} Discord server "
                     "to use this command."
                 )
 

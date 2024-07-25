@@ -107,8 +107,8 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         then gives the member the "Member" role.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        member_role: discord.Role = await self.tex_bot.member_role
-        interaction_member: discord.Member = await ctx.tex_bot.get_main_guild_member(ctx.user)
+        member_role: discord.Role = await self.bot.member_role
+        interaction_member: discord.Member = await ctx.bot.get_main_guild_member(ctx.user)
 
         if member_role in interaction_member.roles:
             await ctx.respond(
@@ -125,7 +125,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 ctx,
                 message=(
                     f"{group_member_id!r} is not a valid "
-                    f"{self.tex_bot.group_member_id_type} ID."
+                    f"{self.bot.group_member_id_type} ID."
                 ),
             )
             return

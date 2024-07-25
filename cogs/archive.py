@@ -46,11 +46,11 @@ class ArchiveCommandCog(TeXBotBaseCog):
             return set()
 
         try:
-            if not await ctx.tex_bot.check_user_has_committee_role(ctx.interaction.user):
+            if not await ctx.bot.check_user_has_committee_role(ctx.interaction.user):
                 return set()
 
-            main_guild: discord.Guild = ctx.tex_bot.main_guild
-            interaction_user: discord.Member = await ctx.tex_bot.get_main_guild_member(
+            main_guild: discord.Guild = ctx.bot.main_guild
+            interaction_user: discord.Member = await ctx.bot.get_main_guild_member(
                 ctx.interaction.user,
             )
         except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
@@ -218,12 +218,14 @@ class ArchiveCommandCog(TeXBotBaseCog):
                 await self.command_send_error(
                     ctx,
                     message=(
-                        "TeX-Bot does not have access to the channels in the selected category."
+                        "TeX-Bot does not have access to "
+                        "the channels in the selected category."
                     ),
                 )
                 logger.error(  # noqa: TRY400
                     (
-                        "TeX-Bot did not have access to the channels in the selected category: "
+                        "TeX-Bot did not have access to "
+                        "the channels in the selected category: "
                         "%s."
                     ),
                     category.name,

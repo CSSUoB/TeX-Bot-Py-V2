@@ -55,7 +55,7 @@ class InductSendMessageCog(TeXBotBaseCog):
         a guest into your group's Discord guild.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.tex_bot.main_guild
+        main_guild: discord.Guild = self.bot.main_guild
 
         if before.guild != main_guild or after.guild != main_guild or before.bot or after.bot:
             return
@@ -117,7 +117,7 @@ class InductSendMessageCog(TeXBotBaseCog):
             if user_type != "member":
                 await after.send(
                     f"You can also get yourself an annual membership "
-                    f"to {self.tex_bot.group_full_name} for only £5! "
+                    f"to {self.bot.group_full_name} for only £5! "
                     f"{
                         f"Just head to {settings["PURCHASE_MEMBERSHIP_LINK"]}. "
                         if settings["PURCHASE_MEMBERSHIP_LINK"]
@@ -125,7 +125,7 @@ class InductSendMessageCog(TeXBotBaseCog):
                     }"
                     "You'll get awesome perks like a free T-shirt:shirt:, "
                     "access to member only events:calendar_spiral: and a cool green name on "
-                    f"the {self.tex_bot.group_short_name} Discord server:green_square:! "
+                    f"the {self.bot.group_short_name} Discord server:green_square:! "
                     f"{
                         f"Checkout all the perks at {settings["MEMBERSHIP_PERKS_LINK"]}"
                         if settings["MEMBERSHIP_PERKS_LINK"]
@@ -191,8 +191,8 @@ class BaseInductCog(TeXBotBaseCog):
     async def _perform_induction(self, ctx: TeXBotApplicationContext, induction_member: discord.Member, *, silent: bool) -> None:  # noqa: E501
         """Perform the actual process of inducting a member by giving them the Guest role."""
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.tex_bot.main_guild
-        guest_role: discord.Role = await self.tex_bot.guest_role
+        main_guild: discord.Guild = self.bot.main_guild
+        guest_role: discord.Role = await self.bot.guest_role
 
         intro_channel: discord.TextChannel | None = discord.utils.get(
             main_guild.text_channels,
@@ -232,7 +232,7 @@ class BaseInductCog(TeXBotBaseCog):
             message: discord.Message
             async for message in general_channel.history(limit=10):
                 message_already_sent = (
-                    message.author == self.tex_bot.user
+                    message.author == self.bot.user
                     and "grab your roles" in message.content
                 )
                 if message_already_sent:
@@ -300,8 +300,8 @@ class InductSlashCommandCog(BaseInductCog):
         that have a member input-type.
         """
         try:
-            main_guild: discord.Guild = ctx.tex_bot.main_guild
-            guest_role: discord.Role = await ctx.tex_bot.guest_role
+            main_guild: discord.Guild = ctx.bot.main_guild
+            guest_role: discord.Role = await ctx.bot.guest_role
         except (GuildDoesNotExistError, GuestRoleDoesNotExistError):
             return set()
 

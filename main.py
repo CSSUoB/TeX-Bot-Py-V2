@@ -9,8 +9,10 @@ the asynchronous running process for TeX-Bot.
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("tex_bot",)
+__all__: Sequence[str] = ("bot",)
 
+
+from typing import NoReturn
 
 from typing import NoReturn
 
@@ -27,23 +29,27 @@ with SuppressTraceback():
     # noinspection PyDunderSlots,PyUnresolvedReferences
     intents.members = True
 
-    tex_bot: TeXBot = TeXBot(intents=intents)
+    # NOTE: The variable name `bot` is used here for consistency.
+    # NOTE: `tex_bot` would be preferred but would be inconsitent with the required attribute name of Pycord's context classes
+    # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
+    bot: TeXBot = TeXBot(intents=intents)
 
-    tex_bot.load_extension("cogs")
+    bot.load_extension("cogs")
 
+# NOTE: The function name `_run_bot()` is used here for consistency.
+# NOTE: `_run_tex_bot()` would be preferred but would be inconsitent with the required attribute name of Pycord's context classes
+# NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
+def _run_bot() -> NoReturn:
+    bot.run(settings["DISCORD_BOT_TOKEN"])
 
-def _run_tex_bot() -> NoReturn:
-    tex_bot.run(settings["DISCORD_BOT_TOKEN"])
-
-    if tex_bot.EXIT_REASON is TeXBotExitReason.RESTART_REQUIRED_DUE_TO_CHANGED_CONFIG:
+    if bot.EXIT_REASON is TeXBotExitReason.RESTART_REQUIRED_DUE_TO_CHANGED_CONFIG:
         with SuppressTraceback():
-            tex_bot.reset_exit_reason()
+            bot.reset_exit_reason()
             config.run_setup()
-            tex_bot.reload_extension("cogs")
-            _run_tex_bot()
+            bot.reload_extension("cogs")
+            _run_bot()
 
-    raise SystemExit(tex_bot.EXIT_REASON.value)
-
+    raise SystemExit(bot.EXIT_REASON.value)
 
 if __name__ == "__main__":
-    _run_tex_bot()
+    _run_bot()

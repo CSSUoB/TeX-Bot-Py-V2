@@ -91,7 +91,7 @@ class StartupCog(TeXBotBaseCog):
         try:
             main_guild: discord.Guild | None = self.tex_bot.main_guild
         except GuildDoesNotExistError:
-            main_guild = self.tex_bot.get_guild(settings["_DISCORD_MAIN_GUILD_ID"])
+            main_guild = self.bot.get_guild(settings["_DISCORD_MAIN_GUILD_ID"])
             if main_guild:
                 self.tex_bot.set_main_guild(main_guild)
 
@@ -100,7 +100,7 @@ class StartupCog(TeXBotBaseCog):
                 logger.info(
                     "Invite URL: %s",
                     utils.generate_invite_url(
-                        self.tex_bot.application_id,
+                        self.bot.application_id,
                         settings["_DISCORD_MAIN_GUILD_ID"]),
                     )
             logger.critical(GuildDoesNotExistError(

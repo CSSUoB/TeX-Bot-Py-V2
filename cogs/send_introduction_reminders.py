@@ -110,7 +110,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         reminders are sent.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.tex_bot.main_guild
+        main_guild: discord.Guild = self.bot.main_guild
 
         member: discord.Member
         for member in main_guild.members:
@@ -193,6 +193,9 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         @override
         def __init__(self, bot: TeXBot) -> None:
             """Initialise a new discord.View, to opt-in/out of introduction reminders."""
+            # NOTE: The attribute/variable name `bot` is used here for consistency.
+            # NOTE: `tex_bot` would be preferred but would be inconsitent with the required attribute name of Pycord's context classes
+            # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
             self.bot: TeXBot = bot
 
             super().__init__(timeout=None)
