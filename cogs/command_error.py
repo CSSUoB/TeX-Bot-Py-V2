@@ -67,10 +67,7 @@ class CommandErrorCog(TeXBotBaseCog):
             logging_message=logging_message,
         )
 
-        if (
-            isinstance(error, discord.ApplicationCommandInvokeError)
-            and isinstance(error.original, GuildDoesNotExistError)
-        ):
+        if (isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(error.original, GuildDoesNotExistError)):  # noqa: E501
             command_name: str = (
                 ctx.command.callback.__name__
                 if (
