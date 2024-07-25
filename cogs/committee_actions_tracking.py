@@ -131,7 +131,6 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                     create_action_error,
                 )
                 await self.bot.close()
-                return ""  # NOTE: this should never be called due to the close() call above, but is here just to be absolutely certain nothing else will be executed.
 
             DUPLICATE_ACTION_MESSAGE: Final[str] = (
                 f"User: {action_user} already has an action "
