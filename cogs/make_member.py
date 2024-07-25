@@ -29,23 +29,23 @@ from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: Final[str] = f"""{
-        "Student"
-        if (
-            settings["_GROUP_FULL_NAME"]
-            and (
-                "computer science society" in settings["_GROUP_FULL_NAME"].lower()
-                or "css" in settings["_GROUP_FULL_NAME"].lower()
-                or "uob" in settings["_GROUP_FULL_NAME"].lower()
-                or "university of birmingham" in settings["_GROUP_FULL_NAME"].lower()
-                or "uob" in settings["_GROUP_FULL_NAME"].lower()
-                or (
-                    "bham" in settings["_GROUP_FULL_NAME"].lower()
-                    and "uni" in settings["_GROUP_FULL_NAME"].lower()
-                )
+    "Student"
+    if (
+        settings["_GROUP_FULL_NAME"]
+        and (
+            "computer science society" in settings["_GROUP_FULL_NAME"].lower()
+            or "css" in settings["_GROUP_FULL_NAME"].lower()
+            or "uob" in settings["_GROUP_FULL_NAME"].lower()
+            or "university of birmingham" in settings["_GROUP_FULL_NAME"].lower()
+            or "uob" in settings["_GROUP_FULL_NAME"].lower()
+            or (
+                "bham" in settings["_GROUP_FULL_NAME"].lower()
+                and "uni" in settings["_GROUP_FULL_NAME"].lower()
             )
         )
-        else "Member"
-    } ID"""
+    )
+    else "Member"
+} ID"""
 
 _GROUP_MEMBER_ID_ARGUMENT_NAME: Final[str] = (
     _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME.lower().replace(
@@ -226,7 +226,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         # NOTE: The "Member" role must be added to the user **before** the "Guest" role to ensure that the welcome message does not include the suggestion to purchase membership
         await interaction_member.add_roles(
             member_role,
-            reason='TeX Bot slash-command: "/makemember"',
+            reason="TeX Bot slash-command: \"/makemember\"",
         )
 
         try:
@@ -250,15 +250,15 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             guest_role: discord.Role = await self.bot.guest_role
         except GuestRoleDoesNotExistError:
             logger.warning(
-                '"/makemember" command used but the "Guest" role does not exist. '
-                'Some user\'s may now have the "Member" role without the "Guest" role. '
-                'Use the "/ensure-members-inducted" command to fix this issue.',
+                "\"/makemember\" command used but the \"Guest\" role does not exist. "
+                "Some user's may now have the \"Member\" role without the \"Guest\" role. "
+                "Use the \"/ensure-members-inducted\" command to fix this issue.",
             )
         else:
             if guest_role not in interaction_member.roles:
                 await interaction_member.add_roles(
                     guest_role,
-                    reason='TeX Bot slash-command: "/makemember"',
+                    reason="TeX Bot slash-command: \"/makemember\"",
                 )
 
         applicant_role: discord.Role | None = None
@@ -268,5 +268,5 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         if applicant_role and applicant_role in interaction_member.roles:
             await interaction_member.remove_roles(
                 applicant_role,
-                reason='TeX Bot slash-command: "/makemember"',
+                reason="TeX Bot slash-command: \"/makemember\"",
             )

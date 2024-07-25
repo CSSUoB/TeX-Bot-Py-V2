@@ -48,7 +48,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
             ephemeral=True,
         )
 
-        AUDIT_MESSAGE: Final[str] = f'{ctx.user} used TeX Bot Command "Make User Applicant"'
+        AUDIT_MESSAGE: Final[str] = f"{ctx.user} used TeX Bot Command \"Make User Applicant\""
 
         if guest_role in applicant_member.roles:
             await applicant_member.remove_roles(guest_role, reason=AUDIT_MESSAGE)
