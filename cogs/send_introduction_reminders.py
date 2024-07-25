@@ -236,7 +236,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     ":raised_hand:",
                     language="alias",
                 )
-                or button.label and "Opt back in" in button.label,
+                or button.label and "Opt back in" in button.label # noqa: COM812
             )
             INCOMPATIBLE_BUTTONS: Final[bool] = bool(
                 (BUTTON_WILL_MAKE_OPT_OUT and _BUTTON_WILL_MAKE_OPT_IN)
