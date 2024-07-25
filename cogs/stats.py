@@ -188,7 +188,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         channel.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.tex_bot.main_guild
+        main_guild: discord.Guild = self.bot.main_guild
 
         channel_id: int = ctx.channel_id
 
@@ -301,8 +301,8 @@ class StatsCommandsCog(TeXBotBaseCog):
         of your group's Discord guild.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.tex_bot.main_guild
-        guest_role: discord.Role = await self.tex_bot.guest_role
+        main_guild: discord.Guild = self.bot.main_guild
+        guest_role: discord.Role = await self.bot.guest_role
 
         await ctx.defer(ephemeral=True)
 
@@ -386,12 +386,12 @@ class StatsCommandsCog(TeXBotBaseCog):
                     ),
                     title=(
                         "Most Active Roles in "
-                        f"the {self.tex_bot.group_short_name} Discord Server"
+                        f"the {self.bot.group_short_name} Discord Server"
                     ),
                     filename="roles_server_stats.png",
                     description=(
                         "Bar chart of the number of messages sent by different roles "
-                        f"in the {self.tex_bot.group_short_name} Discord server."
+                        f"in the {self.bot.group_short_name} Discord server."
                     ),
                     extra_text=(
                         "Messages sent by members with multiple roles are counted once "
@@ -412,12 +412,12 @@ class StatsCommandsCog(TeXBotBaseCog):
                     ),
                     title=(
                         "Most Active Channels "
-                        f"in the {self.tex_bot.group_short_name} Discord Server"
+                        f"in the {self.bot.group_short_name} Discord Server"
                     ),
                     filename="channels_server_stats.png",
                     description=(
                         "Bar chart of the number of messages sent in different text channels "
-                        f"in the {self.tex_bot.group_short_name} Discord server."
+                        f"in the {self.bot.group_short_name} Discord server."
                     ),
                 ),
             ],
@@ -436,16 +436,16 @@ class StatsCommandsCog(TeXBotBaseCog):
         member.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.tex_bot.main_guild
-        interaction_member: discord.Member = await self.tex_bot.get_main_guild_member(ctx.user)
-        guest_role: discord.Role = await self.tex_bot.guest_role
+        main_guild: discord.Guild = self.bot.main_guild
+        interaction_member: discord.Member = await self.bot.get_main_guild_member(ctx.user)
+        guest_role: discord.Role = await self.bot.guest_role
 
         if guest_role not in interaction_member.roles:
             await self.command_send_error(
                 ctx,
                 message=(
                     "You must be inducted as a guest member "
-                    f"of the {self.tex_bot.group_short_name} Discord server "
+                    f"of the {self.bot.group_short_name} Discord server "
                     "to use this command."
                 ),
             )
@@ -500,13 +500,13 @@ class StatsCommandsCog(TeXBotBaseCog):
                 ),
                 title=(
                     "Your Most Active Channels "
-                    f"in the {self.tex_bot.group_short_name} Discord Server"
+                    f"in the {self.bot.group_short_name} Discord Server"
                 ),
                 filename=f"{ctx.user}_stats.png",
                 description=(
                     f"Bar chart of the number of messages sent by {ctx.user} "
                     "in different channels in "
-                    f"the {self.tex_bot.group_short_name} Discord server."
+                    f"the {self.bot.group_short_name} Discord server."
                 ),
             ),
         )
@@ -524,7 +524,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         had when they left your group's Discord guild.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.tex_bot.main_guild
+        main_guild: discord.Guild = self.bot.main_guild
 
         await ctx.defer(ephemeral=True)
 
@@ -568,16 +568,16 @@ class StatsCommandsCog(TeXBotBaseCog):
                 x_label="Role Name",
                 y_label=(
                     "Number of Members that have left "
-                    f"the {self.tex_bot.group_short_name} Discord Server"
+                    f"the {self.bot.group_short_name} Discord Server"
                 ),
                 title=(
                     "Most Common Roles that Members had when they left "
-                    f"the {self.tex_bot.group_short_name} Discord Server"
+                    f"the {self.bot.group_short_name} Discord Server"
                 ),
                 filename="left_members_stats.png",
                 description=(
                     "Bar chart of the number of members with different roles "
-                    f"that have left the {self.tex_bot.group_short_name} Discord server."
+                    f"that have left the {self.bot.group_short_name} Discord server."
                 ),
                 extra_text=(
                     "Members that left with multiple roles "
@@ -591,7 +591,7 @@ class StatsCommandsCog(TeXBotBaseCog):
     @capture_guild_does_not_exist_error
     async def on_member_leave(self, member: discord.Member) -> None:
         """Update the stats of the roles that members had when they left your Discord guild."""
-        if member.guild != self.tex_bot.main_guild or member.bot:
+        if member.guild != self.bot.main_guild or member.bot:
             return
 
         await LeftDiscordMember.objects.acreate(

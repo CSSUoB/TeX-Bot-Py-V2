@@ -63,13 +63,16 @@ class TeXBotBaseCog(Cog):
     }
 
     @override
-    def __init__(self, tex_bot: TeXBot) -> None:
+    def __init__(self, bot: TeXBot) -> None:
         """
         Initialise a new cog instance.
 
         During initialisation, a reference to the currently running TeXBot instance is stored.
         """
-        self.tex_bot: TeXBot = tex_bot
+        # NOTE: The attribute/variable name `bot` is used here for consistency.
+        # NOTE: `tex_bot` would be preferred but would be inconsitent with the required attribute name of Pycord's context classes
+        # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
+        self.bot: TeXBot = bot
 
     async def command_send_error(self, ctx: TeXBotApplicationContext, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
         """
@@ -87,7 +90,7 @@ class TeXBotBaseCog(Cog):
         )
 
         await self.send_error(
-            self.tex_bot,
+            self.bot,
             ctx.interaction,
             interaction_name=COMMAND_NAME,
             error_code=error_code,
@@ -96,7 +99,7 @@ class TeXBotBaseCog(Cog):
         )
 
     @classmethod
-    async def send_error(cls, tex_bot: TeXBot, interaction: discord.Interaction, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
+    async def send_error(cls, bot: TeXBot, interaction: discord.Interaction, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
         """
         Construct & format an error message from the given details.
 
@@ -109,7 +112,7 @@ class TeXBotBaseCog(Cog):
             committee_mention: str = "committee"
 
             with contextlib.suppress(CommitteeRoleDoesNotExistError):
-                committee_mention = (await tex_bot.committee_role).mention
+                committee_mention = (await bot.committee_role).mention
 
             construct_error_message = (
                 f"**Contact a {committee_mention} member, referencing error code: "

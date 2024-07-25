@@ -92,7 +92,7 @@ class TeXBot(discord.Bot):
         """
         MAIN_GUILD_EXISTS: Final[bool] = bool(
             self._main_guild
-            and self._tex_bot_has_guild(settings["_DISCORD_MAIN_GUILD_ID"])  # noqa: COM812
+            and self._check_guild_accessible(settings["_DISCORD_MAIN_GUILD_ID"])  # noqa: COM812
         )
         if not MAIN_GUILD_EXISTS:
             raise GuildDoesNotExistError(guild_id=settings["_DISCORD_MAIN_GUILD_ID"])
@@ -384,7 +384,7 @@ class TeXBot(discord.Bot):
             else "our community moderators"
         )
 
-    def _tex_bot_has_guild(self, guild_id: int) -> bool:
+    def _check_guild_accessible(self, guild_id: int) -> bool:
         return bool(discord.utils.get(self.guilds, id=guild_id))
 
     def _guild_has_role(self, role: discord.Role) -> bool:

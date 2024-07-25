@@ -58,7 +58,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
         await applicant_member.add_roles(applicant_role, reason=AUDIT_MESSAGE)
         logger.debug("Applicant role given to user %s", applicant_member)
 
-        tex_emoji: discord.Emoji | None = self.tex_bot.get_emoji(743218410409820213)
+        tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
         if not tex_emoji:
             tex_emoji = discord.utils.get(main_guild.emojis, name="TeX")
 
@@ -152,7 +152,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
         """
         member_id_not_integer_error: ValueError
         try:
-            applicant_member: discord.Member = await self.tex_bot.get_member_from_str_id(
+            applicant_member: discord.Member = await self.bot.get_member_from_str_id(
                 str_applicant_member_id,
             )
         except ValueError as member_id_not_integer_error:
@@ -190,7 +190,7 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
         "Applicant" role and removes the "Guest" role if they have it.
         """
         try:
-            member: discord.Member = await self.tex_bot.get_member_from_str_id(
+            member: discord.Member = await self.bot.get_member_from_str_id(
                 str(message.author.id),
             )
         except ValueError:

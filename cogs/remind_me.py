@@ -237,7 +237,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                     "Error when creating DiscordReminder object: %s",
                     create_discord_reminder_error,
                 )
-                await self.tex_bot.close()
+                await self.bot.close()
 
             await self.command_send_error(
                 ctx,
@@ -303,7 +303,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                         ),
                         _reminder=reminder,
                     ),
-                    self.tex_bot.users,
+                    self.bot.users,
                 )
 
                 if not user:
@@ -315,7 +315,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                     continue
 
                 # noinspection PyUnresolvedReferences
-                channel: discord.PartialMessageable = self.tex_bot.get_partial_messageable(
+                channel: discord.PartialMessageable = self.bot.get_partial_messageable(
                     reminder.channel_id,
                     type=(
                         discord.ChannelType(reminder.channel_type.value)
@@ -334,7 +334,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                             "Reminder's channel_id must refer to a valid text channel/DM.",
                         ),
                     )
-                    await self.tex_bot.close()
+                    await self.bot.close()
 
                 await channel.send(
                     "**Sorry it's a bit late! "
@@ -347,4 +347,4 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
     @clear_reminders_backlog.before_loop
     async def before_tasks(self) -> None:
         """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
-        await self.tex_bot.wait_until_ready()
+        await self.bot.wait_until_ready()

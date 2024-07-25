@@ -40,11 +40,11 @@ class StartupCog(TeXBotBaseCog):
         """
         if settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
             discord_logging_handler: logging.Handler = DiscordHandler(
-                self.tex_bot.user.name if self.tex_bot.user else "TeXBot",
+                self.bot.user.name if self.bot.user else "TeXBot",
                 settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
                 avatar_url=(
-                    self.tex_bot.user.avatar.url
-                    if self.tex_bot.user and self.tex_bot.user.avatar
+                    self.bot.user.avatar.url
+                    if self.bot.user and self.bot.user.avatar
                     else None
                 ),
             )
@@ -63,30 +63,30 @@ class StartupCog(TeXBotBaseCog):
             )
 
         try:
-            main_guild: discord.Guild | None = self.tex_bot.main_guild
+            main_guild: discord.Guild | None = self.bot.main_guild
         except GuildDoesNotExistError:
-            main_guild = self.tex_bot.get_guild(settings["_DISCORD_MAIN_GUILD_ID"])
+            main_guild = self.bot.get_guild(settings["_DISCORD_MAIN_GUILD_ID"])
             if main_guild:
-                self.tex_bot.set_main_guild(main_guild)
+                self.bot.set_main_guild(main_guild)
 
         if not main_guild:
-            if self.tex_bot.application_id:
+            if self.bot.application_id:
                 logger.info(
                     "Invite URL: %s",
                     utils.generate_invite_url(
-                        self.tex_bot.application_id,
+                        self.bot.application_id,
                         settings["_DISCORD_MAIN_GUILD_ID"]),
                     )
             logger.critical(GuildDoesNotExistError(
                 guild_id=settings["_DISCORD_MAIN_GUILD_ID"]),
             )
-            await self.tex_bot.close()
+            await self.bot.close()
 
-        if self.tex_bot.application_id:
+        if self.bot.application_id:
             logger.debug(
                 "Invite URL: %s",
                 utils.generate_invite_url(
-                    self.tex_bot.application_id,
+                    self.bot.application_id,
                     settings["_DISCORD_MAIN_GUILD_ID"]),
             )
 
@@ -137,6 +137,6 @@ class StartupCog(TeXBotBaseCog):
                         ),
                         repr("DM"),
                     )
-                await self.tex_bot.close()
+                await self.bot.close()
 
-        logger.info("Ready! Logged in as %s", self.tex_bot.user)
+        logger.info("Ready! Logged in as %s", self.bot.user)

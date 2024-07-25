@@ -59,8 +59,8 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
     @TeXBotBaseCog.listener()
     async def on_ready(self) -> None:
         """Add OptOutIntroductionRemindersView to the bot's list of permanent views."""
-        self.tex_bot.add_view(
-            self.OptOutIntroductionRemindersView(self.tex_bot),
+        self.bot.add_view(
+            self.OptOutIntroductionRemindersView(self.bot),
         )
 
     @tasks.loop(**settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"])  # type: ignore[misc]
@@ -81,7 +81,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         reminders are sent.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.tex_bot.main_guild
+        main_guild: discord.Guild = self.bot.main_guild
 
         member: discord.Member
         for member in main_guild.members:
@@ -154,13 +154,13 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 await member.send(
                     content=(
                         "Hey! It seems like you joined "
-                        f"the {self.tex_bot.group_short_name} Discord server "
+                        f"the {self.bot.group_short_name} Discord server "
                         "but have not yet introduced yourself.\n"
                         "You will only get access to the rest of the server after sending "
                         "an introduction message."
                     ),
                     view=(
-                        self.OptOutIntroductionRemindersView(self.tex_bot)
+                        self.OptOutIntroductionRemindersView(self.bot)
                         if settings["SEND_INTRODUCTION_REMINDERS"] == "interval"
                         else None  # type: ignore[arg-type]
                     ),
@@ -188,9 +188,12 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         """
 
         @override
-        def __init__(self, tex_bot: TeXBot) -> None:
+        def __init__(self, bot: TeXBot) -> None:
             """Initialise a new discord.View, to opt-in/out of introduction reminders."""
-            self.tex_bot: TeXBot = tex_bot
+            # NOTE: The attribute/variable name `bot` is used here for consistency.
+            # NOTE: `tex_bot` would be preferred but would be inconsitent with the required attribute name of Pycord's context classes
+            # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
+            self.bot: TeXBot = bot
 
             super().__init__(timeout=None)
 
@@ -202,7 +205,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             to the given interaction.
             """
             await TeXBotBaseCog.send_error(
-                self.tex_bot,
+                self.bot,
                 interaction,
                 interaction_name="opt_out_introduction_reminders",
                 error_code=error_code,
@@ -251,7 +254,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 return
 
             try:
-                interaction_member: discord.Member = await self.tex_bot.get_main_guild_member(
+                interaction_member: discord.Member = await self.bot.get_main_guild_member(
                     interaction.user,
                 )
             except DiscordMemberNotInMainGuildError:
@@ -259,7 +262,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     interaction,
                     message=(
                         f"You must be a member "
-                        f"of the {self.tex_bot.group_short_name} Discord server "
+                        f"of the {self.bot.group_short_name} Discord server "
                         f"""to opt{
                             "-out of" if BUTTON_WILL_MAKE_OPT_OUT else " back in to"
                         } introduction reminders."""
@@ -317,4 +320,4 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
     @send_introduction_reminders.before_loop
     async def before_tasks(self) -> None:
         """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
-        await self.tex_bot.wait_until_ready()
+        await self.bot.wait_until_ready()
