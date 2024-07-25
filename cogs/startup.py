@@ -79,7 +79,6 @@ class StartupCog(TeXBotBaseCog):
                     )
             logger.critical(GuildDoesNotExistError(guild_id=settings["DISCORD_GUILD_ID"]))
             await self.bot.close()
-            return
 
         if self.bot.application_id:
             logger.debug(
@@ -137,6 +136,5 @@ class StartupCog(TeXBotBaseCog):
                         repr("DM"),
                     )
                 await self.bot.close()
-                return
 
         logger.info("Ready! Logged in as %s", self.bot.user)
