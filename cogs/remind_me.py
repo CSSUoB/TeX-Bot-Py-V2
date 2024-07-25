@@ -138,10 +138,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
 
                 slice_size: int
                 for slice_size in range(1, len(formatted_time_choice) + 1):
-                    if (
-                        match.group("ctx_time_choice").casefold()
-                        == formatted_time_choice[:slice_size]
-                    ):
+                    if (match.group("ctx_time_choice").casefold() == formatted_time_choice[:slice_size]):  # noqa: E501
                         delay_choices.add(formatted_time_choice[slice_size:])
 
         elif match := re.match(r"\A(?P<date>\d{1,2}) ?[/\-.] ?\Z", ctx.value):
