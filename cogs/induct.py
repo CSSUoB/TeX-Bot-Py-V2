@@ -245,7 +245,7 @@ class BaseInductCog(TeXBotBaseCog):
         # noinspection PyUnusedLocal
         applicant_role: discord.Role | None = None
         with contextlib.suppress(ApplicantRoleDoesNotExistError):
-            applicant_role = await ctx.tex_bot.applicant_role
+            applicant_role = await ctx.bot.applicant_role
 
         if applicant_role and applicant_role in induction_member.roles:
             await induction_member.remove_roles(
@@ -292,8 +292,8 @@ class InductSlashCommandCog(BaseInductCog):
         that have a member input-type.
         """
         try:
-            main_guild: discord.Guild = ctx.tex_bot.main_guild
-            guest_role: discord.Role = await ctx.tex_bot.guest_role
+            main_guild: discord.Guild = ctx.bot.main_guild
+            guest_role: discord.Role = await ctx.bot.guest_role
         except (GuildDoesNotExistError, GuestRoleDoesNotExistError):
             return set()
 

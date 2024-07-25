@@ -165,14 +165,14 @@ class TeXBotBaseCog(Cog):
             return set()
 
         try:
-            main_guild: discord.Guild = ctx.tex_bot.main_guild
+            main_guild: discord.Guild = ctx.bot.main_guild
             # noinspection PyUnusedLocal
-            channel_permissions_limiter: MentionableMember = await ctx.tex_bot.guest_role
+            channel_permissions_limiter: MentionableMember = await ctx.bot.guest_role
         except BaseDoesNotExistError:
             return set()
 
         with contextlib.suppress(DiscordMemberNotInMainGuildError):
-            channel_permissions_limiter = await ctx.tex_bot.get_main_guild_member(
+            channel_permissions_limiter = await ctx.bot.get_main_guild_member(
                 ctx.interaction.user,
             )
 

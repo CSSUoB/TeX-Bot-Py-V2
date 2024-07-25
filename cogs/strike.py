@@ -777,7 +777,7 @@ class StrikeCommandCog(BaseStrikeCog):
         that have a member input-type.
         """
         try:
-            main_guild: discord.Guild = ctx.tex_bot.main_guild
+            main_guild: discord.Guild = ctx.bot.main_guild
         except GuildDoesNotExistError:
             return set()
 

@@ -108,7 +108,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         member_role: discord.Role = await self.tex_bot.member_role
-        interaction_member: discord.Member = await ctx.tex_bot.get_main_guild_member(ctx.user)
+        interaction_member: discord.Member = await ctx.bot.get_main_guild_member(ctx.user)
 
         if member_role in interaction_member.roles:
             await ctx.respond(
@@ -263,7 +263,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         # noinspection PyUnusedLocal
         applicant_role: discord.Role | None = None
         with contextlib.suppress(ApplicantRoleDoesNotExistError):
-            applicant_role = await ctx.tex_bot.applicant_role
+            applicant_role = await ctx.bot.applicant_role
 
         if applicant_role and applicant_role in interaction_member.roles:
             await interaction_member.remove_roles(
