@@ -53,6 +53,10 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
         )
         logger.debug("Running the handover command!")
 
+        HANDOVER_AUDIT_MESSAGE: Final[str] = (
+            f"{ctx.user} used TeX-Bot slash-command: \"committee-handover\""
+        )
+
         if main_guild.me.top_role.position < committee_role.position:
             logger.debug(
                 "Handover command aborted because the bot did not "
@@ -61,7 +65,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
             await initial_response.edit(
                 content=(
                     ":warning: This command requires TeX-Bot to hold a role higher than "
-                    'that of the "Committee" role to perform this action. Operation aborted.'
+                    "that of the \"Committee\" role to perform this action. Operation aborted."
                     " :warning:"
                 ),
             )
@@ -87,7 +91,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
         await initial_response.edit(
             content=(
                 ":hourglass: Giving committee users access to the #handover channel and "
-                'removing the "Committee" role... :hourglass:'
+                "removing the \"Committee\" role... :hourglass:"
             ),
         )
 
@@ -114,19 +118,19 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
             logger.debug("Removing Committee role from user: %s", committee_member)
             await committee_member.remove_roles(
                 committee_role,
-                reason=f'{ctx.user} used TeX-Bot slash-command: "committee-handover"',
+                reason=HANDOVER_AUDIT_MESSAGE,
             )
 
             if automod_role and automod_role in committee_member.roles:
                 await committee_member.remove_roles(
                     automod_role,
-                    reason=f'{ctx.user} used TeX-Bot slash-command: "committee-handover"',
+                    reason=HANDOVER_AUDIT_MESSAGE,
                 )
 
         await initial_response.edit(
             content=(
-                ':hourglass: Giving committee-elect users the "Committee" role '
-                'and removing their "Committee-Elect" role... :hourglass:'
+                ":hourglass: Giving committee-elect users the \"Committee\" role "
+                "and removing their \"Committee-Elect\" role... :hourglass:"
             ),
         )
 
@@ -137,13 +141,13 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
             logger.debug("Giving user: %s, the committee role.", committee_elect_member)
             await committee_elect_member.add_roles(
                 committee_role,
-                reason=f'{ctx.user} used TeX-Bot slash-command: "committee-handover"',
+                reason=HANDOVER_AUDIT_MESSAGE,
             )
 
             logger.debug("Removing Committee-Elect role from user: %s", committee_elect_member)
             await committee_elect_member.remove_roles(
                 committee_elect_role,
-                reason=f'{ctx.user} used TeX-Bot slash-command: "committee-handover"',
+                reason=HANDOVER_AUDIT_MESSAGE,
             )
 
         await initial_response.edit(content=":white_check_mark: Handover procedure complete!")
@@ -188,11 +192,15 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
             content=":hourglass: Resetting membership and year roles... :hourglass:",
         )
 
+        ROLE_RESET_AUDIT_MESSAGE: Final[str] = (
+            f"{ctx.user} used TeX-Bot slash-command: \"/annual_roles_reset\""
+        )
+
         member: discord.Member
         for member in member_role.members:
             await member.remove_roles(
                 member_role,
-                reason=f'{ctx.user} used TeX-Bot slash-command: "/annual_roles_reset"',
+                reason=ROLE_RESET_AUDIT_MESSAGE,
             )
 
         logger.debug("Removed Member role from all users!")
@@ -220,7 +228,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
             for year_role_member in year_role.members:
                 await year_role_member.remove_roles(
                     year_role,
-                    reason=f'{ctx.user} used TeX-Bot slash-command: "annual_roles_reset"',
+                    reason=ROLE_RESET_AUDIT_MESSAGE,
                 )
 
         logger.debug("Execution of reset roles command complete!")
@@ -259,7 +267,7 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
 
         if final_year_channel:
             await initial_message.edit(
-                content=':hourglass: Archiving "final-years" channel... :hourglass:',
+                content=":hourglass: Archiving \"final-years\" channel... :hourglass:",
             )
             archivist_role: discord.Role = await self.bot.archivist_role
 
@@ -304,7 +312,7 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
 
         await initial_message.edit(
             content=(
-                ':hourglass: Creating new "first-years" channel and setting permissions... '
+                ":hourglass: Creating new \"first-years\" channel and setting permissions... "
                 ":hourglass:"
             ),
         )
