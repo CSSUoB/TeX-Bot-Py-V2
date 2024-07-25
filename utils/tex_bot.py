@@ -65,13 +65,10 @@ class TeXBot(discord.Bot):
         super().__init__(*args, **options)  # type: ignore[no-untyped-call]
 
     @override
-    async def close(self) -> NoReturn:
+    async def close(self) -> NoReturn:  # type: ignore[misc]
         await super().close()
 
-        TEX_BOT_NOT_CLOSED_CORRECTLY_MESSAGE: Final[str] = (
-            "TeX-Bot did not shutdown correctly."
-        )
-        raise RuntimeError(TEX_BOT_NOT_CLOSED_CORRECTLY_MESSAGE)
+        logger.info("TeX-Bot manually terminated.")
 
     # noinspection PyPep8Naming
     @property
