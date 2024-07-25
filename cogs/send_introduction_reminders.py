@@ -112,9 +112,8 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 settings["SEND_INTRODUCTION_REMINDERS"] == "interval"
             )
             member_recently_joined: bool = (
-                (discord.utils.utcnow() - member.joined_at)
-                <= settings["SEND_INTRODUCTION_REMINDERS_DELAY"]
-            )
+                discord.utils.utcnow() - member.joined_at
+            ) <= settings["SEND_INTRODUCTION_REMINDERS_DELAY"]
             member_opted_out_from_reminders: bool = await (
                 await IntroductionReminderOptOutMember.objects.afilter(
                     discord_id=member.id,
@@ -232,12 +231,13 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             )
 
             _BUTTON_WILL_MAKE_OPT_IN: Final[bool] = bool(
-                    button.style == discord.ButtonStyle.green
-                    or str(button.emoji) == emoji.emojize(
-                        ":raised_hand:",
-                        language="alias",
-                    )
-                    or button.label and "Opt back in" in button.label)
+                button.style == discord.ButtonStyle.green
+                or str(button.emoji) == emoji.emojize(
+                    ":raised_hand:",
+                    language="alias",
+                )
+                or button.label and "Opt back in" in button.label # noqa: COM812
+            )
             INCOMPATIBLE_BUTTONS: Final[bool] = bool(
                 (BUTTON_WILL_MAKE_OPT_OUT and _BUTTON_WILL_MAKE_OPT_IN)
                 or (not BUTTON_WILL_MAKE_OPT_OUT and not _BUTTON_WILL_MAKE_OPT_IN),
