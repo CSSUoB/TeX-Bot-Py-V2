@@ -113,7 +113,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         if not channel:
             await self.command_send_error(
                 ctx,
-                message=f'Text channel with ID "{channel_id}" does not exist.',
+                message=f"Text channel with ID \"{channel_id}\" does not exist.",
             )
             return
 
@@ -122,7 +122,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         except discord.NotFound:
             await self.command_send_error(
                 ctx,
-                message=f'Message with ID "{message_id}" does not exist.',
+                message=f"Message with ID \"{message_id}\" does not exist.",
             )
             return
 
