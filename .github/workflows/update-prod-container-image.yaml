@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-push-container-image:
+  build-and-push-prod-container-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -28,7 +28,6 @@ jobs:
     - uses: docker/build-push-action@v5
       with:
         push: true
-        # noinspection SpellCheckingInspection
         tags: ghcr.io/cssuob/tex-bot-py-v2:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
