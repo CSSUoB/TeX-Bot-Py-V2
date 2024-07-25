@@ -48,7 +48,7 @@ pre-commit = "^3.7"
 mypy = "~1.10"
 django-stubs = {extras = ["compatible-mypy"], version = "~5.0"}
 types-beautifulsoup4 = "^4.12"
-pytest = "^8.2"
+pytest = "^8.3"
 ruff = "^0.5"
 gitpython = "^3.1"
 pymarkdownlnt = "^0.9"
