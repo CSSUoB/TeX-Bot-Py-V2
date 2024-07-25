@@ -106,7 +106,7 @@ class StartupCog(TeXBotBaseCog):
             logger.critical(GuildDoesNotExistError(
                 guild_id=settings["_DISCORD_MAIN_GUILD_ID"]),
             )
-            await self.tex_bot.close()
+            await self.bot.close()
 
     async def _check_strike_performed_manually_warning_location_exists(self) -> None:
         if settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] == "DM":
@@ -114,7 +114,7 @@ class StartupCog(TeXBotBaseCog):
 
         STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_EXISTS: Final[bool] = bool(
             discord.utils.get(
-                self.tex_bot.main_guild.text_channels,
+                self.bot.main_guild.text_channels,
                 name=settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"],
             )  # noqa: COM812
         )
@@ -144,7 +144,7 @@ class StartupCog(TeXBotBaseCog):
                 repr("DM"),
             )
 
-        await self.tex_bot.close()
+        await self.bot.close()
 
     async def _check_all_shortcut_accessors(self) -> None:
         main_guild: discord.Guild = self.tex_bot.main_guild
@@ -180,7 +180,7 @@ class StartupCog(TeXBotBaseCog):
 
         await self._initialise_main_guild()
 
-        if self.tex_bot.application_id:
+        if self.bot.application_id:
             logger.debug(
                 "Invite URL: %s",
                 utils.generate_invite_url(

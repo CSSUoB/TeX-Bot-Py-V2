@@ -335,7 +335,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                             "Reminder's channel_id must refer to a valid text channel/DM.",
                         ),
                     )
-                    await self.tex_bot.close()
+                    await self.bot.close()
 
                 await channel.send(
                     "**Sorry it's a bit late! "

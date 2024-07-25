@@ -64,13 +64,13 @@ class TeXBotBaseCog(Cog):
     }
 
     @override
-    def __init__(self, tex_bot: TeXBot) -> None:
+    def __init__(self, bot: TeXBot) -> None:
         """
         Initialise a new cog instance.
 
         During initialisation, a reference to the currently running TeXBot instance is stored.
         """
-        self.tex_bot: TeXBot = tex_bot
+        self.bot: TeXBot = bot
 
     async def command_send_error(self, ctx: TeXBotApplicationContext, *, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False, responder_component: GenericResponderComponent | None = None) -> None:  # noqa: E501
         """
