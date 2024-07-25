@@ -52,13 +52,12 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
         The profile page will contain the user's name and a list of the MSL organisations
         the user has administrative access to.
         """
-        async with (
-            aiohttp.ClientSession(
-                headers=REQUEST_HEADERS,
-                cookies=REQUEST_COOKIES,
-            ) as http_session,
-            http_session.get(REQUEST_URL) as http_response,
-        ):
+        http_session: aiohttp.ClientSession = aiohttp.ClientSession(
+            headers=REQUEST_HEADERS,
+            cookies=REQUEST_COOKIES,
+        )
+
+        async with http_session, http_session.get(REQUEST_URL) as http_response:
             response_html: str = await http_response.text()
 
         parsed_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
