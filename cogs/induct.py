@@ -109,7 +109,7 @@ class InductSendMessageCog(TeXBotBaseCog):
                 "optional roles like pronouns and year groups\n"
                 "3. Change your nickname to whatever you wish others to refer to you as "
                 "(You can do this by right-clicking your name in the members-list "
-                'to the right & selecting "Edit Server Profile").',
+                "to the right & selecting \"Edit Server Profile\").",
             )
             if user_type != "member":
                 await after.send(
@@ -178,11 +178,16 @@ class BaseInductCog(TeXBotBaseCog):
 
         return random_welcome_message.strip()
 
+
     async def _perform_induction(self, ctx: TeXBotApplicationContext, induction_member: discord.Member, *, silent: bool) -> None:  # noqa: E501
         """Perform the actual process of inducting a member by giving them the Guest role."""
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guest_role: discord.Role = await self.bot.guest_role
         main_guild: discord.Guild = self.bot.main_guild
+
+        INDUCT_AUDIT_MESSAGE: Final[str] = (
+            f"{ctx.user} used TeX Bot slash-command: \"/induct\""
+        )
 
         intro_channel: discord.TextChannel | None = discord.utils.get(
             main_guild.text_channels,
@@ -234,7 +239,7 @@ class BaseInductCog(TeXBotBaseCog):
 
         await induction_member.add_roles(
             guest_role,
-            reason=f'{ctx.user} used TeX Bot slash-command: "/induct"',
+            reason=INDUCT_AUDIT_MESSAGE,
         )
 
         applicant_role: discord.Role | None = None
@@ -244,7 +249,7 @@ class BaseInductCog(TeXBotBaseCog):
         if applicant_role and applicant_role in induction_member.roles:
             await induction_member.remove_roles(
                 applicant_role,
-                reason=f'{ctx.user} used TeX Bot slash-command: "/induct"',
+                reason=INDUCT_AUDIT_MESSAGE,
             )
 
         tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
@@ -309,6 +314,7 @@ class InductSlashCommandCog(BaseInductCog):
             discord.OptionChoice(name=member.name, value=str(member.id)) for member in members
         }
 
+
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="induct",
         description=(
@@ -369,6 +375,7 @@ class InductContextCommandsCog(BaseInductCog):
         """
         await self._perform_induction(ctx, member, silent=False)
 
+
     @discord.user_command(name="Silently Induct User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -377,10 +384,11 @@ class InductContextCommandsCog(BaseInductCog):
         Definition & callback response of the "silent_induct" user-context-command.
 
         The "silent_induct" command executes the same process as the "induct" slash-command,
-        and thus inducts a given member into your group's Discord guild by giving them the
+        and thus inducts a given member into your group"s Discord guild by giving them the
         "Guest" role.
         """
         await self._perform_induction(ctx, member, silent=True)
+
 
     @discord.message_command(name="Induct Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
@@ -408,6 +416,7 @@ class InductContextCommandsCog(BaseInductCog):
             return
 
         await self._perform_induction(ctx, member, silent=False)
+
 
     @discord.message_command(name="Silently Induct Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
@@ -474,7 +483,7 @@ class EnsureMembersInductedCommandCog(TeXBotBaseCog):
                 await member.add_roles(
                     guest_role,
                     reason=(
-                        f'{ctx.user} used TeX Bot slash-command: "/ensure-members-inducted"'
+                        f"{ctx.user} used TeX Bot slash-command: \"/ensure-members-inducted\""
                     ),
                 )
 
