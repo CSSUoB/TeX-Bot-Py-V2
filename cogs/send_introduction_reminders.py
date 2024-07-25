@@ -134,15 +134,12 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     bool(message.components)
                     and isinstance(message.components[0], discord.ActionRow)
                     and isinstance(message.components[0].children[0], discord.Button)
-                    and message.components[0].children[0].custom_id
-                    == "opt_out_introduction_reminders_button"
+                    and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button"  # noqa: E501
                 )
                 if message_contains_opt_in_out_button:
                     await message.edit(view=None)
 
-            if (
-                member not in guild.members
-            ):  # HACK: Caching errors can cause the member to no longer be part of the guild at this point, so this check must be performed before sending that member a message # noqa: FIX004
+            if (member not in guild.members):  # HACK: Caching errors can cause the member to no longer be part of the guild at this point, so this check must be performed before sending that member a message # noqa: FIX004
                 logger.info(
                     (
                         "Member with ID: %s does not need to be sent a reminder "
@@ -277,8 +274,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     )
                 except ValidationError as create_introduction_reminder_opt_out_member_error:
                     error_is_already_exists: bool = (
-                        "hashed_member_id"
-                        in create_introduction_reminder_opt_out_member_error.message_dict
+                        "hashed_member_id" in create_introduction_reminder_opt_out_member_error.message_dict  # noqa: E501
                         and any(
                             "already exists" in error
                             for error

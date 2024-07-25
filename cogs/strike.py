@@ -104,7 +104,7 @@ class ConfirmStrikeMemberView(View):
         The actual handling of the event is done by the command that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
-        logger.debug('"Yes" button pressed. %s', interaction)
+        logger.debug("\"Yes\" button pressed. %s", interaction)
         await interaction.response.edit_message(view=None)  # NOTE: Despite removing the view within the normal command processing loop, the view also needs to be removed here to prevent an Unknown Webhook error
 
     @discord.ui.button(  # type: ignore[misc]
@@ -121,7 +121,7 @@ class ConfirmStrikeMemberView(View):
         The actual handling of the event is done by the command that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
-        logger.debug('"No" button pressed. %s', interaction)
+        logger.debug("\"No\" button pressed. %s", interaction)
         await interaction.response.edit_message(view=None)  # NOTE: Despite removing the view within the normal command processing loop, the view also needs to be removed here to prevent an Unknown Webhook error
 
 
@@ -143,7 +143,7 @@ class ConfirmManualModerationView(View):
         the manual moderation tracker subroutine that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
-        logger.debug('"Yes" button pressed. %s', interaction)
+        logger.debug("\"Yes\" button pressed. %s", interaction)
         await interaction.response.edit_message(view=None)  # NOTE: Despite removing the view within the normal command processing loop, the view also needs to be removed here to prevent an Unknown Webhook error
 
     @discord.ui.button(  # type: ignore[misc]
@@ -161,7 +161,7 @@ class ConfirmManualModerationView(View):
         the manual moderation tracker subroutine that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
-        logger.debug('"No" button pressed. %s', interaction)
+        logger.debug("\"No\" button pressed. %s", interaction)
         await interaction.response.edit_message(view=None)  # NOTE: Despite removing the view within the normal command processing loop, the view also needs to be removed here to prevent an Unknown Webhook error
 
 
@@ -183,7 +183,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
         the manual moderation tracker subroutine that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
-        logger.debug('"Yes" button pressed. %s', interaction)
+        logger.debug("\"Yes\" button pressed. %s", interaction)
         await interaction.response.edit_message(view=None)  # NOTE: Despite removing the view within the normal command processing loop, the view also needs to be removed here to prevent an Unknown Webhook error
 
     @discord.ui.button(  # type: ignore[misc]
@@ -201,7 +201,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
         the manual moderation tracker subroutine that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
-        logger.debug('"No" button pressed. %s', interaction)
+        logger.debug("\"No\" button pressed. %s", interaction)
         await interaction.response.edit_message(view=None)  # NOTE: Despite removing the view within the normal command processing loop, the view also needs to be removed here to prevent an Unknown Webhook error
 
 
@@ -548,8 +548,7 @@ class ManualModerationCog(BaseStrikeCog):
                     )
                     and interaction.channel == confirmation_message_channel
                     and "custom_id" in interaction.data
-                    and interaction.data["custom_id"]
-                    in {
+                    and interaction.data["custom_id"] in {
                         "yes_out_of_sync_ban_member",
                         "no_out_of_sync_ban_member",
                     }
@@ -557,9 +556,7 @@ class ManualModerationCog(BaseStrikeCog):
             )
 
             if (
-                out_of_sync_ban_button_interaction.data["custom_id"]  # type: ignore[index, typeddict-item]
-                == "no_out_of_sync_ban_member"
-            ):
+                out_of_sync_ban_button_interaction.data["custom_id"] == "no_out_of_sync_ban_member"):  # type: ignore[index, typeddict-item]  # noqa: E501
                 await out_of_sync_ban_confirmation_message.edit(
                     content=(
                         f"Aborted performing ban action upon {strike_user.mention}. "
@@ -579,9 +576,7 @@ class ManualModerationCog(BaseStrikeCog):
                 return
 
             if (
-                out_of_sync_ban_button_interaction.data["custom_id"]  # type: ignore[index, typeddict-item]
-                == "yes_out_of_sync_ban_member"
-            ):
+                out_of_sync_ban_button_interaction.data["custom_id"] == "yes_out_of_sync_ban_member"):  # type: ignore[index, typeddict-item]  # noqa: E501
                 await self._send_strike_user_message(strike_user, member_strikes)
                 await main_guild.ban(
                     strike_user,
@@ -704,8 +699,7 @@ class ManualModerationCog(BaseStrikeCog):
         async for audit_log_entry in main_guild.audit_logs(limit=5):
             FOUND_CORRECT_AUDIT_LOG_ENTRY: bool = (
                 audit_log_entry.target.id == after.id
-                and audit_log_entry.action
-                == (discord.AuditLogAction.auto_moderation_user_communication_disabled)
+                and audit_log_entry.action == (discord.AuditLogAction.auto_moderation_user_communication_disabled)  # noqa: E501
             )
             if FOUND_CORRECT_AUDIT_LOG_ENTRY:
                 await self._confirm_manual_add_strike(
@@ -730,7 +724,7 @@ class ManualModerationCog(BaseStrikeCog):
         MEMBER_REMOVED_BECAUSE_OF_MANUALLY_APPLIED_KICK: Final[bool] = bool(
             member.guild == self.bot.main_guild
             and not member.bot
-            and not await asyncany(ban.user == member async for ban in main_guild.bans()),
+            and not await asyncany(ban.user == member async for ban in main_guild.bans())  # noqa: COM812
         )
         if not MEMBER_REMOVED_BECAUSE_OF_MANUALLY_APPLIED_KICK:
             return
