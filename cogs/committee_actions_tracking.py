@@ -40,7 +40,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         committee_role: discord.Role = await ctx.bot.committee_role
 
         return {
-            discord.OptionChoice(name=member.name, value=str(member.id))
+            discord.OptionChoice(name=str(member), value=str(member.id))
             for member in committee_role.members if not member.bot
         }
 
