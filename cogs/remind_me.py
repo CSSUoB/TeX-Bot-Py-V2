@@ -249,7 +249,6 @@ class RemindMeCommandCog(TeXBotBaseCog):
                     create_discord_reminder_error,
                 )
                 await self.bot.close()
-                return
 
             await self.command_send_error(
                 ctx,
@@ -347,7 +346,6 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                         ),
                     )
                     await self.bot.close()
-                    return
 
                 await channel.send(
                     "**Sorry it's a bit late! "
