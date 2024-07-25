@@ -22,6 +22,18 @@ from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
+REQUEST_HEADERS: Mapping[str, str] = {
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
+    "Expires": "0",
+}
+
+REQUEST_COOKIES: Mapping[str, str] = {
+    ".ASPXAUTH": settings["MEMBERS_LIST_URL_SESSION_COOKIE"],
+}
+
+REQUEST_URL: Final[str] = "https://guildofstudents.com/profile"
+
 
 class GetTokenAuthorisationCommand(TeXBotBaseCog):
     """Cog class that defines the "/get_token_authorisation" command."""
@@ -40,18 +52,6 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
         The profile page will contain the user's name and a list of the MSL organisations
         the user has administrative access to.
         """
-        REQUEST_HEADERS: Mapping[str, str] = {
-            "Cache-Control": "no-cache",
-            "Pragma": "no-cache",
-            "Expires": "0",
-        }
-
-        REQUEST_COOKIES: Mapping[str, str] = {
-            ".ASPXAUTH": settings["MEMBERS_LIST_URL_SESSION_COOKIE"],
-        }
-
-        REQUEST_URL: Final[str] = "https://guildofstudents.com/profile"
-
         async with (
             aiohttp.ClientSession(
                 headers=REQUEST_HEADERS,
