@@ -161,7 +161,7 @@ class Settings(abc.ABC):
         DISCORD_BOT_TOKEN_IS_VALID: Final[bool] = bool(
             raw_discord_bot_token
             and re.fullmatch(
-                r"\A([A-Za-z0-9]{24,26})\.([A-Za-z0-9]{6})\.([A-Za-z0-9_-]{27,38})\Z",
+                r"\A([A-Za-z0-9_-]{24,26})\.([A-Za-z0-9_-]{6})\.([A-Za-z0-9_-]{27,38})\Z",
                 raw_discord_bot_token,
             ),
         )
