@@ -54,7 +54,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
         logger.debug("Running the handover command!")
 
         HANDOVER_AUDIT_MESSAGE: Final[str] = (
-            f"{ctx.user} used TeX-Bot slash-command: \"committee-handover\""
+            f"{ctx.user} used TeX-Bot slash-command: \"/committee-handover\""
         )
 
         if main_guild.me.top_role.position < committee_role.position:

@@ -168,7 +168,6 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             headers=REQUEST_HEADERS,
             cookies=REQUEST_COOKIES,
         )
-
         async with http_session, http_session.get(REQUEST_URL) as http_response:
             response_html: str = await http_response.text()
 

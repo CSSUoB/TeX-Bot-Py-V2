@@ -73,10 +73,10 @@ class InductSendMessageCog(TeXBotBaseCog):
             ).adelete()
 
         async for message in after.history():
-            message_is_introduction_reminder: bool = (
+            message_is_introduction_reminder: bool = bool (
                 ("joined the " in message.content)
                 and (" Discord guild but have not yet introduced" in message.content)
-                and message.author.bot
+                and message.author.bot  # noqa: COM812
             )
             if message_is_introduction_reminder:
                 await message.delete(
@@ -384,7 +384,7 @@ class InductContextCommandsCog(BaseInductCog):
         Definition & callback response of the "silent_induct" user-context-command.
 
         The "silent_induct" command executes the same process as the "induct" slash-command,
-        and thus inducts a given member into your group"s Discord guild by giving them the
+        and thus inducts a given member into your group's Discord guild by giving them the
         "Guest" role.
         """
         await self._perform_induction(ctx, member, silent=True)

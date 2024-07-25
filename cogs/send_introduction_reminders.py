@@ -139,7 +139,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 if message_contains_opt_in_out_button:
                     await message.edit(view=None)
 
-            if (member not in guild.members):  # HACK: Caching errors can cause the member to no longer be part of the guild at this point, so this check must be performed before sending that member a message # noqa: FIX004
+            if member not in guild.members:  # HACK: Caching errors can cause the member to no longer be part of the guild at this point, so this check must be performed before sending that member a message # noqa: FIX004
                 logger.info(
                     (
                         "Member with ID: %s does not need to be sent a reminder "

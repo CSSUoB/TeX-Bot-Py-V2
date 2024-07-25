@@ -22,13 +22,13 @@ from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
-REQUEST_HEADERS: Mapping[str, str] = {
+REQUEST_HEADERS: Final[Mapping[str, str]] = {
     "Cache-Control": "no-cache",
     "Pragma": "no-cache",
     "Expires": "0",
 }
 
-REQUEST_COOKIES: Mapping[str, str] = {
+REQUEST_COOKIES: Final[Mapping[str, str]] = {
     ".ASPXAUTH": settings["MEMBERS_LIST_URL_SESSION_COOKIE"],
 }
 

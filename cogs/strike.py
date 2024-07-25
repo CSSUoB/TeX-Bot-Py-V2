@@ -555,8 +555,7 @@ class ManualModerationCog(BaseStrikeCog):
                 ),
             )
 
-            if (
-                out_of_sync_ban_button_interaction.data["custom_id"] == "no_out_of_sync_ban_member"):  # type: ignore[index, typeddict-item]  # noqa: E501
+            if out_of_sync_ban_button_interaction.data["custom_id"] == "no_out_of_sync_ban_member":  # type: ignore[index, typeddict-item]  # noqa: E501
                 await out_of_sync_ban_confirmation_message.edit(
                     content=(
                         f"Aborted performing ban action upon {strike_user.mention}. "
@@ -575,8 +574,7 @@ class ManualModerationCog(BaseStrikeCog):
                 await out_of_sync_ban_confirmation_message.delete()
                 return
 
-            if (
-                out_of_sync_ban_button_interaction.data["custom_id"] == "yes_out_of_sync_ban_member"):  # type: ignore[index, typeddict-item]  # noqa: E501
+            if out_of_sync_ban_button_interaction.data["custom_id"] == "yes_out_of_sync_ban_member":  # type: ignore[index, typeddict-item]  # noqa: E501
                 await self._send_strike_user_message(strike_user, member_strikes)
                 await main_guild.ban(
                     strike_user,
@@ -638,8 +636,7 @@ class ManualModerationCog(BaseStrikeCog):
                 )
                 and interaction.channel == confirmation_message_channel
                 and "custom_id" in interaction.data
-                and interaction.data["custom_id"]
-                in {
+                and interaction.data["custom_id"] in {
                     "yes_manual_moderation_action",
                     "no_manual_moderation_action",
                 }
