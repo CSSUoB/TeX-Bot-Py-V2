@@ -59,7 +59,7 @@ class KillCommandCog(TeXBotBaseCog):
         """
         committee_role: discord.Role | None = None
         with contextlib.suppress(CommitteeRoleDoesNotExistError):
-            committee_role = await self.tex_bot.committee_role
+            committee_role = await self.bot.committee_role
 
         response: discord.Message | discord.Interaction = await ctx.respond(
             content=(
@@ -78,7 +78,7 @@ class KillCommandCog(TeXBotBaseCog):
             else await response.original_response()
         )
 
-        button_interaction: discord.Interaction = await self.tex_bot.wait_for(
+        button_interaction: discord.Interaction = await self.bot.wait_for(
             "interaction",
             check=lambda interaction: (
                 interaction.type == discord.InteractionType.component

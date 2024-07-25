@@ -90,7 +90,7 @@ class CommandErrorCog(TeXBotBaseCog):
                 # noinspection PyUnusedLocal
                 committee_role_mention: str = "@Committee"
                 with contextlib.suppress(CommitteeRoleDoesNotExistError):
-                    committee_role_mention = (await self.tex_bot.committee_role).mention
+                    committee_role_mention = (await self.bot.committee_role).mention
                 message = f"Only {committee_role_mention} members can run this command."
 
         await self.command_send_error(
@@ -134,4 +134,4 @@ class CommandErrorCog(TeXBotBaseCog):
                 or type(error.original) is Exception
             )
             if TEX_BOT_NEEDS_CLOSING:
-                await self.tex_bot.close()
+                await self.bot.close()

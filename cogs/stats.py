@@ -391,7 +391,7 @@ class StatsCommandsCog(TeXBotBaseCog):
                     filename="roles_server_stats.png",
                     description=(
                         "Bar chart of the number of messages sent by different roles "
-                        f"in the {self.tex_bot.group_short_name} Discord server."
+                        f"in the {self.bot.group_short_name} Discord server."
                     ),
                     extra_text=(
                         "Messages sent by members with multiple roles are counted once "
@@ -412,12 +412,12 @@ class StatsCommandsCog(TeXBotBaseCog):
                     ),
                     title=(
                         "Most Active Channels "
-                        f"in the {self.tex_bot.group_short_name} Discord Server"
+                        f"in the {self.bot.group_short_name} Discord Server"
                     ),
                     filename="channels_server_stats.png",
                     description=(
                         "Bar chart of the number of messages sent in different text channels "
-                        f"in the {self.tex_bot.group_short_name} Discord server."
+                        f"in the {self.bot.group_short_name} Discord server."
                     ),
                 ),
             ],
@@ -500,7 +500,7 @@ class StatsCommandsCog(TeXBotBaseCog):
                 ),
                 title=(
                     "Your Most Active Channels "
-                    f"in the {self.tex_bot.group_short_name} Discord Server"
+                    f"in the {self.bot.group_short_name} Discord Server"
                 ),
                 filename=f"{ctx.user}_stats.png",
                 description=(
@@ -568,16 +568,16 @@ class StatsCommandsCog(TeXBotBaseCog):
                 x_label="Role Name",
                 y_label=(
                     "Number of Members that have left "
-                    f"the {self.tex_bot.group_short_name} Discord Server"
+                    f"the {self.bot.group_short_name} Discord Server"
                 ),
                 title=(
                     "Most Common Roles that Members had when they left "
-                    f"the {self.tex_bot.group_short_name} Discord Server"
+                    f"the {self.bot.group_short_name} Discord Server"
                 ),
                 filename="left_members_stats.png",
                 description=(
                     "Bar chart of the number of members with different roles "
-                    f"that have left the {self.tex_bot.group_short_name} Discord server."
+                    f"that have left the {self.bot.group_short_name} Discord server."
                 ),
                 extra_text=(
                     "Members that left with multiple roles "
@@ -591,7 +591,7 @@ class StatsCommandsCog(TeXBotBaseCog):
     @capture_guild_does_not_exist_error
     async def on_member_leave(self, member: discord.Member) -> None:
         """Update the stats of the roles that members had when they left your Discord guild."""
-        if member.guild != self.tex_bot.main_guild or member.bot:
+        if member.guild != self.bot.main_guild or member.bot:
             return
 
         await LeftDiscordMember.objects.acreate(

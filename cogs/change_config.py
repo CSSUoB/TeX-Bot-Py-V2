@@ -216,7 +216,7 @@ class CheckConfigFileChangedTaskCog(TeXBotBaseCog):
     @check_config_file_changed.before_loop
     async def before_tasks(self) -> None:
         """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
-        await self.tex_bot.wait_until_ready()
+        await self.bot.wait_until_ready()
 
 
 class ConfigChangeCommandsCog(TeXBotBaseCog):
@@ -246,7 +246,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             return set()
 
         try:
-            if not await ctx.tex_bot.check_user_has_committee_role(ctx.interaction.user):
+            if not await ctx.bot.check_user_has_committee_role(ctx.interaction.user):
                 return set()
         except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
             return set()
@@ -260,7 +260,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             return set()
 
         try:
-            if not await ctx.tex_bot.check_user_has_committee_role(ctx.interaction.user):
+            if not await ctx.bot.check_user_has_committee_role(ctx.interaction.user):
                 return set()
         except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
             return set()
@@ -282,7 +282,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             return set()
 
         try:
-            if not await ctx.tex_bot.check_user_has_committee_role(ctx.interaction.user):  # type: ignore[arg-type]
+            if not await ctx.bot.check_user_has_committee_role(ctx.interaction.user):  # type: ignore[arg-type]
                 return set()
         except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
             return set()
@@ -478,7 +478,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                     for domain, path
                     in itertools.product(
                         ("github", "raw.githubusercontent"),
-                        (f"{urllib.parse.quote(ctx.tex_bot.group_short_name)}/", ""),
+                        (f"{urllib.parse.quote(ctx.bot.group_short_name)}/", ""),
                     )
                 } | {
                     f"https://{subdomain}dropbox{domain_suffix}.com/{path}"
@@ -493,7 +493,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             return {"https://"}
 
         try:
-            main_guild: discord.Guild = ctx.tex_bot.main_guild
+            main_guild: discord.Guild = ctx.bot.main_guild
         except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
             return set()
 
@@ -517,7 +517,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                 }
 
         try:
-            interaction_member: discord.Member = await ctx.tex_bot.get_main_guild_member(
+            interaction_member: discord.Member = await ctx.bot.get_main_guild_member(
                 ctx.interaction.user,  # type: ignore[arg-type]
             )
         except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
@@ -632,13 +632,13 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                 f"{
                     config_setting_help.description.replace(
                         "**`@TeX-Bot`**",
-                        self.tex_bot.user.mention if self.tex_bot.user else "**`@TeX-Bot`**",
+                        self.bot.user.mention if self.bot.user else "**`@TeX-Bot`**",
                     ).replace(
                         "TeX-Bot",
-                        self.tex_bot.user.mention if self.tex_bot.user else "**`@TeX-Bot`**",
+                        self.bot.user.mention if self.bot.user else "**`@TeX-Bot`**",
                     ).replace(
                         "the bot",
-                        self.tex_bot.user.mention if self.tex_bot.user else "**`@TeX-Bot`**",
+                        self.bot.user.mention if self.bot.user else "**`@TeX-Bot`**",
                     )
                 }\n\n"
                 f"{
@@ -711,14 +711,14 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
 
             committee_role: discord.Role | None = None
             with contextlib.suppress(CommitteeRoleDoesNotExistError):
-                committee_role = await self.tex_bot.committee_role
+                committee_role = await self.bot.committee_role
 
             confirmation_message: discord.Message = (
                 response
                 if isinstance(response, discord.Message)
                 else await response.original_response()
             )
-            button_interaction: discord.Interaction = await self.tex_bot.wait_for(
+            button_interaction: discord.Interaction = await self.bot.wait_for(
                 "interaction",
                 check=lambda interaction: (
                     interaction.type == discord.InteractionType.component

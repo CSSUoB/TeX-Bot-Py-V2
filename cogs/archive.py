@@ -160,13 +160,13 @@ class ArchiveCommandCog(TeXBotBaseCog):
         unless they have the "Archivist" role.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.tex_bot.main_guild
-        interaction_member: discord.Member = await self.tex_bot.get_main_guild_member(ctx.user)
-        committee_role: discord.Role = await self.tex_bot.committee_role
-        guest_role: discord.Role = await self.tex_bot.guest_role
-        member_role: discord.Role = await self.tex_bot.member_role
-        archivist_role: discord.Role = await self.tex_bot.archivist_role
-        everyone_role: discord.Role = await self.tex_bot.get_everyone_role()
+        main_guild: discord.Guild = self.bot.main_guild
+        interaction_member: discord.Member = await self.bot.get_main_guild_member(ctx.user)
+        committee_role: discord.Role = await self.bot.committee_role
+        guest_role: discord.Role = await self.bot.guest_role
+        member_role: discord.Role = await self.bot.member_role
+        archivist_role: discord.Role = await self.bot.archivist_role
+        everyone_role: discord.Role = await self.bot.get_everyone_role()
 
         if not re.fullmatch(r"\A\d{17,20}\Z", str_category_id):
             await self.command_send_error(

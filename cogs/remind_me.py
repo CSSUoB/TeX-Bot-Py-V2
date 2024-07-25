@@ -304,7 +304,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                         ),
                         _reminder=reminder,
                     ),
-                    self.tex_bot.users,
+                    self.bot.users,
                 )
 
                 if not user:
@@ -348,4 +348,4 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
     @clear_reminders_backlog.before_loop
     async def before_tasks(self) -> None:
         """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
-        await self.tex_bot.wait_until_ready()
+        await self.bot.wait_until_ready()

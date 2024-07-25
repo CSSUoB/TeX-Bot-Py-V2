@@ -133,14 +133,14 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         GROUP_MEMBER_ID_IS_ALREADY_USED: Final[bool] = await GroupMadeMember.objects.filter(
             hashed_group_member_id=GroupMadeMember.hash_group_member_id(
                 group_member_id,
-                self.tex_bot.group_member_id_type,
+                self.bot.group_member_id_type,
             ),
         ).aexists()
         if GROUP_MEMBER_ID_IS_ALREADY_USED:
             # noinspection PyUnusedLocal
             committee_mention: str = "committee"
             with contextlib.suppress(CommitteeRoleDoesNotExistError):
-                committee_mention = (await self.tex_bot.committee_role).mention
+                committee_mention = (await self.bot.committee_role).mention
 
             await ctx.respond(
                 (
@@ -213,11 +213,11 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             await self.command_send_error(
                 ctx,
                 message=(
-                    f"You must be a member of {self.tex_bot.group_full_name} "
+                    f"You must be a member of {self.bot.group_full_name} "
                     "to use this command.\n"
                     f"The provided {_GROUP_MEMBER_ID_ARGUMENT_NAME} must match "
-                    f"the {self.tex_bot.group_member_id_type} ID "
-                    f"that you purchased your {self.tex_bot.group_short_name} membership with."
+                    f"the {self.bot.group_member_id_type} ID "
+                    f"that you purchased your {self.bot.group_short_name} membership with."
                 ),
             )
             return
@@ -246,7 +246,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         await ctx.respond("Successfully made you a member!", ephemeral=True)
 
         try:
-            guest_role: discord.Role = await self.tex_bot.guest_role
+            guest_role: discord.Role = await self.bot.guest_role
         except GuestRoleDoesNotExistError:
             logger.warning(
                 "\"/makemember\" command used but the \"Guest\" role does not exist. "
@@ -263,7 +263,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         # noinspection PyUnusedLocal
         applicant_role: discord.Role | None = None
         with contextlib.suppress(ApplicantRoleDoesNotExistError):
-            applicant_role = await ctx.tex_bot.applicant_role
+            applicant_role = await ctx.bot.applicant_role
 
         if applicant_role and applicant_role in interaction_member.roles:
             await interaction_member.remove_roles(

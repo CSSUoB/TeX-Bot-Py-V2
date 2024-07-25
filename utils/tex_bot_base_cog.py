@@ -85,7 +85,7 @@ class TeXBotBaseCog(Cog):
         and the bot will shortly close.
         """
         await self._respond_with_error(
-            self.tex_bot,
+            self.bot,
             responder=(
                 responder_component or SenderResponseComponent(ctx.interaction, ephemeral=True)
             ),
@@ -103,7 +103,7 @@ class TeXBotBaseCog(Cog):
         )
 
     @classmethod
-    async def send_error(cls, tex_bot: TeXBot, interaction: discord.Interaction, *, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False) -> None:  # noqa: PLR0913,E501
+    async def send_error(cls, bot: TeXBot, interaction: discord.Interaction, *, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False) -> None:  # noqa: PLR0913,E501
         """
         Construct & format an error message from the given details.
 
@@ -112,7 +112,7 @@ class TeXBotBaseCog(Cog):
         and the bot will shortly close.
         """
         await cls._respond_with_error(
-            bot=tex_bot,
+            bot=bot,
             responder=SenderResponseComponent(interaction, ephemeral=True),
             interaction_name=interaction_name,
             error_code=error_code,
@@ -122,7 +122,7 @@ class TeXBotBaseCog(Cog):
         )
 
     @classmethod
-    async def _respond_with_error(cls, tex_bot: TeXBot, responder: GenericResponderComponent, *, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False) -> None:  # noqa: PLR0913,E501
+    async def _respond_with_error(cls, bot: TeXBot, responder: GenericResponderComponent, *, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False) -> None:  # noqa: PLR0913,E501
         construct_error_message: str = ":warning:"
 
         if is_fatal:
@@ -130,7 +130,7 @@ class TeXBotBaseCog(Cog):
             fatal_committee_mention: str = "committee"
 
             with contextlib.suppress(CommitteeRoleDoesNotExistError):
-                fatal_committee_mention = (await tex_bot.committee_role).mention
+                fatal_committee_mention = (await bot.committee_role).mention
 
             construct_error_message += (
                 "A fatal error occurred, "
@@ -148,7 +148,7 @@ class TeXBotBaseCog(Cog):
                 non_fatal_committee_mention: str = "committee"
 
                 with contextlib.suppress(CommitteeRoleDoesNotExistError):
-                    non_fatal_committee_mention = (await tex_bot.committee_role).mention
+                    non_fatal_committee_mention = (await bot.committee_role).mention
 
                 construct_error_message = (
                     f"**Contact a {non_fatal_committee_mention} member, "
@@ -214,14 +214,14 @@ class TeXBotBaseCog(Cog):
             return set()
 
         try:
-            main_guild: discord.Guild = ctx.tex_bot.main_guild
+            main_guild: discord.Guild = ctx.bot.main_guild
             # noinspection PyUnusedLocal
-            channel_permissions_limiter: MentionableMember = await ctx.tex_bot.guest_role
+            channel_permissions_limiter: MentionableMember = await ctx.bot.guest_role
         except BaseDoesNotExistError:
             return set()
 
         with contextlib.suppress(DiscordMemberNotInMainGuildError):
-            channel_permissions_limiter = await ctx.tex_bot.get_main_guild_member(
+            channel_permissions_limiter = await ctx.bot.get_main_guild_member(
                 ctx.interaction.user,
             )
 
