@@ -33,7 +33,6 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         description="Add, list, remove and reassign tracked committee-actions.",
     )
 
-
     @staticmethod
     async def autocomplete_get_committee_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
         """Autocomplete callable that generates a set of selectable committee members."""
@@ -592,7 +591,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         committee_actions: dict[discord.Member, list[AssinedCommitteeAction]] = {
             committee: [
                 action for action in actions
-                if str(action.discord_member) == DiscordMember.hash_discord_id(committee.id) # type: ignore[has-type]
+                if str(action.discord_member) == DiscordMember.hash_discord_id(committee.id)  # type: ignore[has-type]
                 and action.status in desired_status
             ]
             for committee in committee_members
