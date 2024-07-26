@@ -250,14 +250,20 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         try:
             new_status: AssinedCommitteeAction.Status = AssinedCommitteeAction.Status(status)
+            logger.debug("Has the error triggered yet?")
             action.status = new_status
+            logger.debug("How about now?")
             await action.asave()
+            logger.debug("Now?")
             action.full_clean()
+            logger.debug("NOW??!")
         except (ValidationError, KeyError) as invalid_status:
             await ctx.respond(content=f"{new_status} is not a valid status!")
             logger.debug(invalid_status)
             logger.debug(new_status)
             return
+
+        logger.debug("WHAT THE FUCK!?")
 
         await ctx.respond(
             content=f"Updated action: {action.description} status to be: {action.status}",
