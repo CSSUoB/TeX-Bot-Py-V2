@@ -248,13 +248,11 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             )
             return
 
-        new_status: AssinedCommitteeAction.Status = AssinedCommitteeAction.Status(status)
-
-        action.status = new_status
-
         try:
+            new_status: AssinedCommitteeAction.Status = AssinedCommitteeAction.Status(status)
+            action.status = new_status
             await action.asave()
-        except ValidationError as invalid_status:
+        except (ValidationError, KeyError) as invalid_status:
             await ctx.respond(content=f"{new_status} is not a valid status!")
             logger.debug(invalid_status)
             logger.debug(new_status)
