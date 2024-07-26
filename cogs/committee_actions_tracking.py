@@ -200,6 +200,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                 ctx.user,
                 member_id,
             )
+            return
 
         await self._create_action(ctx, action_user, action_description, silent=False)
 
@@ -246,6 +247,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         try:
             new_status: AssinedCommitteeAction.Status = AssinedCommitteeAction.Status(status)
+            logger.debug("Successfully created Status: %s", new_status)
         except KeyError as key_error:
             await self.command_send_error(ctx, message=f"Invalid Action Status: {key_error}")
             return
