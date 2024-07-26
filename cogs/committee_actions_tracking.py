@@ -249,24 +249,27 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             return
 
         try:
-            logger.debug("WHAT?!?!?!")
             new_status: AssinedCommitteeAction.Status = AssinedCommitteeAction.Status(status)
-            await ctx.respond(new_status)
-            await self.bot.close()
-            logger.debug("Has the error triggered yet?")
-            action.status = new_status
-            logger.debug("How about now?")
-            await action.asave()
-            logger.debug("Now?")
-            action.full_clean()
-            logger.debug("NOW??!")
-        except Exception as invalid_status:
-            await ctx.respond(content=f"{new_status} is not a valid status!")
+        except (ValueError, KeyError) as invalid_status:
+            await self.command_send_error(
+                ctx,
+                message=f"Status ({status}) provided was not valid or could not be found.",
+            )
             logger.debug(invalid_status)
-            logger.debug(new_status)
             return
 
-        logger.debug("WHAT THE FUCK!?")
+        if not new_status:
+            await self.command_send_error(
+                ctx,
+                message=f"Status ({status}) provided was not valid or could not be found.",
+            )
+            return
+
+        action.status = new_status
+
+        await action.asave()
+
+        action.full_clean()
 
         await ctx.respond(
             content=f"Updated action: {action.description} status to be: {action.status}",
