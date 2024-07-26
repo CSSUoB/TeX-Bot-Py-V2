@@ -194,7 +194,10 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                 member_id,
             )
         except ValueError:
-            await ctx.respond(f":warning: The user ID provided: {member_id}, was not valid.")
+            await ctx.respond(
+                content=f":warning: The user ID provided: {member_id}, was not valid.",
+                ephemeral=True,
+            )
             logger.debug(
                 "User: %s, tried to create an action with an invalid user ID: %s",
                 ctx.user,
@@ -245,14 +248,15 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             )
             return
 
-        try:
-            new_status: AssinedCommitteeAction.Status = AssinedCommitteeAction.Status(status)
-            logger.debug("Successfully created Status: %s", new_status)
-        except KeyError as key_error:
-            await self.command_send_error(ctx, message=f"Invalid Action Status: {key_error}")
-            return
+        new_status: AssinedCommitteeAction.Status = AssinedCommitteeAction.Status(status)
 
-        action.status = new_status
+        try:
+            action.status = new_status
+        except ValidationError as invalid_status:
+            await ctx.respond(content=f"{new_status} is not a valid status!")
+            logger.debug(invalid_status)
+            logger.debug(new_status)
+            return
 
         await action.asave()
 
