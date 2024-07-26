@@ -269,8 +269,6 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         await action.asave()
 
-        action.full_clean()
-
         await ctx.respond(
             content=f"Updated action: {action.description} status to be: {action.status}",
             ephemeral=True,
