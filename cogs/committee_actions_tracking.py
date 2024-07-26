@@ -251,6 +251,8 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         try:
             logger.debug("WHAT?!?!?!")
             new_status: AssinedCommitteeAction.Status = AssinedCommitteeAction.Status(status)
+            await ctx.respond(new_status)
+            await self.bot.close()
             logger.debug("Has the error triggered yet?")
             action.status = new_status
             logger.debug("How about now?")
