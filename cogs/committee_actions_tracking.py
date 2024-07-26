@@ -189,9 +189,17 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         """
         member_id: str = action_member_id if action_member_id else str(ctx.user.id)
 
-        action_user: discord.Member = await self.bot.get_member_from_str_id(
-            member_id,
-        )
+        try:
+            action_user: discord.Member = await self.bot.get_member_from_str_id(
+                member_id,
+            )
+        except ValueError:
+            await ctx.respond(f":warning: The user ID provided: {member_id}, was not valid.")
+            logger.debug(
+                "User: %s, tried to create an action with an invalid user ID: %s",
+                ctx.user,
+                member_id,
+            )
 
         await self._create_action(ctx, action_user, action_description, silent=False)
 
