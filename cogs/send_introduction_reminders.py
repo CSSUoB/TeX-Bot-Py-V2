@@ -134,7 +134,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     bool(message.components)
                     and isinstance(message.components[0], discord.ActionRow)
                     and isinstance(message.components[0].children[0], discord.Button)
-                    and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button"  # noqa: E501
+                    and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button"  # noqa: COM812, E501
                 )
                 if MESSAGE_CONTAINS_OPT_IN_OUT_BUTTON:
                     await message.edit(view=None)
