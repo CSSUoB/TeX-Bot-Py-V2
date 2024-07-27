@@ -814,6 +814,28 @@ class StrikeCommandCog(BaseStrikeCog):
 class StrikeContextCommandsCog(BaseStrikeCog):
     """Cog class that defines the context menu strike command & its call-back method."""
 
+    async def _send_message_to_committee(self, message: discord.Message) -> None:
+        """Send a provided message to committee channels."""
+        discord_channel: discord.TextChannel | None = discord.utils.get(
+            self.bot.main_guild.text_channels,
+            name="discord",
+        )
+
+        if not discord_channel:
+            logger.debug("Couldn't find the discord channel.")
+            return
+
+        report_webhook: discord.Webhook = await discord_channel.create_webhook(name="TeX-Bot")
+
+        await report_webhook.send(
+            content=message.content,
+            username=message.author.display_name,
+            avatar_url=message.author.display_avatar.url,
+            embeds=message.embeds,
+        )
+
+        await report_webhook.delete()
+
     @discord.user_command(name="Strike User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -821,28 +843,31 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         """Call the _strike command, providing the required command arguments."""
         await self._command_perform_strike(ctx, member)
 
-
-    @discord.message_command(  # type: ignore[no-untyped-call, misc]
-        name="Strike Message Author",
-        description="Add a strike to the author of the message.",
-    )
+    @discord.message_command(name="Strike Message Author") # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def strike_message_author(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
-        """Call the _strike command on the author of the message."""
-        main_guild: discord.Guild = self.bot.main_guild
-        message_author: discord.Member | discord.User = message.author
-        strike_user: discord.Member = ctx.user
-        discord_channel: discord.TextChannel | None = discord.utils.get(
-            main_guild.text_channels,
-            name="discord",
+        """Call the _strike command on the message author."""
+        strike_user: discord.Member = await self.bot.get_member_from_str_id(
+            str(message.author.id),
         )
+        await self._command_perform_strike(ctx, strike_member=strike_user)
 
-        if not discord_channel:
-            await ctx.respond("Couldn't find the discord channel!! major L")
-            return
-        
-        await discord_channel.send(f"User: {message_author}\n{message.content}\nReported by: {strike_user}")
+    @discord.message_command(  # type: ignore[no-untyped-call, misc]
+        name="Send Message to Committee",
+        description="Sends the selected message to the committee channel for discussion.",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def send_message_to_committee(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
+        """
+        Definition & callback response of the "Send Message to Committee" message-context command.
 
-        await ctx.respond(content=":white_check_mark: Successfully reported message to committee channels!",ephemeral=True)
+        Sends a copy of the selected message to the committee channels.
+        """
+        await self._send_message_to_committee(message)
 
+        await ctx.respond(
+            content=":white_check_mark: Successfully reported message to committee channels!",
+            ephemeral=True,
+        )
