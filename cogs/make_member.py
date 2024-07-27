@@ -8,6 +8,7 @@ __all__: Sequence[str] = ("MakeMemberCommandCog",)
 import contextlib
 import logging
 import re
+from collections.abc import Mapping
 from logging import Logger
 from typing import Final
 
@@ -28,26 +29,24 @@ from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
-_GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: Final[str] = (
-    f"""{
-        "Student"
-        if (
-            settings["_GROUP_FULL_NAME"]
-            and (
-                "computer science society" in settings["_GROUP_FULL_NAME"].lower()
-                or "css" in settings["_GROUP_FULL_NAME"].lower()
-                or "uob" in settings["_GROUP_FULL_NAME"].lower()
-                or "university of birmingham" in settings["_GROUP_FULL_NAME"].lower()
-                or "uob" in settings["_GROUP_FULL_NAME"].lower()
-                or (
-                    "bham" in settings["_GROUP_FULL_NAME"].lower()
-                    and "uni" in settings["_GROUP_FULL_NAME"].lower()
-                )
+_GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: Final[str] = f"""{
+    "Student"
+    if (
+        settings["_GROUP_FULL_NAME"]
+        and (
+            "computer science society" in settings["_GROUP_FULL_NAME"].lower()
+            or "css" in settings["_GROUP_FULL_NAME"].lower()
+            or "uob" in settings["_GROUP_FULL_NAME"].lower()
+            or "university of birmingham" in settings["_GROUP_FULL_NAME"].lower()
+            or "uob" in settings["_GROUP_FULL_NAME"].lower()
+            or (
+                "bham" in settings["_GROUP_FULL_NAME"].lower()
+                and "uni" in settings["_GROUP_FULL_NAME"].lower()
             )
         )
-        else "Member"
-    } ID"""
-)
+    )
+    else "Member"
+} ID"""
 
 _GROUP_MEMBER_ID_ARGUMENT_NAME: Final[str] = (
     _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME.lower().replace(
@@ -55,6 +54,18 @@ _GROUP_MEMBER_ID_ARGUMENT_NAME: Final[str] = (
         "",
     )
 )
+
+REQUEST_HEADERS: Final[Mapping[str, str]] = {
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
+    "Expires": "0",
+}
+
+REQUEST_COOKIES: Final[Mapping[str, str]] = {
+    ".ASPXAUTH": settings["MEMBERS_LIST_URL_SESSION_COOKIE"],
+}
+
+REQUEST_URL: Final[str] = settings["MEMBERS_LIST_URL"]
 
 
 class MakeMemberCommandCog(TeXBotBaseCog):
@@ -98,7 +109,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         parameter_name="group_member_id",
     )
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_member(self, ctx: TeXBotApplicationContext, group_member_id: str) -> None:  # noqa: PLR0915
+    async def make_member(self, ctx: TeXBotApplicationContext, group_member_id: str) -> None:
         """
         Definition & callback response of the "make_member" command.
 
@@ -157,17 +168,12 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 
         guild_member_ids: set[str] = set()
 
-        request_headers: dict[str, str] = {
-            "Cache-Control": "no-cache",
-            "Pragma": "no-cache",
-            "Expires": "0",
-        }
-        request_cookies: dict[str, str] = {
-            ".ASPXAUTH": settings["MEMBERS_LIST_URL_SESSION_COOKIE"],
-        }
-        async with aiohttp.ClientSession(headers=request_headers, cookies=request_cookies) as http_session:  # noqa: E501, SIM117
-            async with http_session.get(url=settings["MEMBERS_LIST_URL"]) as http_response:
-                response_html: str = await http_response.text()
+        http_session: aiohttp.ClientSession = aiohttp.ClientSession(
+            headers=REQUEST_HEADERS,
+            cookies=REQUEST_COOKIES,
+        )
+        async with http_session, http_session.get(REQUEST_URL) as http_response:
+            response_html: str = await http_response.text()
 
         MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
             {
@@ -190,8 +196,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 
             guild_member_ids.update(
                 row.contents[2].text
-                for row
-                in parsed_html.find_all(
+                for row in parsed_html.find_all(
                     "tr",
                     {"class": ["msl_row", "msl_altrow"]},
                 )
@@ -237,10 +242,10 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             error_is_already_exists: bool = (
                 "hashed_group_member_id" in create_group_made_member_error.message_dict
                 and any(
-                    "already exists"
-                    in error
-                    for error
-                    in create_group_made_member_error.message_dict["hashed_group_member_id"]
+                    "already exists" in error
+                    for error in create_group_made_member_error.message_dict[
+                        "hashed_group_member_id"
+                    ]
                 )
             )
             if not error_is_already_exists:
