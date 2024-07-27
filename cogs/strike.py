@@ -831,7 +831,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
 
         await report_webhook.send(
             content=message.content,
-            username=message.author.display_name,
+            username=str(message.author),
             avatar_url=message.author.display_avatar.url,
             embeds=message.embeds,
         )
@@ -853,18 +853,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         strike_user: discord.Member = await self.bot.get_member_from_str_id(
             str(message.author.id),
         )
-        await self._command_perform_strike(ctx, strike_member=strike_user)
-
-    @discord.message_command(name="Strike User and Delete Message")  # type: ignore[no-untyped-call, misc]
-    @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_main_guild
-    async def strike_message_author_and_delete(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
-        """Call the _strike command on the message author and delete the message."""
-        strike_user: discord.Member = await self.bot.get_member_from_str_id(
-            str(message.author.id),
-        )
-        await self._send_message_to_committee(ctx, message)
-        await message.delete()
+        await self._send_message_to_committee(ctx, message=message)
         await self._command_perform_strike(ctx, strike_member=strike_user)
 
     @discord.message_command(  # type: ignore[no-untyped-call, misc]
@@ -875,7 +864,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def send_message_to_committee(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
         """Send a copy of the selected message to committee channels for review."""
-        await self._send_message_to_committee(ctx, message)
+        await self._send_message_to_committee(ctx, message=message)
 
         await ctx.respond(
             content=":white_check_mark: Successfully reported message to committee channels!",
