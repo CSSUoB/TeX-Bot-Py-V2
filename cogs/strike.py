@@ -853,6 +853,18 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         )
         await self._command_perform_strike(ctx, strike_member=strike_user)
 
+    @discord.message_command(name="Strike User and Delete Message")  # type: ignore[no-untyped-call, misc]
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def strike_message_author_and_delete(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
+        """Call the _strike command on the message author and delete the message."""
+        strike_user: discord.Member = await self.bot.get_member_from_str_id(
+            str(message.author.id),
+        )
+        await self._send_message_to_committee(message)
+        await message.delete()
+        await self._command_perform_strike(ctx, strike_member=strike_user)
+
     @discord.message_command(  # type: ignore[no-untyped-call, misc]
         name="Send Message to Committee",
         description="Sends the selected message to the committee channel for discussion.",
@@ -860,11 +872,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def send_message_to_committee(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
-        """
-        Definition & callback response of the "Send Message to Committee" message-context command.
-
-        Sends a copy of the selected message to the committee channels.
-        """
+        """Send a copy of the selected message to committee channels for review."""
         await self._send_message_to_committee(message)
 
         await ctx.respond(
