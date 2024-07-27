@@ -61,7 +61,6 @@ class TeXBotBaseCog(Cog):
         "write_roles": "send messages",
     }
 
-
     @override
     def __init__(self, bot: TeXBot) -> None:
         """Initialize a new cog instance, storing a reference to the bot object."""
@@ -91,7 +90,6 @@ class TeXBotBaseCog(Cog):
             message=message,
             logging_message=logging_message,
         )
-
 
     @classmethod
     async def send_error(cls, bot: TeXBot, interaction: discord.Interaction, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
@@ -147,7 +145,6 @@ class TeXBotBaseCog(Cog):
                     if message_part
                 ).rstrip(": ;"),
             )
-
 
     @staticmethod
     async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
