@@ -109,29 +109,23 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
 
         members: set[discord.Member] = {
             member
-            for member
-            in main_guild.members
+            for member in main_guild.members
             if not member.bot and applicant_role not in member.roles
         }
 
         if not ctx.value or ctx.value.startswith("@"):
             return {
                 discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
-                for member
-                in members
+                for member in members
             }
 
         return {
-            discord.OptionChoice(name=member.name, value=str(member.id))
-            for member
-            in members
+            discord.OptionChoice(name=member.name, value=str(member.id)) for member in members
         }
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="make-applicant",
-        description=(
-            "Gives the user @Applicant role and removes the @Guest role if present."
-        ),
+        description="Gives the user @Applicant role and removes the @Guest role if present.",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="user",
@@ -194,9 +188,11 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
                 str(message.author.id),
             )
         except ValueError:
-            await ctx.respond((
-                ":information_source: No changes made. User cannot be made into an applicant "
-                "because they have left the server :information_source:"
+            await ctx.respond(
+                content=(
+                    ":information_source: "
+                    "No changes made. User cannot be made into an applicant "
+                    "because they have left the server :information_source:"
                 ),
                 ephemeral=True,
             )

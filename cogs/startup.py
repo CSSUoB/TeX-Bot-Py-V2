@@ -75,8 +75,9 @@ class StartupCog(TeXBotBaseCog):
                     "Invite URL: %s",
                     utils.generate_invite_url(
                         self.bot.application_id,
-                        settings["_DISCORD_MAIN_GUILD_ID"]),
-                    )
+                        settings["_DISCORD_MAIN_GUILD_ID"],
+                    ),
+                )
             logger.critical(GuildDoesNotExistError(
                 guild_id=settings["_DISCORD_MAIN_GUILD_ID"]),
             )
@@ -87,7 +88,8 @@ class StartupCog(TeXBotBaseCog):
                 "Invite URL: %s",
                 utils.generate_invite_url(
                     self.bot.application_id,
-                    settings["_DISCORD_MAIN_GUILD_ID"]),
+                    settings["_DISCORD_MAIN_GUILD_ID"],
+                ),
             )
 
         if not discord.utils.get(main_guild.roles, name="Committee"):
@@ -124,8 +126,7 @@ class StartupCog(TeXBotBaseCog):
                     repr(settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"]),
                 )
                 manual_moderation_warning_message_location_similar_to_dm: bool = (
-                    settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"].lower()
-                    in ("dm", "dms")
+                    settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"].lower() in ("dm", "dms")  # noqa: E501
                 )
                 if manual_moderation_warning_message_location_similar_to_dm:
                     logger.info(

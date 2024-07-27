@@ -239,11 +239,7 @@ class BaseStrikeCog(TeXBotBaseCog):
             else ""
         )
 
-        actual_strike_amount: int = (
-            member_strikes.strikes
-            if member_strikes.strikes < 3
-            else 3
-        )
+        actual_strike_amount: int = member_strikes.strikes if member_strikes.strikes < 3 else 3
 
         await strike_user.send(
             "Hi, a recent incident occurred in which you may have broken one or more of "
@@ -434,16 +430,12 @@ class ManualModerationCog(BaseStrikeCog):
                     ) from fetch_log_channel_error
 
             raw_user: discord.User | None = (
-                self.bot.get_user(user.id)
-                if isinstance(user, discord.Member)
-                else user
+                self.bot.get_user(user.id) if isinstance(user, discord.Member) else user
             )
             if not raw_user:
                 raise StrikeTrackingError
 
-            dm_confirmation_message_channel: discord.DMChannel = (
-                await raw_user.create_dm()
-            )
+            dm_confirmation_message_channel: discord.DMChannel = await raw_user.create_dm()
             if not dm_confirmation_message_channel.recipient:
                 dm_confirmation_message_channel.recipient = raw_user
 
@@ -475,8 +467,7 @@ class ManualModerationCog(BaseStrikeCog):
             # noinspection PyTypeChecker
             audit_log_entry: discord.AuditLogEntry = await anext(
                 _audit_log_entry
-                async for _audit_log_entry
-                in main_guild.audit_logs(
+                async for _audit_log_entry in main_guild.audit_logs(
                     after=discord.utils.utcnow() - datetime.timedelta(minutes=1),
                     action=action,
                 )
@@ -568,7 +559,7 @@ class ManualModerationCog(BaseStrikeCog):
                 )
             )
 
-            if out_of_sync_ban_button_interaction.data["custom_id"] == "no_out_of_sync_ban_member":  # type: ignore[index, typeddict-item] # noqa: E501
+            if out_of_sync_ban_button_interaction.data["custom_id"] == "no_out_of_sync_ban_member":  # type: ignore[index, typeddict-item]  # noqa: E501
                 await out_of_sync_ban_confirmation_message.edit(
                     content=(
                         f"Aborted performing ban action upon {strike_user.mention}. "
@@ -587,7 +578,7 @@ class ManualModerationCog(BaseStrikeCog):
                 await out_of_sync_ban_confirmation_message.delete()
                 return
 
-            if out_of_sync_ban_button_interaction.data["custom_id"] == "yes_out_of_sync_ban_member":  # type: ignore[index, typeddict-item] # noqa: E501
+            if out_of_sync_ban_button_interaction.data["custom_id"] == "yes_out_of_sync_ban_member":  # type: ignore[index, typeddict-item]  # noqa: E501
                 await self._send_strike_user_message(strike_user, member_strikes)
                 await main_guild.ban(
                     strike_user,
@@ -713,9 +704,7 @@ class ManualModerationCog(BaseStrikeCog):
         async for audit_log_entry in main_guild.audit_logs(limit=5):
             FOUND_CORRECT_AUDIT_LOG_ENTRY: bool = (
                 audit_log_entry.target.id == after.id
-                and audit_log_entry.action == (
-                    discord.AuditLogAction.auto_moderation_user_communication_disabled
-                )
+                and audit_log_entry.action == (discord.AuditLogAction.auto_moderation_user_communication_disabled)  # noqa: E501
             )
             if FOUND_CORRECT_AUDIT_LOG_ENTRY:
                 await self._confirm_manual_add_strike(
@@ -739,9 +728,7 @@ class ManualModerationCog(BaseStrikeCog):
         MEMBER_REMOVED_BECAUSE_OF_MANUALLY_APPLIED_KICK: Final[bool] = bool(
             member.guild == self.bot.main_guild
             and not member.bot
-            and not await asyncany(
-                ban.user == member async for ban in main_guild.bans()
-            )  # noqa: COM812
+            and not await asyncany(ban.user == member async for ban in main_guild.bans())  # noqa: COM812
         )
         if not MEMBER_REMOVED_BECAUSE_OF_MANUALLY_APPLIED_KICK:
             return
@@ -788,14 +775,11 @@ class StrikeCommandCog(BaseStrikeCog):
         if not ctx.value or re.fullmatch(r"\A@.*\Z", ctx.value):
             return {
                 discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
-                for member
-                in members
+                for member in members
             }
 
         return {
-            discord.OptionChoice(name=member.name, value=str(member.id))
-            for member
-            in members
+            discord.OptionChoice(name=member.name, value=str(member.id)) for member in members
         }
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
