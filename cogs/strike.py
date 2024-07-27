@@ -814,7 +814,7 @@ class StrikeCommandCog(BaseStrikeCog):
 class StrikeContextCommandsCog(BaseStrikeCog):
     """Cog class that defines the context menu strike command & its call-back method."""
 
-    async def _send_message_to_committee(self, message: discord.Message) -> None:
+    async def _send_message_to_committee(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
         """Send a provided message to committee channels."""
         discord_channel: discord.TextChannel | None = discord.utils.get(
             self.bot.main_guild.text_channels,
@@ -824,6 +824,8 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         if not discord_channel:
             logger.debug("Couldn't find the discord channel.")
             return
+
+        await discord_channel.send(content=f"{ctx.user} reported the following message:")
 
         report_webhook: discord.Webhook = await discord_channel.create_webhook(name="TeX-Bot")
 
@@ -861,7 +863,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         strike_user: discord.Member = await self.bot.get_member_from_str_id(
             str(message.author.id),
         )
-        await self._send_message_to_committee(message)
+        await self._send_message_to_committee(ctx, message)
         await message.delete()
         await self._command_perform_strike(ctx, strike_member=strike_user)
 
@@ -873,7 +875,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def send_message_to_committee(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
         """Send a copy of the selected message to committee channels for review."""
-        await self._send_message_to_committee(message)
+        await self._send_message_to_committee(ctx, message)
 
         await ctx.respond(
             content=":white_check_mark: Successfully reported message to committee channels!",
