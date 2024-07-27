@@ -593,10 +593,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         desired_status: list[str] = []
 
-        if status:
-            desired_status += status
-        else:
-            desired_status += "NS", "IP", "B"
+        desired_status += status if status else ("NS", "IP", "B")
 
         committee_members: list[discord.Member] = committee_role.members
 
