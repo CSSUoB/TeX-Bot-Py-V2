@@ -258,6 +258,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                 ctx,
                 message=f"Status ({status}) provided was not valid or could not be found.",
             )
+            logger.debug("An invalid status was provided but did not raise an exception.")
             return
 
         action.status = new_status
@@ -488,7 +489,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
                     f"User: {action_member.mention if ping else action_member} has no "
                     "in progress actions."
                     if not status
-                    else " actions matching given filter."
+                    else "actions matching given filter."
                 ),
             )
             return
@@ -520,14 +521,14 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members),  # type: ignore[arg-type]
         required=True,
-        parameter_name="str_action_member_id",
+        parameter_name="member_id",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def reassign_action(self, ctx:TeXBotApplicationContext, action_id: str, str_action_member_id: str) -> None:  # noqa: E501
+    async def reassign_action(self, ctx:TeXBotApplicationContext, action_id: str, member_id: str) -> None:  # noqa: E501
         """Reassign the specified action to the specified user."""
         new_user_to_action: discord.Member = await self.bot.get_member_from_str_id(
-            str_action_member_id,
+            member_id,
         )
         new_user_to_action_hash: str = DiscordMember.hash_discord_id(new_user_to_action.id)
 
