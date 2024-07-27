@@ -229,7 +229,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                 and any(
                     "already exists" in error
                     for error in create_discord_reminder_error.message_dict["__all__"]
-                )
+                )  # noqa: COM812
             )
             if not ERROR_IS_ALREADY_EXISTS:
                 await self.command_send_error(ctx, message="An unrecoverable error occurred.")
