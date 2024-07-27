@@ -8,6 +8,7 @@ __all__: Sequence[str] = ("CommandErrorCog",)
 import contextlib
 import logging
 from logging import Logger
+from typing import Final
 
 import discord
 from discord import Forbidden
@@ -20,7 +21,7 @@ from exceptions import (
 from exceptions.base import BaseErrorWithErrorCode
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class CommandErrorCog(TeXBotBaseCog):
@@ -69,15 +70,16 @@ class CommandErrorCog(TeXBotBaseCog):
         if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(error.original, GuildDoesNotExistError):  # noqa: E501
             command_name: str = (
                 ctx.command.callback.__name__
-                if (hasattr(ctx.command, "callback")
-                    and not ctx.command.callback.__name__.startswith("_"))
+                if (
+                    hasattr(ctx.command, "callback")
+                    and not ctx.command.callback.__name__.startswith("_")
+                )
                 else ctx.command.qualified_name
             )
             logger.critical(
                 " ".join(
                     message_part
-                    for message_part
-                    in (
+                    for message_part in (
                         error.original.ERROR_CODE,
                         f"({command_name})" if command_name in self.ERROR_ACTIVITIES else "",
                         str(error.original).rstrip(".:"),

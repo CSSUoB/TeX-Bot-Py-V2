@@ -56,8 +56,7 @@ def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str,
     if len(data) > 4:
         data = {
             key: value
-            for index, (key, value)
-            in enumerate(data.items())
+            for index, (key, value) in enumerate(data.items())
             if value > 0 or index <= 4
         }
 
@@ -234,9 +233,7 @@ class StatsCommandsCog(TeXBotBaseCog):
                 continue
 
             author_role_names: set[str] = {
-                author_role.name
-                for author_role
-                in message.author.roles
+                author_role.name for author_role in message.author.roles
             }
 
             author_role_name: str
@@ -341,9 +338,7 @@ class StatsCommandsCog(TeXBotBaseCog):
                     continue
 
                 author_role_names: set[str] = {
-                    author_role.name
-                    for author_role
-                    in message.author.roles
+                    author_role.name for author_role in message.author.roles
                 }
 
                 author_role_name: str
@@ -358,11 +353,13 @@ class StatsCommandsCog(TeXBotBaseCog):
 
                         message_counts["roles"][f"@{author_role_name}"] += 1
 
-        too_few_roles_stats: bool = math.ceil(max(message_counts["roles"].values()) / 15) < 1
-        too_few_channels_stats: bool = math.ceil(
-            max(message_counts["channels"].values()) / 15,
-        ) < 1
-        if too_few_roles_stats or too_few_channels_stats:
+        TOO_FEW_ROLES_STATS: Final[bool] = (
+            math.ceil(max(message_counts["roles"].values()) / 15) < 1
+        )
+        TOO_FEW_CHANNELS_STATS: Final[bool] = (
+            math.ceil(max(message_counts["channels"].values()) / 15) < 1
+        )
+        if TOO_FEW_ROLES_STATS or TOO_FEW_CHANNELS_STATS:
             await self.command_send_error(ctx, message="There are not enough messages sent.")
             return
 
@@ -592,8 +589,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         await LeftDiscordMember.objects.acreate(
             roles={
                 f"@{role.name}"
-                for role
-                in member.roles
+                for role in member.roles
                 if role.name.lower().strip("@").strip() != "everyone"
             },
         )

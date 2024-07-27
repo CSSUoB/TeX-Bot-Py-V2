@@ -39,7 +39,7 @@ if TYPE_CHECKING:
         Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T]]
     )
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class ErrorCaptureDecorators:
@@ -69,7 +69,6 @@ class ErrorCaptureDecorators:
             except error_type as error:
                 close_func(error)
                 await self.bot.close()
-                return None
         return wrapper  # type: ignore[return-value]
 
     @staticmethod

@@ -9,7 +9,7 @@ import contextlib
 import functools
 import logging
 from logging import Logger
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Final, override
 
 import discord
 from discord import AuditLogAction
@@ -28,12 +28,13 @@ from utils.error_capture_decorators import (
 if TYPE_CHECKING:
     import datetime
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
     """Cog class that defines the send_get_roles_reminders task."""
 
+    @override
     def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
         if settings["SEND_GET_ROLES_REMINDERS"]:
@@ -41,6 +42,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
 
         super().__init__(bot)
 
+    @override
     def cog_unload(self) -> None:
         """
         Unload hook that ends all running tasks whenever the tasks cog is unloaded.
@@ -116,18 +118,15 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 and utils.is_member_inducted(member)
                 and not any(
                     opt_in_role_name.lower() in {role.name.lower() for role in member.roles}
-                    for opt_in_role_name
-                    in OPT_IN_ROLE_NAMES
+                    for opt_in_role_name in OPT_IN_ROLE_NAMES
                 )
             )
             if not member_requires_opt_in_roles_reminder:
                 continue
 
-            sent_get_roles_reminder_member_exists: bool = (
-                await (
-                    await SentGetRolesReminderMember.objects.afilter(discord_id=member.id)
-                ).aexists()
-            )
+            sent_get_roles_reminder_member_exists: bool = await (
+                await SentGetRolesReminderMember.objects.afilter(discord_id=member.id)
+            ).aexists()
             if sent_get_roles_reminder_member_exists:
                 continue
 
@@ -137,8 +136,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 # noinspection PyTypeChecker
                 guest_role_received_time = await anext(
                     log.created_at
-                    async for log
-                    in guild.audit_logs(action=AuditLogAction.member_role_update)
+                    async for log in guild.audit_logs(action=AuditLogAction.member_role_update)
                     if (
                         log.target == member
                         and guest_role not in log.before.roles

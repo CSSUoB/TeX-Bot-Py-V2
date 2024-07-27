@@ -15,7 +15,7 @@ import contextlib
 import logging
 import random
 from logging import Logger
-from typing import Literal
+from typing import Final, Literal
 
 import discord
 
@@ -38,7 +38,8 @@ from utils import (
 )
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
+
 
 class InductSendMessageCog(TeXBotBaseCog):
     """Cog class that defines the "/induct" command and its call-back method."""
@@ -72,12 +73,10 @@ class InductSendMessageCog(TeXBotBaseCog):
             ).adelete()
 
         async for message in after.history():
-            message_is_introduction_reminder: bool = (
-                (
-                    "joined the " in message.content
-                ) and (
-                    " Discord guild but have not yet introduced" in message.content
-                ) and message.author.bot
+            message_is_introduction_reminder: bool = bool(
+                ("joined the " in message.content)
+                and (" Discord guild but have not yet introduced" in message.content)
+                and message.author.bot  # noqa: COM812
             )
             if message_is_introduction_reminder:
                 await message.delete(
@@ -179,11 +178,16 @@ class BaseInductCog(TeXBotBaseCog):
 
         return random_welcome_message.strip()
 
+
     async def _perform_induction(self, ctx: TeXBotApplicationContext, induction_member: discord.Member, *, silent: bool) -> None:  # noqa: E501
         """Perform the actual process of inducting a member by giving them the Guest role."""
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         guest_role: discord.Role = await self.bot.guest_role
         main_guild: discord.Guild = self.bot.main_guild
+
+        INDUCT_AUDIT_MESSAGE: Final[str] = (
+            f"{ctx.user} used TeX Bot slash-command: \"/induct\""
+        )
 
         intro_channel: discord.TextChannel | None = discord.utils.get(
             main_guild.text_channels,
@@ -235,7 +239,7 @@ class BaseInductCog(TeXBotBaseCog):
 
         await induction_member.add_roles(
             guest_role,
-            reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\"",
+            reason=INDUCT_AUDIT_MESSAGE,
         )
 
         applicant_role: discord.Role | None = None
@@ -245,7 +249,7 @@ class BaseInductCog(TeXBotBaseCog):
         if applicant_role and applicant_role in induction_member.roles:
             await induction_member.remove_roles(
                 applicant_role,
-                reason=f"{ctx.user} used TeX Bot slash-command: \"/induct\"",
+                reason=INDUCT_AUDIT_MESSAGE,
             )
 
         tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
@@ -303,14 +307,11 @@ class InductSlashCommandCog(BaseInductCog):
         if not ctx.value or ctx.value.startswith("@"):
             return {
                 discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
-                for member
-                in members
+                for member in members
             }
 
         return {
-            discord.OptionChoice(name=member.name, value=str(member.id))
-            for member
-            in members
+            discord.OptionChoice(name=member.name, value=str(member.id)) for member in members
         }
 
 
@@ -374,6 +375,7 @@ class InductContextCommandsCog(BaseInductCog):
         """
         await self._perform_induction(ctx, member, silent=False)
 
+
     @discord.user_command(name="Silently Induct User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -386,6 +388,7 @@ class InductContextCommandsCog(BaseInductCog):
         "Guest" role.
         """
         await self._perform_induction(ctx, member, silent=True)
+
 
     @discord.message_command(name="Induct Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
@@ -413,6 +416,7 @@ class InductContextCommandsCog(BaseInductCog):
             return
 
         await self._perform_induction(ctx, member, silent=False)
+
 
     @discord.message_command(name="Silently Induct Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role

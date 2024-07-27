@@ -77,7 +77,7 @@ LOG_LEVEL_CHOICES: Final[Sequence[str]] = (
     "CRITICAL",
 )
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class Settings(abc.ABC):
