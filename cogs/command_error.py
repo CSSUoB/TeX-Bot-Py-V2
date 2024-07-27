@@ -105,21 +105,18 @@ class CommandErrorCog(TeXBotBaseCog):
             if isinstance(error.original, GuildDoesNotExistError):
                 command_name: str = (
                     ctx.command.callback.__name__
-                    if (hasattr(ctx.command, "callback")
-                        and not ctx.command.callback.__name__.startswith("_"))
+                    if (
+                        hasattr(ctx.command, "callback")
+                        and not ctx.command.callback.__name__.startswith("_")
+                    )
                     else ctx.command.qualified_name
                 )
                 logger.critical(
                     " ".join(
                         message_part
-                        for message_part
-                        in (
+                        for message_part in (
                             error.original.ERROR_CODE,
-                            (
-                                f"({command_name})"
-                                if command_name in self.ERROR_ACTIVITIES
-                                else ""
-                            ),
+                            f"({command_name})" if command_name in self.ERROR_ACTIVITIES else "",
                             str(error.original).rstrip(".:"),
                         )
                         if message_part

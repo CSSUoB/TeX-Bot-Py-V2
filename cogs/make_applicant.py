@@ -116,16 +116,13 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
                 ),
                 value=str(member.id),
             )
-            for member
-            in main_guild.members
+            for member in main_guild.members
             if not member.bot and applicant_role not in member.roles
         }
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="make-applicant",
-        description=(
-            "Gives the user @Applicant role and removes the @Guest role if present."
-        ),
+        description="Gives the user @Applicant role and removes the @Guest role if present.",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="user",
@@ -188,9 +185,11 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
                 str(message.author.id),
             )
         except ValueError:
-            await ctx.respond((
-                ":information_source: No changes made. User cannot be made into an applicant "
-                "because they have left the server :information_source:"
+            await ctx.respond(
+                content=(
+                    ":information_source: "
+                    "No changes made. User cannot be made into an applicant "
+                    "because they have left the server :information_source:"
                 ),
                 ephemeral=True,
             )

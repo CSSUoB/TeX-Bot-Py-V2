@@ -77,10 +77,9 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         MEMBER_NEEDS_RECURRING_REMINDER: Final[bool] = (
             settings["SEND_INTRODUCTION_REMINDERS_ENABLED"] == "interval"
         )
-        MEMBER_RECENTLY_JOINED: Final[bool] = (
-            (discord.utils.utcnow() - member_joined_at)
-            <= settings["SEND_INTRODUCTION_REMINDERS_DELAY"]
-        )
+        MEMBER_RECENTLY_JOINED: bool = (
+            discord.utils.utcnow() - member_joined_at
+        ) <= settings["SEND_INTRODUCTION_REMINDERS_DELAY"]
         MEMBER_OPTED_OUT_FROM_REMINDERS: Final[bool] = await (
             await IntroductionReminderOptOutMember.objects.afilter(
                 discord_id=member_id,

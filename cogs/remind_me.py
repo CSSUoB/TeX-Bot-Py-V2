@@ -83,8 +83,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
             for time_num, joiner, has_s in FORMATTED_TIME_NUMS:
                 delay_choices.update(
                     f"{time_num}{joiner}{time_choice}{has_s}"
-                    for time_choice
-                    in TIME_CHOICES
+                    for time_choice in TIME_CHOICES
                     if not (len(time_choice) <= 1 and has_s)
                 )
 
@@ -95,8 +94,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
             for joiner, has_s in itertools.product({"", " "}, {"", "s"}):
                 delay_choices.update(
                     f"""{match.group("partial_date")}{joiner}{time_choice}{has_s}"""
-                    for time_choice
-                    in TIME_CHOICES
+                    for time_choice in TIME_CHOICES
                     if not (len(time_choice) <= 1 and has_s)
                 )
 
@@ -108,16 +106,17 @@ class RemindMeCommandCog(TeXBotBaseCog):
             for joiner, has_s in itertools.product({"", " "}, {"", "s"}):
                 delay_choices.update(
                     f"{joiner}{time_choice}{has_s}"
-                    for time_choice
-                    in TIME_CHOICES
+                    for time_choice in TIME_CHOICES
                     if not (len(time_choice) <= 1 and has_s)
                 )
 
             if 1 <= int(ctx.value) <= 31:
-                FORMATTED_DAY_DATE_CHOICES: Final[Iterator[tuple[int, int, str]]] = itertools.product(  # noqa: E501
-                    range(1, 12),
-                    range(current_year, current_year + 40),
-                    ("/", " / ", "-", " - ", ".", " . "),
+                FORMATTED_DAY_DATE_CHOICES: Final[Iterator[tuple[int, int, str]]] = (
+                    itertools.product(
+                        range(1, 12),
+                        range(current_year, current_year + 40),
+                        ("/", " / ", "-", " - ", ".", " . "),
+                    )
                 )
                 month: int
                 year: int
@@ -146,10 +145,12 @@ class RemindMeCommandCog(TeXBotBaseCog):
 
         elif match := re.fullmatch(r"\A(?P<date>\d{1,2}) ?[/\-.] ?\Z", ctx.value):
             if 1 <= int(match.group("date")) <= 31:
-                FORMATTED_DAY_AND_JOINER_DATE_CHOICES: Final[Iterator[tuple[int, int, str]]] = itertools.product(  # noqa: E501
-                    range(1, 12),
-                    range(current_year, current_year + 40),
-                    ("/", " / ", "-", " - ", ".", " . "),
+                FORMATTED_DAY_AND_JOINER_DATE_CHOICES: Final[Iterator[tuple[int, int, str]]] = (  # noqa: E501
+                        itertools.product(
+                        range(1, 12),
+                        range(current_year, current_year + 40),
+                        ("/", " / ", "-", " - ", ".", " . "),
+                    )
                 )
                 for month, year, joiner in FORMATTED_DAY_AND_JOINER_DATE_CHOICES:
                     delay_choices.add(f"{month}{joiner}{year}")
@@ -228,8 +229,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                 "__all__" in create_discord_reminder_error.message_dict
                 and any(
                     "already exists" in error
-                    for error
-                    in create_discord_reminder_error.message_dict["__all__"]
+                    for error in create_discord_reminder_error.message_dict["__all__"]
                 )
             )
             if not ERROR_IS_ALREADY_EXISTS:

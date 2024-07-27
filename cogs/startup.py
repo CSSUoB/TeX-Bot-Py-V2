@@ -101,10 +101,11 @@ class StartupCog(TeXBotBaseCog):
                     "Invite URL: %s",
                     utils.generate_invite_url(
                         self.bot.application_id,
-                        settings["_DISCORD_MAIN_GUILD_ID"]),
-                    )
-            logger.critical(GuildDoesNotExistError(
-                guild_id=settings["_DISCORD_MAIN_GUILD_ID"]),
+                        settings["_DISCORD_MAIN_GUILD_ID"],
+                    ),
+                )
+            logger.critical(
+                GuildDoesNotExistError(guild_id=settings["_DISCORD_MAIN_GUILD_ID"]),
             )
             await self.bot.close()
 
@@ -185,7 +186,8 @@ class StartupCog(TeXBotBaseCog):
                 "Invite URL: %s",
                 utils.generate_invite_url(
                     self.bot.application_id,
-                    settings["_DISCORD_MAIN_GUILD_ID"]),
+                    settings["_DISCORD_MAIN_GUILD_ID"],
+                ),
             )
 
         await self._check_all_shortcut_accessors()
