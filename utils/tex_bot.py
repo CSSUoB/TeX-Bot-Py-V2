@@ -473,7 +473,9 @@ class TeXBot(discord.Bot):
         str_member_id = str_member_id.replace("<@", "").replace(">", "")
 
         if not re.match(r"\A\d{17,20}\Z", str_member_id):
-            INVALID_USER_ID_MESSAGE: Final[str] = f'"{str_member_id}" is not a valid user ID.'
+            INVALID_USER_ID_MESSAGE: Final[str] = (
+                f"\"{str_member_id}\" is not a valid user ID."
+            )
             raise ValueError(INVALID_USER_ID_MESSAGE)
 
         user: discord.User | None = self.get_user(int(str_member_id))

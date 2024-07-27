@@ -109,8 +109,8 @@ class TeXBotBaseCog(Cog):
 
             construct_error_message = (
                 f"**Contact a {committee_mention} member, referencing error code: "
-                f"{error_code}**\n" + construct_error_message
-            )
+                f"{error_code}**\n"
+            ) + construct_error_message
 
         if interaction_name in cls.ERROR_ACTIVITIES:
             construct_error_message += (
