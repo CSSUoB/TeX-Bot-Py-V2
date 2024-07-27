@@ -228,7 +228,7 @@ class BaseInductCog(TeXBotBaseCog):
             async for message in general_channel.history(limit=7):
                 message_already_sent = bool(
                     message.author == self.bot.user
-                    and "grab your roles" in message.content
+                    and "grab your roles" in message.content  # noqa: E501
                 )
                 if message_already_sent:
                     break
