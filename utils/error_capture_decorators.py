@@ -59,6 +59,12 @@ class ErrorCaptureDecorators:
 
         @functools.wraps(func)
         async def wrapper(self: TeXBotBaseCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:  # type: ignore[misc] # noqa: E501
+            if not isinstance(self, TeXBotBaseCog):
+                INVALID_METHOD_TYPE_MESSAGE: Final[str] = (  # type: ignore[unreachable]
+                    f"Parameter {self.__name__!r} of any 'capture_error decorator "
+                    f"must be an instance of {TeXBotBaseCog.__name__!r}/one of its subclasses."
+                )
+                raise TypeError(INVALID_METHOD_TYPE_MESSAGE)
             try:
                 return await func(self, *args, **kwargs)
             except error_type as error:
