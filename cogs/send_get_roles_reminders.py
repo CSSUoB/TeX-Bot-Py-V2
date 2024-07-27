@@ -136,7 +136,9 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 # noinspection PyTypeChecker
                 guest_role_received_time = await anext(
                     log.created_at
-                    async for log in main_guild.audit_logs(action=AuditLogAction.member_role_update)
+                    async for log in main_guild.audit_logs(
+                        action=AuditLogAction.member_role_update,
+                    )
                     if (
                         log.target == member
                         and guest_role not in log.before.roles
