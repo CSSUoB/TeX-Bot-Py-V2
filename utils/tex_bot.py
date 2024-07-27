@@ -269,8 +269,7 @@ class TeXBot(discord.Bot):
         """
         if not self._rules_channel or not self._guild_has_channel(self._rules_channel):
             self._rules_channel = (
-                    self.main_guild.rules_channel
-                    or await self._fetch_text_channel("welcome")
+                self.main_guild.rules_channel or await self._fetch_text_channel("welcome")
             )
 
         if not self._rules_channel:
@@ -377,14 +376,18 @@ class TeXBot(discord.Bot):
             else "our community moderators"
         )
 
+
     def _bot_has_guild(self, guild_id: int) -> bool:
         return bool(discord.utils.get(self.guilds, id=guild_id))
+
 
     def _guild_has_role(self, role: discord.Role) -> bool:
         return bool(discord.utils.get(self.main_guild.roles, id=role.id))
 
+
     def _guild_has_channel(self, channel: discord.TextChannel) -> bool:
         return bool(discord.utils.get(self.main_guild.text_channels, id=channel.id))
+
 
     async def _fetch_text_channel(self, name: str) -> discord.TextChannel | None:
         text_channel: AllChannelTypes | None = discord.utils.get(
@@ -400,6 +403,7 @@ class TeXBot(discord.Bot):
             raise TypeError(INVALID_TEXT_CHANNEL_MESSAGE)
 
         return text_channel
+
 
     async def perform_kill_and_close(self, initiated_by_user: discord.User | discord.Member | None = None) -> None:  # noqa: E501
         """
@@ -419,6 +423,7 @@ class TeXBot(discord.Bot):
         self._exit_was_due_to_kill_command = True
         await self.close()
 
+
     async def get_everyone_role(self) -> discord.Role:
         """
         Util method to retrieve the "@everyone" role from your group's Discord guild.
@@ -434,9 +439,11 @@ class TeXBot(discord.Bot):
             raise EveryoneRoleCouldNotBeRetrievedError
         return everyone_role
 
+
     async def check_user_has_committee_role(self, user: discord.Member | discord.User) -> bool:
         """Util method to validate whether the given user has the "Committee" role."""
         return await self.committee_role in (await self.get_main_guild_member(user)).roles
+
 
     def set_main_guild(self, main_guild: discord.Guild) -> None:
         """
@@ -453,6 +460,7 @@ class TeXBot(discord.Bot):
         self._main_guild = main_guild
         self._main_guild_set = True
 
+
     async def get_main_guild_member(self, user: discord.Member | discord.User) -> discord.Member:  # noqa: E501
         """
         Util method to retrieve a member of your group's Discord guild from their User object.
@@ -464,6 +472,7 @@ class TeXBot(discord.Bot):
             raise DiscordMemberNotInMainGuildError(user_id=user.id)
         return main_guild_member
 
+
     async def get_member_from_str_id(self, str_member_id: str) -> discord.Member:
         """
         Retrieve a member of your group's Discord guild by their ID.
@@ -474,9 +483,7 @@ class TeXBot(discord.Bot):
         str_member_id = str_member_id.replace("<@", "").replace(">", "")
 
         if not re.match(r"\A\d{17,20}\Z", str_member_id):
-            INVALID_USER_ID_MESSAGE: Final[str] = (
-                f"\"{str_member_id}\" is not a valid user ID."
-            )
+            INVALID_USER_ID_MESSAGE: Final[str] = f'"{str_member_id}" is not a valid user ID.'
             raise ValueError(INVALID_USER_ID_MESSAGE)
 
         user: discord.User | None = self.get_user(int(str_member_id))
@@ -492,6 +499,7 @@ class TeXBot(discord.Bot):
             raise ValueError from user_not_in_main_guild_error
 
         return member
+
 
     async def fetch_log_channel(self) -> discord.TextChannel:
         """

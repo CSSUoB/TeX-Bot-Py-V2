@@ -61,6 +61,7 @@ class TeXBotBaseCog(Cog):
         "write_roles": "send messages",
     }
 
+
     @override
     def __init__(self, bot: TeXBot) -> None:
         """Initialize a new cog instance, storing a reference to the bot object."""
@@ -78,7 +79,8 @@ class TeXBotBaseCog(Cog):
             if (
                 hasattr(ctx.command, "callback")
                 and not ctx.command.callback.__name__.startswith("_")
-            ) else ctx.command.qualified_name
+            )
+            else ctx.command.qualified_name
         )
 
         await self.send_error(
@@ -89,6 +91,7 @@ class TeXBotBaseCog(Cog):
             message=message,
             logging_message=logging_message,
         )
+
 
     @classmethod
     async def send_error(cls, bot: TeXBot, interaction: discord.Interaction, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
@@ -108,8 +111,7 @@ class TeXBotBaseCog(Cog):
 
             construct_error_message = (
                 f"**Contact a {committee_mention} member, referencing error code: "
-                f"{error_code}**\n"
-                + construct_error_message
+                f"{error_code}**\n" + construct_error_message
             )
 
         if interaction_name in cls.ERROR_ACTIVITIES:
@@ -137,9 +139,7 @@ class TeXBotBaseCog(Cog):
         if logging_message:
             logger.error(
                 " ".join(
-                    message_part
-                    for message_part
-                    in (
+                    message_part for message_part in (
                         error_code if error_code else "",
                         f"({interaction_name})",
                         str(logging_message),
@@ -147,6 +147,7 @@ class TeXBotBaseCog(Cog):
                     if message_part
                 ).rstrip(": ;"),
             )
+
 
     @staticmethod
     async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
@@ -174,8 +175,7 @@ class TeXBotBaseCog(Cog):
         if not ctx.value or re.match(r"\A#.*\Z", ctx.value):
             return {
                 discord.OptionChoice(name=f"#{channel.name}", value=str(channel.id))
-                for channel
-                in main_guild.text_channels
+                for channel in main_guild.text_channels
                 if channel.permissions_for(channel_permissions_limiter).is_superset(
                     discord.Permissions(send_messages=True, view_channel=True),
                 )
@@ -183,8 +183,7 @@ class TeXBotBaseCog(Cog):
 
         return {
             discord.OptionChoice(name=channel.name, value=str(channel.id))
-            for channel
-            in main_guild.text_channels
+            for channel in main_guild.text_channels
             if channel.permissions_for(channel_permissions_limiter).is_superset(
                 discord.Permissions(send_messages=True, view_channel=True),
             )

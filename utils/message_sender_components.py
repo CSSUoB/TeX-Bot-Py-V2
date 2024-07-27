@@ -29,6 +29,7 @@ class MessageSenderComponent(abc.ABC):
     def __init__(self) -> None:
         self.sent_message: discord.Message | discord.Interaction | None = None
 
+
     @abc.abstractmethod
     async def _send(self, content: str, *, view: View | None = None) -> discord.Message | discord.Interaction:  # noqa: E501
         """
@@ -37,6 +38,7 @@ class MessageSenderComponent(abc.ABC):
         Implementations should send the provided message content & optional view
         to the defined endpoint.
         """
+
 
     @final
     async def send(self, content: str, *, view: View | None = None) -> None:
@@ -77,6 +79,7 @@ class ChannelMessageSender(MessageSenderComponent):
 
         super().__init__()
 
+
     @override
     async def _send(self, content: str, *, view: View | None = None) -> discord.Message | discord.Interaction:  # noqa: E501
         class _BaseChannelSendKwargs(TypedDict):
@@ -113,6 +116,7 @@ class ResponseMessageSender(MessageSenderComponent):
         self.ctx: TeXBotApplicationContext = ctx
 
         super().__init__()
+
 
     @override
     async def _send(self, content: str, *, view: View | None = None) -> discord.Message | discord.Interaction:  # noqa: E501
