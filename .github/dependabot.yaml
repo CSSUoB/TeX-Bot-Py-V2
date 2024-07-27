@@ -11,6 +11,10 @@ updates:
       interval: "daily"
     labels:
       - "dependabot-python"
+    groups:
+      python-dependencies:
+        patterns:
+          - "*"
 
   - package-ecosystem: "github-actions" # See documentation for possible values
     directory: "/" # Location of package manifests
@@ -18,3 +22,6 @@ updates:
       interval: "daily"
     labels:
       - "dependabot-github_actions"
+    groups:
+      github-actions-dependencies:
+        - "*"
