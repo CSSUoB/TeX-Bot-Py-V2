@@ -24,4 +24,5 @@ updates:
       - "dependabot-github_actions"
     groups:
       github-actions-dependencies:
-        - "*"
+        patterns:
+          - "*"
