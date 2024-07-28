@@ -233,8 +233,17 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         sets the status of the provided action to be the provided status.
         """
         try:
+            action_id_int: int = int(action_id)
+        except ValueError:
+            await self.command_send_error(
+                ctx,
+                message="Action ID entered was not valid! Please use the autocomplete.",
+                logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
+            )
+
+        try:
             action: AssignedCommitteeAction = (
-                await AssignedCommitteeAction.objects.select_related().aget(id=action_id)
+                await AssignedCommitteeAction.objects.select_related().aget(id=action_id_int)
             )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
             await self.command_send_error(
@@ -303,8 +312,17 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             return
 
         try:
+            action_id_int: int = int(action_id)
+        except ValueError:
+            await self.command_send_error(
+                ctx,
+                message="Action ID entered was not valid! Please use the autocomplete.",
+                logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
+            )
+
+        try:
             action: AssignedCommitteeAction = (
-                await AssignedCommitteeAction.objects.select_related().aget(id=action_id)
+                await AssignedCommitteeAction.objects.select_related().aget(id=action_id_int)
             )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
             await self.command_send_error(
@@ -527,6 +545,15 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def reassign_action(self, ctx:TeXBotApplicationContext, action_id: str, member_id: str) -> None:  # noqa: E501
         """Reassign the specified action to the specified user."""
+        try:
+            action_id_int: int = int(action_id)
+        except ValueError:
+            await self.command_send_error(
+                ctx,
+                message="Action ID entered was not valid! Please use the autocomplete.",
+                logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
+            )
+
         new_user_to_action: discord.Member = await self.bot.get_member_from_str_id(
             member_id,
         )
@@ -534,7 +561,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         try:
             action_to_reassign: AssignedCommitteeAction = (
-                await AssignedCommitteeAction.objects.select_related().aget(id=action_id)
+                await AssignedCommitteeAction.objects.select_related().aget(id=action_id_int)
             )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
             await self.command_send_error(
@@ -642,8 +669,17 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         Takes in an action as an argument and deletes it from the database.
         """
         try:
+            action_id_int: int = int(action_id)
+        except ValueError:
+            await self.command_send_error(
+                ctx,
+                message="Action ID entered was not valid! Please use the autocomplete.",
+                logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
+            )
+
+        try:
             action: AssignedCommitteeAction = (
-                await AssignedCommitteeAction.objects.select_related().aget(id=action_id)
+                await AssignedCommitteeAction.objects.select_related().aget(id=action_id_int)
             )
         except (ObjectDoesNotExist, MultipleObjectsReturned):
             await self.command_send_error(
