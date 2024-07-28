@@ -747,3 +747,38 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             actioned_message_text,
             silent=False,
         )
+
+
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        name="admin-toggle",
+        description="Toggles if the user has the admin role or not.",
+    )
+    async def admin_toggle(self, ctx: TeXBotApplicationContext) -> None:
+        """Toggle the user admin status."""
+        admin_role: discord.Role | None = discord.utils.get(
+            self.bot.main_guild.roles,
+            name="Admin",
+        )
+
+        if not admin_role:
+            await ctx.respond(content="Couldn't find the admin role!!")
+            return
+
+        interaction_user: discord.Member = ctx.user
+
+        if admin_role in interaction_user.roles:
+            await interaction_user.remove_roles(
+                admin_role,
+                reason=f"{interaction_user} executed TeX-Bot slash-command \"admin-toggle\"",
+            )
+            await ctx.respond(content="Removed your admin role!")
+            return
+
+        await interaction_user.add_roles(
+            admin_role,
+            reason=f"{interaction_user} executed TeX-Bot slash-command \"admin-toggle\"",
+        )
+
+        await ctx.respond(content="Given you the admin role!!")
+
+
