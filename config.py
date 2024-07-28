@@ -110,7 +110,7 @@ class Settings(abc.ABC):
         if item in self._settings:
             return self._settings[item]
 
-        if re.match(r"\A[A-Z](?:[A-Z_]*[A-Z])?\Z", item):
+        if re.fullmatch(r"\A[A-Z](?:[A-Z_]*[A-Z])?\Z", item):
             INVALID_SETTINGS_KEY_MESSAGE: Final[str] = self.get_invalid_settings_key_message(
                 item,
             )
@@ -160,8 +160,8 @@ class Settings(abc.ABC):
 
         DISCORD_BOT_TOKEN_IS_VALID: Final[bool] = bool(
             raw_discord_bot_token
-            and re.match(
-                r"\A([A-Za-z0-9]{24,26})\.([A-Za-z0-9]{6})\.([A-Za-z0-9_-]{27,38})\Z",
+            and re.fullmatch(
+                r"\A([A-Za-z0-9_-]{24,26})\.([A-Za-z0-9_-]{6})\.([A-Za-z0-9_-]{27,38})\Z",
                 raw_discord_bot_token,
             ),
         )
@@ -205,7 +205,7 @@ class Settings(abc.ABC):
 
         DISCORD_GUILD_ID_IS_VALID: Final[bool] = bool(
             raw_discord_guild_id
-            and re.match(r"\A\d{17,20}\Z", raw_discord_guild_id),
+            and re.fullmatch(r"\A\d{17,20}\Z", raw_discord_guild_id),
         )
         if not DISCORD_GUILD_ID_IS_VALID:
             INVALID_DISCORD_GUILD_ID_MESSAGE: Final[str] = (
@@ -214,7 +214,7 @@ class Settings(abc.ABC):
             )
             raise ImproperlyConfiguredError(INVALID_DISCORD_GUILD_ID_MESSAGE)
 
-        cls._settings["DISCORD_GUILD_ID"] = int(raw_discord_guild_id)  # type: ignore[arg-type]
+        cls._settings["_DISCORD_MAIN_GUILD_ID"] = int(raw_discord_guild_id)  # type: ignore[arg-type]
 
     @classmethod
     def _setup_group_full_name(cls) -> None:
@@ -222,7 +222,7 @@ class Settings(abc.ABC):
 
         GROUP_FULL_NAME_IS_VALID: Final[bool] = bool(
             not raw_group_full_name
-            or re.match(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", raw_group_full_name),
+            or re.fullmatch(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", raw_group_full_name),
         )
         if not GROUP_FULL_NAME_IS_VALID:
             INVALID_GROUP_FULL_NAME: Final[str] = (
@@ -237,7 +237,7 @@ class Settings(abc.ABC):
 
         GROUP_SHORT_NAME_IS_VALID: Final[bool] = bool(
             not raw_group_short_name
-            or re.match(r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", raw_group_short_name),
+            or re.fullmatch(r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", raw_group_short_name),
         )
         if not GROUP_SHORT_NAME_IS_VALID:
             INVALID_GROUP_SHORT_NAME: Final[str] = (
@@ -394,22 +394,24 @@ class Settings(abc.ABC):
         cls._settings["MEMBERS_LIST_URL"] = raw_members_list_url
 
     @classmethod
-    def _setup_members_list_url_session_cookie(cls) -> None:
-        raw_members_list_url_session_cookie: str | None = os.getenv(
+    def _setup_members_list_auth_session_cookie(cls) -> None:
+        raw_members_list_auth_session_cookie: str | None = os.getenv(
             "MEMBERS_LIST_URL_SESSION_COOKIE",
         )
 
-        MEMBERS_LIST_URL_SESSION_COOKIE_IS_VALID: Final[bool] = bool(
-            raw_members_list_url_session_cookie
-            and re.match(r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_url_session_cookie),
+        MEMBERS_LIST_AUTH_SESSION_COOKIE_IS_VALID: Final[bool] = bool(
+            raw_members_list_auth_session_cookie
+            and re.fullmatch(r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_auth_session_cookie),
         )
-        if not MEMBERS_LIST_URL_SESSION_COOKIE_IS_VALID:
-            INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
+        if not MEMBERS_LIST_AUTH_SESSION_COOKIE_IS_VALID:
+            INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE: Final[str] = (
                 "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
             )
-            raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE)
 
-        cls._settings["MEMBERS_LIST_URL_SESSION_COOKIE"] = raw_members_list_url_session_cookie
+        cls._settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"] = (
+            raw_members_list_auth_session_cookie
+        )
 
     @classmethod
     def _setup_send_introduction_reminders(cls) -> None:
@@ -441,7 +443,7 @@ class Settings(abc.ABC):
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        raw_send_introduction_reminders_delay: Match[str] | None = re.match(
+        raw_send_introduction_reminders_delay: Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
             str(os.getenv("SEND_INTRODUCTION_REMINDERS_DELAY", "40h")),
         )
@@ -489,7 +491,7 @@ class Settings(abc.ABC):
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        raw_send_introduction_reminders_interval: Match[str] | None = re.match(
+        raw_send_introduction_reminders_interval: Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
             str(os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h")),
         )
@@ -544,7 +546,7 @@ class Settings(abc.ABC):
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        raw_send_get_roles_reminders_delay: Match[str] | None = re.match(
+        raw_send_get_roles_reminders_delay: Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
             str(os.getenv("SEND_GET_ROLES_REMINDERS_DELAY", "40h")),
         )
@@ -592,7 +594,7 @@ class Settings(abc.ABC):
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        raw_advanced_send_get_roles_reminders_interval: Match[str] | None = re.match(
+        raw_advanced_send_get_roles_reminders_interval: Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
             str(os.getenv("ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL", "24h")),
         )
@@ -667,20 +669,20 @@ class Settings(abc.ABC):
         cls._settings["MODERATION_DOCUMENT_URL"] = raw_moderation_document_url
 
     @classmethod
-    def _setup_manual_moderation_warning_message_location(cls) -> None:
-        raw_manual_moderation_warning_message_location: str = os.getenv(
+    def _setup_strike_performed_manually_warning_location(cls) -> None:
+        raw_strike_performed_manually_warning_location: str = os.getenv(
             "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION",
             "DM",
         )
-        if not raw_manual_moderation_warning_message_location:
-            MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE: Final[str] = (
+        if not raw_strike_performed_manually_warning_location:
+            STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_MESSAGE: Final[str] = (
                 "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION must be a valid name "
                 "of a channel in your group's Discord guild."
             )
-            raise ImproperlyConfiguredError(MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE)
+            raise ImproperlyConfiguredError(STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_MESSAGE)
 
-        cls._settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] = (
-            raw_manual_moderation_warning_message_location
+        cls._settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] = (
+            raw_strike_performed_manually_warning_location
         )
 
     @classmethod
@@ -707,7 +709,7 @@ class Settings(abc.ABC):
         cls._setup_welcome_messages()
         cls._setup_roles_messages()
         cls._setup_members_list_url()
-        cls._setup_members_list_url_session_cookie()
+        cls._setup_members_list_auth_session_cookie()
         cls._setup_membership_perks_url()
         cls._setup_purchase_membership_url()
         cls._setup_send_introduction_reminders()
@@ -719,7 +721,7 @@ class Settings(abc.ABC):
         cls._setup_statistics_days()
         cls._setup_statistics_roles()
         cls._setup_moderation_document_url()
-        cls._setup_manual_moderation_warning_message_location()
+        cls._setup_strike_performed_manually_warning_location()
 
         cls._is_env_variables_setup = True
 

@@ -7,6 +7,7 @@ __all__: Sequence[str] = ("ArchiveCommandCog",)
 
 import logging
 import re
+from collections.abc import Set
 from logging import Logger
 from typing import Final
 
@@ -29,25 +30,25 @@ class ArchiveCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/archive" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_categories(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+    async def autocomplete_get_categories(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable categories.
 
-        The list of available selectable categories is unique to each member, and is used in
+        The list of available selectable categories is unique to each member and is used in
         any of the "archive" slash-command options that have a category input-type.
         """
         if not ctx.interaction.user:
             return set()
 
         try:
+            if not await ctx.bot.check_user_has_committee_role(ctx.interaction.user):
+                return set()
+
             main_guild: discord.Guild = ctx.bot.main_guild
             interaction_user: discord.Member = await ctx.bot.get_main_guild_member(
                 ctx.interaction.user,
             )
         except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
-            return set()
-
-        if not await ctx.bot.check_user_has_committee_role(interaction_user):
             return set()
 
         return {
@@ -89,7 +90,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         archivist_role: discord.Role = await self.bot.archivist_role
         everyone_role: discord.Role = await self.bot.get_everyone_role()
 
-        if not re.match(r"\A\d{17,20}\Z", str_category_id):
+        if not re.fullmatch(r"\A\d{17,20}\Z", str_category_id):
             await self.command_send_error(
                 ctx,
                 message=f"{str_category_id!r} is not a valid category ID.",
@@ -122,19 +123,19 @@ class ArchiveCommandCog(TeXBotBaseCog):
         channel: AllChannelTypes
         for channel in category.channels:
             try:
-                channel_needs_committee_archiving: bool = (
+                CHANNEL_NEEDS_COMMITTEE_ARCHIVING: bool = (
                     channel.permissions_for(committee_role).is_superset(
                         discord.Permissions(view_channel=True),
                     ) and not channel.permissions_for(guest_role).is_superset(
                         discord.Permissions(view_channel=True),
                     )
                 )
-                channel_needs_normal_archiving: bool = channel.permissions_for(
-                    guest_role,
-                ).is_superset(
-                    discord.Permissions(view_channel=True),
+                CHANNEL_NEEDS_NORMAL_ARCHIVING: bool = (
+                    channel.permissions_for(guest_role).is_superset(
+                        discord.Permissions(view_channel=True),
+                    )
                 )
-                if channel_needs_committee_archiving:
+                if CHANNEL_NEEDS_COMMITTEE_ARCHIVING:
                     await channel.set_permissions(
                         everyone_role,
                         reason=f"{interaction_member.display_name} used \"/archive\".",
@@ -156,7 +157,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
                         reason=f"{interaction_member.display_name} used \"/archive\".",
                     )
 
-                elif channel_needs_normal_archiving:
+                elif CHANNEL_NEEDS_NORMAL_ARCHIVING:
                     await channel.set_permissions(
                         everyone_role,
                         reason=f"{interaction_member.display_name} used \"/archive\".",
@@ -198,12 +199,14 @@ class ArchiveCommandCog(TeXBotBaseCog):
                 await self.command_send_error(
                     ctx,
                     message=(
-                        "Bot does not have access to the channels in the selected category."
+                        "TeX-Bot does not have access to "
+                        "the channels in the selected category."
                     ),
                 )
                 logger.error(  # noqa: TRY400
                     (
-                        "Bot did not have access to the channels in the selected category: "
+                        "TeX-Bot did not have access to "
+                        "the channels in the selected category: "
                         "%s."
                     ),
                     category.name,
