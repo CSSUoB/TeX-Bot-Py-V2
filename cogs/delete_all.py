@@ -7,7 +7,7 @@ __all__: Sequence[str] = ("DeleteAllCommandsCog",)
 
 import discord
 
-from db.core.models import AssinedCommitteeAction, DiscordReminder, GroupMadeMember
+from db.core.models import AssignedCommitteeAction, DiscordReminder, GroupMadeMember
 from db.core.models.utils import AsyncBaseModel
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
@@ -80,4 +80,4 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
         The "delete-all-actions" command uses the _delete_all() function
         to delete all `Action` instance objects stored in the database.
         """
-        await self._delete_all(ctx, delete_model=AssinedCommitteeAction)
+        await self._delete_all(ctx, delete_model=AssignedCommitteeAction)
