@@ -656,8 +656,6 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
 
         await ctx.respond(content="Action successfully deleted.")
 
-
-
     @discord.message_command(  # type: ignore[no-untyped-call, misc]
         name="Action Message Author",
         description="Creates a new action for the message author using the message content.",
