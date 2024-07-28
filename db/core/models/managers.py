@@ -151,7 +151,7 @@ class HashedDiscordMemberManager(BaseHashedIDManager["DiscordMember"]):
     Manager class to create & retrieve DiscordMember model instances.
 
     This manager implements extra functionality to filter/create instances
-    using a given discord_id that with be automatically hashed, before saved to the database.
+    using a given discord_id that with be automatically hashed before saved to the database.
     """
 
     # noinspection SpellCheckingInspection
@@ -204,7 +204,7 @@ class RelatedDiscordMemberManager(BaseHashedIDManager["T_BaseDiscordMemberWrappe
     Manager class to create & retrieve instances of any concrete `BaseDiscordMemberWrapper`.
 
     This manager implements extra functionality to filter/create instances
-    using a given discord_id that with be automatically hashed, before saved to the database.
+    using a given discord_id that with be automatically hashed before saved to the database.
     """
 
     # noinspection SpellCheckingInspection

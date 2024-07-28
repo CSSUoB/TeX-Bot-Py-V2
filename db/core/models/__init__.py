@@ -138,7 +138,7 @@ class SentGetRolesReminderMember(BaseDiscordMemberWrapper):
     """
     Represents a Discord member that has already been sent an opt-in roles reminder.
 
-    The opt-in roles reminder suggests to the Discord member to visit the #roles channel
+    The opt-in roles reminder suggests the Discord member visit the #roles channel
     to claim some opt-in roles within your group's Discord guild.
     The Discord member is identified by their hashed Discord member ID.
 
@@ -229,7 +229,7 @@ class GroupMadeMember(AsyncBaseModel):
         that hashed_group_member_ids are stored in the database
         when new GroupMadeMember objects are created.
         """
-        if not re.match(r"\A\d{7}\Z", str(group_member_id)):
+        if not re.fullmatch(r"\A\d{7}\Z", str(group_member_id)):
             INVALID_GROUP_MEMBER_ID_MESSAGE: Final[str] = (
                 f"{group_member_id!r} is not a valid {group_member_id_type} ID."
             )

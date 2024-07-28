@@ -3,7 +3,7 @@
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
-    "MessageSenderComponent",
+    "MessageSavingSenderComponent",
     "ChannelMessageSender",
     "ResponseMessageSender",
 )
@@ -15,12 +15,12 @@ from typing import Final, TypedDict, final, override
 import discord
 from discord.ui import View
 
-from utils.tex_bot_contexts import TeXBotApplicationContext
+from .tex_bot_contexts import TeXBotApplicationContext
 
 
-class MessageSenderComponent(abc.ABC):
+class MessageSavingSenderComponent(abc.ABC):
     """
-    Abstract protocol definition of a sending component.
+    Abstract protocol definition of a sending component that saves the sent-message.
 
     Defines the way to send a provided message content & optional view to the defined endpoint.
     """
@@ -64,7 +64,7 @@ class MessageSenderComponent(abc.ABC):
             await self.sent_message.delete_original_message()
 
 
-class ChannelMessageSender(MessageSenderComponent):
+class ChannelMessageSender(MessageSavingSenderComponent):
     """
     Concrete definition of a channel sending component.
 
@@ -100,7 +100,7 @@ class ChannelMessageSender(MessageSenderComponent):
         return await self.channel.send(**send_kwargs)
 
 
-class ResponseMessageSender(MessageSenderComponent):
+class ResponseMessageSender(MessageSavingSenderComponent):
     """
     Concrete definition of a context-based response sending component.
 
