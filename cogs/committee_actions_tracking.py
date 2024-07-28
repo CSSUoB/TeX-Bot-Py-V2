@@ -54,6 +54,25 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             str(ctx.interaction.user.id),
         )
 
+        admin_role: discord.Role | None = discord.utils.get(
+            ctx.bot.main_guild.roles,
+            name="Admin",
+        )
+
+        if admin_role and admin_role in interaction_user.roles:
+            all_actions: list[AssignedCommitteeAction] = [
+                action
+                async for action in AssignedCommitteeAction.objects.select_related().all()
+            ]
+
+            return {
+                discord.OptionChoice(
+                    name=f"{action.description} ({action.status})",
+                    value=str(action.id),
+                )
+                for action in all_actions
+            }
+
         filtered_user_actions: list[AssignedCommitteeAction] = [
             action async for action in await AssignedCommitteeAction.objects.afilter(
                 Q(status="IP") | Q(status="B") | Q(status="NS"),
