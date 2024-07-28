@@ -83,7 +83,8 @@ class TeXBotBaseCog(Cog):
             if (
                 hasattr(ctx.command, "callback")
                 and not ctx.command.callback.__name__.startswith("_")
-            ) else ctx.command.qualified_name
+            )
+            else ctx.command.qualified_name
         )
 
         await self.send_error(
@@ -114,8 +115,7 @@ class TeXBotBaseCog(Cog):
             construct_error_message = (
                 f"**Contact a {committee_mention} member, referencing error code: "
                 f"{error_code}**\n"
-                + construct_error_message
-            )
+            ) + construct_error_message
 
         if interaction_name in cls.ERROR_ACTIVITIES:
             construct_error_message += (
@@ -142,9 +142,7 @@ class TeXBotBaseCog(Cog):
         if logging_message:
             logger.error(
                 " ".join(
-                    message_part
-                    for message_part
-                    in (
+                    message_part for message_part in (
                         error_code if error_code else "",
                         f"({interaction_name})",
                         str(logging_message),
@@ -179,8 +177,7 @@ class TeXBotBaseCog(Cog):
         if not ctx.value or re.fullmatch(r"\A#.*\Z", ctx.value):
             return {
                 discord.OptionChoice(name=f"#{channel.name}", value=str(channel.id))
-                for channel
-                in main_guild.text_channels
+                for channel in main_guild.text_channels
                 if channel.permissions_for(channel_permissions_limiter).is_superset(
                     discord.Permissions(send_messages=True, view_channel=True),
                 )
@@ -188,8 +185,7 @@ class TeXBotBaseCog(Cog):
 
         return {
             discord.OptionChoice(name=channel.name, value=str(channel.id))
-            for channel
-            in main_guild.text_channels
+            for channel in main_guild.text_channels
             if channel.permissions_for(channel_permissions_limiter).is_superset(
                 discord.Permissions(send_messages=True, view_channel=True),
             )
