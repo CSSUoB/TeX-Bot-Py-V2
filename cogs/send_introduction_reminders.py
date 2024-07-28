@@ -8,7 +8,7 @@ __all__: Sequence[str] = ("SendIntroductionRemindersTaskCog",)
 import functools
 import logging
 from logging import Logger
-from typing import Final
+from typing import Final, override
 
 import discord
 import emoji
@@ -30,12 +30,13 @@ from utils.error_capture_decorators import (
     capture_guild_does_not_exist_error,
 )
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
     """Cog class that defines the send_introduction_reminders task."""
 
+    @override
     def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
         if settings["SEND_INTRODUCTION_REMINDERS"]:
@@ -46,6 +47,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
         super().__init__(bot)
 
+    @override
     def cog_unload(self) -> None:
         """
         Unload hook that ends all running tasks whenever the tasks cog is unloaded.
@@ -110,9 +112,8 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 settings["SEND_INTRODUCTION_REMINDERS"] == "interval"
             )
             member_recently_joined: bool = (
-                (discord.utils.utcnow() - member.joined_at)
-                <= settings["SEND_INTRODUCTION_REMINDERS_DELAY"]
-            )
+                discord.utils.utcnow() - member.joined_at
+            ) <= settings["SEND_INTRODUCTION_REMINDERS_DELAY"]
             member_opted_out_from_reminders: bool = await (
                 await IntroductionReminderOptOutMember.objects.afilter(
                     discord_id=member.id,
@@ -185,6 +186,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         joining your group's Discord guild.
         """
 
+        @override
         def __init__(self, bot: TeXBot) -> None:
             """Initialize a new discord.View, to opt-in/out of introduction reminders."""
             self.bot: TeXBot = bot
@@ -229,12 +231,13 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             )
 
             _BUTTON_WILL_MAKE_OPT_IN: Final[bool] = bool(
-                    button.style == discord.ButtonStyle.green
-                    or str(button.emoji) == emoji.emojize(
-                        ":raised_hand:",
-                        language="alias",
-                    )
-                    or button.label and "Opt back in" in button.label)
+                button.style == discord.ButtonStyle.green
+                or str(button.emoji) == emoji.emojize(
+                    ":raised_hand:",
+                    language="alias",
+                )
+                or button.label and "Opt back in" in button.label # noqa: COM812
+            )
             INCOMPATIBLE_BUTTONS: Final[bool] = bool(
                 (BUTTON_WILL_MAKE_OPT_OUT and _BUTTON_WILL_MAKE_OPT_IN)
                 or (not BUTTON_WILL_MAKE_OPT_OUT and not _BUTTON_WILL_MAKE_OPT_IN),

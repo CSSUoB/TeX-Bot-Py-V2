@@ -23,12 +23,10 @@ from collections.abc import Mapping
 from logging import Logger
 from typing import Final
 
-import aiohttp
 import discord
 
 # noinspection SpellCheckingInspection
 from asyncstdlib.builtins import any as asyncany
-from discord import Webhook
 from discord.ui import View
 
 from config import settings
@@ -234,11 +232,7 @@ class BaseStrikeCog(TeXBotBaseCog):
             else ""
         )
 
-        actual_strike_amount: int = (
-            member_strikes.strikes
-            if member_strikes.strikes < 3
-            else 3
-        )
+        actual_strike_amount: int = member_strikes.strikes if member_strikes.strikes < 3 else 3
 
         await strike_user.send(
             "Hi, a recent incident occurred in which you may have broken one or more of "
@@ -418,31 +412,21 @@ class ManualModerationCog(BaseStrikeCog):
         """
         if settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] == "DM":
             if user.bot:
-                session: aiohttp.ClientSession
-                with aiohttp.ClientSession() as session:  # type: ignore[assignment]
-                    log_confirmation_message_channel: discord.TextChannel | None = (
-                        await Webhook.from_url(
-                            settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
-                            session=session,
-                        ).fetch()
-                    ).channel
-
-                    if not log_confirmation_message_channel:
-                        raise StrikeTrackingError
-
-                    return log_confirmation_message_channel
+                fetch_log_channel_error: RuntimeError
+                try:
+                    return await self.bot.fetch_log_channel()
+                except RuntimeError as fetch_log_channel_error:
+                    raise StrikeTrackingError(
+                        str(fetch_log_channel_error),
+                    ) from fetch_log_channel_error
 
             raw_user: discord.User | None = (
-                self.bot.get_user(user.id)
-                if isinstance(user, discord.Member)
-                else user
+                self.bot.get_user(user.id) if isinstance(user, discord.Member) else user
             )
             if not raw_user:
                 raise StrikeTrackingError
 
-            dm_confirmation_message_channel: discord.DMChannel = (
-                await raw_user.create_dm()
-            )
+            dm_confirmation_message_channel: discord.DMChannel = await raw_user.create_dm()
             if not dm_confirmation_message_channel.recipient:
                 dm_confirmation_message_channel.recipient = raw_user
 
@@ -473,18 +457,23 @@ class ManualModerationCog(BaseStrikeCog):
             # noinspection PyTypeChecker
             audit_log_entry: discord.AuditLogEntry = await anext(
                 _audit_log_entry
-                async for _audit_log_entry
-                in main_guild.audit_logs(
+                async for _audit_log_entry in main_guild.audit_logs(
                     after=discord.utils.utcnow() - datetime.timedelta(minutes=1),
                     action=action,
                 )
-                if _audit_log_entry.target == strike_user
+                if _audit_log_entry.target.id == strike_user.id  # NOTE: IDs are checked here rather than the objects themselves as the audit log provides an unusual object type in some cases.
             )
         except (StopIteration, StopAsyncIteration):
             IRRETRIEVABLE_AUDIT_LOG_MESSAGE: Final[str] = (
                 f"Unable to retrieve audit log entry of {str(action)!r} action "
                 f"on user {str(strike_user)!r}"
             )
+
+            logger.debug("Printing 5 most recent audit logs:")
+            debug_audit_log_entry: discord.AuditLogEntry
+            async for debug_audit_log_entry in main_guild.audit_logs(limit=5):
+                logger.debug(debug_audit_log_entry)
+
             raise NoAuditLogsStrikeTrackingError(IRRETRIEVABLE_AUDIT_LOG_MESSAGE) from None
 
         if not audit_log_entry.user:
@@ -495,12 +484,21 @@ class ManualModerationCog(BaseStrikeCog):
         if applied_action_user == self.bot.user:
             return
 
-        confirmation_message_channel: discord.DMChannel | discord.TextChannel = (
-            await self.get_confirmation_message_channel(applied_action_user)
-        )
+        fetch_log_channel_error: RuntimeError
+        try:
+            confirmation_message_channel: discord.DMChannel | discord.TextChannel = (
+                await self.get_confirmation_message_channel(applied_action_user)
+                if applied_action_user != strike_user
+                else await self.bot.fetch_log_channel()
+            )
+        except RuntimeError as fetch_log_channel_error:
+            raise StrikeTrackingError(
+                str(fetch_log_channel_error),
+            ) from fetch_log_channel_error
 
         MODERATION_ACTIONS: Final[Mapping[discord.AuditLogAction, str]] = {
             discord.AuditLogAction.member_update: "timed-out",
+            discord.AuditLogAction.auto_moderation_user_communication_disabled: "timed-out",
             discord.AuditLogAction.kick: "kicked",
             discord.AuditLogAction.ban: "banned",
         }
@@ -520,7 +518,7 @@ class ManualModerationCog(BaseStrikeCog):
                 content=(
                     f"""Hi {
                         applied_action_user.display_name
-                        if not applied_action_user.bot
+                        if not applied_action_user.bot and applied_action_user != strike_user
                         else committee_role.mention
                     }, """
                     f"""I just noticed that {
@@ -557,7 +555,7 @@ class ManualModerationCog(BaseStrikeCog):
                 ),
             )
 
-            if out_of_sync_ban_button_interaction.data["custom_id"] == "no_out_of_sync_ban_member":  # type: ignore[index, typeddict-item] # noqa: E501
+            if out_of_sync_ban_button_interaction.data["custom_id"] == "no_out_of_sync_ban_member":  # type: ignore[index, typeddict-item]  # noqa: E501
                 await out_of_sync_ban_confirmation_message.edit(
                     content=(
                         f"Aborted performing ban action upon {strike_user.mention}. "
@@ -576,7 +574,7 @@ class ManualModerationCog(BaseStrikeCog):
                 await out_of_sync_ban_confirmation_message.delete()
                 return
 
-            if out_of_sync_ban_button_interaction.data["custom_id"] == "yes_out_of_sync_ban_member":  # type: ignore[index, typeddict-item] # noqa: E501
+            if out_of_sync_ban_button_interaction.data["custom_id"] == "yes_out_of_sync_ban_member":  # type: ignore[index, typeddict-item]  # noqa: E501
                 await self._send_strike_user_message(strike_user, member_strikes)
                 await main_guild.ban(
                     strike_user,
@@ -609,7 +607,7 @@ class ManualModerationCog(BaseStrikeCog):
             content=(
                 f"""Hi {
                     applied_action_user.display_name
-                    if not applied_action_user.bot
+                    if not applied_action_user.bot and applied_action_user != strike_user
                     else committee_role.mention
                 }, """
                 f"""I just noticed that {
@@ -694,6 +692,19 @@ class ManualModerationCog(BaseStrikeCog):
         if not after.timed_out or before.timed_out == after.timed_out:
             return
 
+        audit_log_entry: discord.AuditLogEntry
+        async for audit_log_entry in main_guild.audit_logs(limit=5):
+            FOUND_CORRECT_AUDIT_LOG_ENTRY: bool = (
+                audit_log_entry.target.id == after.id
+                and audit_log_entry.action == (discord.AuditLogAction.auto_moderation_user_communication_disabled)  # noqa: E501
+            )
+            if FOUND_CORRECT_AUDIT_LOG_ENTRY:
+                await self._confirm_manual_add_strike(
+                    strike_user=after,
+                    action=audit_log_entry.action,
+                )
+                return
+
         # noinspection PyArgumentList
         await self._confirm_manual_add_strike(
             strike_user=after,
@@ -710,9 +721,7 @@ class ManualModerationCog(BaseStrikeCog):
         MEMBER_REMOVED_BECAUSE_OF_MANUALLY_APPLIED_KICK: Final[bool] = bool(
             member.guild == self.bot.main_guild
             and not member.bot
-            and not await asyncany(
-                ban.user == member async for ban in main_guild.bans()
-            ),
+            and not await asyncany(ban.user == member async for ban in main_guild.bans())  # noqa: COM812
         )
         if not MEMBER_REMOVED_BECAUSE_OF_MANUALLY_APPLIED_KICK:
             return
@@ -759,14 +768,11 @@ class StrikeCommandCog(BaseStrikeCog):
         if not ctx.value or re.match(r"\A@.*\Z", ctx.value):
             return {
                 discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
-                for member
-                in members
+                for member in members
             }
 
         return {
-            discord.OptionChoice(name=member.name, value=str(member.id))
-            for member
-            in members
+            discord.OptionChoice(name=member.name, value=str(member.id)) for member in members
         }
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]

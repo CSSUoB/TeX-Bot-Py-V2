@@ -8,19 +8,21 @@ __all__: Sequence[str] = ("ArchiveCommandCog",)
 import logging
 import re
 from logging import Logger
+from typing import Final
 
 import discord
 
 from exceptions import DiscordMemberNotInMainGuildError
 from exceptions.base import BaseDoesNotExistError
 from utils import (
+    AllChannelTypes,
     CommandChecks,
     TeXBotApplicationContext,
     TeXBotAutocompleteContext,
     TeXBotBaseCog,
 )
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class ArchiveCommandCog(TeXBotBaseCog):
@@ -117,14 +119,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
             )
             return
 
-        # noinspection PyUnreachableCode
-        channel: (
-                discord.VoiceChannel
-                | discord.StageChannel
-                | discord.TextChannel
-                | discord.ForumChannel
-                | discord.CategoryChannel
-        )
+        channel: AllChannelTypes
         for channel in category.channels:
             try:
                 channel_needs_committee_archiving: bool = (

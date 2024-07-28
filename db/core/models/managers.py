@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 type Defaults = MutableMapping[str, object | Callable[[], object]] | None
 
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class BaseHashedIDManager[T_model](Manager[T_model], abc.ABC):

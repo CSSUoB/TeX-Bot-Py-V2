@@ -20,13 +20,25 @@ from config import settings
 from exceptions.does_not_exist import GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
-logger: Logger = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
+
+REQUEST_HEADERS: Final[Mapping[str, str]] = {
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
+    "Expires": "0",
+}
+
+REQUEST_COOKIES: Final[Mapping[str, str]] = {
+    ".ASPXAUTH": settings["MEMBERS_LIST_URL_SESSION_COOKIE"],
+}
+
+REQUEST_URL: Final[str] = "https://guildofstudents.com/profile"
 
 
 class GetTokenAuthorisationCommand(TeXBotBaseCog):
     """Cog class that defines the "/get_token_authorisation" command."""
 
-    @discord.slash_command( # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="get-token-authorisation",
         description="Checks the authorisations held by the token.",
     )
@@ -40,21 +52,13 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
         The profile page will contain the user's name and a list of the MSL organisations
         the user has administrative access to.
         """
-        REQUEST_HEADERS: Mapping[str, str] = {
-            "Cache-Control": "no-cache",
-            "Pragma": "no-cache",
-            "Expires": "0",
-        }
+        http_session: aiohttp.ClientSession = aiohttp.ClientSession(
+            headers=REQUEST_HEADERS,
+            cookies=REQUEST_COOKIES,
+        )
 
-        REQUEST_COOKIES: Mapping[str, str] = {
-            ".ASPXAUTH": settings["MEMBERS_LIST_URL_SESSION_COOKIE"],
-        }
-
-        REQUEST_URL: Final[str] = "https://guildofstudents.com/profile"
-
-        async with aiohttp.ClientSession(headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES) as http_session:  # noqa: E501, SIM117
-            async with http_session.get(REQUEST_URL) as http_response:
-                response_html: str = await http_response.text()
+        async with http_session, http_session.get(REQUEST_URL) as http_response:
+            response_html: str = await http_response.text()
 
         parsed_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
             response_html,
@@ -97,9 +101,7 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
             return
 
         organisations: Iterable[str] = [
-            list_item.get_text(strip=True)
-            for list_item
-            in parsed_html.find_all("li")
+            list_item.get_text(strip=True) for list_item in parsed_html.find_all("li")
         ]
 
         logger.debug(
