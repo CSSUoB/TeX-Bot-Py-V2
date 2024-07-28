@@ -18,7 +18,6 @@ __all__: Sequence[str] = (
 
 
 import asyncio
-from typing import TypeAlias
 
 import discord
 
@@ -29,12 +28,13 @@ from .tex_bot import TeXBot
 from .tex_bot_base_cog import TeXBotBaseCog
 from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
 
-AllChannelTypes: TypeAlias = (
+type AllChannelTypes = (
     discord.VoiceChannel
     | discord.StageChannel
     | discord.TextChannel
     | discord.ForumChannel
     | discord.CategoryChannel
+    | None
 )
 
 
