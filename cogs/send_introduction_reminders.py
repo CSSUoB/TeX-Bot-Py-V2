@@ -189,10 +189,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         @override
         def __init__(self, bot: TeXBot) -> None:
             """Initialise a new discord.View, to opt-in/out of introduction reminders."""
-            # NOTE: The attribute/variable name `bot` is used here for consistency.
-            # NOTE: `tex_bot` would be preferred but would be inconsitent with the required attribute name of Pycord's context classes
-            # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
-            self.bot: TeXBot = bot
+            self.bot: TeXBot = bot  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
 
             super().__init__(timeout=None)
 
