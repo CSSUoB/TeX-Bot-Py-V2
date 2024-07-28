@@ -139,3 +139,9 @@ class StartupCog(TeXBotBaseCog):
                 await self.bot.close()
 
         logger.info("Ready! Logged in as %s", self.bot.user)
+
+        try:
+            log_channel: discord.TextChannel = await self.bot.fetch_log_channel()
+            await log_channel.send("TeX-Bot is now running!")
+        except ValueError:
+            logger.debug("Unable to send startup message to log channel!")

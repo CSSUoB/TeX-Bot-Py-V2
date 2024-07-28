@@ -66,6 +66,13 @@ class TeXBot(discord.Bot):
 
     @override
     async def close(self) -> NoReturn:  # type: ignore[misc]
+
+        try:
+            log_channel: discord.TextChannel = await self.fetch_log_channel()
+            await log_channel.send("TeX-Bot is shutting down...")
+        except ValueError:
+            logger.debug("Unable to send shutdown message to log channel!")
+
         await super().close()
 
         logger.info("TeX-Bot manually terminated.")
