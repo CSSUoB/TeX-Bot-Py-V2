@@ -387,9 +387,14 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             )
             return
 
-        action_user: discord.Member = committee_members[
-            random.randint(0, len(committee_members))
-        ]
+        try:
+            index: int = random.randint(0, len(committee_members))
+            action_user: discord.Member = committee_members[index]
+        except IndexError:
+            logger.debug("Index: %s was out of range! Printing list...", index)
+            logger.debug(committee_members)
+            await self.command_send_error(ctx, message="Index out of range... check the logs!")
+            return
 
         await self._create_action(ctx, action_user, action_description, silent=False)
 
