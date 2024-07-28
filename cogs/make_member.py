@@ -62,7 +62,7 @@ REQUEST_HEADERS: Final[Mapping[str, str]] = {
 }
 
 REQUEST_COOKIES: Final[Mapping[str, str]] = {
-    ".ASPXAUTH": settings["MEMBERS_LIST_URL_SESSION_COOKIE"],
+    ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
 }
 
 REQUEST_URL: Final[str] = settings["MEMBERS_LIST_URL"]
@@ -131,11 +131,12 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             )
             return
 
-        if not re.match(r"\A\d{7}\Z", group_member_id):
+        if not re.fullmatch(r"\A\d{7}\Z", group_member_id):
             await self.command_send_error(
                 ctx,
                 message=(
-                    f"{group_member_id!r} is not a valid {self.bot.group_member_id_type} ID."
+                    f"{group_member_id!r} is not a valid "
+                    f"{self.bot.group_member_id_type} ID."
                 ),
             )
             return
@@ -264,6 +265,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                     reason="TeX Bot slash-command: \"/makemember\"",
                 )
 
+        # noinspection PyUnusedLocal
         applicant_role: discord.Role | None = None
         with contextlib.suppress(ApplicantRoleDoesNotExistError):
             applicant_role = await ctx.bot.applicant_role

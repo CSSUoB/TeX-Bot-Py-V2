@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("GetTokenAuthorisationCommand",)
+__all__: Sequence[str] = ("GetTokenAuthorisationCommandCog",)
 
 
 import contextlib
@@ -35,7 +35,7 @@ REQUEST_COOKIES: Final[Mapping[str, str]] = {
 REQUEST_URL: Final[str] = "https://guildofstudents.com/profile"
 
 
-class GetTokenAuthorisationCommand(TeXBotBaseCog):
+class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/get_token_authorisation" command."""
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -48,7 +48,7 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
         """
         Definition of the "get_token_authorisation" command.
 
-        The "get_token_authorisation" command will retrieve the profle for the token user.
+        The "get_token_authorisation" command will retrieve the profile for the token user.
         The profile page will contain the user's name and a list of the MSL organisations
         the user has administrative access to.
         """
@@ -110,6 +110,7 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
             user_name.text,
         )
 
+        # noinspection PyUnusedLocal
         guest_role: discord.Role | None = None
         with contextlib.suppress(GuestRoleDoesNotExistError):
             guest_role = await ctx.bot.guest_role
@@ -122,6 +123,6 @@ class GetTokenAuthorisationCommand(TeXBotBaseCog):
             ephemeral=bool(
                 (not guest_role) or ctx.channel.permissions_for(guest_role).is_superset(
                     discord.Permissions(view_channel=True),
-                ),
+                )  # noqa: COM812
             ),
         )
