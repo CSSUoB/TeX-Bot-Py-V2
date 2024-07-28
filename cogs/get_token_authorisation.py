@@ -29,7 +29,7 @@ REQUEST_HEADERS: Final[Mapping[str, str]] = {
 }
 
 REQUEST_COOKIES: Final[Mapping[str, str]] = {
-    ".ASPXAUTH": settings["MEMBERS_LIST_URL_SESSION_COOKIE"],
+    ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
 }
 
 REQUEST_URL: Final[str] = "https://guildofstudents.com/profile"
