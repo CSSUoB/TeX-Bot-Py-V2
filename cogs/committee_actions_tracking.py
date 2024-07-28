@@ -592,7 +592,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             action async for action in AssinedCommitteeAction.objects.select_related().all()
         ]
 
-        desired_status: list[str] = [status if status else "NS", "IP", "B"]
+        desired_status: list[str] = [status] if status else ["NS", "IP", "B"]
 
         committee_members: list[discord.Member] = committee_role.members
 
