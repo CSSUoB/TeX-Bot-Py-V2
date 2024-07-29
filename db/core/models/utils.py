@@ -41,8 +41,7 @@ class AsyncBaseModel(models.Model):
     def __init__(self, *args: object, **kwargs: object) -> None:
         proxy_fields: dict[str, object] = {
             field_name: kwargs.pop(field_name)
-            for field_name
-            in set(kwargs.keys()) & self.get_proxy_field_names()
+            for field_name in set(kwargs.keys()) & self.get_proxy_field_names()
         }
 
         super().__init__(*args, **kwargs)

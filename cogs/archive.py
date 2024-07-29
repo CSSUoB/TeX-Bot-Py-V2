@@ -58,18 +58,18 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
         return {
             discord.OptionChoice(name=category.name, value=str(category.id))
-            for category
-            in main_guild.categories
+            for category in main_guild.categories
             if category.permissions_for(interaction_user).is_superset(
                 discord.Permissions(send_messages=True, view_channel=True),
             )
         }
 
     async def _set_permissions(self, channel: AllChannelTypes, ctx: TeXBotApplicationContext, interaction_member: discord.Member, *, committee_role: discord.Role, guest_role: discord.Role, member_role: discord.Role, archivist_role: discord.Role, everyone_role: discord.Role) -> None:  # noqa: PLR0913,E501
-        CHANNEL_NEEDS_COMMITTEE_ARCHIVING: Final[bool] = (
+        CHANNEL_NEEDS_COMMITTEE_ARCHIVING: Final[bool] = bool(
             channel.permissions_for(committee_role).is_superset(
                 discord.Permissions(view_channel=True),
-            ) and not channel.permissions_for(guest_role).is_superset(
+            )
+            and not channel.permissions_for(guest_role).is_superset(
                 discord.Permissions(view_channel=True),
             )
         )
@@ -96,10 +96,10 @@ class ArchiveCommandCog(TeXBotBaseCog):
             )
             return
 
-        CHANNEL_NEEDS_NORMAL_ARCHIVING: Final[bool] = (
-            channel.permissions_for(guest_role).is_superset(
-                discord.Permissions(view_channel=True),
-            )
+        CHANNEL_NEEDS_NORMAL_ARCHIVING: Final[bool] = channel.permissions_for(
+            guest_role
+        ).is_superset(
+            discord.Permissions(view_channel=True),
         )
         if CHANNEL_NEEDS_NORMAL_ARCHIVING:
             await channel.set_permissions(

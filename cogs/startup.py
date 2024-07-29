@@ -61,7 +61,8 @@ class StartupCog(TeXBotBaseCog):
                         else (
                             self.bot.user.name
                             if self.bot.user
-                            else DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME)
+                            else DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME
+                        )
                     ),
                     settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
                     avatar_url=(
@@ -131,8 +132,10 @@ class StartupCog(TeXBotBaseCog):
         )
 
         strike_performed_manually_warning_location_similar_to_dm: bool = (
-            settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"].lower()
-            in ("dm", "dms")
+            settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"].lower() in (
+                "dm",
+                "dms",
+            )
         )
         if strike_performed_manually_warning_location_similar_to_dm:
             logger.info(

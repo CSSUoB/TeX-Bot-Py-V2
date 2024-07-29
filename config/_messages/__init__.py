@@ -37,8 +37,8 @@ class MessagesAccessor:
             raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
         if item not in self._messages:
-            INVALID_MESSAGE_ID_MESSAGE: Final[str] = (
-                self.format_invalid_message_id_message(item)
+            INVALID_MESSAGE_ID_MESSAGE: Final[str] = self.format_invalid_message_id_message(
+                item,
             )
             raise AttributeError(INVALID_MESSAGE_ID_MESSAGE)
 
@@ -52,7 +52,7 @@ class MessagesAccessor:
         except AttributeError as attribute_not_exist_error:
             key_error_message: str = item
 
-            ERROR_WAS_FROM_INVALID_KEY_NAME: Final[bool] = (
+            ERROR_WAS_FROM_INVALID_KEY_NAME: Final[bool] = bool(
                 self.format_invalid_message_id_message(item) in str(
                     attribute_not_exist_error,
                 )
@@ -83,8 +83,9 @@ class MessagesAccessor:
             # noinspection PyTypeChecker
             messages_locale_file_path: AsyncPath = await anext(
                 path
-                async for path
-                in (AsyncPath(PROJECT_ROOT) / "config/_messages/locales/").iterdir()
+                async for path in (
+                    AsyncPath(PROJECT_ROOT) / "config/_messages/locales/"
+                ).iterdir()
                 if path.stem == messages_locale_code
             )
         except StopIteration:

@@ -43,5 +43,6 @@ def _run_bot() -> NoReturn:  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2
 
     raise SystemExit(bot.EXIT_REASON.value)
 
+
 if __name__ == "__main__":
     _run_bot()

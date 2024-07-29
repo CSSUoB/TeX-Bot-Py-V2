@@ -74,14 +74,12 @@ def _selectable_required_format_message(options: Iterable[str]) -> str:
 
 
 def _custom_required_format_message(type_value: str, info_link: str | None = None) -> str:
-    return (
-        f"Must be a valid {
-            type_value.lower().replace("discord", "Discord").replace(
-                "id",
-                "ID",
-            ).replace("url", "URL").replace("dm", "DM").strip(".")
-        }{f" (see <{info_link}>)" if info_link else ""}."
-    )
+    return f"Must be a valid {
+        type_value.lower().replace("discord", "Discord").replace(
+            "id",
+            "ID",
+        ).replace("url", "URL").replace("dm", "DM").strip(".")
+    }{f" (see <{info_link}>)" if info_link else ""}."
 
 
 PROJECT_ROOT: Final[Path] = Path(__file__).parent.parent.resolve()
@@ -375,8 +373,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
         value_type_message=_selectable_required_format_message(
             (
                 str(flag_value).lower()
-                for flag_value
-                in getattr(SendIntroductionRemindersFlagType, "__args__")  # noqa: B009
+                for flag_value in getattr(SendIntroductionRemindersFlagType, "__args__")  # noqa: B009
             ),
         ),
         requires_restart_after_changed=True,

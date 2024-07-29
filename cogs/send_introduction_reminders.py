@@ -282,8 +282,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                         "hashed_member_id" in create_introduction_reminder_opt_out_member_error.message_dict  # noqa: E501
                         and any(
                             "already exists" in error
-                            for error
-                            in create_introduction_reminder_opt_out_member_error.message_dict[
+                            for error in create_introduction_reminder_opt_out_member_error.message_dict[
                                 "hashed_member_id"
                             ]
                         )

@@ -229,15 +229,13 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
 
     @classmethod
     def get_formatted_change_delay_message(cls) -> str:
-        return (
-            f"Changes could take up to {
-                (
-                    str(int(settings["CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS"] * 2.1))
-                    if (settings["CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS"] * 2.1) % 1 == 0
-                    else f"{settings["CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS"] * 2.1:.2f}"
-                )
-            } seconds to take effect."
-        )
+        return f"Changes could take up to {
+            (
+                str(int(settings["CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS"] * 2.1))
+                if (settings["CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS"] * 2.1) % 1 == 0
+                else f"{settings["CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS"] * 2.1:.2f}"
+            )
+        } seconds to take effect."
 
     @staticmethod
     async def autocomplete_get_settings_names(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
@@ -267,8 +265,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
 
         return {
             setting_name
-            for setting_name, setting_help
-            in config.CONFIG_SETTINGS_HELPS.items()
+            for setting_name, setting_help in config.CONFIG_SETTINGS_HELPS.items()
             if setting_help.default is not None
         }
 
@@ -373,18 +370,16 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         if "send-introduction-reminders:enable" in setting_name:
             return {
                 str(flag_value).lower()
-                for flag_value
-                in getattr(SendIntroductionRemindersFlagType, "__args__")  # noqa: B009
+                for flag_value in getattr(SendIntroductionRemindersFlagType, "__args__")  # noqa: B009
             }
 
         if "send-get-roles-reminders:enable" in setting_name:
             return {"true", "false"}
 
-        SETTING_NAME_IS_TIMEDELTA: Final[bool] = (
+        SETTING_NAME_IS_TIMEDELTA: Final[bool] = bool(
             any(
                 part in setting_name
-                for part
-                in (
+                for part in (
                     ":timeout-duration:",
                     ":delay:",
                     ":interval:",
@@ -448,10 +443,8 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                         in selected_timedelta_scales
                     ),
                 )
-                for _
-                in range(4)
-                for selected_timedelta_scales
-                in itertools.product(
+                for _ in range(4)
+                for selected_timedelta_scales in itertools.product(
                     *(("", timedelta_scale) for timedelta_scale in timedelta_scales),
                 )
                 if any(selected_timedelta_scales)
@@ -467,28 +460,30 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
 
             if "document" in setting_name:
                 # noinspection SpellCheckingInspection
-                return {
-                    "https://",
-                    "https://drive.google.com/file/d/",
-                    "https://docs.google.com/document/d/",
-                    "https://onedrive.live.com/edit.aspx?resid=",
-                    "https://1drv.ms/p/",
-                } | {
-                    f"https://{domain}.com/{path}"
-                    for domain, path
-                    in itertools.product(
-                        ("github", "raw.githubusercontent"),
-                        (f"{urllib.parse.quote(ctx.bot.group_short_name)}/", ""),
-                    )
-                } | {
-                    f"https://{subdomain}dropbox{domain_suffix}.com/{path}"
-                    for subdomain, domain_suffix, path
-                    in itertools.product(
-                        ("dl.", ""),
-                        ("usercontent", ""),
-                        ("shared/", "", "s/", "scl/fi/"),
-                    )
-                }
+                return (
+                    {
+                        "https://",
+                        "https://drive.google.com/file/d/",
+                        "https://docs.google.com/document/d/",
+                        "https://onedrive.live.com/edit.aspx?resid=",
+                        "https://1drv.ms/p/",
+                    }
+                    | {
+                        f"https://{domain}.com/{path}"
+                        for domain, path in itertools.product(
+                            ("github", "raw.githubusercontent"),
+                            (f"{urllib.parse.quote(ctx.bot.group_short_name)}/", ""),
+                        )
+                    }
+                    | {
+                        f"https://{subdomain}dropbox{domain_suffix}.com/{path}"
+                        for subdomain, domain_suffix, path in itertools.product(
+                            ("dl.", ""),
+                            ("usercontent", ""),
+                            ("shared/", "", "s/", "scl/fi/"),
+                        )
+                    }
+                )
 
             return {"https://"}
 
@@ -524,17 +519,13 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             return set()
 
         if ":performed-manually-warning-location" in setting_name:
-            return (
-                {"DM"}
-                | {
-                    channel.name
-                    for channel
-                    in main_guild.text_channels
-                    if channel.permissions_for(interaction_member).is_superset(
-                        discord.Permissions(send_messages=True),
-                    )
-                }
-            )
+            return {"DM"} | {
+                channel.name
+                for channel in main_guild.text_channels
+                if channel.permissions_for(interaction_member).is_superset(
+                    discord.Permissions(send_messages=True),
+                )
+            }
 
         return set()
 
@@ -720,13 +711,11 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             )
             button_interaction: discord.Interaction = await self.bot.wait_for(
                 "interaction",
-                check=lambda interaction: (
+                check=lambda interaction: bool(
                     interaction.type == discord.InteractionType.component
                     and interaction.message.id == confirmation_message.id
                     and (
-                        (committee_role in interaction.user.roles)
-                        if committee_role
-                        else True
+                        (committee_role in interaction.user.roles) if committee_role else True
                     )
                     and "custom_id" in interaction.data
                     and interaction.data["custom_id"] in {

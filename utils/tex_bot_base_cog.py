@@ -91,7 +91,8 @@ class TeXBotBaseCog(Cog):
                 if (
                     hasattr(ctx.command, "callback")
                     and not ctx.command.callback.__name__.startswith("_")
-                ) else ctx.command.qualified_name
+                )
+                else ctx.command.qualified_name
             ),
             error_code=error_code,
             message=message,
@@ -165,15 +166,13 @@ class TeXBotBaseCog(Cog):
             construct_error_message += ":warning:"
 
             if message:
-                construct_error_message += (
-                    f"\n`{
-                        re.sub(
-                            r"<([@&#]?|(@[&#])?)\d+>",
-                            lambda match: f"`{match.group(0)!s}`",
-                            message.strip(),
-                        )
-                    }`"
-                )
+                construct_error_message += f"\n`{
+                    re.sub(
+                        r"<([@&#]?|(@[&#])?)\d+>",
+                        lambda match: f"`{match.group(0)!s}`",
+                        message.strip(),
+                    )
+                }`"
 
         await responder.respond(content=construct_error_message, view=None)
 

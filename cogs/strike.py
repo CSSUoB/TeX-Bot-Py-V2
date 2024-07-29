@@ -57,7 +57,7 @@ logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 # noinspection PyTypeHints
 PossibleMuteModerationActions: TypeAlias = Literal[
-     discord.AuditLogAction.member_update
+    discord.AuditLogAction.member_update
     | discord.AuditLogAction.auto_moderation_user_communication_disabled
 ]
 
@@ -553,24 +553,22 @@ class ManualModerationCog(BaseStrikeCog):
                 view=ConfirmStrikesOutOfSyncWithBanView(),
             )
 
-            out_of_sync_ban_button_interaction: discord.Interaction = (
-                await self.bot.wait_for(
-                    "interaction",
-                    check=lambda interaction: (
-                        interaction.type == discord.InteractionType.component
-                        and (
-                            (interaction.user == applied_action_user)
-                            if not applied_action_user.bot
-                            else (committee_role in interaction.user.roles)
-                        )
-                        and interaction.channel == confirmation_message_channel
-                        and "custom_id" in interaction.data
-                        and interaction.data["custom_id"] in {
-                            "yes_out_of_sync_ban_member",
-                            "no_out_of_sync_ban_member",
-                        }
-                    ),
-                )
+            out_of_sync_ban_button_interaction: discord.Interaction = await self.bot.wait_for(
+                "interaction",
+                check=lambda interaction: (
+                    interaction.type == discord.InteractionType.component
+                    and (
+                        (interaction.user == applied_action_user)
+                        if not applied_action_user.bot
+                        else (committee_role in interaction.user.roles)
+                    )
+                    and interaction.channel == confirmation_message_channel
+                    and "custom_id" in interaction.data
+                    and interaction.data["custom_id"] in {
+                        "yes_out_of_sync_ban_member",
+                        "no_out_of_sync_ban_member",
+                    }
+                ),
             )
 
             match out_of_sync_ban_button_interaction.data["custom_id"]:  # type: ignore[index, typeddict-item]
@@ -723,7 +721,7 @@ class ManualModerationCog(BaseStrikeCog):
         async for audit_log_entry in main_guild.audit_logs(limit=5):
             FOUND_CORRECT_AUDIT_LOG_ENTRY: bool = (
                 audit_log_entry.target.id == after.id
-                and audit_log_entry.action == (discord.AuditLogAction.auto_moderation_user_communication_disabled)  # noqa: E501
+                and audit_log_entry.action == discord.AuditLogAction.auto_moderation_user_communication_disabled  # noqa: E501
             )
             if FOUND_CORRECT_AUDIT_LOG_ENTRY:
                 mute_action_type = audit_log_entry.action  # type: ignore[assignment]

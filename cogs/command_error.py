@@ -61,9 +61,9 @@ class CommandErrorCog(TeXBotBaseCog):
     @TeXBotBaseCog.listener()
     async def on_application_command_error(self, ctx: TeXBotApplicationContext, error: discord.ApplicationCommandError) -> None:  # noqa: E501
         """Log any major command errors in the logging channel & stderr."""
-        IS_FATAL: Final[bool] = (
+        IS_FATAL: Final[bool] = bool(
             isinstance(error, discord.ApplicationCommandInvokeError)
-            and (
+            and bool(
                 isinstance(error.original, RuntimeError | NotImplementedError)
                 or type(error.original) is Exception
             )

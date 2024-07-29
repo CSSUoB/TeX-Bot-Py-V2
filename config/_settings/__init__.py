@@ -71,15 +71,13 @@ class SettingsAccessor:
             raise RuntimeError(YAML_NOT_LOADED_MESSAGE)
 
         if item not in self._settings:
-            INVALID_SETTINGS_KEY_MESSAGE: Final[str] = (
-                self._get_invalid_settings_key_message(item)
+            INVALID_SETTINGS_KEY_MESSAGE: Final[str] = self._get_invalid_settings_key_message(
+                item
             )
             raise AttributeError(INVALID_SETTINGS_KEY_MESSAGE)
 
         ATTEMPTING_TO_ACCESS_BOT_TOKEN_WHEN_ALREADY_RUNNING: Final[bool] = bool(
-            "bot" in item.lower()
-            and "token" in item.lower()
-            and utils.is_running_in_async()  # noqa: COM812
+            "bot" in item.lower() and "token" in item.lower() and utils.is_running_in_async()  # noqa: COM812
         )
         if ATTEMPTING_TO_ACCESS_BOT_TOKEN_WHEN_ALREADY_RUNNING:
             TEX_BOT_ALREADY_RUNNING_MESSAGE: Final[str] = (
@@ -212,8 +210,7 @@ class SettingsAccessor:
 
         stream_handlers: set[logging.StreamHandler[TextIO]] = {
             handler
-            for handler
-            in ALL_HANDLERS
+            for handler in ALL_HANDLERS
             if (
                 isinstance(handler, type(console_logging_handler))
                 and handler.stream == console_logging_handler.stream
@@ -296,8 +293,7 @@ class SettingsAccessor:
                 and cls._most_recent_yaml["logging"].get("discord-channel", None) is not None
                 and all(
                     value == cls._most_recent_yaml["logging"]["discord-channel"].get(key, None)
-                    for key, value
-                    in discord_channel_logging_settings.items()
+                    for key, value in discord_channel_logging_settings.items()
                     if key != "log-level"
                 )  # noqa: COM812
             )
@@ -351,9 +347,7 @@ class SettingsAccessor:
         DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or cls._most_recent_yaml["logging"].get("discord-channel", None) is None
-            or discord_channel_logging_settings["log-level"] != cls._most_recent_yaml[
-                "logging"
-            ]["discord-channel"]["log-level"]  # noqa: COM812
+            or discord_channel_logging_settings["log-level"] != cls._most_recent_yaml["logging"]["discord-channel"]["log-level"]  # noqa: COM812, E501
         )
         if DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED:
             changed_settings.add("logging:discord-channel:log-level")
@@ -417,9 +411,7 @@ class SettingsAccessor:
             return set()
 
         cls._settings["_GROUP_FULL_NAME"] = (
-            group_full_name
-            if group_full_name is None
-            else group_full_name.data
+            group_full_name if group_full_name is None else group_full_name.data
         )
 
         return {"community-group:full-name"}
@@ -443,9 +435,7 @@ class SettingsAccessor:
             return set()
 
         cls._settings["_GROUP_SHORT_NAME"] = (
-            group_short_name
-            if group_short_name is None
-            else group_short_name.data
+            group_short_name if group_short_name is None else group_short_name.data
         )
 
         return {"community-group:short-name"}
@@ -460,9 +450,10 @@ class SettingsAccessor:
         PURCHASE_MEMBERSHIP_LINK_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "PURCHASE_MEMBERSHIP_LINK" not in cls._settings
-            or purchase_membership_link != cls._most_recent_yaml["community-group"][
-                "links"
-            ].get("purchase-membership", None)  # noqa: COM812
+            or purchase_membership_link != cls._most_recent_yaml["community-group"]["links"].get(  # noqa: E501
+                "purchase-membership",
+                None,
+            )  # noqa: COM812
         )
         if not PURCHASE_MEMBERSHIP_LINK_CHANGED:
             return set()
@@ -485,9 +476,10 @@ class SettingsAccessor:
         MEMBERSHIP_PERKS_LINK_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "MEMBERSHIP_PERKS_LINK" not in cls._settings
-            or membership_perks_link != cls._most_recent_yaml["community-group"][
-                "links"
-            ].get("membership-perks", None)  # noqa: COM812
+            or membership_perks_link != cls._most_recent_yaml["community-group"]["links"].get(  # noqa: E501
+                "membership-perks",
+                None,
+            )  # noqa: COM812
         )
         if not MEMBERSHIP_PERKS_LINK_CHANGED:
             return set()
@@ -510,9 +502,7 @@ class SettingsAccessor:
         MODERATION_DOCUMENT_LINK_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "MODERATION_DOCUMENT_LINK" not in cls._settings
-            or moderation_document_link != cls._most_recent_yaml["community-group"]["links"][
-                "moderation-document"
-            ]  # noqa: COM812
+            or moderation_document_link != cls._most_recent_yaml["community-group"]["links"]["moderation-document"]  # noqa: COM812, E501
         )
         if not MODERATION_DOCUMENT_LINK_CHANGED:
             return set()
@@ -531,9 +521,7 @@ class SettingsAccessor:
         MEMBERS_LIST_URL_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "MEMBERS_LIST_URL" not in cls._settings
-            or members_list_url != cls._most_recent_yaml["community-group"]["members-list"][
-                "url"
-            ]  # noqa: COM812
+            or members_list_url != cls._most_recent_yaml["community-group"]["members-list"]["url"]  # noqa: COM812, E501
         )
         if not MEMBERS_LIST_URL_CHANGED:
             return set()
@@ -552,9 +540,7 @@ class SettingsAccessor:
         MEMBERS_LIST_AUTH_SESSION_COOKIE_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "MEMBERS_LIST_AUTH_SESSION_COOKIE" not in cls._settings
-            or members_list_auth_session_cookie != cls._most_recent_yaml["community-group"][
-                "members-list"
-            ]["auth-session-cookie"]  # noqa: COM812
+            or members_list_auth_session_cookie != cls._most_recent_yaml["community-group"]["members-list"]["auth-session-cookie"]  # noqa: COM812, E501
         )
         if not MEMBERS_LIST_AUTH_SESSION_COOKIE_CHANGED:
             return set()
@@ -575,9 +561,7 @@ class SettingsAccessor:
         MEMBERS_LIST_ID_FORMAT_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "MEMBERS_LIST_ID_FORMAT" not in cls._settings
-            or members_list_id_format != cls._most_recent_yaml["community-group"][
-                "members-list"
-            ]["id-format"]  # noqa: COM812
+            or members_list_id_format != cls._most_recent_yaml["community-group"]["members-list"]["id-format"]  # noqa: COM812, E501
         )
         if not MEMBERS_LIST_ID_FORMAT_CHANGED:
             return set()
@@ -596,9 +580,7 @@ class SettingsAccessor:
         PING_COMMAND_EASTER_EGG_PROBABILITY_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "PING_COMMAND_EASTER_EGG_PROBABILITY" not in cls._settings
-            or ping_command_easter_egg_probability != cls._most_recent_yaml["commands"][
-                "ping"
-            ]["easter-egg-probability"]  # noqa: COM812
+            or ping_command_easter_egg_probability != cls._most_recent_yaml["commands"]["ping"]["easter-egg-probability"]  # noqa: COM812, E501
         )
         if not PING_COMMAND_EASTER_EGG_PROBABILITY_CHANGED:
             return set()
@@ -619,9 +601,7 @@ class SettingsAccessor:
         STATS_COMMAND_LOOKBACK_DAYS_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "STATS_COMMAND_LOOKBACK_DAYS" not in cls._settings
-            or stats_command_lookback_days != cls._most_recent_yaml["commands"][
-                "stats"
-            ]["lookback-days"]  # noqa: COM812
+            or stats_command_lookback_days != cls._most_recent_yaml["commands"]["stats"]["lookback-days"]  # noqa: COM812, E501
         )
         if not STATS_COMMAND_LOOKBACK_DAYS_CHANGED:
             return set()
@@ -642,9 +622,7 @@ class SettingsAccessor:
         STATS_COMMAND_DISPLAYED_ROLES_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "STATS_COMMAND_DISPLAYED_ROLES" not in cls._settings
-            or stats_command_displayed_roles != cls._most_recent_yaml["commands"][
-                "stats"
-            ]["displayed-roles"]  # noqa: COM812
+            or stats_command_displayed_roles != cls._most_recent_yaml["commands"]["stats"]["displayed-roles"]  # noqa: COM812, E501
         )
         if not STATS_COMMAND_DISPLAYED_ROLES_CHANGED:
             return set()
@@ -663,9 +641,7 @@ class SettingsAccessor:
         STRIKE_COMMAND_TIMEOUT_DURATION_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "STRIKE_COMMAND_TIMEOUT_DURATION" not in cls._settings
-            or strike_command_timeout_duration != cls._most_recent_yaml["commands"][
-                "strike"
-            ]["timeout-duration"]  # noqa: COM812
+            or strike_command_timeout_duration != cls._most_recent_yaml["commands"]["strike"]["timeout-duration"]  # noqa: COM812, E501
         )
         if not STRIKE_COMMAND_TIMEOUT_DURATION_CHANGED:
             return set()
@@ -684,9 +660,7 @@ class SettingsAccessor:
         STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION" not in cls._settings
-            or strike_performed_manually_warning_location != cls._most_recent_yaml["commands"][
-                "strike"
-            ]["performed-manually-warning-location"]  # noqa: COM812
+            or strike_performed_manually_warning_location != cls._most_recent_yaml["commands"]["strike"]["performed-manually-warning-location"]  # noqa: COM812, E501
         )
         if not STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_CHANGED:
             return set()
@@ -726,9 +700,7 @@ class SettingsAccessor:
         SEND_INTRODUCTION_REMINDERS_ENABLED_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "SEND_INTRODUCTION_REMINDERS_ENABLED" not in cls._settings
-            or send_introduction_reminders_enabled != cls._most_recent_yaml["reminders"][
-                "send-introduction-reminders"
-            ]["enabled"]  # noqa: COM812
+            or send_introduction_reminders_enabled != cls._most_recent_yaml["reminders"]["send-introduction-reminders"]["enabled"]  # noqa: COM812, E501
         )
         if not SEND_INTRODUCTION_REMINDERS_ENABLED_CHANGED:
             return set()
@@ -751,9 +723,7 @@ class SettingsAccessor:
         SEND_INTRODUCTION_REMINDERS_DELAY_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "SEND_INTRODUCTION_REMINDERS_DELAY" not in cls._settings
-            or send_introduction_reminders_delay != cls._most_recent_yaml["reminders"][
-                "send-introduction-reminders"
-            ]["delay"]  # noqa: COM812
+            or send_introduction_reminders_delay != cls._most_recent_yaml["reminders"]["send-introduction-reminders"]["delay"]  # noqa: COM812, E501
         )
         if not SEND_INTRODUCTION_REMINDERS_DELAY_CHANGED:
             return set()
@@ -774,9 +744,7 @@ class SettingsAccessor:
         SEND_INTRODUCTION_REMINDERS_INTERVAL_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "SEND_INTRODUCTION_REMINDERS_INTERVAL_SECONDS" not in cls._settings
-            or send_introduction_reminders_interval != cls._most_recent_yaml["reminders"][
-                "send-introduction-reminders"
-            ]["interval"]  # noqa: COM812
+            or send_introduction_reminders_interval != cls._most_recent_yaml["reminders"]["send-introduction-reminders"]["interval"]  # noqa: COM812, E501
         )
         if not SEND_INTRODUCTION_REMINDERS_INTERVAL_CHANGED:
             return set()
@@ -797,9 +765,7 @@ class SettingsAccessor:
         SEND_GET_ROLES_REMINDERS_ENABLED_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "SEND_GET_ROLES_REMINDERS_ENABLED" not in cls._settings
-            or send_get_roles_reminders_enabled != cls._most_recent_yaml["reminders"][
-                "send-get-roles-reminders"
-            ]["enabled"]  # noqa: COM812
+            or send_get_roles_reminders_enabled != cls._most_recent_yaml["reminders"]["send-get-roles-reminders"]["enabled"]  # noqa: COM812, E501
         )
         if not SEND_GET_ROLES_REMINDERS_ENABLED_CHANGED:
             return set()
@@ -823,16 +789,12 @@ class SettingsAccessor:
         SEND_GET_ROLES_REMINDERS_DELAY_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "SEND_GET_ROLES_REMINDERS_DELAY" not in cls._settings
-            or send_get_roles_reminders_delay != cls._most_recent_yaml["reminders"][
-                "send-get-roles-reminders"
-            ]["delay"]  # noqa: COM812
+            or send_get_roles_reminders_delay != cls._most_recent_yaml["reminders"]["send-get-roles-reminders"]["delay"]  # noqa: COM812, E501
         )
         if not SEND_GET_ROLES_REMINDERS_DELAY_CHANGED:
             return set()
 
-        cls._settings["SEND_GET_ROLES_REMINDERS_DELAY"] = (
-            send_get_roles_reminders_delay.data
-        )
+        cls._settings["SEND_GET_ROLES_REMINDERS_DELAY"] = send_get_roles_reminders_delay.data
 
         return {"reminders:send-get-roles-reminders:delay"}
 
@@ -846,9 +808,7 @@ class SettingsAccessor:
         SEND_GET_ROLES_REMINDERS_INTERVAL_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "SEND_GET_ROLES_REMINDERS_INTERVAL_SECONDS" not in cls._settings
-            or send_get_roles_reminders_interval != cls._most_recent_yaml["reminders"][
-                "send-get-roles-reminders"
-            ]["interval"]  # noqa: COM812
+            or send_get_roles_reminders_interval != cls._most_recent_yaml["reminders"]["send-get-roles-reminders"]["interval"]  # noqa: COM812, E501
         )
         if not SEND_GET_ROLES_REMINDERS_INTERVAL_CHANGED:
             return set()
@@ -869,9 +829,7 @@ class SettingsAccessor:
         CHECK_IF_CONFIG_CHANGED_INTERVAL_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS" not in cls._settings
-            or check_if_config_changed_interval != cls._most_recent_yaml[
-                "check-if-config-changed-interval"
-            ]  # noqa: COM812
+            or check_if_config_changed_interval != cls._most_recent_yaml["check-if-config-changed-interval"]  # noqa: COM812, E501
         )
         if not CHECK_IF_CONFIG_CHANGED_INTERVAL_CHANGED:
             return set()
@@ -989,8 +947,7 @@ class SettingsAccessor:
         if yaml_settings_tree[config_setting_name].is_sequence():
             yaml_settings_tree[config_setting_name] = [
                 sequence_value.strip()
-                for sequence_value
-                in new_config_setting_value.strip().split(",")
+                for sequence_value in new_config_setting_value.strip().split(",")
             ]
             return yaml_settings_tree
 

@@ -40,10 +40,7 @@ class LogLevelValidator(strictyaml.ScalarValidator):  # type: ignore[misc]
 
         if val not in LogLevels:
             chunk.expecting_but_found(
-                (
-                    "when expecting a valid log-level "
-                    f"(one of: '{"', '".join(LogLevels)}')"
-                ),
+                "when expecting a valid log-level " f"(one of: '{"', '".join(LogLevels)}')",
             )
             raise RuntimeError
 
