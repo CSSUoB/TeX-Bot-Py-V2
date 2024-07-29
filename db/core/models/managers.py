@@ -26,7 +26,7 @@ type Defaults = MutableMapping[str, object | Callable[[], object]] | None
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
-class BaseHashedIDManager[T_model](Manager[T_model], abc.ABC):
+class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
     """Base manager class to remove a given unhashed ID before executing a query."""
 
     use_in_migrations: bool = True
@@ -163,7 +163,7 @@ class HashedDiscordMemberManager(BaseHashedIDManager["DiscordMember"]):
         if not isinstance(raw_discord_id, int | str | None):
             raise TypeError
 
-        discord_id: int | str | None = raw_discord_id  # type: ignore[assignment]
+        discord_id: int | str | None = raw_discord_id
 
         if discord_id:
             kwargs["hashed_discord_id"] = self.model.hash_discord_id(discord_id)
@@ -185,7 +185,7 @@ class HashedDiscordMemberManager(BaseHashedIDManager["DiscordMember"]):
         if not isinstance(raw_discord_id, int | str | None):
             raise TypeError
 
-        discord_id: int | str | None = raw_discord_id  # type: ignore[assignment]
+        discord_id: int | str | None = raw_discord_id
 
         if discord_id:
             kwargs["hashed_discord_id"] = self.model.hash_discord_id(discord_id)
@@ -216,7 +216,7 @@ class RelatedDiscordMemberManager(BaseHashedIDManager["BaseDiscordMemberWrapper"
         if not isinstance(raw_discord_id, int | str | None):
             raise TypeError
 
-        discord_id: int | str | None = raw_discord_id  # type: ignore[assignment]
+        discord_id: int | str | None = raw_discord_id
 
         if discord_id:
             does_not_exist_error: ObjectDoesNotExist
@@ -246,7 +246,7 @@ class RelatedDiscordMemberManager(BaseHashedIDManager["BaseDiscordMemberWrapper"
         if not isinstance(raw_discord_id, int | str | None):
             raise TypeError
 
-        discord_id: int | str | None = raw_discord_id  # type: ignore[assignment]
+        discord_id: int | str | None = raw_discord_id
 
         if discord_id:
             does_not_exist_error: ObjectDoesNotExist
