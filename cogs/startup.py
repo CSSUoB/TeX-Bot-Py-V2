@@ -34,9 +34,9 @@ class StartupCog(TeXBotBaseCog):
     @TeXBotBaseCog.listener()
     async def on_ready(self) -> None:
         """
-        Populate the shortcut accessors of the bot after initialisation.
+        Populate the shortcut accessors of TeX-Bot after initialisation.
 
-        Shortcut accessors should only be populated once the bot is ready to make API requests.
+        Shortcut accessors should only be populated once TeX-Bot is ready to make API requests.
         """
         if settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
             discord_logging_handler: logging.Handler = DiscordHandler(
@@ -65,7 +65,7 @@ class StartupCog(TeXBotBaseCog):
         try:
             main_guild: discord.Guild | None = self.bot.main_guild
         except GuildDoesNotExistError:
-            main_guild = self.bot.get_guild(settings["DISCORD_GUILD_ID"])
+            main_guild = self.bot.get_guild(settings["_DISCORD_MAIN_GUILD_ID"])
             if main_guild:
                 self.bot.set_main_guild(main_guild)
 
@@ -75,9 +75,12 @@ class StartupCog(TeXBotBaseCog):
                     "Invite URL: %s",
                     utils.generate_invite_url(
                         self.bot.application_id,
-                        settings["DISCORD_GUILD_ID"]),
-                    )
-            logger.critical(GuildDoesNotExistError(guild_id=settings["DISCORD_GUILD_ID"]))
+                        settings["_DISCORD_MAIN_GUILD_ID"],
+                    ),
+                )
+            logger.critical(GuildDoesNotExistError(
+                guild_id=settings["_DISCORD_MAIN_GUILD_ID"]),
+            )
             await self.bot.close()
 
         if self.bot.application_id:
@@ -85,7 +88,8 @@ class StartupCog(TeXBotBaseCog):
                 "Invite URL: %s",
                 utils.generate_invite_url(
                     self.bot.application_id,
-                    settings["DISCORD_GUILD_ID"]),
+                    settings["_DISCORD_MAIN_GUILD_ID"],
+                ),
             )
 
         if not discord.utils.get(main_guild.roles, name="Committee"):
@@ -106,11 +110,11 @@ class StartupCog(TeXBotBaseCog):
         if not discord.utils.get(main_guild.text_channels, name="general"):
             logger.warning(GeneralChannelDoesNotExistError())
 
-        if settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] != "DM":
+        if settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] != "DM":
             manual_moderation_warning_message_location_exists: bool = bool(
                 discord.utils.get(
                     main_guild.text_channels,
-                    name=settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"],
+                    name=settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"],
                 ),
             )
             if not manual_moderation_warning_message_location_exists:
@@ -119,11 +123,10 @@ class StartupCog(TeXBotBaseCog):
                         "The channel %s does not exist, so cannot be used as the location "
                         "for sending manual-moderation warning messages"
                     ),
-                    repr(settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"]),
+                    repr(settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"]),
                 )
                 manual_moderation_warning_message_location_similar_to_dm: bool = (
-                    settings["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"].lower()
-                    in ("dm", "dms")
+                    settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"].lower() in ("dm", "dms")  # noqa: E501
                 )
                 if manual_moderation_warning_message_location_similar_to_dm:
                     logger.info(

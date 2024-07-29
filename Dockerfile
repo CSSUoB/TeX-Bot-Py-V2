@@ -1,4 +1,4 @@
-FROM python:3.12 as builder
+FROM python:3.12 AS builder
 
 ENV PYTHONUNBUFFERED=true \
     PYTHONDONTWRITEBYTECODE=true \
@@ -25,7 +25,7 @@ COPY poetry.lock pyproject.toml README.md ./
 
 RUN --mount=type=cache,target=$POETRY_CACHE_DIR $POETRY_HOME/bin/poetry install --without dev --no-root --no-interaction
 
-FROM python:3.12-slim as runtime
+FROM python:3.12-slim AS runtime
 
 ENV LANG=C.UTF-8 \
     VIRTUAL_ENV=/app/.venv \
@@ -38,9 +38,9 @@ WORKDIR /app
 COPY LICENSE .en[v] config.py main.py messages.json ./
 RUN chmod +x main.py
 
-COPY cogs/ ./cogs/
-COPY db/ ./db/
-COPY utils/ ./utils/
 COPY exceptions/ ./exceptions/
+COPY utils/ ./utils/
+COPY db/ ./db/
+COPY cogs/ ./cogs/
 
 ENTRYPOINT ["python", "-m", "main"]
