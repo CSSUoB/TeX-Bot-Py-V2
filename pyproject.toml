@@ -39,7 +39,7 @@ mplcyberpunk = "^0.7"
 python-logging-discord-handler = "^0.1"
 classproperties = {git = "https://github.com/hottwaj/classproperties.git"}
 asyncstdlib = "~3.12"
-setuptools = "^71.1"
+setuptools = "^70.3"
 strictyaml = "^1.7"
 python-slugify = "^8.0"
 aiopath = "^0.7"
