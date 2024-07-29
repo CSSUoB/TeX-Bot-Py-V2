@@ -20,7 +20,8 @@ from logging import Logger
 from typing import Concatenate, Final
 
 from exceptions import GuildDoesNotExistError, StrikeTrackingError
-from utils.tex_bot_base_cog import TeXBotBaseCog
+
+from .tex_bot_base_cog import TeXBotBaseCog
 
 type WrapperInputFunc[**P, T] = (
     Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T]]
@@ -48,11 +49,13 @@ class ErrorCaptureDecorators:
 
         The raised exception is then suppressed.
         """  # noqa: D401
+
         @functools.wraps(func)
-        async def wrapper(self: TeXBotBaseCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:  # type: ignore[misc] # noqa: E501
+        async def wrapper(self: object, /, *args: P.args, **kwargs: P.kwargs) -> T | None:  # type: ignore[misc]
             if not isinstance(self, TeXBotBaseCog):
-                INVALID_METHOD_TYPE_MESSAGE: Final[str] = (  # type: ignore[unreachable]
-                    f"Parameter {self.__name__!r} of any 'capture_error' decorator "
+                INVALID_METHOD_TYPE_MESSAGE: Final[str] = (
+                    f"Parameter '{getattr(self, "__name__", None) or "self"}' "
+                    "of any 'capture_error decorator "
                     f"must be an instance of {TeXBotBaseCog.__name__!r}/one of its subclasses."
                 )
                 raise TypeError(INVALID_METHOD_TYPE_MESSAGE)
@@ -61,6 +64,7 @@ class ErrorCaptureDecorators:
             except error_type as error:
                 close_func(error)
                 await self.bot.close()
+
         return wrapper  # type: ignore[return-value]
 
     @staticmethod

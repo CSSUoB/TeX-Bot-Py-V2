@@ -69,11 +69,11 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         reminders are sent.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
-        guild: discord.Guild = self.bot.main_guild
+        main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
         # noinspection PyUnusedLocal
-        roles_channel_mention: str = "#roles"
+        roles_channel_mention: str = "**`#roles`**"
         with contextlib.suppress(RolesChannelDoesNotExistError):
             roles_channel_mention = (await self.bot.roles_channel).mention
 
@@ -112,7 +112,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         )
 
         member: discord.Member
-        for member in guild.members:
+        for member in main_guild.members:
             member_requires_opt_in_roles_reminder: bool = (
                 not member.bot
                 and utils.is_member_inducted(member)
@@ -136,7 +136,9 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 # noinspection PyTypeChecker
                 guest_role_received_time = await anext(
                     log.created_at
-                    async for log in guild.audit_logs(action=AuditLogAction.member_role_update)
+                    async for log in main_guild.audit_logs(
+                        action=AuditLogAction.member_role_update,
+                    )
                     if (
                         log.target == member
                         and guest_role not in log.before.roles
@@ -151,7 +153,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 if time_since_role_received <= settings["SEND_GET_ROLES_REMINDERS_DELAY"]:
                     continue
 
-            if member not in guild.members:  # HACK: Caching errors can cause the member to no longer be part of the guild at this point, so this check must be performed before sending that member a message # noqa: FIX004
+            if member not in main_guild.members:  # HACK: Caching errors can cause the member to no longer be part of the guild at this point, so this check must be performed before sending that member a message # noqa: FIX004
                 logger.info(
                     (
                         "Member with ID: %s does not need to be sent a reminder "

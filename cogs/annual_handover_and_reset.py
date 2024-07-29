@@ -26,7 +26,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="committee-handover",
-        description="Initiates the annual Discord handover procedure for new committee",
+        description="Initiates the annual Discord handover procedure for new committee.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -171,7 +171,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="annual-roles-reset",
-        description="Removes the @Member role and academic year roles from all users",
+        description="Removes the @Member role and academic year roles from all users.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
