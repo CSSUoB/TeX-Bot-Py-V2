@@ -65,8 +65,8 @@ class CommandErrorCog(TeXBotBaseCog):
             isinstance(error, discord.ApplicationCommandInvokeError)
             and bool(
                 isinstance(error.original, RuntimeError | NotImplementedError)
-                or type(error.original) is Exception
-            )
+                or type(error.original) is Exception  # noqa: COM812
+            )  # noqa: COM812
         )
 
         error_code: str | None = None
@@ -116,7 +116,11 @@ class CommandErrorCog(TeXBotBaseCog):
                         message_part
                         for message_part in (
                             error.original.ERROR_CODE,
-                            f"({command_name})" if command_name in self.ERROR_ACTIVITIES else "",
+                            (
+                                f"({command_name})"
+                                if command_name in self.ERROR_ACTIVITIES
+                                else ""
+                            ),
                             str(error.original).rstrip(".:"),
                         )
                         if message_part

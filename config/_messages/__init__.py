@@ -52,10 +52,8 @@ class MessagesAccessor:
         except AttributeError as attribute_not_exist_error:
             key_error_message: str = item
 
-            ERROR_WAS_FROM_INVALID_KEY_NAME: Final[bool] = bool(
-                self.format_invalid_message_id_message(item) in str(
-                    attribute_not_exist_error,
-                )
+            ERROR_WAS_FROM_INVALID_KEY_NAME: Final[bool] = self.format_invalid_message_id_message(item) in str(  # noqa: E501
+                attribute_not_exist_error,
             )
             if ERROR_WAS_FROM_INVALID_KEY_NAME:
                 key_error_message = str(attribute_not_exist_error)

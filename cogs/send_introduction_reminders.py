@@ -278,16 +278,14 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                         discord_id=interaction_member.id,
                     )
                 except ValidationError as create_introduction_reminder_opt_out_member_error:
-                    error_is_already_exists: bool = (
+                    ERROR_IS_ALREADY_EXISTS: Final[bool] = bool(
                         "hashed_member_id" in create_introduction_reminder_opt_out_member_error.message_dict  # noqa: E501
                         and any(
                             "already exists" in error
-                            for error in create_introduction_reminder_opt_out_member_error.message_dict[
-                                "hashed_member_id"
-                            ]
-                        )
+                            for error in create_introduction_reminder_opt_out_member_error.message_dict["hashed_member_id"]  # noqa: E501
+                        )  # noqa: COM812
                     )
-                    if not error_is_already_exists:
+                    if not ERROR_IS_ALREADY_EXISTS:
                         raise
 
                 button.style = discord.ButtonStyle.green

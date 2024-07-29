@@ -71,7 +71,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
             )
             and not channel.permissions_for(guest_role).is_superset(
                 discord.Permissions(view_channel=True),
-            )
+            )  # noqa: COM812
         )
         if CHANNEL_NEEDS_COMMITTEE_ARCHIVING:
             await channel.set_permissions(
@@ -97,7 +97,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
             return
 
         CHANNEL_NEEDS_NORMAL_ARCHIVING: Final[bool] = channel.permissions_for(
-            guest_role
+            guest_role,
         ).is_superset(
             discord.Permissions(view_channel=True),
         )

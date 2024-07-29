@@ -400,7 +400,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                     "-delay",
                     "-interval",
                 ),
-            )
+            )  # noqa: COM812
         )
         if SETTING_NAME_IS_TIMEDELTA:
             timedelta_scales: MutableSequence[str] = ["s", "m"]
@@ -721,7 +721,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                     and interaction.data["custom_id"] in {
                         "shutdown_confirm",
                         "shutdown_cancel",
-                    }
+                    }  # noqa: COM812
                 ),
             )
 

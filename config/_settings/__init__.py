@@ -72,7 +72,7 @@ class SettingsAccessor:
 
         if item not in self._settings:
             INVALID_SETTINGS_KEY_MESSAGE: Final[str] = self._get_invalid_settings_key_message(
-                item
+                item,
             )
             raise AttributeError(INVALID_SETTINGS_KEY_MESSAGE)
 
@@ -476,7 +476,7 @@ class SettingsAccessor:
         MEMBERSHIP_PERKS_LINK_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "MEMBERSHIP_PERKS_LINK" not in cls._settings
-            or membership_perks_link != cls._most_recent_yaml["community-group"]["links"].get(  # noqa: E501
+            or membership_perks_link != cls._most_recent_yaml["community-group"]["links"].get(
                 "membership-perks",
                 None,
             )  # noqa: COM812
