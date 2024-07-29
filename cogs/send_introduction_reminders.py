@@ -63,7 +63,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             self.OptOutIntroductionRemindersView(self.bot),
         )
 
-    @tasks.loop(**settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"])  # type: ignore[misc]
+    @tasks.loop(**settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"])
     @functools.partial(
         ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExistError,
