@@ -7,6 +7,7 @@ __all__: Sequence[str] = ("EditMessageCommandCog",)
 
 import logging
 import re
+from collections.abc import Set
 from logging import Logger
 
 import discord
@@ -25,34 +26,30 @@ logger: Logger = logging.getLogger("TeX-Bot")
 
 class EditMessageCommandCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
-    """Cog class that defines the "/editmessage" command and its call-back method."""
+    """Cog class that defines the "/edit-message" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+    async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable channels.
 
-        The list of available selectable channels is unique to each member, and is used in any
+        The list of available selectable channels is unique to each member and is used in any
         of the "edit-message" slash-command options that have a channel input-type.
         """
         if not ctx.interaction.user:
             return set()
 
         try:
-            interaction_user: discord.Member = await ctx.bot.get_main_guild_member(
-                ctx.interaction.user,
-            )
+            if not await ctx.bot.check_user_has_committee_role(ctx.interaction.user):
+                return set()
         except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
-            return set()
-
-        if not await ctx.bot.check_user_has_committee_role(interaction_user):
             return set()
 
         return await TeXBotBaseCog.autocomplete_get_text_channels(ctx)
 
     # noinspection SpellCheckingInspection
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="editmessage",
+        name="edit-message",
         description="Edits a message sent by TeX-Bot to the value supplied.",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
@@ -92,7 +89,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
-        if not re.match(r"\A\d{17,20}\Z", str_channel_id):
+        if not re.fullmatch(r"\A\d{17,20}\Z", str_channel_id):
             await self.command_send_error(
                 ctx,
                 message=f"{str_channel_id!r} is not a valid channel ID.",
@@ -101,7 +98,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
 
         channel_id: int = int(str_channel_id)
 
-        if not re.match(r"\A\d{17,20}\Z", str_message_id):
+        if not re.fullmatch(r"\A\d{17,20}\Z", str_message_id):
             await self.command_send_error(
                 ctx,
                 message=f"{str_message_id!r} is not a valid message ID.",
@@ -117,7 +114,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         if not channel:
             await self.command_send_error(
                 ctx,
-                message=f"Text channel with ID \"{channel_id}\" does not exist.",
+                message=f"Text channel with ID '{channel_id}' does not exist.",
             )
             return
 
@@ -126,7 +123,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         except discord.NotFound:
             await self.command_send_error(
                 ctx,
-                message=f"Message with ID \"{message_id}\" does not exist.",
+                message=f"Message with ID '{message_id}' does not exist.",
             )
             return
 

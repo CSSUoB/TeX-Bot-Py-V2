@@ -18,11 +18,11 @@ logger: Logger = logging.getLogger("TeX-Bot")
 
 class WriteRolesCommandCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
-    """Cog class that defines the "/writeroles" command and its call-back method."""
+    """Cog class that defines the "/write-roles" command and its call-back method."""
 
     # noinspection SpellCheckingInspection
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="writeroles",
+        name="write-roles",
         description="Populates #roles with the correct messages.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
