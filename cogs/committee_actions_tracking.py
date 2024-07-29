@@ -68,7 +68,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             return {
                 discord.OptionChoice(
                     name=f"{action.description} ({action.status})",
-                    value=str(action.id),  # type: ignore[attr-defined]
+                    value=str(action.id),
                 )
                 for action in all_actions
             }
@@ -81,7 +81,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         ]
 
         return {
-            discord.OptionChoice(name=action.description, value=str(action.id))  # type: ignore[attr-defined]
+            discord.OptionChoice(name=action.description, value=str(action.id))
             for action in filtered_user_actions
         }
 
