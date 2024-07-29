@@ -28,16 +28,17 @@ if TYPE_CHECKING:
 
 
 P = ParamSpec("P")
-T = TypeVar("T")
+T_ret = TypeVar("T_ret")
+T_cog = TypeVar("T_cog", bound=TeXBotBaseCog)
 
 if TYPE_CHECKING:
     WrapperInputFunc: TypeAlias = (
-        Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T]]
-        | Callable[P, Coroutine[object, object, T]]
+        Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T_ret]]
+        | Callable[P, Coroutine[object, object, T_ret]]
     )
-    WrapperOutputFunc: TypeAlias = Callable[P, Coroutine[object, object, T | None]]
+    WrapperOutputFunc: TypeAlias = Callable[P, Coroutine[object, object, T_ret | None]]
     DecoratorInputFunc: TypeAlias = (
-        Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T]]
+        Callable[Concatenate[T_cog, P], Coroutine[object, object, T_ret]]
     )
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
@@ -51,7 +52,7 @@ class ErrorCaptureDecorators:
     """
 
     @staticmethod
-    def capture_error_and_close(func: "DecoratorInputFunc[P, T]", error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> "WrapperOutputFunc[P, T]":  # noqa: E501
+    def capture_error_and_close(func: "DecoratorInputFunc[T_cog, P, T_ret]", error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> "WrapperOutputFunc[P, T_ret]":  # noqa: E501
         """
         Decorator to send an error message to the user when the given exception type is raised.
 
@@ -59,7 +60,7 @@ class ErrorCaptureDecorators:
         """  # noqa: D401
 
         @functools.wraps(func)
-        async def wrapper(self: object, /, *args: P.args, **kwargs: P.kwargs) -> T | None:  # type: ignore[misc]
+        async def wrapper(self: object, /, *args: P.args, **kwargs: P.kwargs) -> T_ret | None:  # type: ignore[misc]
             if not isinstance(self, TeXBotBaseCog):
                 INVALID_METHOD_TYPE_MESSAGE: Final[str] = (
                     f"Parameter '{getattr(self, "__name__", None) or "self"}' "
@@ -87,7 +88,7 @@ class ErrorCaptureDecorators:
         logger.warning("Critical errors are likely to lead to untracked moderation actions")
 
 
-def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T]") -> "WrapperOutputFunc[P, T]":  # noqa: E501
+def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T_ret]") -> "WrapperOutputFunc[P, T_ret]":  # noqa: E501
     """
     Decorator to send an error message to the Discord user when a GuildDoesNotExist is raised.
 
@@ -100,7 +101,7 @@ def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T]") -> "Wrapp
     )
 
 
-def capture_strike_tracking_error(func: "WrapperInputFunc[P, T]") -> "WrapperOutputFunc[P, T]":
+def capture_strike_tracking_error(func: "WrapperInputFunc[P, T_ret]") -> "WrapperOutputFunc[P, T_ret]":
     """
     Decorator to send an error message to the user when a StrikeTrackingError is raised.
 
