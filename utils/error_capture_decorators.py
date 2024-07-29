@@ -85,7 +85,7 @@ def capture_guild_does_not_exist_error[**P, T_ret](func: WrapperInputFunc[P, T_r
     )
 
 
-def capture_strike_tracking_error[**P, T_ret](func: WrapperInputFunc[P, T_ret]) -> WrapperOutputFunc[P, T_ret]:
+def capture_strike_tracking_error[**P, T_ret](func: WrapperInputFunc[P, T_ret]) -> WrapperOutputFunc[P, T_ret]:  # noqa: E501
     """
     Decorator to send an error message to the user when a StrikeTrackingError is raised.
 

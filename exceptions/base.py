@@ -52,7 +52,7 @@ class BaseTeXBotError(BaseException, abc.ABC):
         return formatted
 
 
-class BaseErrorWithErrorCode(BaseTeXBotError, abc.ABC):
+class BaseErrorWithErrorCode(BaseTeXBotError, abc.ABC):  # noqa: N818
     """Base class for exception errors that have an error code."""
 
     # noinspection PyMethodParameters,PyPep8Naming

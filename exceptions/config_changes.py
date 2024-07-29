@@ -26,7 +26,7 @@ class ImproperlyConfiguredError(BaseTeXBotError, Exception):
         return "One or more provided environment variable values are invalid."
 
 
-class RestartRequiredDueToConfigChange(BaseTeXBotError, Exception):
+class RestartRequiredDueToConfigChange(BaseTeXBotError, Exception):  # noqa: N818
     """Exception class to raise when a restart is required to apply config changes."""
 
     # noinspection PyMethodParameters,PyPep8Naming

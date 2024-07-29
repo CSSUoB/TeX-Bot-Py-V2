@@ -100,21 +100,21 @@ class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
         return await super().acreate(**(await self._aremove_unhashed_id_from_kwargs(kwargs)))
 
     @override
-    def get_or_create(self, defaults: Defaults = None, **kwargs: object) -> tuple[T_model, bool]:  # noqa: E501
+    def get_or_create(self, defaults: Defaults = None, **kwargs: object) -> tuple[T_model, bool]:  # type: ignore[override]  # noqa: E501
         return super().get_or_create(
             defaults=defaults,
             **self._perform_remove_unhashed_id_from_kwargs(kwargs),
         )
 
     @override
-    async def aget_or_create(self, defaults: Defaults = None, **kwargs: object) -> tuple[T_model, bool]:  # noqa: E501
+    async def aget_or_create(self, defaults: Defaults = None, **kwargs: object) -> tuple[T_model, bool]:  # type: ignore[override]  # noqa: E501
         return await super().aget_or_create(
             defaults=defaults,
             **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
         )
 
     @override
-    def update_or_create(self, defaults: Defaults = None, create_defaults: Defaults = None, **kwargs: object) -> tuple[T_model, bool]:  # noqa: E501
+    def update_or_create(self, defaults: Defaults = None, create_defaults: Defaults = None, **kwargs: object) -> tuple[T_model, bool]:  # type: ignore[override]  # noqa: E501
         return super().get_or_create(
             defaults=defaults,
             create_defaults=create_defaults,
@@ -123,7 +123,7 @@ class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
 
     # noinspection SpellCheckingInspection
     @override
-    async def aupdate_or_create(self, defaults: Defaults = None, create_defaults: Defaults = None, **kwargs: object) -> tuple[T_model, bool]:  # noqa: E501
+    async def aupdate_or_create(self, defaults: Defaults = None, create_defaults: Defaults = None, **kwargs: object) -> tuple[T_model, bool]:  # type: ignore[override]  # noqa: E501
         return await super().aupdate_or_create(
             defaults=defaults,
             create_defaults=create_defaults,

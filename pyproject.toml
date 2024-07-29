@@ -81,6 +81,7 @@ warn_return_any = true
 no_implicit_reexport = true
 strict_equality = true
 warn_unreachable = true
+enable_incomplete_feature = "NewGenericSyntax"
 
 [[tool.mypy.overrides]]
 module = [
@@ -160,7 +161,6 @@ select = [
 ]
 fixable = ["I001", "TCH", "F401", "COM812"]
 ignore = [
-    "N818",
     "N806",
     "D203",
     "D212",
@@ -170,7 +170,6 @@ ignore = [
     "TD002",
     "TD003",
     "S311",
-    "UP040",  # NOTE: Mypy does not currently support PEP 695 type aliases, so they should not be used
     "PT009",
     "PT027",
 ]
