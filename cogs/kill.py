@@ -89,19 +89,25 @@ class KillCommandCog(TeXBotBaseCog):
             ),
         )
 
-        if button_interaction.data["custom_id"] == "shutdown_confirm":  # type: ignore[index, typeddict-item]
-            await confirmation_message.edit(
-                content="My battery is low and it's getting dark...",
-                view=None,
-            )
-            await self.bot.perform_kill_and_close(initiated_by_user=ctx.interaction.user)
+        match button_interaction.data["custom_id"]:  # type: ignore[index, typeddict-item]
+            case "shutdown_confirm":
+                await confirmation_message.edit(
+                    content="My battery is low and it's getting dark...",
+                    view=None,
+                )
+                await self.bot.perform_kill_and_close(
+                    initiated_by_user=ctx.interaction.user,
+                )
 
-        if button_interaction.data["custom_id"] == "shutdown_cancel":  # type: ignore[index, typeddict-item]
-            await confirmation_message.edit(
-                content="Shutdown has been cancelled.",
-                view=None,
-            )
-            logger.info("Manual shutdown cancelled by %s.", ctx.interaction.user)
-            return
+            case "shutdown_cancel":
+                await confirmation_message.edit(
+                    content="Shutdown has been cancelled.",
+                    view=None,
+                )
+                logger.info(
+                    "Manual shutdown cancelled by %s.",
+                    ctx.interaction.user,
+                )
 
-        raise ValueError
+            case _:
+                raise ValueError

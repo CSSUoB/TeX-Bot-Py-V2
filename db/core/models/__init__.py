@@ -226,9 +226,7 @@ class DiscordReminder(BaseDiscordMemberWrapper):
     _channel_type = models.IntegerField(
         "Discord Channel Type of the channel that the reminder needs to be sent in",
         choices=[
-            (channel_type.value, channel_type.name)
-            for channel_type
-            in discord.ChannelType
+            (channel_type.value, channel_type.name) for channel_type in discord.ChannelType
         ],
         null=True,
         blank=True,

@@ -5,11 +5,12 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("ArchiveCommandCog",)
 
 
+import functools
 import logging
 import re
 from collections.abc import Set
 from logging import Logger
-from typing import Final
+from typing import Final, Protocol
 
 import discord
 
@@ -24,6 +25,10 @@ from utils import (
 )
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
+
+
+class _SetPermissionsFunc(Protocol):
+    async def __call__(self, channel: AllChannelTypes) -> None: ...
 
 
 class ArchiveCommandCog(TeXBotBaseCog):
@@ -53,12 +58,85 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
         return {
             discord.OptionChoice(name=category.name, value=str(category.id))
-            for category
-            in main_guild.categories
+            for category in main_guild.categories
             if category.permissions_for(interaction_user).is_superset(
                 discord.Permissions(send_messages=True, view_channel=True),
             )
         }
+
+    async def _set_permissions(self, channel: AllChannelTypes, ctx: TeXBotApplicationContext, interaction_member: discord.Member, *, committee_role: discord.Role, guest_role: discord.Role, member_role: discord.Role, archivist_role: discord.Role, everyone_role: discord.Role) -> None:  # noqa: PLR0913,E501
+        CHANNEL_NEEDS_COMMITTEE_ARCHIVING: Final[bool] = bool(
+            channel.permissions_for(committee_role).is_superset(
+                discord.Permissions(view_channel=True),
+            )
+            and not channel.permissions_for(guest_role).is_superset(
+                discord.Permissions(view_channel=True),
+            )  # noqa: COM812
+        )
+        if CHANNEL_NEEDS_COMMITTEE_ARCHIVING:
+            await channel.set_permissions(
+                everyone_role,
+                reason=f"{interaction_member.display_name} used \"/archive\".",
+                view_channel=False,
+            )
+            await channel.set_permissions(
+                guest_role,
+                overwrite=None,
+                reason=f"{interaction_member.display_name} used \"/archive\".",
+            )
+            await channel.set_permissions(
+                member_role,
+                overwrite=None,
+                reason=f"{interaction_member.display_name} used \"/archive\".",
+            )
+            await channel.set_permissions(
+                committee_role,
+                overwrite=None,
+                reason=f"{interaction_member.display_name} used \"/archive\".",
+            )
+            return
+
+        CHANNEL_NEEDS_NORMAL_ARCHIVING: Final[bool] = channel.permissions_for(
+            guest_role,
+        ).is_superset(
+            discord.Permissions(view_channel=True),
+        )
+        if CHANNEL_NEEDS_NORMAL_ARCHIVING:
+            await channel.set_permissions(
+                everyone_role,
+                reason=f"{interaction_member.display_name} used \"/archive\".",
+                view_channel=False,
+            )
+            await channel.set_permissions(
+                guest_role,
+                overwrite=None,
+                reason=f"{interaction_member.display_name} used \"/archive\".",
+            )
+            await channel.set_permissions(
+                member_role,
+                overwrite=None,
+                reason=f"{interaction_member.display_name} used \"/archive\".",
+            )
+            await channel.set_permissions(
+                committee_role,
+                reason=f"{interaction_member.display_name} used \"/archive\".",
+                view_channel=False,
+            )
+            await channel.set_permissions(
+                archivist_role,
+                reason=f"{interaction_member.display_name} used \"/archive\".",
+                view_channel=True,
+            )
+            return
+
+        await self.command_send_error(
+            ctx,
+            message=f"Channel {channel.mention} had invalid permissions",
+        )
+        logger.error(
+            "Channel %s had invalid permissions, so could not be archived.",
+            channel.name,
+        )
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="archive",
@@ -78,8 +156,8 @@ class ArchiveCommandCog(TeXBotBaseCog):
         """
         Definition & callback response of the "archive" command.
 
-        The "archive" command hides a given category from view of casual members unless they
-        have the "Archivist" role.
+        The "archive" command hides a given category from the view of casual members
+        unless they have the "Archivist" role.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
@@ -120,81 +198,22 @@ class ArchiveCommandCog(TeXBotBaseCog):
             )
             return
 
+        set_permissions_func: _SetPermissionsFunc = functools.partial(
+            self._set_permissions,
+            ctx=ctx,
+            interaction_member=interaction_member,
+            committee_role=committee_role,
+            guest_role=guest_role,
+            member_role=member_role,
+            archivist_role=archivist_role,
+            everyone_role=everyone_role,
+        )
+
+        # noinspection PyUnreachableCode
         channel: AllChannelTypes
         for channel in category.channels:
             try:
-                CHANNEL_NEEDS_COMMITTEE_ARCHIVING: bool = (
-                    channel.permissions_for(committee_role).is_superset(
-                        discord.Permissions(view_channel=True),
-                    ) and not channel.permissions_for(guest_role).is_superset(
-                        discord.Permissions(view_channel=True),
-                    )
-                )
-                CHANNEL_NEEDS_NORMAL_ARCHIVING: bool = (
-                    channel.permissions_for(guest_role).is_superset(
-                        discord.Permissions(view_channel=True),
-                    )
-                )
-                if CHANNEL_NEEDS_COMMITTEE_ARCHIVING:
-                    await channel.set_permissions(
-                        everyone_role,
-                        reason=f"{interaction_member.display_name} used \"/archive\".",
-                        view_channel=False,
-                    )
-                    await channel.set_permissions(
-                        guest_role,
-                        overwrite=None,
-                        reason=f"{interaction_member.display_name} used \"/archive\".",
-                    )
-                    await channel.set_permissions(
-                        member_role,
-                        overwrite=None,
-                        reason=f"{interaction_member.display_name} used \"/archive\".",
-                    )
-                    await channel.set_permissions(
-                        committee_role,
-                        overwrite=None,
-                        reason=f"{interaction_member.display_name} used \"/archive\".",
-                    )
-
-                elif CHANNEL_NEEDS_NORMAL_ARCHIVING:
-                    await channel.set_permissions(
-                        everyone_role,
-                        reason=f"{interaction_member.display_name} used \"/archive\".",
-                        view_channel=False,
-                    )
-                    await channel.set_permissions(
-                        guest_role,
-                        overwrite=None,
-                        reason=f"{interaction_member.display_name} used \"/archive\".",
-                    )
-                    await channel.set_permissions(
-                        member_role,
-                        overwrite=None,
-                        reason=f"{interaction_member.display_name} used \"/archive\".",
-                    )
-                    await channel.set_permissions(
-                        committee_role,
-                        reason=f"{interaction_member.display_name} used \"/archive\".",
-                        view_channel=False,
-                    )
-                    await channel.set_permissions(
-                        archivist_role,
-                        reason=f"{interaction_member.display_name} used \"/archive\".",
-                        view_channel=True,
-                    )
-
-                else:
-                    await self.command_send_error(
-                        ctx,
-                        message=f"Channel {channel.mention} had invalid permissions",
-                    )
-                    logger.error(
-                        "Channel %s had invalid permissions, so could not be archived.",
-                        channel.name,
-                    )
-                    return
-
+                await set_permissions_func(channel=channel)
             except discord.Forbidden:
                 await self.command_send_error(
                     ctx,

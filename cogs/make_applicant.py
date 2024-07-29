@@ -107,20 +107,17 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
         except (GuildDoesNotExistError, ApplicantRoleDoesNotExistError):
             return set()
 
-        members: set[discord.Member] = {
-            member
+        return {
+            discord.OptionChoice(
+                name=(
+                    f"@{member.name}"
+                    if not ctx.value or ctx.value.startswith("@")
+                    else member.name
+                ),
+                value=str(member.id),
+            )
             for member in main_guild.members
             if not member.bot and applicant_role not in member.roles
-        }
-
-        if not ctx.value or ctx.value.startswith("@"):
-            return {
-                discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
-                for member in members
-            }
-
-        return {
-            discord.OptionChoice(name=member.name, value=str(member.id)) for member in members
         }
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -146,7 +143,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
         """
         member_id_not_integer_error: ValueError
         try:
-            applicant_member: discord.Member = await self.bot.get_member_from_str_id(
+            applicant_member: discord.Member = await self.bot.get_main_guild_member(
                 str_applicant_member_id,
             )
         except ValueError as member_id_not_integer_error:
@@ -184,7 +181,7 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
         "Applicant" role and removes the "Guest" role if they have it.
         """
         try:
-            member: discord.Member = await self.bot.get_member_from_str_id(
+            member: discord.Member = await self.bot.get_main_guild_member(
                 str(message.author.id),
             )
         except ValueError:

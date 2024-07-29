@@ -9,6 +9,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = (
     "ArchiveCommandCog",
+    "ConfigChangeCommandsCog",
     "GetTokenAuthorisationCommandCog",
     "CommandErrorCog",
     "DeleteAllCommandsCog",
@@ -50,6 +51,7 @@ from .annual_handover_and_reset import (
     CommitteeHandoverCommandCog,
 )
 from .archive import ArchiveCommandCog
+from .change_config import CheckConfigFileChangedTaskCog, ConfigChangeCommandsCog
 from .command_error import CommandErrorCog
 from .delete_all import DeleteAllCommandsCog
 from .edit_message import EditMessageCommandCog
@@ -84,6 +86,8 @@ def setup(bot: TeXBot) -> None:
     cogs: Iterable[type[TeXBotBaseCog]] = (
         ArchiveCommandCog,
         GetTokenAuthorisationCommandCog,
+        CheckConfigFileChangedTaskCog,
+        ConfigChangeCommandsCog,
         CommandErrorCog,
         DeleteAllCommandsCog,
         EditMessageCommandCog,

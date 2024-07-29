@@ -3,6 +3,9 @@
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
+    "GenericResponderComponent",
+    "SenderResponseComponent",
+    "EditorResponseComponent",
     "MessageSavingSenderComponent",
     "ChannelMessageSender",
     "ResponseMessageSender",
@@ -16,6 +19,72 @@ import discord
 from discord.ui import View
 
 from .tex_bot_contexts import TeXBotApplicationContext
+
+
+# noinspection PyPep8Naming
+class _VIEW_NOT_PROVIDED:  # noqa: N801
+    pass
+
+
+class GenericResponderComponent(abc.ABC):
+    """Abstract protocol definition of a component that responds in some way."""
+
+    @override
+    def __init__(self, interaction: discord.Interaction) -> None:
+        self.interaction: discord.Interaction = interaction
+
+        super().__init__()
+
+    @abc.abstractmethod
+    async def respond(self, content: str, *, view: View | None | type[_VIEW_NOT_PROVIDED] = _VIEW_NOT_PROVIDED) -> None:  # noqa: E501
+        """Respond in some way to the user with the given content & view."""
+
+
+class SenderResponseComponent(GenericResponderComponent):
+    """
+    Concrete definition of a message-sending response component.
+
+    Defines the way to send a provided message content & optional view.
+    """
+
+    @override
+    def __init__(self, interaction: discord.Interaction, *, ephemeral: bool) -> None:
+        self.ephemeral: bool = ephemeral
+
+        super().__init__(interaction=interaction)
+
+    @override
+    async def respond(self, content: str, *, view: View | None | type[_VIEW_NOT_PROVIDED] = _VIEW_NOT_PROVIDED) -> None:  # noqa: E501
+        if view is _VIEW_NOT_PROVIDED:
+            await self.interaction.respond(content=content, ephemeral=self.ephemeral)
+            return
+
+        if view is not None and not isinstance(view, View):
+            raise TypeError
+
+        await self.interaction.respond(
+            content=content,
+            view=view,
+            ephemeral=self.ephemeral,
+        )
+
+
+class EditorResponseComponent(GenericResponderComponent):
+    """
+    Concrete definition of a message editing response component.
+
+    Defines the way to edit a previous message to the given content & optional view.
+    """
+
+    @override
+    async def respond(self, content: str, *, view: View | None | type[_VIEW_NOT_PROVIDED] = _VIEW_NOT_PROVIDED) -> None:  # noqa: E501
+        if view is _VIEW_NOT_PROVIDED:
+            await self.interaction.edit_original_response(content=content)
+
+        if view is not None and not isinstance(view, View):
+            raise TypeError
+
+        await self.interaction.edit_original_response(content=content, view=view)
 
 
 class MessageSavingSenderComponent(abc.ABC):

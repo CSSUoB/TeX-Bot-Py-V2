@@ -20,7 +20,7 @@ from typing import Final, Literal
 
 import discord
 
-from config import settings
+from config import messages, settings
 from db.core.models import IntroductionReminderOptOutMember
 from exceptions import (
     ApplicantRoleDoesNotExistError,
@@ -116,11 +116,19 @@ class InductSendMessageCog(TeXBotBaseCog):
                 await after.send(
                     f"You can also get yourself an annual membership "
                     f"to {self.bot.group_full_name} for only £5! "
-                    f"Just head to {settings["PURCHASE_MEMBERSHIP_URL"]}. "
+                    f"{
+                        f"Just head to {settings["PURCHASE_MEMBERSHIP_LINK"]}. "
+                        if settings["PURCHASE_MEMBERSHIP_LINK"]
+                        else ""
+                    }"
                     "You'll get awesome perks like a free T-shirt:shirt:, "
                     "access to member only events:calendar_spiral: and a cool green name on "
                     f"the {self.bot.group_short_name} Discord server:green_square:! "
-                    f"Checkout all the perks at {settings["MEMBERSHIP_PERKS_URL"]}",
+                    f"{
+                        f"Checkout all the perks at {settings["MEMBERSHIP_PERKS_LINK"]}"
+                        if settings["MEMBERSHIP_PERKS_LINK"]
+                        else ""
+                    }",
                 )
         except discord.Forbidden:
             logger.info(
@@ -139,7 +147,7 @@ class BaseInductCog(TeXBotBaseCog):
 
     async def get_random_welcome_message(self, induction_member: discord.User | discord.Member | None = None) -> str:  # noqa: E501
         """Get & format a random welcome message."""
-        random_welcome_message: str = random.choice(tuple(settings["WELCOME_MESSAGES"]))
+        random_welcome_message: str = random.choice(tuple(messages["WELCOME_MESSAGES"]))
 
         if "<User>" in random_welcome_message:
             if not induction_member:
@@ -161,13 +169,13 @@ class BaseInductCog(TeXBotBaseCog):
                     committee_role_mention,
                 )
 
-        if "<Purchase_Membership_URL>" in random_welcome_message:
-            if not settings["PURCHASE_MEMBERSHIP_URL"]:
+        if "<Purchase_Membership_Link>" in random_welcome_message:
+            if not settings["PURCHASE_MEMBERSHIP_LINK"]:
                 return await self.get_random_welcome_message(induction_member)
 
             random_welcome_message = random_welcome_message.replace(
-                "<Purchase_Membership_URL>",
-                settings["PURCHASE_MEMBERSHIP_URL"],
+                "<Purchase_Membership_Link>",
+                settings["PURCHASE_MEMBERSHIP_LINK"],
             )
 
         if "<Group_Name>" in random_welcome_message:
@@ -177,7 +185,6 @@ class BaseInductCog(TeXBotBaseCog):
             )
 
         return random_welcome_message.strip()
-
 
     async def _perform_induction(self, ctx: TeXBotApplicationContext, induction_member: discord.Member, *, silent: bool) -> None:  # noqa: E501
         """Perform the actual process of inducting a member by giving them the Guest role."""
@@ -225,7 +232,7 @@ class BaseInductCog(TeXBotBaseCog):
 
             message_already_sent: bool = False
             message: discord.Message
-            async for message in general_channel.history(limit=7):
+            async for message in general_channel.history(limit=10):
                 message_already_sent = bool(
                     message.author == self.bot.user
                     and "grab your roles" in message.content  # noqa: COM812
@@ -300,21 +307,17 @@ class InductSlashCommandCog(BaseInductCog):
         except (GuildDoesNotExistError, GuestRoleDoesNotExistError):
             return set()
 
-        members: set[discord.Member] = {
-            member
-            for member
-            in main_guild.members
-            if not member.bot and guest_role not in member.roles
-        }
-
-        if not ctx.value or ctx.value.startswith("@"):
-            return {
-                discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
-                for member in members
-            }
-
         return {
-            discord.OptionChoice(name=member.name, value=str(member.id)) for member in members
+            discord.OptionChoice(
+                name=(
+                    f"@{member.name}"
+                    if not ctx.value or ctx.value.startswith("@")
+                    else member.name
+                ),
+                value=str(member.id),
+            )
+            for member in main_guild.members
+            if not member.bot and guest_role not in member.roles
         }
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -349,7 +352,7 @@ class InductSlashCommandCog(BaseInductCog):
         """
         member_id_not_integer_error: ValueError
         try:
-            induct_member: discord.Member = await self.bot.get_member_from_str_id(
+            induct_member: discord.Member = await self.bot.get_main_guild_member(
                 str_induct_member_id,
             )
         except ValueError as member_id_not_integer_error:
@@ -376,7 +379,6 @@ class InductContextCommandsCog(BaseInductCog):
         """
         await self._perform_induction(ctx, member, silent=False)
 
-
     @discord.user_command(name="Silently Induct User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -391,7 +393,6 @@ class InductContextCommandsCog(BaseInductCog):
         """
         await self._perform_induction(ctx, member, silent=True)
 
-
     @discord.message_command(name="Induct Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -405,7 +406,7 @@ class InductContextCommandsCog(BaseInductCog):
         by giving them the "Guest" role.
         """
         try:
-            member: discord.Member = await self.bot.get_member_from_str_id(
+            member: discord.Member = await self.bot.get_main_guild_member(
                 str(message.author.id),
             )
         except ValueError:
@@ -421,7 +422,6 @@ class InductContextCommandsCog(BaseInductCog):
 
         await self._perform_induction(ctx, member, silent=False)
 
-
     @discord.message_command(name="Silently Induct Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -435,7 +435,7 @@ class InductContextCommandsCog(BaseInductCog):
         by giving them the "Guest" role, only without broadcasting a welcome message.
         """
         try:
-            member: discord.Member = await self.bot.get_member_from_str_id(
+            member: discord.Member = await self.bot.get_main_guild_member(
                 str(message.author.id),
             )
         except ValueError:

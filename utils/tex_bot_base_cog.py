@@ -20,6 +20,7 @@ from exceptions.base import (
     BaseDoesNotExistError,
 )
 
+from .message_sender_components import GenericResponderComponent, SenderResponseComponent
 from .tex_bot import TeXBot
 from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
 
@@ -71,73 +72,109 @@ class TeXBotBaseCog(Cog):
         """
         self.bot: TeXBot = bot  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
 
-    async def command_send_error(self, ctx: TeXBotApplicationContext, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
+    async def command_send_error(self, ctx: TeXBotApplicationContext, *, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False, responder_component: GenericResponderComponent | None = None) -> None:  # noqa: E501
         """
         Construct & format an error message from the given details.
 
         The constructed error message is then sent as the response to the given
         application command context.
+        If `is_fatal` is set to True, this suggests that the reason for the error is unknown
+        and the bot will shortly close.
         """
-        COMMAND_NAME: Final[str] = (
-            ctx.command.callback.__name__
-            if (
-                hasattr(ctx.command, "callback")
-                and not ctx.command.callback.__name__.startswith("_")
-            )
-            else ctx.command.qualified_name
-        )
-
-        await self.send_error(
+        await self._respond_with_error(
             self.bot,
-            ctx.interaction,
-            interaction_name=COMMAND_NAME,
+            responder=(
+                responder_component or SenderResponseComponent(ctx.interaction, ephemeral=True)
+            ),
+            interaction_name=(
+                ctx.command.callback.__name__
+                if (
+                    hasattr(ctx.command, "callback")
+                    and not ctx.command.callback.__name__.startswith("_")
+                )
+                else ctx.command.qualified_name
+            ),
             error_code=error_code,
             message=message,
             logging_message=logging_message,
+            is_fatal=is_fatal,
         )
 
     @classmethod
-    async def send_error(cls, bot: TeXBot, interaction: discord.Interaction, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
+    async def send_error(cls, bot: TeXBot, interaction: discord.Interaction, *, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False) -> None:  # noqa: E501
         """
         Construct & format an error message from the given details.
 
         The constructed error message is then sent as the response to the given interaction.
+        If `is_fatal` is set to True, this suggests that the reason for the error is unknown
+        and the bot will shortly close.
         """
-        construct_error_message: str = ":warning:There was an error"
+        await cls._respond_with_error(
+            bot=bot,
+            responder=SenderResponseComponent(interaction, ephemeral=True),
+            interaction_name=interaction_name,
+            error_code=error_code,
+            message=message,
+            logging_message=logging_message,
+            is_fatal=is_fatal,
+        )
 
-        if error_code:
+    @classmethod
+    async def _respond_with_error(cls, bot: TeXBot, responder: GenericResponderComponent, *, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False) -> None:  # noqa: E501
+        construct_error_message: str = ":warning:"
+
+        if is_fatal:
             # noinspection PyUnusedLocal
-            committee_mention: str = "committee"
+            fatal_committee_mention: str = "committee"
 
             with contextlib.suppress(CommitteeRoleDoesNotExistError):
-                committee_mention = (await bot.committee_role).mention
+                fatal_committee_mention = (await bot.committee_role).mention
 
-            construct_error_message = (
-                f"**Contact a {committee_mention} member, referencing error code: "
-                f"{error_code}**\n"
-            ) + construct_error_message
-
-        if interaction_name in cls.ERROR_ACTIVITIES:
             construct_error_message += (
-                f" when trying to {cls.ERROR_ACTIVITIES[interaction_name]}"
+                "A fatal error occurred, "
+                f"please **contact a {fatal_committee_mention} member**.:warning:"
             )
 
-        if message:
-            construct_error_message += ":"
+            if message:
+                construct_error_message += message.strip()
+
         else:
-            construct_error_message += "."
+            construct_error_message += "There was an error"
 
-        construct_error_message += ":warning:"
+            if error_code:
+                # noinspection PyUnusedLocal
+                non_fatal_committee_mention: str = "committee"
 
-        if message:
-            message = re.sub(
-                r"<([@&#]?|(@[&#])?)\d+>",
-                lambda match: f"`{match.group(0)}`",
-                message.strip(),
-            )
-            construct_error_message += f"\n`{message}`"
+                with contextlib.suppress(CommitteeRoleDoesNotExistError):
+                    non_fatal_committee_mention = (await bot.committee_role).mention
 
-        await interaction.respond(construct_error_message, ephemeral=True)
+                construct_error_message = (
+                    f"**Contact a {non_fatal_committee_mention} member, "
+                    f"referencing error code: {error_code}**\n"
+                ) + construct_error_message
+
+            if interaction_name in cls.ERROR_ACTIVITIES:
+                construct_error_message += (
+                    f" when trying to {cls.ERROR_ACTIVITIES[interaction_name]}"
+                )
+
+            if message:
+                construct_error_message += ":"
+            else:
+                construct_error_message += "."
+
+            construct_error_message += ":warning:"
+
+            if message:
+                construct_error_message += f"\n`{
+                    re.sub(
+                        r"<([@&#]?|(@[&#])?)\d+>",
+                        lambda match: f"`{match.group(0)!s}`",
+                        message.strip(),
+                    )
+                }`"
+
+        await responder.respond(content=construct_error_message, view=None)
 
         if logging_message:
             logger.error(
@@ -150,6 +187,13 @@ class TeXBotBaseCog(Cog):
                     if message_part
                 ).rstrip(": ;"),
             )
+
+        if is_fatal and error_code:
+            FATAL_AND_ERROR_CODE_MESSAGE: Final[str] = (
+                "Error message was requested to be sent with an error code, "
+                "despite being marked as a fatal error."
+            )
+            raise ValueError(FATAL_AND_ERROR_CODE_MESSAGE)
 
     @staticmethod
     async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
@@ -174,17 +218,15 @@ class TeXBotBaseCog(Cog):
                 ctx.interaction.user,
             )
 
-        if not ctx.value or re.fullmatch(r"\A#.*\Z", ctx.value):
-            return {
-                discord.OptionChoice(name=f"#{channel.name}", value=str(channel.id))
-                for channel in main_guild.text_channels
-                if channel.permissions_for(channel_permissions_limiter).is_superset(
-                    discord.Permissions(send_messages=True, view_channel=True),
-                )
-            }
-
         return {
-            discord.OptionChoice(name=channel.name, value=str(channel.id))
+            discord.OptionChoice(
+                name=(
+                    f"#{channel.name}"
+                    if not ctx.value or re.fullmatch(r"\A#.*\Z", ctx.value)
+                    else channel.name
+                ),
+                value=str(channel.id),
+            )
             for channel in main_guild.text_channels
             if channel.permissions_for(channel_permissions_limiter).is_superset(
                 discord.Permissions(send_messages=True, view_channel=True),

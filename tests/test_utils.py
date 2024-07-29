@@ -11,8 +11,6 @@ from typing import Final
 
 import utils
 
-# TODO(CarrotManMatt): Move to stats_tests  # noqa: FIX002
-# https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/57
 # class TestPlotBarChart:
 #     """Test case to unit-test the plot_bar_chart function."""
 #
@@ -36,8 +34,6 @@ import utils
 #         assert bool(bar_chart_image.fp.read()) is True  # noqa: ERA001
 
 
-# TODO(CarrotManMatt): Move to stats_tests  # noqa: FIX002
-# https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/57
 # class TestAmountOfTimeFormatter:
 #     """Test case to unit-test the amount_of_time_formatter function."""
 #
@@ -85,14 +81,17 @@ class TestGenerateInviteURL:
     def test_url_generates() -> None:
         """Test that the invite URL generates successfully when valid arguments are passed."""
         DISCORD_BOT_APPLICATION_ID: Final[int] = random.randint(
-            10000000000000000, 99999999999999999999,
+            10000000000000000,
+            99999999999999999999,
         )
         DISCORD_MAIN_GUILD_ID: Final[int] = random.randint(
-            10000000000000000, 99999999999999999999,
+            10000000000000000,
+            99999999999999999999,
         )
 
         invite_url: str = utils.generate_invite_url(
-            DISCORD_BOT_APPLICATION_ID, DISCORD_MAIN_GUILD_ID,
+            DISCORD_BOT_APPLICATION_ID,
+            DISCORD_MAIN_GUILD_ID,
         )
 
         assert re.fullmatch(
