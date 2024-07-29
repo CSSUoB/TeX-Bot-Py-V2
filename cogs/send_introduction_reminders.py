@@ -133,11 +133,11 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
             async for message in member.history():
                 # noinspection PyUnresolvedReferences
-                MESSAGE_CONTAINS_OPT_IN_OUT_BUTTON: bool = (
+                MESSAGE_CONTAINS_OPT_IN_OUT_BUTTON: bool = bool(
                     bool(message.components)
                     and isinstance(message.components[0], discord.ActionRow)
                     and isinstance(message.components[0].children[0], discord.Button)
-                    and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button"  # noqa: E501
+                    and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button"  # noqa: COM812, E501
                 )
                 if MESSAGE_CONTAINS_OPT_IN_OUT_BUTTON:
                     await message.edit(view=None)
@@ -192,10 +192,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         @override
         def __init__(self, bot: TeXBot) -> None:
             """Initialise a new discord.View, to opt-in/out of introduction reminders."""
-            # NOTE: The attribute/variable name `bot` is used here for consistency.
-            # NOTE: `tex_bot` would be preferred but would be inconsitent with the required attribute name of Pycord's context classes
-            # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
-            self.bot: TeXBot = bot
+            self.bot: TeXBot = bot  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
 
             super().__init__(timeout=None)
 
@@ -238,7 +235,10 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
             BUTTON_WILL_MAKE_OPT_IN: Final[bool] = bool(
                 button.style == discord.ButtonStyle.green
-                or str(button.emoji) == emoji.emojize(":raised_hand:", language="alias")
+                or str(button.emoji) == emoji.emojize(
+                    ":raised_hand:",
+                    language="alias",
+                )
                 or (button.label and "Opt back in" in button.label)  # noqa: COM812
             )
             INCOMPATIBLE_BUTTONS: Final[bool] = bool(

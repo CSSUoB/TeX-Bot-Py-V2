@@ -284,8 +284,7 @@ class TeXBot(discord.Bot):
         """
         if not self._rules_channel or not self._guild_has_channel(self._rules_channel):
             self._rules_channel = (
-                    self.main_guild.rules_channel
-                    or await self._fetch_text_channel("welcome")
+                self.main_guild.rules_channel or await self._fetch_text_channel("welcome")
             )
 
         if not self._rules_channel:

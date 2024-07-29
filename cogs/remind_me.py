@@ -225,12 +225,12 @@ class RemindMeCommandCog(TeXBotBaseCog):
                 channel_type=ctx.channel.type,
             )
         except ValidationError as create_discord_reminder_error:
-            ERROR_IS_ALREADY_EXISTS: Final[bool] = (
+            ERROR_IS_ALREADY_EXISTS: Final[bool] = bool(
                 "__all__" in create_discord_reminder_error.message_dict
                 and any(
                     "already exists" in error
                     for error in create_discord_reminder_error.message_dict["__all__"]
-                )
+                )  # noqa: COM812
             )
             if not ERROR_IS_ALREADY_EXISTS:
                 raise UnknownDjangoError(

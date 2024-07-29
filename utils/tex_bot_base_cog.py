@@ -70,10 +70,7 @@ class TeXBotBaseCog(Cog):
 
         During initialisation, a reference to the currently running TeXBot instance is stored.
         """
-        # NOTE: The attribute/variable name `bot` is used here for consistency.
-        # NOTE: `tex_bot` would be preferred but would be inconsitent with the required attribute name of Pycord's context classes
-        # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
-        self.bot: TeXBot = bot
+        self.bot: TeXBot = bot  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
 
     async def command_send_error(self, ctx: TeXBotApplicationContext, *, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False, responder_component: GenericResponderComponent | None = None) -> None:  # noqa: E501
         """
@@ -153,8 +150,7 @@ class TeXBotBaseCog(Cog):
                 construct_error_message = (
                     f"**Contact a {non_fatal_committee_mention} member, "
                     f"referencing error code: {error_code}**\n"
-                    + construct_error_message
-                )
+                ) + construct_error_message
 
             if interaction_name in cls.ERROR_ACTIVITIES:
                 construct_error_message += (
@@ -184,9 +180,7 @@ class TeXBotBaseCog(Cog):
         if logging_message:
             logger.error(
                 " ".join(
-                    message_part
-                    for message_part
-                    in (
+                    message_part for message_part in (
                         error_code if error_code else "",
                         f"({interaction_name})",
                         str(logging_message),
@@ -234,8 +228,7 @@ class TeXBotBaseCog(Cog):
                 ),
                 value=str(channel.id),
             )
-            for channel
-            in main_guild.text_channels
+            for channel in main_guild.text_channels
             if channel.permissions_for(channel_permissions_limiter).is_superset(
                 discord.Permissions(send_messages=True, view_channel=True),
             )
