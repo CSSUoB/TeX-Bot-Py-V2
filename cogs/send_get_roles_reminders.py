@@ -51,7 +51,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         """
         self.send_get_roles_reminders.cancel()
 
-    @tasks.loop(**settings["ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL"])  # type: ignore[misc]
+    @tasks.loop(**settings["ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL"])
     @functools.partial(
         ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExistError,
