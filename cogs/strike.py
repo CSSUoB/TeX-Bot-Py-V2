@@ -843,8 +843,11 @@ class StrikeContextCommandsCog(BaseStrikeCog):
 
         if message.content:
             embed_content += message.content[:200]
+            embed_content += "..."
         else:
             embed_content += "_Reported message had no content_"
+            if len(message.attachments) > 0 or len(message.embeds) > 0:
+                embed_content += " _but did have one or more attachments!_"
 
         embed_content += f"\n[View Original]({message.jump_url})"
 
@@ -858,12 +861,19 @@ class StrikeContextCommandsCog(BaseStrikeCog):
             icon_url=message_author_avatar_url,
         )
 
+        embed_image: str | None = None
+        if len(message.attachments) == 1:
+            attachment_type: str | None = message.attachments[0].content_type
+            if attachment_type and "image" in attachment_type:
+                embed_image = message.attachments[0].url
+
         await discord_channel.send(
-            content=f"{ctx.user} reported the following message:",
+            content=f"{ctx.user.mention} reported the following message:",
             embed=discord.Embed(
                 author=embed_author,
                 description=embed_content,
                 colour=message.author.colour,
+                image=embed_image,
             ),
         )
 
