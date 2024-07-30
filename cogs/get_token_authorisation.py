@@ -16,6 +16,7 @@ import discord
 from bs4 import BeautifulSoup
 
 from config import settings
+from exceptions.does_not_exist import GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
@@ -128,8 +129,20 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
 
         MAKE_EPHEMERAL: bool = True
 
-        if "committee" in ctx.channel.name.lower():
-            MAKE_EPHEMERAL = False
+        try:
+            guest_role: discord.Role = await self.bot.guest_role
+
+            channel: discord.TextChannel | None = discord.utils.get(
+                self.bot.main_guild.text_channels,
+                id=ctx.channel.id,
+            )
+
+            if not channel:
+                MAKE_EPHEMERAL = True
+            else:
+                MAKE_EPHEMERAL = channel.permissions_for(guest_role).view_channel
+        except GuestRoleDoesNotExistError:
+            MAKE_EPHEMERAL = True
 
         await ctx.respond(
             f"Admin token has access to the following MSL Organisations as "
