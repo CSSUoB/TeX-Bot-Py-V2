@@ -858,7 +858,16 @@ class StrikeContextCommandsCog(BaseStrikeCog):
 
         await discord_channel.send(
             content=f"{ctx.user} reported the following message:",
-            embed=discord.Embed(author=embed_author, description=embed_content, colour=message.author.colour),
+            embed=discord.Embed(
+                author=embed_author,
+                description=embed_content,
+                colour=message.author.colour,
+            ),
+        )
+
+        await ctx.respond(
+            content=":white_check_mark: Successfully reported message to committee channels!",
+            ephemeral=True,
         )
 
 
@@ -889,8 +898,3 @@ class StrikeContextCommandsCog(BaseStrikeCog):
     async def send_message_to_committee(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
         """Send a copy of the selected message to committee channels for review."""
         await self._send_message_to_committee(ctx, message=message)
-
-        await ctx.respond(
-            content=":white_check_mark: Successfully reported message to committee channels!",
-            ephemeral=True,
-        )
