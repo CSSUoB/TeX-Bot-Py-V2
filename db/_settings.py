@@ -19,8 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent
 # NOTE: settings.py is called when setting up the mypy_django_plugin & when running Pytest. When mypy/Pytest runs no config settings variables are set, so they should not be accessed
 IMPORTED_BY_MYPY_OR_PYTEST: Final[bool] = any(
     "mypy_django_plugin" in frame.filename or "pytest" in frame.filename
-    for frame
-    in inspect.stack()[1:]
+    for frame in inspect.stack()[1:]
     if not frame.filename.startswith("<")
 )
 if IMPORTED_BY_MYPY_OR_PYTEST:
