@@ -851,9 +851,11 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         if message.reference:
             embed_content += f"\n[View Message this replied to]({message.reference.jump_url})"
 
+        message_author_avatar_url: str | None = message.author.display_avatar.url
+
         embed_author: discord.EmbedAuthor = discord.EmbedAuthor(
             name=message.author.display_name,
-            icon_url=message.author.display_avatar.url if message.author.display_avatar else None,
+            icon_url=message_author_avatar_url,
         )
 
         await discord_channel.send(
@@ -869,7 +871,6 @@ class StrikeContextCommandsCog(BaseStrikeCog):
             content=":white_check_mark: Successfully reported message to committee channels!",
             ephemeral=True,
         )
-
 
     @discord.user_command(name="Strike User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
