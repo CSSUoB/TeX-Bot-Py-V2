@@ -108,7 +108,7 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
             "html.parser",
         ).find("ul", {"id": "ulOrgs"})
 
-        if not parsed_html or isinstance(parsed_html, bs4.NavigableString):
+        if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
             NO_ADMIN_TABLE_MESSAGE: Final[str] = (
                 f"Failed to retrieve the admin table for user: {user_name.string}."
                 "Please check you have used the correct token!"
