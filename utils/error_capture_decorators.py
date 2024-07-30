@@ -20,23 +20,25 @@ from logging import Logger
 from typing import TYPE_CHECKING, Final, ParamSpec, TypeVar
 
 from exceptions import GuildDoesNotExistError, StrikeTrackingError
-from utils.tex_bot_base_cog import TeXBotBaseCog
+
+from .tex_bot_base_cog import TeXBotBaseCog
 
 if TYPE_CHECKING:
     from typing import Concatenate, TypeAlias
 
 
 P = ParamSpec("P")
-T = TypeVar("T")
+T_ret = TypeVar("T_ret")
+T_cog = TypeVar("T_cog", bound=TeXBotBaseCog)
 
 if TYPE_CHECKING:
     WrapperInputFunc: TypeAlias = (
-        Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T]]
-        | Callable[P, Coroutine[object, object, T]]
+        Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T_ret]]
+        | Callable[P, Coroutine[object, object, T_ret]]
     )
-    WrapperOutputFunc: TypeAlias = Callable[P, Coroutine[object, object, T | None]]
+    WrapperOutputFunc: TypeAlias = Callable[P, Coroutine[object, object, T_ret | None]]
     DecoratorInputFunc: TypeAlias = (
-        Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T]]
+        Callable[Concatenate[T_cog, P], Coroutine[object, object, T_ret]]
     )
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
@@ -50,25 +52,21 @@ class ErrorCaptureDecorators:
     """
 
     @staticmethod
-    def capture_error_and_close(func: "DecoratorInputFunc[P, T]", error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> "WrapperOutputFunc[P, T]":  # noqa: E501
+    def capture_error_and_close(func: "DecoratorInputFunc[T_cog, P, T_ret]", error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> "WrapperOutputFunc[P, T_ret]":  # noqa: E501
         """
         Decorator to send an error message to the user when the given exception type is raised.
 
         The raised exception is then suppressed.
         """  # noqa: D401
+
         @functools.wraps(func)
-        async def wrapper(self: TeXBotBaseCog, /, *args: P.args, **kwargs: P.kwargs) -> T | None:  # type: ignore[misc] # noqa: E501
-            if not isinstance(self, TeXBotBaseCog):
-                INVALID_METHOD_TYPE_MESSAGE: Final[str] = (  # type: ignore[unreachable]
-                    f"Parameter {self.__name__!r} of any 'capture_error' decorator "
-                    f"must be an instance of {TeXBotBaseCog.__name__!r}/one of its subclasses."
-                )
-                raise TypeError(INVALID_METHOD_TYPE_MESSAGE)
+        async def wrapper(self: T_cog, /, *args: P.args, **kwargs: P.kwargs) -> T_ret | None:  # type: ignore[misc]
             try:
                 return await func(self, *args, **kwargs)
             except error_type as error:
                 close_func(error)
                 await self.bot.close()
+
         return wrapper  # type: ignore[return-value]
 
     @staticmethod
@@ -83,7 +81,7 @@ class ErrorCaptureDecorators:
         logger.warning("Critical errors are likely to lead to untracked moderation actions")
 
 
-def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T]") -> "WrapperOutputFunc[P, T]":  # noqa: E501
+def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T_ret]") -> "WrapperOutputFunc[P, T_ret]":  # noqa: E501
     """
     Decorator to send an error message to the Discord user when a GuildDoesNotExist is raised.
 
@@ -96,7 +94,7 @@ def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T]") -> "Wrapp
     )
 
 
-def capture_strike_tracking_error(func: "WrapperInputFunc[P, T]") -> "WrapperOutputFunc[P, T]":
+def capture_strike_tracking_error(func: "WrapperInputFunc[P, T_ret]") -> "WrapperOutputFunc[P, T_ret]":  # noqa: E501
     """
     Decorator to send an error message to the user when a StrikeTrackingError is raised.
 
