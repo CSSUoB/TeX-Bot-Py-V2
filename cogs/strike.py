@@ -832,18 +832,35 @@ class StrikeContextCommandsCog(BaseStrikeCog):
             logger.debug("Couldn't find the discord channel.")
             return
 
-        await discord_channel.send(content=f"{ctx.user} reported the following message:")
+        if not message.guild:
+            await self.command_send_error(
+                ctx,
+                message="Message supplied did not have a guild ID!",
+            )
+            return
 
-        report_webhook: discord.Webhook = await discord_channel.create_webhook(name="TeX-Bot")
+        embed_content: str = ""
 
-        await report_webhook.send(
-            content=message.content,
-            username=str(message.author),
-            avatar_url=message.author.display_avatar.url,
-            embeds=message.embeds,
+        if message.content:
+            embed_content += message.content[:200]
+        else:
+            embed_content += "_Reported message had no content_"
+
+        embed_content += f"\n[View Original]({message.jump_url})"
+
+        if message.reference:
+            embed_content += f"\n[View Message this replied to]({message.reference.jump_url})"
+
+        embed_author: discord.EmbedAuthor = discord.EmbedAuthor(
+            name=message.author.display_name,
+            icon_url=message.author.display_avatar.url if message.author.display_avatar else None,
         )
 
-        await report_webhook.delete()
+        await discord_channel.send(
+            content=f"{ctx.user} reported the following message:",
+            embed=discord.Embed(author=embed_author, description=embed_content, colour=message.author.colour),
+        )
+
 
     @discord.user_command(name="Strike User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
