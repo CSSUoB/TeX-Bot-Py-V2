@@ -58,6 +58,8 @@ class AssignedCommitteeAction(BaseDiscordMemberWrapper):
         max_length=2,
         choices=Status,
         default=Status.NOT_STARTED,
+        null=False,
+        blank=False,
     )
     class Meta:
         verbose_name = "Assigned Committee Action"
