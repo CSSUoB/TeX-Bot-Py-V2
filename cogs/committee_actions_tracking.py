@@ -7,6 +7,7 @@ __all__: Sequence[str] = ("CommitteeActionsTrackingCog",)
 
 import logging
 import random
+from collections.abc import Set
 from logging import Logger
 from typing import Final
 
@@ -15,6 +16,7 @@ from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, 
 from django.db.models import Q
 
 from db.core.models import AssignedCommitteeAction, DiscordMember
+from exceptions import CommitteeRoleDoesNotExistError
 from utils import (
     CommandChecks,
     TeXBotApplicationContext,
@@ -34,9 +36,12 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
     )
 
     @staticmethod
-    async def autocomplete_get_committee_members(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+    async def autocomplete_get_committee_members(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
         """Autocomplete callable that generates a set of selectable committee members."""
-        committee_role: discord.Role = await ctx.bot.committee_role
+        try:
+            committee_role: discord.Role = await ctx.bot.committee_role
+        except CommitteeRoleDoesNotExistError:
+            return set()
 
         return {
             discord.OptionChoice(name=str(member), value=str(member.id))
@@ -44,15 +49,20 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         }
 
     @staticmethod
-    async def autocomplete_get_user_action_ids(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501
+    async def autocomplete_get_user_action_ids(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
         """Autocomplete callable that provides a set of actions that belong to the user."""
         if not ctx.interaction.user:
             logger.debug("User actions autocomplete did not have an interaction user!!")
             return set()
 
-        interaction_user: discord.Member = await ctx.bot.get_member_from_str_id(
-            str(ctx.interaction.user.id),
-        )
+        try:
+            interaction_user: discord.Member = await ctx.bot.get_member_from_str_id(
+                str(ctx.interaction.user.id),
+            )
+        except ValueError:
+            logger.debug("User action ID autocomplete could not acquire an interaction user!")
+            return set()
+
 
         admin_role: discord.Role | None = discord.utils.get(
             ctx.bot.main_guild.roles,
@@ -86,10 +96,10 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         }
 
     @staticmethod
-    async def autocomplete_get_action_status(ctx: TeXBotAutocompleteContext) -> set[discord.OptionChoice]:  # noqa: E501, ARG004
+    async def autocomplete_get_action_status(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501, ARG004
         """Autocomplete callable that provides the set of possible Status' of actions."""
-        status_options: list[tuple[str, str]] = (
-            AssignedCommitteeAction._meta.get_field("status").__dict__["_choices"]
+        status_options: Sequence[tuple[str, str]] = (
+            AssignedCommitteeAction._meta.get_field("status").choices  # type: ignore[assignment]
         )
 
         if not status_options:
