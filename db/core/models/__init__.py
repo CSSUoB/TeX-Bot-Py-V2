@@ -31,11 +31,11 @@ class AssignedCommitteeAction(BaseDiscordMemberWrapper):
     """Model to represent an action that has been assigned to a Discord committee-member."""
 
     class Status(models.TextChoices):
-        CANCELLED = "X", _("Cancelled")
-        BLOCKED = "B", _("Blocked")
-        COMPLETE = "C", _("Complete")
-        IN_PROGRESS = "IP", _("In Progress")
-        NOT_STARTED = "NS", _("Not Started")
+        CANCELLED = "CND", _("Cancelled")
+        BLOCKED = "BLK", _("Blocked")
+        COMPLETE = "CMP", _("Complete")
+        IN_PROGRESS = "INP", _("In Progress")
+        NOT_STARTED = "NST", _("Not Started")
 
     INSTANCES_NAME_PLURAL: str = "Assigned Committee Actions"
 
@@ -55,7 +55,7 @@ class AssignedCommitteeAction(BaseDiscordMemberWrapper):
         blank=False,
     )
     status = models.CharField(
-        max_length=2,
+        max_length=3,
         choices=Status,
         default=Status.NOT_STARTED,
         null=False,
