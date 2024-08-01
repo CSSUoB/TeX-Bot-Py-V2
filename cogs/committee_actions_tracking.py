@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("CommitteeActionsTrackingCog",)
+__all__: Sequence[str] = ("CommitteeActionsTrackingCommandsCog",)
 
 
 import logging
@@ -27,7 +27,7 @@ from utils import (
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
-class CommitteeActionsTrackingCog(TeXBotBaseCog):
+class CommitteeActionsTrackingCommandsCog(TeXBotBaseCog):
     """Cog class that defines the committee-actions tracking functionality."""
 
     committee_actions: discord.SlashCommandGroup = discord.SlashCommandGroup(
