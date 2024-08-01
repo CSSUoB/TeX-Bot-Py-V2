@@ -2,7 +2,11 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("CommitteeActionsTrackingCommandsCog",)
+__all__: Sequence[str] = (
+    "CommitteeActionsTrackingBaseCog",
+    "CommitteeActionsTrackingSlashCommandsCog",
+    "CommitteeActionsTrackingContextCommandsCog",
+)
 
 
 import logging
@@ -27,8 +31,85 @@ from utils import (
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
-class CommitteeActionsTrackingCommandsCog(TeXBotBaseCog):
-    """Cog class that defines the committee-actions tracking functionality."""
+class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
+    """Base cog class that defines methods for committee actions tracking."""
+
+    async def _create_action(self, ctx: TeXBotApplicationContext, action_user: discord.Member, description: str, *, silent: bool) -> AssignedCommitteeAction | str:  # noqa: E501
+        """
+        Create the action object with the given description for the given user.
+
+        If action creation is successful, the Action object will be returned.
+        If unsuccessful, a string explaining the error will be returned.
+        """
+        if len(description) >= 200:
+            if not silent:
+                await self.command_send_error(
+                    ctx,
+                    message=(
+                        "Action description was too long! "
+                        "Max description length is 200 characters."
+                    ),
+                )
+            return "Action description exceeded the maximum character limit!"
+
+        if action_user.bot:
+            if not silent:
+                await self.command_send_error(
+                    ctx,
+                    message=(
+                        "Action creation aborted because actions cannot be assigned to bots!"
+                    ),
+                )
+            return f"Actions cannot be assigned to bots! ({action_user})"
+
+        try:
+            action: AssignedCommitteeAction = await AssignedCommitteeAction.objects.acreate(
+                discord_id=int(action_user.id),
+                description=description,
+            )
+        except ValidationError as create_action_error:
+            error_is_already_exits: bool = (
+                "__all__" in create_action_error.message_dict
+                and any(
+                    "already exists" in error
+                    for error in create_action_error.message_dict["__all__"]
+                )
+            )
+            if not error_is_already_exits:
+                await self.command_send_error(ctx, message="An unrecoverable error occured.")
+                logger.critical(
+                    "Error upon creating Action object: %s",
+                    create_action_error,
+                )
+                await self.bot.close()
+
+            DUPLICATE_ACTION_MESSAGE: Final[str] = (
+                f"User: {action_user} already has an action "
+                f"with description: {description}!"
+            )
+            if not silent:
+                await self.command_send_error(
+                    ctx,
+                    message=(DUPLICATE_ACTION_MESSAGE),
+                )
+            logger.debug(
+                "Action creation for user: %s, failed because an action "
+                "with description: %s, already exists.",
+                action_user,
+                description,
+            )
+            return DUPLICATE_ACTION_MESSAGE
+        if not silent:
+            await ctx.respond(
+                content=(
+                    f"Action: {action.description} created for user: {action_user.mention}"
+                ),
+            )
+        return action
+
+
+class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
+    """Cog class that defines the committee-actions tracking slash commands functionality."""
 
     committee_actions: discord.SlashCommandGroup = discord.SlashCommandGroup(
         name="committee-actions",
@@ -107,79 +188,6 @@ class CommitteeActionsTrackingCommandsCog(TeXBotBaseCog):
             return set()
 
         return {discord.OptionChoice(name=value, value=code) for code, value in status_options}
-
-    async def _create_action(self, ctx: TeXBotApplicationContext, action_user: discord.Member, description: str, *, silent: bool) -> AssignedCommitteeAction | str:  # noqa: E501
-        """
-        Create the action object with the given description for the given user.
-
-        If action creation is successful, the Action object will be returned.
-        If unsuccessful, a string explaining the error will be returned.
-        """
-        if len(description) >= 200:
-            if not silent:
-                await self.command_send_error(
-                    ctx,
-                    message=(
-                        "Action description was too long! "
-                        "Max description length is 200 characters."
-                    ),
-                )
-            return "Action description exceeded the maximum character limit!"
-
-        if action_user.bot:
-            if not silent:
-                await self.command_send_error(
-                    ctx,
-                    message=(
-                        "Action creation aborted because actions cannot be assigned to bots!"
-                    ),
-                )
-            return f"Actions cannot be assigned to bots! ({action_user})"
-
-        try:
-            action: AssignedCommitteeAction = await AssignedCommitteeAction.objects.acreate(
-                discord_id=int(action_user.id),
-                description=description,
-            )
-        except ValidationError as create_action_error:
-            error_is_already_exits: bool = (
-                "__all__" in create_action_error.message_dict
-                and any(
-                    "already exists" in error
-                    for error in create_action_error.message_dict["__all__"]
-                )
-            )
-            if not error_is_already_exits:
-                await self.command_send_error(ctx, message="An unrecoverable error occured.")
-                logger.critical(
-                    "Error upon creating Action object: %s",
-                    create_action_error,
-                )
-                await self.bot.close()
-
-            DUPLICATE_ACTION_MESSAGE: Final[str] = (
-                f"User: {action_user} already has an action "
-                f"with description: {description}!"
-            )
-            if not silent:
-                await self.command_send_error(
-                    ctx,
-                    message=(DUPLICATE_ACTION_MESSAGE),
-                )
-            logger.debug(
-                "Action creation for user: %s, failed because an action "
-                "with description: %s, already exists.",
-                action_user,
-                description,
-            )
-            return DUPLICATE_ACTION_MESSAGE
-        if not silent:
-            await ctx.respond(
-                content=(
-                    f"Action: {action.description} created for user: {action_user.mention}"
-                ),
-            )
-        return action
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="create",
@@ -727,6 +735,10 @@ class CommitteeActionsTrackingCommandsCog(TeXBotBaseCog):
         await action.adelete()
 
         await ctx.respond(content="Action successfully deleted.")
+
+
+class CommitteeActionsTrackingContextCommandsCog(CommitteeActionsTrackingBaseCog):
+    """Cog class to define the actions tracking message context commands."""
 
     @discord.message_command(  # type: ignore[no-untyped-call, misc]
         name="Action Message Author",
