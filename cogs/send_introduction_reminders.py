@@ -164,6 +164,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                         else None  # type: ignore[arg-type]
                     ),
                 )
+                logger.debug("Sent introduction reminder to %s", member)
             except discord.Forbidden:
                 logger.info(
                     "Failed to open DM channel with user, %s, "
@@ -274,6 +275,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     await IntroductionReminderOptOutMember.objects.acreate(
                         discord_id=interaction_member.id,
                     )
+                    logger.debug("Created opt out object for user %s", interaction_member)
                 except ValidationError as create_introduction_reminder_opt_out_member_error:
                     error_is_already_exists: bool = (
                         "hashed_member_id" in create_introduction_reminder_opt_out_member_error.message_dict  # noqa: E501

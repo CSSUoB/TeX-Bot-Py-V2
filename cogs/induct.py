@@ -112,6 +112,7 @@ class InductSendMessageCog(TeXBotBaseCog):
                 "(You can do this by right-clicking your name in the members-list "
                 "to the right & selecting \"Edit Server Profile\").",
             )
+            logger.debug("Sent welcome message to %s", after)
             if user_type != "member":
                 await after.send(
                     f"You can also get yourself an annual membership "
@@ -122,6 +123,7 @@ class InductSendMessageCog(TeXBotBaseCog):
                     f"the {self.bot.group_short_name} Discord server:green_square:! "
                     f"Checkout all the perks at {settings["MEMBERSHIP_PERKS_URL"]}",
                 )
+                logger.debug("Sent member message to %s", after)
         except discord.Forbidden:
             logger.info(
                 "Failed to open DM channel to user %s so no welcome message was sent.",
@@ -213,6 +215,12 @@ class BaseInductCog(TeXBotBaseCog):
                     "User has already been inducted. :information_source:"
                 ),
             )
+            self.log_user_error(
+                message=(
+                    f"User {induction_member} was not inducted "
+                    f"because they already have the guest role."
+                ),
+            )
             return
 
         if not silent:
@@ -231,6 +239,10 @@ class BaseInductCog(TeXBotBaseCog):
                     and "grab your roles" in message.content  # noqa: COM812
                 )
                 if message_already_sent:
+                    logger.debug(
+                        "Welcome message not sent to %s because it's already been sent!",
+                        induction_member,
+                    )
                     break
 
             if not message_already_sent:
@@ -239,11 +251,13 @@ class BaseInductCog(TeXBotBaseCog):
                     f"Remember to grab your roles in {roles_channel_mention} "
                     "and say hello to everyone here! :wave:",
                 )
+                logger.debug("General induction message for user %s has been sent.")
 
         await induction_member.add_roles(
             guest_role,
             reason=INDUCT_AUDIT_MESSAGE,
         )
+        logger.debug("Added guest role to %s", induction_member)
 
         # noinspection PyUnusedLocal
         applicant_role: discord.Role | None = None
@@ -255,10 +269,12 @@ class BaseInductCog(TeXBotBaseCog):
                 applicant_role,
                 reason=INDUCT_AUDIT_MESSAGE,
             )
+            logger.debug("Removed Applicant role from %s", induction_member)
 
         tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
         if not tex_emoji:
             tex_emoji = discord.utils.get(main_guild.emojis, name="TeX")
+            logger.debug("Could not find the TeX emoji!")
 
         if intro_channel:
             recent_message: discord.Message
@@ -281,6 +297,10 @@ class BaseInductCog(TeXBotBaseCog):
                     break
 
         await initial_response.edit(content=":white_check_mark: User inducted successfully.")
+        logger.debug(
+            "Induction completed successfully for user %s",
+            induction_member,
+        )
 
 
 class InductSlashCommandCog(BaseInductCog):
@@ -500,4 +520,9 @@ class EnsureMembersInductedCommandCog(TeXBotBaseCog):
                 else "No members required inducting"
             ),
             ephemeral=True,
+        )
+        logger.debug(
+            "Successfully inducted members"
+            if changes_made
+            else "No members have been inducted"  # noqa: COM812
         )

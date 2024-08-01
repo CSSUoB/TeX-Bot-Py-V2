@@ -5,11 +5,16 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("DeleteAllCommandsCog",)
 
 
+import logging
+from logging import Logger
+
 import discord
 
 from db.core.models import DiscordReminder, GroupMadeMember
 from db.core.models.utils import AsyncBaseModel
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class DeleteAllCommandsCog(TeXBotBaseCog):
@@ -38,6 +43,7 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
             f"All {delete_model_instances_name_plural} deleted successfully.",
             ephemeral=True,
         )
+        logger.debug("All %s have been deleted.", delete_model_instances_name_plural)
 
     @delete_all.command(
         name="reminders",

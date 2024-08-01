@@ -89,9 +89,17 @@ async def perform_moderation_action(strike_user: discord.Member, strikes: int, c
 
     elif strikes == 2:
         await strike_user.kick(reason=MODERATION_ACTION_REASON)
+        logger.debug(
+            "User %s has been automatically kicked for having 2 strikes.",
+            strike_user,
+        )
 
     elif strikes == 3:
         await strike_user.ban(reason=MODERATION_ACTION_REASON)
+        logger.debug(
+            "User %s has been automatically banned for having 3 strikes.",
+            strike_user,
+        )
 
 
 class ConfirmStrikeMemberView(View):
@@ -111,7 +119,7 @@ class ConfirmStrikeMemberView(View):
         The actual handling of the event is done by the command that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
-        logger.debug("\"Yes\" button pressed. %s", interaction)
+        logger.debug("\"Yes\" strike button pressed. %s", interaction)
         await interaction.response.edit_message(view=None)  # NOTE: Despite removing the view within the normal command processing loop, the view also needs to be removed here to prevent an Unknown Webhook error
 
     @discord.ui.button(  # type: ignore[misc]
@@ -128,7 +136,7 @@ class ConfirmStrikeMemberView(View):
         The actual handling of the event is done by the command that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
-        logger.debug("\"No\" button pressed. %s", interaction)
+        logger.debug("\"No\" strike button pressed. %s", interaction)
         await interaction.response.edit_message(view=None)  # NOTE: Despite removing the view within the normal command processing loop, the view also needs to be removed here to prevent an Unknown Webhook error
 
 
@@ -150,7 +158,7 @@ class ConfirmManualModerationView(View):
         the manual moderation tracker subroutine that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
-        logger.debug("\"Yes\" button pressed. %s", interaction)
+        logger.debug("\"Yes\" manual moderation action button pressed. %s", interaction)
         await interaction.response.edit_message(view=None)  # NOTE: Despite removing the view within the normal command processing loop, the view also needs to be removed here to prevent an Unknown Webhook error
 
     @discord.ui.button(  # type: ignore[misc]
@@ -168,7 +176,7 @@ class ConfirmManualModerationView(View):
         the manual moderation tracker subroutine that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
-        logger.debug("\"No\" button pressed. %s", interaction)
+        logger.debug("\"No\" manual moderation action button pressed. %s", interaction)
         await interaction.response.edit_message(view=None)  # NOTE: Despite removing the view within the normal command processing loop, the view also needs to be removed here to prevent an Unknown Webhook error
 
 
@@ -190,7 +198,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
         the manual moderation tracker subroutine that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
-        logger.debug("\"Yes\" button pressed. %s", interaction)
+        logger.debug("\"Yes\" out of sync ban member button pressed. %s", interaction)
         await interaction.response.edit_message(view=None)  # NOTE: Despite removing the view within the normal command processing loop, the view also needs to be removed here to prevent an Unknown Webhook error
 
     @discord.ui.button(  # type: ignore[misc]
@@ -208,7 +216,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
         the manual moderation tracker subroutine that sent the view,
         so all that is required is to delete the original message that sent this view.
         """
-        logger.debug("\"No\" button pressed. %s", interaction)
+        logger.debug("\"No\" out of sync ban member button pressed. %s", interaction)
         await interaction.response.edit_message(view=None)  # NOTE: Despite removing the view within the normal command processing loop, the view also needs to be removed here to prevent an Unknown Webhook error
 
 
@@ -255,6 +263,7 @@ class BaseStrikeCog(TeXBotBaseCog):
             f"to them.{includes_ban_message}\n\nA committee member will be in contact "
             "with you shortly, to discuss this further.",
         )
+        logger.debug("Sent strike message to user %s", strike_user)
 
     async def _confirm_perform_moderation_action(self, message_sender_component: MessageSavingSenderComponent, interaction_user: discord.User, strike_user: discord.Member, confirm_strike_message: str, actual_strike_amount: int, button_callback_channel: discord.TextChannel | discord.DMChannel) -> None:  # noqa: E501
         await message_sender_component.send(
@@ -282,6 +291,7 @@ class BaseStrikeCog(TeXBotBaseCog):
                 ),
                 view=None,
             )
+            logger.debug("Cancelled strike action.")
             return
 
         if button_interaction.data["custom_id"] == "yes_strike_member":  # type: ignore[index, typeddict-item]
@@ -298,6 +308,7 @@ class BaseStrikeCog(TeXBotBaseCog):
                 ),
                 view=None,
             )
+            logger.debug("Strike action against %s completed successfully.", strike_user)
             return
 
         raise ValueError
@@ -355,6 +366,7 @@ class BaseStrikeCog(TeXBotBaseCog):
                     }"""
                 ),
             )
+            logger.debug("Sent strike confirmation message.")
             await asyncio.sleep(118)
             await message_sender_component.delete()
             return
