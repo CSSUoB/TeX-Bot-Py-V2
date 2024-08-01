@@ -473,7 +473,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         await ctx.respond(content=response_message)
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="list-user-actions",
+        name="list",
         description="Lists all actions for a specified user",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
@@ -505,7 +505,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def list_user_actions(self, ctx: TeXBotApplicationContext, *, action_member_id: str, ping: bool, status: str) -> None:  # noqa: E501
         """
-        Definition and callback of the list user actions command.
+        Definition and callback of the "/list" command.
 
         Takes in a user and lists out their current actions.
         """
@@ -556,7 +556,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         await ctx.respond(content=actions_message)
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="reassign-action",
+        name="reassign",
         description="Reassign the specified action to another user.",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
@@ -624,7 +624,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             await action_to_reassign.adelete()
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="list-all-actions",
+        name="list-all",
         description="List all current actions.",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
@@ -635,8 +635,8 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         required=False,
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
-        name="status",
-        description="The desired status of the action.",
+        name="status-filter",
+        description="The filter to apply to the status of actions.",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_action_status),  # type: ignore[arg-type]
         required=False,
@@ -701,6 +701,8 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
         Definition & callback response of the "delete" command.
 
         Takes in an action as an argument and deletes it from the database.
+        This command should be used for administrative purposes only, in most circumstances
+        the update-status command should be used.
         """
         try:
             action_id_int: int = int(action_id)
@@ -758,7 +760,7 @@ class CommitteeActionsTrackingCog(TeXBotBaseCog):
             silent=False,
         )
 
-
+# NOTE: EVERYTHING BELOW THIS LINE MUST BE DELETED BEFORE MERGE
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="admin-toggle",
         description="Toggles if the user has the admin role or not.",
