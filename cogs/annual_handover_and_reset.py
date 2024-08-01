@@ -211,7 +211,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
         await GroupMadeMember._default_manager.all().adelete()
 
         await initial_response.edit(
-            content=":white_check_mark: Deleted all members from the database...",
+            content=":hourglass: Deleted all members from the database...",
         )
         logger.debug("Deleted all members from the database.")
 
