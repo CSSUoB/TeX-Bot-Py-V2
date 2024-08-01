@@ -79,6 +79,7 @@ __pypackages__/
 .env.bkp
 .env.bckp
 .env.bak
+.devcontainer
 .venv
 .venv/
 env/
