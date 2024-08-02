@@ -12,7 +12,7 @@ from typing import Final
 
 import aiohttp
 import bs4
-import dateutil
+import dateutil.parser
 import discord
 from bs4 import BeautifulSoup
 
