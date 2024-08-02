@@ -7,7 +7,6 @@ __all__: Sequence[str] = ("EventsManagementCommandsCog",)
 
 import logging
 from collections.abc import Mapping
-from datetime import datetime
 from logging import Logger
 from typing import Final
 
