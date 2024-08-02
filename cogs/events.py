@@ -153,10 +153,21 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def get_events(self, ctx: TeXBotApplicationContext, *, str_from_date: str, str_to_date: str) -> None:  # noqa: E501
         """Command to get the events on the guild website."""
-        from_date_dt = datetime.strptime(str_from_date)
+        from_date_dt = dateutil.parser.parse(str_from_date)
+        to_date_dt = dateutil.parser.parse(str_to_date)
+
+        if from_date_dt > to_date_dt:
+            await ctx.respond(
+                content=(
+                    f":warning: Start date ({from_date_dt}) is after end date ({to_date_dt})."
+                ),
+            )
+
+        formatted_from_date = from_date_dt.strftime("%d/%m/%Y")
+        formatted_to_date = to_date_dt.strftime("%d/%m/%Y")
 
 
-        await self._get_all_guild_events(ctx)
+        await self._get_all_guild_events(ctx, formatted_from_date, formatted_to_date)
 
 
 
