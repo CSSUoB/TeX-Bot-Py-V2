@@ -24,7 +24,7 @@ from db.core.models import (
     SentOneOffIntroductionReminderMember,
 )
 from exceptions import DiscordMemberNotInMainGuildError, GuestRoleDoesNotExistError
-from utils import TeXBot, TeXBotBaseCog
+from utils import CommandChecks, TeXBot, TeXBotApplicationContext, TeXBotBaseCog
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
     capture_guild_does_not_exist_error,
@@ -320,3 +320,50 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
     async def before_tasks(self) -> None:
         """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
         await self.bot.wait_until_ready()
+
+class SendIntroductionRemindersCommandsCog(TeXBotBaseCog):
+    """Cog class that defines the send_introduction_reminders commands."""
+
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        name="send-introduction-reminders",
+        description="Bypasses the delay and sends introduction reminders to all members.",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def send_introduction_reminders(self, ctx: TeXBotApplicationContext) -> None:
+        """
+        Send introduction reminders to all members of the guild.
+
+        This command is used to send introduction reminders to all members of the guild,
+        regardless of whether they have recently joined or not.
+        """
+        main_guild: discord.Guild = self.bot.main_guild
+        guest_role: discord.Role = await self.bot.guest_role
+        staff_role: discord.Role | None = discord.utils.get(
+            main_guild.roles,
+            name="Staff",
+        )
+
+        initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
+            content=":hourglass: Sending introduction reminders to all members...",
+            ephemeral=True,
+        )
+
+        member: discord.Member
+        for member in main_guild.members:
+            if guest_role in member.roles or member.bot or staff_role in member.roles:
+                continue
+
+            await member.send(
+                content=(
+                    "Hey! It seems like you joined "
+                    f"the {self.bot.group_short_name} Discord server "
+                    "but have not yet introduced yourself.\n"
+                    "You will only get access to the rest of the server after sending "
+                    "an introduction message."
+                ),
+            )
+
+        await initial_response.edit(
+            content=":white_check_mark: Sent introduction reminders to all members.",
+        )
