@@ -13,6 +13,7 @@ from typing import Final
 import aiohttp
 import bs4
 import dateutil.parser
+from dateutil.parser import ParserError
 import discord
 from bs4 import BeautifulSoup
 
@@ -110,12 +111,14 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
                 ctx,
                 message="Something went wrong and the event list could not be fetched.",
             )
-            logger.debug(http_response)
             return
 
         if "There are no events" in str(parsed_html):
-            await ctx.respond("There are no events found for the date range selected.")
-            logger.debug(http_response.request_info)
+            await ctx.respond(
+                content=(
+                    f"There are no events found for the date range: {from_date} to {to_date}."
+                ),
+            )
             return
 
         event_list: list[bs4.Tag] = parsed_html.find_all("tr")
@@ -127,7 +130,15 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
             for event in event_list
         }
 
-        await ctx.respond(event_ids)
+        response_message: str = (
+            f"Events from {from_date} to {to_date}:\n"
+            + "\n".join(
+                f"{event_id}: {event_name}"
+                for event_id, event_name in event_ids.items()
+            )
+        )
+
+        await ctx.respond(content=response_message)
 
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -152,8 +163,23 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def get_events(self, ctx: TeXBotApplicationContext, *, str_from_date: str, str_to_date: str) -> None:  # noqa: E501
         """Command to get the events on the guild website."""
-        from_date_dt = dateutil.parser.parse(str_from_date)
-        to_date_dt = dateutil.parser.parse(str_to_date)
+        try:
+            if str_from_date:
+                from_date_dt = dateutil.parser.parse(str_from_date, dayfirst=True)
+            else:
+                from_date_dt = dateutil.parser.parse("01/08/2024", dayfirst=True)
+
+            if str_to_date:
+                to_date_dt = dateutil.parser.parse(str_to_date, dayfirst=True)
+            else:
+                to_date_dt = dateutil.parser.parse("31/07/2025", dayfirst=True)
+        except ParserError:
+            await ctx.respond(
+                content=(
+                    ":warning: Invalid date format. Please use the format `dd/mm/yyyy`."
+                ),
+            )
+            return
 
         if from_date_dt > to_date_dt:
             await ctx.respond(
