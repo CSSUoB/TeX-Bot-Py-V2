@@ -13,9 +13,9 @@ from typing import Final
 import aiohttp
 import bs4
 import dateutil.parser
-from dateutil.parser import ParserError
 import discord
 from bs4 import BeautifulSoup
+from dateutil.parser import ParserError
 
 from config import settings
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
