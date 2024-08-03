@@ -256,15 +256,23 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
         input_type=str,
         parameter_name="str_description",
     )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="location",
+        description="The location of the event.",
+        required=False,
+        input_type=str,
+        parameter_name="str_location",
+    )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def setup_event(self, ctx: TeXBotApplicationContext, str_event_title: str, str_start_date: str, str_start_time: str, str_end_date: str, str_end_time: str, *, str_description: str) -> None:  # noqa: E501
+    async def setup_event(self, ctx: TeXBotApplicationContext, str_event_title: str, str_start_date: str, str_start_time: str, str_end_date: str, str_end_time: str, *, str_description: str, str_location: str) -> None:  # noqa: E501, PLR0913
         """
         Definition & callback response of the "delete_all_reminders" command.
 
         Takes in the title of the event, the start and end dates and times of the event.
         Optionally takes a long description for the event.
         """
+        main_guild: discord.Guild = self.bot.main_guild
         try:
             start_date_dt: datetime.datetime = dateutil.parser.parse(
                 f"{str_start_date}T{str_start_time}", dayfirst=True,
@@ -290,7 +298,22 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
             )
             return
 
-        await ctx.respond(content=f"Got DTs: {start_date_dt} and {end_date_dt}.")
+        try:
+            new_discord_event: discord.ScheduledEvent | None = await main_guild.create_scheduled_event(
+                name=str_event_title,
+                start_time=start_date_dt,
+                end_time=end_date_dt,
+                description=str_description if str_description else "No description provided.",
+                location=str_location if str_location else "No location provided.",
+            )
+        except discord.Forbidden:
+            await self.command_send_error(
+                ctx=ctx,
+                message="TeX-Bot does not have the required permissions to create an event.",
+            )
+            return
+
+        await ctx.respond(f"Event created successful!\n{new_discord_event}")
 
 
 
