@@ -19,8 +19,8 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 if TYPE_CHECKING:
-    from googleapiclient._apis.calendar.v3.resources import CalendarResource  # type: ignore[reportMissingModuleSource]  # noqa: I001
-    from googleapiclient._apis.calendar.v3.schemas import Events  # type: ignore[reportMissingModuleSource]
+    from googleapiclient._apis.calendar.v3.resources import CalendarResource
+    from googleapiclient._apis.calendar.v3.schemas import Events
 
 SCOPES: Final[Sequence[str]] = ["https://www.googleapis.com/auth/calendar.readonly"]
 
