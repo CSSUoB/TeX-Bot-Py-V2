@@ -25,7 +25,8 @@ logger: Final[Logger] = logging.getLogger("TeX-Bot")
 class GoogleCalendar:
     """Class to define the Google Calendar API."""
 
-    async def fetch_credentials(self) -> Credentials | None:
+    @staticmethod
+    async def fetch_credentials() -> Credentials | None:
         """Fetch the credentials for the Google Calendar API."""
         credentials: Credentials | None = None
 
@@ -47,21 +48,36 @@ class GoogleCalendar:
 
         return credentials
 
-    async def fetch_events(self) -> list[dict[str, str]]:
+    @staticmethod
+    async def fetch_events() -> list[dict[str, str]]:
         """Fetch the events from the Google Calendar API."""
-        credentials: Credentials | None = await self.fetch_credentials()
+        credentials: Credentials | None = await GoogleCalendar.fetch_credentials()
         if not credentials:
-            return []
+            return None
 
         try:
-            service: CalendarResource = build("calendar", "v3", credentials=credentials)
+            service = build(serviceName="calendar", version="v3", credentials=credentials)
 
-            now = datetime.datetime.utcnow().isoformat() + "Z"
+            now: str = datetime.datetime.now().isoformat() + "Z"
+
+            events = (
+                service.events().list(
+                    calendarId="primary",
+                    timeMin=now,
+                    maxResults=10,
+                    singleEvents=True,
+                    orderBy="startTime",
+                )
+                .execute()
+            )
+
+            if not events:
+                return None
+            
+            return events
 
         except HttpError as error:
-            return []
+            return None
 
-
-        return []
 
 

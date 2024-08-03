@@ -18,7 +18,7 @@ from bs4 import BeautifulSoup
 from dateutil.parser import ParserError
 
 from config import settings
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog, GoogleCalendar
 
 if TYPE_CHECKING:
     import datetime
@@ -147,7 +147,7 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
         }
 
         response_message: str = (
-            f"Events from {from_date} to {to_date}:\n"
+            f"Guild events from {from_date} to {to_date}:\n"
             + "\n".join(
                 f"{event_id}: {event_name}"
                 for event_id, event_name in event_ids.items()
@@ -204,11 +204,14 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
                 ),
             )
 
-        formatted_from_date = from_date_dt.strftime("%d/%m/%Y")
-        formatted_to_date = to_date_dt.strftime("%d/%m/%Y")
-
+        formatted_from_date: str = from_date_dt.strftime("%d/%m/%Y")
+        formatted_to_date: str = to_date_dt.strftime("%d/%m/%Y")
 
         await self._get_all_guild_events(ctx, formatted_from_date, formatted_to_date)
+
+        events = await GoogleCalendar.fetch_events()
+
+        await ctx.send(content=f"Found GCal events: {events}")
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="create-event",
