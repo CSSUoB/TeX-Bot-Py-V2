@@ -5,6 +5,7 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("GoogleCalendar",)
 
 
+import dateutil.parser
 import datetime
 import logging
 from logging import Logger
@@ -19,8 +20,8 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 if TYPE_CHECKING:
-    from googleapiclient._apis.calendar.v3.schemas import Events
-
+    from googleapiclient._apis.calendar.v3.schemas import Events # type: ignore
+    from googleapiclient._apis.calendar.v3.resources import CalendarResource # type: ignore
 
 SCOPES: Final[Sequence[str]] = ["https://www.googleapis.com/auth/calendar.readonly"]
 
@@ -36,37 +37,46 @@ class GoogleCalendar:
 
         if Path("token.json").exists():
             credentials = Credentials.from_authorized_user_file("token.json", SCOPES)  # type: ignore[no-untyped-call]
+            logger.debug("Credentials loaded from token.json")
 
-        if not credentials or not credentials.valid:
+        if not credentials or not credentials.token_state.FRESH:
             if credentials and credentials.expired and credentials.refresh_token:
                 credentials.refresh(Request())  # type: ignore[no-untyped-call]
+                logger.debug("Credentials refreshed")
             else:
-                flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
+                flow: InstalledAppFlow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
                 credentials = flow.run_local_server(port=0)
+                logger.debug("Attempted to fetch credentials")
 
             if not credentials:
                 return None
 
-            async with await anyio.open_file("token.json") as token:
-                await token.write(credentials.to_json())  # type: ignore[no-untyped-call]
+            try:
+                async with await anyio.open_file("token.json") as token:
+                    await token.write(credentials.to_json())  # type: ignore[no-untyped-call]
+            except Exception as error:
+                logger.error("Failed to write credentials to token.json")
+                logger.debug(error.args)
+                logger.debug(error.with_traceback)
+                return None
 
         return credentials
 
     @staticmethod
-    async def fetch_events() -> list[Event] | None:
+    async def fetch_events() -> list[dict[str, str]] | None:
         """Fetch the events from the Google Calendar API."""
         credentials: Credentials | None = await GoogleCalendar.fetch_credentials()
         if not credentials:
             return None
 
         try:
-            service = build(serviceName="calendar", version="v3", credentials=credentials)
+            service: CalendarResource = build(serviceName="calendar", version="v3", credentials=credentials)
 
             now: str = datetime.datetime.now().isoformat() + "Z"
 
             events: Events = (
                 service.events().list(
-                    calendarId="primary",
+                    calendarId="kg5v9k480jn2qahpmq33h8g7cs@group.calendar.google.com",
                     timeMin=now,
                     maxResults=10,
                     singleEvents=True,
@@ -78,10 +88,21 @@ class GoogleCalendar:
             if not events:
                 return None
             
-            for event in events:
-                logger.debug(event)
+            events_list = events.get("items", [])
 
-            return events.get("items", [])
+            if not events_list:
+                return None
+
+            formatted_events: list[dict[str, str]] = [{
+                    "event_id": event["id"],
+                    "event_title": event["summary"],
+                    "start_dt": str(event["start"]),
+                    "end_dt": str(event["end"]),
+                }
+                for event in events_list
+            ]
+
+            return formatted_events
 
         except HttpError as error:
             logger.error(error)

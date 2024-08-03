@@ -209,7 +209,7 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
 
         await self._get_all_guild_events(ctx, formatted_from_date, formatted_to_date)
 
-        events = await GoogleCalendar.fetch_events()
+        events: list[dict[str, str]] | None = await GoogleCalendar.fetch_events()
 
         await ctx.send(content=f"Found GCal events: {events}")
 
