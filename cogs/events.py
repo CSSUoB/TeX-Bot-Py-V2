@@ -8,7 +8,7 @@ __all__: Sequence[str] = ("EventsManagementCommandsCog",)
 import logging
 from collections.abc import Mapping
 from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import aiohttp
 import bs4
@@ -19,6 +19,10 @@ from dateutil.parser import ParserError
 
 from config import settings
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+
+if TYPE_CHECKING:
+    import datetime
+    from http.cookies import Morsel
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
@@ -43,6 +47,17 @@ EVENT_TABLE_ID: Final[str] = "ctl00_ctl00_Main_AdminPageContent_gvEvents"
 class EventsManagementCommandsCog(TeXBotBaseCog):
     """Cog class to define event management commands."""
 
+    async def _get_msl_context(self, url: str) -> tuple[dict[str, str], dict[str, str]]:
+        """Get the required context headers, data and cookies to make a request to MSL."""
+        http_session: aiohttp.ClientSession = aiohttp.ClientSession(
+            headers=REQUEST_HEADERS,
+            cookies=REQUEST_COOKIES,
+        )
+        async with http_session, http_session.get(url) as field_data:
+            data_response = BeautifulSoup(await field_data.text(), "html.parser")
+
+        return {}, {}
+
     async def _get_all_guild_events(self, ctx: TeXBotApplicationContext, from_date: str, to_date: str) -> None:  # noqa: E501
         """Fetch all events on the guild website."""
         form_data: dict[str, str] = {
@@ -53,6 +68,7 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
             "__EVENTARGUMENT": "",
             "__VIEWSTATEENCRYPTED": "",
         }
+
         http_session: aiohttp.ClientSession = aiohttp.ClientSession(
             headers=REQUEST_HEADERS,
             cookies=REQUEST_COOKIES,
@@ -71,15 +87,15 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
             ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
         }
 
-        anti_xss_cookie = field_data.cookies.get("__AntiXsrfToken")
+        anti_xss_cookie: Morsel[str] | None = field_data.cookies.get("__AntiXsrfToken")
         if anti_xss_cookie is not None:
             new_cookies["__AntiXsrfToken"] = anti_xss_cookie.value
 
-        asp_net_shared_cookie = field_data.cookies.get(".AspNet.SharedCookie")
+        asp_net_shared_cookie: Morsel[str] | None = field_data.cookies.get(".AspNet.SharedCookie")  # noqa: E501
         if asp_net_shared_cookie is not None:
             new_cookies[".AspNet.SharedCookie"] = asp_net_shared_cookie.value
 
-        asp_session_id = field_data.cookies.get("ASP.NET_SessionId")
+        asp_session_id: Morsel[str] | None = field_data.cookies.get("ASP.NET_SessionId")
         if asp_session_id is not None:
             new_cookies["ASP.NET_SessionId"] = asp_session_id.value
 
@@ -98,7 +114,7 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
 
             response_html: str = await http_response.text()
 
-        parsed_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
+        event_table_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
                 response_html,
                 "html.parser",
             ).find(
@@ -106,14 +122,14 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
                 {"id": EVENT_TABLE_ID},
             )
 
-        if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
+        if event_table_html is None or isinstance(event_table_html, bs4.NavigableString):
             await self.command_send_error(
                 ctx,
                 message="Something went wrong and the event list could not be fetched.",
             )
             return
 
-        if "There are no events" in str(parsed_html):
+        if "There are no events" in str(event_table_html):
             await ctx.respond(
                 content=(
                     f"There are no events found for the date range: {from_date} to {to_date}."
@@ -121,7 +137,7 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
             )
             return
 
-        event_list: list[bs4.Tag] = parsed_html.find_all("tr")
+        event_list: list[bs4.Tag] = event_table_html.find_all("tr")
 
         event_list.pop(0)
 
@@ -193,6 +209,88 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
 
 
         await self._get_all_guild_events(ctx, formatted_from_date, formatted_to_date)
+
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        name="create-event",
+        description="Sets up an event on the Guild website, Discord and Google Calendar.",
+    )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="event-title",
+        description="The title of the event.",
+        required=True,
+        input_type=str,
+        parameter_name="str_event_title",
+    )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="start-date",
+        description="The date the event starts. Must be in the format `dd/mm/yyyy`.",
+        required=True,
+        input_type=str,
+        parameter_name="str_start_date",
+    )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="start-time",
+        description="The time the event starts. Must be in the format `hh:mm`.",
+        required=True,
+        input_type=str,
+        parameter_name="str_start_time",
+    )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="end-date",
+        description="The date the event ends. Must be in the format `dd/mm/yyyy`.",
+        required=True,
+        input_type=str,
+        parameter_name="str_end_date",
+    )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="end-time",
+        description="The time the event ends. Must be in the format `hh:mm`.",
+        required=True,
+        input_type=str,
+        parameter_name="str_end_time",
+    )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="description",
+        description="A long description of the event.",
+        required=False,
+        input_type=str,
+        parameter_name="str_description",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def setup_event(self, ctx: TeXBotApplicationContext, str_event_title: str, str_start_date: str, str_start_time: str, str_end_date: str, str_end_time: str, *, str_description: str) -> None:  # noqa: E501
+        """
+        Definition & callback response of the "delete_all_reminders" command.
+
+        Takes in the title of the event, the start and end dates and times of the event.
+        Optionally takes a long description for the event.
+        """
+        try:
+            start_date_dt: datetime.datetime = dateutil.parser.parse(
+                f"{str_start_date}T{str_start_time}", dayfirst=True,
+            )
+            end_date_dt: datetime.datetime = dateutil.parser.parse(
+                f"{str_end_date}T{str_end_time}", dayfirst=True,
+            )
+        except ParserError:
+            await ctx.respond(
+                content=(
+                    ":warning: Invalid date format. "
+                    "Please use the format `dd/mm/yyyy` for dates and `hh:mm` for times."
+                ),
+            )
+            return
+
+        if start_date_dt > end_date_dt:
+            await ctx.respond(
+                content=(
+                    f":warning: Start dt ({start_date_dt}) "
+                    f"is after end dt ({end_date_dt})."
+                ),
+            )
+            return
+
+        await ctx.respond(content=f"Got DTs: {start_date_dt} and {end_date_dt}.")
 
 
 
