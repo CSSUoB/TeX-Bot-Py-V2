@@ -9,7 +9,7 @@ import datetime
 import logging
 from logging import Logger
 from pathlib import Path
-from typing import Final
+from typing import Final, TYPE_CHECKING
 
 import anyio
 from google.auth.transport.requests import Request
@@ -17,6 +17,10 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+
+if TYPE_CHECKING:
+    from googleapiclient._apis.calendar.v3.schemas import Events
+
 
 SCOPES: Final[Sequence[str]] = ["https://www.googleapis.com/auth/calendar.readonly"]
 
@@ -60,7 +64,7 @@ class GoogleCalendar:
 
             now: str = datetime.datetime.now().isoformat() + "Z"
 
-            events = (
+            events: Events = (
                 service.events().list(
                     calendarId="primary",
                     timeMin=now,
@@ -74,11 +78,11 @@ class GoogleCalendar:
             if not events:
                 return None
             
-            event_details: list[dict[str, str]]
             for event in events:
                 logger.debug(event)
 
             return events.get("items", [])
 
         except HttpError as error:
+            logger.error(error)
             return None
