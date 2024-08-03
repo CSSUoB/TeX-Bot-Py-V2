@@ -18,7 +18,7 @@ from bs4 import BeautifulSoup
 from dateutil.parser import ParserError
 
 from config import settings
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog, GoogleCalendar
+from utils import CommandChecks, GoogleCalendar, TeXBotApplicationContext, TeXBotBaseCog
 
 if TYPE_CHECKING:
     import datetime

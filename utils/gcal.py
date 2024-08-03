@@ -5,12 +5,11 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("GoogleCalendar",)
 
 
-import dateutil.parser
 import datetime
 import logging
 from logging import Logger
 from pathlib import Path
-from typing import Final, TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 import anyio
 from google.auth.transport.requests import Request
@@ -20,8 +19,8 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 if TYPE_CHECKING:
-    from googleapiclient._apis.calendar.v3.schemas import Events # type: ignore
-    from googleapiclient._apis.calendar.v3.resources import CalendarResource # type: ignore
+    from googleapiclient._apis.calendar.v3.resources import CalendarResource  # type: ignore[reportMissingModuleSource]  # noqa: I001
+    from googleapiclient._apis.calendar.v3.schemas import Events  # type: ignore[reportMissingModuleSource]
 
 SCOPES: Final[Sequence[str]] = ["https://www.googleapis.com/auth/calendar.readonly"]
 
@@ -44,7 +43,9 @@ class GoogleCalendar:
                 credentials.refresh(Request())  # type: ignore[no-untyped-call]
                 logger.debug("Credentials refreshed")
             else:
-                flow: InstalledAppFlow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
+                flow: InstalledAppFlow = InstalledAppFlow.from_client_secrets_file(
+                    client_secrets_file="credentials.json", scopes=SCOPES,
+                )
                 credentials = flow.run_local_server(port=0)
                 logger.debug("Attempted to fetch credentials")
 
@@ -55,7 +56,7 @@ class GoogleCalendar:
                 async with await anyio.open_file("token.json") as token:
                     await token.write(credentials.to_json())  # type: ignore[no-untyped-call]
             except Exception as error:
-                logger.error("Failed to write credentials to token.json")
+                logger.exception("Failed to write credentials to token.json")
                 logger.debug(error.args)
                 logger.debug(error.with_traceback)
                 return None
@@ -70,9 +71,13 @@ class GoogleCalendar:
             return None
 
         try:
-            service: CalendarResource = build(serviceName="calendar", version="v3", credentials=credentials)
+            service: CalendarResource = build(
+                serviceName="calendar",
+                version="v3",
+                credentials=credentials,
+            )
 
-            now: str = datetime.datetime.now().isoformat() + "Z"
+            now: str = datetime.datetime.now(tz=datetime.UTC).isoformat() + "Z"
 
             events: Events = (
                 service.events().list(
@@ -87,7 +92,7 @@ class GoogleCalendar:
 
             if not events:
                 return None
-            
+
             events_list = events.get("items", [])
 
             if not events_list:
@@ -102,8 +107,9 @@ class GoogleCalendar:
                 for event in events_list
             ]
 
-            return formatted_events
-
         except HttpError as error:
-            logger.error(error)
+            logger.debug(error)
             return None
+
+        else:
+            return formatted_events
