@@ -299,7 +299,7 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
             return
 
         try:
-            new_discord_event: discord.ScheduledEvent | None = await main_guild.create_scheduled_event(
+            new_discord_event: discord.ScheduledEvent | None = await main_guild.create_scheduled_event(  # noqa: E501
                 name=str_event_title,
                 start_time=start_date_dt,
                 end_time=end_date_dt,
