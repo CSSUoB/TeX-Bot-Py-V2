@@ -49,7 +49,7 @@ class GoogleCalendar:
         return credentials
 
     @staticmethod
-    async def fetch_events() -> list[dict[str, str]]:
+    async def fetch_events() -> list[Event] | None:
         """Fetch the events from the Google Calendar API."""
         credentials: Credentials | None = await GoogleCalendar.fetch_credentials()
         if not credentials:
@@ -74,10 +74,11 @@ class GoogleCalendar:
             if not events:
                 return None
             
-            return events
+            event_details: list[dict[str, str]]
+            for event in events:
+                logger.debug(event)
+
+            return events.get("items", [])
 
         except HttpError as error:
             return None
-
-
-
