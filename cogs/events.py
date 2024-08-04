@@ -92,7 +92,7 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
             headers=BASE_HEADERS,
             cookies=new_cookies,
         )
-        async with session_v2, session_v2.post(url=EVENT_LIST_URL, data=data_fields) as http_response:
+        async with session_v2, session_v2.post(url=EVENT_LIST_URL, data=data_fields) as http_response:  # noqa: E501
             if http_response.status != 200:
                 await self.command_send_error(
                     ctx=ctx,
@@ -195,13 +195,39 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
             )
 
         formatted_from_date: str = from_date_dt.strftime("%d/%m/%Y")
-        formatted_to_date: str = to_date_dt.strftime("%d/%m/%Y")
+        formatted_to_date: str = to_date_dt.strftime(format="%d/%m/%Y")
 
         await self._get_all_guild_events(ctx, formatted_from_date, formatted_to_date)
 
         events: list[dict[str, str]] | None = await GoogleCalendar.fetch_events()
 
-        await ctx.send(content=f"Found GCal events: {events}")
+        if events is None:
+            await ctx.send(content="No events found on the Google Calendar.")
+            return
+
+        events_message: str = (
+            f"Found {len(events)} events on the Google Calendar:\n"
+            + "\n".join(
+                f"{event['event_title']} - {event['start_dt']} to {event['end_dt']}"
+                for event in events
+            )
+        )
+
+        await ctx.send(content=events_message)
+
+        scheduled_events_list: list[discord.ScheduledEvent] = await ctx.guild.fetch_scheduled_events()  # noqa: E501
+
+        scheduled_events_message: str = (
+            f"Found {len(scheduled_events_list)} scheduled events on the Discord server:\n"
+            + "\n".join(
+                f"{event.id} - {event.name} - {event.start_time} to {event.end_time}"
+                for event in scheduled_events_list
+            )
+        )
+
+        await ctx.send(content=scheduled_events_message)
+
+
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="create-event",

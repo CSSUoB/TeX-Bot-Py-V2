@@ -26,6 +26,74 @@ from django.db import models
 from .utils import AsyncBaseModel, BaseDiscordMemberWrapper, DiscordMember
 
 
+class SocietyEvent(AsyncBaseModel):
+    """
+    Model to represent a society event.
+
+    A society event is an event that is hosted by a society.
+    Each SocietyEvent is associated with a discord
+    ScheduledEvent, Guild Event and Google Calendar Event.
+    """
+
+    INSTANCES_NAME_PLURAL: str = "Society Events"
+
+    guild_event_id = models.IntegerField(
+        "Guild Event ID",
+        unique=True,
+        null=False,
+        blank=False,
+    )
+
+    gcal_event_id = models.TextField(
+        "Google Calendar Event ID",
+        unique=True,
+        null=False,
+        blank=False,
+    )
+
+    discord_event_id = models.BigIntegerField(
+        "Discord Event ID",
+        unique=True,
+        null=False,
+        blank=False,
+    )
+
+    event_name = models.TextField(
+        "Event Name",
+        null=False,
+        blank=False,
+    )
+
+    event_description = models.TextField(
+        "Event Description",
+    )
+
+    event_start_time = models.DateTimeField(
+        "Event Start Time",
+        null=False,
+        blank=False,
+    )
+
+    event_end_time = models.DateTimeField(
+        "Event End Time",
+        null=False,
+        blank=False,
+    )
+
+    event_location = models.TextField(
+        "Event Location",
+    )
+
+    class Meta:
+        verbose_name: str = "Society Event"
+        constraints: list[models.UniqueConstraint] = [  # noqa: RUF012
+            models.UniqueConstraint(
+                fields=["guild_event_id", "gcal_event_id", "discord_event_id"],
+                name="unique_society_event",
+            ),
+        ]
+
+
 class IntroductionReminderOptOutMember(BaseDiscordMemberWrapper):
     """
     Model to represent a Discord member that has opted out of introduction reminders.
