@@ -47,6 +47,7 @@ class GoogleCalendar:
                     client_secrets_file="credentials.json", scopes=SCOPES,
                 )
                 credentials = flow.run_local_server(port=0)
+                await anyio.sleep(10)
                 logger.debug("Attempted to fetch credentials")
 
             if not credentials:

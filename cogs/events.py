@@ -27,17 +27,17 @@ if TYPE_CHECKING:
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
-REQUEST_HEADERS: Final[Mapping[str, str]] = {
+BASE_HEADERS: Final[Mapping[str, str]] = {
     "Cache-Control": "no-cache",
     "Pragma": "no-cache",
     "Expires": "0",
 }
 
-REQUEST_COOKIES: Final[Mapping[str, str]] = {
+BASE_COOKIES: Final[Mapping[str, str]] = {
     ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
 }
 
-REQUEST_URL: Final[str] = "https://www.guildofstudents.com/events/edit/6531/"
+EVENT_LIST_URL: Final[str] = "https://www.guildofstudents.com/events/edit/6531/"
 FROM_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$datesFilter$txtFromDate"
 TO_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$datesFilter$txtToDate"
 BUTTON_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$fsSetDates$btnSubmit"
@@ -50,16 +50,33 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
     async def _get_msl_context(self, url: str) -> tuple[dict[str, str], dict[str, str]]:
         """Get the required context headers, data and cookies to make a request to MSL."""
         http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-            headers=REQUEST_HEADERS,
-            cookies=REQUEST_COOKIES,
+            headers=BASE_HEADERS,
+            cookies=BASE_COOKIES,
         )
-        async with http_session, http_session.get(url) as field_data:
-            data_response = BeautifulSoup(await field_data.text(), "html.parser")
+        data_fields: dict[str, str] = {}
+        cookies: dict[str ,str] = {}
+        async with http_session, http_session.get(url=url) as field_data:
+            data_response = BeautifulSoup(
+                markup=await field_data.text(),
+                features="html.parser",
+            )
 
-        return {}, {}
+            for field in data_response.find_all(name="input"):
+                if field.get("name") and field.get("value"):
+                    data_fields[field.get("name")] = field.get("value")
+
+            for cookie in field_data.cookies:
+                cookie_morsel: Morsel[str] | None = field_data.cookies.get(cookie)
+                if cookie_morsel is not None:
+                    cookies[cookie] = cookie_morsel.value
+            cookies[".ASPXAUTH"] = settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"]
+
+        return data_fields, cookies
 
     async def _get_all_guild_events(self, ctx: TeXBotApplicationContext, from_date: str, to_date: str) -> None:  # noqa: E501
         """Fetch all events on the guild website."""
+        data_fields, new_cookies = await self._get_msl_context(url=EVENT_LIST_URL)
+
         form_data: dict[str, str] = {
             FROM_DATE_KEY: from_date,
             TO_DATE_KEY: to_date,
@@ -69,44 +86,16 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
             "__VIEWSTATEENCRYPTED": "",
         }
 
-        http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-            headers=REQUEST_HEADERS,
-            cookies=REQUEST_COOKIES,
-        )
-        async with http_session, http_session.get(REQUEST_URL) as field_data:
-            data_response = BeautifulSoup(await field_data.text(), "html.parser")
-            view_state: str = data_response.find("input", {"name": "__VIEWSTATE"}).get("value")  # type: ignore[union-attr, assignment]
-            event_validation: str = data_response.find("input", {"name": "__EVENTVALIDATION"}).get("value")  # type: ignore[union-attr, assignment]  # noqa: E501
-            view_state_generator: str = data_response.find("input", {"name": "__VIEWSTATEGENERATOR"}).get("value")  # type: ignore[union-attr, assignment]  # noqa: E501
-
-        form_data["__VIEWSTATE"] = view_state
-        form_data["__EVENTVALIDATION"] = event_validation
-        form_data["__VIEWSTATEGENERATOR"] = view_state_generator
-
-        new_cookies: dict[str, str] = {
-            ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
-        }
-
-        anti_xss_cookie: Morsel[str] | None = field_data.cookies.get("__AntiXsrfToken")
-        if anti_xss_cookie is not None:
-            new_cookies["__AntiXsrfToken"] = anti_xss_cookie.value
-
-        asp_net_shared_cookie: Morsel[str] | None = field_data.cookies.get(".AspNet.SharedCookie")  # noqa: E501
-        if asp_net_shared_cookie is not None:
-            new_cookies[".AspNet.SharedCookie"] = asp_net_shared_cookie.value
-
-        asp_session_id: Morsel[str] | None = field_data.cookies.get("ASP.NET_SessionId")
-        if asp_session_id is not None:
-            new_cookies["ASP.NET_SessionId"] = asp_session_id.value
+        data_fields.update(form_data)
 
         session_v2: aiohttp.ClientSession = aiohttp.ClientSession(
-            headers=REQUEST_HEADERS,
+            headers=BASE_HEADERS,
             cookies=new_cookies,
         )
-        async with session_v2, session_v2.post(REQUEST_URL, data=form_data) as http_response:
+        async with session_v2, session_v2.post(url=EVENT_LIST_URL, data=data_fields) as http_response:
             if http_response.status != 200:
                 await self.command_send_error(
-                    ctx,
+                    ctx=ctx,
                     message="Returned a non-200 status code!!!.",
                 )
                 logger.debug(http_response)
@@ -115,16 +104,16 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
             response_html: str = await http_response.text()
 
         event_table_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-                response_html,
-                "html.parser",
+                markup=response_html,
+                features="html.parser",
             ).find(
-                "table",
-                {"id": EVENT_TABLE_ID},
+                name="table",
+                attrs={"id": EVENT_TABLE_ID},
             )
 
         if event_table_html is None or isinstance(event_table_html, bs4.NavigableString):
             await self.command_send_error(
-                ctx,
+                ctx=ctx,
                 message="Something went wrong and the event list could not be fetched.",
             )
             return
@@ -135,14 +124,15 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
                     f"There are no events found for the date range: {from_date} to {to_date}."
                 ),
             )
+            logger.debug(event_table_html)
             return
 
-        event_list: list[bs4.Tag] = event_table_html.find_all("tr")
+        event_list: list[bs4.Tag] = event_table_html.find_all(name="tr")
 
         event_list.pop(0)
 
         event_ids: dict[str, str] = {
-            event.find("a").get("href").split("/")[5]: event.find("a").text  # type: ignore[union-attr]
+            event.find(name="a").get("href").split("/")[5]: event.find(name="a").text  # type: ignore[union-attr]
             for event in event_list
         }
 
@@ -319,5 +309,28 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
         await ctx.respond(f"Event created successful!\n{new_discord_event}")
 
 
-
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        name="get-msl-context",
+        description="debug command to check the msl context retrieved for a given url",
+    )
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="url",
+        description="The URL to get the MSL context for.",
+        required=True,
+        input_type=str,
+        parameter_name="str_url",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def get_msl_context(self, ctx: TeXBotApplicationContext, str_url: str) -> None:
+        """Command to get the MSL context for a given URL."""
+        data_fields, cookies = await self._get_msl_context(str_url)
+        logger.debug(data_fields)
+        logger.debug(cookies)
+        await ctx.respond(
+            content=(
+                f"Context headers: {data_fields}\n"
+                f"Context data: {cookies}"
+            ),
+        )
 
