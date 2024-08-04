@@ -47,14 +47,13 @@ class GoogleCalendar:
                     client_secrets_file="credentials.json", scopes=SCOPES,
                 )
                 credentials = flow.run_local_server(port=0)
-                await anyio.sleep(10)
                 logger.debug("Attempted to fetch credentials")
 
             if not credentials:
                 return None
 
             try:
-                async with await anyio.open_file("token.json") as token:
+                async with await anyio.open_file(file="token.json") as token:
                     await token.write(credentials.to_json())  # type: ignore[no-untyped-call]
             except Exception as error:
                 logger.exception("Failed to write credentials to token.json")
@@ -78,7 +77,7 @@ class GoogleCalendar:
                 credentials=credentials,
             )
 
-            now: str = datetime.datetime.now(tz=datetime.UTC).isoformat() + "Z"
+            now: str = datetime.datetime.now(tz=datetime.UTC).isoformat()
 
             events: Events = (
                 service.events().list(
