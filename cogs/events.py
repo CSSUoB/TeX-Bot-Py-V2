@@ -294,10 +294,10 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
         main_guild: discord.Guild = self.bot.main_guild
         try:
             start_date_dt: datetime.datetime = dateutil.parser.parse(
-                f"{str_start_date}T{str_start_time}", dayfirst=True,
+                timestr=f"{str_start_date}T{str_start_time}", dayfirst=True,
             )
             end_date_dt: datetime.datetime = dateutil.parser.parse(
-                f"{str_end_date}T{str_end_time}", dayfirst=True,
+                timestr=f"{str_end_date}T{str_end_time}", dayfirst=True,
             )
         except ParserError:
             await ctx.respond(
@@ -317,20 +317,22 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
             )
             return
 
+        location: str = str_location if str_location else "No location provided."
+        description: str = str_description if str_description else "No description provided."
+
         try:
             new_discord_event: discord.ScheduledEvent | None = await main_guild.create_scheduled_event(  # noqa: E501
                 name=str_event_title,
                 start_time=start_date_dt,
                 end_time=end_date_dt,
-                description=str_description if str_description else "No description provided.",
-                location=str_location if str_location else "No location provided.",
+                description=description,
+                location=location,
             )
         except discord.Forbidden:
             await self.command_send_error(
                 ctx=ctx,
-                message="TeX-Bot does not have the required permissions to create an event.",
+                message="TeX-Bot does not have the required permissions to create a discord event.",  # noqa: E501
             )
-            return
 
         await ctx.respond(f"Event created successful!\n{new_discord_event}")
 

@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from googleapiclient._apis.calendar.v3.resources import CalendarResource
     from googleapiclient._apis.calendar.v3.schemas import Events
 
-SCOPES: Final[Sequence[str]] = ["https://www.googleapis.com/auth/calendar.readonly"]
+SCOPES: Final[Sequence[str]] = ["https://www.googleapis.com/auth/calendar.events"]
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
@@ -35,7 +35,7 @@ class GoogleCalendar:
         credentials: Credentials | None = None
 
         if Path("token.json").exists():
-            credentials = Credentials.from_authorized_user_file("token.json", SCOPES)  # type: ignore[no-untyped-call]
+            credentials = Credentials.from_authorized_user_file(filename="token.json", scopes=SCOPES)  # type: ignore[no-untyped-call]
             logger.debug("Credentials loaded from token.json")
 
         if not credentials or not credentials.token_state.FRESH:
