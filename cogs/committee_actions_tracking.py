@@ -166,7 +166,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         filtered_user_actions: list[AssignedCommitteeAction] = [
             action async for action in await AssignedCommitteeAction.objects.afilter(
-                Q(status="IP") | Q(status="B") | Q(status="NS"),
+                Q(status="INP") | Q(status="BLK") | Q(status="NST"),
                 discord_id=int(interaction_user.id),
             )
         ]
@@ -531,7 +531,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         if not status:
             user_actions = [
                 action async for action in await AssignedCommitteeAction.objects.afilter(
-                    Q(status="IP") | Q(status="B") | Q(status="NS"),
+                    Q(status="INP") | Q(status="BLK") | Q(status="NST"),
                     discord_id=int(action_member.id),
                 )
             ]
@@ -661,7 +661,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             action async for action in AssignedCommitteeAction.objects.select_related().all()
         ]
 
-        desired_status: list[str] = [status] if status else ["NS", "IP", "B"]
+        desired_status: list[str] = [status] if status else ["NST", "INP", "BLK"]
 
         committee_members: list[discord.Member] = committee_role.members
 
