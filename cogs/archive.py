@@ -211,7 +211,9 @@ class ArchiveCommandCog(TeXBotBaseCog):
         """
         main_guild: discord.Guild = self.bot.main_guild
 
-        if not re.fullmatch(r"\A\d{17,20}\Z", str_category_id) or not re.fullmatch(r"\A\d{17,20}\Z", str_channel_id):
+        IS_VALID_CATEGORY_ID: bool = bool(re.fullmatch(r"\A\d{17,20}\Z", str_category_id))
+        IS_VALID_CHANNEL_ID: bool = bool(re.fullmatch(r"\A\d{17,20}\Z", str_channel_id))
+        if not IS_VALID_CATEGORY_ID or not IS_VALID_CHANNEL_ID:
             await self.command_send_error(
                 ctx=ctx,
                 message=f"{str_category_id!r} is not a valid category ID.",
