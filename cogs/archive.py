@@ -68,7 +68,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def archive_category(self, ctx: TeXBotApplicationContext, str_category_id: str, allow_archivist: bool) -> None:  # noqa: E501
+    async def archive_category(self, ctx: TeXBotApplicationContext, str_category_id: str, allow_archivist: bool) -> None:  # noqa: E501, FBT001
         """
         Definition & callback response of the "archive" command.
 
