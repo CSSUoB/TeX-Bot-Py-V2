@@ -18,11 +18,10 @@ from bs4 import BeautifulSoup
 from dateutil.parser import ParserError
 
 from config import settings
-from utils import CommandChecks, GoogleCalendar, TeXBotApplicationContext, TeXBotBaseCog
+from utils import CommandChecks, GoogleCalendar, TeXBotApplicationContext, TeXBotBaseCog, msl
 
 if TYPE_CHECKING:
     import datetime
-    from http.cookies import Morsel
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
@@ -37,115 +36,8 @@ BASE_COOKIES: Final[Mapping[str, str]] = {
     ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
 }
 
-EVENT_LIST_URL: Final[str] = "https://www.guildofstudents.com/events/edit/6531/"
-FROM_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$datesFilter$txtFromDate"
-TO_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$datesFilter$txtToDate"
-BUTTON_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$fsSetDates$btnSubmit"
-EVENT_TABLE_ID: Final[str] = "ctl00_ctl00_Main_AdminPageContent_gvEvents"
-
-
 class EventsManagementCommandsCog(TeXBotBaseCog):
     """Cog class to define event management commands."""
-
-    async def _get_msl_context(self, url: str) -> tuple[dict[str, str], dict[str, str]]:
-        """Get the required context headers, data and cookies to make a request to MSL."""
-        http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-            headers=BASE_HEADERS,
-            cookies=BASE_COOKIES,
-        )
-        data_fields: dict[str, str] = {}
-        cookies: dict[str ,str] = {}
-        async with http_session, http_session.get(url=url) as field_data:
-            data_response = BeautifulSoup(
-                markup=await field_data.text(),
-                features="html.parser",
-            )
-
-            for field in data_response.find_all(name="input"):
-                if field.get("name") and field.get("value"):
-                    data_fields[field.get("name")] = field.get("value")
-
-            for cookie in field_data.cookies:
-                cookie_morsel: Morsel[str] | None = field_data.cookies.get(cookie)
-                if cookie_morsel is not None:
-                    cookies[cookie] = cookie_morsel.value
-            cookies[".ASPXAUTH"] = settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"]
-
-        return data_fields, cookies
-
-    async def _get_all_guild_events(self, ctx: TeXBotApplicationContext, from_date: str, to_date: str) -> None:  # noqa: E501
-        """Fetch all events on the guild website."""
-        data_fields, new_cookies = await self._get_msl_context(url=EVENT_LIST_URL)
-
-        form_data: dict[str, str] = {
-            FROM_DATE_KEY: from_date,
-            TO_DATE_KEY: to_date,
-            BUTTON_KEY: "Find Events",
-            "__EVENTTARGET": "",
-            "__EVENTARGUMENT": "",
-            "__VIEWSTATEENCRYPTED": "",
-        }
-
-        data_fields.update(form_data)
-
-        session_v2: aiohttp.ClientSession = aiohttp.ClientSession(
-            headers=BASE_HEADERS,
-            cookies=new_cookies,
-        )
-        async with session_v2, session_v2.post(url=EVENT_LIST_URL, data=data_fields) as http_response:  # noqa: E501
-            if http_response.status != 200:
-                await self.command_send_error(
-                    ctx=ctx,
-                    message="Returned a non-200 status code!!!.",
-                )
-                logger.debug(http_response)
-                return
-
-            response_html: str = await http_response.text()
-
-        event_table_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-                markup=response_html,
-                features="html.parser",
-            ).find(
-                name="table",
-                attrs={"id": EVENT_TABLE_ID},
-            )
-
-        if event_table_html is None or isinstance(event_table_html, bs4.NavigableString):
-            await self.command_send_error(
-                ctx=ctx,
-                message="Something went wrong and the event list could not be fetched.",
-            )
-            return
-
-        if "There are no events" in str(event_table_html):
-            await ctx.respond(
-                content=(
-                    f"There are no events found for the date range: {from_date} to {to_date}."
-                ),
-            )
-            logger.debug(event_table_html)
-            return
-
-        event_list: list[bs4.Tag] = event_table_html.find_all(name="tr")
-
-        event_list.pop(0)
-
-        event_ids: dict[str, str] = {
-            event.find(name="a").get("href").split("/")[5]: event.find(name="a").text  # type: ignore[union-attr]
-            for event in event_list
-        }
-
-        response_message: str = (
-            f"Guild events from {from_date} to {to_date}:\n"
-            + "\n".join(
-                f"{event_id}: {event_name}"
-                for event_id, event_name in event_ids.items()
-            )
-        )
-
-        await ctx.respond(content=response_message)
-
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="get-events",
