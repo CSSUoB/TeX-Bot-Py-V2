@@ -147,3 +147,5 @@ local/
 *.sqlite3.bak
 *.db.bak
 local_stubs/
+credentials.json
+token.json
