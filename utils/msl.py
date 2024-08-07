@@ -25,7 +25,9 @@ logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 MSL_URLS: Final[Mapping[str, str]] = {
     "EVENT_LIST": "https://www.guildofstudents.com/events/edit/6531/",
+    "CREATE_EVENT": "https://www.guildofstudents.com/events/edit/event/6531/",
     "MEMBERS_LIST": settings["MEMBERS_LIST_URL"],
+    "SALES_REPORTS": "https://www.guildofstudents.com/organisation/salesreports/6531/",
 }
 
 BASE_HEADERS: Final[Mapping[str, str]] = {

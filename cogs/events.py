@@ -10,15 +10,12 @@ from collections.abc import Mapping
 from logging import Logger
 from typing import TYPE_CHECKING, Final
 
-import aiohttp
-import bs4
 import dateutil.parser
 import discord
-from bs4 import BeautifulSoup
 from dateutil.parser import ParserError
 
 from config import settings
-from utils import CommandChecks, GoogleCalendar, TeXBotApplicationContext, TeXBotBaseCog, msl
+from utils import CommandChecks, GoogleCalendar, TeXBotApplicationContext, TeXBotBaseCog
 
 if TYPE_CHECKING:
     import datetime
