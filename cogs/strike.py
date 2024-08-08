@@ -389,7 +389,7 @@ class BaseStrikeCog(TeXBotBaseCog):
             )
             return
 
-        member_strikes: DiscordMemberStrikes = (  # type: ignore[assignment]
+        member_strikes: DiscordMemberStrikes = (
             await DiscordMemberStrikes.objects.aget_or_create(
                 discord_id=strike_member.id,
             )
@@ -505,7 +505,7 @@ class ManualModerationCog(BaseStrikeCog):
                 str(fetch_log_channel_error),
             ) from fetch_log_channel_error
 
-        member_strikes: DiscordMemberStrikes = (  # type: ignore[assignment]
+        member_strikes: DiscordMemberStrikes = (
             await DiscordMemberStrikes.objects.aget_or_create(
                 discord_id=strike_user.id,
             )

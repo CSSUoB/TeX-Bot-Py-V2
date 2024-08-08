@@ -11,6 +11,8 @@ __all__: Sequence[str] = (
     "ArchiveCommandCog",
     "GetTokenAuthorisationCommandCog",
     "CommandErrorCog",
+    "CommitteeActionsTrackingSlashCommandsCog",
+    "CommitteeActionsTrackingContextCommandsCog",
     "DeleteAllCommandsCog",
     "EditMessageCommandCog",
     "EnsureMembersInductedCommandCog",
@@ -51,6 +53,10 @@ from .annual_handover_and_reset import (
 )
 from .archive import ArchiveCommandCog
 from .command_error import CommandErrorCog
+from .committee_actions_tracking import (
+    CommitteeActionsTrackingContextCommandsCog,
+    CommitteeActionsTrackingSlashCommandsCog,
+)
 from .delete_all import DeleteAllCommandsCog
 from .edit_message import EditMessageCommandCog
 from .get_token_authorisation import GetTokenAuthorisationCommandCog
@@ -85,6 +91,8 @@ def setup(bot: TeXBot) -> None:
         ArchiveCommandCog,
         GetTokenAuthorisationCommandCog,
         CommandErrorCog,
+        CommitteeActionsTrackingSlashCommandsCog,
+        CommitteeActionsTrackingContextCommandsCog,
         DeleteAllCommandsCog,
         EditMessageCommandCog,
         EnsureMembersInductedCommandCog,
