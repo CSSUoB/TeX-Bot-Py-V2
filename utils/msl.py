@@ -48,7 +48,8 @@ EVENT_TABLE_ID: Final[str] = "ctl00_ctl00_Main_AdminPageContent_gvEvents"
 class MSL:
     """Class to define the functions related to MSL based SU websites."""
 
-    async def _get_msl_context(self, url: str) -> tuple[dict[str, str], dict[str, str]]:
+    @staticmethod
+    async def _get_msl_context(url: str) -> tuple[dict[str, str], dict[str, str]]:
         """Get the required context headers, data and cookies to make a request to MSL."""
         http_session: aiohttp.ClientSession = aiohttp.ClientSession(
             headers=BASE_HEADERS,
@@ -81,7 +82,7 @@ class MSL:
             """Fetch all events on the guild website."""
             EVENT_LIST_URL: Final[str] = MSL_URLS["EVENT_LIST"]
 
-            data_fields, cookies = await MSL._get_msl_context(self, url=EVENT_LIST_URL)
+            data_fields, cookies = await MSL._get_msl_context(url=EVENT_LIST_URL)
 
             form_data: dict[str, str] = {
                 FROM_DATE_KEY: from_date,
@@ -139,6 +140,13 @@ class MSL:
     class MSLMemberships:
         """Class to define Membership specific MSL methods."""
 
+        @staticmethod
+        async def get_full_membership_list() -> list[tuple[str, str]]:
+            """Get a list of tuples of student ID to names."""
+            
+
+
+            return []
 
     class MSLSalesReports:
         """Class to define Sales Reports specific MSL methods."""
