@@ -255,13 +255,13 @@ class ApplicantRoleDoesNotExistError(RoleDoesNotExistError):
     # noinspection PyMethodParameters
     @classproperty
     @override
-    def DEPENDENT_COMMANDS(cls) -> frozenset[str]: # noqa: N805
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N805
         return frozenset({"make_applicant"})
 
     # noinspection PyMethodParameters
     @classproperty
     @override
-    def ROLE_NAME(cls) -> str: # noqa: N805
+    def ROLE_NAME(cls) -> str:  # noqa: N805
         return "Applicant"
 
 

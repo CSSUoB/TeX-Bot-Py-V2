@@ -22,10 +22,7 @@ if TYPE_CHECKING:
 
     T_model = TypeVar("T_model", bound=AsyncBaseModel)
 
-Defaults: TypeAlias = (
-    MutableMapping[str, object | Callable[[], object]]
-    | None
-)
+Defaults: TypeAlias = MutableMapping[str, object | Callable[[], object]] | None
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
