@@ -5,21 +5,19 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("EventsManagementCommandsCog",)
 
 
+import datetime
 import logging
 from collections.abc import Mapping
 from logging import Logger
-from typing import TYPE_CHECKING, Final
+from typing import Final
 
 import dateutil.parser
 import discord
-from utils.msl import MSL
 from dateutil.parser import ParserError
 
 from config import settings
 from utils import CommandChecks, GoogleCalendar, TeXBotApplicationContext, TeXBotBaseCog
-
-if TYPE_CHECKING:
-    import datetime
+from utils.msl import MSL
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
@@ -227,6 +225,15 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
         await ctx.respond(f"Event created successful!\n{new_discord_event}")
 
 
+
+
+
+
+
+
+
+
+    # TODO: THESE COMMANDS ARE FOR TESTING PURPOSES ONLY AND MUST BE REMOVED
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="get-msl-context",
         description="debug command to check the msl context retrieved for a given url",
@@ -242,8 +249,7 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def get_msl_context(self, ctx: TeXBotApplicationContext, str_url: str) -> None:
         """Command to get the MSL context for a given URL."""
-        return
-        data_fields, cookies = await self._get_msl_context(str_url)
+        data_fields, cookies = await MSL._get_msl_context(str_url)  # noqa: SLF001
         logger.debug(data_fields)
         logger.debug(cookies)
         await ctx.respond(
@@ -282,3 +288,25 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
         )
 
         await initial_response.edit(content=member_list_message)
+
+
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        name="get-sales-reports",
+        description="Returns the sales reports on the guild website.",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def get_sales_reports(self, ctx: TeXBotApplicationContext) -> None:
+        """Command to get the sales reports on the guild website."""
+        initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
+            content="Fetching sales reports...",
+        )
+
+        from_date: datetime.datetime = datetime.datetime(year=2024, month=7, day=1, tzinfo=datetime.UTC)
+        to_date: datetime.datetime = datetime.datetime(year=2024, month=8, day=9, tzinfo=datetime.UTC)
+
+        sales_report_object: MSL.MSLSalesReports = MSL.MSLSalesReports()
+
+        await MSL.MSLSalesReports.get_all_sales_report(self=sales_report_object, from_date=from_date, to_date=to_date)
+
+        await initial_response.edit(content="Done!")

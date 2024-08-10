@@ -232,7 +232,19 @@ class MSL:
                     logger.debug(http_response)
                     return
 
-                response_html: str = await http_response.text() 
+                response_html: str = await http_response.text()
+
+            logger.debug(response_html)
+
+            sales_report_table: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
+                markup=response_html,
+                features="html.parser",
+            ).find(
+                name="table",
+                attrs={"class": "A22a30fa654c04e588b579b10a158372a310"},
+            )
+
+            logger.debug(sales_report_table)
 
 
 
