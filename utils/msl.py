@@ -45,6 +45,14 @@ TO_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$datesFilter$txtToDa
 BUTTON_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$fsSetDates$btnSubmit"
 EVENT_TABLE_ID: Final[str] = "ctl00_ctl00_Main_AdminPageContent_gvEvents"
 
+MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
+    {
+        "ctl00_Main_rptGroups_ctl05_gvMemberships",
+        "ctl00_Main_rptGroups_ctl03_gvMemberships",
+    },
+)
+
+
 class MSL:
     """Class to define the functions related to MSL based SU websites."""
 
@@ -143,7 +151,12 @@ class MSL:
         @staticmethod
         async def get_full_membership_list() -> list[tuple[str, str]]:
             """Get a list of tuples of student ID to names."""
-            
+            http_session: aiohttp.ClientSession = aiohttp.ClientSession(
+                headers=BASE_HEADERS,
+                cookies=BASE_COOKIES,
+            )
+            async with http_session, http_session.get(url=MSL_URLS["MEMBERS_LIST"]) as http_response:
+                response_html: str = await http_response.text()
 
 
             return []
