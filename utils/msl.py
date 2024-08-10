@@ -7,6 +7,7 @@ __all__: Sequence[str] = ("MSL",)
 
 import logging
 from collections.abc import Mapping
+from datetime import datetime
 from logging import Logger
 from typing import TYPE_CHECKING, Final
 
@@ -39,11 +40,6 @@ BASE_HEADERS: Final[Mapping[str, str]] = {
 BASE_COOKIES: Final[Mapping[str, str]] = {
     ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
 }
-
-FROM_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$datesFilter$txtFromDate"
-TO_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$datesFilter$txtToDate"
-BUTTON_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$fsSetDates$btnSubmit"
-EVENT_TABLE_ID: Final[str] = "ctl00_ctl00_Main_AdminPageContent_gvEvents"
 
 MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
     {
@@ -86,6 +82,11 @@ class MSL:
     class MSLEvents:
         """Class to define Event specific MSL methods."""
 
+        FROM_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$datesFilter$txtFromDate"
+        TO_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$datesFilter$txtToDate"
+        BUTTON_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$fsSetDates$btnSubmit"
+        EVENT_TABLE_ID: Final[str] = "ctl00_ctl00_Main_AdminPageContent_gvEvents"
+
         async def _get_all_guild_events(self, from_date: str, to_date: str) -> dict[str, str]:
             """Fetch all events on the guild website."""
             EVENT_LIST_URL: Final[str] = MSL_URLS["EVENT_LIST"]
@@ -93,9 +94,9 @@ class MSL:
             data_fields, cookies = await MSL._get_msl_context(url=EVENT_LIST_URL)
 
             form_data: dict[str, str] = {
-                FROM_DATE_KEY: from_date,
-                TO_DATE_KEY: to_date,
-                BUTTON_KEY: "Find Events",
+                self.FROM_DATE_KEY: from_date,
+                self.TO_DATE_KEY: to_date,
+                self.BUTTON_KEY: "Find Events",
                 "__EVENTTARGET": "",
                 "__EVENTARGUMENT": "",
                 "__VIEWSTATEENCRYPTED": "",
@@ -120,7 +121,7 @@ class MSL:
                     features="html.parser",
                 ).find(
                     name="table",
-                    attrs={"id": EVENT_TABLE_ID},
+                    attrs={"id": self.EVENT_TABLE_ID},
                 )
 
             if event_table_html is None or isinstance(event_table_html, bs4.NavigableString):
@@ -197,4 +198,41 @@ class MSL:
 
     class MSLSalesReports:
         """Class to define Sales Reports specific MSL methods."""
+
+        FROM_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtFromDate"
+        FROM_TIME_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtFromTime"
+        TO_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtToDate"
+        TO_TIME_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtToTime"
+
+        async def get_all_sales_report(self, from_date: datetime, to_date: datetime) -> None:
+            """Get all sales reports from the guild website."""
+            SALES_REPORT_URL: Final[str] = MSL_URLS["SALES_REPORTS"]
+
+            data_fields, cookies = await MSL._get_msl_context(url=SALES_REPORT_URL)
+
+            form_data: dict[str, str] = {
+                self.FROM_DATE_KEY: from_date.strftime("%d/%m/%Y"),
+                self.TO_TIME_KEY: from_date.strftime("%H:%M"),
+                self.TO_DATE_KEY: to_date.strftime("%d/%m/%Y"),
+                self.TO_TIME_KEY: to_date.strftime("%H:%M"),
+                "__EVENTTARGET": "ctl00$ctl00$Main$AdminPageContent$lbSales",
+                "__EVENTARGUMENT": "",
+                "__VIEWSTATEENCRYPTED": "",
+            }
+
+            data_fields.update(form_data)
+
+            session_v2: aiohttp.ClientSession = aiohttp.ClientSession(
+                headers=BASE_HEADERS,
+                cookies=cookies,
+            )
+            async with session_v2, session_v2.post(url=SALES_REPORT_URL, data=data_fields) as http_response:
+                if http_response.status != 200:
+                    logger.debug("Returned a non 200 status code!!")
+                    logger.debug(http_response)
+                    return
+
+                response_html: str = await http_response.text() 
+
+
 
