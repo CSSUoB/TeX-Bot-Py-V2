@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Final
 
 import dateutil.parser
 import discord
+from utils.msl import MSL
 from dateutil.parser import ParserError
 
 from config import settings
@@ -21,7 +22,6 @@ if TYPE_CHECKING:
     import datetime
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
-
 
 BASE_HEADERS: Final[Mapping[str, str]] = {
     "Cache-Control": "no-cache",
@@ -58,6 +58,7 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def get_events(self, ctx: TeXBotApplicationContext, *, str_from_date: str, str_to_date: str) -> None:  # noqa: E501
         """Command to get the events on the guild website."""
+        return
         try:
             if str_from_date:
                 from_date_dt = dateutil.parser.parse(str_from_date, dayfirst=True)
@@ -241,6 +242,7 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def get_msl_context(self, ctx: TeXBotApplicationContext, str_url: str) -> None:
         """Command to get the MSL context for a given URL."""
+        return
         data_fields, cookies = await self._get_msl_context(str_url)
         logger.debug(data_fields)
         logger.debug(cookies)
@@ -251,3 +253,32 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
             ),
         )
 
+
+
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        name="get-member-list",
+        description="Returns the list of members on the guild website.",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def get_member_list(self, ctx: TeXBotApplicationContext) -> None:
+        """Command to get the member list on the guild website."""
+        initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
+            content="Fetching member list...",
+        )
+
+        member_list: list[tuple[str, int]] = await MSL.MSLMemberships.get_full_membership_list()
+
+        if not member_list:
+            await initial_response.edit(content="No members found on the guild website.")
+            return
+
+        member_list_message: str = (
+            f"Found {len(member_list)} members on the guild website:\n"
+            + "\n".join(
+                f"{member[0]} - {member[1]}"
+                for member in member_list
+            )
+        )
+
+        await initial_response.edit(content=member_list_message)

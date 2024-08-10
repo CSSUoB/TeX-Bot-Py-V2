@@ -149,7 +149,7 @@ class MSL:
         """Class to define Membership specific MSL methods."""
 
         @staticmethod
-        async def get_full_membership_list() -> list[tuple[str, str]]:
+        async def get_full_membership_list() -> list[tuple[str, int]]:
             """Get a list of tuples of student ID to names."""
             http_session: aiohttp.ClientSession = aiohttp.ClientSession(
                 headers=BASE_HEADERS,
@@ -158,8 +158,42 @@ class MSL:
             async with http_session, http_session.get(url=MSL_URLS["MEMBERS_LIST"]) as http_response:
                 response_html: str = await http_response.text()
 
+            standard_members_table: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
+                markup=response_html,
+                features="html.parser",
+            ).find(
+                name="table",
+                attrs={"id": "ctl00_Main_rptGroups_ctl03_gvMemberships"},
+            )
 
-            return []
+            all_members_table: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
+                markup=response_html,
+                features="html.parser",
+            ).find(
+                name="table",
+                attrs={"id": "ctl00_Main_rptGroups_ctl05_gvMemberships"},
+            )
+
+            if standard_members_table is None or all_members_table is None:
+                return []
+
+            if isinstance(standard_members_table, bs4.NavigableString) or isinstance(all_members_table, bs4.NavigableString):  # noqa: E501
+                return []
+
+            standard_members: list[bs4.Tag] = standard_members_table.find_all(name="tr")
+            all_members: list[bs4.Tag] = all_members_table.find_all(name="tr")
+
+            standard_members.pop(0)
+            all_members.pop(0)
+
+            member_list: list[tuple[str, int]] = [(
+                member.find_all(name="td")[0].text.strip(),
+                member.find_all(name="td")[1].text.strip(),  # NOTE: This will not properly handle external members who do not have an ID...
+                )
+                for member in standard_members + all_members
+            ]
+
+            return member_list
 
     class MSLSalesReports:
         """Class to define Sales Reports specific MSL methods."""
