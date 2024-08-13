@@ -158,7 +158,7 @@ class MSL:
                 headers=BASE_HEADERS,
                 cookies=BASE_COOKIES,
             )
-            async with http_session, http_session.get(url=MSL_URLS["MEMBERS_LIST"]) as http_response:
+            async with http_session, http_session.get(url=MSL_URLS["MEMBERS_LIST"]) as http_response:  # noqa: E501
                 response_html: str = await http_response.text()
 
             standard_members_table: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
@@ -233,7 +233,7 @@ class MSL:
                 headers=BASE_HEADERS,
                 cookies=cookies,
             )
-            async with session_v2, session_v2.post(url=SALES_REPORT_URL, data=data_fields) as http_response:
+            async with session_v2, session_v2.post(url=SALES_REPORT_URL, data=data_fields) as http_response:  # noqa: E501
                 if http_response.status != 200:
                     logger.debug("Returned a non 200 status code!!")
                     logger.debug(http_response)
@@ -268,6 +268,36 @@ class MSL:
             )
             async with file_session, file_session.get(url=report_url) as file_response:
                 if file_response.status == 200:
-                    async with await anyio.open_file("CurrentYearSalesReport.csv", "wb") as report_file:
-                        await report_file.write(await file_response.read())
+                    async with await anyio.open_file("CurrentYearSalesReport.csv", "wb") as report_file:  # noqa: E501
+                        # skip the first 6 lines
+                        # the columns we want are: 1, 6, 7, 8, 9
+                        # these are: product, date, qty, unit price, total
 
+                        await report_file.write(
+                            b"product_id,product_name,date,quantity,unit_price,total\n",
+                        )
+
+                        for line in (await file_response.read()).split(b"\n")[7:]:
+                            if line == b"\r" or not line:
+                                break
+
+                            values: list[bytes] = line.split(b",")
+
+                            product_name_and_id: bytes = values[0]
+                            product_id: bytes = product_name_and_id.split(b" ")[0].removeprefix(b"[").removesuffix(b"]")  # noqa: E501
+                            product_name: bytes = b" ".join(product_name_and_id.split(b" ")[1:])  # noqa: E501
+
+                            # get the date, quantity, unit price and total
+                            date: bytes = values[5]
+                            quantity: bytes = values[6]
+                            unit_price: bytes = values[7]
+                            total: bytes = values[8]
+
+                            await report_file.write(
+                                product_id + b"," + product_name + b"," + date + b"," + quantity + b"," + unit_price + b"," + total + b"\n",  # noqa: E501
+                            )
+
+                        logger.debug("Sales report updated successfully!!")
+
+        async def get_product_sales(self, product_id: str) -> dict[str, int]:
+            return {}
