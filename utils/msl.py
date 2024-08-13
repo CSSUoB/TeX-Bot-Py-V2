@@ -6,12 +6,14 @@ __all__: Sequence[str] = ("MSL",)
 
 
 import logging
+import re
 from collections.abc import Mapping
 from datetime import datetime
 from logging import Logger
 from typing import TYPE_CHECKING, Final
 
 import aiohttp
+import anyio
 import bs4
 from bs4 import BeautifulSoup
 
@@ -204,11 +206,14 @@ class MSL:
         TO_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtToDate"
         TO_TIME_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtToTime"
 
-        async def get_all_sales_report(self, from_date: datetime, to_date: datetime) -> None:
+        async def update_current_year_sales_report(self) -> None:
             """Get all sales reports from the guild website."""
             SALES_REPORT_URL: Final[str] = MSL_URLS["SALES_REPORTS"]
 
             data_fields, cookies = await MSL._get_msl_context(url=SALES_REPORT_URL)
+
+            from_date: datetime = datetime(year=datetime.now().year, month=7, day=1)
+            to_date: datetime = datetime(year=datetime.now().year + 1, month=6, day=30)
 
             form_data: dict[str, str] = {
                 self.FROM_DATE_KEY: from_date.strftime("%d/%m/%Y"),
@@ -219,6 +224,8 @@ class MSL:
                 "__EVENTARGUMENT": "",
                 "__VIEWSTATEENCRYPTED": "",
             }
+
+            data_fields.pop("ctl00$ctl00$search$btnSubmit")
 
             data_fields.update(form_data)
 
@@ -234,17 +241,33 @@ class MSL:
 
                 response_html: str = await http_response.text()
 
-            logger.debug(response_html)
-
             sales_report_table: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
                 markup=response_html,
                 features="html.parser",
             ).find(
-                name="table",
-                attrs={"class": "A22a30fa654c04e588b579b10a158372a310"},
+                name="div",
+                attrs={"id": "ctl00_ctl00_Main_AdminPageContent_ReportViewer1_ctl13"},
             )
 
-            logger.debug(sales_report_table)
+            if not isinstance(sales_report_table, bs4.Tag):
+                logger.debug("Couldn't find the sales reports!!")
+                return
 
+            match = re.search(r'ExportUrlBase":"(.*?)"', response_html)
+            if not match:
+                logger.debug("Couldn't find the export URL!!")
+                return
 
+            urlbase: str = match.group(1).replace(r"\u0026", "&").replace("\\/", "/")
+
+            report_url: str = f"https://guildofstudents.com/{urlbase}CSV"
+
+            file_session: aiohttp.ClientSession = aiohttp.ClientSession(
+                headers=BASE_HEADERS,
+                cookies=cookies,
+            )
+            async with file_session, file_session.get(url=report_url) as file_response:
+                if file_response.status == 200:
+                    async with await anyio.open_file("CurrentYearSalesReport.csv", "wb") as report_file:
+                        await report_file.write(await file_response.read())
 

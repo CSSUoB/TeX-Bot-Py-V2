@@ -56,7 +56,6 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def get_events(self, ctx: TeXBotApplicationContext, *, str_from_date: str, str_to_date: str) -> None:  # noqa: E501
         """Command to get the events on the guild website."""
-        return
         try:
             if str_from_date:
                 from_date_dt = dateutil.parser.parse(str_from_date, dayfirst=True)
@@ -85,7 +84,9 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
         formatted_from_date: str = from_date_dt.strftime("%d/%m/%Y")
         formatted_to_date: str = to_date_dt.strftime(format="%d/%m/%Y")
 
-        await self._get_all_guild_events(ctx, formatted_from_date, formatted_to_date)
+        events_object: MSL.MSLEvents = MSL.MSLEvents()
+
+        await events_object._get_all_guild_events(formatted_from_date, formatted_to_date)
 
         events: list[dict[str, str]] | None = await GoogleCalendar.fetch_events()
 
@@ -296,17 +297,14 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def get_sales_reports(self, ctx: TeXBotApplicationContext) -> None:
+    async def update_sales_report(self, ctx: TeXBotApplicationContext) -> None:
         """Command to get the sales reports on the guild website."""
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
             content="Fetching sales reports...",
         )
 
-        from_date: datetime.datetime = datetime.datetime(year=2024, month=7, day=1, tzinfo=datetime.UTC)
-        to_date: datetime.datetime = datetime.datetime(year=2024, month=8, day=9, tzinfo=datetime.UTC)
-
         sales_report_object: MSL.MSLSalesReports = MSL.MSLSalesReports()
 
-        await MSL.MSLSalesReports.get_all_sales_report(self=sales_report_object, from_date=from_date, to_date=to_date)
+        await sales_report_object.update_current_year_sales_report()
 
         await initial_response.edit(content="Done!")
