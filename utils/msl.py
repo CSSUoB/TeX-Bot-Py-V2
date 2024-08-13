@@ -269,10 +269,6 @@ class MSL:
             async with file_session, file_session.get(url=report_url) as file_response:
                 if file_response.status == 200:
                     async with await anyio.open_file("CurrentYearSalesReport.csv", "wb") as report_file:  # noqa: E501
-                        # skip the first 6 lines
-                        # the columns we want are: 1, 6, 7, 8, 9
-                        # these are: product, date, qty, unit price, total
-
                         await report_file.write(
                             b"product_id,product_name,date,quantity,unit_price,total\n",
                         )
@@ -286,8 +282,6 @@ class MSL:
                             product_name_and_id: bytes = values[0]
                             product_id: bytes = product_name_and_id.split(b" ")[0].removeprefix(b"[").removesuffix(b"]")  # noqa: E501
                             product_name: bytes = b" ".join(product_name_and_id.split(b" ")[1:])  # noqa: E501
-
-                            # get the date, quantity, unit price and total
                             date: bytes = values[5]
                             quantity: bytes = values[6]
                             unit_price: bytes = values[7]
