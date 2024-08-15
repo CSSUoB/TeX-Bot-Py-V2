@@ -5,11 +5,10 @@ from collections.abc import Sequence
 __all__: Sequence[str] = ("EventsManagementCommandsCog",)
 
 
-import datetime
 import logging
 from collections.abc import Mapping
 from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import dateutil.parser
 import discord
@@ -18,6 +17,9 @@ from dateutil.parser import ParserError
 from config import settings
 from utils import CommandChecks, GoogleCalendar, TeXBotApplicationContext, TeXBotBaseCog
 from utils.msl import MSL
+
+if TYPE_CHECKING:
+    import datetime
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
@@ -86,7 +88,7 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
 
         events_object: MSL.MSLEvents = MSL.MSLEvents()
 
-        await events_object._get_all_guild_events(formatted_from_date, formatted_to_date)
+        await events_object._get_all_guild_events(formatted_from_date, formatted_to_date)  # noqa: SLF001
 
         events: list[dict[str, str]] | None = await GoogleCalendar.fetch_events()
 
@@ -173,7 +175,7 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def setup_event(self, ctx: TeXBotApplicationContext, str_event_title: str, str_start_date: str, str_start_time: str, str_end_date: str, str_end_time: str, *, str_description: str, str_location: str) -> None:  # noqa: E501, PLR0913
+    async def setup_society_event(self, ctx: TeXBotApplicationContext, str_event_title: str, str_start_date: str, str_start_time: str, str_end_date: str, str_end_time: str, *, str_description: str, str_location: str) -> None:  # noqa: E501, PLR0913
         """
         Definition & callback response of the "delete_all_reminders" command.
 
@@ -224,87 +226,3 @@ class EventsManagementCommandsCog(TeXBotBaseCog):
             )
 
         await ctx.respond(f"Event created successful!\n{new_discord_event}")
-
-
-
-
-
-
-
-
-
-
-    # TODO: THESE COMMANDS ARE FOR TESTING PURPOSES ONLY AND MUST BE REMOVED
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="get-msl-context",
-        description="debug command to check the msl context retrieved for a given url",
-    )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
-        name="url",
-        description="The URL to get the MSL context for.",
-        required=True,
-        input_type=str,
-        parameter_name="str_url",
-    )
-    @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_main_guild
-    async def get_msl_context(self, ctx: TeXBotApplicationContext, str_url: str) -> None:
-        """Command to get the MSL context for a given URL."""
-        data_fields, cookies = await MSL._get_msl_context(str_url)  # noqa: SLF001
-        logger.debug(data_fields)
-        logger.debug(cookies)
-        await ctx.respond(
-            content=(
-                f"Context headers: {data_fields}\n"
-                f"Context data: {cookies}"
-            ),
-        )
-
-
-
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="get-member-list",
-        description="Returns the list of members on the guild website.",
-    )
-    @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_main_guild
-    async def get_member_list(self, ctx: TeXBotApplicationContext) -> None:
-        """Command to get the member list on the guild website."""
-        initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-            content="Fetching member list...",
-        )
-
-        member_list: list[tuple[str, int]] = await MSL.MSLMemberships.get_full_membership_list()
-
-        if not member_list:
-            await initial_response.edit(content="No members found on the guild website.")
-            return
-
-        member_list_message: str = (
-            f"Found {len(member_list)} members on the guild website:\n"
-            + "\n".join(
-                f"{member[0]} - {member[1]}"
-                for member in member_list
-            )
-        )
-
-        await initial_response.edit(content=member_list_message)
-
-
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="get-sales-reports",
-        description="Returns the sales reports on the guild website.",
-    )
-    @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_main_guild
-    async def update_sales_report(self, ctx: TeXBotApplicationContext) -> None:
-        """Command to get the sales reports on the guild website."""
-        initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-            content="Fetching sales reports...",
-        )
-
-        sales_report_object: MSL.MSLSalesReports = MSL.MSLSalesReports()
-
-        await sales_report_object.update_current_year_sales_report()
-
-        await initial_response.edit(content="Done!")

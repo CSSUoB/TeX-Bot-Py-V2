@@ -8,7 +8,7 @@ __all__: Sequence[str] = ("MSL",)
 import logging
 import re
 from collections.abc import Mapping
-from datetime import datetime
+from datetime import datetime, timezone
 from logging import Logger
 from typing import TYPE_CHECKING, Final
 
@@ -127,12 +127,10 @@ class MSL:
                 )
 
             if event_table_html is None or isinstance(event_table_html, bs4.NavigableString):
-                # TODO: something went wrong!!
                 logger.debug("Something went wrong!")
                 return {}
 
             if "There are no events" in str(event_table_html):
-                # TODO: No events!!
                 logger.debug("No events were found!")
                 return {}
 
@@ -198,6 +196,11 @@ class MSL:
 
             return member_list
 
+        @staticmethod
+        async def is_student_id_member() -> bool:
+            """Check if the student ID is a member of the society."""
+            return False
+
     class MSLSalesReports:
         """Class to define Sales Reports specific MSL methods."""
 
@@ -212,8 +215,8 @@ class MSL:
 
             data_fields, cookies = await MSL._get_msl_context(url=SALES_REPORT_URL)
 
-            from_date: datetime = datetime(year=datetime.now().year, month=7, day=1)
-            to_date: datetime = datetime(year=datetime.now().year + 1, month=6, day=30)
+            from_date: datetime = datetime(year=datetime.now(tz=timezone.utc).year, month=7, day=1, tzinfo=timezone.utc)  # noqa: E501, UP017
+            to_date: datetime = datetime(year=datetime.now(tz=timezone.utc).year + 1, month=6, day=30, tzinfo=timezone.utc)  # noqa: E501, UP017
 
             form_data: dict[str, str] = {
                 self.FROM_DATE_KEY: from_date.strftime("%d/%m/%Y"),
@@ -255,10 +258,19 @@ class MSL:
 
             match = re.search(r'ExportUrlBase":"(.*?)"', response_html)
             if not match:
-                logger.debug("Couldn't find the export URL!!")
+                logger.warning(
+                    "Something went wrong when attempting to extract the export url "
+                    "from the http response.",
+                )
+                logger.debug(response_html)
                 return
 
             urlbase: str = match.group(1).replace(r"\u0026", "&").replace("\\/", "/")
+
+            if not urlbase:
+                logger.debug("Couldn't find the export URL!!")
+                logger.debug(response_html)
+                return
 
             report_url: str = f"https://guildofstudents.com/{urlbase}CSV"
 
@@ -280,18 +292,41 @@ class MSL:
                             values: list[bytes] = line.split(b",")
 
                             product_name_and_id: bytes = values[0]
-                            product_id: bytes = product_name_and_id.split(b" ")[0].removeprefix(b"[").removesuffix(b"]")  # noqa: E501
-                            product_name: bytes = b" ".join(product_name_and_id.split(b" ")[1:])  # noqa: E501
+                            product_id: bytes = ((
+                                    product_name_and_id.split(b" ")[0].removeprefix(b"[")
+                                ).removesuffix(b"]")
+                            )
+                            product_name: bytes = b" ".join(
+                                product_name_and_id.split(b" ")[1:],
+                            )
                             date: bytes = values[5]
                             quantity: bytes = values[6]
                             unit_price: bytes = values[7]
                             total: bytes = values[8]
 
                             await report_file.write(
-                                product_id + b"," + product_name + b"," + date + b"," + quantity + b"," + unit_price + b"," + total + b"\n",  # noqa: E501
+                                product_id + b"," +
+                                product_name + b"," +
+                                date + b"," +
+                                quantity + b"," +
+                                unit_price + b"," +
+                                total + b"\n",
                             )
 
                         logger.debug("Sales report updated successfully!!")
+                        return
+
+                logger.debug("Couldn't get the sales report!!")
+                logger.debug(file_response)
 
         async def get_product_sales(self, product_id: str) -> dict[str, int]:
-            return {}
+            """Get the dates and quantities of sales for a given product ID."""
+            product_sales_data: dict[str, int] = {}
+            async with await anyio.open_file("CurrentYearSalesReport.csv", "r") as report_file:
+                for line in (await report_file.readlines())[1:]:
+                    values: list[str] = line.split(",")
+
+                    if values[0] == product_id:
+                        product_sales_data[values[2]] = int(values[3])
+
+            return product_sales_data

@@ -15,6 +15,7 @@ __all__: Sequence[str] = (
     "is_member_inducted",
     "is_running_in_async",
     "GoogleCalendar",
+    "MSL",
 )
 
 
@@ -26,6 +27,7 @@ import discord
 from .command_checks import CommandChecks
 from .gcal import GoogleCalendar
 from .message_sender_components import MessageSavingSenderComponent
+from .msl import MSL
 from .suppress_traceback import SuppressTraceback
 from .tex_bot import TeXBot
 from .tex_bot_base_cog import TeXBotBaseCog
