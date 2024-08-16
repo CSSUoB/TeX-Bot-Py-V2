@@ -185,7 +185,7 @@ class BaseInductCog(TeXBotBaseCog):
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
-        logger.debug(f"Inducting member {induction_member}, silent={silent}")
+        logger.debug("Inducting member %s, silent=%s", induction_member, silent)
 
         INDUCT_AUDIT_MESSAGE: Final[str] = (
             f"{ctx.user} used TeX Bot slash-command: \"/induct\""
@@ -233,7 +233,10 @@ class BaseInductCog(TeXBotBaseCog):
                     and "grab your roles" in message.content  # noqa: COM812
                 )
                 if message_already_sent:
-                    logger.debug("Not sending induction message because an induction message has already been sent recently.")
+                    logger.debug(
+                        "Not sending induction message because an induction message "
+                        "has already been sent recently.",
+                    )
                     break
 
             if not message_already_sent:
