@@ -225,11 +225,11 @@ class BaseInductCog(TeXBotBaseCog):
             with contextlib.suppress(RolesChannelDoesNotExistError):
                 roles_channel_mention = (await self.bot.roles_channel).mention
 
-                await general_channel.send(
-                    f"{await self.get_random_welcome_message(induction_member)} :tada:\n"
-                    f"Remember to grab your roles in {roles_channel_mention} "
-                    "and say hello to everyone here! :wave:",
-                )
+            await general_channel.send(
+                f"{await self.get_random_welcome_message(induction_member)} :tada:\n"
+                f"Remember to grab your roles in {roles_channel_mention} "
+                "and say hello to everyone here! :wave:",
+            )
 
         await induction_member.add_roles(
             guest_role,
