@@ -26,13 +26,6 @@ if TYPE_CHECKING:
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
-MSL_URLS: Final[Mapping[str, str]] = {
-    "EVENT_LIST": "https://www.guildofstudents.com/events/edit/6531/",
-    "CREATE_EVENT": "https://www.guildofstudents.com/events/edit/event/6531/",
-    "MEMBERS_LIST": settings["MEMBERS_LIST_URL"],
-    "SALES_REPORTS": "https://www.guildofstudents.com/organisation/salesreports/6531/",
-}
-
 BASE_HEADERS: Final[Mapping[str, str]] = {
     "Cache-Control": "no-cache",
     "Pragma": "no-cache",
@@ -53,6 +46,13 @@ MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
 
 class MSL:
     """Class to define the functions related to MSL based SU websites."""
+
+    MSL_URLS: Final[Mapping[str, str]] = {
+        "EVENT_LIST": "https://www.guildofstudents.com/events/edit/6531/",
+        "CREATE_EVENT": "https://www.guildofstudents.com/events/edit/event/6531/",
+        "MEMBERS_LIST": settings["MEMBERS_LIST_URL"],
+        "SALES_REPORTS": "https://www.guildofstudents.com/organisation/salesreports/6531/",
+    }
 
     @staticmethod
     async def get_msl_context(url: str) -> tuple[dict[str, str], dict[str, str]]:
@@ -92,7 +92,7 @@ class MSLEvents(MSL):
 
     async def _get_all_guild_events(self, from_date: str, to_date: str) -> dict[str, str]:
         """Fetch all events on the guild website."""
-        EVENT_LIST_URL: Final[str] = MSL_URLS["EVENT_LIST"]
+        EVENT_LIST_URL: Final[str] = self.MSL_URLS["EVENT_LIST"]
 
         data_fields, cookies = await self.get_msl_context(url=EVENT_LIST_URL)
 
@@ -156,7 +156,7 @@ class MSLMemberships(MSL):
             headers=BASE_HEADERS,
             cookies=BASE_COOKIES,
         )
-        async with http_session, http_session.get(url=MSL_URLS["MEMBERS_LIST"]) as http_response:  # noqa: E501
+        async with http_session, http_session.get(url=self.MSL_URLS["MEMBERS_LIST"]) as http_response:  # noqa: E501
             response_html: str = await http_response.text()
 
         standard_members_table: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
@@ -225,7 +225,7 @@ class MSLSalesReports(MSL):
 
     async def update_current_year_sales_report(self) -> None:
         """Get all sales reports from the guild website."""
-        SALES_REPORT_URL: Final[str] = MSL_URLS["SALES_REPORTS"]
+        SALES_REPORT_URL: Final[str] = self.MSL_URLS["SALES_REPORTS"]
 
         data_fields, cookies = await self.get_msl_context(url=SALES_REPORT_URL)
 
