@@ -84,6 +84,7 @@ EVENTS_TO_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$datesFilter$
 EVENTS_BUTTON_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$fsSetDates$btnSubmit"
 EVENTS_TABLE_ID: Final[str] = "ctl00_ctl00_Main_AdminPageContent_gvEvents"
 
+
 async def get_all_guild_events(from_date: str, to_date: str) -> dict[str, str]:
     """Fetch all events on the guild website."""
     data_fields, cookies = await get_msl_context(url=EVENT_LIST_URL)
@@ -195,6 +196,7 @@ async def get_full_membership_list() -> set[tuple[str, int]]:
 
     return member_list
 
+
 async def is_student_id_member(student_id: str | int) -> bool:
     """Check if the student ID is a member of the society."""
     all_ids: set[str] = {
@@ -229,8 +231,8 @@ async def fetch_report_url_and_cookies(report_type: ReportType) -> tuple[str | N
     """Fetch the specified report from the guild website."""
     data_fields, cookies = await get_msl_context(url=SALES_REPORTS_URL)
 
-    from_date: datetime = datetime(year=datetime.now(tz=timezone.utc).year, month=7, day=1, tzinfo=timezone.utc)  # noqa: E501, UP017
-    to_date: datetime = datetime(year=datetime.now(tz=timezone.utc).year + 1, month=6, day=30, tzinfo=timezone.utc)  # noqa: E501, UP017
+    from_date: datetime = datetime(datetime.now(tz=timezone.utc).year, month=7, day=1, tzinfo=timezone.utc)  # noqa: E501, UP017
+    to_date: datetime = datetime(datetime.now(tz=timezone.utc).year + 1, month=6, day=30, tzinfo=timezone.utc)  # noqa: E501, UP017
 
     form_data: dict[str, str] = {
         SALES_FROM_DATE_KEY: from_date.strftime("%d/%m/%Y"),
