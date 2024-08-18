@@ -9,6 +9,7 @@ import logging
 import re
 from collections.abc import Mapping
 from datetime import datetime, timezone
+from enum import Enum
 from logging import Logger
 from typing import TYPE_CHECKING, Final
 
@@ -223,8 +224,22 @@ class MSLSalesReports(MSL):
     TO_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtToDate"
     TO_TIME_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtToTime"
 
-    async def update_current_year_sales_report(self) -> None:
-        """Get all sales reports from the guild website."""
+    class ReportType(Enum):
+        """
+        Enum to define the different types of reports available.
+
+        SALES - Provides a report of sales by product, date and quantity.
+        CUSTOMISATION - Provides a report of customisations by product, date and quantity.
+
+        MSL also supports "Purchasers" reports, however, these are largely unused but could
+        be implemented in the future.
+        """
+
+        SALES = "Sales"
+        CUSTOMISATION = "Customisations"
+
+    async def fetch_report_url_and_cookies(self, report_type: ReportType) -> tuple[str | None, dict[str, str]]:  # noqa: E501
+        """Fetch the specified report from the guild website."""
         SALES_REPORT_URL: Final[str] = self.MSL_URLS["SALES_REPORTS"]
 
         data_fields, cookies = await self.get_msl_context(url=SALES_REPORT_URL)
@@ -234,10 +249,10 @@ class MSLSalesReports(MSL):
 
         form_data: dict[str, str] = {
             self.FROM_DATE_KEY: from_date.strftime("%d/%m/%Y"),
-            self.TO_TIME_KEY: from_date.strftime("%H:%M"),
+            self.FROM_TIME_KEY: from_date.strftime("%H:%M"),
             self.TO_DATE_KEY: to_date.strftime("%d/%m/%Y"),
             self.TO_TIME_KEY: to_date.strftime("%H:%M"),
-            "__EVENTTARGET": "ctl00$ctl00$Main$AdminPageContent$lbSales",
+            "__EVENTTARGET": f"ctl00$ctl00$Main$AdminPageContent$lb{report_type.value}",
             "__EVENTARGUMENT": "",
             "__VIEWSTATEENCRYPTED": "",
         }
@@ -254,39 +269,36 @@ class MSLSalesReports(MSL):
             if http_response.status != 200:
                 logger.debug("Returned a non 200 status code!!")
                 logger.debug(http_response)
-                return
+                return None, {}
 
             response_html: str = await http_response.text()
 
-        sales_report_table: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-            markup=response_html,
-            features="html.parser",
-        ).find(
-            name="div",
-            attrs={"id": "ctl00_ctl00_Main_AdminPageContent_ReportViewer1_ctl13"},
-        )
+        if "no transactions" in response_html:
+            logger.debug("No transactions were found!")
+            return None, {}
 
-        if not isinstance(sales_report_table, bs4.Tag):
-            logger.debug("Couldn't find the sales reports!!")
-            return
 
         match = re.search(r'ExportUrlBase":"(.*?)"', response_html)
         if not match:
-            logger.warning(
-                "Something went wrong when attempting to extract the export url "
-                "from the http response.",
-            )
+            logger.warning("Failed to find the report export url from the http response.")
             logger.debug(response_html)
-            return
+            return None, {}
 
         urlbase: str = match.group(1).replace(r"\u0026", "&").replace("\\/", "/")
-
         if not urlbase:
-            logger.debug("Couldn't find the export URL!!")
-            logger.debug(response_html)
-            return
+            logger.warning("Failed to construct report url!")
+            logger.debug(match)
+            return None, {}
 
-        report_url: str = f"https://guildofstudents.com/{urlbase}CSV"
+        return f"https://guildofstudents.com/{urlbase}CSV", cookies
+
+    async def update_current_year_sales_report(self) -> None:
+        """Get all sales reports from the guild website."""
+        report_url, cookies = await self.fetch_report_url_and_cookies(report_type=self.ReportType.SALES)  # noqa: E501
+
+        if report_url is None:
+            logger.debug("No report URL was found!")
+            return
 
         file_session: aiohttp.ClientSession = aiohttp.ClientSession(
             headers=BASE_HEADERS,
