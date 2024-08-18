@@ -150,8 +150,7 @@ class MSLEvents(MSL):
 class MSLMemberships(MSL):
     """Class to define Membership specific MSL methods."""
 
-    @staticmethod
-    async def get_full_membership_list() -> set[tuple[str, int]]:
+    async def get_full_membership_list(self) -> set[tuple[str, int]]:
         """Get a list of tuples of student ID to names."""
         http_session: aiohttp.ClientSession = aiohttp.ClientSession(
             headers=BASE_HEADERS,
@@ -207,10 +206,13 @@ class MSLMemberships(MSL):
 
         return member_list
 
-    @staticmethod
-    async def is_student_id_member() -> bool:
+    async def is_student_id_member(self, student_id: str | int) -> bool:
         """Check if the student ID is a member of the society."""
-        return False
+        all_ids: set[str] = {
+            str(member[1]) for member in await self.get_full_membership_list()
+        }
+
+        return str(student_id) in all_ids
 
 
 class MSLSalesReports(MSL):
