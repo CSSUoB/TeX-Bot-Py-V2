@@ -189,7 +189,7 @@ async def get_full_membership_list() -> set[tuple[str, int]]:
 
     member_list: set[tuple[str, int]] = {(
         member.find_all(name="td")[0].text.strip(),
-        member.find_all(name="td")[1].text.strip(),  # NOTE: This will not properly handle external members who do not have an ID...
+        member.find_all(name="td")[1].text.strip(),  # NOTE: This will not properly handle external members who do not have an ID... There does not appear to be a solution to this other than simply checking manually.
         )
         for member in standard_members + all_members
     }
