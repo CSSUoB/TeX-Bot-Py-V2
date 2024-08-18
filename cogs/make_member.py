@@ -12,10 +12,7 @@ from collections.abc import Mapping
 from logging import Logger
 from typing import Final
 
-import aiohttp
-import bs4
 import discord
-from bs4 import BeautifulSoup
 from django.core.exceptions import ValidationError
 
 from config import settings
@@ -26,6 +23,7 @@ from exceptions import (
     GuestRoleDoesNotExistError,
 )
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils.msl import is_student_id_member
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
@@ -163,60 +161,9 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             )
             return
 
-        guild_member_ids: set[str] = set()
-
-        http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-            headers=REQUEST_HEADERS,
-            cookies=REQUEST_COOKIES,
-        )
-        async with http_session, http_session.get(REQUEST_URL) as http_response:
-            response_html: str = await http_response.text()
-
-        MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
-            {
-                "ctl00_Main_rptGroups_ctl05_gvMemberships",
-                "ctl00_Main_rptGroups_ctl03_gvMemberships",
-            },
-        )
-        table_id: str
-        for table_id in MEMBER_HTML_TABLE_IDS:
-            parsed_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-                response_html,
-                "html.parser",
-            ).find(
-                "table",
-                {"id": table_id},
-            )
-
-            if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
-                continue
-
-            guild_member_ids.update(
-                row.contents[2].text
-                for row in parsed_html.find_all(
-                    "tr",
-                    {"class": ["msl_row", "msl_altrow"]},
-                )
-            )
-
-        guild_member_ids.discard("")
-        guild_member_ids.discard("\n")
-        guild_member_ids.discard(" ")
-
-        if not guild_member_ids:
+        if not is_student_id_member(student_id=group_member_id):
             await self.command_send_error(
-                ctx,
-                error_code="E1041",
-                logging_message=OSError(
-                    "The guild member IDs could not be retrieved from "
-                    "the MEMBERS_LIST_URL.",
-                ),
-            )
-            return
-
-        if group_member_id not in guild_member_ids:
-            await self.command_send_error(
-                ctx,
+                ctx=ctx,
                 message=(
                     f"You must be a member of {self.bot.group_full_name} "
                     "to use this command.\n"
