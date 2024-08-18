@@ -378,20 +378,19 @@ class Settings(abc.ABC):
         cls._settings["ROLES_MESSAGES"] = set(messages_dict["roles_messages"])  # type: ignore[call-overload]
 
     @classmethod
-    def _setup_members_list_url(cls) -> None:
-        raw_members_list_url: str | None = os.getenv("MEMBERS_LIST_URL")
+    def _setup_msl_organisation_id(cls) -> None:
+        raw_msl_organisation_id: str | None = os.getenv("MSL_ORGANISATION_ID")
 
-        MEMBERS_LIST_URL_IS_VALID: Final[bool] = bool(
-            raw_members_list_url
-            and validators.url(raw_members_list_url),
+        MSL_ORGANISATION_ID_IS_VALID: Final[bool] = bool(
+            raw_msl_organisation_id
+            and re.fullmatch(r"\A\d{4}\Z", raw_msl_organisation_id),
         )
-        if not MEMBERS_LIST_URL_IS_VALID:
-            INVALID_MEMBERS_LIST_URL_MESSAGE: Final[str] = (
-                "MEMBERS_LIST_URL must be a valid URL."
+        if not MSL_ORGANISATION_ID_IS_VALID:
+            raise ImproperlyConfiguredError(
+                message="MSL_ORGANISATION_ID must be a 4-digit number.",
             )
-            raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_URL_MESSAGE)
 
-        cls._settings["MEMBERS_LIST_URL"] = raw_members_list_url
+        cls._settings["MSL_ORGANISATION_ID"] = raw_msl_organisation_id
 
     @classmethod
     def _setup_members_list_auth_session_cookie(cls) -> None:
@@ -708,7 +707,7 @@ class Settings(abc.ABC):
         cls._setup_ping_command_easter_egg_probability()
         cls._setup_welcome_messages()
         cls._setup_roles_messages()
-        cls._setup_members_list_url()
+        cls._setup_msl_organisation_id()
         cls._setup_members_list_auth_session_cookie()
         cls._setup_membership_perks_url()
         cls._setup_purchase_membership_url()

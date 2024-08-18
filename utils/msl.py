@@ -44,12 +44,12 @@ MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
     },
 )
 
-MSL_URLS: Final[Mapping[str, str]] = {
-    "EVENT_LIST": "https://www.guildofstudents.com/events/edit/6531/",
-    "CREATE_EVENT": "https://www.guildofstudents.com/events/edit/event/6531/",
-    "MEMBERS_LIST": settings["MEMBERS_LIST_URL"],
-    "SALES_REPORTS": "https://www.guildofstudents.com/organisation/salesreports/6531/",
-}
+ORGANISATION_ID: Final[str] = settings["MSL_ORGANISATION_ID"]
+
+EVENT_LIST_URL: Final[str] = f"https://www.guildofstudents.com/events/edit/{ORGANISATION_ID}/"
+CREATE_EVENT_URL: Final[str] = f"https://www.guildofstudents.com/events/edit/event/{ORGANISATION_ID}/"
+MEMBERS_LIST_URL: Final[str] = f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
+SALES_REPORTS_URL: Final[str] = f"https://www.guildofstudents.com/organisation/salesreports/{ORGANISATION_ID}/"
 
 
 async def get_msl_context(url: str) -> tuple[dict[str, str], dict[str, str]]:
@@ -86,8 +86,6 @@ EVENTS_TABLE_ID: Final[str] = "ctl00_ctl00_Main_AdminPageContent_gvEvents"
 
 async def get_all_guild_events(from_date: str, to_date: str) -> dict[str, str]:
     """Fetch all events on the guild website."""
-    EVENT_LIST_URL: Final[str] = MSL_URLS["EVENT_LIST"]
-
     data_fields, cookies = await get_msl_context(url=EVENT_LIST_URL)
 
     form_data: dict[str, str] = {
@@ -147,7 +145,7 @@ async def get_full_membership_list() -> set[tuple[str, int]]:
         headers=BASE_HEADERS,
         cookies=BASE_COOKIES,
     )
-    async with http_session, http_session.get(url=MSL_URLS["MEMBERS_LIST"]) as http_response:
+    async with http_session, http_session.get(url=MEMBERS_LIST_URL) as http_response:
         response_html: str = await http_response.text()
 
     standard_members_table: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
@@ -229,9 +227,7 @@ class ReportType(Enum):
 
 async def fetch_report_url_and_cookies(report_type: ReportType) -> tuple[str | None, dict[str, str]]:  # noqa: E501
     """Fetch the specified report from the guild website."""
-    SALES_REPORT_URL: Final[str] = MSL_URLS["SALES_REPORTS"]
-
-    data_fields, cookies = await get_msl_context(url=SALES_REPORT_URL)
+    data_fields, cookies = await get_msl_context(url=SALES_REPORTS_URL)
 
     from_date: datetime = datetime(year=datetime.now(tz=timezone.utc).year, month=7, day=1, tzinfo=timezone.utc)  # noqa: E501, UP017
     to_date: datetime = datetime(year=datetime.now(tz=timezone.utc).year + 1, month=6, day=30, tzinfo=timezone.utc)  # noqa: E501, UP017
@@ -254,7 +250,7 @@ async def fetch_report_url_and_cookies(report_type: ReportType) -> tuple[str | N
         headers=BASE_HEADERS,
         cookies=cookies,
     )
-    async with session_v2, session_v2.post(url=SALES_REPORT_URL, data=data_fields) as http_response:  # noqa: E501
+    async with session_v2, session_v2.post(url=SALES_REPORTS_URL, data=data_fields) as http_response:  # noqa: E501
         if http_response.status != 200:
             logger.debug("Returned a non 200 status code!!")
             logger.debug(http_response)
