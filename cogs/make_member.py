@@ -63,8 +63,6 @@ REQUEST_COOKIES: Final[Mapping[str, str]] = {
     ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
 }
 
-REQUEST_URL: Final[str] = settings["MEMBERS_LIST_URL"]
-
 
 class MakeMemberCommandCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
@@ -161,7 +159,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             )
             return
 
-        if not is_student_id_member(student_id=group_member_id):
+        if not await is_student_id_member(student_id=group_member_id):
             await self.command_send_error(
                 ctx=ctx,
                 message=(
