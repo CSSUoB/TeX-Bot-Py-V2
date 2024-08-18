@@ -94,7 +94,7 @@ class MSLEvents(MSL):
         """Fetch all events on the guild website."""
         EVENT_LIST_URL: Final[str] = MSL_URLS["EVENT_LIST"]
 
-        data_fields, cookies = await MSL.get_msl_context(url=EVENT_LIST_URL)
+        data_fields, cookies = await self.get_msl_context(url=EVENT_LIST_URL)
 
         form_data: dict[str, str] = {
             self.FROM_DATE_KEY: from_date,
@@ -225,7 +225,7 @@ class MSLSalesReports(MSL):
         """Get all sales reports from the guild website."""
         SALES_REPORT_URL: Final[str] = MSL_URLS["SALES_REPORTS"]
 
-        data_fields, cookies = await MSL.get_msl_context(url=SALES_REPORT_URL)
+        data_fields, cookies = await self.get_msl_context(url=SALES_REPORT_URL)
 
         from_date: datetime = datetime(year=datetime.now(tz=timezone.utc).year, month=7, day=1, tzinfo=timezone.utc)  # noqa: E501, UP017
         to_date: datetime = datetime(year=datetime.now(tz=timezone.utc).year + 1, month=6, day=30, tzinfo=timezone.utc)  # noqa: E501, UP017
