@@ -14,6 +14,9 @@ __all__: Sequence[str] = (
     "generate_invite_url",
     "is_member_inducted",
     "is_running_in_async",
+    "MSLMemberships",
+    "MSLSalesReports",
+    "MSLEvents",
 )
 
 
@@ -24,6 +27,7 @@ import discord
 
 from .command_checks import CommandChecks
 from .message_sender_components import MessageSavingSenderComponent
+from .msl import MSLEvents, MSLMemberships, MSLSalesReports
 from .suppress_traceback import SuppressTraceback
 from .tex_bot import TeXBot
 from .tex_bot_base_cog import TeXBotBaseCog
