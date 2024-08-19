@@ -8,7 +8,7 @@ __all__: Sequence[str] = ()
 import logging
 import re
 from collections.abc import Mapping
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from logging import Logger
 from typing import TYPE_CHECKING, Final
@@ -43,6 +43,9 @@ MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
         "ctl00_Main_rptGroups_ctl03_gvMemberships",
     },
 )
+
+CURRENT_YEAR_START_DATE: Final[datetime] = datetime(datetime.now(tz=timezone.utc).year, month=7, day=1, tzinfo=timezone.utc)  # noqa: E501, UP017
+CURRENT_YEAR_END_DATE: Final[datetime] = datetime(datetime.now(tz=timezone.utc).year + 1, month=6, day=30, tzinfo=timezone.utc)  # noqa: E501, UP017
 
 ORGANISATION_ID: Final[str] = settings["MSL_ORGANISATION_ID"]
 
@@ -227,12 +230,9 @@ class ReportType(Enum):
     CUSTOMISATION = "Customisations"
 
 
-async def fetch_report_url_and_cookies(report_type: ReportType) -> tuple[str | None, dict[str, str]]:  # noqa: E501
+async def fetch_report_url_and_cookies(report_type: ReportType, *, from_date: datetime, to_date: datetime) -> tuple[str | None, dict[str, str]]:  # noqa: E501
     """Fetch the specified report from the guild website."""
     data_fields, cookies = await get_msl_context(url=SALES_REPORTS_URL)
-
-    from_date: datetime = datetime(datetime.now(tz=timezone.utc).year, month=7, day=1, tzinfo=timezone.utc)  # noqa: E501, UP017
-    to_date: datetime = datetime(datetime.now(tz=timezone.utc).year + 1, month=6, day=30, tzinfo=timezone.utc)  # noqa: E501, UP017
 
     form_data: dict[str, str] = {
         SALES_FROM_DATE_KEY: from_date.strftime("%d/%m/%Y"),
@@ -281,7 +281,11 @@ async def fetch_report_url_and_cookies(report_type: ReportType) -> tuple[str | N
 
 async def update_current_year_sales_report() -> None:
     """Get all sales reports from the guild website."""
-    report_url, cookies = await fetch_report_url_and_cookies(report_type=ReportType.SALES)
+    report_url, cookies = await fetch_report_url_and_cookies(
+        report_type=ReportType.SALES,
+        to_date=CURRENT_YEAR_END_DATE,
+        from_date=CURRENT_YEAR_START_DATE,
+    )
 
     if report_url is None:
         logger.debug("No report URL was found!")
@@ -345,3 +349,73 @@ async def get_product_sales(product_id: str) -> dict[str, int]:
                 product_sales_data[values[2]] = int(values[3])
 
     return product_sales_data
+
+
+async def get_product_customisations(product_id: str) -> set[dict[str, str]]:
+    """Get the set of product customisations for a given product ID, checking the past year."""
+    report_url, cookies = await fetch_report_url_and_cookies(
+        report_type=ReportType.CUSTOMISATION,
+        to_date=datetime.now(tz=timezone.utc),  # noqa: UP017
+        from_date=datetime.now(tz=timezone.utc)-timedelta(weeks=52),  # noqa: UP017
+    )
+
+    if report_url is None:
+        logger.warning("Failed to retrieve customisations report URL.")
+        return set()
+
+    customisation_records: set[dict[str, str]] = set()
+    file_session: aiohttp.ClientSession = aiohttp.ClientSession(
+        headers=BASE_HEADERS,
+        cookies=cookies,
+    )
+    async with file_session, file_session.get(url=report_url) as file_response:
+        if file_response.status != 200:
+            logger.warning("Customisation report file session returned a non 200 status code.")
+            logger.debug(file_response)
+            return set()
+
+        for line in (await file_response.content.read()).split(b"\n")[7:]:
+            if line == b"\r" or not line:
+                break
+
+            values: list[str] = line.decode("utf-8").split(",")
+
+            if len(values) < 6:
+                logger.debug("Invalid line in customisations report!")
+                logger.debug(values)
+                continue
+
+            product_name_and_id: str = values[0]
+            file_product_id: str = (
+                product_name_and_id.split(" ")[0].removeprefix("[").removesuffix("]")
+            )
+            file_product_name: str = " ".join(product_name_and_id.split(" ")[1:])
+
+            if file_product_id != product_id:
+                continue
+
+            purchase_id: str = values[1]
+            purchase_date: str = values[2]
+
+            student_id: str = values[3]
+            customisation_name: str = values[4]
+            customisation_value: str = values[5]
+
+            for item in customisation_records:
+                if item["purchase_id"] == purchase_id:
+                    item[customisation_name] = customisation_value
+                    logger.debug(item)
+                    break
+
+                customisation_records.add(
+                    {
+                        "product_id": product_id,
+                        "product_name": file_product_name,
+                        "purchase_id": purchase_id,
+                        "purchase_date": purchase_date,
+                        "student_id": student_id,
+                        customisation_name: customisation_value,
+                    },
+                )
+
+    return customisation_records
