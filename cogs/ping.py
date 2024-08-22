@@ -11,7 +11,6 @@ import discord
 
 from config import settings
 from utils import TeXBotApplicationContext, TeXBotBaseCog
-from utils.msl import get_product_customisations
 
 
 class PingCommandCog(TeXBotBaseCog):
@@ -33,26 +32,3 @@ class PingCommandCog(TeXBotBaseCog):
             )[0],
             ephemeral=True,
         )
-
-
-
-
-
-    # TODO: ONLY FOR TESTING REMOVE WHEN DONE
-
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="test-customisation-report",
-        description="returns a customisation report",
-    )
-    async def test_customisation_report(self, ctx: TeXBotApplicationContext) -> None:
-        initial_message: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-            content="Generating customisation report...",
-        )
-
-        customisation_report: set[dict[str, str]] = await get_product_customisations(product_id="10211090")
-
-        await initial_message.edit(
-            content=f"Customisation report for product 10211090:\n\n{customisation_report}",
-        )
-
-
