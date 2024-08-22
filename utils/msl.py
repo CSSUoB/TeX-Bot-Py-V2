@@ -55,7 +55,7 @@ MEMBERS_LIST_URL: Final[str] = f"https://guildofstudents.com/organisation/member
 SALES_REPORTS_URL: Final[str] = f"https://www.guildofstudents.com/organisation/salesreports/{ORGANISATION_ID}/"
 
 
-async def get_msl_context(url: str) -> tuple[dict[str, str], dict[str, str]]:
+async def _get_msl_context(url: str) -> tuple[dict[str, str], dict[str, str]]:
     """Get the required context headers, data and cookies to make a request to MSL."""
     http_session: aiohttp.ClientSession = aiohttp.ClientSession(
         headers=BASE_HEADERS,
@@ -90,7 +90,7 @@ EVENTS_TABLE_ID: Final[str] = "ctl00_ctl00_Main_AdminPageContent_gvEvents"
 
 async def get_all_guild_events(from_date: str, to_date: str) -> dict[str, str]:
     """Fetch all events on the guild website."""
-    data_fields, cookies = await get_msl_context(url=EVENT_LIST_URL)
+    data_fields, cookies = await _get_msl_context(url=EVENT_LIST_URL)
 
     form_data: dict[str, str] = {
         EVENTS_FROM_DATE_KEY: from_date,
@@ -232,7 +232,7 @@ class ReportType(Enum):
 
 async def fetch_report_url_and_cookies(report_type: ReportType, *, from_date: datetime, to_date: datetime) -> tuple[str | None, dict[str, str]]:  # noqa: E501
     """Fetch the specified report from the guild website."""
-    data_fields, cookies = await get_msl_context(url=SALES_REPORTS_URL)
+    data_fields, cookies = await _get_msl_context(url=SALES_REPORTS_URL)
 
     form_data: dict[str, str] = {
         SALES_FROM_DATE_KEY: from_date.strftime("%d/%m/%Y"),
