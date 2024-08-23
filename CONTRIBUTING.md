@@ -222,6 +222,13 @@ If you are stuck, need help, or have a question, the best place to ask is on our
 
 Happy contributing!
 
+
+
+
+
+
+
+
 ## Guides
 
 ### Creating a New Cog
