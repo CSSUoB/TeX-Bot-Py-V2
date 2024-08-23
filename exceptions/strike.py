@@ -3,8 +3,8 @@
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
-    "StrikeTrackingError",
     "NoAuditLogsStrikeTrackingError",
+    "StrikeTrackingError",
 )
 
 
