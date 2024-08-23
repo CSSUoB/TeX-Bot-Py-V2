@@ -3,11 +3,11 @@
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
-    "InductSendMessageCog",
     "BaseInductCog",
-    "InductSlashCommandCog",
-    "InductContextCommandsCog",
     "EnsureMembersInductedCommandCog",
+    "InductContextCommandsCog",
+    "InductSendMessageCog",
+    "InductSlashCommandCog",
 )
 
 
