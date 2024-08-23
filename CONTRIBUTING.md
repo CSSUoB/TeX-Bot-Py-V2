@@ -221,3 +221,16 @@ If you see an error, we encourage you to **be bold** and fix it yourself, rather
 If you are stuck, need help, or have a question, the best place to ask is on our Discord.
 
 Happy contributing!
+
+## Guides
+
+### Creating a New Cog
+
+
+### Creating a New Environment Variable
+
+
+### Creating a Response Button
+
+
+
