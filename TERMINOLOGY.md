@@ -14,7 +14,7 @@ An [Application Command](https://discord.com/developers/docs/interactions/applic
 
 Bots are limited to only 100 [Slash Commands](#slash-commands), 5 [Message Commands](#message-commands) and 5 [User Commands](#user-commands).
 
-The primary difference is the way these commands are triggered. [Slash Commands](#slash-commands) are triggered by sending a message 
+The primary difference is the way these commands are triggered. [Slash Commands](#slash-commands) are triggered by sending a message into the chat, while both [User Commands](#user-commands) and [Message Commands](#message-commands) are triggered via a UI context menu provided by right-clicking on a [User](https://discord.com/developers/docs/resources/user) or [Message](https://discord.com/developers/docs/resources/message) respectively.
 
 
 ### [Slash Commands](https://discord.com/developers/docs/interactions/application-commands#slash-commands)
