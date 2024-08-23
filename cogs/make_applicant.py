@@ -4,8 +4,8 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = (
     "BaseMakeApplicantCog",
-    "MakeApplicantSlashCommandCog",
     "MakeApplicantContextCommandsCog",
+    "MakeApplicantSlashCommandCog",
 )
 
 

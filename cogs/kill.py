@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("KillCommandCog", "ConfirmKillView")
+__all__: Sequence[str] = ("ConfirmKillView", "KillCommandCog")
 
 
 import contextlib
