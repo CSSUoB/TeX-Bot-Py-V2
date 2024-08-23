@@ -24,13 +24,13 @@ Slash commands, also known as `CHAT_INPUT` commands are executed via sending a c
 
 
 
-### [Message Commands]()
+### [Message Commands](https://discord.com/developers/docs/interactions/application-commands#message-commands)
 
 
 
 
 
-### [User Commands]()
+### [User Commands](https://discord.com/developers/docs/interactions/application-commands#user-commands)
 
 
 
