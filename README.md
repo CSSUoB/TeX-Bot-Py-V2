@@ -166,15 +166,7 @@ A full guide on how to create your bot's account can be found [here; on Pycord's
 You'll need to create a [Discord bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts) of your own in the [Discord Developer Portal](https://discord.com/developers/applications).
 It's also handy if you have an empty [guild](https://discord.com/developers/docs/resources/guild) for you to test in.
 
-You can retrieve the correct [invite URL](https://docs.pycord.dev/en/stable/discord.html#inviting-your-bot) to use by navigating to the root folder, then running the following command:
-
-```shell
-poetry run python -m utils generate_invite_url {discord_bot_application_id} {discord_guild_id}
-```
-
-* `{discord_bot_application_id}` must be replaced by the [application ID](https://discord.com/developers/applications) of your [bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)
-
-* `{discord_guild_id}` must be replaced by the [snowflake ID](https://discord.com/developers/docs/reference#snowflakes) of your community group's [guild](https://discord.com/developers/docs/resources/guild)
+You can retrieve the correct [invite URL](https://docs.pycord.dev/en/stable/discord.html#inviting-your-bot) by simply running TeX-Bot for the first time with DEBUG logging enabled, and the invite url will be printed to the console.
 
 ### Setting [Environment Variables](https://wikipedia.org/wiki/Environment_variable)
 
