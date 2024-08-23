@@ -8,6 +8,35 @@ Therefore, the same terminology (["guild"](https://discord.com/developers/docs/r
 
 The term "main guild" is used throughout the code in this repository to refer specifically to your community group's main [Discord guild](https://discord.com/developers/docs/resources/guild).
 
+## [Application Commands](https://discord.com/developers/docs/interactions/application-commands)
+
+An [Application Command](https://discord.com/developers/docs/interactions/application-commands) can be a [Slash Command](#slash-commands), [Message Command](#message-commands) or [User Command](#user-commands).
+
+Bots are limited to only 100 [Slash Commands](#slash-commands), 5 [Message Commands](#message-commands) and 5 [User Commands](#user-commands).
+
+The primary difference is the way these commands are triggered. [Slash Commands](#slash-commands) are triggered by sending a message 
+
+
+### [Slash Commands](https://discord.com/developers/docs/interactions/application-commands#slash-commands)
+
+Slash commands, also known as `CHAT_INPUT` commands are executed via sending a chat message and are made up of a name, description and a set of options.
+
+
+
+
+### [Message Commands]()
+
+
+
+
+
+### [User Commands]()
+
+
+
+
+
+
 ## "User" Vs "Member" Vs "Guest"
 
 ### [Discord Objects](https://discord.com/developers/docs)
