@@ -72,15 +72,14 @@ async def get_all_guild_events(from_date: str, to_date: str) -> dict[str, str]:
 
     event_list.pop(0)
 
-    event_ids: dict[str, str] = {
+    return {
         event.find(name="a").get("href").split("/")[5]: event.find(name="a").text  # type: ignore[union-attr]
         for event in event_list
     }
 
-    return event_ids
-
-async def create_event() -> None:
+async def create_event() -> int:
     """Create an event on the guild website."""
+    return 0
 
 
 

@@ -2,16 +2,10 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = (
-    "get_msl_context",
-    "BASE_HEADERS",
-    "BASE_COOKIES",
-    "CURRENT_YEAR_START_DATE",
-    "CURRENT_YEAR_END_DATE",
-    "ORGANISATION_ID",
-)
+__all__: Sequence[str] = ()
 
 
+import datetime as dt
 import logging
 from collections.abc import Mapping
 from datetime import datetime, timezone
@@ -30,6 +24,23 @@ if TYPE_CHECKING:
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
+DEFAULT_TIMEZONE: Final[timezone] = dt.UTC
+TODAYS_DATE: Final[datetime] = datetime.now(tz=DEFAULT_TIMEZONE)
+
+CURRENT_YEAR_START_DATE: Final[datetime] = datetime(
+    year=TODAYS_DATE.year if TODAYS_DATE.month >= 7 else TODAYS_DATE.year - 1,
+    month=7,
+    day=1,
+    tzinfo=DEFAULT_TIMEZONE,
+)
+
+CURRENT_YEAR_END_DATE: Final[datetime] = datetime(
+    year=TODAYS_DATE.year if TODAYS_DATE.month >= 7 else TODAYS_DATE.year - 1,
+    month=6,
+    day=30,
+    tzinfo=DEFAULT_TIMEZONE,
+)
+
 BASE_HEADERS: Final[Mapping[str, str]] = {
     "Cache-Control": "no-cache",
     "Pragma": "no-cache",
@@ -39,9 +50,6 @@ BASE_HEADERS: Final[Mapping[str, str]] = {
 BASE_COOKIES: Final[Mapping[str, str]] = {
     ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
 }
-
-CURRENT_YEAR_START_DATE: Final[datetime] = datetime(datetime.now(tz=timezone.utc).year, month=7, day=1, tzinfo=timezone.utc)  # noqa: E501, UP017
-CURRENT_YEAR_END_DATE: Final[datetime] = datetime(datetime.now(tz=timezone.utc).year + 1, month=6, day=30, tzinfo=timezone.utc)  # noqa: E501, UP017
 
 ORGANISATION_ID: Final[str] = settings["MSL_ORGANISATION_ID"]
 
