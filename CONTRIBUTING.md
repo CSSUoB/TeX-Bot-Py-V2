@@ -73,6 +73,8 @@ There are separate cog files for each activity, and one [`__init__.py`](cogs/__i
 
 * [`cogs/__init__.py`](cogs/__init__.py): instantiates all the cog classes within this directory
 
+* [`cogs/annual_handover_and_reset.py](cogs/annual_handover_and_reset.py): cogs for annual handover procedures and role resets
+
 * [`cogs/archive.py`](cogs/archive.py): cogs for archiving categories of channels within your group's Discord guild
 
 * [`cogs/command_error.py`](cogs/command_error.py): cogs for sending error messages when commands fail to complete/execute
@@ -81,9 +83,13 @@ There are separate cog files for each activity, and one [`__init__.py`](cogs/__i
 
 * [`cogs/edit_message.py`](cogs/edit_message.py): cogs for editing messages that were previously sent by TeX-Bot
 
+* [`cogs/get_token_authorisation.py`](cogs/get_token_authorisation.py): cogs for retrieving the current status of the supplied authentication token
+
 * [`cogs/induct.py`](cogs/induct.py): cogs for inducting people into your group's Discord guild
 
 * [`cogs/kill.py`](cogs/kill.py): cogs related to the shutdown of TeX-Bot
+
+* [`cogs/make_applicant`](cogs/make_applicant.py): cogs related to making users into applicants
 
 * [`cogs/make_member.py`](cogs/make_member.py): cogs related to making guests into members
 
