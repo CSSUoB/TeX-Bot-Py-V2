@@ -8,7 +8,16 @@ Therefore, the same terminology (["guild"](https://discord.com/developers/docs/r
 
 The term "main guild" is used throughout the code in this repository to refer specifically to your community group's main [Discord guild](https://discord.com/developers/docs/resources/guild).
 
+
+## [Interactions](https://discord.com/developers/docs/interactions/overview)
+
+
+
+
+
+
 ## [Application Commands](https://discord.com/developers/docs/interactions/application-commands)
+
 
 An [Application Command](https://discord.com/developers/docs/interactions/application-commands) can be a [Slash Command](#slash-commands), [Message Command](#message-commands) or [User Command](#user-commands).
 
@@ -18,6 +27,7 @@ The primary difference is the way these commands are triggered. [Slash Commands]
 
 
 ### [Slash Commands](https://discord.com/developers/docs/interactions/application-commands#slash-commands)
+
 
 Slash commands, also known as `CHAT_INPUT` commands are executed via sending a chat message and are made up of a name, description and a set of options. These can be defined using the `discord.slash_command` decorator as follows:
 ```python
@@ -30,22 +40,21 @@ async def command_name(self, ctx: TeXBotApplicationContext):
     pass # command functions go here
 ```
 
+
 For more example usages, check the [Guides](CONTRIBUTING#Guides) section of the [CONTRIBUTING](CONTRIBUTING.md) doc.
 
 
+### Context Commands
 
-### [Message Commands](https://discord.com/developers/docs/interactions/application-commands#message-commands)
-
-
-
+#### [Message Commands](https://discord.com/developers/docs/interactions/application-commands#message-commands)
 
 
-### [User Commands](https://discord.com/developers/docs/interactions/application-commands#user-commands)
+Message commands, also known as `Message-Context Commands`, are executed via right-clicking on a [Message](https://discord.com/developers/docs/resources/message), clicking "Apps", then selecting the command from the menu. 
+
+The main difference between [Context Commands](#context-commands) and [Slash Commands](#slash-commands) is that [Context Commands](#context-commands) do not take user defined arguments and are limited to the [Message](https://discord.com/developers/docs/resources/message) that the command is issued on and the context which is passed along side it.
 
 
-
-## Interaction
-
+#### [User Commands](https://discord.com/developers/docs/interactions/application-commands#user-commands)
 
 
 
