@@ -19,10 +19,16 @@ The primary difference is the way these commands are triggered. [Slash Commands]
 
 ### [Slash Commands](https://discord.com/developers/docs/interactions/application-commands#slash-commands)
 
-Slash commands, also known as `CHAT_INPUT` commands are executed via sending a chat message and are made up of a name, description and a set of options.
-
-
-
+Slash commands, also known as `CHAT_INPUT` commands are executed via sending a chat message and are made up of a name, description and a set of options. These can be defined using the `discord.slash_command` decorator as follows:
+```python
+@discord.slash_command(
+    name="command-name",
+    description="a description of what the command does",
+)
+async def command_name(self, ctx: TeXBotApplicationContext):
+    """Doc string goes here."""
+    pass # command functions go here
+```
 
 ### [Message Commands](https://discord.com/developers/docs/interactions/application-commands#message-commands)
 
@@ -33,6 +39,8 @@ Slash commands, also known as `CHAT_INPUT` commands are executed via sending a c
 ### [User Commands](https://discord.com/developers/docs/interactions/application-commands#user-commands)
 
 
+
+## Interaction
 
 
 
