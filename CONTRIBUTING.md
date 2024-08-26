@@ -73,7 +73,7 @@ There are separate cog files for each activity, and one [`__init__.py`](cogs/__i
 
 * [`cogs/__init__.py`](cogs/__init__.py): instantiates all the cog classes within this directory
 
-* [`cogs/annual_handover_and_reset.py](cogs/annual_handover_and_reset.py): cogs for annual handover procedures and role resets
+* [`cogs/annual_handover_and_reset.py`](cogs/annual_handover_and_reset.py): cogs for annual handover procedures and role resets
 
 * [`cogs/archive.py`](cogs/archive.py): cogs for archiving categories of channels within your group's Discord guild
 
