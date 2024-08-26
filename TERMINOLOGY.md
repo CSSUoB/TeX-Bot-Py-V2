@@ -30,6 +30,10 @@ async def command_name(self, ctx: TeXBotApplicationContext):
     pass # command functions go here
 ```
 
+For more example usages, check the [Guides](CONTRIBUTING#guides) section of the [CONTRIBUTING](CONTRIBUTING.md) doc.
+
+
+
 ### [Message Commands](https://discord.com/developers/docs/interactions/application-commands#message-commands)
 
 
