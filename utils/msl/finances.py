@@ -14,7 +14,6 @@ from .core import ORGANISATION_ID
 FINANCES_URL: Final[str] = f"https://guildofstudents.com/sgf/{ORGANISATION_ID}/Home/Dashboard/"
 
 
-
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
@@ -37,12 +36,12 @@ class TransactionType(Enum):
     INVOICE: str = "Invoice"
 
 
-async def get_account_balance() -> int:
+async def get_account_balance() -> float | None:
     """Return the current account balance."""
     return 0
 
 
-async def fetch_financial_transactions(limit: int, transaction_type: TransactionType) -> dict[str, str]:  # noqa: ARG001, E501
+async def fetch_financial_transactions(limit: int | None = None, transaction_type: TransactionType | None = None) -> dict[str, str]:  # noqa: ARG001, E501
     """
     Return the most recent `limit` transactions.
 

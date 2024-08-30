@@ -83,3 +83,12 @@ async def is_student_id_member(student_id: str | int) -> bool:
     }
 
     return str(student_id) in all_ids
+
+
+async def get_membership_count() -> int:
+    """
+    Return the total number of members.
+
+    Optionally can be filtered by membership type but otherwise returns the total count.
+    """
+    return len(await get_full_membership_list())
