@@ -38,17 +38,26 @@ class TransactionType(Enum):
 
 async def get_account_balance() -> float | None:
     """Return the current account balance."""
-    return 0
+    raise NotImplementedError  # NOTE: Not implemented because SGF does not currently support this but is due to be added imminently.
 
 
-async def fetch_financial_transactions(limit: int | None = None, transaction_type: TransactionType | None = None) -> dict[str, str]:  # noqa: ARG001, E501
+async def get_available_balance() -> float | None:
+    """
+    Return the current available balance.
+
+    This is different from the account balance as it takes into account pending transactions.
+    """
+    raise NotImplementedError  # NOTE: Not implemented because SGF does not currently support this but is due to be added imminently.
+
+
+async def fetch_financial_transactions(limit: int | None = None, transaction_type: TransactionType | None = None) -> dict[str, str]:  # noqa: E501
     """
     Return the most recent `limit` transactions.
 
     If no limit is supplied, all transactions will be returned.
     Optional filter for type, if no type is supplied, all transactions will be returned.
     """
-    return {}
+    raise NotImplementedError
 
 
 async def fetch_transaction_from_id(transaction_id: int) -> dict[str, str]:  # noqa: ARG001
