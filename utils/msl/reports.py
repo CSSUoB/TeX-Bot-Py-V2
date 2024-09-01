@@ -240,4 +240,3 @@ async def get_product_customisations(product_id: str) -> set[dict[str, str]]:
                 )
 
     return customisation_records
-

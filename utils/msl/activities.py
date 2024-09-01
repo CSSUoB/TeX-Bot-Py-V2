@@ -106,5 +106,6 @@ async def create_activity() -> int:
     return 0
 
 
-
-
+async def fetch_activity(activity_id: int) -> dict[str, str]:
+    """Fetch a specific activity from the guild website."""
+    raise NotImplementedError

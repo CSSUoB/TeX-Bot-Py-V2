@@ -79,5 +79,3 @@ async def get_msl_context(url: str) -> tuple[dict[str, str], dict[str, str]]:
         cookies[".ASPXAUTH"] = settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"]
 
     return data_fields, cookies
-
-

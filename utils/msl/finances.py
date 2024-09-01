@@ -63,7 +63,3 @@ async def fetch_financial_transactions(limit: int | None = None, transaction_typ
 async def fetch_transaction_from_id(transaction_id: int) -> dict[str, str]:  # noqa: ARG001
     """Return the transaction with the given ID."""
     return {}
-
-
-
-

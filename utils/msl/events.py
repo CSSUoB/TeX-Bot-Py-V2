@@ -77,10 +77,12 @@ async def get_all_guild_events(from_date: str, to_date: str) -> dict[str, str]:
         for event in event_list
     }
 
-async def create_event() -> int:
+
+async def create_event() -> int | None:
     """Create an event on the guild website."""
-    return 0
+    raise NotImplementedError
 
 
-
-
+async def fetch_event(event_id: int) -> dict[str, str]:
+    """Fetch a specific event from the guild website."""
+    raise NotImplementedError
