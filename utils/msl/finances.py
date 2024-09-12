@@ -9,9 +9,14 @@ from enum import Enum
 from logging import Logger
 from typing import Final
 
-from .core import ORGANISATION_ID
+import aiohttp
+import bs4
+from bs4 import BeautifulSoup
+
+from .core import BASE_COOKIES, BASE_HEADERS, ORGANISATION_ID
 
 FINANCES_URL: Final[str] = f"https://guildofstudents.com/sgf/{ORGANISATION_ID}/Home/Dashboard/"
+BASE_EXPENSE_URL: Final[str] = f"https://guildofstudents.com/sgf/{ORGANISATION_ID}/Request/Edit?RequestId="
 
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
@@ -60,6 +65,50 @@ async def fetch_financial_transactions(limit: int | None = None, transaction_typ
     raise NotImplementedError
 
 
-async def fetch_transaction_from_id(transaction_id: int) -> dict[str, str]:  # noqa: ARG001
+async def fetch_transaction_from_id(transaction_id: int) -> dict[str, str]:
     """Return the transaction with the given ID."""
-    return {}
+    """
+    Transaction structure: {
+        id: int,
+        created by: str,
+        linked_event_id: int | None,
+        payee: str
+        lines: {
+            line 1 description: str,
+            line 1 amount: float,
+            line 2 description: str,
+            line 2 amount: float,
+            etc...
+        }
+        total_amount: float,
+        status: str,
+    }
+
+    """
+    EXPENSE_URL: Final[str] = BASE_EXPENSE_URL + str(transaction_id)
+
+    http_session: aiohttp.ClientSession = aiohttp.ClientSession(
+        headers=BASE_HEADERS,
+        cookies=BASE_COOKIES,
+    )
+    async with http_session, http_session.get(url=EXPENSE_URL) as http_response:
+        if http_response.status != 200:
+            logger.debug("Returned a non 200 status code!!")
+            logger.debug(http_response)
+            return {}
+
+        response_html: str = await http_response.text()
+
+    expense_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
+        markup=response_html,
+        features="html.parser",
+    ).find(
+        name="div",
+        attrs={"class": "row container mx-auto"},
+    )
+
+    if expense_html is None or isinstance(expense_html, bs4.NavigableString):
+        logger.debug("Something went wrong!")
+        return {}
+
+    raise NotImplementedError
