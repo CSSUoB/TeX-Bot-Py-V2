@@ -83,6 +83,5 @@ CommandChecks.check_interaction_user_in_main_guild = commands.check_any(
 )
 
 # noinspection PyProtectedMember
-CommandChecks.check_interaction_user_has_committee_role = commands.check_any(
-    commands.check(CommandChecks._check_interaction_user_has_committee_role),  # type: ignore[arg-type] # noqa: SLF001
+CommandChecks.check_interaction_user_has_committee_role = commands.check_any(commands.check(CommandChecks._check_interaction_user_has_committee_role),  # type: ignore[arg-type] # noqa: SLF001
 )
