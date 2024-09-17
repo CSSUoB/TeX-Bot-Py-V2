@@ -7,6 +7,7 @@ __all__: Sequence[str] = ("CommandChecks",)
 
 from collections.abc import Callable
 
+import discord
 from discord.ext import commands
 from discord.ext.commands import CheckFailure
 
@@ -49,13 +50,13 @@ class CommandChecks:
     """
 
     @classmethod
-    def is_interaction_user_in_main_guild_failure(cls, check: CheckFailure) -> bool:
+    def is_interaction_user_in_main_guild_failure(cls, check: Callable[[discord.Context], bool]) -> bool:  # noqa: E501
         # noinspection GrazieInspection
         """Whether check failed due to the interaction user not being in your Discord guild."""
         return bool(check.__name__ == cls._check_interaction_user_in_main_guild.__name__)  # type: ignore[attr-defined]
 
     @classmethod
-    def is_interaction_user_has_committee_role_failure(cls, check: CheckFailure) -> bool:
+    def is_interaction_user_has_committee_role_failure(cls, check: Callable[[discord.Context], bool]) -> bool:  # noqa: E501
         # noinspection GrazieInspection
         """Whether check failed due to the interaction user not having the committee role."""
         return bool(check.__name__ == cls._check_interaction_user_has_committee_role.__name__)  # type: ignore[attr-defined]
