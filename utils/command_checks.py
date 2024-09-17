@@ -50,7 +50,7 @@ class CommandChecks:
     """
 
     @classmethod
-    def _compare_check_failure(cls, check: Callable[[discord.Context], bool], interaction_name: str) -> bool:  # noqa: E501
+    def _compare_check_failure(cls, check: Callable[[discord.ApplicationContext], bool], interaction_name: str) -> bool:  # noqa: E501
         check_name: str | None = getattr(check, "__name__", None)
         if check_name is None:
             COULD_NOT_CONFIRM_INTERACTION_MESSAGE: Final[str] = (
