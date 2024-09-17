@@ -61,7 +61,7 @@ class CommandChecks:
         return bool(check.__name__ == interaction_name)
 
     @classmethod
-    def is_interaction_user_in_main_guild_failure(cls, check: Callable[[discord.Context], bool]) -> bool:  # noqa: E501
+    def is_interaction_user_in_main_guild_failure(cls, check: Callable[[discord.ApplicationContext], bool]) -> bool:  # noqa: E501
         # noinspection GrazieInspection
         """Whether check failed due to the interaction user not being in your Discord guild."""
         return cls._compare_check_failure(
@@ -70,7 +70,7 @@ class CommandChecks:
         )
 
     @classmethod
-    def is_interaction_user_has_committee_role_failure(cls, check: Callable[[discord.Context], bool]) -> bool:  # noqa: E501
+    def is_interaction_user_has_committee_role_failure(cls, check: Callable[[discord.ApplicationContext], bool]) -> bool:  # noqa: E501
         # noinspection GrazieInspection
         """Whether check failed due to the interaction user not having the committee role."""
         return cls._compare_check_failure(
