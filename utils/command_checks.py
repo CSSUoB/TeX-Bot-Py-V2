@@ -50,18 +50,33 @@ class CommandChecks:
     """
 
     @classmethod
+    def _compare_check_failure(cls, check: Callable[[discord.Context], bool], interaction_name: str) -> bool:  # noqa: E501
+        check_name: str | None = getattr(check, "__name__", None)
+        if check_name is None:
+            COULD_NOT_CONFIRM_INTERACTION_MESSAGE: Final[str] = (
+                "Could not confirm interaction type. Check's name did not exist."
+            )
+            raise ValueError(COULD_NOT_CONFIRM_INTERACTION_MESSAGE)
+
+        return bool(check.__name__ == interaction_name)
+
+    @classmethod
     def is_interaction_user_in_main_guild_failure(cls, check: Callable[[discord.Context], bool]) -> bool:  # noqa: E501
         # noinspection GrazieInspection
         """Whether check failed due to the interaction user not being in your Discord guild."""
-        return bool(check.__name__ == cls._check_interaction_user_in_main_guild.__name__)  # type: ignore[attr-defined]
+        return cls._compare_check_failure(
+            check,
+            cls._check_interaction_user_in_main_guild.__name__,  # type: ignore[attr-defined]
+        )
 
     @classmethod
     def is_interaction_user_has_committee_role_failure(cls, check: Callable[[discord.Context], bool]) -> bool:  # noqa: E501
         # noinspection GrazieInspection
         """Whether check failed due to the interaction user not having the committee role."""
-        return bool(check.__name__ == cls._check_interaction_user_has_committee_role.__name__)  # type: ignore[attr-defined]
-
-
+        return cls._compare_check_failure(
+            check,
+            cls._check_interaction_user_has_committee_role.__name__,  # type: ignore[attr-defined]
+        )
 # noinspection PyProtectedMember
 CommandChecks.check_interaction_user_in_main_guild = commands.check_any(
     commands.check(CommandChecks._check_interaction_user_in_main_guild),  # type: ignore[arg-type] # noqa: SLF001
