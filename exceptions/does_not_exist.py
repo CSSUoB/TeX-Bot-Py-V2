@@ -3,18 +3,18 @@
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
-    "RulesChannelDoesNotExistError",
-    "GuildDoesNotExistError",
-    "RoleDoesNotExistError",
-    "CommitteeRoleDoesNotExistError",
-    "CommitteeElectRoleDoesNotExistError",
-    "GuestRoleDoesNotExistError",
-    "MemberRoleDoesNotExistError",
-    "ArchivistRoleDoesNotExistError",
     "ApplicantRoleDoesNotExistError",
+    "ArchivistRoleDoesNotExistError",
     "ChannelDoesNotExistError",
-    "RolesChannelDoesNotExistError",
+    "CommitteeElectRoleDoesNotExistError",
+    "CommitteeRoleDoesNotExistError",
     "GeneralChannelDoesNotExistError",
+    "GuestRoleDoesNotExistError",
+    "GuildDoesNotExistError",
+    "MemberRoleDoesNotExistError",
+    "RoleDoesNotExistError",
+    "RolesChannelDoesNotExistError",
+    "RulesChannelDoesNotExistError",
 )
 
 

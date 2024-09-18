@@ -3,11 +3,11 @@
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
-    "InductSendMessageCog",
     "BaseInductCog",
-    "InductSlashCommandCog",
-    "InductContextCommandsCog",
     "EnsureMembersInductedCommandCog",
+    "InductContextCommandsCog",
+    "InductSendMessageCog",
+    "InductSlashCommandCog",
 )
 
 
@@ -185,6 +185,8 @@ class BaseInductCog(TeXBotBaseCog):
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
+        logger.debug("Inducting member %s, silent=%s", induction_member, silent)
+
         INDUCT_AUDIT_MESSAGE: Final[str] = (
             f"{ctx.user} used TeX Bot slash-command: \"/induct\""
         )
@@ -223,22 +225,11 @@ class BaseInductCog(TeXBotBaseCog):
             with contextlib.suppress(RolesChannelDoesNotExistError):
                 roles_channel_mention = (await self.bot.roles_channel).mention
 
-            message_already_sent: bool = False
-            message: discord.Message
-            async for message in general_channel.history(limit=7):
-                message_already_sent = bool(
-                    message.author == self.bot.user
-                    and "grab your roles" in message.content  # noqa: COM812
-                )
-                if message_already_sent:
-                    break
-
-            if not message_already_sent:
-                await general_channel.send(
-                    f"{await self.get_random_welcome_message(induction_member)} :tada:\n"
-                    f"Remember to grab your roles in {roles_channel_mention} "
-                    "and say hello to everyone here! :wave:",
-                )
+            await general_channel.send(
+                f"{await self.get_random_welcome_message(induction_member)} :tada:\n"
+                f"Remember to grab your roles in {roles_channel_mention} "
+                "and say hello to everyone here! :wave:",
+            )
 
         await induction_member.add_roles(
             guest_role,
