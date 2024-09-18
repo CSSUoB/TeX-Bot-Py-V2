@@ -66,7 +66,7 @@ class CommandChecks:
         """Whether check failed due to the interaction user not being in your Discord guild."""
         return cls._compare_check_failure(
             check,
-            cls._check_interaction_user_in_main_guild.__name__,  # type: ignore[attr-defined]
+            cls._check_interaction_user_in_main_guild.__name__,
         )
 
     @classmethod
@@ -75,11 +75,13 @@ class CommandChecks:
         """Whether check failed due to the interaction user not having the committee role."""
         return cls._compare_check_failure(
             check,
-            cls._check_interaction_user_has_committee_role.__name__,  # type: ignore[attr-defined]
+            cls._check_interaction_user_has_committee_role.__name__,
         )
+
+
 # noinspection PyProtectedMember
 CommandChecks.check_interaction_user_in_main_guild = commands.check_any(
-    commands.check(CommandChecks._check_interaction_user_in_main_guild), # noqa: SLF001
+    commands.check(CommandChecks._check_interaction_user_in_main_guild),  # noqa: SLF001
 )
 
 # noinspection PyProtectedMember
