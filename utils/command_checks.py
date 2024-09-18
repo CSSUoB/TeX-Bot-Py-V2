@@ -6,10 +6,10 @@ __all__: Sequence[str] = ("CommandChecks",)
 
 
 from collections.abc import Callable
+from typing import Final
 
 import discord
 from discord.ext import commands
-from discord.ext.commands import CheckFailure
 
 # noinspection PyProtectedMember
 from discord.ext.commands.core import T
@@ -79,10 +79,10 @@ class CommandChecks:
         )
 # noinspection PyProtectedMember
 CommandChecks.check_interaction_user_in_main_guild = commands.check_any(
-    commands.check(CommandChecks._check_interaction_user_in_main_guild),  # type: ignore[arg-type] # noqa: SLF001
+    commands.check(CommandChecks._check_interaction_user_in_main_guild), # noqa: SLF001
 )
 
 # noinspection PyProtectedMember
-CommandChecks.check_interaction_user_has_committee_role = commands.check_any(commands.check(CommandChecks._check_interaction_user_has_committee_role),  # type: ignore[arg-type] # noqa: SLF001
+CommandChecks.check_interaction_user_has_committee_role = commands.check_any(
+    commands.check(CommandChecks._check_interaction_user_has_committee_role),  # noqa: SLF001
 )
-
