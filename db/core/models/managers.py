@@ -4,7 +4,7 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = ("HashedDiscordMemberManager", "RelatedDiscordMemberManager")
 
-
+ 
 import abc
 import logging
 from collections.abc import Callable, MutableMapping
