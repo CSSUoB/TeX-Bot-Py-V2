@@ -33,7 +33,7 @@ py-cord = "~2.6"
 python-dotenv = "^1.0"
 validators = "^0.34"
 beautifulsoup4 = "^4.12"
-emoji = "^2.12"
+emoji = "^2.13"
 parsedatetime = "^2.6"
 django = "~5.1"
 matplotlib = "^3.9"
@@ -47,7 +47,7 @@ anyio = "^4.4.0"
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.8"
 mypy = "~1.11"
-django-stubs = {extras = ["compatible-mypy"], version = "~5.0"}
+django-stubs = {extras = ["compatible-mypy"], version = "~5.1"}
 types-beautifulsoup4 = "^4.12"
 pytest = "^8.3"
 ruff = "^0.6"
