@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("RemindMeCommandCog", "ClearRemindersBacklogTaskCog")
+__all__: Sequence[str] = ("ClearRemindersBacklogTaskCog", "RemindMeCommandCog")
 
 
 import datetime
