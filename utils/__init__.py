@@ -3,17 +3,17 @@
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
-    "CommandChecks",
-    "MessageSavingSenderComponent",
-    "SuppressTraceback",
-    "TeXBot",
-    "TeXBotBaseCog",
-    "TeXBotApplicationContext",
-    "TeXBotAutocompleteContext",
     "AllChannelTypes",
+    "CommandChecks",
     "generate_invite_url",
     "is_member_inducted",
     "is_running_in_async",
+    "MessageSavingSenderComponent",
+    "SuppressTraceback",
+    "TeXBot",
+    "TeXBotApplicationContext",
+    "TeXBotAutocompleteContext",
+    "TeXBotBaseCog",
 )
 
 
