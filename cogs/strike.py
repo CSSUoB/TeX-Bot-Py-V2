@@ -3,12 +3,12 @@
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
-    "perform_moderation_action",
-    "ConfirmStrikeMemberView",
-    "ConfirmManualModerationView",
-    "ConfirmStrikesOutOfSyncWithBanView",
     "BaseStrikeCog",
+    "ConfirmManualModerationView",
+    "ConfirmStrikeMemberView",
+    "ConfirmStrikesOutOfSyncWithBanView",
     "ManualModerationCog",
+    "perform_moderation_action",
     "StrikeCommandCog",
     "StrikeContextCommandsCog",
 )
