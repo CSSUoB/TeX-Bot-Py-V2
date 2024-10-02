@@ -78,6 +78,7 @@ async def get_full_membership_list() -> set[tuple[str, int]]:
 
 async def is_student_id_member(student_id: str | int) -> bool:
     """Check if the student ID is a member of the society."""
+    # TODO: Implement cache so that a query is only made to the website if the student ID being checked is not in the cache
     all_ids: set[str] = {
         str(member[1]) for member in await get_full_membership_list()
     }
