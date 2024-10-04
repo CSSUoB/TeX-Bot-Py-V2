@@ -16,6 +16,8 @@ from .core import BASE_COOKIES, BASE_HEADERS, ORGANISATION_ID
 
 MEMBERS_LIST_URL: Final[str] = f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
 
+persistent_membership_list: set[tuple[str, int]] = set()
+
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
@@ -73,17 +75,26 @@ async def get_full_membership_list() -> set[tuple[str, int]]:
         for member in standard_members + all_members
     }
 
+    persistent_membership_list.clear()
+    persistent_membership_list.update(member_list)
+
     return member_list
 
 
 async def is_student_id_member(student_id: str | int) -> bool:
     """Check if the student ID is a member of the society."""
-    # TODO: Implement cache so that a query is only made to the website if the student ID being checked is not in the cache
     all_ids: set[str] = {
-        str(member[1]) for member in await get_full_membership_list()
+        str(member[1]) for member in persistent_membership_list
     }
 
-    return str(student_id) in all_ids
+    if str(student_id) in all_ids:
+        return True
+
+    new_ids: set[str] = {
+        str(member[1] for member in await get_full_membership_list()),
+    }
+
+    return str(student_id) in new_ids
 
 
 async def get_membership_count() -> int:
