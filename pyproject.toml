@@ -42,6 +42,7 @@ python-logging-discord-handler = "^0.1"
 classproperties = {git = "https://github.com/hottwaj/classproperties.git"}
 asyncstdlib = "~3.12"
 setuptools = "^70.3"
+anyio = "^4.4.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.8"
