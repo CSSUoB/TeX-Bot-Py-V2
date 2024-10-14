@@ -6,6 +6,7 @@ __all__: Sequence[str] = ()
 
 import logging
 from enum import Enum
+from http.cookies import SimpleCookie
 from logging import Logger
 from typing import Final
 
@@ -13,8 +14,15 @@ import aiohttp
 import bs4
 from bs4 import BeautifulSoup
 
-from .core import BASE_COOKIES, BASE_HEADERS, ORGANISATION_ID
+from .core import (
+    BASE_COOKIES,
+    BASE_HEADERS,
+    ORGANISATION_ADMIN_URL,
+    ORGANISATION_ID,
+    get_msl_context,
+)
 
+FINANCE_REDIRECT_URL: Final[str] = f"https://www.guildofstudents.com/sgf/{ORGANISATION_ID}/Landing/Member"
 FINANCES_URL: Final[str] = f"https://guildofstudents.com/sgf/{ORGANISATION_ID}/Home/Dashboard/"
 BASE_EXPENSE_URL: Final[str] = f"https://guildofstudents.com/sgf/{ORGANISATION_ID}/Request/Edit?RequestId="
 
@@ -52,8 +60,52 @@ async def get_available_balance() -> float | None:
 
     This is different from the account balance as it takes into account pending transactions.
     """
-    raise NotImplementedError  # NOTE: Not implemented because SGF does not currently support this but is due to be added imminently.
+    cookie_session: aiohttp.ClientSession = aiohttp.ClientSession(
+        headers=BASE_HEADERS,
+        cookies=BASE_COOKIES,
+    )
+    async with cookie_session, cookie_session.get(url=ORGANISATION_ADMIN_URL) as cookie_response:
+        if cookie_response.status != 200:
+            logger.debug("Returned a non 200 status code!!")
+            logger.debug(cookie_response)
+            return None
 
+        cookies = cookie_response.cookies
+
+    logger.debug(cookies)
+    http_session: aiohttp.ClientSession = aiohttp.ClientSession(
+        headers=BASE_HEADERS,
+        cookies=cookies,
+    )
+    async with http_session, http_session.get(url=FINANCE_REDIRECT_URL) as http_response:
+        if http_response.status != 200:
+            logger.debug("Returned a non 200 status code!!")
+            logger.debug(http_response)
+            return None
+
+        response_html: str = await http_response.text()
+
+    # check page title
+    if "Login" in response_html:
+        logger.debug("Not logged in!")
+        return None
+
+    available_balance_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
+        markup=response_html,
+        features="html.parser",
+    ).find(
+        name="div",
+        attrs={"id": "accounts-summary"},
+    )
+
+    if available_balance_html is None or isinstance(available_balance_html, bs4.NavigableString):
+        logger.debug("Something went wrong!")
+        logger.debug(response_html)
+        return None
+
+    logger.debug("Available balance HTML: %s", available_balance_html)
+
+    return None
 
 async def fetch_financial_transactions(limit: int | None = None, transaction_type: TransactionType | None = None) -> dict[str, str]:  # noqa: E501
     """

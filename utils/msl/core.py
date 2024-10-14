@@ -53,6 +53,8 @@ BASE_COOKIES: Final[Mapping[str, str]] = {
 
 ORGANISATION_ID: Final[str] = settings["MSL_ORGANISATION_ID"]
 
+ORGANISATION_ADMIN_URL: Final[str] = f"https://www.guildofstudents.com/organisation/admin/{ORGANISATION_ID}/"
+
 
 async def get_msl_context(url: str) -> tuple[dict[str, str], dict[str, str]]:
     """Get the required context headers, data and cookies to make a request to MSL."""
