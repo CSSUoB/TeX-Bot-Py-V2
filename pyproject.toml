@@ -45,7 +45,7 @@ setuptools = "^70.3"
 anyio = "^4.4.0"
 
 [tool.poetry.group.dev.dependencies]
-pre-commit = "^3.8"
+pre-commit = "^4.0"
 mypy = "~1.11"
 django-stubs = {extras = ["compatible-mypy"], version = "~5.1"}
 types-beautifulsoup4 = "^4.12"
