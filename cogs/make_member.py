@@ -176,6 +176,8 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             {
                 "ctl00_Main_rptGroups_ctl05_gvMemberships",
                 "ctl00_Main_rptGroups_ctl03_gvMemberships",
+                "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl03_gvMemberships",
+                "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl05_gvMemberships",
             },
         )
         table_id: str
