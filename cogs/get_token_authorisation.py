@@ -65,14 +65,17 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
         ).find("title")
 
         if not page_title:
-            await self.command_send_error(ctx, message="Something has gone very wrong.")
+            await self.command_send_error(
+                ctx=ctx,
+                message="Profile page returned no content when checking token authorisation!",
+            )
             return
 
         if isinstance(page_title, bs4.NavigableString) and "Login" in page_title or "Login" in page_title.string:  # type: ignore[operator, union-attr]  # noqa: E501
             BAD_TOKEN_MESSAGE: Final[str] = (
                 "Unable to fetch profile page because the token was not valid."
             )
-            logger.debug(BAD_TOKEN_MESSAGE)
+            logger.warning(BAD_TOKEN_MESSAGE)
             await ctx.respond(content=BAD_TOKEN_MESSAGE)
             return
 
@@ -113,7 +116,7 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
                 f"Failed to retrieve the admin table for user: {user_name.string}."
                 "Please check you have used the correct token!"
             )
-            logger.debug(NO_ADMIN_TABLE_MESSAGE)
+            logger.warning(NO_ADMIN_TABLE_MESSAGE)
             await ctx.respond(content=NO_ADMIN_TABLE_MESSAGE)
             return
 
