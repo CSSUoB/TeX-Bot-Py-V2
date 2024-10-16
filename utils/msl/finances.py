@@ -6,7 +6,6 @@ __all__: Sequence[str] = ()
 
 import logging
 from enum import Enum
-from http.cookies import SimpleCookie
 from logging import Logger
 from typing import Final
 
@@ -19,7 +18,6 @@ from .core import (
     BASE_HEADERS,
     ORGANISATION_ADMIN_URL,
     ORGANISATION_ID,
-    get_msl_context,
 )
 
 FINANCE_REDIRECT_URL: Final[str] = f"https://www.guildofstudents.com/sgf/{ORGANISATION_ID}/Landing/Member"
@@ -64,7 +62,9 @@ async def get_available_balance() -> float | None:
         headers=BASE_HEADERS,
         cookies=BASE_COOKIES,
     )
-    async with cookie_session, cookie_session.get(url=ORGANISATION_ADMIN_URL) as cookie_response:
+    async with cookie_session, cookie_session.get(url=ORGANISATION_ADMIN_URL) as (
+        cookie_response
+    ):
         if cookie_response.status != 200:
             logger.debug("Returned a non 200 status code!!")
             logger.debug(cookie_response)
@@ -98,7 +98,9 @@ async def get_available_balance() -> float | None:
         attrs={"id": "accounts-summary"},
     )
 
-    if available_balance_html is None or isinstance(available_balance_html, bs4.NavigableString):
+    if available_balance_html is None or (
+        isinstance(available_balance_html, bs4.NavigableString)
+    ):
         logger.debug("Something went wrong!")
         logger.debug(response_html)
         return None
