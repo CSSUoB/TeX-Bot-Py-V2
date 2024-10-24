@@ -40,7 +40,7 @@ matplotlib = "^3.9"
 mplcyberpunk = "^0.7"
 python-logging-discord-handler = "^0.1"
 classproperties = {git = "https://github.com/hottwaj/classproperties.git"}
-asyncstdlib = "~3.12"
+asyncstdlib = "~3.13"
 setuptools = "^70.3"
 
 [tool.poetry.group.dev.dependencies]
