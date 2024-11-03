@@ -318,7 +318,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             logger.debug("An invalid status was provided but did not raise an exception.")
             return
 
-        action.update(status=new_status)
+        await action.aupdate(status=new_status)
 
         await ctx.respond(
             content=f"Updated action: {action.description} status to be: {action.status}",
@@ -377,7 +377,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             return
 
-        action.update(description=description)
+        await action.aupdate(description=description)
 
         await ctx.respond(content="Action description updated!")
 
