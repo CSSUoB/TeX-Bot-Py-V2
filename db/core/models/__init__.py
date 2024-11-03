@@ -31,8 +31,8 @@ class AssignedCommitteeAction(BaseDiscordMemberWrapper):
     """Model to represent an action that has been assigned to a Discord committee-member."""
 
     class Status(models.TextChoices):
-        CANCELLED = "CND", _("Cancelled")
         BLOCKED = "BLK", _("Blocked")
+        CANCELLED = "CND", _("Cancelled")
         COMPLETE = "CMP", _("Complete")
         IN_PROGRESS = "INP", _("In Progress")
         NOT_STARTED = "NST", _("Not Started")

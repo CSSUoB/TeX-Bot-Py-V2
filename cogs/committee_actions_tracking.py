@@ -12,6 +12,7 @@ __all__: Sequence[str] = (
 import logging
 import random
 from collections.abc import Set
+from enum import Enum
 from logging import Logger
 from typing import Final
 
@@ -29,6 +30,16 @@ from utils import (
 )
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
+
+
+class Status(Enum):
+    """Enum class to define the possible statuses of an action."""
+
+    BLOCKED: Final[str] = "BLK"
+    CANCELLED: Final[str] = "CND"
+    COMPLETED: Final[str] = "CMP"
+    IN_PROGRESS: Final[str] = "INP"
+    NOT_STARTED: Final[str] = "NST"
 
 
 class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
@@ -528,14 +539,14 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         if not status:
             user_actions = [
                 action async for action in await AssignedCommitteeAction.objects.afilter(
-                    Q(status="INP") | Q(status="BLK") | Q(status="NST"),
+                    Q(status=Status.IN_PROGRESS) | Q(status=Status.BLOCKED) | Q(status=Status.NOT_STARTED),
                     discord_id=int(action_member.id),
                 )
             ]
         else:
             user_actions = [
                 action async for action in await AssignedCommitteeAction.objects.afilter(
-                    Q(status=status),
+                    status=status,
                     discord_id=int(action_member.id),
                 )
             ]
