@@ -155,40 +155,30 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             logger.debug("User action ID autocomplete could not acquire an interaction user!")
             return set()
 
-
         admin_role: discord.Role | None = discord.utils.get(
             ctx.bot.main_guild.roles,
             name="Admin",
         )
 
         if admin_role and admin_role in interaction_user.roles:
-            all_actions: list[AssignedCommitteeAction] = [
-                action
-                async for action in AssignedCommitteeAction.objects.select_related().all()
-            ]
-
             return {
                 discord.OptionChoice(
                     name=f"{action.description} ({action.status})",
                     value=str(action.id),
                 )
-                for action in all_actions
+                for action in AssignedCommitteeAction.objects.select_related().all()
             }
-
-        filtered_user_actions: list[AssignedCommitteeAction] = [
-            action async for action in await AssignedCommitteeAction.objects.afilter(
-                (
-                    Q(status=Status.IN_PROGRESS) |
-                    Q(status=Status.BLOCKED) |
-                    Q(status=Status.NOT_STARTED)
-                ),
-                discord_id=int(interaction_user.id),
-            )
-        ]
 
         return {
             discord.OptionChoice(name=action.description, value=str(action.id))
-            for action in filtered_user_actions
+            async for action in await AssignedCommitteeAction.objects.afilter(
+                (
+                    Q(status=Status.IN_PROGRESS.value) |
+                    Q(status=Status.BLOCKED.value) |
+                    Q(status=Status.NOT_STARTED.value)
+                ),
+                discord_id=int(interaction_user.id),
+            )
         }
 
     @staticmethod
@@ -544,9 +534,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             user_actions = [
                 action async for action in await AssignedCommitteeAction.objects.afilter(
                     (
-                        Q(status=Status.IN_PROGRESS) |
-                        Q(status=Status.BLOCKED) |
-                        Q(status=Status.NOT_STARTED)
+                        Q(status=Status.IN_PROGRESS.value) |
+                        Q(status=Status.BLOCKED.value) |
+                        Q(status=Status.NOT_STARTED.value)
                     ),
                     discord_id=int(action_member.id),
                 )
