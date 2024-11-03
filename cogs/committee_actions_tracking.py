@@ -539,7 +539,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         if not status:
             user_actions = [
                 action async for action in await AssignedCommitteeAction.objects.afilter(
-                    Q(status=Status.IN_PROGRESS) | Q(status=Status.BLOCKED) | Q(status=Status.NOT_STARTED),
+                    Q(status="INP") | Q(status="BLK") | Q(status="NST"),
                     discord_id=int(action_member.id),
                 )
             ]
