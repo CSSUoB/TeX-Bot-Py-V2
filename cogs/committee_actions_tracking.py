@@ -178,9 +178,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         filtered_user_actions: list[AssignedCommitteeAction] = [
             action async for action in await AssignedCommitteeAction.objects.afilter(
                 (
-                      Q(status=Status.IN_PROGRESS)
-                    | Q(status=Status.BLOCKED)
-                    | Q(status=Status.NOT_STARTED)
+                    Q(status=Status.IN_PROGRESS) |
+                    Q(status=Status.BLOCKED) |
+                    Q(status=Status.NOT_STARTED)
                 ),
                 discord_id=int(interaction_user.id),
             )
@@ -544,9 +544,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             user_actions = [
                 action async for action in await AssignedCommitteeAction.objects.afilter(
                     (
-                        Q(status=Status.IN_PROGRESS)
-                        | Q(status=Status.BLOCKED)
-                        | Q(status=Status.NOT_STARTED)
+                        Q(status=Status.IN_PROGRESS) |
+                        Q(status=Status.BLOCKED) |
+                        Q(status=Status.NOT_STARTED)
                     ),
                     discord_id=int(action_member.id),
                 )
