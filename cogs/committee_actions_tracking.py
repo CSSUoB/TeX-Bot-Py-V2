@@ -678,7 +678,11 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             action async for action in AssignedCommitteeAction.objects.select_related().all()
         ]
 
-        desired_status: list[str] = [status] if status else ["NST", "INP", "BLK"]
+        desired_status: list[str] = [status] if status else [
+            Status.NOT_STARTED.value,
+            Status.IN_PROGRESS.value,
+            Status.BLOCKED.value,
+        ]
 
         committee_members: list[discord.Member] = committee_role.members
 
