@@ -50,17 +50,17 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                         "Max description length is 200 characters."
                     ),
                 )
-            return "Action description exceeded the maximum character limit!"
+            return "Action description exceeded the maximum character limit (200)."
 
         if action_user.bot:
             if not silent:
                 await self.command_send_error(
-                    ctx,
+                    ctx=ctx,
                     message=(
                         "Action creation aborted because actions cannot be assigned to bots!"
                     ),
                 )
-            return f"Actions cannot be assigned to bots! ({action_user})"
+            return f"Actions cannot be assigned to bots. ({action_user})"
 
         try:
             action: AssignedCommitteeAction = await AssignedCommitteeAction.objects.acreate(
@@ -211,7 +211,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def create(self, ctx: TeXBotApplicationContext, action_description: str, *, action_member_id: str) -> None:  # noqa: E501
+    async def create(self, ctx: TeXBotApplicationContext, action_description: str, *, action_member_id: str | None) -> None:  # noqa: E501
         """
         Definition and callback response of the "create" command.
 
@@ -405,8 +405,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             return
 
+        index: int = random.randint(0, len(committee_members))
+
         try:
-            index: int = random.randint(0, len(committee_members))
             action_user: discord.Member = committee_members[index]
         except IndexError:
             logger.debug("Index: %s was out of range! Printing list...", index)
@@ -595,6 +596,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 message="Action ID entered was not valid! Please use the autocomplete.",
                 logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
             )
+            return
 
         new_user_to_action: discord.Member = await self.bot.get_member_from_str_id(
             member_id,
@@ -771,38 +773,3 @@ class CommitteeActionsTrackingContextCommandsCog(CommitteeActionsTrackingBaseCog
             actioned_message_text,
             silent=False,
         )
-
-# NOTE: EVERYTHING BELOW THIS LINE MUST BE DELETED BEFORE MERGE
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="admin-toggle",
-        description="Toggles if the user has the admin role or not.",
-    )
-    async def admin_toggle(self, ctx: TeXBotApplicationContext) -> None:
-        """Toggle the user admin status."""
-        admin_role: discord.Role | None = discord.utils.get(
-            self.bot.main_guild.roles,
-            name="Admin",
-        )
-
-        if not admin_role:
-            await ctx.respond(content="Couldn't find the admin role!!")
-            return
-
-        interaction_user: discord.Member = ctx.user
-
-        if admin_role in interaction_user.roles:
-            await interaction_user.remove_roles(
-                admin_role,
-                reason=f"{interaction_user} executed TeX-Bot slash-command \"admin-toggle\"",
-            )
-            await ctx.respond(content="Removed your admin role!")
-            return
-
-        await interaction_user.add_roles(
-            admin_role,
-            reason=f"{interaction_user} executed TeX-Bot slash-command \"admin-toggle\"",
-        )
-
-        await ctx.respond(content="Given you the admin role!!")
-
-
