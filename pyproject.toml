@@ -81,7 +81,6 @@ warn_return_any = true
 no_implicit_reexport = true
 strict_equality = true
 warn_unreachable = true
-enable_incomplete_feature = "NewGenericSyntax"
 
 [[tool.mypy.overrides]]
 module = [
