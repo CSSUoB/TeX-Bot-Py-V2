@@ -45,7 +45,7 @@ class Status(Enum):
 class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
     """Base cog class that defines methods for committee actions tracking."""
 
-    async def _create_action(self, ctx: TeXBotApplicationContext, action_user: discord.Member, description: str, *, silent: bool) -> AssignedCommitteeAction | str:  # noqa: E501
+    async def _create_action(self, ctx: TeXBotApplicationContext, action_user: discord.Member, description: str) -> AssignedCommitteeAction | None:  # noqa: E501
         """
         Create the action object with the given description for the given user.
 
@@ -53,24 +53,9 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
         If unsuccessful, a string explaining the error will be returned.
         """
         if len(description) >= 200:
-            if not silent:
-                await self.command_send_error(
-                    ctx,
-                    message=(
-                        "Action description was too long! "
-                        "Max description length is 200 characters."
-                    ),
-                )
             return "Action description exceeded the maximum character limit (200)."
 
         if action_user.bot:
-            if not silent:
-                await self.command_send_error(
-                    ctx=ctx,
-                    message=(
-                        "Action creation aborted because actions cannot be assigned to bots!"
-                    ),
-                )
             return f"Actions cannot be assigned to bots. ({action_user})"
 
         try:
@@ -98,11 +83,6 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 f"User: {action_user} already has an action "
                 f"with description: {description}!"
             )
-            if not silent:
-                await self.command_send_error(
-                    ctx,
-                    message=(DUPLICATE_ACTION_MESSAGE),
-                )
             logger.debug(
                 "Action creation for user: %s, failed because an action "
                 "with description: %s, already exists.",
@@ -110,12 +90,6 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 description,
             )
             return DUPLICATE_ACTION_MESSAGE
-        if not silent:
-            await ctx.respond(
-                content=(
-                    f"Action: {action.description} created for user: {action_user.mention}"
-                ),
-            )
         return action
 
 
@@ -243,7 +217,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             return
 
-        await self._create_action(ctx, action_user, action_description, silent=False)
+        await self._create_action(ctx, action_user, action_description)
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="update-status",
@@ -416,7 +390,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             await self.command_send_error(ctx, message="Index out of range... check the logs!")
             return
 
-        await self._create_action(ctx, action_user, action_description, silent=False)
+        await self._create_action(ctx, action_user, action_description)
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="action-all-committee",
@@ -449,11 +423,10 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         committee_member: discord.Member
         for committee_member in committee_members:
-            action_or_error_message: AssignedCommitteeAction | str = await self._create_action(
-                ctx,
-                committee_member,
-                action_description,
-                silent=True,
+            action_or_error_message: AssignedCommitteeAction | None = await self._create_action(
+                ctx=ctx,
+                action_user=committee_member,
+                description=action_description,
             )
             if isinstance(action_or_error_message, AssignedCommitteeAction):
                 success_members.append(committee_member)
@@ -632,7 +605,6 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             ctx,
             new_user_to_action,
             action_to_reassign.description,
-            silent=False,
         )
 
         if isinstance(new_action, AssignedCommitteeAction):
@@ -780,5 +752,4 @@ class CommitteeActionsTrackingContextCommandsCog(CommitteeActionsTrackingBaseCog
             ctx,
             actioned_message_user,
             actioned_message_text,
-            silent=False,
         )
