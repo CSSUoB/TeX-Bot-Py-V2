@@ -164,7 +164,6 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
             await channel.edit(sync_permissions=True)
 
-
         await category.set_permissions(guest_role, overwrite=None)
         await category.set_permissions(committee_role, overwrite=None)
         await category.set_permissions(everyone_role, overwrite=None)
