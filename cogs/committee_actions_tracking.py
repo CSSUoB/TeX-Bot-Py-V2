@@ -21,7 +21,11 @@ from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, 
 from django.db.models import Q
 
 from db.core.models import AssignedCommitteeAction, DiscordMember
-from exceptions import CommitteeRoleDoesNotExistError
+from exceptions import (
+    CommitteeRoleDoesNotExistError,
+    InvalidActionDescriptionError,
+    InvalidActionTargetError,
+)
 from utils import (
     CommandChecks,
     TeXBotApplicationContext,
@@ -53,10 +57,17 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
         If unsuccessful, a string explaining the error will be returned.
         """
         if len(description) >= 200:
-            return "Action description exceeded the maximum character limit (200)."
+            INVALID_DESCRIPTION_ERROR_MESSAGE: Final[str] = (
+                f"Action description length was {len(description)} characters which is "
+                "greater than the maximum of 200."
+            )
+            raise InvalidActionTargetError(message=INVALID_DESCRIPTION_ERROR_MESSAGE)
 
         if action_user.bot:
-            return f"Actions cannot be assigned to bots. ({action_user})"
+            INVALID_ACTION_TARGET_MESSAGE: Final[str] = (
+                f"Actions cannot be assigned to bots. ({action_user})"
+            )
+            raise InvalidActionTargetError(message=INVALID_ACTION_TARGET_MESSAGE)
 
         try:
             action: AssignedCommitteeAction = await AssignedCommitteeAction.objects.acreate(
@@ -89,7 +100,9 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 action_user,
                 description,
             )
-            return DUPLICATE_ACTION_MESSAGE
+            raise InvalidActionDescriptionError(
+                message=DUPLICATE_ACTION_MESSAGE,
+            ) from create_action_error
         return action
 
 
@@ -217,7 +230,15 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             return
 
-        await self._create_action(ctx, action_user, action_description)
+        try:
+            await self._create_action(ctx, action_user, action_description)
+            await ctx.respond(
+                content=f"Action `{action_description}` created for: {action_user.mention}",
+            )
+        except (
+            InvalidActionDescriptionError, InvalidActionTargetError,
+        ) as creation_failed_error:
+            await ctx.respond(content=creation_failed_error.message)
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="update-status",
@@ -390,7 +411,16 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             await self.command_send_error(ctx, message="Index out of range... check the logs!")
             return
 
-        await self._create_action(ctx, action_user, action_description)
+        try:
+            await self._create_action(ctx, action_user, action_description)
+            await ctx.respond(
+                content=f"Action `{action_description}` created for: {action_user.mention}",
+            )
+        except (
+            InvalidActionTargetError, InvalidActionDescriptionError,
+        ) as creation_failed_error:
+            await ctx.respond(content=creation_failed_error.message)
+            return
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="action-all-committee",
@@ -423,15 +453,17 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         committee_member: discord.Member
         for committee_member in committee_members:
-            action_or_error_message: AssignedCommitteeAction | None = await self._create_action(
-                ctx=ctx,
-                action_user=committee_member,
-                description=action_description,
-            )
-            if isinstance(action_or_error_message, AssignedCommitteeAction):
+            try:
+                _: AssignedCommitteeAction | None = await self._create_action(
+                    ctx=ctx,
+                    action_user=committee_member,
+                    description=action_description,
+                )
                 success_members.append(committee_member)
-            else:
-                failed_members += action_or_error_message + "\n"
+            except (
+                InvalidActionDescriptionError, InvalidActionTargetError,
+            ) as creation_failed_error:
+                failed_members += creation_failed_error.message + "\n"
 
         response_message: str = ""
 
@@ -601,14 +633,19 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             return
 
-        new_action: AssignedCommitteeAction | str = await self._create_action(
-            ctx,
-            new_user_to_action,
-            action_to_reassign.description,
-        )
-
-        if isinstance(new_action, AssignedCommitteeAction):
-            await action_to_reassign.adelete()
+        try:
+            new_action: AssignedCommitteeAction | None = await self._create_action(
+                ctx=ctx,
+                action_user=new_user_to_action,
+                description=action_to_reassign.description,
+            )
+            if new_action:
+                await action_to_reassign.adelete()
+        except (
+            InvalidActionDescriptionError, InvalidActionTargetError,
+        ) as invalid_description_error:
+            await ctx.respond(content=invalid_description_error.message)
+            return
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="list-all",
@@ -748,8 +785,17 @@ class CommitteeActionsTrackingContextCommandsCog(CommitteeActionsTrackingBaseCog
             await ctx.respond(content="Message author is not in the server!")
             return
 
-        await self._create_action(
-            ctx,
-            actioned_message_user,
-            actioned_message_text,
-        )
+        try:
+            await self._create_action(
+                ctx=ctx,
+                action_user=actioned_message_user,
+                description=actioned_message_text,
+            )
+            await ctx.respond(
+                content=f"Action `{actioned_message_text}` created "
+                f"for: {actioned_message_user.mention}",
+            )
+        except (
+            InvalidActionTargetError, InvalidActionDescriptionError,
+        ) as creation_failure_error:
+            await ctx.respond(content=creation_failure_error.message)
