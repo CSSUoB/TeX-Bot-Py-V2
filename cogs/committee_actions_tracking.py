@@ -747,14 +747,16 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
         except (ObjectDoesNotExist, MultipleObjectsReturned):
             await self.command_send_error(
-                ctx,
+                ctx=ctx,
                 message="Action provided was either not unique or could not be found.",
             )
             return
 
+        action_description: str = action.description
+
         await action.adelete()
 
-        await ctx.respond(content="Action successfully deleted.")
+        await ctx.respond(content=f"Action `{action_description}` successfully deleted.")
 
 
 class CommitteeActionsTrackingContextCommandsCog(CommitteeActionsTrackingBaseCog):
