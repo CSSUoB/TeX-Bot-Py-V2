@@ -181,7 +181,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         return {discord.OptionChoice(name=value, value=code) for code, value in status_options}
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @committee_actions.slash_command(  # type: ignore[no-untyped-call, misc]
         name="create",
         description="Adds a new action with the specified description.",
     )
@@ -240,7 +240,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         ) as creation_failed_error:
             await ctx.respond(content=creation_failed_error.message)
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @committee_actions.slash_command(  # type: ignore[no-untyped-call, misc]
         name="update-status",
         description="Update the status of the provided action.",
     )
@@ -314,7 +314,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             ephemeral=True,
         )
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @committee_actions.slash_command(  # type: ignore[no-untyped-call, misc]
         name="update-description",
         description="Update the description of the provided action.",
     )
@@ -370,7 +370,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         await ctx.respond(content="Action description updated!")
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @committee_actions.slash_command(  # type: ignore[no-untyped-call, misc]
         name="action-random-user",
         description="Creates an action object with the specified description and random user.",
     )
@@ -422,7 +422,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             await ctx.respond(content=creation_failed_error.message)
             return
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @committee_actions.slash_command(  # type: ignore[no-untyped-call, misc]
         name="action-all-committee",
         description="Creates an action with the description for every committee member",
     )
@@ -487,7 +487,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         await ctx.respond(content=response_message)
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @committee_actions.slash_command(  # type: ignore[no-untyped-call, misc]
         name="list",
         description="Lists all actions for a specified user",
     )
@@ -574,7 +574,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         await ctx.respond(content=actions_message)
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @committee_actions.slash_command(  # type: ignore[no-untyped-call, misc]
         name="reassign",
         description="Reassign the specified action to another user.",
     )
@@ -647,7 +647,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             await ctx.respond(content=invalid_description_error.message)
             return
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @committee_actions.slash_command(  # type: ignore[no-untyped-call, misc]
         name="list-all",
         description="List all current actions.",
     )
@@ -712,7 +712,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         await ctx.respond(content=all_actions_message)
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @committee_actions.slash_command(  # type: ignore[no-untyped-call, misc]
         name="delete",
         description="Deletes the specified action from the database completely.",
     )
