@@ -22,6 +22,8 @@ if TYPE_CHECKING:
 
     T_model = TypeVar("T_model", bound=AsyncBaseModel)
 
+    T_BaseDiscordMemberWrapper = TypeVar("T_BaseDiscordMemberWrapper", bound=BaseDiscordMemberWrapper)  # noqa: E501
+
 Defaults: TypeAlias = (
     MutableMapping[str, object | Callable[[], object]]
     | None
@@ -197,7 +199,7 @@ class HashedDiscordMemberManager(BaseHashedIDManager["DiscordMember"]):
         return kwargs
 
 
-class RelatedDiscordMemberManager(BaseHashedIDManager["BaseDiscordMemberWrapper"]):
+class RelatedDiscordMemberManager(BaseHashedIDManager["T_BaseDiscordMemberWrapper"]):
     """
     Manager class to create & retrieve instances of any concrete `BaseDiscordMemberWrapper`.
 

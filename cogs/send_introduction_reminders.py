@@ -299,7 +299,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             else:
                 try:
                     introduction_reminder_opt_out_member: IntroductionReminderOptOutMember = (
-                        await IntroductionReminderOptOutMember.objects.aget(  # type: ignore[assignment]
+                        await IntroductionReminderOptOutMember.objects.aget(
                             discord_id=interaction_member.id,
                         )
                     )

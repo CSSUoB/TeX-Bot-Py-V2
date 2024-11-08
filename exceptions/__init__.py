@@ -14,6 +14,8 @@ __all__: Sequence[str] = (
     "GuestRoleDoesNotExistError",
     "GuildDoesNotExistError",
     "ImproperlyConfiguredError",
+    "InvalidActionDescriptionError",
+    "InvalidActionTargetError",
     "InvalidMessagesJSONFileError",
     "MemberRoleDoesNotExistError",
     "MessagesJSONFileMissingKeyError",
@@ -27,6 +29,7 @@ __all__: Sequence[str] = (
 )
 
 
+from .committee_actions import InvalidActionDescriptionError, InvalidActionTargetError
 from .config_changes import (
     ImproperlyConfiguredError,
     RestartRequiredDueToConfigChange,
