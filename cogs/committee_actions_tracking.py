@@ -153,7 +153,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                     name=f"{action.description} ({action.status})",
                     value=str(action.id),
                 )
-                for action in AssignedCommitteeAction.objects.select_related().all()
+                async for action in AssignedCommitteeAction.objects.select_related().all()
             }
 
         return {
