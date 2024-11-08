@@ -301,7 +301,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         if not new_status:
             await self.command_send_error(
-                ctx,
+                ctx=ctx,
                 message=f"Status ({status}) provided was not valid or could not be found.",
             )
             logger.debug("An invalid status was provided but did not raise an exception.")
@@ -310,7 +310,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         await action.aupdate(status=new_status)
 
         await ctx.respond(
-            content=f"Updated action: {action.description} status to be: {action.status}",
+            content=f"Status for action`{action.description}` updated to `{action.status}`",
             ephemeral=True,
         )
 
@@ -361,7 +361,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
             await self.command_send_error(
-                ctx,
+                ctx=ctx,
                 message="Action provided was either not unique or could not be found.",
             )
             return
@@ -412,7 +412,11 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             return
 
         try:
-            await self._create_action(ctx, action_user, action_description)
+            await self._create_action(
+                ctx=ctx,
+                action_user=action_user,
+                description=action_description,
+            )
             await ctx.respond(
                 content=f"Action `{action_description}` created for: {action_user.mention}",
             )
@@ -469,7 +473,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         if success_members:
             response_message += (
-                f"Successfully created action: {action_description} for users: \n"
+                f"Successfully created action `{action_description}` for users: \n"
             )
 
             response_message += "\n".join(
@@ -602,7 +606,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             action_id_int: int = int(action_id)
         except ValueError:
             await self.command_send_error(
-                ctx,
+                ctx=ctx,
                 message="Action ID entered was not valid! Please use the autocomplete.",
                 logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
             )
@@ -627,7 +631,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         if str(action_to_reassign.discord_member) == new_user_to_action_hash:  # type: ignore[has-type]
             await ctx.respond(
                 content=(
-                    f"HEY! Action: {action_to_reassign.description} is already assigned "
+                    f"HEY! Action `{action_to_reassign.description}` is already assigned "
                     f"to user: {new_user_to_action.mention}\nNo action has been taken."
                 ),
             )
@@ -644,7 +648,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 await ctx.respond(
                     content=(
                         f"Action `{new_action.description}` successfully "
-                        f"reassigned to {new_user_to_action}!"
+                        f"reassigned to {new_user_to_action.mention}!"
                     ),
                 )
         except (
@@ -742,7 +746,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             action_id_int: int = int(action_id)
         except ValueError:
             await self.command_send_error(
-                ctx,
+                ctx=ctx,
                 message="Action ID entered was not valid! Please use the autocomplete.",
                 logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
             )
