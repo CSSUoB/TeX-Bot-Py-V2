@@ -713,7 +713,8 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         }
 
         if not filtered_committee_actions:
-            await ctx.respond(content="No one has any actions!")
+            await ctx.respond(content="No one has any actions that match the request!")
+            logger.debug("No actions found with the status filter: %s", status)
             return
 
         all_actions_message: str = "\n".join(
