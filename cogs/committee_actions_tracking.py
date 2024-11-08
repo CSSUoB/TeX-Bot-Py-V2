@@ -333,14 +333,14 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         required=True,
         parameter_name="action_description",
     )
-    async def update_description(self, ctx: TeXBotApplicationContext, action_id: str, description: str) -> None:  # noqa: E501
+    async def update_description(self, ctx: TeXBotApplicationContext, action_id: str, new_description: str) -> None:  # noqa: E501
         """
         Definition and callback response of the "update-description" command.
 
         Takes in an action id and description, retrieves the action from the ID
         and updates the action to with the new description.
         """
-        if len(description) >= 200:
+        if len(new_description) >= 200:
             await ctx.respond(
                 content=":warning: The provided description was too long! No action taken.",
             )
@@ -350,7 +350,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             action_id_int: int = int(action_id)
         except ValueError:
             await self.command_send_error(
-                ctx,
+                ctx=ctx,
                 message="Action ID entered was not valid! Please use the autocomplete.",
                 logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
             )
@@ -366,9 +366,13 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             return
 
-        await action.aupdate(description=description)
+        old_description: str = action.description
 
-        await ctx.respond(content="Action description updated!")
+        await action.aupdate(description=new_description)
+
+        await ctx.respond(
+            content=f"Action `{old_description}` updated to {action.description}!",
+        )
 
     @committee_actions.command(
         name="action-random-user",
