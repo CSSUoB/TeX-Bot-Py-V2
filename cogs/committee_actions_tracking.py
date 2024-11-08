@@ -641,6 +641,12 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             if new_action:
                 await action_to_reassign.adelete()
+                await ctx.respond(
+                    content=(
+                        f"Action `{new_action.description}` successfully "
+                        f"reassigned to {new_user_to_action}!"
+                    ),
+                )
         except (
             InvalidActionDescriptionError, InvalidActionTargetError,
         ) as invalid_description_error:
