@@ -371,7 +371,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         await action.aupdate(description=new_description)
 
         await ctx.respond(
-            content=f"Action `{old_description}` updated to {action.description}!",
+            content=f"Action `{old_description}` updated to `{action.description}`!",
         )
 
     @committee_actions.command(
