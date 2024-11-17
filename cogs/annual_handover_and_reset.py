@@ -242,6 +242,8 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
         name="increment-year-channels",
         description="Increments the year channels, archiving and creating channels as needed.",
     )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
     async def increment_year_channels(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition and callback response of the "increment_year_channels" command.
