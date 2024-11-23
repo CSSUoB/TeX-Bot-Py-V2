@@ -1,22 +1,25 @@
 """Contains cog classes for any killing interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("ConfirmKillView", "KillCommandCog")
-
-
 import contextlib
 import logging
-from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING
 
 import discord
 from discord.ui import View
 
 from exceptions import CommitteeRoleDoesNotExistError
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from logging import Logger
+    from typing import Final
+
+    from utils import TeXBotApplicationContext
+
+__all__: "Sequence[str]" = ("ConfirmKillView", "KillCommandCog")
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class ConfirmKillView(View):
@@ -50,7 +53,7 @@ class KillCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def kill(self, ctx: TeXBotApplicationContext) -> None:
+    async def kill(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "kill" command.
 

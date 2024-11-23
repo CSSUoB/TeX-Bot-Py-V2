@@ -1,24 +1,28 @@
 """Contains cog classes for annual handover and role reset functionality."""
 
-from collections.abc import Sequence
+import datetime
+import logging
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = (
+import discord
+
+from db.core.models import GroupMadeMember
+from utils import CommandChecks, TeXBotBaseCog
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from logging import Logger
+    from typing import Final
+
+    from utils import AllChannelTypes, TeXBotApplicationContext
+
+__all__: "Sequence[str]" = (
     "AnnualRolesResetCommandCog",
     "AnnualYearChannelsIncrementCommandCog",
     "CommitteeHandoverCommandCog",
 )
 
-import datetime
-import logging
-from logging import Logger
-from typing import Final
-
-import discord
-
-from db.core.models import GroupMadeMember
-from utils import AllChannelTypes, CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
-
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class CommitteeHandoverCommandCog(TeXBotBaseCog):
@@ -30,7 +34,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def committee_handover(self, ctx: TeXBotApplicationContext) -> None:
+    async def committee_handover(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "committee_handover" command.
 
@@ -156,7 +160,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
 class AnnualRolesResetCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/annual-roles-reset" command."""
 
-    ACADEMIC_YEAR_ROLE_NAMES: Final[frozenset[str]] = frozenset(
+    ACADEMIC_YEAR_ROLE_NAMES: "Final[frozenset[str]]" = frozenset(
         {
             "Foundation Year",
             "First Year",
@@ -175,7 +179,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def annual_roles_reset(self, ctx: TeXBotApplicationContext) -> None:
+    async def annual_roles_reset(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "annual_roles_reset" command.
 
@@ -244,7 +248,7 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def increment_year_channels(self, ctx: TeXBotApplicationContext) -> None:
+    async def increment_year_channels(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition and callback response of the "increment_year_channels" command.
 

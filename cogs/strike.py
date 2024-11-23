@@ -1,27 +1,11 @@
 """Contains cog classes for any strike interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = (
-    "BaseStrikeCog",
-    "ConfirmManualModerationView",
-    "ConfirmStrikeMemberView",
-    "ConfirmStrikesOutOfSyncWithBanView",
-    "ManualModerationCog",
-    "perform_moderation_action",
-    "StrikeCommandCog",
-    "StrikeUserCommandCog",
-)
-
-
 import asyncio
 import contextlib
 import datetime
 import logging
 import re
-from collections.abc import Mapping, Set
-from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING
 
 import discord
 
@@ -39,8 +23,6 @@ from exceptions import (
 )
 from utils import (
     CommandChecks,
-    TeXBotApplicationContext,
-    TeXBotAutocompleteContext,
     TeXBotBaseCog,
 )
 from utils.error_capture_decorators import (
@@ -49,13 +31,37 @@ from utils.error_capture_decorators import (
 )
 from utils.message_sender_components import (
     ChannelMessageSender,
-    MessageSavingSenderComponent,
     ResponseMessageSender,
 )
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+    from collections.abc import Set as AbstractSet
+    from logging import Logger
+    from typing import Final
 
-FORMATTED_MODERATION_ACTIONS: Final[Mapping[discord.AuditLogAction, str]] = {
+    from utils import (
+        TeXBotApplicationContext,
+        TeXBotAutocompleteContext,
+    )
+    from utils.message_sender_components import (
+        MessageSavingSenderComponent,
+    )
+
+__all__: "Sequence[str]" = (
+    "BaseStrikeCog",
+    "ConfirmManualModerationView",
+    "ConfirmStrikeMemberView",
+    "ConfirmStrikesOutOfSyncWithBanView",
+    "ManualModerationCog",
+    "StrikeCommandCog",
+    "StrikeUserCommandCog",
+    "perform_moderation_action",
+)
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+
+FORMATTED_MODERATION_ACTIONS: "Final[Mapping[discord.AuditLogAction, str]]" = {
     discord.AuditLogAction.member_update: "timed-out",
     discord.AuditLogAction.kick: "kicked",
     discord.AuditLogAction.ban: "banned",
@@ -220,7 +226,7 @@ class BaseStrikeCog(TeXBotBaseCog):
     by child strike cog container classes.
     """
 
-    SUGGESTED_ACTIONS: Final[Mapping[int, str]] = {1: "time-out", 2: "kick", 3: "ban"}
+    SUGGESTED_ACTIONS: "Final[Mapping[int, str]]" = {1: "time-out", 2: "kick", 3: "ban"}  # noqa: RUF012
 
     async def _send_strike_user_message(self, strike_user: discord.User | discord.Member, member_strikes: DiscordMemberStrikes) -> None:  # noqa: E501
         # noinspection PyUnusedLocal
@@ -239,7 +245,7 @@ class BaseStrikeCog(TeXBotBaseCog):
             else ""
         )
 
-        actual_strike_amount: int = member_strikes.strikes if member_strikes.strikes < 3 else 3
+        actual_strike_amount: int = min(3, member_strikes.strikes)
 
         await strike_user.send(
             "Hi, a recent incident occurred in which you may have broken one or more of "
@@ -256,7 +262,7 @@ class BaseStrikeCog(TeXBotBaseCog):
             "with you shortly, to discuss this further.",
         )
 
-    async def _confirm_perform_moderation_action(self, message_sender_component: MessageSavingSenderComponent, interaction_user: discord.User, strike_user: discord.Member, confirm_strike_message: str, actual_strike_amount: int, button_callback_channel: discord.TextChannel | discord.DMChannel) -> None:  # noqa: E501
+    async def _confirm_perform_moderation_action(self, message_sender_component: "MessageSavingSenderComponent", interaction_user: discord.User, strike_user: discord.Member, confirm_strike_message: str, actual_strike_amount: int, button_callback_channel: discord.TextChannel | discord.DMChannel) -> None:  # noqa: E501
         await message_sender_component.send(
             content=confirm_strike_message,
             view=ConfirmStrikeMemberView(),
@@ -302,7 +308,7 @@ class BaseStrikeCog(TeXBotBaseCog):
 
         raise ValueError
 
-    async def _confirm_increase_strike(self, message_sender_component: MessageSavingSenderComponent, interaction_user: discord.User, strike_user: discord.User | discord.Member, member_strikes: DiscordMemberStrikes, button_callback_channel: discord.TextChannel | discord.DMChannel, *, perform_action: bool) -> None:  # noqa: E501
+    async def _confirm_increase_strike(self, message_sender_component: "MessageSavingSenderComponent", interaction_user: discord.User, strike_user: discord.User | discord.Member, member_strikes: DiscordMemberStrikes, button_callback_channel: discord.TextChannel | discord.DMChannel, *, perform_action: bool) -> None:  # noqa: E501
         if perform_action and isinstance(strike_user, discord.User):
             STRIKE_USER_TYPE_ERROR_MESSAGE: Final[str] = (
                 "Cannot perform moderation action on non-guild member."
@@ -371,11 +377,11 @@ class BaseStrikeCog(TeXBotBaseCog):
             interaction_user,
             strike_user,
             confirm_strike_message,
-            (member_strikes.strikes if member_strikes.strikes < 3 else 3),
+            min(3, member_strikes.strikes),
             button_callback_channel,
         )
 
-    async def _command_perform_strike(self, ctx: TeXBotApplicationContext, strike_member: discord.Member) -> None:  # noqa: E501
+    async def _command_perform_strike(self, ctx: "TeXBotApplicationContext", strike_member: discord.Member) -> None:  # noqa: E501
         """
         Perform the actual process of giving a member an additional strike.
 
@@ -513,7 +519,7 @@ class ManualModerationCog(BaseStrikeCog):
 
         STRIKES_OUT_OF_SYNC_WITH_BAN: Final[bool] = bool(
             (action != discord.AuditLogAction.ban and member_strikes.strikes >= 3)
-            or (action == discord.AuditLogAction.ban and member_strikes.strikes > 3)  # noqa: COM812
+            or (action == discord.AuditLogAction.ban and member_strikes.strikes > 3)
         )
         if STRIKES_OUT_OF_SYNC_WITH_BAN:
             out_of_sync_ban_confirmation_message: discord.Message = await confirmation_message_channel.send(  # noqa: E501
@@ -728,7 +734,7 @@ class ManualModerationCog(BaseStrikeCog):
         MEMBER_REMOVED_BECAUSE_OF_MANUALLY_APPLIED_KICK: Final[bool] = bool(
             member.guild == self.bot.main_guild
             and not member.bot
-            and not await asyncany(ban.user == member async for ban in main_guild.bans())  # noqa: COM812
+            and not await asyncany(ban.user == member async for ban in main_guild.bans())
         )
         if not MEMBER_REMOVED_BECAUSE_OF_MANUALLY_APPLIED_KICK:
             return
@@ -756,7 +762,7 @@ class StrikeCommandCog(BaseStrikeCog):
     """Cog class that defines the "/strike" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
+    async def autocomplete_get_members(ctx: "TeXBotAutocompleteContext") -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable members.
 
@@ -799,7 +805,7 @@ class StrikeCommandCog(BaseStrikeCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def strike(self, ctx: TeXBotApplicationContext, str_strike_member_id: str) -> None:
+    async def strike(self, ctx: "TeXBotApplicationContext", str_strike_member_id: str) -> None:
         """
         Definition & callback response of the "strike" command.
 
@@ -824,6 +830,6 @@ class StrikeUserCommandCog(BaseStrikeCog):
     @discord.user_command(name="Strike User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def user_strike(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:
+    async def user_strike(self, ctx: "TeXBotApplicationContext", member: discord.Member) -> None:  # noqa: E501
         """Call the _strike command, providing the required command arguments."""
         await self._command_perform_strike(ctx, member)

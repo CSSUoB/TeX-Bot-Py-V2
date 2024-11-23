@@ -1,15 +1,15 @@
 """Custom exception classes for committee-action tracking."""
 
-from collections.abc import Sequence
+from typing import TYPE_CHECKING, override
 
-__all__: Sequence[str] = ()
-
-
-from typing import override
-
-from classproperties import classproperty
+from typed_classproperties import classproperty
 
 from .base import BaseTeXBotError
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__: "Sequence[str]" = ()
 
 
 class InvalidActionTargetError(BaseTeXBotError, RuntimeError):
@@ -21,7 +21,7 @@ class InvalidActionTargetError(BaseTeXBotError, RuntimeError):
 
     @classproperty
     @override
-    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
+    def DEFAULT_MESSAGE(cls) -> str:
         return "The target of the action is invalid."
 
 
@@ -34,5 +34,5 @@ class InvalidActionDescriptionError(BaseTeXBotError, RuntimeError):
 
     @classproperty
     @override
-    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
+    def DEFAULT_MESSAGE(cls) -> str:
         return "The description of the action is invalid."

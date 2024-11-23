@@ -1,14 +1,8 @@
 """Contains cog classes for any send_introduction_reminders interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("SendIntroductionRemindersTaskCog",)
-
-
 import functools
 import logging
-from logging import Logger
-from typing import Final, override
+from typing import TYPE_CHECKING, override
 
 import discord
 import emoji
@@ -24,20 +18,29 @@ from db.core.models import (
     SentOneOffIntroductionReminderMember,
 )
 from exceptions import DiscordMemberNotInMainGuildError, GuestRoleDoesNotExistError
-from utils import TeXBot, TeXBotBaseCog
+from utils import TeXBotBaseCog
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
     capture_guild_does_not_exist_error,
 )
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from logging import Logger
+    from typing import Final
+
+    from utils import TeXBot
+
+__all__: "Sequence[str]" = ("SendIntroductionRemindersTaskCog",)
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
     """Cog class that defines the send_introduction_reminders task."""
 
     @override
-    def __init__(self, bot: TeXBot) -> None:
+    def __init__(self, bot: "TeXBot") -> None:
         """Start all task managers when this cog is initialised."""
         if settings["SEND_INTRODUCTION_REMINDERS"]:
             if settings["SEND_INTRODUCTION_REMINDERS"] == "interval":
@@ -134,7 +137,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     bool(message.components)
                     and isinstance(message.components[0], discord.ActionRow)
                     and isinstance(message.components[0].children[0], discord.Button)
-                    and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button"  # noqa: COM812, E501
+                    and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button"  # noqa: E501
                 )
                 if MESSAGE_CONTAINS_OPT_IN_OUT_BUTTON:
                     await message.edit(view=None)
@@ -187,7 +190,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         """
 
         @override
-        def __init__(self, bot: TeXBot) -> None:
+        def __init__(self, bot: "TeXBot") -> None:
             """Initialise a new discord.View, to opt-in/out of introduction reminders."""
             self.bot: TeXBot = bot  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
 
@@ -227,7 +230,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             BUTTON_WILL_MAKE_OPT_OUT: Final[bool] = bool(
                 button.style == discord.ButtonStyle.red
                 or str(button.emoji) == emoji.emojize(":no_good:", language="alias")
-                or (button.label and "Opt-out" in button.label)  # noqa: COM812
+                or (button.label and "Opt-out" in button.label)
             )
 
             BUTTON_WILL_MAKE_OPT_IN: Final[bool] = bool(
@@ -236,11 +239,11 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     ":raised_hand:",
                     language="alias",
                 )
-                or (button.label and "Opt back in" in button.label)  # noqa: COM812
+                or (button.label and "Opt back in" in button.label)
             )
             INCOMPATIBLE_BUTTONS: Final[bool] = bool(
                 (BUTTON_WILL_MAKE_OPT_OUT and BUTTON_WILL_MAKE_OPT_IN)
-                or (not BUTTON_WILL_MAKE_OPT_OUT and not BUTTON_WILL_MAKE_OPT_IN)  # noqa: COM812
+                or (not BUTTON_WILL_MAKE_OPT_OUT and not BUTTON_WILL_MAKE_OPT_IN)
             )
             if INCOMPATIBLE_BUTTONS:
                 INCOMPATIBLE_BUTTONS_MESSAGE: Final[str] = "Conflicting buttons pressed"

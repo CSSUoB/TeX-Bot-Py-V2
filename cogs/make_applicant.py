@@ -1,24 +1,27 @@
 """Contains cog classes for making a user into an applicant."""
 
-from collections.abc import Sequence
+import logging
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = (
+import discord
+
+from exceptions.does_not_exist import ApplicantRoleDoesNotExistError, GuildDoesNotExistError
+from utils import CommandChecks, TeXBotBaseCog
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from logging import Logger
+    from typing import Final
+
+    from utils import TeXBotApplicationContext
+
+__all__: "Sequence[str]" = (
     "BaseMakeApplicantCog",
     "MakeApplicantContextCommandsCog",
     "MakeApplicantSlashCommandCog",
 )
 
-
-import logging
-from logging import Logger
-from typing import Final
-
-import discord
-
-from exceptions.does_not_exist import ApplicantRoleDoesNotExistError, GuildDoesNotExistError
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
-
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class BaseMakeApplicantCog(TeXBotBaseCog):
@@ -29,7 +32,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
     child cog container classes.
     """
 
-    async def _perform_make_applicant(self, ctx: TeXBotApplicationContext, applicant_member: discord.Member) -> None:  # noqa: E501
+    async def _perform_make_applicant(self, ctx: "TeXBotApplicationContext", applicant_member: discord.Member) -> None:  # noqa: E501
         """Perform the actual process of making the user into a group-applicant."""
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = ctx.bot.main_guild
@@ -94,7 +97,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
     """Cog class that defines the "/make_applicant" slash-command."""
 
     @staticmethod
-    async def autocomplete_get_members(ctx: TeXBotApplicationContext) -> set[discord.OptionChoice]:  # noqa: E501
+    async def autocomplete_get_members(ctx: "TeXBotApplicationContext") -> set[discord.OptionChoice]:  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable members.
 
@@ -137,7 +140,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_applicant(self, ctx: TeXBotApplicationContext, str_applicant_member_id: str) -> None:  # noqa: E501
+    async def make_applicant(self, ctx: "TeXBotApplicationContext", str_applicant_member_id: str) -> None:  # noqa: E501
         """
         Definition & callback response of the "make_applicant" command.
 
@@ -162,7 +165,7 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
     @discord.user_command(name="Make Applicant")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def user_make_applicant(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:  # noqa: E501
+    async def user_make_applicant(self, ctx: "TeXBotApplicationContext", member: discord.Member) -> None:  # noqa: E501
         """
         Definition and callback response of the "make_applicant" user-context-command.
 
@@ -175,7 +178,7 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
     @discord.message_command(name="Make Message Author Applicant")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def message_make_applicant(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
+    async def message_make_applicant(self, ctx: "TeXBotApplicationContext", message: discord.Message) -> None:  # noqa: E501
         """
         Definition of the "message_make_applicant" message-context-command.
 

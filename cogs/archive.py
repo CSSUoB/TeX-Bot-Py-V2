@@ -1,36 +1,40 @@
 """Contains cog classes for any archival interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("ArchiveCommandCog",)
-
-
 import logging
 import re
-from collections.abc import Set
-from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING
 
 import discord
 
 from exceptions import DiscordMemberNotInMainGuildError
 from exceptions.base import BaseDoesNotExistError
 from utils import (
-    AllChannelTypes,
     CommandChecks,
-    TeXBotApplicationContext,
-    TeXBotAutocompleteContext,
     TeXBotBaseCog,
 )
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from collections.abc import Set as AbstractSet
+    from logging import Logger
+    from typing import Final
+
+    from utils import (
+        AllChannelTypes,
+        TeXBotApplicationContext,
+        TeXBotAutocompleteContext,
+    )
+
+__all__: "Sequence[str]" = ("ArchiveCommandCog",)
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class ArchiveCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/archive" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_categories(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
+    async def autocomplete_get_categories(ctx: "TeXBotAutocompleteContext") -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":  # noqa: E501
         """
         Autocomplete callable that generates the set of available selectable categories.
 
@@ -74,7 +78,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def archive(self, ctx: TeXBotApplicationContext, str_category_id: str) -> None:
+    async def archive(self, ctx: "TeXBotApplicationContext", str_category_id: str) -> None:
         """
         Definition & callback response of the "archive" command.
 

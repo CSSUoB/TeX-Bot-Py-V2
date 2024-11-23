@@ -1,15 +1,9 @@
 """Contains cog classes for any send_get_roles_reminders interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("SendGetRolesRemindersTaskCog",)
-
-
 import contextlib
 import functools
 import logging
-from logging import Logger
-from typing import TYPE_CHECKING, Final, override
+from typing import TYPE_CHECKING, override
 
 import discord
 from discord import AuditLogAction
@@ -19,7 +13,7 @@ import utils
 from config import settings
 from db.core.models import SentGetRolesReminderMember
 from exceptions import GuestRoleDoesNotExistError, RolesChannelDoesNotExistError
-from utils import TeXBot, TeXBotBaseCog
+from utils import TeXBotBaseCog
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
     capture_guild_does_not_exist_error,
@@ -27,15 +21,22 @@ from utils.error_capture_decorators import (
 
 if TYPE_CHECKING:
     import datetime
+    from collections.abc import Sequence
+    from logging import Logger
+    from typing import Final
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+    from utils import TeXBot
+
+__all__: "Sequence[str]" = ("SendGetRolesRemindersTaskCog",)
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
     """Cog class that defines the send_get_roles_reminders task."""
 
     @override
-    def __init__(self, bot: TeXBot) -> None:
+    def __init__(self, bot: "TeXBot") -> None:
         """Start all task managers when this cog is initialised."""
         if settings["SEND_GET_ROLES_REMINDERS"]:
             self.send_get_roles_reminders.start()

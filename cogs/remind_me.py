@@ -1,18 +1,11 @@
 """Contains cog classes for any remind_me interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("ClearRemindersBacklogTaskCog", "RemindMeCommandCog")
-
-
 import datetime
 import functools
 import itertools
 import logging
 import re
-from collections.abc import Set
-from logging import Logger
-from typing import TYPE_CHECKING, Final, override
+from typing import TYPE_CHECKING, override
 
 import discord
 import parsedatetime
@@ -21,21 +14,28 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 from db.core.models import DiscordMember, DiscordReminder
-from utils import TeXBot, TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotBaseCog
+from utils import TeXBotBaseCog
 
 if TYPE_CHECKING:
     import time
-    from collections.abc import Iterator
+    from collections.abc import Iterator, Sequence
+    from collections.abc import Set as AbstractSet
+    from logging import Logger
+    from typing import Final
+
+    from utils import TeXBot, TeXBotApplicationContext, TeXBotAutocompleteContext
+
+__all__: "Sequence[str]" = ("ClearRemindersBacklogTaskCog", "RemindMeCommandCog")
 
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class RemindMeCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/remind-me" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_delays(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: C901, PLR0912, PLR0915, E501
+    async def autocomplete_get_delays(ctx: "TeXBotAutocompleteContext") -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":  # noqa: PLR0912, PLR0915, E501
         """
         Autocomplete callable that generates the common delay input values.
 
@@ -191,7 +191,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
         description="The message you want to be reminded with.",
         required=False,
     )
-    async def remind_me(self, ctx: TeXBotApplicationContext, delay: str, message: str) -> None:
+    async def remind_me(self, ctx: "TeXBotApplicationContext", delay: str, message: str) -> None:  # noqa: E501
         """
         Definition & callback response of the "remind_me" command.
 
@@ -229,7 +229,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
                 and any(
                     "already exists" in error
                     for error in create_discord_reminder_error.message_dict["__all__"]
-                )  # noqa: COM812
+                )
             )
             if not ERROR_IS_ALREADY_EXISTS:
                 await self.command_send_error(ctx, message="An unrecoverable error occurred.")
@@ -262,7 +262,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
     """Cog class that defines the clear_reminders_backlog task."""
 
     @override
-    def __init__(self, bot: TeXBot) -> None:
+    def __init__(self, bot: "TeXBot") -> None:
         """Start all task managers when this cog is initialised."""
         self.clear_reminders_backlog.start()
 

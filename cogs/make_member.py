@@ -1,16 +1,9 @@
 """Contains cog classes for any make_member interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("MakeMemberCommandCog",)
-
-
 import contextlib
 import logging
 import re
-from collections.abc import Mapping
-from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING
 
 import aiohttp
 import bs4
@@ -25,11 +18,20 @@ from exceptions import (
     CommitteeRoleDoesNotExistError,
     GuestRoleDoesNotExistError,
 )
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+    from logging import Logger
+    from typing import Final
 
-_GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: Final[str] = f"""{
+    from utils import TeXBotApplicationContext
+
+__all__: "Sequence[str]" = ("MakeMemberCommandCog",)
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+
+_GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: "Final[str]" = f"""{
     "Student"
     if (
         settings["_GROUP_FULL_NAME"]
@@ -48,24 +50,24 @@ _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: Final[str] = f"""{
     else "Member"
 } ID"""
 
-_GROUP_MEMBER_ID_ARGUMENT_NAME: Final[str] = (
+_GROUP_MEMBER_ID_ARGUMENT_NAME: "Final[str]" = (
     _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME.lower().replace(
         " ",
         "",
     )
 )
 
-REQUEST_HEADERS: Final[Mapping[str, str]] = {
+REQUEST_HEADERS: "Final[Mapping[str, str]]" = {
     "Cache-Control": "no-cache",
     "Pragma": "no-cache",
     "Expires": "0",
 }
 
-REQUEST_COOKIES: Final[Mapping[str, str]] = {
+REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
     ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
 }
 
-REQUEST_URL: Final[str] = settings["MEMBERS_LIST_URL"]
+REQUEST_URL: "Final[str]" = settings["MEMBERS_LIST_URL"]
 
 
 class MakeMemberCommandCog(TeXBotBaseCog):
@@ -109,7 +111,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         parameter_name="group_member_id",
     )
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_member(self, ctx: TeXBotApplicationContext, group_member_id: str) -> None:
+    async def make_member(self, ctx: "TeXBotApplicationContext", group_member_id: str) -> None:
         """
         Definition & callback response of the "make_member" command.
 

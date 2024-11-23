@@ -4,14 +4,14 @@ Context manager to suppress the traceback output when an exception is raised.
 The previous traceback limit is returned when exiting the context manager.
 """
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("SuppressTraceback",)
-
-
 import sys
-from types import TracebackType
-from typing import override
+from typing import TYPE_CHECKING, override
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from types import TracebackType
+
+__all__: "Sequence[str]" = ("SuppressTraceback",)
 
 
 class SuppressTraceback:
@@ -38,7 +38,7 @@ class SuppressTraceback:
         # noinspection SpellCheckingInspection
         sys.tracebacklimit = 0
 
-    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None) -> None:  # noqa: E501
+    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: "TracebackType | None") -> None:  # noqa: E501, PYI036
         """Exit the context manager, reverting the limit of traceback output."""
         if exc_type is not None or exc_val is not None or exc_tb is not None:
             return

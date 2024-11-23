@@ -5,19 +5,6 @@ Settings values are imported from the .env file or the current environment varia
 These values are used to configure the functionality of the bot at run-time.
 """
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = (
-    "TRUE_VALUES",
-    "FALSE_VALUES",
-    "VALID_SEND_INTRODUCTION_REMINDERS_VALUES",
-    "DEFAULT_STATISTICS_ROLES",
-    "LOG_LEVEL_CHOICES",
-    "run_setup",
-    "settings",
-)
-
-
 import abc
 import functools
 import importlib
@@ -27,10 +14,8 @@ import os
 import re
 from collections.abc import Iterable, Mapping
 from datetime import timedelta
-from logging import Logger
 from pathlib import Path
-from re import Match
-from typing import IO, Any, ClassVar, Final, final
+from typing import TYPE_CHECKING, final
 
 import dotenv
 import validators
@@ -41,14 +26,30 @@ from exceptions import (
     MessagesJSONFileValueError,
 )
 
-PROJECT_ROOT: Final[Path] = Path(__file__).parent.resolve()
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from logging import Logger
+    from re import Match
+    from typing import IO, Any, ClassVar, Final
 
-TRUE_VALUES: Final[frozenset[str]] = frozenset({"true", "1", "t", "y", "yes", "on"})
-FALSE_VALUES: Final[frozenset[str]] = frozenset({"false", "0", "f", "n", "no", "off"})
-VALID_SEND_INTRODUCTION_REMINDERS_VALUES: Final[frozenset[str]] = frozenset(
+__all__: "Sequence[str]" = (
+    "DEFAULT_STATISTICS_ROLES",
+    "FALSE_VALUES",
+    "LOG_LEVEL_CHOICES",
+    "TRUE_VALUES",
+    "VALID_SEND_INTRODUCTION_REMINDERS_VALUES",
+    "run_setup",
+    "settings",
+)
+
+PROJECT_ROOT: "Final[Path]" = Path(__file__).parent.resolve()
+
+TRUE_VALUES: "Final[frozenset[str]]" = frozenset({"true", "1", "t", "y", "yes", "on"})
+FALSE_VALUES: "Final[frozenset[str]]" = frozenset({"false", "0", "f", "n", "no", "off"})
+VALID_SEND_INTRODUCTION_REMINDERS_VALUES: "Final[frozenset[str]]" = frozenset(
     {"once"} | TRUE_VALUES | FALSE_VALUES,
 )
-DEFAULT_STATISTICS_ROLES: Final[frozenset[str]] = frozenset(
+DEFAULT_STATISTICS_ROLES: "Final[frozenset[str]]" = frozenset(
     {
         "Committee",
         "Committee-Elect",
@@ -69,7 +70,7 @@ DEFAULT_STATISTICS_ROLES: Final[frozenset[str]] = frozenset(
         "Quiz Victor",
     },
 )
-LOG_LEVEL_CHOICES: Final[Sequence[str]] = (
+LOG_LEVEL_CHOICES: "Final[Sequence[str]]" = (
     "DEBUG",
     "INFO",
     "WARNING",
@@ -77,7 +78,7 @@ LOG_LEVEL_CHOICES: Final[Sequence[str]] = (
     "CRITICAL",
 )
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class Settings(abc.ABC):
@@ -87,15 +88,15 @@ class Settings(abc.ABC):
     Settings values can be accessed via key (like a dictionary) or via class attribute.
     """
 
-    _is_env_variables_setup: ClassVar[bool]
-    _settings: ClassVar[dict[str, object]]
+    _is_env_variables_setup: "ClassVar[bool]"
+    _settings: "ClassVar[dict[str, object]]"
 
     @classmethod
     def get_invalid_settings_key_message(cls, item: str) -> str:
         """Return the message to state that the given settings key is invalid."""
         return f"{item!r} is not a valid settings key."
 
-    def __getattr__(self, item: str) -> Any:  # type: ignore[misc]  # noqa: ANN401
+    def __getattr__(self, item: str) -> "Any":  # type: ignore[misc]  # noqa: ANN401
         """Retrieve settings value by attribute lookup."""
         MISSING_ATTRIBUTE_MESSAGE: Final[str] = (
             f"{type(self).__name__!r} object has no attribute {item!r}"
@@ -118,7 +119,7 @@ class Settings(abc.ABC):
 
         raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
-    def __getitem__(self, item: str) -> Any:  # type: ignore[misc]  # noqa: ANN401
+    def __getitem__(self, item: str) -> "Any":  # type: ignore[misc]  # noqa: ANN401
         """Retrieve settings value by key lookup."""
         attribute_not_exist_error: AttributeError
         try:
@@ -735,13 +736,13 @@ def _settings_class_factory() -> type[Settings]:
         Settings values can be accessed via key (like a dictionary) or via class attribute.
         """
 
-        _is_env_variables_setup: ClassVar[bool] = False
-        _settings: ClassVar[dict[str, object]] = {}
+        _is_env_variables_setup: "ClassVar[bool]" = False
+        _settings: "ClassVar[dict[str, object]]" = {}  # noqa: RUF012
 
     return RuntimeSettings
 
 
-settings: Final[Settings] = _settings_class_factory()()
+settings: "Final[Settings]" = _settings_class_factory()()
 
 
 def run_setup() -> None:

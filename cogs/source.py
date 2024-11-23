@@ -1,13 +1,18 @@
 """Contains cog classes for any source interactions."""
 
-from collections.abc import Sequence
 
-__all__: Sequence[str] = ("SourceCommandCog",)
-
+from typing import TYPE_CHECKING
 
 import discord
 
-from utils import TeXBotApplicationContext, TeXBotBaseCog
+from utils import TeXBotBaseCog
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from utils import TeXBotApplicationContext
+
+__all__: "Sequence[str]" = ("SourceCommandCog",)
 
 
 class SourceCommandCog(TeXBotBaseCog):
@@ -16,7 +21,7 @@ class SourceCommandCog(TeXBotBaseCog):
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         description="Displays information about the source code of TeX-Bot.",
     )
-    async def source(self, ctx: TeXBotApplicationContext) -> None:
+    async def source(self, ctx: "TeXBotApplicationContext") -> None:
         """Definition & callback response of the "source" command."""
         await ctx.respond(
             (

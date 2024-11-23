@@ -1,13 +1,7 @@
 """Contains cog classes for any startup interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("StartupCog",)
-
-
 import logging
-from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING
 
 import discord
 from discord_logging.handler import DiscordHandler
@@ -25,7 +19,14 @@ from exceptions import (
 )
 from utils import TeXBotBaseCog
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from logging import Logger
+    from typing import Final
+
+__all__: "Sequence[str]" = ("StartupCog",)
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class StartupCog(TeXBotBaseCog):

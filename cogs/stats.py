@@ -1,15 +1,9 @@
 """Contains cog classes for any stats interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("amount_of_time_formatter", "plot_bar_chart", "StatsCommandsCog")
-
-
 import io
 import math
 import re
-from collections.abc import AsyncIterable
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
 import discord
 import matplotlib.pyplot as plt
@@ -17,13 +11,18 @@ import mplcyberpunk
 
 from config import settings
 from db.core.models import LeftDiscordMember
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 if TYPE_CHECKING:
-    from collections.abc import Collection
+    from collections.abc import AsyncIterable, Collection, Sequence
+    from typing import Final
 
     from matplotlib.text import Text as Plot_Text
+
+    from utils import TeXBotApplicationContext
+
+__all__: "Sequence[str]" = ("StatsCommandsCog", "amount_of_time_formatter", "plot_bar_chart")
 
 
 def amount_of_time_formatter(value: float, time_scale: str) -> str:
@@ -136,7 +135,7 @@ def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str,
 class StatsCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/stats" command group and its command call-back methods."""
 
-    _DISCORD_SERVER_NAME: Final[str] = f"""{
+    _DISCORD_SERVER_NAME: "Final[str]" = f"""{
         "the " if (
             settings["_GROUP_SHORT_NAME"] is not None
             and (
@@ -179,7 +178,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         required=False,
         parameter_name="str_channel_id",
     )
-    async def channel_stats(self, ctx: TeXBotApplicationContext, str_channel_id: str) -> None:
+    async def channel_stats(self, ctx: "TeXBotApplicationContext", str_channel_id: str) -> None:  # noqa: E501
         """
         Definition & callback response of the "channel_stats" command.
 
@@ -290,7 +289,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         name="server",
         description=f"Displays the stats for the whole of {_DISCORD_SERVER_NAME}",
     )
-    async def server_stats(self, ctx: TeXBotApplicationContext) -> None:
+    async def server_stats(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "server_stats" command.
 
@@ -425,7 +424,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         description="Displays stats about the number of messages you have sent.",
     )
     @CommandChecks.check_interaction_user_in_main_guild
-    async def user_stats(self, ctx: TeXBotApplicationContext) -> None:
+    async def user_stats(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "user_stats" command.
 
@@ -513,7 +512,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         name="left-members",
         description=f"Displays the stats about members that have left {_DISCORD_SERVER_NAME}",
     )
-    async def left_member_stats(self, ctx: TeXBotApplicationContext) -> None:
+    async def left_member_stats(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "left_member_stats" command.
 

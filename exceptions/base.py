@@ -1,18 +1,19 @@
 """Base exception classes inherited by other custom exceptions used within this project."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = (
-    "BaseTeXBotError",
-    "BaseErrorWithErrorCode",
-    "BaseDoesNotExistError",
-)
-
-
 import abc
-from typing import Final, override
+from typing import TYPE_CHECKING, override
 
-from classproperties import classproperty
+from typed_classproperties import classproperty
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import Final
+
+__all__: "Sequence[str]" = (
+    "BaseDoesNotExistError",
+    "BaseErrorWithErrorCode",
+    "BaseTeXBotError",
+)
 
 
 class BaseTeXBotError(BaseException, abc.ABC):
@@ -21,8 +22,8 @@ class BaseTeXBotError(BaseException, abc.ABC):
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802, N805
-        """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
+    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802
+        """The message to be displayed alongside this exception class if none is provided."""
 
     @override
     def __init__(self, message: str | None = None) -> None:
@@ -52,14 +53,14 @@ class BaseTeXBotError(BaseException, abc.ABC):
         return formatted
 
 
-class BaseErrorWithErrorCode(BaseTeXBotError, abc.ABC):
+class BaseErrorWithErrorCode(BaseTeXBotError, abc.ABC):  # noqa: N818
     """Base class for exception errors that have an error code."""
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def ERROR_CODE(cls) -> str:  # noqa: N802, N805
-        """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
+    def ERROR_CODE(cls) -> str:  # noqa: N802
+        """The unique error code for users to tell admins about an error that occurred."""
 
 
 class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
@@ -67,45 +68,45 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802, N805
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802
         """
         The set of names of commands that require this Discord entity.
 
         This set being empty could mean that all commands require this Discord entity,
         or no commands require this Discord entity.
-        """  # noqa: D401
+        """
         return frozenset()
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def DEPENDENT_TASKS(cls) -> frozenset[str]:  # noqa: N802, N805
+    def DEPENDENT_TASKS(cls) -> frozenset[str]:  # noqa: N802
         """
         The set of names of tasks that require this Discord entity.
 
         This set being empty could mean that all tasks require this Discord entity,
         or no tasks require this Discord entity.
-        """  # noqa: D401
+        """
         return frozenset()
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def DEPENDENT_EVENTS(cls) -> frozenset[str]:  # noqa: N802, N805
+    def DEPENDENT_EVENTS(cls) -> frozenset[str]:  # noqa: N802
         """
         The set of names of event listeners that require this Discord entity.
 
         This set being empty could mean that all event listeners require this Discord entity,
         or no event listeners require this Discord entity.
-        """  # noqa: D401
+        """
         return frozenset()
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def DOES_NOT_EXIST_TYPE(cls) -> str:  # noqa: N802, N805
-        """The name of the Discord entity that this `DoesNotExistError` is associated with."""  # noqa: D401
+    def DOES_NOT_EXIST_TYPE(cls) -> str:  # noqa: N802
+        """The name of the Discord entity that this `DoesNotExistError` is associated with."""
 
     @classmethod
-    def get_formatted_message(cls, non_existent_object_identifier: str) -> str:  # noqa: C901, PLR0912, PLR0915
+    def get_formatted_message(cls, non_existent_object_identifier: str) -> str:  # noqa: PLR0912, PLR0915
         """
         Format the exception message with the dependants that require the non-existent object.
 

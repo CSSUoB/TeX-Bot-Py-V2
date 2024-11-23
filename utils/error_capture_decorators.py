@@ -4,27 +4,24 @@ Common decorator utilities to capture & suppress errors.
 Capturing errors is necessary in contexts where exceptions are not already suppressed.
 """
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = (
-    "capture_guild_does_not_exist_error",
-    "capture_strike_tracking_error",
-    "ErrorCaptureDecorators",
-)
-
-
 import functools
 import logging
-from collections.abc import Callable, Coroutine
-from logging import Logger
-from typing import TYPE_CHECKING, Final, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, ParamSpec, TypeVar
 
 from exceptions import GuildDoesNotExistError, StrikeTrackingError
 
 from .tex_bot_base_cog import TeXBotBaseCog
 
 if TYPE_CHECKING:
-    from typing import Concatenate, TypeAlias
+    from collections.abc import Callable, Coroutine, Sequence
+    from logging import Logger
+    from typing import Concatenate, Final
+
+__all__: "Sequence[str]" = (
+    "ErrorCaptureDecorators",
+    "capture_guild_does_not_exist_error",
+    "capture_strike_tracking_error",
+)
 
 
 P = ParamSpec("P")
@@ -32,16 +29,18 @@ T_ret = TypeVar("T_ret")
 T_cog = TypeVar("T_cog", bound=TeXBotBaseCog)
 
 if TYPE_CHECKING:
-    WrapperInputFunc: TypeAlias = (
-        Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T_ret]]
-        | Callable[P, Coroutine[object, object, T_ret]]
+    type WrapperInputFunc[T_ret] = (
+        Callable[
+            Concatenate[TeXBotBaseCog, P],
+            Coroutine[object, object, T_ret]] | Callable[P, Coroutine[object, object, T_ret],
+        ]
     )
-    WrapperOutputFunc: TypeAlias = Callable[P, Coroutine[object, object, T_ret | None]]
-    DecoratorInputFunc: TypeAlias = (
+    type WrapperOutputFunc[T_ret] = Callable[P, Coroutine[object, object, T_ret | None]]
+    type DecoratorInputFunc[T_cog: TeXBotBaseCog, T_ret] = (
         Callable[Concatenate[T_cog, P], Coroutine[object, object, T_ret]]
     )
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class ErrorCaptureDecorators:
@@ -52,7 +51,7 @@ class ErrorCaptureDecorators:
     """
 
     @staticmethod
-    def capture_error_and_close(func: "DecoratorInputFunc[T_cog, P, T_ret]", error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> "WrapperOutputFunc[P, T_ret]":  # noqa: E501
+    def capture_error_and_close(func: "DecoratorInputFunc[T_cog, P, T_ret]", error_type: type[BaseException], close_func: "Callable[[BaseException], None]") -> "WrapperOutputFunc[P, T_ret]":  # noqa: E501
         """
         Decorator to send an error message to the user when the given exception type is raised.
 
