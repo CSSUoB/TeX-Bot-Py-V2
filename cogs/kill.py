@@ -30,18 +30,22 @@ class ConfirmKillView(View):
         style=discord.ButtonStyle.red,
         custom_id="shutdown_confirm",
     )
-    async def confirm_shutdown_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
+    async def confirm_shutdown_button_callback(
+        self, _: discord.Button, interaction: discord.Interaction
+    ) -> None:
         """When the shutdown button is pressed, delete the message."""
-        logger.debug("\"Confirm\" button pressed. %s", interaction)
+        logger.debug('"Confirm" button pressed. %s', interaction)
 
     @discord.ui.button(  # type: ignore[misc]
         label="CANCEL",
         style=discord.ButtonStyle.grey,
         custom_id="shutdown_cancel",
     )
-    async def cancel_shutdown_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
+    async def cancel_shutdown_button_callback(
+        self, _: discord.Button, interaction: discord.Interaction
+    ) -> None:
         """When the cancel button is pressed, delete the message."""
-        logger.debug("\"Cancel\" button pressed. %s", interaction)
+        logger.debug('"Cancel" button pressed. %s', interaction)
 
 
 class KillCommandCog(TeXBotBaseCog):

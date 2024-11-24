@@ -42,7 +42,15 @@ def amount_of_time_formatter(value: float, time_scale: str) -> str:
     return f"{value:.2f} {time_scale}s"
 
 
-def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str, filename: str, description: str, extra_text: str = "") -> discord.File:  # noqa: E501
+def plot_bar_chart(
+    data: dict[str, int],
+    x_label: str,
+    y_label: str,
+    title: str,
+    filename: str,
+    description: str,
+    extra_text: str = "",
+) -> discord.File:
     """Generate an image of a plot bar chart from the given data & format variables."""
     plt.style.use("cyberpunk")
 
@@ -178,7 +186,9 @@ class StatsCommandsCog(TeXBotBaseCog):
         required=False,
         parameter_name="str_channel_id",
     )
-    async def channel_stats(self, ctx: "TeXBotApplicationContext", str_channel_id: str) -> None:  # noqa: E501
+    async def channel_stats(
+        self, ctx: "TeXBotApplicationContext", str_channel_id: str
+    ) -> None:
         """
         Definition & callback response of the "channel_stats" command.
 

@@ -1,6 +1,5 @@
 """Contains cog classes for any write_roles interactions."""
 
-
 from typing import TYPE_CHECKING
 
 import discord

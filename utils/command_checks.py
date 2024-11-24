@@ -37,7 +37,9 @@ class CommandChecks:
     """
 
     @staticmethod
-    async def _check_interaction_user_has_committee_role(ctx: "TeXBotApplicationContext") -> bool:  # noqa: E501
+    async def _check_interaction_user_has_committee_role(
+        ctx: "TeXBotApplicationContext",
+    ) -> bool:
         return await ctx.bot.check_user_has_committee_role(ctx.user)
 
     check_interaction_user_has_committee_role: "Callable[[T], T]"

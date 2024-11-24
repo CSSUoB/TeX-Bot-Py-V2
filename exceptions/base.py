@@ -123,13 +123,13 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
         if cls.DEPENDENT_COMMANDS:
             if len(cls.DEPENDENT_COMMANDS) == 1:
                 formatted_dependent_commands += (
-                    f"\"/{next(iter(cls.DEPENDENT_COMMANDS))}\" command"
+                    f'"/{next(iter(cls.DEPENDENT_COMMANDS))}" command'
                 )
             else:
                 index: int
                 dependent_command: str
                 for index, dependent_command in enumerate(cls.DEPENDENT_COMMANDS):
-                    formatted_dependent_commands += f"\"/{dependent_command}\""
+                    formatted_dependent_commands += f'"/{dependent_command}"'
 
                     if index < len(cls.DEPENDENT_COMMANDS) - 2:
                         formatted_dependent_commands += ", "
@@ -142,7 +142,7 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
             non_existent_object_identifier = f"#{non_existent_object_identifier}"
 
         partial_message: str = (
-            f"\"{non_existent_object_identifier}\" {cls.DOES_NOT_EXIST_TYPE} must exist "
+            f'"{non_existent_object_identifier}" {cls.DOES_NOT_EXIST_TYPE} must exist '
             f"in order to use the {formatted_dependent_commands}"
         )
 
@@ -156,11 +156,11 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
                     partial_message += ", the "
 
             if len(cls.DEPENDENT_TASKS) == 1:
-                formatted_dependent_tasks += f"\"{next(iter(cls.DEPENDENT_TASKS))}\" task"
+                formatted_dependent_tasks += f'"{next(iter(cls.DEPENDENT_TASKS))}" task'
             else:
                 dependent_task: str
                 for index, dependent_task in enumerate(cls.DEPENDENT_TASKS):
-                    formatted_dependent_tasks += f"\"{dependent_task}\""
+                    formatted_dependent_tasks += f'"{dependent_task}"'
 
                     if index < len(cls.DEPENDENT_TASKS) - 2:
                         formatted_dependent_tasks += ", "
@@ -178,11 +178,11 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
                 partial_message += " and the "
 
             if len(cls.DEPENDENT_EVENTS) == 1:
-                formatted_dependent_events += f"\"{next(iter(cls.DEPENDENT_EVENTS))}\" event"
+                formatted_dependent_events += f'"{next(iter(cls.DEPENDENT_EVENTS))}" event'
             else:
                 dependent_event: str
                 for index, dependent_event in enumerate(cls.DEPENDENT_EVENTS):
-                    formatted_dependent_events += f"\"{dependent_event}\""
+                    formatted_dependent_events += f'"{dependent_event}"'
 
                     if index < len(cls.DEPENDENT_EVENTS) - 2:
                         formatted_dependent_events += ", "

@@ -234,7 +234,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         # NOTE: The "Member" role must be added to the user **before** the "Guest" role to ensure that the welcome message does not include the suggestion to purchase membership
         await interaction_member.add_roles(
             member_role,
-            reason="TeX Bot slash-command: \"/makemember\"",
+            reason='TeX Bot slash-command: "/makemember"',
         )
 
         try:
@@ -258,15 +258,15 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             guest_role: discord.Role = await self.bot.guest_role
         except GuestRoleDoesNotExistError:
             logger.warning(
-                "\"/makemember\" command used but the \"Guest\" role does not exist. "
-                "Some user's may now have the \"Member\" role without the \"Guest\" role. "
-                "Use the \"/ensure-members-inducted\" command to fix this issue.",
+                '"/makemember" command used but the "Guest" role does not exist. '
+                'Some user\'s may now have the "Member" role without the "Guest" role. '
+                'Use the "/ensure-members-inducted" command to fix this issue.',
             )
         else:
             if guest_role not in interaction_member.roles:
                 await interaction_member.add_roles(
                     guest_role,
-                    reason="TeX Bot slash-command: \"/makemember\"",
+                    reason='TeX Bot slash-command: "/makemember"',
                 )
 
         # noinspection PyUnusedLocal
@@ -277,5 +277,5 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         if applicant_role and applicant_role in interaction_member.roles:
             await interaction_member.remove_roles(
                 applicant_role,
-                reason="TeX Bot slash-command: \"/makemember\"",
+                reason='TeX Bot slash-command: "/makemember"',
             )

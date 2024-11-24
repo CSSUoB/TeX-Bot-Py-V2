@@ -34,7 +34,9 @@ class ArchiveCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/archive" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_categories(ctx: "TeXBotAutocompleteContext") -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":  # noqa: E501
+    async def autocomplete_get_categories(
+        ctx: "TeXBotAutocompleteContext",
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """
         Autocomplete callable that generates the set of available selectable categories.
 
@@ -57,8 +59,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
         return {
             discord.OptionChoice(name=category.name, value=str(category.id))
-            for category
-            in main_guild.categories
+            for category in main_guild.categories
             if category.permissions_for(interaction_user).is_superset(
                 discord.Permissions(send_messages=True, view_channel=True),
             )
@@ -127,64 +128,64 @@ class ArchiveCommandCog(TeXBotBaseCog):
         channel: AllChannelTypes
         for channel in category.channels:
             try:
-                CHANNEL_NEEDS_COMMITTEE_ARCHIVING: bool = (
-                    channel.permissions_for(committee_role).is_superset(
-                        discord.Permissions(view_channel=True),
-                    ) and not channel.permissions_for(guest_role).is_superset(
-                        discord.Permissions(view_channel=True),
-                    )
+                CHANNEL_NEEDS_COMMITTEE_ARCHIVING: bool = channel.permissions_for(
+                    committee_role
+                ).is_superset(
+                    discord.Permissions(view_channel=True),
+                ) and not channel.permissions_for(guest_role).is_superset(
+                    discord.Permissions(view_channel=True),
                 )
-                CHANNEL_NEEDS_NORMAL_ARCHIVING: bool = (
-                    channel.permissions_for(guest_role).is_superset(
-                        discord.Permissions(view_channel=True),
-                    )
+                CHANNEL_NEEDS_NORMAL_ARCHIVING: bool = channel.permissions_for(
+                    guest_role
+                ).is_superset(
+                    discord.Permissions(view_channel=True),
                 )
                 if CHANNEL_NEEDS_COMMITTEE_ARCHIVING:
                     await channel.set_permissions(
                         everyone_role,
-                        reason=f"{interaction_member.display_name} used \"/archive\".",
+                        reason=f'{interaction_member.display_name} used "/archive".',
                         view_channel=False,
                     )
                     await channel.set_permissions(
                         guest_role,
                         overwrite=None,
-                        reason=f"{interaction_member.display_name} used \"/archive\".",
+                        reason=f'{interaction_member.display_name} used "/archive".',
                     )
                     await channel.set_permissions(
                         member_role,
                         overwrite=None,
-                        reason=f"{interaction_member.display_name} used \"/archive\".",
+                        reason=f'{interaction_member.display_name} used "/archive".',
                     )
                     await channel.set_permissions(
                         committee_role,
                         overwrite=None,
-                        reason=f"{interaction_member.display_name} used \"/archive\".",
+                        reason=f'{interaction_member.display_name} used "/archive".',
                     )
 
                 elif CHANNEL_NEEDS_NORMAL_ARCHIVING:
                     await channel.set_permissions(
                         everyone_role,
-                        reason=f"{interaction_member.display_name} used \"/archive\".",
+                        reason=f'{interaction_member.display_name} used "/archive".',
                         view_channel=False,
                     )
                     await channel.set_permissions(
                         guest_role,
                         overwrite=None,
-                        reason=f"{interaction_member.display_name} used \"/archive\".",
+                        reason=f'{interaction_member.display_name} used "/archive".',
                     )
                     await channel.set_permissions(
                         member_role,
                         overwrite=None,
-                        reason=f"{interaction_member.display_name} used \"/archive\".",
+                        reason=f'{interaction_member.display_name} used "/archive".',
                     )
                     await channel.set_permissions(
                         committee_role,
-                        reason=f"{interaction_member.display_name} used \"/archive\".",
+                        reason=f'{interaction_member.display_name} used "/archive".',
                         view_channel=False,
                     )
                     await channel.set_permissions(
                         archivist_role,
-                        reason=f"{interaction_member.display_name} used \"/archive\".",
+                        reason=f'{interaction_member.display_name} used "/archive".',
                         view_channel=True,
                     )
 

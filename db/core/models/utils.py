@@ -32,7 +32,14 @@ class AsyncBaseModel(models.Model):
         abstract = True
 
     @override
-    def save(self, *, force_insert: bool = False, force_update: bool = False, using: str | None = None, update_fields: "Iterable[str] | None" = None) -> None:  # type: ignore[override] # noqa: E501
+    def save(
+        self,
+        *,
+        force_insert: bool = False,
+        force_update: bool = False,
+        using: str | None = None,
+        update_fields: "Iterable[str] | None" = None,
+    ) -> None:  # type: ignore[override]
         self.full_clean()
 
         return super().save(force_insert, force_update, using, update_fields)
@@ -41,8 +48,7 @@ class AsyncBaseModel(models.Model):
     def __init__(self, *args: object, **kwargs: object) -> None:
         proxy_fields: dict[str, object] = {
             field_name: kwargs.pop(field_name)
-            for field_name
-            in set(kwargs.keys()) & self.get_proxy_field_names()
+            for field_name in set(kwargs.keys()) & self.get_proxy_field_names()
         }
 
         super().__init__(*args, **kwargs)
@@ -52,7 +58,16 @@ class AsyncBaseModel(models.Model):
         for field_name, value in proxy_fields.items():
             setattr(self, field_name, value)
 
-    def update(self, *, commit: bool = True, force_insert: bool = False, force_update: bool = False, using: str | None = None, update_fields: "Iterable[str] | None" = None, **kwargs: object) -> None:  # noqa: E501
+    def update(
+        self,
+        *,
+        commit: bool = True,
+        force_insert: bool = False,
+        force_update: bool = False,
+        using: str | None = None,
+        update_fields: "Iterable[str] | None" = None,
+        **kwargs: object,
+    ) -> None:
         """
         Change an in-memory object's values, then save it to the database.
 
@@ -98,7 +113,16 @@ class AsyncBaseModel(models.Model):
     update.alters_data: bool = True  # type: ignore[attr-defined, misc]
 
     # noinspection SpellCheckingInspection
-    async def aupdate(self, *, commit: bool = True, force_insert: bool = False, force_update: bool = False, using: str | None = None, update_fields: "Iterable[str] | None" = None, **kwargs: object) -> None:  # noqa: E501
+    async def aupdate(
+        self,
+        *,
+        commit: bool = True,
+        force_insert: bool = False,
+        force_update: bool = False,
+        using: str | None = None,
+        update_fields: "Iterable[str] | None" = None,
+        **kwargs: object,
+    ) -> None:
         """
         Asyncronously change an in-memory object's values, then save it to the database.
 

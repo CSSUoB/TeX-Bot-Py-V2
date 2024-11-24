@@ -1,6 +1,5 @@
 """Contains cog classes for any source interactions."""
 
-
 from typing import TYPE_CHECKING
 
 import discord

@@ -79,8 +79,8 @@ class StartupCog(TeXBotBaseCog):
                         settings["_DISCORD_MAIN_GUILD_ID"],
                     ),
                 )
-            logger.critical(GuildDoesNotExistError(
-                guild_id=settings["_DISCORD_MAIN_GUILD_ID"]),
+            logger.critical(
+                GuildDoesNotExistError(guild_id=settings["_DISCORD_MAIN_GUILD_ID"]),
             )
             await self.bot.close()
 
@@ -126,9 +126,9 @@ class StartupCog(TeXBotBaseCog):
                     ),
                     repr(settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"]),
                 )
-                manual_moderation_warning_message_location_similar_to_dm: bool = (
-                    settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"].lower() in ("dm", "dms")  # noqa: E501
-                )
+                manual_moderation_warning_message_location_similar_to_dm: bool = settings[
+                    "STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"
+                ].lower() in ("dm", "dms")
                 if manual_moderation_warning_message_location_similar_to_dm:
                     logger.info(
                         (

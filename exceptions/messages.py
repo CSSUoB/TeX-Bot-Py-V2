@@ -67,7 +67,12 @@ class MessagesJSONFileValueError(InvalidMessagesJSONFileError):
         return "The messages JSON file has an invalid value."
 
     @override
-    def __init__(self, message: str | None = None, dict_key: str | None = None, invalid_value: object | None = None) -> None:  # noqa: E501
+    def __init__(
+        self,
+        message: str | None = None,
+        dict_key: str | None = None,
+        invalid_value: object | None = None,
+    ) -> None:
         """Initialise a new InvalidMessagesJSONFile exception for a key's invalid value."""
         self.invalid_value: object | None = invalid_value
 

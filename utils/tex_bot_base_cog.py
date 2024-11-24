@@ -70,7 +70,13 @@ class TeXBotBaseCog(Cog):
         """
         self.bot: TeXBot = bot  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
 
-    async def command_send_error(self, ctx: "TeXBotApplicationContext", error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
+    async def command_send_error(
+        self,
+        ctx: "TeXBotApplicationContext",
+        error_code: str | None = None,
+        message: str | None = None,
+        logging_message: str | BaseException | None = None,
+    ) -> None:
         """
         Construct & format an error message from the given details.
 
@@ -96,7 +102,15 @@ class TeXBotBaseCog(Cog):
         )
 
     @classmethod
-    async def send_error(cls, bot: "TeXBot", interaction: discord.Interaction, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
+    async def send_error(
+        cls,
+        bot: "TeXBot",
+        interaction: discord.Interaction,
+        interaction_name: str,
+        error_code: str | None = None,
+        message: str | None = None,
+        logging_message: str | BaseException | None = None,
+    ) -> None:
         """
         Construct & format an error message from the given details.
 
@@ -141,7 +155,8 @@ class TeXBotBaseCog(Cog):
         if logging_message:
             logger.error(
                 " ".join(
-                    message_part for message_part in (
+                    message_part
+                    for message_part in (
                         error_code if error_code else "",
                         f"({interaction_name})",
                         str(logging_message),
@@ -151,7 +166,9 @@ class TeXBotBaseCog(Cog):
             )
 
     @staticmethod
-    async def autocomplete_get_text_channels(ctx: "TeXBotAutocompleteContext") -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":  # noqa: E501
+    async def autocomplete_get_text_channels(
+        ctx: "TeXBotAutocompleteContext",
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """
         Autocomplete callable that generates the set of available selectable channels.
 

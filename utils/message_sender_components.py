@@ -32,7 +32,9 @@ class MessageSavingSenderComponent(abc.ABC):
         self.sent_message: discord.Message | discord.Interaction | None = None
 
     @abc.abstractmethod
-    async def _send(self, content: str, *, view: "View | None" = None) -> discord.Message | discord.Interaction:  # noqa: E501
+    async def _send(
+        self, content: str, *, view: "View | None" = None
+    ) -> discord.Message | discord.Interaction:
         """
         Subclass implementation of `send()` method.
 
@@ -80,8 +82,11 @@ class ChannelMessageSender(MessageSavingSenderComponent):
         super().__init__()
 
     @override
-    async def _send(self, content: str, *, view: "View | None" = None) -> discord.Message | discord.Interaction:  # noqa: E501
+    async def _send(
+        self, content: str, *, view: "View | None" = None
+    ) -> discord.Message | discord.Interaction:
         if TYPE_CHECKING:
+
             class _BaseChannelSendKwargs(TypedDict):
                 """Type-hint for the required kwargs to the channel-send-function."""
 
@@ -118,5 +123,7 @@ class ResponseMessageSender(MessageSavingSenderComponent):
         super().__init__()
 
     @override
-    async def _send(self, content: str, *, view: "View | None" = None) -> discord.Message | discord.Interaction:  # noqa: E501
+    async def _send(
+        self, content: str, *, view: "View | None" = None
+    ) -> discord.Message | discord.Interaction:
         return await self.ctx.respond(content=content, view=view, ephemeral=True)

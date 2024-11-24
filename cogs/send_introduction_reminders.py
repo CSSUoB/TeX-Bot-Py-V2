@@ -137,12 +137,15 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     bool(message.components)
                     and isinstance(message.components[0], discord.ActionRow)
                     and isinstance(message.components[0].children[0], discord.Button)
-                    and message.components[0].children[0].custom_id == "opt_out_introduction_reminders_button"  # noqa: E501
+                    and message.components[0].children[0].custom_id
+                    == "opt_out_introduction_reminders_button"
                 )
                 if MESSAGE_CONTAINS_OPT_IN_OUT_BUTTON:
                     await message.edit(view=None)
 
-            if member not in main_guild.members:  # HACK: Caching errors can cause the member to no longer be part of the guild at this point, so this check must be performed before sending that member a message # noqa: FIX004
+            if (
+                member not in main_guild.members
+            ):  # HACK: Caching errors can cause the member to no longer be part of the guild at this point, so this check must be performed before sending that member a message # noqa: FIX004
                 logger.info(
                     (
                         "Member with ID: %s does not need to be sent a reminder "
@@ -192,11 +195,19 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         @override
         def __init__(self, bot: "TeXBot") -> None:
             """Initialise a new discord.View, to opt-in/out of introduction reminders."""
-            self.bot: TeXBot = bot  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
+            self.bot: TeXBot = (
+                bot  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
+            )
 
             super().__init__(timeout=None)
 
-        async def send_error(self, interaction: discord.Interaction, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
+        async def send_error(
+            self,
+            interaction: discord.Interaction,
+            error_code: str | None = None,
+            message: str | None = None,
+            logging_message: str | BaseException | None = None,
+        ) -> None:
             """
             Construct & format an error message from the given details.
 
@@ -220,7 +231,9 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 emoji.emojize(":no_good:", language="alias"),
             ),
         )
-        async def opt_out_introduction_reminders_button_callback(self, button: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
+        async def opt_out_introduction_reminders_button_callback(
+            self, button: discord.Button, interaction: discord.Interaction
+        ) -> None:
             """
             Set the opt-in/out flag depending on the status of the button.
 
@@ -235,7 +248,8 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
             BUTTON_WILL_MAKE_OPT_IN: Final[bool] = bool(
                 button.style == discord.ButtonStyle.green
-                or str(button.emoji) == emoji.emojize(
+                or str(button.emoji)
+                == emoji.emojize(
                     ":raised_hand:",
                     language="alias",
                 )
@@ -279,13 +293,15 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     )
                 except ValidationError as create_introduction_reminder_opt_out_member_error:
                     error_is_already_exists: bool = (
-                        "hashed_member_id" in create_introduction_reminder_opt_out_member_error.message_dict  # noqa: E501
+                        "hashed_member_id"
+                        in create_introduction_reminder_opt_out_member_error.message_dict
                         and any(
                             "already exists" in error
-                            for error
-                            in create_introduction_reminder_opt_out_member_error.message_dict[
-                                "hashed_member_id"
-                            ]
+                            for error in (
+                                create_introduction_reminder_opt_out_member_error.message_dict[
+                                    "hashed_member_id"
+                                ]
+                            )
                         )
                     )
                     if not error_is_already_exists:

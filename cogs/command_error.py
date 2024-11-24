@@ -31,7 +31,9 @@ class CommandErrorCog(TeXBotBaseCog):
     """Cog class that defines additional code to execute upon a command error."""
 
     @TeXBotBaseCog.listener()
-    async def on_application_command_error(self, ctx: "TeXBotApplicationContext", error: discord.ApplicationCommandError) -> None:  # noqa: E501
+    async def on_application_command_error(
+        self, ctx: "TeXBotApplicationContext", error: discord.ApplicationCommandError
+    ) -> None:
         """Log any major command errors in the logging channel & stderr."""
         error_code: str | None = None
         message: str | None = "Please contact a committee member."
@@ -70,7 +72,9 @@ class CommandErrorCog(TeXBotBaseCog):
             logging_message=logging_message,
         )
 
-        if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(error.original, GuildDoesNotExistError):  # noqa: E501
+        if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(
+            error.original, GuildDoesNotExistError
+        ):
             command_name: str = (
                 ctx.command.callback.__name__
                 if (

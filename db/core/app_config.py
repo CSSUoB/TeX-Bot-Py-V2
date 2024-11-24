@@ -1,6 +1,5 @@
 """Configurations to make the core app ready to import into _settings.py."""
 
-
 from typing import TYPE_CHECKING
 
 from django.apps import AppConfig

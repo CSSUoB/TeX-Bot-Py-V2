@@ -102,7 +102,9 @@ class Settings(abc.ABC):
             f"{type(self).__name__!r} object has no attribute {item!r}"
         )
 
-        if "_pytest" in item or item in ("__bases__", "__test__"):  # NOTE: Overriding __getattr__() leads to many edge-case issues where external libraries will attempt to call getattr() with peculiar values
+        if (
+            "_pytest" in item or item in ("__bases__", "__test__")
+        ):  # NOTE: Overriding __getattr__() leads to many edge-case issues where external libraries will attempt to call getattr() with peculiar values
             raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
         if not self._is_env_variables_setup:
@@ -178,8 +180,8 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_discord_log_channel_webhook_url(cls) -> None:
         raw_discord_log_channel_webhook_url: str = os.getenv(
-           "DISCORD_LOG_CHANNEL_WEBHOOK_URL",
-           "",
+            "DISCORD_LOG_CHANNEL_WEBHOOK_URL",
+            "",
         )
 
         DISCORD_LOG_CHANNEL_WEBHOOK_URL_IS_VALID: Final[bool] = bool(
@@ -205,8 +207,7 @@ class Settings(abc.ABC):
         raw_discord_guild_id: str | None = os.getenv("DISCORD_GUILD_ID")
 
         DISCORD_GUILD_ID_IS_VALID: Final[bool] = bool(
-            raw_discord_guild_id
-            and re.fullmatch(r"\A\d{17,20}\Z", raw_discord_guild_id),
+            raw_discord_guild_id and re.fullmatch(r"\A\d{17,20}\Z", raw_discord_guild_id),
         )
         if not DISCORD_GUILD_ID_IS_VALID:
             INVALID_DISCORD_GUILD_ID_MESSAGE: Final[str] = (
@@ -252,8 +253,7 @@ class Settings(abc.ABC):
         raw_purchase_membership_url: str | None = os.getenv("PURCHASE_MEMBERSHIP_URL")
 
         PURCHASE_MEMBERSHIP_URL_IS_VALID: Final[bool] = bool(
-            not raw_purchase_membership_url
-            or validators.url(raw_purchase_membership_url),
+            not raw_purchase_membership_url or validators.url(raw_purchase_membership_url),
         )
         if not PURCHASE_MEMBERSHIP_URL_IS_VALID:
             INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE: Final[str] = (
@@ -268,8 +268,7 @@ class Settings(abc.ABC):
         raw_membership_perks_url: str | None = os.getenv("MEMBERSHIP_PERKS_URL")
 
         MEMBERSHIP_PERKS_URL_IS_VALID: Final[bool] = bool(
-            not raw_membership_perks_url
-            or validators.url(raw_membership_perks_url),
+            not raw_membership_perks_url or validators.url(raw_membership_perks_url),
         )
         if not MEMBERSHIP_PERKS_URL_IS_VALID:
             INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (
@@ -367,10 +366,9 @@ class Settings(abc.ABC):
         if "roles_messages" not in messages_dict:
             raise MessagesJSONFileMissingKeyError(missing_key="roles_messages")
 
-        ROLES_MESSAGES_KEY_IS_VALID: Final[bool] = (
-            isinstance(messages_dict["roles_messages"], Iterable)
-            and bool(messages_dict["roles_messages"])
-        )
+        ROLES_MESSAGES_KEY_IS_VALID: Final[bool] = isinstance(
+            messages_dict["roles_messages"], Iterable
+        ) and bool(messages_dict["roles_messages"])
         if not ROLES_MESSAGES_KEY_IS_VALID:
             raise MessagesJSONFileValueError(
                 dict_key="roles_messages",
@@ -383,8 +381,7 @@ class Settings(abc.ABC):
         raw_members_list_url: str | None = os.getenv("MEMBERS_LIST_URL")
 
         MEMBERS_LIST_URL_IS_VALID: Final[bool] = bool(
-            raw_members_list_url
-            and validators.url(raw_members_list_url),
+            raw_members_list_url and validators.url(raw_members_list_url),
         )
         if not MEMBERS_LIST_URL_IS_VALID:
             INVALID_MEMBERS_LIST_URL_MESSAGE: Final[str] = (
@@ -422,8 +419,7 @@ class Settings(abc.ABC):
 
         if raw_send_introduction_reminders not in VALID_SEND_INTRODUCTION_REMINDERS_VALUES:
             INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE: Final[str] = (
-                "SEND_INTRODUCTION_REMINDERS must be one of: "
-                "\"Once\", \"Interval\" or \"False\"."
+                "SEND_INTRODUCTION_REMINDERS must be one of: " '"Once", "Interval" or "False".'
             )
             raise ImproperlyConfiguredError(INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE)
 
@@ -464,8 +460,7 @@ class Settings(abc.ABC):
             raw_timedelta_send_introduction_reminders_delay = timedelta(
                 **{
                     key: float(value)
-                    for key, value
-                    in raw_send_introduction_reminders_delay.groupdict().items()
+                    for key, value in raw_send_introduction_reminders_delay.groupdict().items()
                     if value
                 },
             )
@@ -513,8 +508,7 @@ class Settings(abc.ABC):
 
             raw_timedelta_details_send_introduction_reminders_interval = {
                 key: float(value)
-                for key, value
-                in raw_send_introduction_reminders_interval.groupdict().items()
+                for key, value in raw_send_introduction_reminders_interval.groupdict().items()
                 if value
             }
 
@@ -534,9 +528,7 @@ class Settings(abc.ABC):
             )
             raise ImproperlyConfiguredError(INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE)
 
-        cls._settings["SEND_GET_ROLES_REMINDERS"] = (
-            raw_send_get_roles_reminders in TRUE_VALUES
-        )
+        cls._settings["SEND_GET_ROLES_REMINDERS"] = raw_send_get_roles_reminders in TRUE_VALUES
 
     @classmethod
     def _setup_send_get_roles_reminders_delay(cls) -> None:
@@ -567,8 +559,7 @@ class Settings(abc.ABC):
             raw_timedelta_send_get_roles_reminders_delay = timedelta(
                 **{
                     key: float(value)
-                    for key, value
-                    in raw_send_get_roles_reminders_delay.groupdict().items()
+                    for key, value in raw_send_get_roles_reminders_delay.groupdict().items()
                     if value
                 },
             )
@@ -600,7 +591,9 @@ class Settings(abc.ABC):
             str(os.getenv("ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL", "24h")),
         )
 
-        raw_timedelta_details_advanced_send_get_roles_reminders_interval: Mapping[str, float] = {  # noqa: E501
+        raw_timedelta_details_advanced_send_get_roles_reminders_interval: Mapping[
+            str, float
+        ] = {
             "hours": 24,
         }
 
@@ -616,8 +609,9 @@ class Settings(abc.ABC):
 
             raw_timedelta_details_advanced_send_get_roles_reminders_interval = {
                 key: float(value)
-                for key, value
-                in raw_advanced_send_get_roles_reminders_interval.groupdict().items()
+                for key, value in (
+                    raw_advanced_send_get_roles_reminders_interval.groupdict().items()
+                )
                 if value
             }
 
@@ -648,8 +642,7 @@ class Settings(abc.ABC):
         else:
             cls._settings["STATISTICS_ROLES"] = {
                 raw_statistics_role
-                for raw_statistics_role
-                in raw_statistics_roles.split(",")
+                for raw_statistics_role in raw_statistics_roles.split(",")
                 if raw_statistics_role
             }
 
@@ -658,8 +651,7 @@ class Settings(abc.ABC):
         raw_moderation_document_url: str | None = os.getenv("MODERATION_DOCUMENT_URL")
 
         MODERATION_DOCUMENT_URL_IS_VALID: Final[bool] = bool(
-            raw_moderation_document_url
-            and validators.url(raw_moderation_document_url),
+            raw_moderation_document_url and validators.url(raw_moderation_document_url),
         )
         if not MODERATION_DOCUMENT_URL_IS_VALID:
             MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (

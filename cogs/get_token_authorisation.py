@@ -123,7 +123,8 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
                 organisation for organisation in organisations
             )}",
             ephemeral=bool(
-                (not guest_role) or ctx.channel.permissions_for(guest_role).is_superset(
+                (not guest_role)
+                or ctx.channel.permissions_for(guest_role).is_superset(
                     discord.Permissions(view_channel=True),
                 )
             ),

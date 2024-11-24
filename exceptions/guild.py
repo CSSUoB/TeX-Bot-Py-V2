@@ -39,7 +39,7 @@ class EveryoneRoleCouldNotBeRetrievedError(BaseErrorWithErrorCode, ValueError):
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:
-        return "The reference to the \"@everyone\" role could not be correctly retrieved."
+        return 'The reference to the "@everyone" role could not be correctly retrieved.'
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty

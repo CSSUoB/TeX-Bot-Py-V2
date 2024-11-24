@@ -58,7 +58,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
         logger.debug("Running the handover command!")
 
         HANDOVER_AUDIT_MESSAGE: Final[str] = (
-            f"{ctx.user} used TeX-Bot slash-command: \"/committee-handover\""
+            f'{ctx.user} used TeX-Bot slash-command: "/committee-handover"'
         )
 
         if main_guild.me.top_role.position < committee_role.position:
@@ -69,7 +69,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
             await initial_response.edit(
                 content=(
                     ":warning: This command requires TeX-Bot to hold a role higher than "
-                    "that of the \"Committee\" role to perform this action. Operation aborted."
+                    'that of the "Committee" role to perform this action. Operation aborted.'
                     " :warning:"
                 ),
             )
@@ -95,7 +95,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
         await initial_response.edit(
             content=(
                 ":hourglass: Giving committee users access to the #handover channel and "
-                "removing the \"Committee\" role... :hourglass:"
+                'removing the "Committee" role... :hourglass:'
             ),
         )
 
@@ -133,8 +133,8 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
 
         await initial_response.edit(
             content=(
-                ":hourglass: Giving committee-elect users the \"Committee\" role "
-                "and removing their \"Committee-Elect\" role... :hourglass:"
+                ':hourglass: Giving committee-elect users the "Committee" role '
+                'and removing their "Committee-Elect" role... :hourglass:'
             ),
         )
 
@@ -197,7 +197,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
         )
 
         ROLE_RESET_AUDIT_MESSAGE: Final[str] = (
-            f"{ctx.user} used TeX-Bot slash-command: \"/annual_roles_reset\""
+            f'{ctx.user} used TeX-Bot slash-command: "/annual_roles_reset"'
         )
 
         member: discord.Member
@@ -273,7 +273,7 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
 
         if final_year_channel:
             await initial_message.edit(
-                content=":hourglass: Archiving \"final-years\" channel... :hourglass:",
+                content=':hourglass: Archiving "final-years" channel... :hourglass:',
             )
             archivist_role: discord.Role = await self.bot.archivist_role
 
@@ -318,7 +318,7 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
 
         await initial_message.edit(
             content=(
-                ":hourglass: Creating new \"first-years\" channel and setting permissions... "
+                ':hourglass: Creating new "first-years" channel and setting permissions... '
                 ":hourglass:"
             ),
         )

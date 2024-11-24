@@ -39,7 +39,7 @@ class AssignedCommitteeAction(BaseDiscordMemberWrapper):
 
     INSTANCES_NAME_PLURAL: str = "Assigned Committee Actions"
 
-    discord_member = models.ForeignKey(   # type: ignore[assignment]
+    discord_member = models.ForeignKey(  # type: ignore[assignment]
         DiscordMember,
         on_delete=models.CASCADE,
         related_name="assigned_committee_actions",
@@ -61,6 +61,7 @@ class AssignedCommitteeAction(BaseDiscordMemberWrapper):
         null=False,
         blank=False,
     )
+
     class Meta:
         verbose_name = "Assigned Committee Action"
         constraints = [  # noqa: RUF012
@@ -72,9 +73,7 @@ class AssignedCommitteeAction(BaseDiscordMemberWrapper):
 
     def __repr__(self) -> str:
         """Generate a developer-focused representation of this Assigned Committee Action's attributes."""  # noqa: E501, W505
-        return (
-            f"<{self._meta.verbose_name}: {self.discord_member}, {self.description}" # type: ignore[has-type]
-        )
+        return f"<{self._meta.verbose_name}: {self.discord_member}, {self.description}"  # type: ignore[has-type]
 
     def __str__(self) -> str:
         """Generate the string representation of this Assigned Committee Action."""
@@ -161,9 +160,9 @@ class SentGetRolesReminderMember(BaseDiscordMemberWrapper):
     )
 
     class Meta:  # noqa: D106
-        verbose_name = "Discord Member that has had a \"Get Roles\" reminder sent to their DMs"
+        verbose_name = 'Discord Member that has had a "Get Roles" reminder sent to their DMs'
         verbose_name_plural = (
-            "Discord Members that have had a \"Get Roles\" reminder sent to their DMs"
+            'Discord Members that have had a "Get Roles" reminder sent to their DMs'
         )
 
 
@@ -223,7 +222,9 @@ class GroupMadeMember(AsyncBaseModel):
         return f"<{self._meta.verbose_name}: {self.hashed_group_member_id!r}>"
 
     @classmethod
-    def hash_group_member_id(cls, group_member_id: str | int, group_member_id_type: str = "community group") -> str:  # noqa: E501
+    def hash_group_member_id(
+        cls, group_member_id: str | int, group_member_id_type: str = "community group"
+    ) -> str:
         """
         Hash the provided group_member_id.
 
@@ -281,9 +282,7 @@ class DiscordReminder(BaseDiscordMemberWrapper):
     _channel_type = models.IntegerField(
         "Discord Channel Type of the channel that the reminder needs to be sent in",
         choices=[
-            (channel_type.value, channel_type.name)
-            for channel_type
-            in discord.ChannelType
+            (channel_type.value, channel_type.name) for channel_type in discord.ChannelType
         ],
         null=True,
         blank=True,

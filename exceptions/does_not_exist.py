@@ -76,7 +76,7 @@ class RoleDoesNotExistError(BaseDoesNotExistError, abc.ABC):
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:
-        return f"Role with name \"{cls.ROLE_NAME}\" does not exist."
+        return f'Role with name "{cls.ROLE_NAME}" does not exist.'
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
@@ -273,7 +273,7 @@ class ChannelDoesNotExistError(BaseDoesNotExistError):
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:
-        return f"Channel with name \"{cls.CHANNEL_NAME}\" does not exist."
+        return f'Channel with name "{cls.CHANNEL_NAME}" does not exist.'
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
