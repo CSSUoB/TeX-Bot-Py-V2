@@ -617,9 +617,9 @@ class ManualModerationCog(BaseStrikeCog):
             )
 
             if (
-                out_of_sync_ban_button_interaction.data["custom_id"]
+                out_of_sync_ban_button_interaction.data["custom_id"]  # type: ignore[index, typeddict-item]
                 == "no_out_of_sync_ban_member"
-            ):  # type: ignore[index, typeddict-item]
+            ):
                 await out_of_sync_ban_confirmation_message.edit(
                     content=(
                         f"Aborted performing ban action upon {strike_user.mention}. "
@@ -639,9 +639,9 @@ class ManualModerationCog(BaseStrikeCog):
                 return
 
             if (
-                out_of_sync_ban_button_interaction.data["custom_id"]
+                out_of_sync_ban_button_interaction.data["custom_id"]  # type: ignore[index, typeddict-item]
                 == "yes_out_of_sync_ban_member"
-            ):  # type: ignore[index, typeddict-item]
+            ):
                 await self._send_strike_user_message(strike_user, member_strikes)
                 await main_guild.ban(
                     strike_user,

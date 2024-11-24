@@ -112,8 +112,8 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
 
     @override
     def get_or_create(
-        self, defaults: "Defaults" = None, **kwargs: object
-    ) -> tuple["T_model", bool]:  # type: ignore[override]
+        self, defaults: "Defaults" = None, **kwargs: object  # type: ignore[override]
+    ) -> tuple["T_model", bool]:
         return super().get_or_create(
             defaults=defaults,
             **self._perform_remove_unhashed_id_from_kwargs(kwargs),
@@ -121,8 +121,8 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
 
     @override
     async def aget_or_create(
-        self, defaults: "Defaults" = None, **kwargs: object
-    ) -> tuple["T_model", bool]:  # type: ignore[override]
+        self, defaults: "Defaults" = None, **kwargs: object  # type: ignore[override]
+    ) -> tuple["T_model", bool]:
         return await super().aget_or_create(
             defaults=defaults,
             **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
@@ -130,8 +130,8 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
 
     @override
     def update_or_create(
-        self, defaults: "Defaults" = None, create_defaults: "Defaults" = None, **kwargs: object
-    ) -> tuple["T_model", bool]:  # type: ignore[override]
+        self, defaults: "Defaults" = None, create_defaults: "Defaults" = None, **kwargs: object  # type: ignore[override]
+    ) -> tuple["T_model", bool]:
         return super().get_or_create(
             defaults=defaults,
             create_defaults=create_defaults,
@@ -141,8 +141,8 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
     # noinspection SpellCheckingInspection
     @override
     async def aupdate_or_create(
-        self, defaults: "Defaults" = None, create_defaults: "Defaults" = None, **kwargs: object
-    ) -> tuple["T_model", bool]:  # type: ignore[override]
+        self, defaults: "Defaults" = None, create_defaults: "Defaults" = None, **kwargs: object  # type: ignore[override]
+    ) -> tuple["T_model", bool]:
         return await super().aupdate_or_create(
             defaults=defaults,
             create_defaults=create_defaults,
@@ -248,8 +248,8 @@ class RelatedDiscordMemberManager(BaseHashedIDManager["T_BaseDiscordMemberWrappe
                     )[0]
                 )
             except (
-                self.model.discord_member.field.remote_field.model.DoesNotExist
-            ) as does_not_exist_error:  # type: ignore[attr-defined]
+                self.model.discord_member.field.remote_field.model.DoesNotExist  # type: ignore[attr-defined]
+            ) as does_not_exist_error:
                 raise self.model.DoesNotExist from does_not_exist_error
 
         return kwargs
@@ -282,8 +282,8 @@ class RelatedDiscordMemberManager(BaseHashedIDManager["T_BaseDiscordMemberWrappe
                     )
                 )[0]
             except (
-                self.model.discord_member.field.remote_field.model.DoesNotExist
-            ) as does_not_exist_error:  # type: ignore[attr-defined]
+                self.model.discord_member.field.remote_field.model.DoesNotExist  # type: ignore[attr-defined]
+            ) as does_not_exist_error:
                 raise self.model.DoesNotExist from does_not_exist_error
 
         return kwargs

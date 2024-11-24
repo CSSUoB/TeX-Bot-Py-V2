@@ -32,14 +32,14 @@ class AsyncBaseModel(models.Model):
         abstract = True
 
     @override
-    def save(
+    def save(  # type: ignore[override]
         self,
         *,
         force_insert: bool = False,
         force_update: bool = False,
         using: str | None = None,
         update_fields: "Iterable[str] | None" = None,
-    ) -> None:  # type: ignore[override]
+    ) -> None:
         self.full_clean()
 
         return super().save(force_insert, force_update, using, update_fields)
