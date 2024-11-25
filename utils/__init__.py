@@ -36,6 +36,7 @@ if TYPE_CHECKING:
         | discord.TextChannel
         | discord.ForumChannel
         | discord.CategoryChannel
+        | None
     )
 
 

@@ -2,7 +2,7 @@
 
 import abc
 import logging
-from typing import TYPE_CHECKING, TypeVar, final, override
+from typing import TYPE_CHECKING, final, override
 
 from django.db.models import Manager
 
@@ -21,19 +21,13 @@ if TYPE_CHECKING:
 __all__: "Sequence[str]" = ("HashedDiscordMemberManager", "RelatedDiscordMemberManager")
 
 if TYPE_CHECKING:
-    T_model = TypeVar("T_model", bound=AsyncBaseModel)
-
-    T_BaseDiscordMemberWrapper = TypeVar(
-        "T_BaseDiscordMemberWrapper", bound=BaseDiscordMemberWrapper
-    )
-
     type Defaults = MutableMapping[str, object | Callable[[], object]] | None
 
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-class BaseHashedIDManager(Manager["T_model"], abc.ABC):
+class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
     """Base manager class to remove a given unhashed ID before executing a query."""
 
     use_in_migrations: bool = True
@@ -64,11 +58,11 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
         """Remove any unhashed_id values from the kwargs dict before executing a query."""
 
     @override
-    def get(self, *args: object, **kwargs: object) -> "T_model":
+    def get(self, *args: object, **kwargs: object) -> T_model:
         return super().get(*args, **self._perform_remove_unhashed_id_from_kwargs(kwargs))
 
     @override
-    async def aget(self, *args: object, **kwargs: object) -> "T_model":
+    async def aget(self, *args: object, **kwargs: object) -> T_model:
         return await super().aget(
             *args,
             **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
@@ -102,36 +96,43 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
         )
 
     @override
-    def create(self, **kwargs: object) -> "T_model":
+    def create(self, **kwargs: object) -> T_model:
         return super().create(**self._perform_remove_unhashed_id_from_kwargs(kwargs))
 
     # noinspection SpellCheckingInspection
     @override
-    async def acreate(self, **kwargs: object) -> "T_model":
+    async def acreate(self, **kwargs: object) -> T_model:
         return await super().acreate(**(await self._aremove_unhashed_id_from_kwargs(kwargs)))
 
     @override
-    def get_or_create(
-        self, defaults: "Defaults" = None, **kwargs: object  # type: ignore[override]
-    ) -> tuple["T_model", bool]:
+    def get_or_create(  # type: ignore[override]
+        self,
+        defaults: "Defaults" = None,
+        **kwargs: object,
+    ) -> tuple[T_model, bool]:
         return super().get_or_create(
             defaults=defaults,
             **self._perform_remove_unhashed_id_from_kwargs(kwargs),
         )
 
     @override
-    async def aget_or_create(
-        self, defaults: "Defaults" = None, **kwargs: object  # type: ignore[override]
-    ) -> tuple["T_model", bool]:
+    async def aget_or_create(  # type: ignore[override]
+        self,
+        defaults: "Defaults" = None,
+        **kwargs: object,
+    ) -> tuple[T_model, bool]:
         return await super().aget_or_create(
             defaults=defaults,
             **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
         )
 
     @override
-    def update_or_create(
-        self, defaults: "Defaults" = None, create_defaults: "Defaults" = None, **kwargs: object  # type: ignore[override]
-    ) -> tuple["T_model", bool]:
+    def update_or_create(  # type: ignore[override]
+        self,
+        defaults: "Defaults" = None,
+        create_defaults: "Defaults" = None,
+        **kwargs: object,
+    ) -> tuple[T_model, bool]:
         return super().get_or_create(
             defaults=defaults,
             create_defaults=create_defaults,
@@ -140,9 +141,12 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
 
     # noinspection SpellCheckingInspection
     @override
-    async def aupdate_or_create(
-        self, defaults: "Defaults" = None, create_defaults: "Defaults" = None, **kwargs: object  # type: ignore[override]
-    ) -> tuple["T_model", bool]:
+    async def aupdate_or_create(  # type: ignore[override]
+        self,
+        defaults: "Defaults" = None,
+        create_defaults: "Defaults" = None,
+        **kwargs: object,
+    ) -> tuple[T_model, bool]:
         return await super().aupdate_or_create(
             defaults=defaults,
             create_defaults=create_defaults,
@@ -214,7 +218,9 @@ class HashedDiscordMemberManager(BaseHashedIDManager["DiscordMember"]):
         return kwargs
 
 
-class RelatedDiscordMemberManager(BaseHashedIDManager["T_BaseDiscordMemberWrapper"]):
+class RelatedDiscordMemberManager[T_BaseDiscordMemberWrapper: "BaseDiscordMemberWrapper"](
+    BaseHashedIDManager[T_BaseDiscordMemberWrapper]
+):
     """
     Manager class to create & retrieve instances of any concrete `BaseDiscordMemberWrapper`.
 
