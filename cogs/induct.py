@@ -1,22 +1,9 @@
 """Contains cog classes for any induction interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = (
-    "BaseInductCog",
-    "EnsureMembersInductedCommandCog",
-    "InductContextCommandsCog",
-    "InductSendMessageCog",
-    "InductSlashCommandCog",
-)
-
-
 import contextlib
 import logging
 import random
-from collections.abc import Set
-from logging import Logger
-from typing import Final, Literal
+from typing import TYPE_CHECKING
 
 import discord
 
@@ -33,13 +20,30 @@ from exceptions import (
 )
 from utils import (
     CommandChecks,
-    TeXBotApplicationContext,
-    TeXBotAutocompleteContext,
     TeXBotBaseCog,
 )
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from collections.abc import Set as AbstractSet
+    from logging import Logger
+    from typing import Final, Literal
+
+    from utils import (
+        TeXBotApplicationContext,
+        TeXBotAutocompleteContext,
+    )
+
+__all__: "Sequence[str]" = (
+    "BaseInductCog",
+    "EnsureMembersInductedCommandCog",
+    "InductContextCommandsCog",
+    "InductSendMessageCog",
+    "InductSlashCommandCog",
+)
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class InductSendMessageCog(TeXBotBaseCog):
@@ -77,7 +81,7 @@ class InductSendMessageCog(TeXBotBaseCog):
             MESSAGE_IS_INTRODUCTION_REMINDER: bool = bool(
                 ("joined the " in message.content)
                 and (" Discord guild but have not yet introduced" in message.content)
-                and message.author.bot  # noqa: COM812
+                and message.author.bot
             )
             if MESSAGE_IS_INTRODUCTION_REMINDER:
                 await message.delete(
@@ -110,7 +114,7 @@ class InductSendMessageCog(TeXBotBaseCog):
                 "optional roles like pronouns and year groups\n"
                 "3. Change your nickname to whatever you wish others to refer to you as "
                 "(You can do this by right-clicking your name in the members-list "
-                "to the right & selecting \"Edit Server Profile\").",
+                'to the right & selecting "Edit Server Profile").',
             )
             if user_type != "member":
                 await after.send(
@@ -137,9 +141,11 @@ class BaseInductCog(TeXBotBaseCog):
     child user-induction cog container classes.
     """
 
-    async def get_random_welcome_message(self, induction_member: discord.User | discord.Member | None = None) -> str:  # noqa: E501
+    async def get_random_welcome_message(
+        self, induction_member: discord.User | discord.Member | None = None
+    ) -> str:
         """Get & format a random welcome message."""
-        random_welcome_message: str = random.choice(tuple(settings["WELCOME_MESSAGES"]))
+        random_welcome_message: str = random.choice(tuple(settings["WELCOME_MESSAGES"]))  # noqa: S311
 
         if "<User>" in random_welcome_message:
             if not induction_member:
@@ -178,8 +184,13 @@ class BaseInductCog(TeXBotBaseCog):
 
         return random_welcome_message.strip()
 
-
-    async def _perform_induction(self, ctx: TeXBotApplicationContext, induction_member: discord.Member, *, silent: bool) -> None:  # noqa: E501
+    async def _perform_induction(
+        self,
+        ctx: "TeXBotApplicationContext",
+        induction_member: discord.Member,
+        *,
+        silent: bool,
+    ) -> None:
         """Perform the actual process of inducting a member by giving them the Guest role."""
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
@@ -187,9 +198,7 @@ class BaseInductCog(TeXBotBaseCog):
 
         logger.debug("Inducting member %s, silent=%s", induction_member, silent)
 
-        INDUCT_AUDIT_MESSAGE: Final[str] = (
-            f"{ctx.user} used TeX Bot slash-command: \"/induct\""
-        )
+        INDUCT_AUDIT_MESSAGE: Final[str] = f'{ctx.user} used TeX Bot slash-command: "/induct"'
 
         intro_channel: discord.TextChannel | None = discord.utils.get(
             main_guild.text_channels,
@@ -278,7 +287,9 @@ class InductSlashCommandCog(BaseInductCog):
     """Cog class that defines the "/induct" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_members(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
+    async def autocomplete_get_members(
+        ctx: "TeXBotAutocompleteContext",
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """
         Autocomplete callable that generates the set of available selectable members.
 
@@ -293,8 +304,7 @@ class InductSlashCommandCog(BaseInductCog):
 
         members: set[discord.Member] = {
             member
-            for member
-            in main_guild.members
+            for member in main_guild.members
             if not member.bot and guest_role not in member.roles
         }
 
@@ -331,7 +341,9 @@ class InductSlashCommandCog(BaseInductCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def induct(self, ctx: TeXBotApplicationContext, str_induct_member_id: str, *, silent: bool) -> None:  # noqa: E501
+    async def induct(
+        self, ctx: "TeXBotApplicationContext", str_induct_member_id: str, *, silent: bool
+    ) -> None:
         """
         Definition & callback response of the "induct" command.
 
@@ -356,7 +368,9 @@ class InductContextCommandsCog(BaseInductCog):
     @discord.user_command(name="Induct User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def non_silent_user_induct(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:  # noqa: E501
+    async def non_silent_user_induct(
+        self, ctx: "TeXBotApplicationContext", member: discord.Member
+    ) -> None:
         """
         Definition & callback response of the "non_silent_induct" user-context-command.
 
@@ -367,11 +381,12 @@ class InductContextCommandsCog(BaseInductCog):
         """
         await self._perform_induction(ctx, member, silent=False)
 
-
     @discord.user_command(name="Silently Induct User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def silent_user_induct(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:  # noqa: E501
+    async def silent_user_induct(
+        self, ctx: "TeXBotApplicationContext", member: discord.Member
+    ) -> None:
         """
         Definition & callback response of the "silent_induct" user-context-command.
 
@@ -382,11 +397,12 @@ class InductContextCommandsCog(BaseInductCog):
         """
         await self._perform_induction(ctx, member, silent=True)
 
-
     @discord.message_command(name="Induct Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def non_silent_message_induct(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
+    async def non_silent_message_induct(
+        self, ctx: "TeXBotApplicationContext", message: discord.Message
+    ) -> None:
         """
         Definition and callback response of the "non_silent_induct" message-context-command.
 
@@ -412,11 +428,12 @@ class InductContextCommandsCog(BaseInductCog):
 
         await self._perform_induction(ctx, member, silent=False)
 
-
     @discord.message_command(name="Silently Induct Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def silent_message_induct(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
+    async def silent_message_induct(
+        self, ctx: "TeXBotApplicationContext", message: discord.Message
+    ) -> None:
         """
         Definition and callback response of the "silent_induct" message-context-command.
 
@@ -453,7 +470,7 @@ class EnsureMembersInductedCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def ensure_members_inducted(self, ctx: TeXBotApplicationContext) -> None:
+    async def ensure_members_inducted(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "ensure_members_inducted" command.
 
@@ -480,7 +497,7 @@ class EnsureMembersInductedCommandCog(TeXBotBaseCog):
                 await member.add_roles(
                     guest_role,
                     reason=(
-                        f"{ctx.user} used TeX Bot slash-command: \"/ensure-members-inducted\""
+                        f'{ctx.user} used TeX Bot slash-command: "/ensure-members-inducted"'
                     ),
                 )
 

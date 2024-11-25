@@ -1,24 +1,28 @@
 """Contains cog classes for annual handover and role reset functionality."""
 
-from collections.abc import Sequence
+import datetime
+import logging
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = (
+import discord
+
+from db.core.models import GroupMadeMember
+from utils import CommandChecks, TeXBotBaseCog
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from logging import Logger
+    from typing import Final
+
+    from utils import AllChannelTypes, TeXBotApplicationContext
+
+__all__: "Sequence[str]" = (
     "AnnualRolesResetCommandCog",
     "AnnualYearChannelsIncrementCommandCog",
     "CommitteeHandoverCommandCog",
 )
 
-import datetime
-import logging
-from logging import Logger
-from typing import Final
-
-import discord
-
-from db.core.models import GroupMadeMember
-from utils import AllChannelTypes, CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
-
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class CommitteeHandoverCommandCog(TeXBotBaseCog):
@@ -30,7 +34,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def committee_handover(self, ctx: TeXBotApplicationContext) -> None:
+    async def committee_handover(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "committee_handover" command.
 
@@ -54,7 +58,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
         logger.debug("Running the handover command!")
 
         HANDOVER_AUDIT_MESSAGE: Final[str] = (
-            f"{ctx.user} used TeX-Bot slash-command: \"/committee-handover\""
+            f'{ctx.user} used TeX-Bot slash-command: "/committee-handover"'
         )
 
         if main_guild.me.top_role.position < committee_role.position:
@@ -65,7 +69,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
             await initial_response.edit(
                 content=(
                     ":warning: This command requires TeX-Bot to hold a role higher than "
-                    "that of the \"Committee\" role to perform this action. Operation aborted."
+                    'that of the "Committee" role to perform this action. Operation aborted.'
                     " :warning:"
                 ),
             )
@@ -91,7 +95,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
         await initial_response.edit(
             content=(
                 ":hourglass: Giving committee users access to the #handover channel and "
-                "removing the \"Committee\" role... :hourglass:"
+                'removing the "Committee" role... :hourglass:'
             ),
         )
 
@@ -129,8 +133,8 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
 
         await initial_response.edit(
             content=(
-                ":hourglass: Giving committee-elect users the \"Committee\" role "
-                "and removing their \"Committee-Elect\" role... :hourglass:"
+                ':hourglass: Giving committee-elect users the "Committee" role '
+                'and removing their "Committee-Elect" role... :hourglass:'
             ),
         )
 
@@ -156,7 +160,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
 class AnnualRolesResetCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/annual-roles-reset" command."""
 
-    ACADEMIC_YEAR_ROLE_NAMES: Final[frozenset[str]] = frozenset(
+    ACADEMIC_YEAR_ROLE_NAMES: "Final[frozenset[str]]" = frozenset(
         {
             "Foundation Year",
             "First Year",
@@ -175,7 +179,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def annual_roles_reset(self, ctx: TeXBotApplicationContext) -> None:
+    async def annual_roles_reset(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "annual_roles_reset" command.
 
@@ -193,7 +197,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
         )
 
         ROLE_RESET_AUDIT_MESSAGE: Final[str] = (
-            f"{ctx.user} used TeX-Bot slash-command: \"/annual_roles_reset\""
+            f'{ctx.user} used TeX-Bot slash-command: "/annual_roles_reset"'
         )
 
         member: discord.Member
@@ -242,7 +246,9 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
         name="increment-year-channels",
         description="Increments the year channels, archiving and creating channels as needed.",
     )
-    async def increment_year_channels(self, ctx: TeXBotApplicationContext) -> None:
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def increment_year_channels(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition and callback response of the "increment_year_channels" command.
 
@@ -267,7 +273,7 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
 
         if final_year_channel:
             await initial_message.edit(
-                content=":hourglass: Archiving \"final-years\" channel... :hourglass:",
+                content=':hourglass: Archiving "final-years" channel... :hourglass:',
             )
             archivist_role: discord.Role = await self.bot.archivist_role
 
@@ -312,7 +318,7 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
 
         await initial_message.edit(
             content=(
-                ":hourglass: Creating new \"first-years\" channel and setting permissions... "
+                ':hourglass: Creating new "first-years" channel and setting permissions... '
                 ":hourglass:"
             ),
         )

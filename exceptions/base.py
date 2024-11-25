@@ -1,18 +1,19 @@
 """Base exception classes inherited by other custom exceptions used within this project."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = (
-    "BaseTeXBotError",
-    "BaseErrorWithErrorCode",
-    "BaseDoesNotExistError",
-)
-
-
 import abc
-from typing import Final, override
+from typing import TYPE_CHECKING, override
 
-from classproperties import classproperty
+from typed_classproperties import classproperty
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import Final
+
+__all__: "Sequence[str]" = (
+    "BaseDoesNotExistError",
+    "BaseErrorWithErrorCode",
+    "BaseTeXBotError",
+)
 
 
 class BaseTeXBotError(BaseException, abc.ABC):
@@ -21,8 +22,8 @@ class BaseTeXBotError(BaseException, abc.ABC):
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802, N805
-        """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
+    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802
+        """The message to be displayed alongside this exception class if none is provided."""
 
     @override
     def __init__(self, message: str | None = None) -> None:
@@ -58,8 +59,8 @@ class BaseErrorWithErrorCode(BaseTeXBotError, abc.ABC):  # noqa: N818
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def ERROR_CODE(cls) -> str:  # noqa: N802, N805
-        """The unique error code for users to tell admins about an error that occurred."""  # noqa: D401
+    def ERROR_CODE(cls) -> str:  # noqa: N802
+        """The unique error code for users to tell admins about an error that occurred."""
 
 
 class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
@@ -67,45 +68,45 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802, N805
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802
         """
         The set of names of commands that require this Discord entity.
 
         This set being empty could mean that all commands require this Discord entity,
         or no commands require this Discord entity.
-        """  # noqa: D401
+        """
         return frozenset()
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def DEPENDENT_TASKS(cls) -> frozenset[str]:  # noqa: N802, N805
+    def DEPENDENT_TASKS(cls) -> frozenset[str]:  # noqa: N802
         """
         The set of names of tasks that require this Discord entity.
 
         This set being empty could mean that all tasks require this Discord entity,
         or no tasks require this Discord entity.
-        """  # noqa: D401
+        """
         return frozenset()
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def DEPENDENT_EVENTS(cls) -> frozenset[str]:  # noqa: N802, N805
+    def DEPENDENT_EVENTS(cls) -> frozenset[str]:  # noqa: N802
         """
         The set of names of event listeners that require this Discord entity.
 
         This set being empty could mean that all event listeners require this Discord entity,
         or no event listeners require this Discord entity.
-        """  # noqa: D401
+        """
         return frozenset()
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def DOES_NOT_EXIST_TYPE(cls) -> str:  # noqa: N802, N805
-        """The name of the Discord entity that this `DoesNotExistError` is associated with."""  # noqa: D401
+    def DOES_NOT_EXIST_TYPE(cls) -> str:  # noqa: N802
+        """The name of the Discord entity that this `DoesNotExistError` is associated with."""
 
     @classmethod
-    def get_formatted_message(cls, non_existent_object_identifier: str) -> str:  # noqa: C901, PLR0912, PLR0915
+    def get_formatted_message(cls, non_existent_object_identifier: str) -> str:  # noqa: PLR0912, PLR0915
         """
         Format the exception message with the dependants that require the non-existent object.
 
@@ -122,13 +123,13 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
         if cls.DEPENDENT_COMMANDS:
             if len(cls.DEPENDENT_COMMANDS) == 1:
                 formatted_dependent_commands += (
-                    f"\"/{next(iter(cls.DEPENDENT_COMMANDS))}\" command"
+                    f'"/{next(iter(cls.DEPENDENT_COMMANDS))}" command'
                 )
             else:
                 index: int
                 dependent_command: str
                 for index, dependent_command in enumerate(cls.DEPENDENT_COMMANDS):
-                    formatted_dependent_commands += f"\"/{dependent_command}\""
+                    formatted_dependent_commands += f'"/{dependent_command}"'
 
                     if index < len(cls.DEPENDENT_COMMANDS) - 2:
                         formatted_dependent_commands += ", "
@@ -141,7 +142,7 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
             non_existent_object_identifier = f"#{non_existent_object_identifier}"
 
         partial_message: str = (
-            f"\"{non_existent_object_identifier}\" {cls.DOES_NOT_EXIST_TYPE} must exist "
+            f'"{non_existent_object_identifier}" {cls.DOES_NOT_EXIST_TYPE} must exist '
             f"in order to use the {formatted_dependent_commands}"
         )
 
@@ -155,11 +156,11 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
                     partial_message += ", the "
 
             if len(cls.DEPENDENT_TASKS) == 1:
-                formatted_dependent_tasks += f"\"{next(iter(cls.DEPENDENT_TASKS))}\" task"
+                formatted_dependent_tasks += f'"{next(iter(cls.DEPENDENT_TASKS))}" task'
             else:
                 dependent_task: str
                 for index, dependent_task in enumerate(cls.DEPENDENT_TASKS):
-                    formatted_dependent_tasks += f"\"{dependent_task}\""
+                    formatted_dependent_tasks += f'"{dependent_task}"'
 
                     if index < len(cls.DEPENDENT_TASKS) - 2:
                         formatted_dependent_tasks += ", "
@@ -177,11 +178,11 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
                 partial_message += " and the "
 
             if len(cls.DEPENDENT_EVENTS) == 1:
-                formatted_dependent_events += f"\"{next(iter(cls.DEPENDENT_EVENTS))}\" event"
+                formatted_dependent_events += f'"{next(iter(cls.DEPENDENT_EVENTS))}" event'
             else:
                 dependent_event: str
                 for index, dependent_event in enumerate(cls.DEPENDENT_EVENTS):
-                    formatted_dependent_events += f"\"{dependent_event}\""
+                    formatted_dependent_events += f'"{dependent_event}"'
 
                     if index < len(cls.DEPENDENT_EVENTS) - 2:
                         formatted_dependent_events += ", "

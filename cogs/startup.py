@@ -1,13 +1,7 @@
 """Contains cog classes for any startup interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("StartupCog",)
-
-
 import logging
-from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING
 
 import discord
 from discord_logging.handler import DiscordHandler
@@ -25,7 +19,14 @@ from exceptions import (
 )
 from utils import TeXBotBaseCog
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from logging import Logger
+    from typing import Final
+
+__all__: "Sequence[str]" = ("StartupCog",)
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class StartupCog(TeXBotBaseCog):
@@ -78,8 +79,8 @@ class StartupCog(TeXBotBaseCog):
                         settings["_DISCORD_MAIN_GUILD_ID"],
                     ),
                 )
-            logger.critical(GuildDoesNotExistError(
-                guild_id=settings["_DISCORD_MAIN_GUILD_ID"]),
+            logger.critical(
+                GuildDoesNotExistError(guild_id=settings["_DISCORD_MAIN_GUILD_ID"]),
             )
             await self.bot.close()
 
@@ -125,9 +126,9 @@ class StartupCog(TeXBotBaseCog):
                     ),
                     repr(settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"]),
                 )
-                manual_moderation_warning_message_location_similar_to_dm: bool = (
-                    settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"].lower() in ("dm", "dms")  # noqa: E501
-                )
+                manual_moderation_warning_message_location_similar_to_dm: bool = settings[
+                    "STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"
+                ].lower() in ("dm", "dms")
                 if manual_moderation_warning_message_location_similar_to_dm:
                     logger.info(
                         (

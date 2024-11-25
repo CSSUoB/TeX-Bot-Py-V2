@@ -1,29 +1,83 @@
 """Model classes that store extra information between individual event handling call-backs."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = (
-    "IntroductionReminderOptOutMember",
-    "SentOneOffIntroductionReminderMember",
-    "SentGetRolesReminderMember",
-    "GroupMadeMember",
-    "DiscordReminder",
-    "LeftDiscordMember",
-    "DiscordMemberStrikes",
-    "DiscordMember",
-)
-
-
 import hashlib
 import re
-from typing import Final, override
+from typing import TYPE_CHECKING, Final, override
 
 import discord
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from .utils import AsyncBaseModel, BaseDiscordMemberWrapper, DiscordMember
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__: "Sequence[str]" = (
+    "DiscordMember",
+    "DiscordMemberStrikes",
+    "DiscordReminder",
+    "GroupMadeMember",
+    "IntroductionReminderOptOutMember",
+    "LeftDiscordMember",
+    "SentGetRolesReminderMember",
+    "SentOneOffIntroductionReminderMember",
+)
+
+
+class AssignedCommitteeAction(BaseDiscordMemberWrapper):
+    """Model to represent an action that has been assigned to a Discord committee-member."""
+
+    class Status(models.TextChoices):
+        BLOCKED = "BLK", _("Blocked")
+        CANCELLED = "CND", _("Cancelled")
+        COMPLETE = "CMP", _("Complete")
+        IN_PROGRESS = "INP", _("In Progress")
+        NOT_STARTED = "NST", _("Not Started")
+
+    INSTANCES_NAME_PLURAL: str = "Assigned Committee Actions"
+
+    discord_member = models.ForeignKey(  # type: ignore[assignment]
+        DiscordMember,
+        on_delete=models.CASCADE,
+        related_name="assigned_committee_actions",
+        verbose_name="Discord Member",
+        blank=False,
+        null=False,
+        unique=False,
+    )
+    description = models.TextField(
+        "Description",
+        max_length=200,
+        null=False,
+        blank=False,
+    )
+    status = models.CharField(
+        max_length=3,
+        choices=Status,
+        default=Status.NOT_STARTED,
+        null=False,
+        blank=False,
+    )
+
+    class Meta:
+        verbose_name = "Assigned Committee Action"
+        constraints = [  # noqa: RUF012
+            models.UniqueConstraint(
+                fields=["discord_member", "description"],
+                name="unique_user_action",
+            ),
+        ]
+
+    def __repr__(self) -> str:
+        """Generate a developer-focused representation of this Assigned Committee Action's attributes."""  # noqa: E501, W505
+        return f"<{self._meta.verbose_name}: {self.discord_member}, {self.description}"  # type: ignore[has-type]
+
+    def __str__(self) -> str:
+        """Generate the string representation of this Assigned Committee Action."""
+        return f"{self.discord_member}: {self.description}"  # type: ignore[has-type]
 
 
 class IntroductionReminderOptOutMember(BaseDiscordMemberWrapper):
@@ -106,9 +160,9 @@ class SentGetRolesReminderMember(BaseDiscordMemberWrapper):
     )
 
     class Meta:  # noqa: D106
-        verbose_name = "Discord Member that has had a \"Get Roles\" reminder sent to their DMs"
+        verbose_name = 'Discord Member that has had a "Get Roles" reminder sent to their DMs'
         verbose_name_plural = (
-            "Discord Members that have had a \"Get Roles\" reminder sent to their DMs"
+            'Discord Members that have had a "Get Roles" reminder sent to their DMs'
         )
 
 
@@ -168,7 +222,9 @@ class GroupMadeMember(AsyncBaseModel):
         return f"<{self._meta.verbose_name}: {self.hashed_group_member_id!r}>"
 
     @classmethod
-    def hash_group_member_id(cls, group_member_id: str | int, group_member_id_type: str = "community group") -> str:  # noqa: E501
+    def hash_group_member_id(
+        cls, group_member_id: str | int, group_member_id_type: str = "community group"
+    ) -> str:
         """
         Hash the provided group_member_id.
 
@@ -226,9 +282,7 @@ class DiscordReminder(BaseDiscordMemberWrapper):
     _channel_type = models.IntegerField(
         "Discord Channel Type of the channel that the reminder needs to be sent in",
         choices=[
-            (channel_type.value, channel_type.name)
-            for channel_type
-            in discord.ChannelType
+            (channel_type.value, channel_type.name) for channel_type in discord.ChannelType
         ],
         null=True,
         blank=True,

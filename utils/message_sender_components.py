@@ -1,21 +1,23 @@
 """Class definitions of components that send provided message content to a defined endpoint."""
 
-from collections.abc import Sequence
+import abc
+from typing import TYPE_CHECKING, final, override
 
-__all__: Sequence[str] = (
+import discord
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import Final, TypedDict
+
+    from discord.ui import View
+
+    from .tex_bot_contexts import TeXBotApplicationContext
+
+__all__: "Sequence[str]" = (
     "ChannelMessageSender",
     "MessageSavingSenderComponent",
     "ResponseMessageSender",
 )
-
-
-import abc
-from typing import Final, TypedDict, final, override
-
-import discord
-from discord.ui import View
-
-from .tex_bot_contexts import TeXBotApplicationContext
 
 
 class MessageSavingSenderComponent(abc.ABC):
@@ -30,7 +32,9 @@ class MessageSavingSenderComponent(abc.ABC):
         self.sent_message: discord.Message | discord.Interaction | None = None
 
     @abc.abstractmethod
-    async def _send(self, content: str, *, view: View | None = None) -> discord.Message | discord.Interaction:  # noqa: E501
+    async def _send(
+        self, content: str, *, view: "View | None" = None
+    ) -> discord.Message | discord.Interaction:
         """
         Subclass implementation of `send()` method.
 
@@ -39,7 +43,7 @@ class MessageSavingSenderComponent(abc.ABC):
         """
 
     @final
-    async def send(self, content: str, *, view: View | None = None) -> None:
+    async def send(self, content: str, *, view: "View | None" = None) -> None:
         """Send the provided message content & optional view to the defined endpoint."""
         if self.sent_message is not None:
             ALREADY_SENT_MESSAGE: Final[str] = (
@@ -78,20 +82,24 @@ class ChannelMessageSender(MessageSavingSenderComponent):
         super().__init__()
 
     @override
-    async def _send(self, content: str, *, view: View | None = None) -> discord.Message | discord.Interaction:  # noqa: E501
-        class _BaseChannelSendKwargs(TypedDict):
-            """Type-hint-definition for the required kwargs to the channel-send-function."""
+    async def _send(
+        self, content: str, *, view: "View | None" = None
+    ) -> discord.Message | discord.Interaction:
+        if TYPE_CHECKING:
 
-            content: str
+            class _BaseChannelSendKwargs(TypedDict):
+                """Type-hint for the required kwargs to the channel-send-function."""
 
-        class ChannelSendKwargs(_BaseChannelSendKwargs, total=False):
-            """
-            Type-hint-definition for all kwargs to the channel-send-function.
+                content: str
 
-            Includes both required & optional kwargs.
-            """
+            class ChannelSendKwargs(_BaseChannelSendKwargs, total=False):
+                """
+                Type-hint-definition for all kwargs to the channel-send-function.
 
-            view: View
+                Includes both required & optional kwargs.
+                """
+
+                view: "View"
 
         send_kwargs: ChannelSendKwargs = {"content": content}
         if view:
@@ -109,11 +117,13 @@ class ResponseMessageSender(MessageSavingSenderComponent):
     """
 
     @override
-    def __init__(self, ctx: TeXBotApplicationContext) -> None:
+    def __init__(self, ctx: "TeXBotApplicationContext") -> None:
         self.ctx: TeXBotApplicationContext = ctx
 
         super().__init__()
 
     @override
-    async def _send(self, content: str, *, view: View | None = None) -> discord.Message | discord.Interaction:  # noqa: E501
+    async def _send(
+        self, content: str, *, view: "View | None" = None
+    ) -> discord.Message | discord.Interaction:
         return await self.ctx.respond(content=content, view=view, ephemeral=True)
