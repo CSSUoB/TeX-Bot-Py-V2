@@ -39,9 +39,8 @@ django = "~5.1"
 matplotlib = "^3.9"
 mplcyberpunk = "^0.7"
 python-logging-discord-handler = "^0.1"
-classproperties = {git = "https://github.com/hottwaj/classproperties.git"}
+typed_classproperties = "^1"
 asyncstdlib = "~3.13"
-setuptools = "^70.3"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^4.0"
@@ -49,7 +48,7 @@ mypy = "~1.13"
 django-stubs = {extras = ["compatible-mypy"], version = "~5.1"}
 types-beautifulsoup4 = "^4.12"
 pytest = "^8.3"
-ruff = "^0.7"
+ruff = "^0.8"
 gitpython = "^3.1"
 pymarkdownlnt = "^0.9"
 ccft-pymarkdown = "^1.1"
@@ -99,93 +98,39 @@ django_settings_module = "db._settings"
 [tool.ruff]
 output-format = "concise"
 line-length = 95
+indent-width = 4
 target-version ="py312"
-extend-exclude = [
-    "db/**/migrations/",
-    "venv/",
-    ".vscode",
-    ".idea",
-    ".pytest_cache",
-    ".mypy_cache",
-    ".ruff_cache",
-    "__pycache__",
-]
+extend-exclude = ["db/**/migrations/"]
 
 [tool.ruff.lint]
-select = [
-    "E",
-    "F",
-    "W",
-    "C",
-    "I",
-    "N",
-    "D",
-    "UP",
-    "YTT",
-    "ANN",
-    "ASYNC",
-    "S",
-    "BLE",
-    "FBT",
-    "B",
-    "A",
-    "COM",
-    "DTZ",
-    "T",
-    "DJ",
-    "EM",
-    "G",
-    "INP",
-    "PIE",
-    "PT",
-    "Q",
-    "RSE",
-    "RET",
-    "SLF",
-    "SLOT",
-    "SIM",
-    "TID",
-    "TCH",
-    "ARG",
-    "PTH",
-    "TD",
-    "FIX",
-    "ERA",
-    "PGH",
-    "PL",
-    "TRY",
-    "FLY",
-    "PERF",
-    "RUF",
-]
-fixable = ["I001", "TCH", "F401", "COM812"]
 ignore = [
-    "N818",
-    "N806",
-    "D203",
+    "C90",
+    "COM812",
+    "COM819",
+    "CPY",
+    "D206",
     "D212",
-    "ANN101",
-    "ANN102",
+    "FA",
+    "FAST",
+    "INP001",
+    "ISC001",
+    "ISC002",
+    "N806",
+    "PD",
+    "PIE808",
+    "Q000",
+    "Q001",
+    "Q002",
     "Q003",
+    "S603",
+    "SIM910",
     "TD002",
     "TD003",
-    "S311",
-    "UP040",  # NOTE: Mypy does not currently support PEP 695 type aliases, so they should not be used
-    "PT009",
-    "PT027",
+    "W191",
 ]
-task-tags = [
-    "TODO",
-    "FIXME",
-    "HACK",
-    "BUG",
-    "NOBUG",
-    "REQ",
-    "IDEA",
-    "NOTE",
-    "ISSUE",
-    "DONE",
-]
+select = ["ALL", "D204", "D213", "D401"]
+task-tags = ["BUG", "DONE", "FIXME", "HACK", "IDEA", "ISSUE", "NOBUG", "NOTE", "REQ", "TODO"]
+fixable = ["I001", "TCH", "F401", "RUF022", "RUF100", "TC003", "TC004", "PYI025", "UP037", "UP040"]
 allowed-confusables = [
     "ᴀ",
     "ʙ",
@@ -218,24 +163,41 @@ allowed-confusables = [
 [tool.ruff.lint.per-file-ignores]
 "tests/**/test_*.py" = ["S101"]
 
-[tool.ruff.lint.flake8-pytest-style]
-parametrize-values-type = "tuple"
+[tool.ruff.lint.flake8-type-checking]
+quote-annotations = true
+strict = true
 
 [tool.ruff.lint.flake8-self]
 extend-ignore-names = ["_base_manager", "_default_manager",  "_meta", "_get_wrap_line_width"]
 
-[tool.ruff.lint.mccabe]
-max-complexity = 18
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = [
+    "typed_classproperties.cached_classproperty",
+    "typed_classproperties.classproperty",
+]
+extend-ignore-names = ["BROKEN_*_MESSAGE", "INVALID_*_MESSAGE", "NO_*_MESSAGE"]
 
 [tool.ruff.lint.pycodestyle]
 ignore-overlong-task-comments = true
 max-doc-length = 95
 
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+property-decorators = [
+    "typed_classproperties.cached_classproperty",
+    "typed_classproperties.classproperty",
+]
+
 [tool.ruff.lint.pylint]
-allow-magic-value-types = ["str", "bytes", "int"]
-max-args = 7
-max-returns = 10
+allow-magic-value-types = ["bytes", "int", "str"]
+max-args = 8
 max-branches = 19
+max-returns = 10
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = true
+mark-parentheses = true
+parametrize-values-type = "tuple"
 
 [tool.ruff.lint.pyupgrade]
 keep-runtime-typing = true

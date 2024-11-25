@@ -1,14 +1,8 @@
 """Utility classes & functions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("AsyncBaseModel", "DiscordMember", "BaseDiscordMemberWrapper")
-
-
 import hashlib
 import re
-from collections.abc import Iterable
-from typing import Final, Never, NoReturn, override
+from typing import TYPE_CHECKING, override
 
 from asgiref.sync import sync_to_async
 from django.core.exceptions import FieldDoesNotExist
@@ -16,6 +10,12 @@ from django.core.validators import RegexValidator
 from django.db import models
 
 from .managers import HashedDiscordMemberManager, RelatedDiscordMemberManager
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
+    from typing import Final, Never, NoReturn
+
+__all__: "Sequence[str]" = ("AsyncBaseModel", "BaseDiscordMemberWrapper", "DiscordMember")
 
 
 class AsyncBaseModel(models.Model):
@@ -32,7 +32,14 @@ class AsyncBaseModel(models.Model):
         abstract = True
 
     @override
-    def save(self, *, force_insert: bool = False, force_update: bool = False, using: str | None = None, update_fields: Iterable[str] | None = None) -> None:  # type: ignore[override] # noqa: E501
+    def save(  # type: ignore[override]
+        self,
+        *,
+        force_insert: bool = False,
+        force_update: bool = False,
+        using: str | None = None,
+        update_fields: "Iterable[str] | None" = None,
+    ) -> None:
         self.full_clean()
 
         return super().save(force_insert, force_update, using, update_fields)
@@ -41,8 +48,7 @@ class AsyncBaseModel(models.Model):
     def __init__(self, *args: object, **kwargs: object) -> None:
         proxy_fields: dict[str, object] = {
             field_name: kwargs.pop(field_name)
-            for field_name
-            in set(kwargs.keys()) & self.get_proxy_field_names()
+            for field_name in set(kwargs.keys()) & self.get_proxy_field_names()
         }
 
         super().__init__(*args, **kwargs)
@@ -52,7 +58,16 @@ class AsyncBaseModel(models.Model):
         for field_name, value in proxy_fields.items():
             setattr(self, field_name, value)
 
-    def update(self, *, commit: bool = True, force_insert: bool = False, force_update: bool = False, using: str | None = None, update_fields: Iterable[str] | None = None, **kwargs: object) -> None:  # noqa: E501
+    def update(
+        self,
+        *,
+        commit: bool = True,
+        force_insert: bool = False,
+        force_update: bool = False,
+        using: str | None = None,
+        update_fields: "Iterable[str] | None" = None,
+        **kwargs: object,
+    ) -> None:
         """
         Change an in-memory object's values, then save it to the database.
 
@@ -98,7 +113,16 @@ class AsyncBaseModel(models.Model):
     update.alters_data: bool = True  # type: ignore[attr-defined, misc]
 
     # noinspection SpellCheckingInspection
-    async def aupdate(self, *, commit: bool = True, force_insert: bool = False, force_update: bool = False, using: str | None = None, update_fields: Iterable[str] | None = None, **kwargs: object) -> None:  # noqa: E501
+    async def aupdate(
+        self,
+        *,
+        commit: bool = True,
+        force_insert: bool = False,
+        force_update: bool = False,
+        using: str | None = None,
+        update_fields: "Iterable[str] | None" = None,
+        **kwargs: object,
+    ) -> None:
         """
         Asyncronously change an in-memory object's values, then save it to the database.
 
@@ -182,7 +206,7 @@ class DiscordMember(AsyncBaseModel):
         super().__setattr__(name, value)
 
     @property
-    def discord_id(self) -> NoReturn:
+    def discord_id(self) -> "NoReturn":
         """Return the Discord ID of this member."""
         HASHED_ID_CANNOT_BE_REVERSED_ERROR_MESSAGE: Final[str] = (
             "The Discord IDs of members are hashed before being sent into the database. "
@@ -191,22 +215,22 @@ class DiscordMember(AsyncBaseModel):
         raise ValueError(HASHED_ID_CANNOT_BE_REVERSED_ERROR_MESSAGE)
 
     @property
-    def member_id(self) -> NoReturn:
+    def member_id(self) -> "NoReturn":
         """Return the Discord ID of this member."""
         return self.discord_id  # type: ignore[misc]
 
     @property
-    def hashed_member_id(self) -> NoReturn:
+    def hashed_member_id(self) -> "NoReturn":
         """Return the hashed Discord ID of this member."""
         raise DeprecationWarning
 
     @hashed_member_id.setter
-    def hashed_member_id(self, value: Never) -> None:  # noqa: ARG002
+    def hashed_member_id(self, value: "Never") -> None:  # noqa: ARG002
         """Assign the hashed Discord ID of this member."""
         raise DeprecationWarning
 
     @classmethod
-    def hash_member_id(cls, member_id: Never) -> NoReturn:  # noqa: ARG003
+    def hash_member_id(cls, member_id: "Never") -> "NoReturn":  # noqa: ARG003
         """
         Hash the provided discord_id.
 

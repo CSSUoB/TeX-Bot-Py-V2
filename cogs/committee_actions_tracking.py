@@ -1,20 +1,9 @@
 """Contains cog classes for tracking committee-actions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = (
-    "CommitteeActionsTrackingBaseCog",
-    "CommitteeActionsTrackingSlashCommandsCog",
-    "CommitteeActionsTrackingContextCommandsCog",
-)
-
-
 import logging
 import random
-from collections.abc import Set
 from enum import Enum
-from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING
 
 import discord
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
@@ -28,12 +17,27 @@ from exceptions import (
 )
 from utils import (
     CommandChecks,
-    TeXBotApplicationContext,
-    TeXBotAutocompleteContext,
     TeXBotBaseCog,
 )
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from collections.abc import Set as AbstractSet
+    from logging import Logger
+    from typing import Final
+
+    from utils import (
+        TeXBotApplicationContext,
+        TeXBotAutocompleteContext,
+    )
+
+__all__: "Sequence[str]" = (
+    "CommitteeActionsTrackingBaseCog",
+    "CommitteeActionsTrackingContextCommandsCog",
+    "CommitteeActionsTrackingSlashCommandsCog",
+)
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class Status(Enum):
@@ -49,7 +53,9 @@ class Status(Enum):
 class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
     """Base cog class that defines methods for committee actions tracking."""
 
-    async def _create_action(self, ctx: TeXBotApplicationContext, action_user: discord.Member, description: str) -> AssignedCommitteeAction | None:  # noqa: E501
+    async def _create_action(
+        self, ctx: "TeXBotApplicationContext", action_user: discord.Member, description: str
+    ) -> AssignedCommitteeAction | None:
         """
         Create the action object with the given description for the given user.
 
@@ -115,7 +121,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     )
 
     @staticmethod
-    async def autocomplete_get_committee_members(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
+    async def autocomplete_get_committee_members(
+        ctx: "TeXBotAutocompleteContext",
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """Autocomplete callable that generates a set of selectable committee members."""
         try:
             committee_role: discord.Role = await ctx.bot.committee_role
@@ -124,11 +132,14 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         return {
             discord.OptionChoice(name=str(member), value=str(member.id))
-            for member in committee_role.members if not member.bot
+            for member in committee_role.members
+            if not member.bot
         }
 
     @staticmethod
-    async def autocomplete_get_user_action_ids(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
+    async def autocomplete_get_user_action_ids(
+        ctx: "TeXBotAutocompleteContext",
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """Autocomplete callable that provides a set of actions that belong to the user."""
         if not ctx.interaction.user:
             logger.debug("User actions autocomplete did not have an interaction user!!")
@@ -160,20 +171,22 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             discord.OptionChoice(name=action.description, value=str(action.id))
             async for action in await AssignedCommitteeAction.objects.afilter(
                 (
-                    Q(status=Status.IN_PROGRESS.value) |
-                    Q(status=Status.BLOCKED.value) |
-                    Q(status=Status.NOT_STARTED.value)
+                    Q(status=Status.IN_PROGRESS.value)
+                    | Q(status=Status.BLOCKED.value)
+                    | Q(status=Status.NOT_STARTED.value)
                 ),
                 discord_id=int(interaction_user.id),
             )
         }
 
     @staticmethod
-    async def autocomplete_get_action_status(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501, ARG004
+    async def autocomplete_get_action_status(
+        ctx: "TeXBotAutocompleteContext",  # noqa: ARG004
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """Autocomplete callable that provides the set of possible Status' of actions."""
-        status_options: Sequence[tuple[str, str]] = (
-            AssignedCommitteeAction._meta.get_field("status").choices  # type: ignore[assignment]
-        )
+        status_options: Sequence[tuple[str, str]] = AssignedCommitteeAction._meta.get_field(
+            "status"
+        ).choices  # type: ignore[assignment]
 
         if not status_options:
             logger.error("The autocomplete could not find any action Status'!")
@@ -203,7 +216,13 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def create(self, ctx: TeXBotApplicationContext, action_description: str, *, action_member_id: str | None) -> None:  # noqa: E501
+    async def create(
+        self,
+        ctx: "TeXBotApplicationContext",
+        action_description: str,
+        *,
+        action_member_id: str | None,
+    ) -> None:
         """
         Definition and callback response of the "create" command.
 
@@ -236,7 +255,8 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 content=f"Action `{action_description}` created for: {action_user.mention}",
             )
         except (
-            InvalidActionDescriptionError, InvalidActionTargetError,
+            InvalidActionDescriptionError,
+            InvalidActionTargetError,
         ) as creation_failed_error:
             await ctx.respond(content=creation_failed_error.message)
 
@@ -262,7 +282,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def update_status(self, ctx: TeXBotApplicationContext, action_id: str, status: str) -> None:  # noqa: E501
+    async def update_status(
+        self, ctx: "TeXBotApplicationContext", action_id: str, status: str
+    ) -> None:
         """
         Definition and callback of the "update-status" command.
 
@@ -333,7 +355,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         required=True,
         parameter_name="action_description",
     )
-    async def update_description(self, ctx: TeXBotApplicationContext, action_id: str, new_description: str) -> None:  # noqa: E501
+    async def update_description(
+        self, ctx: "TeXBotApplicationContext", action_id: str, new_description: str
+    ) -> None:
         """
         Definition and callback response of the "update-description" command.
 
@@ -387,7 +411,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def action_random_user(self, ctx: TeXBotApplicationContext, action_description: str) -> None:  # noqa: E501
+    async def action_random_user(
+        self, ctx: "TeXBotApplicationContext", action_description: str
+    ) -> None:
         """
         Definition and callback response of the "action-random-user" command.
 
@@ -405,7 +431,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             return
 
-        index: int = random.randint(0, len(committee_members))
+        index: int = random.randint(0, len(committee_members))  # noqa: S311
 
         try:
             action_user: discord.Member = committee_members[index]
@@ -425,7 +451,8 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 content=f"Action `{action_description}` created for: {action_user.mention}",
             )
         except (
-            InvalidActionTargetError, InvalidActionDescriptionError,
+            InvalidActionTargetError,
+            InvalidActionDescriptionError,
         ) as creation_failed_error:
             await ctx.respond(content=creation_failed_error.message)
             return
@@ -443,7 +470,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def action_all_committee(self, ctx: TeXBotApplicationContext, action_description: str) -> None: # noqa: E501
+    async def action_all_committee(
+        self, ctx: "TeXBotApplicationContext", action_description: str
+    ) -> None:
         """
         Definition and callback response of the "action-all-committee" command.
 
@@ -469,7 +498,8 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 )
                 success_members.append(committee_member)
             except (
-                InvalidActionDescriptionError, InvalidActionTargetError,
+                InvalidActionDescriptionError,
+                InvalidActionTargetError,
             ) as creation_failed_error:
                 failed_members += creation_failed_error.message + "\n"
 
@@ -526,7 +556,14 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def list_user_actions(self, ctx: TeXBotApplicationContext, *, action_member_id: str, ping: bool, status: str) -> None:  # noqa: E501
+    async def list_user_actions(
+        self,
+        ctx: "TeXBotApplicationContext",
+        *,
+        action_member_id: str,
+        ping: bool,
+        status: str,
+    ) -> None:
         """
         Definition and callback of the "/list" command.
 
@@ -545,18 +582,20 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         if not status:
             user_actions = [
-                action async for action in await AssignedCommitteeAction.objects.afilter(
+                action
+                async for action in await AssignedCommitteeAction.objects.afilter(
                     (
-                        Q(status=Status.IN_PROGRESS.value) |
-                        Q(status=Status.BLOCKED.value) |
-                        Q(status=Status.NOT_STARTED.value)
+                        Q(status=Status.IN_PROGRESS.value)
+                        | Q(status=Status.BLOCKED.value)
+                        | Q(status=Status.NOT_STARTED.value)
                     ),
                     discord_id=int(action_member.id),
                 )
             ]
         else:
             user_actions = [
-                action async for action in await AssignedCommitteeAction.objects.afilter(
+                action
+                async for action in await AssignedCommitteeAction.objects.afilter(
                     status=status,
                     discord_id=int(action_member.id),
                 )
@@ -604,7 +643,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def reassign_action(self, ctx:TeXBotApplicationContext, action_id: str, member_id: str) -> None:  # noqa: E501
+    async def reassign_action(
+        self, ctx: "TeXBotApplicationContext", action_id: str, member_id: str
+    ) -> None:
         """Reassign the specified action to the specified user."""
         try:
             action_id_int: int = int(action_id)
@@ -656,7 +697,8 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                     ),
                 )
         except (
-            InvalidActionDescriptionError, InvalidActionTargetError,
+            InvalidActionDescriptionError,
+            InvalidActionTargetError,
         ) as invalid_description_error:
             await ctx.respond(content=invalid_description_error.message)
             return
@@ -683,25 +725,32 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def list_all_actions(self, ctx:TeXBotApplicationContext, *, ping: bool, status: str) -> None:  # noqa: E501
-        """List all actions.""" # NOTE: this doesn't actually list *all* actions as it is possible for non-committee to be actioned.
+    async def list_all_actions(
+        self, ctx: "TeXBotApplicationContext", *, ping: bool, status: str
+    ) -> None:
+        """List all actions."""  # NOTE: this doesn't actually list *all* actions as it is possible for non-committee to be actioned.
         committee_role: discord.Role = await self.bot.committee_role
 
         actions: list[AssignedCommitteeAction] = [
             action async for action in AssignedCommitteeAction.objects.select_related().all()
         ]
 
-        desired_status: list[str] = [status] if status else [
-            Status.NOT_STARTED.value,
-            Status.IN_PROGRESS.value,
-            Status.BLOCKED.value,
-        ]
+        desired_status: list[str] = (
+            [status]
+            if status
+            else [
+                Status.NOT_STARTED.value,
+                Status.IN_PROGRESS.value,
+                Status.BLOCKED.value,
+            ]
+        )
 
         committee_members: list[discord.Member] = committee_role.members
 
         committee_actions: dict[discord.Member, list[AssignedCommitteeAction]] = {
             committee: [
-                action for action in actions
+                action
+                for action in actions
                 if str(action.discord_member) == DiscordMember.hash_discord_id(committee.id)  # type: ignore[has-type]
                 and action.status in desired_status
             ]
@@ -739,7 +788,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         required=True,
         parameter_name="action_id",
     )
-    async def delete_action(self, ctx: TeXBotApplicationContext, action_id: str) -> None:
+    async def delete_action(self, ctx: "TeXBotApplicationContext", action_id: str) -> None:
         """
         Definition & callback response of the "delete" command.
 
@@ -783,7 +832,9 @@ class CommitteeActionsTrackingContextCommandsCog(CommitteeActionsTrackingBaseCog
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def action_message_author(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
+    async def action_message_author(
+        self, ctx: "TeXBotApplicationContext", message: discord.Message
+    ) -> None:
         """
         Definition and callback response of the "action-message-author" message command.
 
@@ -813,6 +864,7 @@ class CommitteeActionsTrackingContextCommandsCog(CommitteeActionsTrackingBaseCog
                 f"for: {actioned_message_user.mention}",
             )
         except (
-            InvalidActionTargetError, InvalidActionDescriptionError,
+            InvalidActionTargetError,
+            InvalidActionDescriptionError,
         ) as creation_failure_error:
             await ctx.respond(content=creation_failure_error.message)

@@ -1,35 +1,36 @@
 """Manager classes used for DB access upon models."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("HashedDiscordMemberManager", "RelatedDiscordMemberManager")
-
-
 import abc
 import logging
-from collections.abc import Callable, MutableMapping
-from logging import Logger
-from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar, final, override
+from typing import TYPE_CHECKING, TypeVar, final, override
 
-from django.db.models import Manager, QuerySet
+from django.db.models import Manager
 
 import utils
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, MutableMapping, Sequence
+    from logging import Logger
+    from typing import Final
+
     from django.core.exceptions import ObjectDoesNotExist
+    from django.db.models import QuerySet
 
     from .utils import AsyncBaseModel, BaseDiscordMemberWrapper, DiscordMember  # noqa: F401
 
+__all__: "Sequence[str]" = ("HashedDiscordMemberManager", "RelatedDiscordMemberManager")
+
+if TYPE_CHECKING:
     T_model = TypeVar("T_model", bound=AsyncBaseModel)
 
-    T_BaseDiscordMemberWrapper = TypeVar("T_BaseDiscordMemberWrapper", bound=BaseDiscordMemberWrapper)  # noqa: E501
+    T_BaseDiscordMemberWrapper = TypeVar(
+        "T_BaseDiscordMemberWrapper", bound=BaseDiscordMemberWrapper
+    )
 
-Defaults: TypeAlias = (
-    MutableMapping[str, object | Callable[[], object]]
-    | None
-)
+    type Defaults = MutableMapping[str, object | Callable[[], object]] | None
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class BaseHashedIDManager(Manager["T_model"], abc.ABC):
@@ -43,7 +44,9 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
         """Remove any unhashed ID values from the kwargs dict before executing a query."""
 
     @final
-    def _perform_remove_unhashed_id_from_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:  # noqa: E501
+    def _perform_remove_unhashed_id_from_kwargs(
+        self, kwargs: dict[str, object]
+    ) -> dict[str, object]:
         if utils.is_running_in_async():
             SYNC_IN_ASYNC_MESSAGE: Final[str] = (
                 "Synchronous database access used in asynchronous context. "
@@ -55,7 +58,9 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
 
     # noinspection SpellCheckingInspection
     @abc.abstractmethod
-    async def _aremove_unhashed_id_from_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:  # noqa: E501
+    async def _aremove_unhashed_id_from_kwargs(
+        self, kwargs: dict[str, object]
+    ) -> dict[str, object]:
         """Remove any unhashed_id values from the kwargs dict before executing a query."""
 
     @override
@@ -70,27 +75,27 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
         )
 
     @override
-    def filter(self, *args: object, **kwargs: object) -> QuerySet["T_model"]:
+    def filter(self, *args: object, **kwargs: object) -> "QuerySet[T_model]":
         return super().filter(
             *args,
             **self._perform_remove_unhashed_id_from_kwargs(kwargs),
         )
 
-    async def afilter(self, *args: object, **kwargs: object) -> QuerySet["T_model"]:
+    async def afilter(self, *args: object, **kwargs: object) -> "QuerySet[T_model]":
         return super().filter(
             *args,
             **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
         )
 
     @override
-    def exclude(self, *args: object, **kwargs: object) -> QuerySet["T_model"]:
+    def exclude(self, *args: object, **kwargs: object) -> "QuerySet[T_model]":
         return super().exclude(
             *args,
             **self._perform_remove_unhashed_id_from_kwargs(kwargs),
         )
 
     # noinspection SpellCheckingInspection
-    async def aexclude(self, *args: object, **kwargs: object) -> QuerySet["T_model"]:
+    async def aexclude(self, *args: object, **kwargs: object) -> "QuerySet[T_model]":
         return super().exclude(
             *args,
             **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
@@ -106,21 +111,27 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
         return await super().acreate(**(await self._aremove_unhashed_id_from_kwargs(kwargs)))
 
     @override
-    def get_or_create(self, defaults: Defaults = None, **kwargs: object) -> tuple["T_model", bool]:  # type: ignore[override] # noqa: E501
+    def get_or_create(
+        self, defaults: "Defaults" = None, **kwargs: object  # type: ignore[override]
+    ) -> tuple["T_model", bool]:
         return super().get_or_create(
             defaults=defaults,
             **self._perform_remove_unhashed_id_from_kwargs(kwargs),
         )
 
     @override
-    async def aget_or_create(self, defaults: Defaults = None, **kwargs: object) -> tuple["T_model", bool]:  # type: ignore[override] # noqa: E501
+    async def aget_or_create(
+        self, defaults: "Defaults" = None, **kwargs: object  # type: ignore[override]
+    ) -> tuple["T_model", bool]:
         return await super().aget_or_create(
             defaults=defaults,
             **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
         )
 
     @override
-    def update_or_create(self, defaults: Defaults = None, create_defaults: Defaults = None, **kwargs: object) -> tuple["T_model", bool]:  # type: ignore[override] # noqa: E501
+    def update_or_create(
+        self, defaults: "Defaults" = None, create_defaults: "Defaults" = None, **kwargs: object  # type: ignore[override]
+    ) -> tuple["T_model", bool]:
         return super().get_or_create(
             defaults=defaults,
             create_defaults=create_defaults,
@@ -129,7 +140,9 @@ class BaseHashedIDManager(Manager["T_model"], abc.ABC):
 
     # noinspection SpellCheckingInspection
     @override
-    async def aupdate_or_create(self, defaults: Defaults = None, create_defaults: Defaults = None, **kwargs: object) -> tuple["T_model", bool]:  # type: ignore[override] # noqa: E501
+    async def aupdate_or_create(
+        self, defaults: "Defaults" = None, create_defaults: "Defaults" = None, **kwargs: object  # type: ignore[override]
+    ) -> tuple["T_model", bool]:
         return await super().aupdate_or_create(
             defaults=defaults,
             create_defaults=create_defaults,
@@ -178,7 +191,9 @@ class HashedDiscordMemberManager(BaseHashedIDManager["DiscordMember"]):
 
     # noinspection SpellCheckingInspection
     @override
-    async def _aremove_unhashed_id_from_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:  # noqa: E501
+    async def _aremove_unhashed_id_from_kwargs(
+        self, kwargs: dict[str, object]
+    ) -> dict[str, object]:
         raw_discord_id: object | None = None
 
         field_name: str
@@ -232,14 +247,18 @@ class RelatedDiscordMemberManager(BaseHashedIDManager["T_BaseDiscordMemberWrappe
                         discord_id=discord_id,
                     )[0]
                 )
-            except self.model.discord_member.field.remote_field.model.DoesNotExist as does_not_exist_error:  # type: ignore[attr-defined] # noqa: E501
+            except (
+                self.model.discord_member.field.remote_field.model.DoesNotExist  # type: ignore[attr-defined]
+            ) as does_not_exist_error:
                 raise self.model.DoesNotExist from does_not_exist_error
 
         return kwargs
 
     # noinspection SpellCheckingInspection
     @override
-    async def _aremove_unhashed_id_from_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:  # noqa: E501
+    async def _aremove_unhashed_id_from_kwargs(
+        self, kwargs: dict[str, object]
+    ) -> dict[str, object]:
         raw_discord_id: object | None = None
 
         field_name: str
@@ -262,7 +281,9 @@ class RelatedDiscordMemberManager(BaseHashedIDManager["T_BaseDiscordMemberWrappe
                         discord_id=discord_id,
                     )
                 )[0]
-            except self.model.discord_member.field.remote_field.model.DoesNotExist as does_not_exist_error:  # type: ignore[attr-defined] # noqa: E501
+            except (
+                self.model.discord_member.field.remote_field.model.DoesNotExist  # type: ignore[attr-defined]
+            ) as does_not_exist_error:
                 raise self.model.DoesNotExist from does_not_exist_error
 
         return kwargs

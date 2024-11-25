@@ -1,22 +1,25 @@
 """Contains cog classes for any killing interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("ConfirmKillView", "KillCommandCog")
-
-
 import contextlib
 import logging
-from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING
 
 import discord
 from discord.ui import View
 
 from exceptions import CommitteeRoleDoesNotExistError
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from logging import Logger
+    from typing import Final
+
+    from utils import TeXBotApplicationContext
+
+__all__: "Sequence[str]" = ("ConfirmKillView", "KillCommandCog")
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class ConfirmKillView(View):
@@ -27,18 +30,22 @@ class ConfirmKillView(View):
         style=discord.ButtonStyle.red,
         custom_id="shutdown_confirm",
     )
-    async def confirm_shutdown_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
+    async def confirm_shutdown_button_callback(
+        self, _: discord.Button, interaction: discord.Interaction
+    ) -> None:
         """When the shutdown button is pressed, delete the message."""
-        logger.debug("\"Confirm\" button pressed. %s", interaction)
+        logger.debug('"Confirm" button pressed. %s', interaction)
 
     @discord.ui.button(  # type: ignore[misc]
         label="CANCEL",
         style=discord.ButtonStyle.grey,
         custom_id="shutdown_cancel",
     )
-    async def cancel_shutdown_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
+    async def cancel_shutdown_button_callback(
+        self, _: discord.Button, interaction: discord.Interaction
+    ) -> None:
         """When the cancel button is pressed, delete the message."""
-        logger.debug("\"Cancel\" button pressed. %s", interaction)
+        logger.debug('"Cancel" button pressed. %s', interaction)
 
 
 class KillCommandCog(TeXBotBaseCog):
@@ -50,7 +57,7 @@ class KillCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def kill(self, ctx: TeXBotApplicationContext) -> None:
+    async def kill(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "kill" command.
 
