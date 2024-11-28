@@ -1023,21 +1023,18 @@ dev = ["meson-python (>=0.13.1)", "numpy (>=1.25)", "pybind11 (>=2.6)", "setupto
 
 [[package]]
 name = "mplcyberpunk"
-version = "0.7.4"
+version = "0.7.5"
 description = "Add-on for Matplotlib to produce 'Cyberpunk' style plots"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "mplcyberpunk-0.7.4-py3-none-any.whl", hash = "sha256:7fe839d5865f370102194a6cf112fab95a17bcfd68d4b355215730d9312f96b6"},
-    {file = "mplcyberpunk-0.7.4.tar.gz", hash = "sha256:8ef776f9e0aaf578f2a9138dedfb1fe7e065f432b8f1a83f55b477cabd9b0576"},
+    {file = "mplcyberpunk-0.7.5-py3-none-any.whl", hash = "sha256:2fc5985d0b2494c49a0b4fe5cf2cef80fe9209b32d2c79ad7b496dd958b15978"},
+    {file = "mplcyberpunk-0.7.5.tar.gz", hash = "sha256:374cc2a22d839c82f0f89122b877f4be5ba408b04fffa22d0740de640cb99136"},
 ]
 
 [package.dependencies]
 matplotlib = "*"
 numpy = ">1.24.4"
-
-[package.extras]
-test = ["pandas", "pytest"]
 
 [[package]]
 name = "multidict"
