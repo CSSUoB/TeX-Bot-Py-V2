@@ -38,6 +38,7 @@ from .source import SourceCommandCog
 from .startup import StartupCog
 from .stats import StatsCommandsCog
 from .strike import ManualModerationCog, StrikeCommandCog, StrikeUserCommandCog
+from .thread_friends import AddUsersToThreadsCog
 from .write_roles import WriteRolesCommandCog
 
 if TYPE_CHECKING:
@@ -46,6 +47,7 @@ if TYPE_CHECKING:
     from utils import TeXBot, TeXBotBaseCog
 
 __all__: "Sequence[str]" = (
+    "AddUsersToThreadsCog",
     "AnnualRolesResetCommandCog",
     "AnnualYearChannelsIncrementCommandCog",
     "ArchiveCommandCog",
@@ -83,6 +85,7 @@ __all__: "Sequence[str]" = (
 def setup(bot: "TeXBot") -> None:
     """Add all the cogs to the bot, at bot startup."""
     cogs: Iterable[type[TeXBotBaseCog]] = (
+        AddUsersToThreadsCog,
         AnnualRolesResetCommandCog,
         AnnualYearChannelsIncrementCommandCog,
         ArchiveCommandCog,
