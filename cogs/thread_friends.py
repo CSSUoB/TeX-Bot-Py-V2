@@ -59,6 +59,28 @@ class AddUsersToThreadsCog(TeXBotBaseCog):
             discord.OptionChoice(name=member.name, value=str(member.id)) for member in members
         }
 
+    async def add_user_or_role_silently(self, user_or_role: discord.Member | discord.Role, thread: discord.Thread) -> None:  # noqa: E501
+        """Add a user or role to a thread without pinging them."""
+        message: discord.Message = await thread.send(
+            content=f"Adding {user_or_role!r} to thread...",
+            silent=True,
+        )
+        await message.edit(content=f"{user_or_role.mention}")
+        await message.delete(delay=1)
+
+    async def add_user_or_role_with_ping(self, user_or_role: discord.Member | discord.Role, thread: discord.Thread) -> None:  # noqa: E501
+        """Add a user or role to a thread and ping them."""
+        if isinstance(user_or_role, discord.Member):
+            await thread.add_user(user=user_or_role)
+            return
+
+        if isinstance(user_or_role, discord.Role):
+            member: discord.Member
+            for member in user_or_role.members:
+                await thread.add_user(member)
+            return
+
+        logger.debug("User or role: %s is not a valid type.", user_or_role)
 
     @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
@@ -67,19 +89,13 @@ class AddUsersToThreadsCog(TeXBotBaseCog):
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         committee_role: discord.Role = await self.bot.committee_role
         committee_elect_role: discord.Role = await self.bot.committee_elect_role
-        parent_channel: discord.TextChannel | discord.ForumChannel | None = thread.parent
-        if parent_channel is None:
-            return
 
-        parent_channel_category: discord.CategoryChannel | None = parent_channel.category
-        if not isinstance(parent_channel_category, discord.CategoryChannel):
+        if thread.parent is None or thread.parent.category is None:
             return
 
         if "committee" in thread.parent.category.name.lower():
-            initial_message = await thread.send(content="Adding committee members to thread...", silent=True)
-            await initial_message.edit(content=f"{committee_elect_role.mention} {committee_role.mention}")
-            await initial_message.delete(delay=1)
-            return
+            await self.add_user_or_role_silently(user_or_role=committee_role, thread=thread)
+            await self.add_user_or_role_silently(user_or_role=committee_elect_role, thread=thread)
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="add_users_to_thread",
@@ -93,7 +109,14 @@ class AddUsersToThreadsCog(TeXBotBaseCog):
         required=True,
         parameter_name="user_or_role",
     )
-    async def add_users_to_thread(self, ctx: "TeXBotApplicationContext", user_or_role: str) -> None:  # noqa: E501
+    @discord.option(  # type: ignore[no-untyped-call, misc]
+        name="silent",
+        description="Whether the users being added should be pinged or not.",
+        input_type=bool,
+        required=False,
+        parameter_name="silent",
+    )
+    async def add_users_to_thread(self, ctx: "TeXBotApplicationContext", user_or_role: str, silent: bool) -> None:  # noqa: E501
         """Method for adding users to a thread."""
         main_guild: discord.Guild = ctx.bot.main_guild
 
@@ -104,17 +127,30 @@ class AddUsersToThreadsCog(TeXBotBaseCog):
             )
             return
 
+        thread: discord.Thread = ctx.channel
+
         try:
             user_object: discord.Member = await self.bot.get_member_from_str_id(user_or_role)
         except ValueError:
             logger.debug("User ID: %s is not a valid user ID.", user_or_role)
         else:
-            await ctx.channel.add_user(user=user_object)
-            await ctx.respond(content=f"User: {user_object} added to thread: {ctx.channel}")
+            if silent:
+                await self.add_user_or_role_silently(user_object, thread)
+            else:
+                await self.add_user_or_role_with_ping(user_object, thread)
+
+            await ctx.respond(
+                content=f"User {user_object.mention} has been added to the thread."
+            )
             return
 
-        role_object: discord.Role | None = discord.utils.get(main_guild.roles, id=user_or_role)
-        await ctx.respond(f"Role: {role_object}, ID: {user_or_role}")
+        try:
+            role_id: int = int(user_or_role)
+        except ValueError:
+            logger.debug("Role ID: %s is not a valid role ID.", user_or_role)
+            return
+
+        role_object: discord.Role | None = discord.utils.get(main_guild.roles, id=role_id)
         if role_object is None:
             await self.command_send_error(
                 ctx=ctx,
@@ -122,3 +158,11 @@ class AddUsersToThreadsCog(TeXBotBaseCog):
             )
             return
 
+        if silent:
+            await self.add_user_or_role_silently(role_object, thread)
+        else:
+            await self.add_user_or_role_with_ping(role_object, thread)
+
+        await ctx.respond(
+            content=f"Role {role_object.mention} has been added to the thread."
+        )
