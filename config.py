@@ -170,7 +170,7 @@ class Settings(abc.ABC):
         )
         if not DISCORD_BOT_TOKEN_IS_VALID:
             INVALID_DISCORD_BOT_TOKEN_MESSAGE: Final[str] = (
-                "DISCORD_BOT_TOKEN must be a valid Discord bot token "
+                "DISCORD_BOT_TOKEN must be a valid Discord bot token "  # noqa: S105
                 "(see https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)."
             )
             raise ImproperlyConfiguredError(INVALID_DISCORD_BOT_TOKEN_MESSAGE)
