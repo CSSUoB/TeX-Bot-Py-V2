@@ -88,8 +88,6 @@ class AddUsersToThreadsCog(TeXBotBaseCog):
                     )
             return
 
-        logger.debug("User or role: %s is not a valid type.", user_or_role)
-
     @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
     async def on_thread_create(self, thread: discord.Thread) -> None:
