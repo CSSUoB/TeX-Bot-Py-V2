@@ -431,14 +431,18 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             return
 
-        index: int = random.randint(0, len(committee_members))  # noqa: S311
+        index: int = random.randint(0, len(committee_members)-1)  # noqa: S311
 
         try:
             action_user: discord.Member = committee_members[index]
         except IndexError:
             logger.debug("Index: %s was out of range! Printing list...", index)
             logger.debug(committee_members)
-            await self.command_send_error(ctx, message="Index out of range... check the logs!")
+            await self.command_send_error(
+                ctx=ctx,
+                message=f"Index {index} out of range for {len(committee_members)} "
+                "committee members... check the logs!"
+            )
             return
 
         try:
