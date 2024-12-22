@@ -71,7 +71,15 @@ class AddUsersToThreadsCog(TeXBotBaseCog):
     async def add_user_or_role_with_ping(self, user_or_role: discord.Member | discord.Role, thread: discord.Thread) -> None:  # noqa: E501
         """Add a user or role to a thread and ping them."""
         if isinstance(user_or_role, discord.Member):
-            await thread.add_user(user=user_or_role)
+            try:
+                await thread.add_user(user=user_or_role)
+            except discord.NotFound:
+                logger.debug(
+                    "User: %s has blocked the bot and "
+                    "therefore could not be added to thread: %s.",
+                    user_or_role,
+                    thread
+                )
             return
 
         if isinstance(user_or_role, discord.Role):
