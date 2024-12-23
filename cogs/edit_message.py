@@ -1,12 +1,7 @@
 """Contains cog classes for any edit_message interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("EditMessageCommandCog",)
-
-
 import re
-from collections.abc import Set
+from typing import TYPE_CHECKING
 
 import discord
 
@@ -14,10 +9,19 @@ from exceptions import DiscordMemberNotInMainGuildError
 from exceptions.base import BaseDoesNotExistError
 from utils import (
     CommandChecks,
-    TeXBotApplicationContext,
-    TeXBotAutocompleteContext,
     TeXBotBaseCog,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from collections.abc import Set as AbstractSet
+
+    from utils import (
+        TeXBotApplicationContext,
+        TeXBotAutocompleteContext,
+    )
+
+__all__: "Sequence[str]" = ("EditMessageCommandCog",)
 
 
 class EditMessageCommandCog(TeXBotBaseCog):
@@ -25,7 +29,9 @@ class EditMessageCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/edit-message" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
+    async def autocomplete_get_text_channels(
+        ctx: "TeXBotAutocompleteContext",
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """
         Autocomplete callable that generates the set of available selectable channels.
 
@@ -76,7 +82,13 @@ class EditMessageCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def edit_message(self, ctx: TeXBotApplicationContext, str_channel_id: str, str_message_id: str, new_message_content: str) -> None:  # noqa: E501
+    async def edit_message(
+        self,
+        ctx: "TeXBotApplicationContext",
+        str_channel_id: str,
+        str_message_id: str,
+        new_message_content: str,
+    ) -> None:
         """
         Definition & callback response of the "edit_message" command.
 
