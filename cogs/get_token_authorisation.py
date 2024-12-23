@@ -9,7 +9,6 @@ import discord
 from bs4 import BeautifulSoup
 
 from config import settings
-from exceptions.does_not_exist import GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
