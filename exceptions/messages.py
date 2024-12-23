@@ -1,19 +1,19 @@
 """Custom exception classes raised when errors occur with retrieving messages from the file."""
 
-from collections.abc import Sequence
+from typing import TYPE_CHECKING, override
 
-__all__: Sequence[str] = (
+from typed_classproperties import classproperty
+
+from .config_changes import ImproperlyConfiguredError
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__: "Sequence[str]" = (
     "InvalidMessagesJSONFileError",
     "MessagesJSONFileMissingKeyError",
     "MessagesJSONFileValueError",
 )
-
-
-from typing import override
-
-from classproperties import classproperty
-
-from .config_changes import ImproperlyConfiguredError
 
 
 class InvalidMessagesJSONFileError(ImproperlyConfiguredError):
@@ -22,7 +22,7 @@ class InvalidMessagesJSONFileError(ImproperlyConfiguredError):
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
+    def DEFAULT_MESSAGE(cls) -> str:
         return "The messages JSON file has an invalid structure at the given key."
 
     @override
@@ -39,7 +39,7 @@ class MessagesJSONFileMissingKeyError(InvalidMessagesJSONFileError):
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
+    def DEFAULT_MESSAGE(cls) -> str:
         return "The messages JSON file is missing a required key."
 
     @override
@@ -63,11 +63,16 @@ class MessagesJSONFileValueError(InvalidMessagesJSONFileError):
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
+    def DEFAULT_MESSAGE(cls) -> str:
         return "The messages JSON file has an invalid value."
 
     @override
-    def __init__(self, message: str | None = None, dict_key: str | None = None, invalid_value: object | None = None) -> None:  # noqa: E501
+    def __init__(
+        self,
+        message: str | None = None,
+        dict_key: str | None = None,
+        invalid_value: object | None = None,
+    ) -> None:
         """Initialise a new InvalidMessagesJSONFile exception for a key's invalid value."""
         self.invalid_value: object | None = invalid_value
 

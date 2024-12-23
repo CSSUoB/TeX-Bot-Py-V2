@@ -5,44 +5,7 @@ Cogs are attachable modules that are loaded onto the discord.Bot instance. There
 cogs for each activity.
 """
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = (
-    "AnnualRolesResetCommandCog",
-    "AnnualYearChannelsIncrementCommandCog",
-    "ArchiveCommandCog",
-    "ClearRemindersBacklogTaskCog",
-    "CommandErrorCog",
-    "CommitteeHandoverCommandCog",
-    "DeleteAllCommandsCog",
-    "EditMessageCommandCog",
-    "EnsureMembersInductedCommandCog",
-    "GetTokenAuthorisationCommandCog",
-    "InductContextCommandsCog",
-    "InductSendMessageCog",
-    "InductSlashCommandCog",
-    "KillCommandCog",
-    "MakeApplicantContextCommandsCog",
-    "MakeApplicantSlashCommandCog",
-    "MakeMemberCommandCog",
-    "ManualModerationCog",
-    "PingCommandCog",
-    "RemindMeCommandCog",
-    "SendGetRolesRemindersTaskCog",
-    "SendIntroductionRemindersTaskCog",
-    "setup",
-    "SourceCommandCog",
-    "StartupCog",
-    "StatsCommandsCog",
-    "StrikeCommandCog",
-    "StrikeUserCommandCog",
-    "WriteRolesCommandCog",
-)
-
-
 from typing import TYPE_CHECKING
-
-from utils import TeXBot
 
 from .annual_handover_and_reset import (
     AnnualRolesResetCommandCog,
@@ -51,6 +14,10 @@ from .annual_handover_and_reset import (
 )
 from .archive import ArchiveCommandCog
 from .command_error import CommandErrorCog
+from .committee_actions_tracking import (
+    CommitteeActionsTrackingContextCommandsCog,
+    CommitteeActionsTrackingSlashCommandsCog,
+)
 from .delete_all import DeleteAllCommandsCog
 from .edit_message import EditMessageCommandCog
 from .get_token_authorisation import GetTokenAuthorisationCommandCog
@@ -74,12 +41,46 @@ from .strike import ManualModerationCog, StrikeCommandCog, StrikeUserCommandCog
 from .write_roles import WriteRolesCommandCog
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Sequence
 
-    from utils import TeXBotBaseCog
+    from utils import TeXBot, TeXBotBaseCog
+
+__all__: "Sequence[str]" = (
+    "AnnualRolesResetCommandCog",
+    "AnnualYearChannelsIncrementCommandCog",
+    "ArchiveCommandCog",
+    "ClearRemindersBacklogTaskCog",
+    "CommandErrorCog",
+    "CommitteeActionsTrackingContextCommandsCog",
+    "CommitteeActionsTrackingSlashCommandsCog",
+    "CommitteeHandoverCommandCog",
+    "DeleteAllCommandsCog",
+    "EditMessageCommandCog",
+    "EnsureMembersInductedCommandCog",
+    "GetTokenAuthorisationCommandCog",
+    "InductContextCommandsCog",
+    "InductSendMessageCog",
+    "InductSlashCommandCog",
+    "KillCommandCog",
+    "MakeApplicantContextCommandsCog",
+    "MakeApplicantSlashCommandCog",
+    "MakeMemberCommandCog",
+    "ManualModerationCog",
+    "PingCommandCog",
+    "RemindMeCommandCog",
+    "SendGetRolesRemindersTaskCog",
+    "SendIntroductionRemindersTaskCog",
+    "SourceCommandCog",
+    "StartupCog",
+    "StatsCommandsCog",
+    "StrikeCommandCog",
+    "StrikeUserCommandCog",
+    "WriteRolesCommandCog",
+    "setup",
+)
 
 
-def setup(bot: TeXBot) -> None:
+def setup(bot: "TeXBot") -> None:
     """Add all the cogs to the bot, at bot startup."""
     cogs: Iterable[type[TeXBotBaseCog]] = (
         AnnualRolesResetCommandCog,
@@ -87,6 +88,8 @@ def setup(bot: TeXBot) -> None:
         ArchiveCommandCog,
         ClearRemindersBacklogTaskCog,
         CommandErrorCog,
+        CommitteeActionsTrackingSlashCommandsCog,
+        CommitteeActionsTrackingContextCommandsCog,
         CommitteeHandoverCommandCog,
         DeleteAllCommandsCog,
         EditMessageCommandCog,
