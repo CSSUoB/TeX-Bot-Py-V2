@@ -54,7 +54,9 @@ class ArchiveCommandCog(TeXBotBaseCog):
         }
 
     @staticmethod
-    async def autocomplete_get_archival_categories(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
+    async def autocomplete_get_archival_categories(
+        ctx: "TeXBotAutocompleteContext",
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """
         Autocomplete callable that generates the set of categories to hold archived channels.
 
@@ -75,7 +77,9 @@ class ArchiveCommandCog(TeXBotBaseCog):
         }
 
     @staticmethod
-    async def autocomplete_get_channels(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
+    async def autocomplete_get_channels(
+        ctx: "TeXBotAutocompleteContext"
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """
         Autocpomplete callable that generates the set of channels that the user can archive.
 
@@ -118,7 +122,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def archive_category(self, ctx: TeXBotApplicationContext, str_category_id: str, allow_archivist: bool) -> None:  # noqa: E501, FBT001
+    async def archive_category(self, ctx: "TeXBotApplicationContext", str_category_id: str, allow_archivist: bool) -> None:  # noqa: E501, FBT001
         """
         Definition & callback response of the "archive-category" command.
 
@@ -207,7 +211,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def archive_channel(self, ctx: TeXBotApplicationContext, str_channel_id: str, str_category_id: str) -> None:  # noqa: E501
+    async def archive_channel(self, ctx: "TeXBotApplicationContext", str_channel_id: str, str_category_id: str) -> None:  # noqa: E501
         """
         Definition & callback response of the "archive-channel" command.
 
