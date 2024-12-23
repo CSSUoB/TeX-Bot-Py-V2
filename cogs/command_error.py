@@ -1,14 +1,8 @@
 """Contains cog classes for any command_error interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("CommandErrorCog",)
-
-
 import contextlib
 import logging
-from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING
 
 import discord
 from discord import Forbidden
@@ -19,16 +13,27 @@ from exceptions import (
     GuildDoesNotExistError,
 )
 from exceptions.base import BaseErrorWithErrorCode
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from logging import Logger
+    from typing import Final
+
+    from utils import TeXBotApplicationContext
+
+__all__: "Sequence[str]" = ("CommandErrorCog",)
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class CommandErrorCog(TeXBotBaseCog):
     """Cog class that defines additional code to execute upon a command error."""
 
     @TeXBotBaseCog.listener()
-    async def on_application_command_error(self, ctx: TeXBotApplicationContext, error: discord.ApplicationCommandError) -> None:  # noqa: E501
+    async def on_application_command_error(
+        self, ctx: "TeXBotApplicationContext", error: discord.ApplicationCommandError
+    ) -> None:
         """Log any major command errors in the logging channel & stderr."""
         error_code: str | None = None
         message: str | None = "Please contact a committee member."
@@ -67,7 +72,9 @@ class CommandErrorCog(TeXBotBaseCog):
             logging_message=logging_message,
         )
 
-        if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(error.original, GuildDoesNotExistError):  # noqa: E501
+        if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(
+            error.original, GuildDoesNotExistError
+        ):
             command_name: str = (
                 ctx.command.callback.__name__
                 if (
