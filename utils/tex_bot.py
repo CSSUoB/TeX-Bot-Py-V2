@@ -1,14 +1,8 @@
 """Custom Pycord Bot class implementation."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("TeXBot",)
-
-
 import logging
 import re
-from logging import Logger
-from typing import TYPE_CHECKING, Final, NoReturn, override
+from typing import TYPE_CHECKING, override
 
 import aiohttp
 import discord
@@ -31,9 +25,15 @@ from exceptions import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from logging import Logger
+    from typing import Final, NoReturn
+
     from utils import AllChannelTypes
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+__all__: "Sequence[str]" = ("TeXBot",)
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class TeXBot(discord.Bot):
@@ -65,7 +65,7 @@ class TeXBot(discord.Bot):
         super().__init__(*args, **options)  # type: ignore[no-untyped-call]
 
     @override
-    async def close(self) -> NoReturn:  # type: ignore[misc]
+    async def close(self) -> "NoReturn":  # type: ignore[misc]
         await super().close()
 
         logger.info("TeX-Bot manually terminated.")
@@ -89,7 +89,7 @@ class TeXBot(discord.Bot):
         """
         MAIN_GUILD_EXISTS: Final[bool] = bool(
             self._main_guild
-            and self._check_guild_accessible(settings["_DISCORD_MAIN_GUILD_ID"])  # noqa: COM812
+            and self._check_guild_accessible(settings["_DISCORD_MAIN_GUILD_ID"])
         )
         if not MAIN_GUILD_EXISTS:
             raise GuildDoesNotExistError(guild_id=settings["_DISCORD_MAIN_GUILD_ID"])
@@ -291,7 +291,7 @@ class TeXBot(discord.Bot):
         The group-full-name is either retrieved from the provided environment variable
         or automatically identified from the name of your group's Discord guild.
         """
-        return (  # type: ignore[no-any-return]
+        return (
             settings["_GROUP_FULL_NAME"]
             if settings["_GROUP_FULL_NAME"]
             else (
@@ -312,27 +312,33 @@ class TeXBot(discord.Bot):
         This defaults to `TeXBot.group_full_name`,
         if no group-short-name is provided/could not be determined.
         """
-        return (  # type: ignore[no-any-return]
-            settings["_GROUP_SHORT_NAME"]
-            if settings["_GROUP_SHORT_NAME"]
-            else (
-                "CSS"
-                if (
-                    "computer science society" in self.group_full_name.lower()
-                    or "css" in self.group_full_name.lower()
+        return (
+            (
+                settings["_GROUP_SHORT_NAME"]
+                if settings["_GROUP_SHORT_NAME"]
+                else (
+                    "CSS"
+                    if (
+                        "computer science society" in self.group_full_name.lower()
+                        or "css" in self.group_full_name.lower()
+                    )
+                    else self.group_full_name
                 )
-                else self.group_full_name
             )
-        ).replace(
-            "the",
-            "",
-        ).replace(
-            "THE",
-            "",
-        ).replace(
-            "The",
-            "",
-        ).strip()
+            .replace(
+                "the",
+                "",
+            )
+            .replace(
+                "THE",
+                "",
+            )
+            .replace(
+                "The",
+                "",
+            )
+            .strip()
+        )
 
     @property
     def group_member_id_type(self) -> str:
@@ -404,7 +410,9 @@ class TeXBot(discord.Bot):
 
         return text_channel
 
-    async def perform_kill_and_close(self, initiated_by_user: discord.User | discord.Member | None = None) -> NoReturn:  # noqa: E501
+    async def perform_kill_and_close(
+        self, initiated_by_user: discord.User | discord.Member | None = None
+    ) -> "NoReturn":
         """
         Shutdown TeX-Bot by using the "/kill" command.
 
@@ -456,7 +464,9 @@ class TeXBot(discord.Bot):
         self._main_guild = main_guild
         self._main_guild_set = True
 
-    async def get_main_guild_member(self, user: discord.Member | discord.User) -> discord.Member:  # noqa: E501
+    async def get_main_guild_member(
+        self, user: discord.Member | discord.User
+    ) -> discord.Member:
         """
         Util method to retrieve a member of your group's Discord guild from their User object.
 
@@ -477,9 +487,7 @@ class TeXBot(discord.Bot):
         str_member_id = str_member_id.replace("<@", "").replace(">", "")
 
         if not re.fullmatch(r"\A\d{17,20}\Z", str_member_id):
-            INVALID_USER_ID_MESSAGE: Final[str] = (
-                f"'{str_member_id}' is not a valid user ID."
-            )
+            INVALID_USER_ID_MESSAGE: Final[str] = f"'{str_member_id}' is not a valid user ID."
             raise ValueError(INVALID_USER_ID_MESSAGE)
 
         user: discord.User | None = self.get_user(int(str_member_id))

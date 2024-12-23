@@ -1,14 +1,18 @@
 """Contains cog classes for any write_roles interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("WriteRolesCommandCog",)
-
+from typing import TYPE_CHECKING
 
 import discord
 
 from config import settings
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from utils import TeXBotApplicationContext
+
+__all__: "Sequence[str]" = ("WriteRolesCommandCog",)
 
 
 class WriteRolesCommandCog(TeXBotBaseCog):
@@ -22,7 +26,7 @@ class WriteRolesCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def write_roles(self, ctx: TeXBotApplicationContext) -> None:
+    async def write_roles(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "write_roles" command.
 

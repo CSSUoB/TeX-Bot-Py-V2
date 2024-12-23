@@ -1,16 +1,9 @@
 """Custom cog subclass that stores a reference to the custom bot class."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("TeXBotBaseCog",)
-
-
 import contextlib
 import logging
 import re
-from collections.abc import Mapping, Set
-from logging import Logger
-from typing import TYPE_CHECKING, Final, override
+from typing import TYPE_CHECKING, override
 
 import discord
 from discord import Cog
@@ -20,23 +13,29 @@ from exceptions.base import (
     BaseDoesNotExistError,
 )
 
-from .tex_bot import TeXBot
-from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
+if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+    from collections.abc import Set as AbstractSet
+    from logging import Logger
+    from typing import Final
+
+    from .tex_bot import TeXBot
+    from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
+
+
+__all__: "Sequence[str]" = ("TeXBotBaseCog",)
+
 
 if TYPE_CHECKING:
-    from typing import TypeAlias
+    type MentionableMember = discord.Member | discord.Role
 
-
-if TYPE_CHECKING:
-    MentionableMember: TypeAlias = discord.Member | discord.Role
-
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class TeXBotBaseCog(Cog):
     """Base Cog subclass that stores a reference to the currently running TeXBot instance."""
 
-    ERROR_ACTIVITIES: Final[Mapping[str, str]] = {
+    ERROR_ACTIVITIES: "Final[Mapping[str, str]]" = {  # noqa: RUF012
         "archive": "archive the selected category",
         "delete_all_reminders": (
             "delete all `DiscordReminder` objects from the backend database"
@@ -63,7 +62,7 @@ class TeXBotBaseCog(Cog):
     }
 
     @override
-    def __init__(self, bot: TeXBot) -> None:
+    def __init__(self, bot: "TeXBot") -> None:
         """
         Initialise a new cog instance.
 
@@ -71,7 +70,13 @@ class TeXBotBaseCog(Cog):
         """
         self.bot: TeXBot = bot  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
 
-    async def command_send_error(self, ctx: TeXBotApplicationContext, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
+    async def command_send_error(
+        self,
+        ctx: "TeXBotApplicationContext",
+        error_code: str | None = None,
+        message: str | None = None,
+        logging_message: str | BaseException | None = None,
+    ) -> None:
         """
         Construct & format an error message from the given details.
 
@@ -97,7 +102,15 @@ class TeXBotBaseCog(Cog):
         )
 
     @classmethod
-    async def send_error(cls, bot: TeXBot, interaction: discord.Interaction, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None) -> None:  # noqa: E501
+    async def send_error(
+        cls,
+        bot: "TeXBot",
+        interaction: discord.Interaction,
+        interaction_name: str,
+        error_code: str | None = None,
+        message: str | None = None,
+        logging_message: str | BaseException | None = None,
+    ) -> None:
         """
         Construct & format an error message from the given details.
 
@@ -142,7 +155,8 @@ class TeXBotBaseCog(Cog):
         if logging_message:
             logger.error(
                 " ".join(
-                    message_part for message_part in (
+                    message_part
+                    for message_part in (
                         error_code if error_code else "",
                         f"({interaction_name})",
                         str(logging_message),
@@ -152,7 +166,9 @@ class TeXBotBaseCog(Cog):
             )
 
     @staticmethod
-    async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
+    async def autocomplete_get_text_channels(
+        ctx: "TeXBotAutocompleteContext",
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """
         Autocomplete callable that generates the set of available selectable channels.
 

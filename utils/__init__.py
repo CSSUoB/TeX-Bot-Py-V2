@@ -1,24 +1,7 @@
 """Utility classes & functions provided for use across the whole of the project."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = (
-    "AllChannelTypes",
-    "CommandChecks",
-    "generate_invite_url",
-    "is_member_inducted",
-    "is_running_in_async",
-    "MessageSavingSenderComponent",
-    "SuppressTraceback",
-    "TeXBot",
-    "TeXBotApplicationContext",
-    "TeXBotAutocompleteContext",
-    "TeXBotBaseCog",
-)
-
-
 import asyncio
-from typing import TypeAlias
+from typing import TYPE_CHECKING
 
 import discord
 
@@ -29,13 +12,32 @@ from .tex_bot import TeXBot
 from .tex_bot_base_cog import TeXBotBaseCog
 from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
 
-AllChannelTypes: TypeAlias = (
-    discord.VoiceChannel
-    | discord.StageChannel
-    | discord.TextChannel
-    | discord.ForumChannel
-    | discord.CategoryChannel
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__: "Sequence[str]" = (
+    "AllChannelTypes",
+    "CommandChecks",
+    "MessageSavingSenderComponent",
+    "SuppressTraceback",
+    "TeXBot",
+    "TeXBotApplicationContext",
+    "TeXBotAutocompleteContext",
+    "TeXBotBaseCog",
+    "generate_invite_url",
+    "is_member_inducted",
+    "is_running_in_async",
 )
+
+if TYPE_CHECKING:
+    type AllChannelTypes = (
+        discord.VoiceChannel
+        | discord.StageChannel
+        | discord.TextChannel
+        | discord.ForumChannel
+        | discord.CategoryChannel
+        | None
+    )
 
 
 def generate_invite_url(discord_bot_application_id: int, discord_guild_id: int) -> str:
@@ -71,9 +73,7 @@ def is_member_inducted(member: discord.Member) -> bool:
     Returns True if the member has any role other than "@News".
     The set of ignored roles is a tuple to make the set easily expandable.
     """
-    return any(
-        role.name.lower().strip("@ \n\t") not in ("news",) for role in member.roles
-    )
+    return any(role.name.lower().strip("@ \n\t") not in ("news",) for role in member.roles)
 
 
 def is_running_in_async() -> bool:
