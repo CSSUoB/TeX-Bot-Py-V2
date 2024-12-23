@@ -55,7 +55,7 @@ __all__: "Sequence[str]" = (
     "ConfirmStrikesOutOfSyncWithBanView",
     "ManualModerationCog",
     "StrikeCommandCog",
-    "StrikeUserCommandCog",
+    "StrikeContextCommandsCog",
     "perform_moderation_action",
 )
 
@@ -890,7 +890,7 @@ class StrikeCommandCog(BaseStrikeCog):
 class StrikeContextCommandsCog(BaseStrikeCog):
     """Cog class that defines the context menu strike command & its call-back method."""
 
-    async def _send_message_to_committee(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
+    async def _send_message_to_committee(self, ctx: "TeXBotApplicationContext", message: discord.Message) -> None:  # noqa: E501
         """Send a provided message to committee channels."""
         discord_channel: discord.TextChannel | None = discord.utils.get(
             self.bot.main_guild.text_channels,
@@ -963,7 +963,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
     @discord.message_command(name="Strike Message Author") # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def strike_message_author(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
+    async def strike_message_author(self, ctx: "TeXBotApplicationContext", message: discord.Message) -> None:  # noqa: E501
         """Call the _strike command on the message author."""
         strike_user: discord.Member = await self.bot.get_member_from_str_id(
             str(message.author.id),
@@ -977,6 +977,6 @@ class StrikeContextCommandsCog(BaseStrikeCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def send_message_to_committee(self, ctx: TeXBotApplicationContext, message: discord.Message) -> None:  # noqa: E501
+    async def send_message_to_committee(self, ctx: "TeXBotApplicationContext", message: discord.Message) -> None:  # noqa: E501
         """Send a copy of the selected message to committee channels for review."""
         await self._send_message_to_committee(ctx, message=message)
