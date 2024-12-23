@@ -1,10 +1,5 @@
 """Contains cog classes for token authorisation check interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("GetTokenAuthorisationCommandCog",)
-
-
 import logging
 from typing import TYPE_CHECKING
 
@@ -78,9 +73,13 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
             )
             return
 
-        if isinstance(page_title, bs4.NavigableString) and "Login" in page_title or "Login" in page_title.string:  # type: ignore[operator, union-attr]  # noqa: E501
+        if (
+            (isinstance(page_title, bs4.NavigableString) and "Login" in page_title)
+            or
+            ("Login" in page_title.string)  # type: ignore[union-attr, operator]
+        ):
             BAD_TOKEN_MESSAGE: Final[str] = (
-                "Unable to fetch profile page because the token was not valid."
+                "Unable to fetch profile page because the token was not valid."  # noqa: S105
             )
             logger.warning(BAD_TOKEN_MESSAGE)
             await ctx.respond(content=BAD_TOKEN_MESSAGE)
@@ -137,27 +136,10 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
             user_name.text,
         )
 
-        MAKE_EPHEMERAL: bool = True
-
-        try:
-            guest_role: discord.Role = await self.bot.guest_role
-
-            channel: discord.TextChannel | None = discord.utils.get(
-                self.bot.main_guild.text_channels,
-                id=ctx.channel.id,
-            )
-
-            if not channel:
-                MAKE_EPHEMERAL = True
-            else:
-                MAKE_EPHEMERAL = channel.permissions_for(guest_role).view_channel
-        except GuestRoleDoesNotExistError:
-            MAKE_EPHEMERAL = True
-
         await ctx.respond(
             f"Admin token has access to the following MSL Organisations as "
             f"{user_name.text}:\n{', \n'.join(
                 organisation for organisation in organisations
             )}",
-            ephemeral=MAKE_EPHEMERAL,
+            ephemeral=False,
         )
