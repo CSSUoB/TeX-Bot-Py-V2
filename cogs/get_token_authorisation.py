@@ -72,11 +72,7 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
             )
             return
 
-        if (
-            (isinstance(page_title, bs4.NavigableString) and "Login" in page_title)
-            or
-            ("Login" in page_title.string)  # type: ignore[union-attr, operator]
-        ):
+        if ("Login" in str(page_title)):
             BAD_TOKEN_MESSAGE: Final[str] = (
                 "Unable to fetch profile page because the token was not valid."  # noqa: S105
             )
