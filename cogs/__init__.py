@@ -37,7 +37,7 @@ from .send_introduction_reminders import SendIntroductionRemindersTaskCog
 from .source import SourceCommandCog
 from .startup import StartupCog
 from .stats import StatsCommandsCog
-from .strike import ManualModerationCog, StrikeCommandCog, StrikeUserCommandCog
+from .strike import ManualModerationCog, StrikeCommandCog, StrikeContextCommandsCog
 from .write_roles import WriteRolesCommandCog
 
 if TYPE_CHECKING:
@@ -111,7 +111,7 @@ def setup(bot: "TeXBot") -> None:
         StartupCog,
         StatsCommandsCog,
         StrikeCommandCog,
-        StrikeUserCommandCog,
+        StrikeContextCommandsCog,
         WriteRolesCommandCog,
     )
     Cog: type[TeXBotBaseCog]
