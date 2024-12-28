@@ -24,8 +24,9 @@ if TYPE_CHECKING:
 
     from utils import TeXBotApplicationContext
 
-__all__: "Sequence[str]" = ("MakeMemberCommandCog",)
 from utils.msl import is_student_id_member
+
+__all__: "Sequence[str]" = ("MakeMemberCommandCog",)
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
