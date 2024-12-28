@@ -1,15 +1,8 @@
 """Contains cog classes for token authorisation check interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("GetTokenAuthorisationCommandCog",)
-
-
 import contextlib
 import logging
-from collections.abc import Iterable, Mapping
-from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING
 
 import aiohttp
 import bs4
@@ -18,21 +11,30 @@ from bs4 import BeautifulSoup
 
 from config import settings
 from exceptions.does_not_exist import GuestRoleDoesNotExistError
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Mapping, Sequence
+    from logging import Logger
+    from typing import Final
 
-REQUEST_HEADERS: Final[Mapping[str, str]] = {
+    from utils import TeXBotApplicationContext
+
+__all__: "Sequence[str]" = ("GetTokenAuthorisationCommandCog",)
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+
+REQUEST_HEADERS: "Final[Mapping[str, str]]" = {
     "Cache-Control": "no-cache",
     "Pragma": "no-cache",
     "Expires": "0",
 }
 
-REQUEST_COOKIES: Final[Mapping[str, str]] = {
+REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
     ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
 }
 
-REQUEST_URL: Final[str] = "https://guildofstudents.com/profile"
+REQUEST_URL: "Final[str]" = "https://guildofstudents.com/profile"
 
 
 class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
@@ -44,7 +46,7 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def get_token_authorisation(self, ctx: TeXBotApplicationContext) -> None:
+    async def get_token_authorisation(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition of the "get_token_authorisation" command.
 
@@ -121,8 +123,9 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
                 organisation for organisation in organisations
             )}",
             ephemeral=bool(
-                (not guest_role) or ctx.channel.permissions_for(guest_role).is_superset(
+                (not guest_role)
+                or ctx.channel.permissions_for(guest_role).is_superset(
                     discord.Permissions(view_channel=True),
-                )  # noqa: COM812
+                )
             ),
         )

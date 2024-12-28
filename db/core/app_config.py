@@ -1,11 +1,13 @@
 """Configurations to make the core app ready to import into _settings.py."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("CoreConfig",)
-
+from typing import TYPE_CHECKING
 
 from django.apps import AppConfig
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__: "Sequence[str]" = ("CoreConfig",)
 
 
 class CoreConfig(AppConfig):

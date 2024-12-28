@@ -1,32 +1,8 @@
 """Exception classes & functions provided for use across the whole of the project."""
 
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = (
-    "ApplicantRoleDoesNotExistError",
-    "ArchivistRoleDoesNotExistError",
-    "ChannelDoesNotExistError",
-    "CommitteeElectRoleDoesNotExistError",
-    "CommitteeRoleDoesNotExistError",
-    "DiscordMemberNotInMainGuildError",
-    "EveryoneRoleCouldNotBeRetrievedError",
-    "GeneralChannelDoesNotExistError",
-    "GuestRoleDoesNotExistError",
-    "GuildDoesNotExistError",
-    "ImproperlyConfiguredError",
-    "InvalidMessagesJSONFileError",
-    "MemberRoleDoesNotExistError",
-    "MessagesJSONFileMissingKeyError",
-    "MessagesJSONFileValueError",
-    "NoAuditLogsStrikeTrackingError",
-    "RestartRequiredDueToConfigChange",
-    "RoleDoesNotExistError",
-    "RolesChannelDoesNotExistError",
-    "RulesChannelDoesNotExistError",
-    "StrikeTrackingError",
-)
-
-
+from .committee_actions import InvalidActionDescriptionError, InvalidActionTargetError
 from .config_changes import (
     ImproperlyConfiguredError,
     RestartRequiredDueToConfigChange,
@@ -55,3 +31,32 @@ from .messages import (
     MessagesJSONFileValueError,
 )
 from .strike import NoAuditLogsStrikeTrackingError, StrikeTrackingError
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__: "Sequence[str]" = (
+    "ApplicantRoleDoesNotExistError",
+    "ArchivistRoleDoesNotExistError",
+    "ChannelDoesNotExistError",
+    "CommitteeElectRoleDoesNotExistError",
+    "CommitteeRoleDoesNotExistError",
+    "DiscordMemberNotInMainGuildError",
+    "EveryoneRoleCouldNotBeRetrievedError",
+    "GeneralChannelDoesNotExistError",
+    "GuestRoleDoesNotExistError",
+    "GuildDoesNotExistError",
+    "ImproperlyConfiguredError",
+    "InvalidActionDescriptionError",
+    "InvalidActionTargetError",
+    "InvalidMessagesJSONFileError",
+    "MemberRoleDoesNotExistError",
+    "MessagesJSONFileMissingKeyError",
+    "MessagesJSONFileValueError",
+    "NoAuditLogsStrikeTrackingError",
+    "RestartRequiredDueToConfigChange",
+    "RoleDoesNotExistError",
+    "RolesChannelDoesNotExistError",
+    "RulesChannelDoesNotExistError",
+    "StrikeTrackingError",
+)

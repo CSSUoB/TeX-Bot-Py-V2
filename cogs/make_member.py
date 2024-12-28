@@ -1,16 +1,9 @@
 """Contains cog classes for any make_member interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("MakeMemberCommandCog",)
-
-
 import contextlib
 import logging
 import re
-from collections.abc import Mapping
-from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING
 
 import discord
 from django.core.exceptions import ValidationError
@@ -22,12 +15,21 @@ from exceptions import (
     CommitteeRoleDoesNotExistError,
     GuestRoleDoesNotExistError,
 )
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+    from logging import Logger
+    from typing import Final
+
+    from utils import TeXBotApplicationContext
+
+__all__: "Sequence[str]" = ("MakeMemberCommandCog",)
 from utils.msl import is_student_id_member
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
-_GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: Final[str] = f"""{
+_GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: "Final[str]" = f"""{
     "Student"
     if (
         settings["_GROUP_FULL_NAME"]
@@ -46,22 +48,24 @@ _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: Final[str] = f"""{
     else "Member"
 } ID"""
 
-_GROUP_MEMBER_ID_ARGUMENT_NAME: Final[str] = (
+_GROUP_MEMBER_ID_ARGUMENT_NAME: "Final[str]" = (
     _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME.lower().replace(
         " ",
         "",
     )
 )
 
-REQUEST_HEADERS: Final[Mapping[str, str]] = {
+REQUEST_HEADERS: "Final[Mapping[str, str]]" = {
     "Cache-Control": "no-cache",
     "Pragma": "no-cache",
     "Expires": "0",
 }
 
-REQUEST_COOKIES: Final[Mapping[str, str]] = {
+REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
     ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
 }
+
+REQUEST_URL: "Final[str]" = settings["MEMBERS_LIST_URL"]
 
 
 class MakeMemberCommandCog(TeXBotBaseCog):
@@ -105,7 +109,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         parameter_name="group_member_id",
     )
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_member(self, ctx: TeXBotApplicationContext, group_member_id: str) -> None:
+    async def make_member(self, ctx: "TeXBotApplicationContext", group_member_id: str) -> None:
         """
         Definition & callback response of the "make_member" command.
 
@@ -175,7 +179,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         # NOTE: The "Member" role must be added to the user **before** the "Guest" role to ensure that the welcome message does not include the suggestion to purchase membership
         await interaction_member.add_roles(
             member_role,
-            reason="TeX Bot slash-command: \"/makemember\"",
+            reason='TeX Bot slash-command: "/makemember"',
         )
 
         try:
@@ -199,15 +203,15 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             guest_role: discord.Role = await self.bot.guest_role
         except GuestRoleDoesNotExistError:
             logger.warning(
-                "\"/makemember\" command used but the \"Guest\" role does not exist. "
-                "Some user's may now have the \"Member\" role without the \"Guest\" role. "
-                "Use the \"/ensure-members-inducted\" command to fix this issue.",
+                '"/makemember" command used but the "Guest" role does not exist. '
+                'Some user\'s may now have the "Member" role without the "Guest" role. '
+                'Use the "/ensure-members-inducted" command to fix this issue.',
             )
         else:
             if guest_role not in interaction_member.roles:
                 await interaction_member.add_roles(
                     guest_role,
-                    reason="TeX Bot slash-command: \"/makemember\"",
+                    reason='TeX Bot slash-command: "/makemember"',
                 )
 
         # noinspection PyUnusedLocal
@@ -218,5 +222,5 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         if applicant_role and applicant_role in interaction_member.roles:
             await interaction_member.remove_roles(
                 applicant_role,
-                reason="TeX Bot slash-command: \"/makemember\"",
+                reason='TeX Bot slash-command: "/makemember"',
             )
