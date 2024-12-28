@@ -1,19 +1,10 @@
 """Module for fetching reports from the guild website."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = (
-    "update_current_year_sales_report",
-    "get_product_sales",
-    "get_product_customisations",
-)
-
 import logging
 import re
 from datetime import datetime, timedelta, timezone
 from enum import Enum
-from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import aiohttp
 import anyio
@@ -26,7 +17,17 @@ from .core import (
     get_msl_context,
 )
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from logging import Logger
+
+__all__: "Sequence[str]" = (
+    "get_product_customisations",
+    "get_product_sales",
+    "update_current_year_sales_report",
+)
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 SALES_REPORTS_URL: Final[str] = f"https://www.guildofstudents.com/organisation/salesreports/{ORGANISATION_ID}/"

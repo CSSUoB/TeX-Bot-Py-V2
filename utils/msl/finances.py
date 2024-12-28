@@ -1,13 +1,9 @@
 """Module for accessing society finances."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ()
-
 import logging
 from enum import Enum
 from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import aiohttp
 import bs4
@@ -19,6 +15,11 @@ from .core import (
     ORGANISATION_ADMIN_URL,
     ORGANISATION_ID,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__: "Sequence[str]" = ()
 
 FINANCE_REDIRECT_URL: Final[str] = f"https://www.guildofstudents.com/sgf/{ORGANISATION_ID}/Landing/Member"
 FINANCES_URL: Final[str] = f"https://guildofstudents.com/sgf/{ORGANISATION_ID}/Home/Dashboard/"

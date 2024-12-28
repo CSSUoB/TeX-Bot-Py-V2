@@ -1,18 +1,19 @@
 """Module for fetching events from the guild website."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("get_all_guild_events", "create_event")
-
 import logging
 from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import aiohttp
 import bs4
 from bs4 import BeautifulSoup
 
 from .core import BASE_HEADERS, ORGANISATION_ID, get_msl_context
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__: "Sequence[str]" = ("create_event", "get_all_guild_events")
 
 EVENTS_FROM_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$datesFilter$txtFromDate"
 EVENTS_TO_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$datesFilter$txtToDate"

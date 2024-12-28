@@ -1,18 +1,19 @@
 """Module for checking membership status."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("get_full_membership_list", "is_student_id_member")
-
 import logging
 from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import aiohttp
 import bs4
 from bs4 import BeautifulSoup
 
 from .core import BASE_COOKIES, BASE_HEADERS, ORGANISATION_ID
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__: "Sequence[str]" = ("get_full_membership_list", "is_student_id_member")
 
 MEMBERS_LIST_URL: Final[str] = f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
 

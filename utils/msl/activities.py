@@ -1,20 +1,21 @@
 """Module for fetching activities from the guild website."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ()
-
 import logging
 from datetime import datetime
 from enum import Enum
 from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import aiohttp
 import bs4
 from bs4 import BeautifulSoup
 
 from .core import BASE_HEADERS, ORGANISATION_ID, get_msl_context
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__: "Sequence[str]" = ()
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
