@@ -1,9 +1,7 @@
 """Module for fetching activities from the guild website."""
 
 import logging
-from datetime import datetime
 from enum import Enum
-from logging import Logger
 from typing import TYPE_CHECKING, Final
 
 import aiohttp
@@ -14,10 +12,12 @@ from .core import BASE_HEADERS, ORGANISATION_ID, get_msl_context
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from datetime import datetime
+    from logging import Logger
 
 __all__: "Sequence[str]" = ()
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 ACTIVITIES_URL: Final[str] = f"https://www.guildofstudents.com/organisation/admin/activities/all/{ORGANISATION_ID}/"
@@ -46,7 +46,7 @@ class ActivityStatus(Enum):
     QUERIED = "Queried"
 
 
-async def fetch_guild_activities(from_date: datetime, to_date: datetime) -> dict[str, str]:
+async def fetch_guild_activities(from_date: "datetime", to_date: "datetime") -> dict[str, str]:
     """Fetch all activities on the guild website."""
     data_fields, cookies = await get_msl_context(url=ACTIVITIES_URL)
 

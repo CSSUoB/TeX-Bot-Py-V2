@@ -1,7 +1,6 @@
 """Module for checking membership status."""
 
 import logging
-from logging import Logger
 from typing import TYPE_CHECKING, Final
 
 import aiohttp
@@ -12,6 +11,7 @@ from .core import BASE_COOKIES, BASE_HEADERS, ORGANISATION_ID
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from logging import Logger
 
 __all__: "Sequence[str]" = ("get_full_membership_list", "is_student_id_member")
 
@@ -19,7 +19,7 @@ MEMBERS_LIST_URL: Final[str] = f"https://guildofstudents.com/organisation/member
 
 persistent_membership_list: set[tuple[str, int]] = set()
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 async def get_full_membership_list() -> set[tuple[str, int]]:

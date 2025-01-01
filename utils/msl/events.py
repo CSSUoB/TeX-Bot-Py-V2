@@ -1,7 +1,6 @@
 """Module for fetching events from the guild website."""
 
 import logging
-from logging import Logger
 from typing import TYPE_CHECKING, Final
 
 import aiohttp
@@ -12,6 +11,7 @@ from .core import BASE_HEADERS, ORGANISATION_ID, get_msl_context
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from logging import Logger
 
 __all__: "Sequence[str]" = ("create_event", "get_all_guild_events")
 
@@ -23,7 +23,7 @@ CREATE_EVENT_URL: Final[str] = f"https://www.guildofstudents.com/events/edit/eve
 EVENT_LIST_URL: Final[str] = f"https://www.guildofstudents.com/events/edit/{ORGANISATION_ID}/"
 
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 async def get_all_guild_events(from_date: str, to_date: str) -> dict[str, str]:

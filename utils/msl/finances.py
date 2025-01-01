@@ -2,7 +2,6 @@
 
 import logging
 from enum import Enum
-from logging import Logger
 from typing import TYPE_CHECKING, Final
 
 import aiohttp
@@ -18,6 +17,7 @@ from .core import (
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from logging import Logger
 
 __all__: "Sequence[str]" = ()
 
@@ -26,14 +26,14 @@ FINANCES_URL: Final[str] = f"https://guildofstudents.com/sgf/{ORGANISATION_ID}/H
 BASE_EXPENSE_URL: Final[str] = f"https://guildofstudents.com/sgf/{ORGANISATION_ID}/Request/Edit?RequestId="
 
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class TransactionType(Enum):
     """
     Enum for the different possible types of transactions.
 
-    Attributes
+    Attributes:
     ----------
     - Personal Expense: A personal expense
     - External Payment: A payment to an external entity
