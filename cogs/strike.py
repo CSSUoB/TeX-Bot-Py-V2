@@ -898,7 +898,10 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         )
 
         if not discord_channel:
-            logger.debug("Couldn't find the discord channel.")
+            await self.command_send_error(
+                ctx=ctx,
+                message="Could not find the `#discord` channel in the main guild!",
+            )
             return
 
         if not message.guild:
