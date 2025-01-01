@@ -60,10 +60,12 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
         async with http_session, http_session.get(REQUEST_URL) as http_response:
             response_html: str = await http_response.text()
 
-        page_title: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
+        response_object: bs4.BeautifulSoup = BeautifulSoup(
             response_html,
             "html.parser",
-        ).find("title")
+        )
+
+        page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
 
         if not page_title:
             await self.command_send_error(
@@ -80,10 +82,10 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
             await ctx.respond(content=BAD_TOKEN_MESSAGE)
             return
 
-        profile_section_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-            response_html,
-            "html.parser",
-        ).find("div", {"id": "profile_main"})
+        profile_section_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
+            "div",
+            {"id": "profile_main"},
+        )
 
         if profile_section_html is None:
             logger.warning(
@@ -107,10 +109,10 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
             await ctx.respond(NO_PROFILE_DEBUG_MESSAGE)
             return
 
-        parsed_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-            response_html,
-            "html.parser",
-        ).find("ul", {"id": "ulOrgs"})
+        parsed_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
+            "ul",
+            {"id": "ulOrgs"},
+        )
 
         if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
             NO_ADMIN_TABLE_MESSAGE: Final[str] = (
