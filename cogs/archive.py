@@ -91,13 +91,17 @@ class ArchiveCommandCog(TeXBotBaseCog):
         except BaseDoesNotExistError:
             return set()
 
+        interaction_user: discord.Member | discord.User | None = ctx.interaction.user
+
         return {
             discord.OptionChoice(name=channel.name, value=str(channel.id))
             for channel
             in main_guild.channels
             if (
                 not isinstance(channel, discord.CategoryChannel) and
-                (channel.category and "archive" not in channel.category.name.lower())
+                (channel.category and "archive" not in channel.category.name.lower()) and
+                (isinstance(interaction_user, discord.Member) and
+                channel.permissions_for(interaction_user).read_messages)
             )
         }
 
