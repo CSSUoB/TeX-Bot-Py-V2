@@ -138,5 +138,5 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
             f"{user_name.text}:\n{', \n'.join(
                 organisation for organisation in organisations
             )}",
-            ephemeral=False,
+            ephemeral=True,
         )
