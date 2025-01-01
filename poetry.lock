@@ -1869,13 +1869,13 @@ files = [
 
 [[package]]
 name = "typed-classproperties"
-version = "1.1.1"
+version = "1.1.3"
 description = "Typed decorators for classproperty and cached_classproperty."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "typed_classproperties-1.1.1-py3-none-any.whl", hash = "sha256:44eb5e9384c9c92ae9cb1068e86f322c15c7c96a13f444aaf9dc784b88d5622b"},
-    {file = "typed_classproperties-1.1.1.tar.gz", hash = "sha256:da4de2e191872fef2caefdd8c65b848ac778b4f1af517f16af1111c7bb194c01"},
+    {file = "typed_classproperties-1.1.3-py3-none-any.whl", hash = "sha256:05b9f43ed01b8c06b250f508fd8c29136e26309751a7d7f2060ae487bbf1f241"},
+    {file = "typed_classproperties-1.1.3.tar.gz", hash = "sha256:c0b99d160da6c63e2d321db22903cf88cbc6c50bb00fc14f9ee3bb525e706459"},
 ]
 
 [[package]]
