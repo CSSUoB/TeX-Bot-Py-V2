@@ -892,9 +892,9 @@ class StrikeContextCommandsCog(BaseStrikeCog):
 
     async def _send_message_to_committee(self, ctx: "TeXBotApplicationContext", message: discord.Message) -> None:  # noqa: E501
         """Send a provided message to committee channels."""
-        discord_channel: discord.TextChannel | None = discord.utils.get(  # TODO: Make this user-configurable  # noqa: FIX002
+        discord_channel: discord.TextChannel | None = discord.utils.get(
             self.bot.main_guild.text_channels,
-            name="discord",
+            name="discord",  # TODO: Make this user-configurable  # noqa: FIX002
         )
 
         if not discord_channel:
