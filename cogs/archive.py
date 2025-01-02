@@ -171,6 +171,11 @@ class ArchiveCommandCog(TeXBotBaseCog):
             )
             return
 
+        initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
+            content=f"Archiving {category.name}...",
+            ephemeral=True,
+        )
+
         channel: AllChannelTypes
         for channel in category.channels:
             if isinstance(channel, discord.CategoryChannel):  # NOTE: Categories can not be placed inside other categories, so this will always be false, but is needed due to the typing of the method
@@ -191,7 +196,9 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
         await category.edit(name=f"archive-{category.name}")
 
-        await ctx.respond("Category successfully archived", ephemeral=True)
+        await initial_response.edit(
+            content=f":white_check_mark: Category '{category.name}' successfully archived"
+        )
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="archive-channel",
