@@ -428,37 +428,6 @@ class InductContextCommandsCog(BaseInductCog):
 
         await self._perform_induction(ctx, member, silent=False)
 
-    @discord.message_command(name="Silently Induct Message Author")  # type: ignore[no-untyped-call, misc]
-    @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_main_guild
-    async def silent_message_induct(
-        self, ctx: "TeXBotApplicationContext", message: discord.Message
-    ) -> None:
-        """
-        Definition and callback response of the "silent_induct" message-context-command.
-
-        The "silent_induct" command executes the same process as the "induct" slash-command,
-        using the message-context-menu.
-        Therefore, it will induct a given member into your group's Discord guild
-        by giving them the "Guest" role, only without broadcasting a welcome message.
-        """
-        try:
-            member: discord.Member = await self.bot.get_member_from_str_id(
-                str(message.author.id),
-            )
-        except ValueError:
-            await ctx.respond(
-                (
-                    ":information_source: No changes made. User cannot be inducted "
-                    "because they have left the server "
-                    ":information_source:"
-                ),
-                ephemeral=True,
-            )
-            return
-
-        await self._perform_induction(ctx, member, silent=True)
-
 
 class EnsureMembersInductedCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/ensure-members-inducted" command and call-back method."""
