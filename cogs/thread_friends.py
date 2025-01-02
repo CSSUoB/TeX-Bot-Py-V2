@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import discord
 
 from exceptions import GuestRoleDoesNotExistError, GuildDoesNotExistError
-from utils import TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 if TYPE_CHECKING:
@@ -129,6 +129,8 @@ class AddUsersToThreadsCog(TeXBotBaseCog):
         required=False,
         parameter_name="silent",
     )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
     async def add_user_to_thread(self, ctx: "TeXBotApplicationContext", user_id_str: str, silent: bool) -> None:  # noqa: E501, FBT001
         """Add users or roles to a thread."""
         if not isinstance(ctx.channel, discord.Thread):
@@ -176,6 +178,8 @@ class AddUsersToThreadsCog(TeXBotBaseCog):
         required=False,
         parameter_name="silent",
     )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
     async def add_role_to_thread(self, ctx: "TeXBotApplicationContext", user_or_role: str, silent: bool) -> None:  # noqa: E501, FBT001
         """Add users or roles to a thread."""
         main_guild: discord.Guild = ctx.bot.main_guild
