@@ -55,7 +55,7 @@ __all__: "Sequence[str]" = (
     "ConfirmStrikesOutOfSyncWithBanView",
     "ManualModerationCog",
     "StrikeCommandCog",
-    "StrikeUserCommandCog",
+    "StrikeContextCommandsCog",
     "perform_moderation_action",
 )
 
@@ -887,8 +887,72 @@ class StrikeCommandCog(BaseStrikeCog):
         await self._command_perform_strike(ctx, strike_member)
 
 
-class StrikeUserCommandCog(BaseStrikeCog):
+class StrikeContextCommandsCog(BaseStrikeCog):
     """Cog class that defines the context menu strike command & its call-back method."""
+
+    async def _send_message_to_committee(self, ctx: "TeXBotApplicationContext", message: discord.Message) -> None:  # noqa: E501
+        """Send a provided message to committee channels."""
+        discord_channel: discord.TextChannel | None = discord.utils.get(
+            self.bot.main_guild.text_channels,
+            name="discord",  # TODO: Make this user-configurable  # noqa: FIX002
+        )
+
+        if not discord_channel:
+            await self.command_send_error(
+                ctx=ctx,
+                message="Could not find the `#discord` channel in the main guild!",
+            )
+            return
+
+        if not message.guild:
+            await self.command_send_error(
+                ctx,
+                message="Message supplied did not have a guild ID!",
+            )
+            return
+
+        embed_content: str = ""
+
+        if message.content:
+            embed_content += message.content[:200]
+            embed_content += "..."
+        else:
+            embed_content += "_Reported message had no content_"
+            if len(message.attachments) > 0 or len(message.embeds) > 0:
+                embed_content += " _but did have one or more attachments!_"
+
+        embed_content += f"\n[View Original]({message.jump_url})"
+
+        if message.reference:
+            embed_content += f"\n[View Message this replied to]({message.reference.jump_url})"
+
+        message_author_avatar_url: str | None = message.author.display_avatar.url
+
+        embed_author: discord.EmbedAuthor = discord.EmbedAuthor(
+            name=message.author.display_name,
+            icon_url=message_author_avatar_url,
+        )
+
+        embed_image: str | None = None
+        if len(message.attachments) == 1:
+            attachment_type: str | None = message.attachments[0].content_type
+            if attachment_type and "image" in attachment_type:
+                embed_image = message.attachments[0].url
+
+        await discord_channel.send(
+            content=f"{ctx.user.mention} reported the following message:",
+            embed=discord.Embed(
+                author=embed_author,
+                description=embed_content,
+                colour=message.author.colour,
+                image=embed_image,
+            ),
+        )
+
+        await ctx.respond(
+            content=":white_check_mark: Successfully reported message to committee channels!",
+            ephemeral=True,
+        )
 
     @discord.user_command(name="Strike User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
@@ -898,3 +962,24 @@ class StrikeUserCommandCog(BaseStrikeCog):
     ) -> None:
         """Call the _strike command, providing the required command arguments."""
         await self._command_perform_strike(ctx, member)
+
+    @discord.message_command(name="Strike Message Author") # type: ignore[no-untyped-call, misc]
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def strike_message_author(self, ctx: "TeXBotApplicationContext", message: discord.Message) -> None:  # noqa: E501
+        """Call the _strike command on the message author."""
+        strike_user: discord.Member = await self.bot.get_member_from_str_id(
+            str(message.author.id),
+        )
+        await self._send_message_to_committee(ctx, message=message)
+        await self._command_perform_strike(ctx, strike_member=strike_user)
+
+    @discord.message_command(  # type: ignore[no-untyped-call, misc]
+        name="Send Message to Committee",
+        description="Sends the selected message to the committee channel for discussion.",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def send_message_to_committee(self, ctx: "TeXBotApplicationContext", message: discord.Message) -> None:  # noqa: E501
+        """Send a copy of the selected message to committee channels for review."""
+        await self._send_message_to_committee(ctx, message=message)
