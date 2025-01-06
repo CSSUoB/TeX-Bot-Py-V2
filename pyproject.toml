@@ -1,5 +1,4 @@
 [tool.poetry]
-requires-poetry = "<2.0"
 package-mode = false
 license = "Apache-2.0"
 description = "TeX-Bot, but back in Python!"
