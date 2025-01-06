@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Install Python Project
-        uses: CSSUoB/action-install-python-project@v1.1.1
+        uses: CSSUoB/action-install-python-project@v1.1.2
         with:
           python-version: 3.12
 
@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Install Python Project
-        uses: CSSUoB/action-install-python-project@v1.1.0
+        uses: CSSUoB/action-install-python-project@v1.1.2
         with:
           python-version: 3.12
 
@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - name: Install Python Project
-        uses: CSSUoB/action-install-python-project@v1.1.0
+        uses: CSSUoB/action-install-python-project@v1.1.2
         with:
           python-version: 3.12
 
@@ -48,7 +48,7 @@ jobs:
 
     steps:
       - name: Install Python Project
-        uses: CSSUoB/action-install-python-project@v1.1.0
+        uses: CSSUoB/action-install-python-project@v1.1.2
         with:
           python-version: 3.12
 
@@ -75,7 +75,7 @@ jobs:
 
     steps:
       - name: Install Python Project
-        uses: CSSUoB/action-install-python-project@v1.1.0
+        uses: CSSUoB/action-install-python-project@v1.1.2
         with:
           python-version: 3.12
 
