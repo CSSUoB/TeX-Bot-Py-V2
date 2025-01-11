@@ -1,7 +1,14 @@
 {
+    "roles_messages": [
+        "_ _\nReact to this message to get pronoun roles\n:regional_indicator_h: - He/Him\n:regional_indicator_s: - She/Her\n:regional_indicator_t: - They/Them",
+        "_ _\nReact to this message to get year group roles\n:zero: - Foundation Year\n:one: - First Year\n:two: - Second Year\n:regional_indicator_f: - Final Year (incl. 3rd Year MSci/MEng)\n:regional_indicator_i: - Year in Industry\n:regional_indicator_a: - Year Abroad\n:regional_indicator_t: - Post-Graduate Taught (Masters/MSc)\n:regional_indicator_r: - Post-Graduate Research (PhD)\n:regional_indicator_j: - Joint Honours\n:a: - Alumnus\n:regional_indicator_d: - Postdoc",
+        "_ _\nReact to this message to join the **opt in channels**\n:speech_balloon: - Serious Talk\n:house_with_garden: - Housing\n:video_game: - Gaming\n:tv: - Anime\n:soccer: - Sport\n:briefcase: - Industry\n:pick: - Minecraft\n:technologist: - GitHub\n:bookmark: - Archivist\n:ramen: - Rate My Meal",
+        "_ _\nReact to this message to **__opt out__** of the #starboard\n:no_entry_sign: - Messages you send **won't** be eligible to be added to the starboard, and stars you add to a message won't be counted towards the starboard threshold\n:star: - Your messages **can** be added to the starboard and stars you add to messages **will** be counted towards the starboard threshold",
+        "_ _\nReact to this message to opt in to News notifications\n:speaker: - Get notifications when we `@News`\n:mute:- Don't get notifications when we `@News`\n\n> We will still use `@everyone` messages if there is something urgent"
+    ],
     "welcome_messages": [
         "<User> is the lisan al gaib. As it was written!",
-        "Welcome, <User>. We've been expecting you ( ͡° ͜ʖ ͡°)",
+        "Welcome, <User>. We've been expecting you ( \u0361\u00b0 \u035c\u0296 \u0361\u00b0)",
         "Welcome <User>. Leave your weapons by the <Group_Name> door.",
         "A wild <User> appeared.",
         "<User> just arrived. Seems OP - please nerf.",
@@ -30,7 +37,7 @@
         "<User> navigated here by cardinal directions and vibes.",
         "<User> has joined the Eternal Scrum.",
         "Their palms are sweaty, knees weak, arms are heavy. <User>'s spaghetti.",
-        "What’s new <User>-doo, we’re coming after you, you’re gonna solve that mystery.",
+        "What\u2019s new <User>-doo, we\u2019re coming after you, you\u2019re gonna solve that mystery.",
         "What's that coming over the hill, is that a <User>?",
         "I heard <User> got some cookies ontop of their fridge.",
         "It's-a you, <User>!",
@@ -50,12 +57,5 @@
         "The truth is <User>.... the game was rigged from the start.",
         "Did you ever hear the tragedy of Darth <User> the Wise? I thought not, it's not a story the lecturers would tell you.",
         "`<coroutine object BaseInductCog.get_random_welcome_message at 0x0000011EFD355120; user_object:`<User>`>`"
-    ],
-    "roles_messages": [
-        "_ _\nReact to this message to get pronoun roles\n:regional_indicator_h: - He/Him\n:regional_indicator_s: - She/Her\n:regional_indicator_t: - They/Them",
-        "_ _\nReact to this message to get year group roles\n:zero: - Foundation Year\n:one: - First Year\n:two: - Second Year\n:regional_indicator_f: - Final Year (incl. 3rd Year MSci/MEng)\n:regional_indicator_i: - Year in Industry\n:regional_indicator_a: - Year Abroad\n:regional_indicator_t: - Post-Graduate Taught (Masters/MSc)\n:regional_indicator_r: - Post-Graduate Research (PhD)\n:regional_indicator_j: - Joint Honours\n:a: - Alumnus\n:regional_indicator_d: - Postdoc",
-        "_ _\nReact to this message to join the **opt in channels**\n:speech_balloon: - Serious Talk\n:house_with_garden: - Housing\n:video_game: - Gaming\n:tv: - Anime\n:soccer: - Sport\n:briefcase: - Industry\n:pick: - Minecraft\n:technologist: - GitHub\n:bookmark: - Archivist\n:ramen: - Rate My Meal",
-        "_ _\nReact to this message to **__opt out__** of the #starboard\n:no_entry_sign: - Messages you send **won't** be eligible to be added to the starboard, and stars you add to a message won't be counted towards the starboard threshold\n:star: - Your messages **can** be added to the starboard and stars you add to messages **will** be counted towards the starboard threshold",
-        "_ _\nReact to this message to opt in to News notifications\n:speaker: - Get notifications when we `@News`\n:mute:- Don't get notifications when we `@News`\n\n> We will still use `@everyone` messages if there is something urgent"
     ]
 }

@@ -32,8 +32,6 @@ classifiers = [
     "Private :: Do Not Upload",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
     "Topic :: Internet",
     "Typing :: Typed",
 ]
@@ -61,7 +59,7 @@ maintainers = [
 ]
 name = "TeX-Bot-Py-V2"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.13" # TODO: Allow Python 3.13 once py-cord makes a new release with support for it
 version = "0.1.0"
 
 [project.urls]
