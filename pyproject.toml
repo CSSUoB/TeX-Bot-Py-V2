@@ -1,59 +1,71 @@
-[tool.poetry]
-package-mode = false
-license = "Apache-2.0"
-description = "TeX-Bot, but back in Python!"
-authors = [
-    "Matt Norton <matt@carrotmanmatt.com>",
-    "Victoria \"V\" Tilley",
-    "Matty Widdop",
-    "Matthew Hammond",
-    "awsloth",
-    "Edwin Chan",
-    "Chris W",
-    "Adam Hodgkinson <adam@adamhodgkinson.dev>",
-    "JTWWilson",
-    "Leonardo Bishop",
+[dependency-groups]
+dev = [
+    { include-group = "lint-format" },
+    { include-group = "pre-commit" },
+    { include-group = "test" },
+    { include-group = "type-check" },
 ]
-readme = "README.md"
-repository = "https://github.com/CSSUoB/TeX-Bot-Py-V2.git"
-keywords = ["discord", "uob", "uob-css", "TeX-Bot"]
+lint-format = ["ccft-pymarkdown>=2.0", "ruff>=0.9"]
+pre-commit = ["pre-commit>=4.0"]
+test = ["pytest>=8.3"]
+type-check = ["django-stubs[compatible-mypy]>=5.1", "mypy>=1.13", "types-beautifulsoup4>=4.12"]
+
+[project]
+authors = [
+    { name = "Adam Hodgkinson", email = "adam@adamhodgkinson.dev" },
+    { name = "Chris W" },
+    { name = "Chris W" },
+    { name = "Edwin Chan" },
+    { name = "JTWWilson" },
+    { name = "Leonardo Bishop" },
+    { name = "Matt Norton", email = "matt@carrotmanmatt.com" },
+    { name = "Matthew Hammond" },
+    { name = "Matty Widdop" },
+    { name = "Victoria \"V\" Tilley" },
+    { name = "awsloth" },
+]
 classifiers = [
-    "Private :: Do Not Upload",
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: Apache Software License",
     "Natural Language :: English",
     "Operating System :: OS Independent",
+    "Private :: Do Not Upload",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.12",
-    "Typing :: Typed",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Internet",
+    "Typing :: Typed",
 ]
+dependencies = [
+    "asyncstdlib>=3.13",
+    "beautifulsoup4>=4.12",
+    "django>=5.1",
+    "emoji>=2.14",
+    "matplotlib>=3.10",
+    "mplcyberpunk>=0.7",
+    "parsedatetime>=2.6",
+    "py-cord>=2.6,<2.6.1",                 # TODO: Remove version limit once #349 is resolved
+    "python-dotenv>=1.0",
+    "python-logging-discord-handler>=0.1",
+    "typed_classproperties>=1.1.3",
+    "validators>=0.34",
+]
+description = "TeX-Bot, but back in Python!"
+keywords = ["TeX-Bot", "discord", "uob", "uob-css"]
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+maintainers = [
+    { name = "Matt Norton", email = "matt@carrotmanmatt.com" },
+    { name = "Matty Widdop" },
+]
+name = "TeX-Bot-Py-V2"
+readme = "README.md"
+requires-python = ">=3.12"
+version = "0.1.0"
 
-
-[tool.poetry.dependencies]
-python = "^3.12"
-py-cord = "2.6.0"
-python-dotenv = "^1.0"
-validators = "^0.34"
-beautifulsoup4 = "^4.12"
-emoji = "^2.14"
-parsedatetime = "^2.6"
-django = "~5.1"
-matplotlib = "^3.10"
-mplcyberpunk = "^0.7"
-python-logging-discord-handler = "^0.1"
-typed_classproperties = "^1"
-asyncstdlib = "~3.13"
-setuptools = "^75.8"
-
-[tool.poetry.group.dev.dependencies]
-pre-commit = "^4.0"
-mypy = "~1.13"
-django-stubs = {extras = ["compatible-mypy"], version = "~5.1"}
-types-beautifulsoup4 = "^4.12"
-pytest = "^8.3"
-ruff = "^0.9"
-gitpython = "^3.1"
-pymarkdownlnt = "^0.9"
-ccft-pymarkdown = "^2.0"
-
+[project.urls]
+Repository = "https://github.com/CSSUoB/TeX-Bot-Py-V2"
 
 
 [tool.pytest.ini_options]
@@ -61,35 +73,30 @@ filterwarnings = ["ignore:'audioop':DeprecationWarning"]
 
 
 [tool.mypy]
-plugins = ["mypy_django_plugin.main"]
-exclude = ["db/_settings\\.py$", "venv/"]
-extra_checks = true
-warn_unused_configs = true
-disallow_untyped_calls = true
-disallow_untyped_defs = true
 check_untyped_defs = true
-disallow_any_generics = true
-disallow_any_unimported = false
 disallow_any_decorated = true
 disallow_any_explicit = true
-disallow_subclassing_any = true
-disallow_untyped_decorators = true
+disallow_any_generics = true
+disallow_any_unimported = false
 disallow_incomplete_defs = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_return_any = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = true
+disallow_untyped_defs = true
+exclude = ["db/_settings\\.py$", "venv/"]
+extra_checks = true
 no_implicit_reexport = true
+plugins = ["mypy_django_plugin.main"]
 strict_equality = true
+warn_redundant_casts = true
+warn_return_any = true
 warn_unreachable = true
+warn_unused_configs = true
+warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
-module = [
-    "mplcyberpunk",
-    "discord_logging.handler",
-    "parsedatetime",
-    "validators",
-]
 ignore_missing_imports = true
+module = ["discord_logging.handler", "mplcyberpunk", "parsedatetime", "validators"]
 
 
 [tool.django-stubs]
@@ -97,13 +104,58 @@ django_settings_module = "db._settings"
 
 
 [tool.ruff]
-output-format = "concise"
-line-length = 95
-indent-width = 4
-target-version ="py312"
 extend-exclude = ["db/**/migrations/"]
+indent-width = 4
+line-length = 95
+output-format = "concise"
+
+[tool.ruff.format]
+docstring-code-format = true
+indent-style = "space"
+line-ending = "lf"
+quote-style = "double"
 
 [tool.ruff.lint]
+allowed-confusables = [
+    "s",
+    "x",
+    "ǫ",
+    "ɢ",
+    "ɪ",
+    "ɴ",
+    "ʀ",
+    "ʏ",
+    "ʙ",
+    "ʜ",
+    "ʟ",
+    "ғ",
+    "ᴀ",
+    "ᴄ",
+    "ᴅ",
+    "ᴇ",
+    "ᴊ",
+    "ᴋ",
+    "ᴍ",
+    "ᴏ",
+    "ᴘ",
+    "ᴛ",
+    "ᴜ",
+    "ᴠ",
+    "ᴡ",
+    "ᴢ",
+]
+fixable = [
+    "F401",
+    "I001",
+    "PYI025",
+    "RUF022",
+    "RUF100",
+    "TC003",
+    "TC004",
+    "TCH",
+    "UP037",
+    "UP040",
+]
 ignore = [
     "C90",
     "COM812",
@@ -131,35 +183,6 @@ ignore = [
 ]
 select = ["ALL", "D204", "D213", "D401"]
 task-tags = ["BUG", "DONE", "FIXME", "HACK", "IDEA", "ISSUE", "NOBUG", "NOTE", "REQ", "TODO"]
-fixable = ["I001", "TCH", "F401", "RUF022", "RUF100", "TC003", "TC004", "PYI025", "UP037", "UP040"]
-allowed-confusables = [
-    "ᴀ",
-    "ʙ",
-    "ᴄ",
-    "ᴅ",
-    "ᴇ",
-    "ғ",
-    "ɢ",
-    "ʜ",
-    "ɪ",
-    "ᴊ",
-    "ᴋ",
-    "ʟ",
-    "ᴍ",
-    "ɴ",
-    "ᴏ",
-    "ᴘ",
-    "ǫ",
-    "ʀ",
-    "s",
-    "ᴛ",
-    "ᴜ",
-    "ᴠ",
-    "ᴡ",
-    "x",
-    "ʏ",
-    "ᴢ"
-]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/test_*.py" = ["S101"]
@@ -169,13 +192,10 @@ quote-annotations = true
 strict = true
 
 [tool.ruff.lint.flake8-self]
-extend-ignore-names = ["_base_manager", "_default_manager",  "_meta", "_get_wrap_line_width"]
+extend-ignore-names = ["_base_manager", "_default_manager", "_get_wrap_line_width", "_meta"]
 
 [tool.ruff.lint.pep8-naming]
-classmethod-decorators = [
-    "typed_classproperties.cached_classproperty",
-    "typed_classproperties.classproperty",
-]
+classmethod-decorators = ["typed_classproperties.classproperty"]
 extend-ignore-names = ["BROKEN_*_MESSAGE", "INVALID_*_MESSAGE", "NO_*_MESSAGE"]
 
 [tool.ruff.lint.pycodestyle]
@@ -205,17 +225,24 @@ keep-runtime-typing = true
 
 
 [tool.pymarkdown]
-mode.strict-config = true
 extensions.front-matter.enabled = true
-plugins.heading-style.style = "atx"
-plugins.ul-style.style = "asterisk"
-plugins.ul-start-left.enabled = true
-plugins.ul-indent.indent = 4
-plugins.no-trailing-spaces.strict = true
-plugins.line-length.enabled = false
-plugins.ol-prefix.style = "ordered"
-plugins.no-inline-html.allow_first_image_element = false
-plugins.no-inline-html.allowed_elements = "!--,br"
-plugins.hr-style.style = "---"
+mode.strict-config = true
 plugins.code-block-style.style = "fenced"
 plugins.code-fence-style.style = "backtick"
+plugins.heading-style.style = "atx"
+plugins.hr-style.style = "---"
+plugins.line-length.enabled = false
+plugins.no-inline-html.allow_first_image_element = false
+plugins.no-inline-html.allowed_elements = "!--,br"
+plugins.no-trailing-spaces.strict = true
+plugins.ol-prefix.style = "ordered"
+plugins.ul-indent.indent = 4
+plugins.ul-start-left.enabled = true
+plugins.ul-style.style = "asterisk"
+
+
+[tool.uv]
+default-groups = ["dev"]
+no-binary-package = ["TeX-Bot-Py-V2"]
+no-build = true
+package = false
