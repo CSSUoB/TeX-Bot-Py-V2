@@ -44,8 +44,8 @@ asyncstdlib = "~3.13"
 setuptools = "^75.8"
 
 [tool.poetry.group.dev.dependencies]
-pre-commit = "^4.0"
-mypy = "~1.13"
+pre-commit = "^4.1"
+mypy = "~1.14"
 django-stubs = {extras = ["compatible-mypy"], version = "~5.1"}
 types-beautifulsoup4 = "^4.12"
 pytest = "^8.3"
