@@ -49,11 +49,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
             await self.command_send_error(ctx, message="Cannot make a bot user an applicant!")
             return
 
-        if not ctx.interaction.channel:
-            await self.command_send_error(ctx, message="No interaction channel found!")
-            return
-
-        async with ctx.interaction.channel.typing():
+        async with ctx.typing():
 
             AUDIT_MESSAGE: Final[str] = (
                 f'{ctx.user} used TeX-Bot Command "Make User Applicant"'

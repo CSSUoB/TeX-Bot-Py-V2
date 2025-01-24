@@ -196,14 +196,7 @@ class BaseInductCog(TeXBotBaseCog):
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
-        if not ctx.interaction.channel:
-            await self.command_send_error(
-                ctx=ctx,
-                message="Could not find channel to send response to.",
-            )
-            return
-
-        async with ctx.interaction.channel.typing():
+        async with ctx.typing():
 
             logger.debug("Inducting member %s, silent=%s", induction_member, silent)
 
