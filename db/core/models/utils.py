@@ -32,19 +32,6 @@ class AsyncBaseModel(models.Model):
         abstract = True
 
     @override
-    def save(  # type: ignore[override]
-        self,
-        *,
-        force_insert: bool = False,
-        force_update: bool = False,
-        using: str | None = None,
-        update_fields: "Iterable[str] | None" = None,
-    ) -> None:
-        self.full_clean()
-
-        return super().save(force_insert, force_update, using, update_fields)
-
-    @override
     def __init__(self, *args: object, **kwargs: object) -> None:
         proxy_fields: dict[str, object] = {
             field_name: kwargs.pop(field_name)
@@ -57,6 +44,19 @@ class AsyncBaseModel(models.Model):
         value: object
         for field_name, value in proxy_fields.items():
             setattr(self, field_name, value)
+
+    @override
+    def save(  # type: ignore[override]
+        self,
+        *,
+        force_insert: bool = False,
+        force_update: bool = False,
+        using: str | None = None,
+        update_fields: "Iterable[str] | None" = None,
+    ) -> None:
+        self.full_clean()
+
+        return super().save(force_insert, force_update, using, update_fields)
 
     def update(
         self,
