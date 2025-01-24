@@ -77,15 +77,18 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
                 await initial_response.edit(
                     content=(
                         ":warning: This command requires TeX-Bot to hold a role higher than "
-                        'that of the "Committee" role to perform this action. Operation aborted.'
-                        " :warning:"
+                        'that of the "Committee" role to perform this action.'
+                        " Operation aborted. :warning:"
                     ),
                 )
                 return
 
             category: discord.CategoryChannel
             for category in main_guild.categories:
-                if "committee" not in category.name.lower() or "archive" in category.name.lower():
+                if (
+                    "committee" not in category.name.lower()
+                    or "archive" in category.name.lower()
+                ):
                     continue
 
                 await initial_response.edit(
@@ -112,7 +115,10 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
                 name="Handover",
             )
 
-            automod_role: discord.Role | None = discord.utils.get(main_guild.roles, name="Automod")
+            automod_role: discord.Role | None = discord.utils.get(
+                main_guild.roles,
+                name="Automod",
+            )
 
             committee_member: discord.Member
             for committee_member in committee_role.members:
@@ -156,13 +162,18 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
                     reason=HANDOVER_AUDIT_MESSAGE,
                 )
 
-                logger.debug("Removing Committee-Elect role from user: %s", committee_elect_member)
+                logger.debug(
+                    "Removing Committee-Elect role from user: %s",
+                    committee_elect_member,
+                )
                 await committee_elect_member.remove_roles(
                     committee_elect_role,
                     reason=HANDOVER_AUDIT_MESSAGE,
                 )
 
-            await initial_response.edit(content=":white_check_mark: Handover procedure complete!")
+            await initial_response.edit(
+                content=":white_check_mark: Handover procedure complete!"
+            )
 
 
 class AnnualRolesResetCommandCog(TeXBotBaseCog):
@@ -329,13 +340,13 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
 
             await initial_message.edit(
                 content=(
-                    ':hourglass: Creating new "first-years" channel and setting permissions... '
+                    ':hourglass: Creating new "first-years" channel and setting permissions...'
                     ":hourglass:"
                 ),
             )
 
-            new_first_years_channel: discord.TextChannel = await main_guild.create_text_channel(
-                name="first-years",
+            new_first_years_channel: discord.TextChannel = (
+                await main_guild.create_text_channel(name="first-years")
             )
 
             if year_channels_category:
