@@ -52,12 +52,6 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
         committee_role: discord.Role = await self.bot.committee_role
         committee_elect_role: discord.Role = await self.bot.committee_elect_role
 
-        if not ctx.interaction.channel:
-            await self.command_send_error(
-                ctx=ctx,
-                message="Couldn't find the interaction channel. Aborted!"
-            )
-
         async with ctx.typing():
 
             initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
