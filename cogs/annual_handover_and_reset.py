@@ -57,7 +57,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
             initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
                 content=":hourglass: Running handover procedures... :hourglass:",
             )
-            logger.debug("Running the handover command!")
+            logger.debug("Running the handover command...")
 
             HANDOVER_AUDIT_MESSAGE: Final[str] = (
                 f'{ctx.user} used TeX-Bot slash-command: "/committee-handover"'
@@ -221,7 +221,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
                     reason=ROLE_RESET_AUDIT_MESSAGE,
                 )
 
-            logger.debug("Removed Member role from all users!")
+            logger.debug("Removed Member role from all users.")
             await initial_response.edit(
                 content=":hourglass: Removed Member role from all users...",
             )
@@ -249,7 +249,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
                         reason=ROLE_RESET_AUDIT_MESSAGE,
                     )
 
-            logger.debug("Execution of reset roles command complete!")
+            logger.debug("Execution of reset roles command complete.")
             await initial_response.edit(content=":white_check_mark: Role reset complete!")
 
 
