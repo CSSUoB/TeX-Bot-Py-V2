@@ -238,7 +238,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         )
 
         try:
-            await GroupMadeMember.objects.acreate(group_member_id=group_member_id)
+            await GroupMadeMember.objects.acreate(group_member_id=group_member_id)  # type: ignore[misc]
         except ValidationError as create_group_made_member_error:
             error_is_already_exists: bool = (
                 "hashed_group_member_id" in create_group_made_member_error.message_dict
