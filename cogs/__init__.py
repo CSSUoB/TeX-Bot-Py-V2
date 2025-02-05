@@ -39,6 +39,7 @@ from .startup import StartupCog
 from .stats import StatsCommandsCog
 from .strike import ManualModerationCog, StrikeCommandCog, StrikeContextCommandsCog
 from .write_roles import WriteRolesCommandCog
+from .everest import EverestCommandCog
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
@@ -76,6 +77,7 @@ __all__: "Sequence[str]" = (
     "StrikeCommandCog",
     "StrikeUserCommandCog",
     "WriteRolesCommandCog",
+    "EverestCommandCog"
     "setup",
 )
 
@@ -113,6 +115,7 @@ def setup(bot: "TeXBot") -> None:
         StrikeCommandCog,
         StrikeContextCommandsCog,
         WriteRolesCommandCog,
+        EverestCommandCog
     )
     Cog: type[TeXBotBaseCog]
     for Cog in cogs:
