@@ -196,6 +196,7 @@ class BaseInductCog(TeXBotBaseCog):
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
+        await ctx.defer(ephemeral=True)
         async with ctx.typing():
 
             logger.debug("Inducting member %s, silent=%s", induction_member, silent)
@@ -280,7 +281,7 @@ class BaseInductCog(TeXBotBaseCog):
                             )
                         break
 
-            await ctx.respond(
+            await ctx.followup.send(
                 content=":white_check_mark: User inducted successfully.",
                 ephemeral=True,
             )
