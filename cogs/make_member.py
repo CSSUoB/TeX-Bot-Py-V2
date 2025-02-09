@@ -18,7 +18,7 @@ from exceptions import (
     CommitteeRoleDoesNotExistError,
     GuestRoleDoesNotExistError,
 )
-from utils import CommandChecks, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog, command_checks
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -288,6 +288,10 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 class MemberCountCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/membercount" command and its call-back method."""
 
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        name="membercount",
+        description="Displays the number of members in the group.",
+    )
     async def member_count(self, ctx: "TeXBotApplicationContext") -> None:
         """Definition & callback response of the "member_count" command."""
         await ctx.defer(ephemeral=True)
