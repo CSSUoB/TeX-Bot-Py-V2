@@ -18,7 +18,7 @@ from exceptions import (
     CommitteeRoleDoesNotExistError,
     GuestRoleDoesNotExistError,
 )
-from utils import CommandChecks, TeXBotBaseCog, command_checks
+from utils import CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
