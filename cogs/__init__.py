@@ -20,6 +20,7 @@ from .committee_actions_tracking import (
 )
 from .delete_all import DeleteAllCommandsCog
 from .edit_message import EditMessageCommandCog
+from .everest import EverestCommandCog
 from .get_token_authorisation import GetTokenAuthorisationCommandCog
 from .induct import (
     EnsureMembersInductedCommandCog,
@@ -39,7 +40,6 @@ from .startup import StartupCog
 from .stats import StatsCommandsCog
 from .strike import ManualModerationCog, StrikeCommandCog, StrikeContextCommandsCog
 from .write_roles import WriteRolesCommandCog
-from .everest import EverestCommandCog
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
@@ -58,6 +58,7 @@ __all__: "Sequence[str]" = (
     "DeleteAllCommandsCog",
     "EditMessageCommandCog",
     "EnsureMembersInductedCommandCog",
+    "EverestCommandCog",
     "GetTokenAuthorisationCommandCog",
     "InductContextCommandsCog",
     "InductSendMessageCog",
@@ -77,7 +78,6 @@ __all__: "Sequence[str]" = (
     "StrikeCommandCog",
     "StrikeUserCommandCog",
     "WriteRolesCommandCog",
-    "EverestCommandCog"
     "setup",
 )
 
@@ -96,6 +96,7 @@ def setup(bot: "TeXBot") -> None:
         DeleteAllCommandsCog,
         EditMessageCommandCog,
         EnsureMembersInductedCommandCog,
+        EverestCommandCog,
         GetTokenAuthorisationCommandCog,
         InductContextCommandsCog,
         InductSendMessageCog,
@@ -115,7 +116,6 @@ def setup(bot: "TeXBot") -> None:
         StrikeCommandCog,
         StrikeContextCommandsCog,
         WriteRolesCommandCog,
-        EverestCommandCog
     )
     Cog: type[TeXBotBaseCog]
     for Cog in cogs:
