@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
     from utils import TeXBotApplicationContext
 
-__all__: "Sequence[str]" = ("MakeMemberCommandCog",)
+__all__: "Sequence[str]" = ("MakeMemberCommandCog","MemberCountCommandCog")
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
