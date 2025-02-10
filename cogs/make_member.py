@@ -322,18 +322,14 @@ class MemberCountCommandCog(TeXBotBaseCog):
                 )
                 return
 
-            member_list_text: str = member_list_div.text
-
-            if "Showing 100 of" in member_list_text:
-                member_count: str = member_list_text.split(" ")[3]
+            if "Showing 100 of" in member_list_div.text.lower():
+                member_count: str = member_list_div.text.split(" ")[3]
                 await ctx.followup.send(
                     content=f"Member count: {member_count}",
                     ephemeral=True,
                 )
                 return
 
-            # group has less tha 100 members, find the table and count the rows
-            # table has id ctl00_ctl00_Main_AdminPageContent_gvMembers
             member_table: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
                 response_html,
                 "html.parser",
