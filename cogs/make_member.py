@@ -295,7 +295,8 @@ class MemberCountCommandCog(TeXBotBaseCog):
     )
     async def member_count(self, ctx: "TeXBotApplicationContext") -> None:
         """Definition & callback response of the "member_count" command."""
-        await ctx.defer(ephemeral=True)
+        await ctx.defer(ephemeral=False)
+
         async with ctx.typing():
             http_session: aiohttp.ClientSession = aiohttp.ClientSession(
                 headers=REQUEST_HEADERS,
@@ -304,7 +305,6 @@ class MemberCountCommandCog(TeXBotBaseCog):
             async with http_session, http_session.get(BASE_MEMBERS_URL) as http_response:
                 response_html: str = await http_response.text()
 
-            # find a div with the class "memberlistcol"
             member_list_div: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
                 response_html,
                 "html.parser",
@@ -315,7 +315,7 @@ class MemberCountCommandCog(TeXBotBaseCog):
 
             if member_list_div is None or isinstance(member_list_div, bs4.NavigableString):
                 await self.command_send_error(
-                    ctx,
+                    ctx=ctx,
                     error_code="E1041",
                     logging_message=OSError(
                         "The member count could not be retrieved from the MEMBERS_LIST_URL.",
@@ -323,11 +323,10 @@ class MemberCountCommandCog(TeXBotBaseCog):
                 )
                 return
 
-            if "Showing 100 of" in member_list_div.text.lower():
+            if "showing 100 of" in member_list_div.text.lower():
                 member_count: str = member_list_div.text.split(" ")[3]
                 await ctx.followup.send(
                     content=f"Member count: {member_count}",
-                    ephemeral=True,
                 )
                 return
 
@@ -359,5 +358,4 @@ class MemberCountCommandCog(TeXBotBaseCog):
 
             await ctx.followup.send(
                 content=f"Member count: {member_row_count}",
-                ephemeral=True,
             )
