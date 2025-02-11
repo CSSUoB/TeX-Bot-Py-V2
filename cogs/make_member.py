@@ -67,8 +67,9 @@ REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
     ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
 }
 
-REQUEST_URL: "Final[str]" = settings["MEMBERS_LIST_URL"]
-
+ORGANISATION_ID: "Final[str]" = settings["ORGANISATION_ID"]
+GROUPED_MEMBRS_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
+BASE_MEMBERS_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}"
 
 class MakeMemberCommandCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
@@ -176,7 +177,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 headers=REQUEST_HEADERS,
                 cookies=REQUEST_COOKIES,
             )
-            async with http_session, http_session.get(REQUEST_URL) as http_response:
+            async with http_session, http_session.get(GROUPED_MEMBRS_URL) as http_response:
                 response_html: str = await http_response.text()
 
             MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
@@ -300,7 +301,7 @@ class MemberCountCommandCog(TeXBotBaseCog):
                 headers=REQUEST_HEADERS,
                 cookies=REQUEST_COOKIES,
             )
-            async with http_session, http_session.get(REQUEST_URL[:-12]) as http_response:
+            async with http_session, http_session.get(BASE_MEMBERS_URL) as http_response:
                 response_html: str = await http_response.text()
 
             # find a div with the class "memberlistcol"
@@ -321,6 +322,13 @@ class MemberCountCommandCog(TeXBotBaseCog):
                     ),
                 )
                 return
+
+        http_session: aiohttp.ClientSession = aiohttp.ClientSession(
+            headers=REQUEST_HEADERS,
+            cookies=REQUEST_COOKIES,
+        )
+        async with http_session, http_session.get(GROUPED_MEMBRS_URL) as http_response:
+            response_html: str = await http_response.text()
 
             if "Showing 100 of" in member_list_div.text.lower():
                 member_count: str = member_list_div.text.split(" ")[3]
