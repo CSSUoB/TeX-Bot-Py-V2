@@ -323,13 +323,6 @@ class MemberCountCommandCog(TeXBotBaseCog):
                 )
                 return
 
-        http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-            headers=REQUEST_HEADERS,
-            cookies=REQUEST_COOKIES,
-        )
-        async with http_session, http_session.get(GROUPED_MEMBRS_URL) as http_response:
-            response_html: str = await http_response.text()
-
             if "Showing 100 of" in member_list_div.text.lower():
                 member_count: str = member_list_div.text.split(" ")[3]
                 await ctx.followup.send(
