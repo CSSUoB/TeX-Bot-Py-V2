@@ -68,6 +68,7 @@ REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
 }
 
 ORGANISATION_ID: "Final[str]" = settings["ORGANISATION_ID"]
+GROUP_NAME: "Final[str]" = settings["GROUP_NAME"]
 GROUPED_MEMBRS_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
 BASE_MEMBERS_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}"
 
@@ -326,7 +327,7 @@ class MemberCountCommandCog(TeXBotBaseCog):
             if "showing 100 of" in member_list_div.text.lower():
                 member_count: str = member_list_div.text.split(" ")[3]
                 await ctx.followup.send(
-                    content=f"Member count: {member_count}",
+                    content=f"{GROUP_NAME} has {member_count} members! :tada:",
                 )
                 return
 
@@ -349,13 +350,8 @@ class MemberCountCommandCog(TeXBotBaseCog):
                 )
                 return
 
-            member_row_count: int = len(
-                member_table.find_all(
-                    "tr",
-                    {"class": ["msl_row", "msl_altrow"]},
-                )
-            )
-
             await ctx.followup.send(
-                content=f"Member count: {member_row_count}",
+                content=f"{GROUP_NAME} has {len(member_table.find_all(
+                    "tr",{"class": ["msl_row", "msl_altrow"]},
+                ))} members! :tada:",
             )
