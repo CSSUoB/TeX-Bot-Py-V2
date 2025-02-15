@@ -12,3 +12,6 @@ tests
 .pre-commit-config.yaml
 .taplo.toml
 .yamlfmt.yaml
+.venv
+.python-version
+.hadolint.yaml

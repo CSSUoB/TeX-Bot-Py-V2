@@ -6,36 +6,7 @@ dev = [
     { include-group = "type-check" },
 ]
 lint-format = ["ccft-pymarkdown>=2.0", "ruff>=0.9"]
-pre-commit = ["pre-commit>=4.0"]
-test = ["pytest>=8.3"]
-type-check = ["django-stubs[compatible-mypy]>=5.1", "mypy>=1.13", "types-beautifulsoup4>=4.12"]
-
-[project]
-authors = [
-    { name = "Adam Hodgkinson", email = "adam@adamhodgkinson.dev" },
-    { name = "Chris W" },
-    { name = "Chris W" },
-    { name = "Edwin Chan" },
-    { name = "JTWWilson" },
-    { name = "Leonardo Bishop" },
-    { name = "Matt Norton", email = "matt@carrotmanmatt.com" },
-    { name = "Matthew Hammond" },
-    { name = "Matty Widdop" },
-    { name = "Victoria \"V\" Tilley" },
-    { name = "awsloth" },
-]
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "License :: OSI Approved :: Apache Software License",
-    "Natural Language :: English",
-    "Operating System :: OS Independent",
-    "Private :: Do Not Upload",
-    "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Internet",
-    "Typing :: Typed",
-]
-dependencies = [
+main = [
     "asyncstdlib>=3.13",
     "beautifulsoup4>=4.12",
     "django>=5.1",
@@ -49,21 +20,14 @@ dependencies = [
     "typed_classproperties>=1.1.3",
     "validators>=0.34",
 ]
-description = "TeX-Bot, but back in Python!"
-keywords = ["TeX-Bot", "discord", "uob", "uob-css"]
-license = "Apache-2.0"
-license-files = ["LICENSE"]
-maintainers = [
-    { name = "Matt Norton", email = "matt@carrotmanmatt.com" },
-    { name = "Matty Widdop" },
-]
+pre-commit = ["pre-commit>=4.0"]
+test = ["pytest>=8.3"]
+type-check = ["django-stubs[compatible-mypy]>=5.1", "mypy>=1.13", "types-beautifulsoup4>=4.12"]
+
+[project] # TODO: Remove [project] table once https://github.com/astral-sh/uv/issues/8582 is completed
 name = "TeX-Bot-Py-V2"
-readme = "README.md"
 requires-python = ">=3.12,<3.13" # TODO: Allow Python 3.13 once py-cord makes a new release with support for it
 version = "0.1.0"
-
-[project.urls]
-Repository = "https://github.com/CSSUoB/TeX-Bot-Py-V2"
 
 
 [tool.pytest.ini_options]
@@ -75,12 +39,25 @@ check_untyped_defs = true
 disallow_any_decorated = true
 disallow_any_explicit = true
 disallow_any_generics = true
-disallow_any_unimported = false
+disallow_any_unimported = true
 disallow_incomplete_defs = true
 disallow_subclassing_any = true
 disallow_untyped_calls = true
 disallow_untyped_decorators = true
 disallow_untyped_defs = true
+enable_error_code = [
+    "deprecated",
+    "explicit-override",
+    "ignore-without-code",
+    "mutable-override",
+    "narrowed-type-not-subtype",
+    "possibly-undefined",
+    "redundant-expr",
+    "redundant-self",
+    "truthy-bool",
+    "truthy-iterable",
+    "unused-awaitable",
+]
 exclude = ["db/_settings\\.py$", "venv/"]
 extra_checks = true
 no_implicit_reexport = true
@@ -142,18 +119,6 @@ allowed-confusables = [
     "ᴡ",
     "ᴢ",
 ]
-fixable = [
-    "F401",
-    "I001",
-    "PYI025",
-    "RUF022",
-    "RUF100",
-    "TC003",
-    "TC004",
-    "TCH",
-    "UP037",
-    "UP040",
-]
 ignore = [
     "C90",
     "COM812",
@@ -182,15 +147,21 @@ ignore = [
 select = ["ALL", "D204", "D213", "D401"]
 task-tags = ["BUG", "DONE", "FIXME", "HACK", "IDEA", "ISSUE", "NOBUG", "NOTE", "REQ", "TODO"]
 
+[tool.ruff.lint.flake8-import-conventions]
+banned-from = ["abc", "re", "regex"]
+
 [tool.ruff.lint.per-file-ignores]
 "tests/**/test_*.py" = ["S101"]
+
+[tool.ruff.lint.flake8-self]
+extend-ignore-names = ["_base_manager", "_default_manager", "_get_wrap_line_width", "_meta"]
 
 [tool.ruff.lint.flake8-type-checking]
 quote-annotations = true
 strict = true
 
-[tool.ruff.lint.flake8-self]
-extend-ignore-names = ["_base_manager", "_default_manager", "_get_wrap_line_width", "_meta"]
+[tool.ruff.lint.isort]
+known-first-party = ["cogs", "config", "db", "exceptions", "main", "tests", "utils"]
 
 [tool.ruff.lint.pep8-naming]
 classmethod-decorators = ["typed_classproperties.classproperty"]
@@ -202,10 +173,7 @@ max-doc-length = 95
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
-property-decorators = [
-    "typed_classproperties.cached_classproperty",
-    "typed_classproperties.classproperty",
-]
+property-decorators = ["typed_classproperties.classproperty"]
 
 [tool.ruff.lint.pylint]
 allow-magic-value-types = ["bytes", "int", "str"]
@@ -240,7 +208,8 @@ plugins.ul-style.style = "asterisk"
 
 
 [tool.uv]
-default-groups = ["dev"]
+default-groups = ["dev", "main"]
 no-binary-package = ["TeX-Bot-Py-V2"]
 no-build = true
 package = false
+required-version = ">=0.5.8"
