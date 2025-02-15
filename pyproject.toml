@@ -58,7 +58,6 @@ enable_error_code = [
     "truthy-iterable",
     "unused-awaitable",
 ]
-exclude = ["db/_settings\\.py$", "venv/"]
 extra_checks = true
 no_implicit_reexport = true
 plugins = ["mypy_django_plugin.main"]
@@ -72,6 +71,10 @@ warn_unused_ignores = true
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
 module = ["discord_logging.handler", "mplcyberpunk", "parsedatetime", "validators"]
+
+[[tool.mypy.overrides]]
+ignore_errors = true
+module = ["db.core.migrations.*"]
 
 
 [tool.django-stubs]
