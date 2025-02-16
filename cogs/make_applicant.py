@@ -51,7 +51,6 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
 
         await ctx.defer(ephemeral=True)
         async with ctx.typing():
-
             AUDIT_MESSAGE: Final[str] = (
                 f'{ctx.user} used TeX-Bot Command "Make User Applicant"'
             )

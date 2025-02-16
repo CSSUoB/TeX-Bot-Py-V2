@@ -74,7 +74,7 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
             )
             return
 
-        if ("Login" in str(page_title)):
+        if "Login" in str(page_title):
             BAD_TOKEN_MESSAGE: Final[str] = (
                 "Unable to fetch profile page because the token was not valid."  # noqa: S105
             )
@@ -135,8 +135,8 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
 
         await ctx.respond(
             f"Admin token has access to the following MSL Organisations as "
-            f"{user_name.text}:\n{', \n'.join(
-                organisation for organisation in organisations
-            )}",
+            f"{user_name.text}:\n{
+                ', \n'.join(organisation for organisation in organisations)
+            }",
             ephemeral=True,
         )

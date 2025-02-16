@@ -97,8 +97,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 await self.bot.close()
 
             DUPLICATE_ACTION_MESSAGE: Final[str] = (
-                f"User: {action_user} already has an action "
-                f"with description: {description}!"
+                f"User: {action_user} already has an action with description: {description}!"
             )
             logger.debug(
                 "Action creation for user: %s, failed because an action "
@@ -131,8 +130,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             return set()
 
         return {
-            discord.OptionChoice(name=f"{member.display_name} ({member.global_name})",
-            value=str(member.id))
+            discord.OptionChoice(
+                name=f"{member.display_name} ({member.global_name})", value=str(member.id)
+            )
             for member in committee_role.members
             if not member.bot
         }
@@ -432,7 +432,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             return
 
-        index: int = random.randint(0, len(committee_members)-1)  # noqa: S311
+        index: int = random.randint(0, len(committee_members) - 1)  # noqa: S311
 
         try:
             action_user: discord.Member = committee_members[index]
@@ -442,7 +442,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             await self.command_send_error(
                 ctx=ctx,
                 message=f"Index {index} out of range for {len(committee_members)} "
-                "committee members... check the logs!"
+                "committee members... check the logs!",
             )
             return
 
@@ -620,8 +620,13 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         actions_message: str = (
             f"Found {len(user_actions)} actions for user "
             f"{action_member.mention if ping else action_member}:"
-            f"\n{"\n".join(str(action.description) + f" ({AssignedCommitteeAction.Status(action.status).label})"
-            for action in user_actions)}"  # noqa: E501
+            f"\n{
+                '\n'.join(
+                    str(action.description)
+                    + f' ({AssignedCommitteeAction.Status(action.status).label})'
+                    for action in user_actions
+                )
+            }"
         )
 
         await ctx.respond(content=actions_message)
@@ -774,7 +779,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         all_actions_message: str = "\n".join(
             [
                 f"\n{committee.mention if ping else committee}, Actions:"
-                f"\n{', \n'.join(str(action.description) + f" ({AssignedCommitteeAction.Status(action.status).label})" for action in actions)}"  # noqa: E501
+                f"\n{', \n'.join(str(action.description) + f' ({AssignedCommitteeAction.Status(action.status).label})' for action in actions)}"  # noqa: E501
                 for committee, actions in filtered_committee_actions.items()
             ],
         )

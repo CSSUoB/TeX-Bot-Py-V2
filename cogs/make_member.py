@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
     from utils import TeXBotApplicationContext
 
-__all__: "Sequence[str]" = ("MakeMemberCommandCog","MemberCountCommandCog")
+__all__: "Sequence[str]" = ("MakeMemberCommandCog", "MemberCountCommandCog")
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
@@ -69,8 +69,13 @@ REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
 
 ORGANISATION_ID: "Final[str]" = settings["ORGANISATION_ID"]
 GROUP_NAME: "Final[str]" = settings["_GROUP_FULL_NAME"]
-GROUPED_MEMBRS_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
-BASE_MEMBERS_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}"
+GROUPED_MEMBRS_URL: "Final[str]" = (
+    f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
+)
+BASE_MEMBERS_URL: "Final[str]" = (
+    f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}"
+)
+
 
 class MakeMemberCommandCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
@@ -127,7 +132,6 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 
         await ctx.defer(ephemeral=True)
         async with ctx.typing():
-
             if member_role in interaction_member.roles:
                 await ctx.followup.send(
                     content=(
@@ -148,14 +152,13 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 )
                 return
 
-            GROUP_MEMBER_ID_IS_ALREADY_USED: Final[bool] = (
-                await GroupMadeMember.objects.filter(
-                    hashed_group_member_id=GroupMadeMember.hash_group_member_id(
-                        group_member_id,
-                        self.bot.group_member_id_type,
-                    )
-                ).aexists()
-            )
+            GROUP_MEMBER_ID_IS_ALREADY_USED: Final[
+                bool
+            ] = await GroupMadeMember.objects.filter(
+                hashed_group_member_id=GroupMadeMember.hash_group_member_id(
+                    group_member_id, self.bot.group_member_id_type
+                )
+            ).aexists()
             if GROUP_MEMBER_ID_IS_ALREADY_USED:
                 # noinspection PyUnusedLocal
                 committee_mention: str = "committee"
@@ -287,6 +290,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                     reason='TeX Bot slash-command: "/makemember"',
                 )
 
+
 class MemberCountCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/membercount" command and its call-back method."""
 
@@ -344,14 +348,13 @@ class MemberCountCommandCog(TeXBotBaseCog):
                     ctx=ctx,
                     error_code="E1041",
                     logging_message=OSError(
-                        "The member count could not be retrieved "
-                        "from the MEMBERS_LIST_URL.",
+                        "The member count could not be retrieved from the MEMBERS_LIST_URL."
                     ),
                 )
                 return
 
             await ctx.followup.send(
-                content=f"{GROUP_NAME} has {len(member_table.find_all(
-                    "tr",{"class": ["msl_row", "msl_altrow"]},
-                ))} members! :tada:",
+                content=f"{GROUP_NAME} has {
+                    len(member_table.find_all('tr', {'class': ['msl_row', 'msl_altrow']}))
+                } members! :tada:"
             )
