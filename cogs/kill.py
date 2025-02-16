@@ -25,7 +25,7 @@ logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 class ConfirmKillView(View):
     """A discord.View containing two buttons to confirm shutting down TeX-Bot."""
 
-    @discord.ui.button(  # type: ignore[misc]
+    @discord.ui.button(
         label="SHUTDOWN",
         style=discord.ButtonStyle.red,
         custom_id="shutdown_confirm",
@@ -36,7 +36,7 @@ class ConfirmKillView(View):
         """When the shutdown button is pressed, delete the message."""
         logger.debug('"Confirm" button pressed. %s', interaction)
 
-    @discord.ui.button(  # type: ignore[misc]
+    @discord.ui.button(
         label="CANCEL",
         style=discord.ButtonStyle.grey,
         custom_id="shutdown_cancel",
@@ -70,7 +70,7 @@ class KillCommandCog(TeXBotBaseCog):
 
         response: discord.Message | discord.Interaction = await ctx.respond(
             content=(
-                f"{f"Hi {committee_role.mention}, a" if committee_role else "A"}"
+                f"{f'Hi {committee_role.mention}, a' if committee_role else 'A'}"
                 "re you sure you want to kill me?\n"
                 "This action is irreversible "
                 "and will prevent me from performing any further actions "
