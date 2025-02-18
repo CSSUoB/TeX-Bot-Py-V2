@@ -53,7 +53,6 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
         committee_elect_role: discord.Role = await self.bot.committee_elect_role
 
         async with ctx.typing():
-
             initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
                 content=":hourglass: Running handover procedures... :hourglass:",
             )
@@ -205,7 +204,6 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
         member_role: discord.Role = await self.bot.member_role
 
         async with ctx.typing():
-
             initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
                 content=":hourglass: Resetting membership and year roles... :hourglass:",
             )
@@ -277,7 +275,6 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
         guest_role: discord.Role = await self.bot.guest_role
 
         async with ctx.typing():
-
             initial_message: discord.Interaction | discord.WebhookMessage = await ctx.respond(
                 content=":hourglass: Incrementing year channels... :hourglass:",
             )
@@ -360,9 +357,9 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                 content=(
                     ":white_check_mark: Year channels were successfully incremented"
                     f"{
-                        ". However, no \"Year Chats\" category was found."
-                        if not year_channels_category else
-                        ""
+                        '. However, no "Year Chats" category was found.'
+                        if not year_channels_category
+                        else ''
                     }. :white_check_mark:"
                 ),
             )

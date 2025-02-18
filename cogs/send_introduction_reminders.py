@@ -223,7 +223,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 logging_message=logging_message,
             )
 
-        @ui.button(  # type: ignore[misc]
+        @ui.button(
             label="Opt-out of introduction reminders",
             custom_id="opt_out_introduction_reminders_button",
             style=discord.ButtonStyle.red,

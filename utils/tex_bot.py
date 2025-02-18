@@ -40,7 +40,7 @@ class TeXBot(discord.Bot):
     """
     Subclass of the default Bot class provided by Pycord.
 
-    This subclass allows for storing commonly accessed roles & channels
+    This subclass allows for storing commonly accessed roles and channels
     from your group's Discord guild, while also raising the correct errors
     if these objects do not exist.
     """
