@@ -49,50 +49,53 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
             await self.command_send_error(ctx, message="Cannot make a bot user an applicant!")
             return
 
-        initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-            ":hourglass: Attempting to make user an applicant... :hourglass:",
-            ephemeral=True,
-        )
+        await ctx.defer(ephemeral=True)
+        async with ctx.typing():
 
-        AUDIT_MESSAGE: Final[str] = f'{ctx.user} used TeX-Bot Command "Make User Applicant"'
+            AUDIT_MESSAGE: Final[str] = (
+                f'{ctx.user} used TeX-Bot Command "Make User Applicant"'
+            )
 
-        if guest_role in applicant_member.roles:
-            await applicant_member.remove_roles(guest_role, reason=AUDIT_MESSAGE)
-            logger.debug("Removed Guest role from user %s", applicant_member)
+            if guest_role in applicant_member.roles:
+                await applicant_member.remove_roles(guest_role, reason=AUDIT_MESSAGE)
+                logger.debug("Removed Guest role from user %s", applicant_member)
 
-        await applicant_member.add_roles(applicant_role, reason=AUDIT_MESSAGE)
-        logger.debug("Applicant role given to user %s", applicant_member)
+            await applicant_member.add_roles(applicant_role, reason=AUDIT_MESSAGE)
+            logger.debug("Applicant role given to user %s", applicant_member)
 
-        tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
-        if not tex_emoji:
-            tex_emoji = discord.utils.get(main_guild.emojis, name="TeX")
+            tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
+            if not tex_emoji:
+                tex_emoji = discord.utils.get(main_guild.emojis, name="TeX")
 
-        intro_channel: discord.TextChannel | None = discord.utils.get(
-            main_guild.text_channels,
-            name="introductions",
-        )
+            intro_channel: discord.TextChannel | None = discord.utils.get(
+                main_guild.text_channels,
+                name="introductions",
+            )
 
-        if intro_channel:
-            recent_message: discord.Message
-            for recent_message in await intro_channel.history(limit=30).flatten():
-                if recent_message.author.id == applicant_member.id:
-                    forbidden_error: discord.Forbidden
-                    try:
-                        if tex_emoji:
-                            await recent_message.add_reaction(tex_emoji)
-                        await recent_message.add_reaction("👋")
-                    except discord.Forbidden as forbidden_error:
-                        if "90001" not in str(forbidden_error):
-                            raise forbidden_error from forbidden_error
+            if intro_channel:
+                recent_message: discord.Message
+                for recent_message in await intro_channel.history(limit=30).flatten():
+                    if recent_message.author.id == applicant_member.id:
+                        forbidden_error: discord.Forbidden
+                        try:
+                            if tex_emoji:
+                                await recent_message.add_reaction(tex_emoji)
+                            await recent_message.add_reaction("👋")
+                        except discord.Forbidden as forbidden_error:
+                            if "90001" not in str(forbidden_error):
+                                raise forbidden_error from forbidden_error
 
-                        logger.info(
-                            "Failed to add reactions because the user, %s, "
-                            "has blocked TeX-Bot.",
-                            recent_message.author,
-                        )
-                    break
+                            logger.info(
+                                "Failed to add reactions because the user, %s, "
+                                "has blocked TeX-Bot.",
+                                recent_message.author,
+                            )
+                        break
 
-        await initial_response.edit(content=":white_check_mark: User is now an applicant.")
+            await ctx.followup.send(
+                content=":white_check_mark: User is now an applicant.",
+                ephemeral=True,
+            )
 
 
 class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):

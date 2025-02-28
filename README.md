@@ -1,7 +1,7 @@
 # TeX-Bot-Py-V2
 
 [![Python Version](https://img.shields.io/badge/Python-3.12-blue?&logo=Python&logoColor=white)](https://python.org/downloads/release/python-3122)
-[![Pycord Version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSUoB%2FTeX-Bot-Py-V2%2Fmain%2Fpoetry.lock&query=%24.package%5B%3F%28%40.name%3D%3D%27py-cord%27%29%5D.version&logo=Discord&label=Pycord&logoColor=white)](https://pycord.dev)
+[![Pycord Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Ftoml-version-finder.carrotmanmatt.com%2Flock%2FCSSUoB%2FTeX-Bot-Py-V2%2Fpy-cord&query=%24.package_version&logo=Discord&label=Pycord&logoColor=white)](https://pycord.dev)
 [![Tests Status](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yaml/badge.svg)](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yaml)
 [![Mypy Status](https://img.shields.io/badge/mypy-checked-%232EBB4E&label=mypy)](https://mypy-lang.org)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://ruff.rs)
@@ -190,9 +190,7 @@ You'll also need to set a number of [environment variables](https://wikipedia.or
 (This setting is optional.
 Error logs will **always** be sent to the [console](https://wikipedia.org/wiki/Terminal_emulator), this setting allows them to also be sent to a [Discord log channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel).)
 
-* `MEMBERS_LIST_URL`: The [URL](https://wikipedia.org/wiki/URL) to retrieve the list of IDs of people that have purchased a membership to your community group.
-(The [CSS](https://cssbham.com)' members-list is currently found on [the Guild of Students website](https://guildofstudents.com).
-If your members-list is also found on [the Guild of Students website](https://guildofstudents.com), ensure the [URL](https://wikipedia.org/wiki/URL) includes the "sort by groups" option, so that all members are visible without [pagination](https://wikipedia.org/wiki/Pagination).)
+* `ORGANISATION_ID`: Your Guild society ID. This is used to dynamically create the members list among other needed URLs.
 
 * `MEMBERS_LIST_URL_SESSION_COOKIE`: The members-list [URL](https://wikipedia.org/wiki/URL) [session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie).
 (If your group's members-list is stored at a [URL](https://wikipedia.org/wiki/URL) that requires [authentication](https://wikipedia.org/wiki/Authentication), this [session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie) should [authenticate](https://wikipedia.org/wiki/Authentication) TeX-Bot to view your group's members-list, as if it were [logged in to the website](https://wikipedia.org/wiki/Login_session) as a Committee member.

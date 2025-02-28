@@ -234,7 +234,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
             message = re.sub(r"<@[&#]?\d+>", "@...", message.strip())
 
         try:
-            reminder: DiscordReminder = await DiscordReminder.objects.acreate(
+            reminder: DiscordReminder = await DiscordReminder.objects.acreate(  # type: ignore[misc]
                 discord_id=ctx.user.id,
                 message=message or "",
                 channel_id=ctx.channel_id,
