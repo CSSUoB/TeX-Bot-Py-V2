@@ -76,7 +76,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
             raise InvalidActionTargetError(message=INVALID_ACTION_TARGET_MESSAGE)
 
         try:
-            action: AssignedCommitteeAction = await AssignedCommitteeAction.objects.acreate(
+            action: AssignedCommitteeAction = await AssignedCommitteeAction.objects.acreate(  # type: ignore[misc]
                 discord_id=int(action_user.id),
                 description=description,
             )

@@ -49,6 +49,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
             await self.command_send_error(ctx, message="Cannot make a bot user an applicant!")
             return
 
+        await ctx.defer(ephemeral=True)
         async with ctx.typing():
 
             AUDIT_MESSAGE: Final[str] = (
@@ -91,7 +92,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
                             )
                         break
 
-            await ctx.respond(
+            await ctx.followup.send(
                 content=":white_check_mark: User is now an applicant.",
                 ephemeral=True,
             )
