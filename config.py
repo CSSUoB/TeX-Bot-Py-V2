@@ -297,7 +297,7 @@ class Settings(abc.ABC):
                 os.getenv("PING_COMMAND_EASTER_EGG_PROBABILITY", "0.01"),
             )
         except ValueError as e:
-            logger.error(INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE)
+            logger.error(INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE)  # noqa: TRY400
             raise (
                 ImproperlyConfiguredError(INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE)
             ) from e
@@ -338,7 +338,7 @@ class Settings(abc.ABC):
             try:
                 messages_dict: object = json.load(messages_file)
             except json.JSONDecodeError as e:
-                logger.error(JSON_DECODING_ERROR_MESSAGE)
+                logger.error(JSON_DECODING_ERROR_MESSAGE)  # noqa: TRY400
                 raise ImproperlyConfiguredError(JSON_DECODING_ERROR_MESSAGE) from e
 
         if not isinstance(messages_dict, Mapping):
@@ -654,7 +654,7 @@ class Settings(abc.ABC):
             INVALID_STATISTICS_DAYS_MESSAGE: Final[str] = (
                 "STATISTICS_DAYS must contain the statistics period in days."
             )
-            logger.error(INVALID_STATISTICS_DAYS_MESSAGE)
+            logger.error(INVALID_STATISTICS_DAYS_MESSAGE)  # noqa: TRY400
             raise ImproperlyConfiguredError(INVALID_STATISTICS_DAYS_MESSAGE) from e
 
         cls._settings["STATISTICS_DAYS"] = timedelta(days=raw_statistics_days)
