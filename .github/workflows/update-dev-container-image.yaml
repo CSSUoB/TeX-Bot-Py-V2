@@ -11,8 +11,7 @@ jobs:
       contents: read
       packages: write
 
-    if: ${{ ! startsWith(github.head_ref, 'dependabot/') }}
-    if: ${{ github.event.pull_request.head.repo.full_name == 'CSSUoB/TeX-Bot-Py-V2' }}
+    if: ${{ (! startsWith(github.head_ref, 'dependabot/')) && github.event.pull_request.head.repo.full_name == 'CSSUoB/TeX-Bot-Py-V2' }}
 
     steps:
     - uses: docker/setup-buildx-action@v3
