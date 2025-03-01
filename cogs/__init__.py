@@ -29,7 +29,7 @@ from .induct import (
 )
 from .kill import KillCommandCog
 from .make_applicant import MakeApplicantContextCommandsCog, MakeApplicantSlashCommandCog
-from .make_member import MakeMemberCommandCog
+from .make_member import MakeMemberCommandCog, MemberCountCommandCog
 from .ping import PingCommandCog
 from .remind_me import ClearRemindersBacklogTaskCog, RemindMeCommandCog
 from .send_get_roles_reminders import SendGetRolesRemindersTaskCog
@@ -37,7 +37,7 @@ from .send_introduction_reminders import SendIntroductionRemindersTaskCog
 from .source import SourceCommandCog
 from .startup import StartupCog
 from .stats import StatsCommandsCog
-from .strike import ManualModerationCog, StrikeCommandCog, StrikeUserCommandCog
+from .strike import ManualModerationCog, StrikeCommandCog, StrikeContextCommandsCog
 from .write_roles import WriteRolesCommandCog
 
 if TYPE_CHECKING:
@@ -66,6 +66,7 @@ __all__: "Sequence[str]" = (
     "MakeApplicantSlashCommandCog",
     "MakeMemberCommandCog",
     "ManualModerationCog",
+    "MemberCountCommandCog",
     "PingCommandCog",
     "RemindMeCommandCog",
     "SendGetRolesRemindersTaskCog",
@@ -103,6 +104,7 @@ def setup(bot: "TeXBot") -> None:
         MakeApplicantSlashCommandCog,
         MakeMemberCommandCog,
         ManualModerationCog,
+        MemberCountCommandCog,
         PingCommandCog,
         RemindMeCommandCog,
         SendGetRolesRemindersTaskCog,
@@ -111,7 +113,7 @@ def setup(bot: "TeXBot") -> None:
         StartupCog,
         StatsCommandsCog,
         StrikeCommandCog,
-        StrikeUserCommandCog,
+        StrikeContextCommandsCog,
         WriteRolesCommandCog,
     )
     Cog: type[TeXBotBaseCog]

@@ -1,6 +1,5 @@
 """Contains cog classes for token authorisation check interactions."""
 
-import contextlib
 import logging
 from typing import TYPE_CHECKING
 
@@ -10,7 +9,6 @@ import discord
 from bs4 import BeautifulSoup
 
 from config import settings
-from exceptions.does_not_exist import GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
@@ -62,23 +60,32 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
         async with http_session, http_session.get(REQUEST_URL) as http_response:
             response_html: str = await http_response.text()
 
-        parsed_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
+        response_object: bs4.BeautifulSoup = BeautifulSoup(
             response_html,
             "html.parser",
-        ).find("ul", {"id": "ulOrgs"})
+        )
 
-        if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
-            logger.debug(
-                "No admin table was found, meaning the token provided "
-                "does not have admin access to any societies.",
+        page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
+
+        if not page_title:
+            await self.command_send_error(
+                ctx=ctx,
+                message="Profile page returned no content when checking token authorisation!",
             )
-            await ctx.respond("The user token provided does not have any admin access!")
             return
 
-        profile_section_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-            response_html,
-            "html.parser",
-        ).find("div", {"id": "profile_main"})
+        if ("Login" in str(page_title)):
+            BAD_TOKEN_MESSAGE: Final[str] = (
+                "Unable to fetch profile page because the token was not valid."  # noqa: S105
+            )
+            logger.warning(BAD_TOKEN_MESSAGE)
+            await ctx.respond(content=BAD_TOKEN_MESSAGE)
+            return
+
+        profile_section_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
+            "div",
+            {"id": "profile_main"},
+        )
 
         if profile_section_html is None:
             logger.warning(
@@ -102,6 +109,20 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
             await ctx.respond(NO_PROFILE_DEBUG_MESSAGE)
             return
 
+        parsed_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
+            "ul",
+            {"id": "ulOrgs"},
+        )
+
+        if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
+            NO_ADMIN_TABLE_MESSAGE: Final[str] = (
+                f"Failed to retrieve the admin table for user: {user_name.string}."
+                "Please check you have used the correct token!"
+            )
+            logger.warning(NO_ADMIN_TABLE_MESSAGE)
+            await ctx.respond(content=NO_ADMIN_TABLE_MESSAGE)
+            return
+
         organisations: Iterable[str] = [
             list_item.get_text(strip=True) for list_item in parsed_html.find_all("li")
         ]
@@ -112,20 +133,10 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
             user_name.text,
         )
 
-        # noinspection PyUnusedLocal
-        guest_role: discord.Role | None = None
-        with contextlib.suppress(GuestRoleDoesNotExistError):
-            guest_role = await ctx.bot.guest_role
-
         await ctx.respond(
             f"Admin token has access to the following MSL Organisations as "
             f"{user_name.text}:\n{', \n'.join(
                 organisation for organisation in organisations
             )}",
-            ephemeral=bool(
-                (not guest_role)
-                or ctx.channel.permissions_for(guest_role).is_superset(
-                    discord.Permissions(view_channel=True),
-                )
-            ),
+            ephemeral=True,
         )

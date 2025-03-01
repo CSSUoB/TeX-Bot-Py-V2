@@ -377,19 +377,20 @@ class Settings(abc.ABC):
         cls._settings["ROLES_MESSAGES"] = set(messages_dict["roles_messages"])  # type: ignore[call-overload]
 
     @classmethod
-    def _setup_msl_organisation_id(cls) -> None:
-        raw_msl_organisation_id: str | None = os.getenv("MSL_ORGANISATION_ID")
+    def _setup_organisation_id(cls) -> None:
+        raw_organisation_id: str | None = os.getenv("ORGANISATION_ID")
 
-        MSL_ORGANISATION_ID_IS_VALID: Final[bool] = bool(
-            raw_msl_organisation_id
-            and re.fullmatch(r"\A\d{4}\Z", raw_msl_organisation_id),
+        ORGANISATION_ID_IS_VALID: Final[bool] = bool(
+            raw_organisation_id and re.fullmatch(r"\A\d{4,5}\Z", raw_organisation_id),
         )
-        if not MSL_ORGANISATION_ID_IS_VALID:
-            raise ImproperlyConfiguredError(
-                message="MSL_ORGANISATION_ID must be a 4-digit number.",
-            )
 
-        cls._settings["MSL_ORGANISATION_ID"] = raw_msl_organisation_id
+        if not ORGANISATION_ID_IS_VALID:
+            INVALID_ORGANISATION_ID_MESSAGE: Final[str] = (
+                "ORGANISATION_ID must be an integer 4 to 5 digits long."
+            )
+            raise ImproperlyConfiguredError(message=INVALID_ORGANISATION_ID_MESSAGE)
+
+        cls._settings["ORGANISATION_ID"] = raw_organisation_id
 
     @classmethod
     def _setup_members_list_auth_session_cookie(cls) -> None:
@@ -701,7 +702,7 @@ class Settings(abc.ABC):
         cls._setup_ping_command_easter_egg_probability()
         cls._setup_welcome_messages()
         cls._setup_roles_messages()
-        cls._setup_msl_organisation_id()
+        cls._setup_organisation_id()
         cls._setup_members_list_auth_session_cookie()
         cls._setup_membership_perks_url()
         cls._setup_purchase_membership_url()
