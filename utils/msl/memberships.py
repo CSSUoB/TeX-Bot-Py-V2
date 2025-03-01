@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from logging import Logger
 
-__all__: "Sequence[str]" = ("get_full_membership_list", "is_student_id_member")
+__all__: "Sequence[str]" = ("get_full_membership_list", "get_membership_count", "is_student_id_member")
 
 MEMBERS_LIST_URL: Final[str] = f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
 

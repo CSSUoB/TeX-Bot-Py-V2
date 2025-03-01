@@ -8,7 +8,7 @@ from .finances import (
     fetch_transaction_from_id,
     get_account_balance,
 )
-from .memberships import get_full_membership_list, is_student_id_member
+from .memberships import get_full_membership_list, get_membership_count, is_student_id_member
 from .reports import (
     get_product_customisations,
     get_product_sales,
@@ -25,6 +25,7 @@ __all__: "Sequence[str]" = (
     "get_account_balance",
     "get_all_guild_events",
     "get_full_membership_list",
+    "get_membership_count",
     "get_product_customisations",
     "get_product_sales",
     "is_student_id_member",

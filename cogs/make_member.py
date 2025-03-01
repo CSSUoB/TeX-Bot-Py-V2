@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
     from utils import TeXBotApplicationContext
 
-from utils.msl import is_student_id_member
+from utils.msl import get_membership_count, is_student_id_member
 
 __all__: "Sequence[str]" = ("MakeMemberCommandCog", "MemberCountCommandCog")
 
@@ -112,7 +112,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         parameter_name="group_member_id",
     )
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_member(self, ctx: "TeXBotApplicationContext", group_member_id: str) -> None:  # noqa: PLR0915
+    async def make_member(self, ctx: "TeXBotApplicationContext", group_member_id: str) -> None:
         """
         Definition & callback response of the "make_member" command.
 
@@ -228,59 +228,6 @@ class MemberCountCommandCog(TeXBotBaseCog):
         await ctx.defer(ephemeral=False)
 
         async with ctx.typing():
-            http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-                headers=REQUEST_HEADERS,
-                cookies=REQUEST_COOKIES,
-            )
-            async with http_session, http_session.get(BASE_MEMBERS_URL) as http_response:
-                response_html: str = await http_response.text()
-
-            member_list_div: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-                response_html,
-                "html.parser",
-            ).find(
-                "div",
-                {"class": "memberlistcol"},
-            )
-
-            if member_list_div is None or isinstance(member_list_div, bs4.NavigableString):
-                await self.command_send_error(
-                    ctx=ctx,
-                    error_code="E1041",
-                    logging_message=OSError(
-                        "The member count could not be retrieved from the MEMBERS_LIST_URL.",
-                    ),
-                )
-                return
-
-            if "showing 100 of" in member_list_div.text.lower():
-                member_count: str = member_list_div.text.split(" ")[3]
-                await ctx.followup.send(
-                    content=f"{GROUP_NAME} has {member_count} members! :tada:",
-                )
-                return
-
-            member_table: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-                response_html,
-                "html.parser",
-            ).find(
-                "table",
-                {"id": "ctl00_ctl00_Main_AdminPageContent_gvMembers"},
-            )
-
-            if member_table is None or isinstance(member_table, bs4.NavigableString):
-                await self.command_send_error(
-                    ctx=ctx,
-                    error_code="E1041",
-                    logging_message=OSError(
-                        "The member count could not be retrieved "
-                        "from the MEMBERS_LIST_URL.",
-                    ),
-                )
-                return
-
             await ctx.followup.send(
-                content=f"{GROUP_NAME} has {len(member_table.find_all(
-                    "tr",{"class": ["msl_row", "msl_altrow"]},
-                ))} members! :tada:",
+                content=f"{GROUP_NAME} has {await get_membership_count()} members! :tada:",
             )
