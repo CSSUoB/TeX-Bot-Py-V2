@@ -26,7 +26,7 @@ class CommandChecks:
         func: "Callable[[T], T]",
     ) -> "Callable[[T], T]":
         """
-        Decorator to ensure the interaction user of a command is within your group's Discord guild.
+        Decorator to ensure the interaction user of a command is in your group's Discord guild.
 
         If this check does not pass, the decorated command will not be executed.
         Instead an error message will be sent to the user.
