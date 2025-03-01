@@ -48,7 +48,7 @@ BASE_COOKIES: Final["Mapping[str, str]"] = {
     ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
 }
 
-ORGANISATION_ID: Final[str] = settings["MSL_ORGANISATION_ID"]
+ORGANISATION_ID: Final[str] = settings["ORGANISATION_ID"]
 
 ORGANISATION_ADMIN_URL: Final[str] = f"https://www.guildofstudents.com/organisation/admin/{ORGANISATION_ID}/"
 
