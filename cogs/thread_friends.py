@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
+from config import settings
 from exceptions import GuestRoleDoesNotExistError, GuildDoesNotExistError
 from utils import CommandChecks, TeXBotBaseCog
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
@@ -16,6 +17,9 @@ if TYPE_CHECKING:
     from typing import Final
 
     from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
+
+
+ADD_COMMITTEE_TO_THREADS: "Final[bool]" = settings["ADD_COMMITTEE_TO_THREADS"]
 
 
 __all__: "Sequence[str]" = ("AddUsersToThreadsAndChannelsCog",)
@@ -113,6 +117,9 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
     async def on_thread_create(self, thread: discord.Thread) -> None:
         """Add users to a thread when it is created."""
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        if not ADD_COMMITTEE_TO_THREADS:
+            return
+
         committee_role: discord.Role = await self.bot.committee_role
         committee_elect_role: discord.Role = await self.bot.committee_elect_role
 
