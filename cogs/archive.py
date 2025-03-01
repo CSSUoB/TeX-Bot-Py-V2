@@ -136,10 +136,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
-        committee_role: discord.Role = await self.bot.committee_role
-        guest_role: discord.Role = await self.bot.guest_role
         archivist_role: discord.Role = await self.bot.archivist_role
-        everyone_role: discord.Role = await self.bot.get_everyone_role()
 
         if not re.fullmatch(r"\A\d{17,20}\Z", str_category_id):
             await self.command_send_error(
@@ -183,9 +180,8 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
             await channel.edit(sync_permissions=True)
 
-        await category.set_permissions(guest_role, overwrite=None)
-        await category.set_permissions(committee_role, overwrite=None)
-        await category.set_permissions(everyone_role, overwrite=None)
+        for overwrite in category.overwrites:
+            await category.set_permissions(overwrite, overwrite=None)
 
         if allow_archivist:
             await category.set_permissions(
