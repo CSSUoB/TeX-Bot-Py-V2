@@ -36,10 +36,20 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
         except (GuildDoesNotExistError, GuestRoleDoesNotExistError):
             return set()
 
-        return {
-            discord.OptionChoice(name=member.name, value=str(member.id))
+        members: set[discord.Member] = {
+            member
             for member in main_guild.members
-            if not member.bot and guest_role in member.roles
+            if not member.bot and guest_role not in member.roles
+        }
+
+        if not ctx.value or ctx.value.startswith("@"):
+            return {
+                discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
+                for member in members
+            }
+
+        return {
+            discord.OptionChoice(name=member.name, value=str(member.id)) for member in members
         }
 
     @staticmethod
@@ -49,6 +59,12 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
             main_guild: discord.Guild = ctx.bot.main_guild
         except GuildDoesNotExistError:
             return set()
+
+        if not ctx.value or ctx.value.startswith("@"):
+            return {
+                discord.OptionChoice(name=f"@{role.name}", value=str(role.id))
+                for role in main_guild.roles
+            }
 
         return {
             discord.OptionChoice(name=role.name, value=str(role.id))
