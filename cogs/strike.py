@@ -110,7 +110,7 @@ class ConfirmStrikeMemberView(View):
         style=discord.ButtonStyle.red,
         custom_id="yes_strike_member",
     )
-    async def yes_strike_member_button_callback(
+    async def yes_strike_member_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
@@ -131,7 +131,7 @@ class ConfirmStrikeMemberView(View):
         style=discord.ButtonStyle.grey,
         custom_id="no_strike_member",
     )
-    async def no_strike_member_button_callback(
+    async def no_strike_member_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
@@ -156,7 +156,7 @@ class ConfirmManualModerationView(View):
         style=discord.ButtonStyle.red,
         custom_id="yes_manual_moderation_action",
     )
-    async def yes_manual_moderation_action_button_callback(
+    async def yes_manual_moderation_action_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
@@ -178,7 +178,7 @@ class ConfirmManualModerationView(View):
         style=discord.ButtonStyle.grey,
         custom_id="no_manual_moderation_action",
     )
-    async def no_manual_moderation_action_button_callback(
+    async def no_manual_moderation_action_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
@@ -204,7 +204,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
         style=discord.ButtonStyle.red,
         custom_id="yes_out_of_sync_ban_member",
     )
-    async def yes_out_of_sync_ban_member_button_callback(
+    async def yes_out_of_sync_ban_member_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
@@ -226,7 +226,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
         style=discord.ButtonStyle.grey,
         custom_id="no_out_of_sync_ban_member",
     )
-    async def no_out_of_sync_ban_member_button_callback(
+    async def no_out_of_sync_ban_member_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
@@ -864,7 +864,7 @@ class StrikeCommandCog(BaseStrikeCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def strike(self, ctx: "TeXBotApplicationContext", str_strike_member_id: str) -> None:
+    async def strike(self, ctx: "TeXBotApplicationContext", str_strike_member_id: str) -> None:  # type: ignore[misc]
         """
         Definition & callback response of the "strike" command.
 
@@ -955,7 +955,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
     @discord.user_command(name="Strike User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def user_strike(
+    async def user_strike(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", member: discord.Member
     ) -> None:
         """Call the _strike command, providing the required command arguments."""
@@ -964,7 +964,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
     @discord.message_command(name="Strike Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def strike_message_author(
+    async def strike_message_author(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", message: discord.Message
     ) -> None:
         """Call the _strike command on the message author."""
@@ -980,7 +980,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def send_message_to_committee(
+    async def send_message_to_committee(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", message: discord.Message
     ) -> None:
         """Send a copy of the selected message to committee channels for review."""

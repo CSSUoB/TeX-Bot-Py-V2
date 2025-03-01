@@ -264,14 +264,13 @@ class BaseInductCog(TeXBotBaseCog):
                 recent_message: discord.Message
                 for recent_message in await intro_channel.history(limit=30).flatten():
                     if recent_message.author.id == induction_member.id:
-                        forbidden_error: discord.Forbidden
                         try:
                             if tex_emoji:
                                 await recent_message.add_reaction(tex_emoji)
                             await recent_message.add_reaction("👋")
-                        except discord.Forbidden as forbidden_error:
-                            if "90001" not in str(forbidden_error):
-                                raise forbidden_error from forbidden_error
+                        except discord.Forbidden as e:
+                            if "90001" not in str(e):
+                                raise e from e
 
                             logger.info(
                                 "Failed to add reactions because the user, %s, "
@@ -344,7 +343,7 @@ class InductSlashCommandCog(BaseInductCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def induct(
+    async def induct(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", str_induct_member_id: str, *, silent: bool
     ) -> None:
         """
@@ -371,7 +370,7 @@ class InductContextCommandsCog(BaseInductCog):
     @discord.user_command(name="Induct User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def non_silent_user_induct(
+    async def non_silent_user_induct(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", member: discord.Member
     ) -> None:
         """
@@ -387,7 +386,7 @@ class InductContextCommandsCog(BaseInductCog):
     @discord.user_command(name="Silently Induct User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def silent_user_induct(
+    async def silent_user_induct(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", member: discord.Member
     ) -> None:
         """
@@ -403,7 +402,7 @@ class InductContextCommandsCog(BaseInductCog):
     @discord.message_command(name="Induct Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def non_silent_message_induct(
+    async def non_silent_message_induct(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", message: discord.Message
     ) -> None:
         """
@@ -442,7 +441,7 @@ class EnsureMembersInductedCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def ensure_members_inducted(self, ctx: "TeXBotApplicationContext") -> None:
+    async def ensure_members_inducted(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
         """
         Definition & callback response of the "ensure_members_inducted" command.
 

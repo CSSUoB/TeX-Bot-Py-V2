@@ -118,7 +118,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         parameter_name="group_member_id",
     )
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_member(self, ctx: "TeXBotApplicationContext", group_member_id: str) -> None:  # noqa: PLR0915
+    async def make_member(self, ctx: "TeXBotApplicationContext", group_member_id: str) -> None:  # type: ignore[misc]  # noqa: PLR0915
         """
         Definition & callback response of the "make_member" command.
 
@@ -298,7 +298,7 @@ class MemberCountCommandCog(TeXBotBaseCog):
         name="membercount",
         description="Displays the number of members in the group.",
     )
-    async def member_count(self, ctx: "TeXBotApplicationContext") -> None:
+    async def member_count(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
         """Definition & callback response of the "member_count" command."""
         await ctx.defer(ephemeral=False)
 

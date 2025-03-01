@@ -71,12 +71,12 @@ class AssignedCommitteeAction(BaseDiscordMemberWrapper):
             ),
         ]
 
+    @override
     def __repr__(self) -> str:
-        """Generate a developer-focused representation of this Assigned Committee Action's attributes."""  # noqa: E501, W505
         return f"<{self._meta.verbose_name}: {self.discord_member}, {self.description}"  # type: ignore[has-type]
 
+    @override
     def __str__(self) -> str:
-        """Generate the string representation of this Assigned Committee Action."""
         return f"{self.discord_member}: {self.description}"  # type: ignore[has-type]
 
 

@@ -300,6 +300,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 message="Action ID entered was not valid! Please use the autocomplete.",
                 logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
             )
+            return
 
         try:
             action: AssignedCommitteeAction = (
@@ -379,6 +380,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 message="Action ID entered was not valid! Please use the autocomplete.",
                 logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
             )
+            return
 
         try:
             action: AssignedCommitteeAction = (
@@ -814,6 +816,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 message="Action ID entered was not valid! Please use the autocomplete.",
                 logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
             )
+            return
 
         try:
             action: AssignedCommitteeAction = (
@@ -842,7 +845,7 @@ class CommitteeActionsTrackingContextCommandsCog(CommitteeActionsTrackingBaseCog
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def action_message_author(
+    async def action_message_author(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", message: discord.Message
     ) -> None:
         """

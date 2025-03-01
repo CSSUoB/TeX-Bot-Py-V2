@@ -30,7 +30,7 @@ class ConfirmKillView(View):
         style=discord.ButtonStyle.red,
         custom_id="shutdown_confirm",
     )
-    async def confirm_shutdown_button_callback(
+    async def confirm_shutdown_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """When the shutdown button is pressed, delete the message."""
@@ -41,7 +41,7 @@ class ConfirmKillView(View):
         style=discord.ButtonStyle.grey,
         custom_id="shutdown_cancel",
     )
-    async def cancel_shutdown_button_callback(
+    async def cancel_shutdown_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """When the cancel button is pressed, delete the message."""
@@ -57,7 +57,7 @@ class KillCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def kill(self, ctx: "TeXBotApplicationContext") -> None:
+    async def kill(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
         """
         Definition & callback response of the "kill" command.
 

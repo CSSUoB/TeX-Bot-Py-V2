@@ -44,7 +44,7 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def get_token_authorisation(self, ctx: "TeXBotApplicationContext") -> None:
+    async def get_token_authorisation(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
         """
         Definition of the "get_token_authorisation" command.
 
