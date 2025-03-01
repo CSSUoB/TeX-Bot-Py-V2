@@ -208,11 +208,11 @@ class Settings(abc.ABC):
         if cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
 
             discord_logging_handler: logging.Handler = DiscordHandler(
-                "TeXBot",
-                cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
+                service_name="TeX-Bot",
+                webhook_url=cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
             )
 
-            discord_logging_handler.setLevel(logging.DEBUG)
+            discord_logging_handler.setLevel(logging.WARNING)
 
             discord_logging_handler.setFormatter(
                 logging.Formatter("{levelname} | {message}", style="{"),
