@@ -1,40 +1,49 @@
 """Contains cog classes for any everest interactions."""
 
-import random
 from typing import TYPE_CHECKING
 
 import discord
 
-from config import settings
 from utils import TeXBotBaseCog
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from collections.abc import Set as AbstractSet
+    from typing import Final
 
-    from utils import TeXBotApplicationContext
+    from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 __all__: "Sequence[str]" = ("EverestCommandCog",)
+
+
+POSSIBLE_COURSE_TYPES: "Final[AbstractSet[str]]" = {"B.Sc.", "M.Sci."}
+POSSIBLE_YEARS: "Final[AbstractSet[int]]" = {1, 2, 3, 4}
+
+BSC_WEIGHTINGS: "Final[list[float]]" = [0, 0.25, 0.75]
+MSCI_WEIGHTINGS: "Final[list[float]]" = [0, 0.2, 0.4, 0.4]
 
 
 class EverestCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/everest" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_course_types(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
-        raise NotImplementedError  # TODO(Donian960)
+    async def autocomplete_get_course_types(ctx: "TeXBotAutocompleteContext",) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":  # noqa: E501, ARG004
+        """Autocomplete for the course type option."""
+        return POSSIBLE_COURSE_TYPES
 
-    @discord.slash_command(description="How many steps of everest is your assignment worth?")
-    @app_commands.describe(
-        course="What course are you on (bsc or msci)",
-        year="Current year of the course (1 to 4)",
-        value="What % of a module is the assignment worth"
+    @staticmethod
+    async def autocomplete_get_course_years(ctx: "TeXBotAutocompleteContext",) -> "AbstractSet[discord.OptionChoice] | AbstractSet[int]":  # noqa: E501, ARG004
+        """Autocomplete for the course year option."""
+        return POSSIBLE_YEARS
+
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        name="everest",
+        description="How many steps of everest is your assignment worth?"
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
-        name="course",
+        name="course-type",
         description="Your type of university course: B.Sc. or M.Sci.",
-        input_type=...,  # TODO(Donian960): Make type into a limited set of choices
+        input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_course_types),  # type: ignore[arg-type]
         required=True,
         parameter_name="course_type",
@@ -42,57 +51,79 @@ class EverestCommandCog(TeXBotBaseCog):
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="year",
         description="Current year of the course (1 to 4).",
-        input_type=...,  # TODO(Donian960): Make type into a limited set of choices
+        input_type=int,
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_course_years),  # type: ignore[arg-type]
         required=True,
         parameter_name="current_course_year",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="module_percentage",
         description="The percentage of a module that the assignment worth.",
-        input_type=float,  # TODO(Donian960): limit values to between 0% & 100%
+        input_type=float,
         required=True,
     )
-    async def everest(self, ctx: "TeXBotApplicationContext", course_type: ..., current_course_year: int, module_percentage: float):  # TODO(Donian960): Choose correct type for 'course_type' variable
-        message_start = "Course: " + str(course) + ", Year: " + str(year) + ", Value: " +str(value) + "%\n" # message data
+    async def everest(self, ctx: "TeXBotApplicationContext", course_type: str, current_course_year: int, module_percentage: float) -> None:
+        """Calculate how many steps of Mount Everest an assignment is worth."""
+        if course_type not in POSSIBLE_COURSE_TYPES:
+            await ctx.respond(
+                content=(
+                    f"{course_type} is not a valid course type. Please use the autocomplete."
+                )
+            )
+            return
 
-        course = course.lower() # allowing capital courses
+        INVALID_COURSE_YEAR_MESSAGE: Final[str] = (
+            f"Course year: {current_course_year} is not valid. Please use the autocomplete."
+        )
 
-        if course != "bsc" and course != "msci": # weeding out fake courses
-            message = message_start + "That's not a real course :(" # preparing to tell the user to go away
-            await interaction.response.send_message(message) # telling the user to go away
-        else: # if the course is real
-            failure = False # it hasn't failed yet
+        try:
+            current_course_year = int(current_course_year)
+        except ValueError:
+            await ctx.respond(content=INVALID_COURSE_YEAR_MESSAGE)
+            return
 
-            try: # seeing if it will fail in a safe way
-                year = int(year) # checking the year is an int
-                value = float(value) # checking the % is valid
-            except: # if they aren't
-                failure = True # it's failed
-                message = message_start + "Invalid data type :(" # preparing to tell the user to go away
-                await interaction.response.send_message(message) # telling the user to go away
+        if current_course_year not in POSSIBLE_YEARS:
+                await ctx.respond(content=INVALID_COURSE_YEAR_MESSAGE)
+                return
 
-            if failure == False: # if it didn't fail
-                if year < 1 or (year > 3 and course == "bsc") or (year > 4 and course == "msci"): # checking they are on a real year
-                    message = message_start + "Invalid year :(" # preparing to tell the user to go away
-                    await interaction.response.send_message(message) # telling the user to go away
+        INVALID_MODULE_WEIGHT_MESSAGE: Final[str] = (
+            f"Module weight: {module_percentage} is not valid."
+            "Please enter a positive number less than or equal to 100."
+        )
+        try:
+            module_weight = float(module_percentage)
+        except ValueError:
+            await ctx.respond(content=INVALID_MODULE_WEIGHT_MESSAGE)
+            return
 
-                else: # if they're on a real year
-                    if course == "bsc": # this
-                        if year == 1: # is
-                            year_value = 0 # just
-                        elif year == 2: # a
-                            year_value = 0.25 # longer
-                        else: # way
-                            year_value = 0.75 # to
-                    if course == "msci": # do
-                        if year == 1: # a
-                            year_value = 0 # dictionary
-                        elif year == 2: # but
-                            year_value = 0.2 # too
-                        else: # bad
-                            year_value = 0.4 # how much is each year worth
+        if module_weight < 0 or module_weight > 100:
+            await ctx.respond(content=INVALID_MODULE_WEIGHT_MESSAGE)
+            return
 
-                    steps = (value / 100) * 1 / 6 * year_value * 44250 # actually calculating the steps of everest (assumes modules are worth 20 / 120 credits)
 
-                    message = message_start + "This assignment is worth " + str(int(steps)) + " steps of Mt. Everest!" # preparing to tell the user how much they walked
-                    await interaction.response.send_message(message) # telling the user how much they walked
+        if current_course_year == 4 and course_type == "B.Sc.":
+            await ctx.respond(
+                content=(
+                    "You have selected 4th year of a B.Sc. course, which is not valid."
+                    "If you are in final year, please select 3rd year."
+                )
+            )
+            return
+
+        year_value: float = 0
+
+        if course_type == "B.Sc.":
+            year_value = BSC_WEIGHTINGS[current_course_year - 1]
+        if course_type == "msci":
+            year_value = MSCI_WEIGHTINGS[current_course_year - 1]
+
+        steps = (module_weight / 100) * 1 / 6 * year_value * 44250  # NOTE: Assumes all modules are 20 credits
+
+        await ctx.respond(
+            content=(
+                f"Course: {course_type}, "
+                f"Year: {current_course_year}, "
+                f"Weight: {module_percentage}%\n"
+                f"This assignment is worth {int(steps)} steps of Mt. Everest!"
+            )
+        )
