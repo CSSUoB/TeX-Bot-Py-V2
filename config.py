@@ -680,6 +680,26 @@ class Settings(abc.ABC):
         )
 
     @classmethod
+    def _setup_add_committee_to_threads(cls) -> None:
+        """
+        Add committee members to threads created in committee channels.
+
+        A committee channel is any channel whose parent category has 'committee' in the name.
+        """
+        raw_add_committee_to_threads: str = str(
+            os.getenv("ADD_COMMITTEE_TO_THREADS", "True")
+        ).lower()
+
+        if raw_add_committee_to_threads not in TRUE_VALUES | FALSE_VALUES:
+            INVALID_ADD_COMMITTEE_TO_THREADS_MESSAGE: Final[str] = (
+                "ADD_COMMITTEE_TO_THREADS must be a boolean value."
+            )
+            raise ImproperlyConfiguredError(INVALID_ADD_COMMITTEE_TO_THREADS_MESSAGE)
+
+        cls._settings["ADD_COMMITTEE_TO_THREADS"] = raw_add_committee_to_threads in TRUE_VALUES
+
+
+    @classmethod
     def _setup_env_variables(cls) -> None:
         """
         Load environment values into the settings dictionary.
@@ -716,6 +736,7 @@ class Settings(abc.ABC):
         cls._setup_statistics_roles()
         cls._setup_moderation_document_url()
         cls._setup_strike_performed_manually_warning_location()
+        cls._setup_add_committee_to_threads()
 
         cls._is_env_variables_setup = True
 
