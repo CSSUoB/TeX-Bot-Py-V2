@@ -7,6 +7,7 @@ cogs for each activity.
 
 from typing import TYPE_CHECKING
 
+from .add_users_to_threads_and_channels import AddUsersToThreadsAndChannelsCog
 from .annual_handover_and_reset import (
     AnnualRolesResetCommandCog,
     AnnualYearChannelsIncrementCommandCog,
@@ -38,7 +39,6 @@ from .source import SourceCommandCog
 from .startup import StartupCog
 from .stats import StatsCommandsCog
 from .strike import ManualModerationCog, StrikeCommandCog, StrikeContextCommandsCog
-from .thread_friends import AddUsersToThreadsAndChannelsCog
 from .write_roles import WriteRolesCommandCog
 
 if TYPE_CHECKING:
