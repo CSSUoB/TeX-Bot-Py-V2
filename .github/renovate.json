@@ -58,7 +58,7 @@
             ]
         },
         {
-            "description": "Update renovatebot's pre-commit hooks Tuesday mornings",
+            "description": "Update frquently changing pre-commit hooks on Tuesday mornings",
             "matchManagers": [
                 "pre-commit"
             ],
@@ -72,7 +72,7 @@
             ]
         }
     ],
-    "prHourlyLimit": 5,
+    "prHourlyLimit": 10,
     "pre-commit": {
         "enabled": true
     },
