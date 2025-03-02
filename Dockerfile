@@ -25,4 +25,6 @@ COPY --from=builder --chown=app:app /app /app
 
 ENV LANG=C.UTF-8 PATH="/app/.venv/bin:$PATH"
 
+WORKDIR /app
+
 ENTRYPOINT ["python", "-m", "main"]
