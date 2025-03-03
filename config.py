@@ -205,7 +205,6 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_discord_logging_channel(cls) -> None:
         if cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
-
             discord_logging_handler: logging.Handler = DiscordHandler(
                 service_name="TeX-Bot",
                 webhook_url=cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
