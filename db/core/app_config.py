@@ -18,5 +18,4 @@ class CoreConfig(AppConfig):
     apply migrations, etc.
     """
 
-    default_auto_field: str = "django.db.models.BigAutoField"
     name: str = "db.core"

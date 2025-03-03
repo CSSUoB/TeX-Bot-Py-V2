@@ -51,7 +51,6 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
 
         await ctx.defer(ephemeral=True)
         async with ctx.typing():
-
             AUDIT_MESSAGE: Final[str] = (
                 f'{ctx.user} used TeX-Bot Command "Make User Applicant"'
             )
@@ -76,14 +75,13 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
                 recent_message: discord.Message
                 for recent_message in await intro_channel.history(limit=30).flatten():
                     if recent_message.author.id == applicant_member.id:
-                        forbidden_error: discord.Forbidden
                         try:
                             if tex_emoji:
                                 await recent_message.add_reaction(tex_emoji)
                             await recent_message.add_reaction("👋")
-                        except discord.Forbidden as forbidden_error:
-                            if "90001" not in str(forbidden_error):
-                                raise forbidden_error from forbidden_error
+                        except discord.Forbidden as e:
+                            if "90001" not in str(e):
+                                raise e from e
 
                             logger.info(
                                 "Failed to add reactions because the user, %s, "
@@ -147,7 +145,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_applicant(
+    async def make_applicant(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", str_applicant_member_id: str
     ) -> None:
         """
@@ -174,7 +172,7 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
     @discord.user_command(name="Make Applicant")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def user_make_applicant(
+    async def user_make_applicant(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", member: discord.Member
     ) -> None:
         """
@@ -189,7 +187,7 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
     @discord.message_command(name="Make Message Author Applicant")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def message_make_applicant(
+    async def message_make_applicant(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", message: discord.Message
     ) -> None:
         """

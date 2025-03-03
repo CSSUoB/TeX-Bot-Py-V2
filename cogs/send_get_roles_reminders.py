@@ -39,7 +39,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
     def __init__(self, bot: "TeXBot") -> None:
         """Start all task managers when this cog is initialised."""
         if settings["SEND_GET_ROLES_REMINDERS"]:
-            self.send_get_roles_reminders.start()
+            _ = self.send_get_roles_reminders.start()
 
         super().__init__(bot)
 

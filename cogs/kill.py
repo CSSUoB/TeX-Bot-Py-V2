@@ -25,23 +25,23 @@ logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 class ConfirmKillView(View):
     """A discord.View containing two buttons to confirm shutting down TeX-Bot."""
 
-    @discord.ui.button(  # type: ignore[misc]
+    @discord.ui.button(
         label="SHUTDOWN",
         style=discord.ButtonStyle.red,
         custom_id="shutdown_confirm",
     )
-    async def confirm_shutdown_button_callback(
+    async def confirm_shutdown_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """When the shutdown button is pressed, delete the message."""
         logger.debug('"Confirm" button pressed. %s', interaction)
 
-    @discord.ui.button(  # type: ignore[misc]
+    @discord.ui.button(
         label="CANCEL",
         style=discord.ButtonStyle.grey,
         custom_id="shutdown_cancel",
     )
-    async def cancel_shutdown_button_callback(
+    async def cancel_shutdown_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """When the cancel button is pressed, delete the message."""
@@ -57,7 +57,7 @@ class KillCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def kill(self, ctx: "TeXBotApplicationContext") -> None:
+    async def kill(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
         """
         Definition & callback response of the "kill" command.
 
@@ -70,7 +70,7 @@ class KillCommandCog(TeXBotBaseCog):
 
         response: discord.Message | discord.Interaction = await ctx.respond(
             content=(
-                f"{f"Hi {committee_role.mention}, a" if committee_role else "A"}"
+                f"{f'Hi {committee_role.mention}, a' if committee_role else 'A'}"
                 "re you sure you want to kill me?\n"
                 "This action is irreversible "
                 "and will prevent me from performing any further actions "

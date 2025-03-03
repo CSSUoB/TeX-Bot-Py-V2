@@ -79,7 +79,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def archive(self, ctx: "TeXBotApplicationContext", str_category_id: str) -> None:
+    async def archive(self, ctx: "TeXBotApplicationContext", str_category_id: str) -> None:  # type: ignore[misc]
         """
         Definition & callback response of the "archive" command.
 

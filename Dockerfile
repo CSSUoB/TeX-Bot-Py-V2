@@ -1,46 +1,30 @@
-FROM python:3.12 AS builder
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
 
-ENV PYTHONUNBUFFERED=true \
-    PYTHONDONTWRITEBYTECODE=true \
-    PIP_NO_CACHE_DIR=off \
-    PIP_DISABLE_PIP_VERSION_CHECK=on \
-    PIP_DEFAULT_TIMEOUT=100 \
-    POETRY_NO_INTERACTION=true \
-    POETRY_VIRTUALENVS_IN_PROJECT=true \
-    POETRY_VIRTUALENVS_CREATE=true \
-    POETRY_CACHE_DIR=/tmp/poetry_cache \
-    POETRY_VIRTUALENVS_OPTIONS_ALWAYS_COPY=true \
-    POETRY_VIRTUALENVS_OPTIONS_NO_PIP=true \
-    POETRY_HOME=/opt/poetry
-
-
-RUN apt-get update && apt-get install --no-install-recommends -y curl build-essential
-RUN python3 -m venv $POETRY_HOME
-RUN $POETRY_HOME/bin/pip install poetry==1.8.3
-
+ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 
 WORKDIR /app
 
-COPY poetry.lock pyproject.toml README.md ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project --no-group dev
 
-RUN --mount=type=cache,target=$POETRY_CACHE_DIR $POETRY_HOME/bin/poetry install --without dev --no-root --no-interaction
+COPY LICENSE /app/
+COPY config.py main.py messages.json /app/
+COPY exceptions/ /app/exceptions/
+COPY utils/ /app/utils/
+COPY db/ /app/db/
+COPY cogs/ /app/cogs/
 
-FROM python:3.12-slim AS runtime
+FROM python:3.12-slim-bookworm
 
-ENV LANG=C.UTF-8 \
-    VIRTUAL_ENV=/app/.venv \
-    PATH="/app/.venv/bin:$PATH"
+LABEL org.opencontainers.image.source=https://github.com/CSSUoB/TeX-Bot-Py-V2
+LABEL org.opencontainers.image.licenses=Apache-2.0
 
-COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+COPY --from=builder --chown=app:app /app /app
+
+ENV LANG=C.UTF-8 PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
-
-COPY LICENSE .en[v] config.py main.py messages.json ./
-RUN chmod +x main.py
-
-COPY exceptions/ ./exceptions/
-COPY utils/ ./utils/
-COPY db/ ./db/
-COPY cogs/ ./cogs/
 
 ENTRYPOINT ["python", "-m", "main"]

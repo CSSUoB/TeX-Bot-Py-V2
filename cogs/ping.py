@@ -20,7 +20,7 @@ class PingCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/remindme" command and its call-back method."""
 
     @discord.slash_command(description="Replies with Pong!")  # type: ignore[no-untyped-call, misc]
-    async def ping(self, ctx: "TeXBotApplicationContext") -> None:
+    async def ping(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
         """Definition & callback response of the "ping" command."""
         await ctx.respond(
             random.choices(  # noqa: S311

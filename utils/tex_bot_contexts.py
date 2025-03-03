@@ -27,7 +27,7 @@ class TeXBotAutocompleteContext(discord.AutocompleteContext):
     should be used in cogs instead.
     """
 
-    bot: "TeXBot"
+    bot: "TeXBot"  # type: ignore[mutable-override]
 
 
 class TeXBotApplicationContext(discord.ApplicationContext):
@@ -39,4 +39,4 @@ class TeXBotApplicationContext(discord.ApplicationContext):
     should be used in cogs instead.
     """
 
-    bot: "TeXBot"
+    bot: "TeXBot"  # type: ignore[mutable-override]

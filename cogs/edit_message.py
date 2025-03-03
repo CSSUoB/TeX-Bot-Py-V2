@@ -1,7 +1,7 @@
 """Contains cog classes for any edit_message interactions."""
 
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 import discord
 
@@ -29,6 +29,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/edit-message" command and its call-back method."""
 
     @staticmethod
+    @override
     async def autocomplete_get_text_channels(
         ctx: "TeXBotAutocompleteContext",
     ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
@@ -82,7 +83,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def edit_message(
+    async def edit_message(  # type: ignore[misc]
         self,
         ctx: "TeXBotApplicationContext",
         str_channel_id: str,

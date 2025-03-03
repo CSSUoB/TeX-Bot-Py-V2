@@ -71,12 +71,12 @@ class AssignedCommitteeAction(BaseDiscordMemberWrapper):
             ),
         ]
 
+    @override
     def __repr__(self) -> str:
-        """Generate a developer-focused representation of this Assigned Committee Action's attributes."""  # noqa: E501, W505
         return f"<{self._meta.verbose_name}: {self.discord_member}, {self.description}"  # type: ignore[has-type]
 
+    @override
     def __str__(self) -> str:
-        """Generate the string representation of this Assigned Committee Action."""
         return f"{self.discord_member}: {self.description}"  # type: ignore[has-type]
 
 
@@ -337,13 +337,9 @@ class DiscordReminder(BaseDiscordMemberWrapper):
         return (
             f"{self.discord_member}"  # type: ignore[has-type]
             f"{
-                ""
+                ''
                 if not self.message
-                else (
-                    f": {self.message[:50]}..."
-                    if len(self.message) > 50
-                    else self.message
-                )
+                else (f': {self.message[:50]}...' if len(self.message) > 50 else self.message)
             }"
         )
 
@@ -406,19 +402,18 @@ class LeftDiscordMember(AsyncBaseModel):
             "when they left your group's Discord guild"
         )
         verbose_name_plural = (
-            "Lists of Roles that Discord Members had when "
-            "they left your group's Discord guild"
+            "Lists of Roles that Discord Members had when they left your group's Discord guild"
         )
 
     @override
     def __str__(self) -> str:
         # noinspection PyUnresolvedReferences
-        return f"{self.id}: {", ".join(self.roles)}"
+        return f"{self.id}: {', '.join(self.roles)}"
 
     @override
     def __repr__(self) -> str:
         return (
-            f"<{self._meta.verbose_name}: {{{", ".join(repr(role) for role in self.roles)}}}>"
+            f"<{self._meta.verbose_name}: {{{', '.join(repr(role) for role in self.roles)}}}>"
         )
 
     @override
