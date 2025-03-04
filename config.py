@@ -680,11 +680,6 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_add_committee_to_threads(cls) -> None:
-        """
-        Add committee members to threads created in committee channels.
-
-        A committee channel is any channel whose parent category has 'committee' in the name.
-        """
         raw_add_committee_to_threads: str = str(
             os.getenv("ADD_COMMITTEE_TO_THREADS", "True")
         ).lower()
