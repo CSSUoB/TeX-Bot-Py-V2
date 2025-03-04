@@ -162,7 +162,7 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def add_user_to_thread(
+    async def add_user_to_thread(  # type: ignore[misc]
         self,
         ctx: "TeXBotApplicationContext",
         user_id_str: str,
@@ -217,7 +217,7 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def add_role_to_thread(
+    async def add_role_to_thread(  # type: ignore[misc]
         self,
         ctx: "TeXBotApplicationContext",
         user_or_role: str,
@@ -279,7 +279,7 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
         required=False,
         parameter_name="silent",
     )
-    async def add_user_to_channel(
+    async def add_user_to_channel(  # type: ignore[misc]
         self,
         ctx: "TeXBotApplicationContext",
         user_id_str: str,
@@ -344,7 +344,7 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
         required=False,
         parameter_name="silent",
     )
-    async def add_role_to_channel(
+    async def add_role_to_channel(  # type: ignore[misc]
         self,
         ctx: "TeXBotApplicationContext",
         role: str,
