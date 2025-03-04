@@ -44,8 +44,7 @@ class BaseTeXBotError(BaseException, abc.ABC):
                 ", ".join(
                     {
                         f"{attribute_name}={attribute_value!r}"
-                        for attribute_name, attribute_value
-                        in attributes.items()
+                        for attribute_name, attribute_value in attributes.items()
                     }
                 )
             })"""
