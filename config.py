@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, final
 
 import dotenv
 import validators
+from discord_logging.handler import DiscordHandler
 
 from exceptions import (
     ImproperlyConfiguredError,
@@ -202,6 +203,22 @@ class Settings(abc.ABC):
         cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = raw_discord_log_channel_webhook_url
 
     @classmethod
+    def _setup_discord_logging_channel(cls) -> None:
+        if cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
+            discord_logging_handler: logging.Handler = DiscordHandler(
+                service_name="TeX-Bot",
+                webhook_url=cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
+            )
+
+            discord_logging_handler.setLevel(logging.WARNING)
+
+            discord_logging_handler.setFormatter(
+                logging.Formatter("{levelname} | {message}", style="{"),
+            )
+
+            logger.addHandler(discord_logging_handler)
+
+    @classmethod
     def _setup_discord_guild_id(cls) -> None:
         raw_discord_guild_id: str | None = os.getenv("DISCORD_GUILD_ID")
 
@@ -213,6 +230,7 @@ class Settings(abc.ABC):
                 "DISCORD_GUILD_ID must be a valid Discord guild ID "
                 "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)."
             )
+            logger.error(INVALID_DISCORD_GUILD_ID_MESSAGE)
             raise ImproperlyConfiguredError(INVALID_DISCORD_GUILD_ID_MESSAGE)
 
         cls._settings["_DISCORD_MAIN_GUILD_ID"] = int(raw_discord_guild_id)  # type: ignore[arg-type]
@@ -229,6 +247,7 @@ class Settings(abc.ABC):
             INVALID_GROUP_FULL_NAME: Final[str] = (
                 "GROUP_NAME must not contain any invalid characters."
             )
+            logger.error(INVALID_GROUP_FULL_NAME)
             raise ImproperlyConfiguredError(INVALID_GROUP_FULL_NAME)
         cls._settings["_GROUP_FULL_NAME"] = raw_group_full_name
 
@@ -244,6 +263,7 @@ class Settings(abc.ABC):
             INVALID_GROUP_SHORT_NAME: Final[str] = (
                 "GROUP_SHORT_NAME must not contain any invalid characters."
             )
+            logger.error(INVALID_GROUP_SHORT_NAME)
             raise ImproperlyConfiguredError(INVALID_GROUP_SHORT_NAME)
         cls._settings["_GROUP_SHORT_NAME"] = raw_group_short_name
 
@@ -258,6 +278,7 @@ class Settings(abc.ABC):
             INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE: Final[str] = (
                 "PURCHASE_MEMBERSHIP_URL must be a valid URL."
             )
+            logger.error(INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE)
             raise ImproperlyConfiguredError(INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE)
 
         cls._settings["PURCHASE_MEMBERSHIP_URL"] = raw_purchase_membership_url
@@ -273,6 +294,7 @@ class Settings(abc.ABC):
             INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (
                 "MEMBERSHIP_PERKS_URL must be a valid URL."
             )
+            logger.error(INVALID_MEMBERSHIP_PERKS_URL_MESSAGE)
             raise ImproperlyConfiguredError(INVALID_MEMBERSHIP_PERKS_URL_MESSAGE)
 
         cls._settings["MEMBERSHIP_PERKS_URL"] = raw_membership_perks_url
@@ -289,6 +311,7 @@ class Settings(abc.ABC):
                 os.getenv("PING_COMMAND_EASTER_EGG_PROBABILITY", "0.01"),
             )
         except ValueError as e:
+            logger.error(INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE)  # noqa: TRY400
             raise (
                 ImproperlyConfiguredError(INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE)
             ) from e
@@ -320,6 +343,7 @@ class Settings(abc.ABC):
             MESSAGES_FILE_PATH_DOES_NOT_EXIST_MESSAGE: Final[str] = (
                 "MESSAGES_FILE_PATH must be a path to a file that exists."
             )
+            logger.error(MESSAGES_FILE_PATH_DOES_NOT_EXIST_MESSAGE)
             raise ImproperlyConfiguredError(MESSAGES_FILE_PATH_DOES_NOT_EXIST_MESSAGE)
 
         messages_file: IO[str]
@@ -328,9 +352,11 @@ class Settings(abc.ABC):
             try:
                 messages_dict: object = json.load(messages_file)
             except json.JSONDecodeError as e:
+                logger.error(JSON_DECODING_ERROR_MESSAGE)  # noqa: TRY400
                 raise ImproperlyConfiguredError(JSON_DECODING_ERROR_MESSAGE) from e
 
         if not isinstance(messages_dict, Mapping):
+            logger.error(JSON_DECODING_ERROR_MESSAGE)
             raise ImproperlyConfiguredError(JSON_DECODING_ERROR_MESSAGE)
 
         return messages_dict
@@ -349,6 +375,7 @@ class Settings(abc.ABC):
             and messages_dict["welcome_messages"],
         )
         if not WELCOME_MESSAGES_KEY_IS_VALID:
+            logger.error("Unable to locate welcome messages.")
             raise MessagesJSONFileValueError(
                 dict_key="welcome_messages",
                 invalid_value=messages_dict["welcome_messages"],
@@ -369,6 +396,7 @@ class Settings(abc.ABC):
             messages_dict["roles_messages"], Iterable
         ) and bool(messages_dict["roles_messages"])
         if not ROLES_MESSAGES_KEY_IS_VALID:
+            logger.error("Unable to locate role messages.")
             raise MessagesJSONFileValueError(
                 dict_key="roles_messages",
                 invalid_value=messages_dict["roles_messages"],
@@ -387,6 +415,7 @@ class Settings(abc.ABC):
             INVALID_ORGANISATION_ID_MESSAGE: Final[str] = (
                 "ORGANISATION_ID must be an integer 4 to 5 digits long."
             )
+            logger.error(INVALID_ORGANISATION_ID_MESSAGE)
             raise ImproperlyConfiguredError(message=INVALID_ORGANISATION_ID_MESSAGE)
 
         cls._settings["ORGANISATION_ID"] = raw_organisation_id
@@ -405,6 +434,7 @@ class Settings(abc.ABC):
             INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE: Final[str] = (
                 "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
             )
+            logger.error(INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE)
             raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE)
 
         cls._settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"] = (
@@ -421,6 +451,7 @@ class Settings(abc.ABC):
             INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE: Final[str] = (
                 'SEND_INTRODUCTION_REMINDERS must be one of: "Once", "Interval" or "False".'
             )
+            logger.error(INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE)
             raise ImproperlyConfiguredError(INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE)
 
         if raw_send_introduction_reminders in TRUE_VALUES:
@@ -453,6 +484,7 @@ class Settings(abc.ABC):
                     "SEND_INTRODUCTION_REMINDERS_DELAY must contain the delay "
                     "in any combination of seconds, minutes, hours, days or weeks."
                 )
+                logger.error(INVALID_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE)
                 raise ImproperlyConfiguredError(
                     INVALID_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE,
                 )
@@ -470,6 +502,7 @@ class Settings(abc.ABC):
                     "SEND_INTRODUCTION_REMINDERS_DELAY must be longer than or equal to 1 day "
                     "(in any allowed format)."
                 )
+                logger.error(TOO_SMALL_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE)
                 raise ImproperlyConfiguredError(
                     TOO_SMALL_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE,
                 )
@@ -485,6 +518,7 @@ class Settings(abc.ABC):
                 "Invalid setup order: SEND_INTRODUCTION_REMINDERS must be set up "
                 "before SEND_INTRODUCTION_REMINDERS_INTERVAL can be set up."
             )
+            logger.error(INVALID_SETUP_ORDER_MESSAGE)
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
         raw_send_introduction_reminders_interval: re.Match[str] | None = re.fullmatch(
@@ -502,6 +536,7 @@ class Settings(abc.ABC):
                     "SEND_INTRODUCTION_REMINDERS_INTERVAL must contain the interval "
                     "in any combination of seconds, minutes or hours."
                 )
+                logger.error(INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE)
                 raise ImproperlyConfiguredError(
                     INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE,
                 )
@@ -526,6 +561,7 @@ class Settings(abc.ABC):
             INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE: Final[str] = (
                 "SEND_GET_ROLES_REMINDERS must be a boolean value."
             )
+            logger.error(INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE)
             raise ImproperlyConfiguredError(INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE)
 
         cls._settings["SEND_GET_ROLES_REMINDERS"] = raw_send_get_roles_reminders in TRUE_VALUES
@@ -552,6 +588,7 @@ class Settings(abc.ABC):
                     "SEND_GET_ROLES_REMINDERS_DELAY must contain the delay "
                     "in any combination of seconds, minutes, hours, days or weeks."
                 )
+                logger.error(INVALID_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE)
                 raise ImproperlyConfiguredError(
                     INVALID_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE,
                 )
@@ -569,6 +606,7 @@ class Settings(abc.ABC):
                     "SEND_SEND_GET_ROLES_REMINDERS_DELAY "
                     "must be longer than or equal to 1 day (in any allowed format)."
                 )
+                logger.error(TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE)
                 raise ImproperlyConfiguredError(
                     TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE,
                 )
@@ -584,6 +622,7 @@ class Settings(abc.ABC):
                 "Invalid setup order: SEND_GET_ROLES_REMINDERS must be set up "
                 "before ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL can be set up."
             )
+            logger.error(INVALID_SETUP_ORDER_MESSAGE)
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
         raw_advanced_send_get_roles_reminders_interval: re.Match[str] | None = re.fullmatch(
@@ -603,6 +642,7 @@ class Settings(abc.ABC):
                     "ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL must contain the interval "
                     "in any combination of seconds, minutes or hours."
                 )
+                logger.error(INVALID_ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE)
                 raise ImproperlyConfiguredError(
                     INVALID_ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE,
                 )
@@ -628,6 +668,7 @@ class Settings(abc.ABC):
             INVALID_STATISTICS_DAYS_MESSAGE: Final[str] = (
                 "STATISTICS_DAYS must contain the statistics period in days."
             )
+            logger.error(INVALID_STATISTICS_DAYS_MESSAGE)  # noqa: TRY400
             raise ImproperlyConfiguredError(INVALID_STATISTICS_DAYS_MESSAGE) from e
 
         cls._settings["STATISTICS_DAYS"] = timedelta(days=raw_statistics_days)
@@ -657,6 +698,7 @@ class Settings(abc.ABC):
             MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
                 "MODERATION_DOCUMENT_URL must be a valid URL."
             )
+            logger.error(MODERATION_DOCUMENT_URL_MESSAGE)
             raise ImproperlyConfiguredError(MODERATION_DOCUMENT_URL_MESSAGE)
 
         cls._settings["MODERATION_DOCUMENT_URL"] = raw_moderation_document_url
@@ -672,6 +714,7 @@ class Settings(abc.ABC):
                 "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION must be a valid name "
                 "of a channel in your group's Discord guild."
             )
+            logger.error(STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_MESSAGE)
             raise ImproperlyConfiguredError(STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_MESSAGE)
 
         cls._settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] = (
@@ -695,6 +738,7 @@ class Settings(abc.ABC):
         cls._setup_logging()
         cls._setup_discord_bot_token()
         cls._setup_discord_log_channel_webhook_url()
+        cls._setup_discord_logging_channel()
         cls._setup_discord_guild_id()
         cls._setup_group_full_name()
         cls._setup_group_short_name()
