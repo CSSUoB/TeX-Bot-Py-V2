@@ -167,7 +167,7 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
         ctx: "TeXBotApplicationContext",
         user_id_str: str,
         silent: bool,  # noqa: FBT001
-    ) -> None:  # type: ignore[misc]
+    ) -> None:
         """Add users or roles to a thread."""
         if not isinstance(ctx.channel, discord.Thread):
             await self.command_send_error(
@@ -222,7 +222,7 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
         ctx: "TeXBotApplicationContext",
         user_or_role: str,
         silent: bool,  # noqa: FBT001
-    ) -> None:  # type: ignore[misc]
+    ) -> None:
         """Add users or roles to a thread."""
         main_guild: discord.Guild = ctx.bot.main_guild
 
@@ -284,7 +284,7 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
         ctx: "TeXBotApplicationContext",
         user_id_str: str,
         silent: bool,  # noqa: FBT001
-    ) -> None:  # type: ignore[misc]
+    ) -> None:
         """Add users or roles to a channel."""
         if isinstance(ctx.channel, discord.Thread):
             await self.command_send_error(
@@ -349,7 +349,7 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
         ctx: "TeXBotApplicationContext",
         role: str,
         silent: bool,  # noqa: FBT001
-    ) -> None:  # type: ignore[misc]
+    ) -> None:
         """Command to add a role to a channel."""
         if isinstance(ctx.channel, discord.Thread):
             await self.command_send_error(
