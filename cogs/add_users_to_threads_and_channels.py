@@ -32,7 +32,9 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
     """Cog for adding users to threads."""
 
     @staticmethod
-    async def autocomplete_get_members(ctx: "TeXBotAutocompleteContext") -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":  # noqa: E501
+    async def autocomplete_get_members(
+        ctx: "TeXBotAutocompleteContext",
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """Autocomplete callable that generates the set of available selectable members."""
         try:
             main_guild: discord.Guild = ctx.bot.main_guild
@@ -57,7 +59,9 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
         }
 
     @staticmethod
-    async def autocomplete_get_roles(ctx: "TeXBotAutocompleteContext") -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":  # noqa: E501
+    async def autocomplete_get_roles(
+        ctx: "TeXBotAutocompleteContext",
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """Autocomplete callable that generates the set of available selectable roles."""
         try:
             main_guild: discord.Guild = ctx.bot.main_guild
@@ -75,7 +79,9 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
             for role in main_guild.roles
         }
 
-    async def add_user_or_role_silently(self, user_or_role: discord.Member | discord.Role, thread: discord.Thread) -> None:  # noqa: E501
+    async def add_user_or_role_silently(
+        self, user_or_role: discord.Member | discord.Role, thread: discord.Thread
+    ) -> None:
         """Add a user or role to a thread without pinging them."""
         message: discord.Message = await thread.send(
             content=f"Adding {user_or_role!r} to thread...",
@@ -84,7 +90,9 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
         await message.edit(content=f"{user_or_role.mention}")
         await message.delete(delay=1)
 
-    async def add_user_or_role_with_ping(self, user_or_role: discord.Member | discord.Role, thread: discord.Thread) -> None:  # noqa: E501
+    async def add_user_or_role_with_ping(
+        self, user_or_role: discord.Member | discord.Role, thread: discord.Thread
+    ) -> None:
         """Add a user or role to a thread and ping them."""
         if isinstance(user_or_role, discord.Member):
             try:
@@ -94,7 +102,7 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
                     "User: %s has blocked the bot and "
                     "therefore could not be added to thread: %s.",
                     user_or_role,
-                    thread
+                    thread,
                 )
             return
 
@@ -108,7 +116,7 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
                         "User: %s has blocked the bot and "
                         "therefore could not be added to thread: %s.",
                         member,
-                        thread
+                        thread,
                     )
             return
 
@@ -154,7 +162,12 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def add_user_to_thread(self, ctx: "TeXBotApplicationContext", user_id_str: str, silent: bool) -> None:  # noqa: E501, FBT001
+    async def add_user_to_thread(
+        self,
+        ctx: "TeXBotApplicationContext",
+        user_id_str: str,
+        silent: bool,  # noqa: FBT001
+    ) -> None:  # type: ignore[misc]
         """Add users or roles to a thread."""
         if not isinstance(ctx.channel, discord.Thread):
             await self.command_send_error(
@@ -204,7 +217,12 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def add_role_to_thread(self, ctx: "TeXBotApplicationContext", user_or_role: str, silent: bool) -> None:  # noqa: E501, FBT001
+    async def add_role_to_thread(
+        self,
+        ctx: "TeXBotApplicationContext",
+        user_or_role: str,
+        silent: bool,  # noqa: FBT001
+    ) -> None:  # type: ignore[misc]
         """Add users or roles to a thread."""
         main_guild: discord.Guild = ctx.bot.main_guild
 
@@ -261,7 +279,12 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
         required=False,
         parameter_name="silent",
     )
-    async def add_user_to_channel(self, ctx: "TeXBotApplicationContext", user_id_str: str, silent: bool) -> None:  # noqa: E501, FBT001
+    async def add_user_to_channel(
+        self,
+        ctx: "TeXBotApplicationContext",
+        user_id_str: str,
+        silent: bool,  # noqa: FBT001
+    ) -> None:  # type: ignore[misc]
         """Add users or roles to a channel."""
         if isinstance(ctx.channel, discord.Thread):
             await self.command_send_error(
@@ -321,7 +344,12 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
         required=False,
         parameter_name="silent",
     )
-    async def add_role_to_channel(self, ctx: "TeXBotApplicationContext", role: str, silent: bool) -> None:  # noqa: E501, FBT001
+    async def add_role_to_channel(
+        self,
+        ctx: "TeXBotApplicationContext",
+        role: str,
+        silent: bool,  # noqa: FBT001
+    ) -> None:  # type: ignore[misc]
         """Command to add a role to a channel."""
         if isinstance(ctx.channel, discord.Thread):
             await self.command_send_error(
@@ -372,4 +400,3 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
 
         if not silent:
             await channel.send(content=f"{role_object.mention} has been added to the channel.")
-
