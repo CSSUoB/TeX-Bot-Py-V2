@@ -164,9 +164,8 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
         silent: bool,  # noqa: FBT001
     ) -> None:
         """Add users or roles to a channel."""
-        if (
-            not isinstance(ctx.channel, discord.TextChannel) and
-            not isinstance(ctx.channel, discord.Thread)
+        if not isinstance(ctx.channel, discord.TextChannel) and not isinstance(
+            ctx.channel, discord.Thread
         ):
             await self.command_send_error(
                 ctx=ctx,
@@ -233,9 +232,8 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
         silent: bool,  # noqa: FBT001
     ) -> None:
         """Command to add a role to a channel."""
-        if (
-            not isinstance(ctx.channel, discord.Thread) and
-            not isinstance(ctx.channel, discord.TextChannel)
+        if not isinstance(ctx.channel, discord.Thread) and not isinstance(
+            ctx.channel, discord.TextChannel
         ):
             await self.command_send_error(
                 ctx=ctx, message="This command can only be used in a text channel or thread."

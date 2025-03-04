@@ -697,7 +697,6 @@ class Settings(abc.ABC):
 
         cls._settings["ADD_COMMITTEE_TO_THREADS"] = raw_add_committee_to_threads in TRUE_VALUES
 
-
     @classmethod
     def _setup_env_variables(cls) -> None:
         """
