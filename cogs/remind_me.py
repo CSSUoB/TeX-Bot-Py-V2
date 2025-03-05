@@ -207,7 +207,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
         description="The message you want to be reminded with.",
         required=False,
     )
-    async def remind_me(
+    async def remind_me(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", delay: str, message: str
     ) -> None:
         """
@@ -234,7 +234,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
             message = re.sub(r"<@[&#]?\d+>", "@...", message.strip())
 
         try:
-            reminder: DiscordReminder = await DiscordReminder.objects.acreate(
+            reminder: DiscordReminder = await DiscordReminder.objects.acreate(  # type: ignore[misc]
                 discord_id=ctx.user.id,
                 message=message or "",
                 channel_id=ctx.channel_id,
@@ -282,7 +282,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
     @override
     def __init__(self, bot: "TeXBot") -> None:
         """Start all task managers when this cog is initialised."""
-        self.clear_reminders_backlog.start()
+        _ = self.clear_reminders_backlog.start()
 
         super().__init__(bot)
 
@@ -336,11 +336,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                 # noinspection PyUnresolvedReferences
                 channel: discord.PartialMessageable = self.bot.get_partial_messageable(
                     reminder.channel_id,
-                    type=(
-                        discord.ChannelType(reminder.channel_type.value)
-                        if reminder.channel_type
-                        else None
-                    ),
+                    type=reminder.channel_type,
                 )
 
                 user_mention: str | None = None

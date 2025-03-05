@@ -124,7 +124,7 @@ To ensure your changes adhere to the required functionality of this project, a t
 The test suite uses [Pytest](https://pytest.org), and can be run with the following command:
 
 ```shell
-poetry run pytest
+uv run pytest
 ```
 
 Pycharm & VS Code also provide GUI interfaces to run the Pytest test suite.
@@ -140,7 +140,7 @@ You should also run the [static analysis linting](https://wikipedia.org/wiki/Lin
 It can be run with the following command:
 
 ```shell
-poetry run ruff check .
+uv run ruff check
 ```
 
 There are many additional flags to provide more advanced linting help (E.g. `--fix`).
@@ -152,7 +152,7 @@ See [ruff's documentation](https://docs.astral.sh/ruff/configuration#command-lin
 It can be run with the following command:
 
 ```shell
-poetry run mypy .
+uv run mypy .
 ```
 
 Although there is [a PyCharm plugin](https://github.com/leinardi/mypy-pycharm#mypy-pycharm) to provide GUI control & inline warnings for [mypy](https://mypy-lang.org), it has been rather temperamental recently.
@@ -164,31 +164,10 @@ So it is suggested to avoid using it, and run [mypy](https://mypy-lang.org) from
 It can be run with the following command:
 
 ```shell
-poetry run python ./.github/workflows/scripts/remove_invalid_tables.py && \
-poetry run pymarkdown scan . ; \
-poetry run python ./.github/workflows/scripts/remove_invalid_tables.py --restore
+uv run ccft-pymarkdown scan-all --with-git
 ```
 
-This command includes the removal of custom-formatted tables, as discussed in [the "Markdown Linting Issues" section](#markdown-linting-issues).
-**This command will not run on Windows PowerShell!
-(Use CommandPrompt instead.)**
-
-##### Markdown Linting Issues
-
-The tools [ruff](https://ruff.rs) & [mypy](https://mypy-lang.org) can be run as normal from the command line (as long as you are [within the poetry environment](https://python-poetry.org/docs/basic-usage#activating-the-virtual-environment)), however, [PyMarkdown](https://github.com/jackdewinter/pymarkdown) will **incorrectly** throw errors if run according to its own documentation.
-This is because some markdown files contain custom-formatted tables that [PyMarkdown](https://github.com/jackdewinter/pymarkdown) cannot parse.
-
-Therefore, you *must* run this utility script before calling [PyMarkdown](https://github.com/jackdewinter/pymarkdown) to remove any custom-formatted tables from files:
-
-```shell
-poetry run python ./.github/workflows/scripts/remove_invalid_tables.py
-```
-
-The below command will restore all markdown files back to their original states:
-
-```shell
-poetry run python ./.github/workflows/scripts/remove_invalid_tables.py --restore
-```
+This command includes the removal of custom-formatted tables. See the [CCFT-PyMarkdown tool](https://github.com/CarrotManMatt/CCFT-PyMarkdown) for more information on linting Markdown files that contain custom-formatted tables.
 
 ### Git Commit Messages
 

@@ -29,7 +29,6 @@ from exceptions import (
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from logging import Logger
-    from re import Match
     from typing import IO, Any, ClassVar, Final
 
 __all__: "Sequence[str]" = (
@@ -96,7 +95,7 @@ class Settings(abc.ABC):
         """Return the message to state that the given settings key is invalid."""
         return f"{item!r} is not a valid settings key."
 
-    def __getattr__(self, item: str) -> "Any":  # type: ignore[misc]  # noqa: ANN401
+    def __getattr__(self, item: str) -> "Any":  # type: ignore[explicit-any]  # noqa: ANN401
         """Retrieve settings value by attribute lookup."""
         MISSING_ATTRIBUTE_MESSAGE: Final[str] = (
             f"{type(self).__name__!r} object has no attribute {item!r}"
@@ -121,7 +120,7 @@ class Settings(abc.ABC):
 
         raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
-    def __getitem__(self, item: str) -> "Any":  # type: ignore[misc]  # noqa: ANN401
+    def __getitem__(self, item: str) -> "Any":  # type: ignore[explicit-any]  # noqa: ANN401
         """Retrieve settings value by key lookup."""
         attribute_not_exist_error: AttributeError
         try:
@@ -140,10 +139,10 @@ class Settings(abc.ABC):
 
         if raw_console_log_level not in LOG_LEVEL_CHOICES:
             INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"""LOG_LEVEL must be one of {
-                ",".join(f"{log_level_choice!r}"
-                    for log_level_choice
-                    in LOG_LEVEL_CHOICES[:-1])
-                } or {LOG_LEVEL_CHOICES[-1]!r}."""
+                ",".join(
+                    f"{log_level_choice!r}" for log_level_choice in LOG_LEVEL_CHOICES[:-1]
+                )
+            } or {LOG_LEVEL_CHOICES[-1]!r}."""
             raise ImproperlyConfiguredError(INVALID_LOG_LEVEL_MESSAGE)
 
         logger.setLevel(getattr(logging, raw_console_log_level))
@@ -377,19 +376,20 @@ class Settings(abc.ABC):
         cls._settings["ROLES_MESSAGES"] = set(messages_dict["roles_messages"])  # type: ignore[call-overload]
 
     @classmethod
-    def _setup_members_list_url(cls) -> None:
-        raw_members_list_url: str | None = os.getenv("MEMBERS_LIST_URL")
+    def _setup_organisation_id(cls) -> None:
+        raw_organisation_id: str | None = os.getenv("ORGANISATION_ID")
 
-        MEMBERS_LIST_URL_IS_VALID: Final[bool] = bool(
-            raw_members_list_url and validators.url(raw_members_list_url),
+        ORGANISATION_ID_IS_VALID: Final[bool] = bool(
+            raw_organisation_id and re.fullmatch(r"\A\d{4,5}\Z", raw_organisation_id),
         )
-        if not MEMBERS_LIST_URL_IS_VALID:
-            INVALID_MEMBERS_LIST_URL_MESSAGE: Final[str] = (
-                "MEMBERS_LIST_URL must be a valid URL."
-            )
-            raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_URL_MESSAGE)
 
-        cls._settings["MEMBERS_LIST_URL"] = raw_members_list_url
+        if not ORGANISATION_ID_IS_VALID:
+            INVALID_ORGANISATION_ID_MESSAGE: Final[str] = (
+                "ORGANISATION_ID must be an integer 4 to 5 digits long."
+            )
+            raise ImproperlyConfiguredError(message=INVALID_ORGANISATION_ID_MESSAGE)
+
+        cls._settings["ORGANISATION_ID"] = raw_organisation_id
 
     @classmethod
     def _setup_members_list_auth_session_cookie(cls) -> None:
@@ -419,7 +419,7 @@ class Settings(abc.ABC):
 
         if raw_send_introduction_reminders not in VALID_SEND_INTRODUCTION_REMINDERS_VALUES:
             INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE: Final[str] = (
-                "SEND_INTRODUCTION_REMINDERS must be one of: " '"Once", "Interval" or "False".'
+                'SEND_INTRODUCTION_REMINDERS must be one of: "Once", "Interval" or "False".'
             )
             raise ImproperlyConfiguredError(INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE)
 
@@ -440,7 +440,7 @@ class Settings(abc.ABC):
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        raw_send_introduction_reminders_delay: Match[str] | None = re.fullmatch(
+        raw_send_introduction_reminders_delay: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
             str(os.getenv("SEND_INTRODUCTION_REMINDERS_DELAY", "40h")),
         )
@@ -487,7 +487,7 @@ class Settings(abc.ABC):
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        raw_send_introduction_reminders_interval: Match[str] | None = re.fullmatch(
+        raw_send_introduction_reminders_interval: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
             str(os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h")),
         )
@@ -539,7 +539,7 @@ class Settings(abc.ABC):
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        raw_send_get_roles_reminders_delay: Match[str] | None = re.fullmatch(
+        raw_send_get_roles_reminders_delay: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
             str(os.getenv("SEND_GET_ROLES_REMINDERS_DELAY", "40h")),
         )
@@ -586,7 +586,7 @@ class Settings(abc.ABC):
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        raw_advanced_send_get_roles_reminders_interval: Match[str] | None = re.fullmatch(
+        raw_advanced_send_get_roles_reminders_interval: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
             str(os.getenv("ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL", "24h")),
         )
@@ -701,7 +701,7 @@ class Settings(abc.ABC):
         cls._setup_ping_command_easter_egg_probability()
         cls._setup_welcome_messages()
         cls._setup_roles_messages()
-        cls._setup_members_list_url()
+        cls._setup_organisation_id()
         cls._setup_members_list_auth_session_cookie()
         cls._setup_membership_perks_url()
         cls._setup_purchase_membership_url()

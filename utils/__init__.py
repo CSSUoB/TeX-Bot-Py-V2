@@ -73,7 +73,9 @@ def is_member_inducted(member: discord.Member) -> bool:
     Returns True if the member has any role other than "@News".
     The set of ignored roles is a tuple to make the set easily expandable.
     """
-    return any(role.name.lower().strip("@ \n\t") not in ("news",) for role in member.roles)
+    return any(
+        role.name.lower().strip("@ \n\t") not in ("news", "everyone") for role in member.roles
+    )
 
 
 def is_running_in_async() -> bool:

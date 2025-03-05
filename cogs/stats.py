@@ -144,24 +144,31 @@ class StatsCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/stats" command group and its command call-back methods."""
 
     _DISCORD_SERVER_NAME: "Final[str]" = f"""{
-        "the " if (
+        "the "
+        if (
             settings["_GROUP_SHORT_NAME"] is not None
-            and (
-                settings["_GROUP_SHORT_NAME"]
-            ).replace("the", "").replace("THE", "").replace("The", "").strip()
+            and (settings["_GROUP_SHORT_NAME"])
+            .replace("the", "")
+            .replace("THE", "")
+            .replace("The", "")
+            .strip()
         )
         else ""
     }{
         (
-            (
-                settings["_GROUP_SHORT_NAME"]
-            ).replace("the", "").replace("THE", "").replace("The", "").strip()
+            (settings["_GROUP_SHORT_NAME"])
+            .replace("the", "")
+            .replace("THE", "")
+            .replace("The", "")
+            .strip()
         )
         if (
             settings["_GROUP_SHORT_NAME"] is not None
-            and (
-                settings["_GROUP_SHORT_NAME"]
-            ).replace("the", "").replace("THE", "").replace("The", "").strip()
+            and (settings["_GROUP_SHORT_NAME"])
+            .replace("the", "")
+            .replace("THE", "")
+            .replace("The", "")
+            .strip()
         )
         else "our community group's"
     }"""
@@ -275,10 +282,7 @@ class StatsCommandsCog(TeXBotBaseCog):
                 x_label="Role Name",
                 y_label=(
                     f"""Number of Messages Sent (in the past {
-                        amount_of_time_formatter(
-                            settings["STATISTICS_DAYS"].days,
-                            "day"
-                        )
+                        amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")
                     })"""
                 ),
                 title=f"Most Active Roles in #{channel.name}",
@@ -384,15 +388,11 @@ class StatsCommandsCog(TeXBotBaseCog):
                     x_label="Role Name",
                     y_label=(
                         f"""Number of Messages Sent (in the past {
-                            amount_of_time_formatter(
-                                settings["STATISTICS_DAYS"].days,
-                                "day"
-                            )
+                            amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")
                         })"""
                     ),
                     title=(
-                        "Most Active Roles in "
-                        f"the {self.bot.group_short_name} Discord Server"
+                        f"Most Active Roles in the {self.bot.group_short_name} Discord Server"
                     ),
                     filename="roles_server_stats.png",
                     description=(
@@ -410,10 +410,7 @@ class StatsCommandsCog(TeXBotBaseCog):
                     x_label="Channel Name",
                     y_label=(
                         f"""Number of Messages Sent (in the past {
-                            amount_of_time_formatter(
-                                settings["STATISTICS_DAYS"].days,
-                                "day"
-                            )
+                            amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")
                         })"""
                     ),
                     title=(
@@ -498,10 +495,7 @@ class StatsCommandsCog(TeXBotBaseCog):
                 x_label="Channel Name",
                 y_label=(
                     f"""Number of Messages Sent (in the past {
-                        amount_of_time_formatter(
-                            settings["STATISTICS_DAYS"].days,
-                            "day"
-                        )
+                        amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")
                     })"""
                 ),
                 title=(
@@ -600,7 +594,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         if member.guild != self.bot.main_guild or member.bot:
             return
 
-        await LeftDiscordMember.objects.acreate(
+        await LeftDiscordMember.objects.acreate(  # type: ignore[misc]
             roles={
                 f"@{role.name}"
                 for role in member.roles

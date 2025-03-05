@@ -120,11 +120,11 @@ class InductSendMessageCog(TeXBotBaseCog):
                 await after.send(
                     f"You can also get yourself an annual membership "
                     f"to {self.bot.group_full_name} for only £5! "
-                    f"Just head to {settings["PURCHASE_MEMBERSHIP_URL"]}. "
+                    f"Just head to {settings['PURCHASE_MEMBERSHIP_URL']}. "
                     "You'll get awesome perks like a free T-shirt:shirt:, "
                     "access to member only events:calendar_spiral: and a cool green name on "
                     f"the {self.bot.group_short_name} Discord server:green_square:! "
-                    f"Checkout all the perks at {settings["MEMBERSHIP_PERKS_URL"]}",
+                    f"Checkout all the perks at {settings['MEMBERSHIP_PERKS_URL']}",
                 )
         except discord.Forbidden:
             logger.info(
@@ -196,91 +196,93 @@ class BaseInductCog(TeXBotBaseCog):
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
-        logger.debug("Inducting member %s, silent=%s", induction_member, silent)
+        await ctx.defer(ephemeral=True)
+        async with ctx.typing():
+            logger.debug("Inducting member %s, silent=%s", induction_member, silent)
 
-        INDUCT_AUDIT_MESSAGE: Final[str] = f'{ctx.user} used TeX Bot slash-command: "/induct"'
-
-        intro_channel: discord.TextChannel | None = discord.utils.get(
-            main_guild.text_channels,
-            name="introductions",
-        )
-
-        initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-            ":hourglass: Processing Induction... :hourglass:",
-            ephemeral=True,
-        )
-
-        if induction_member.bot:
-            await self.command_send_error(
-                ctx,
-                message="Member cannot be inducted because they are a bot.",
-            )
-            return
-
-        if guest_role in induction_member.roles:
-            await initial_response.edit(
-                content=(
-                    ":information_source: No changes made. "
-                    "User has already been inducted. :information_source:"
-                ),
-            )
-            return
-
-        if not silent:
-            general_channel: discord.TextChannel = await self.bot.general_channel
-
-            # noinspection PyUnusedLocal
-            roles_channel_mention: str = "**`#roles`**"
-            with contextlib.suppress(RolesChannelDoesNotExistError):
-                roles_channel_mention = (await self.bot.roles_channel).mention
-
-            await general_channel.send(
-                f"{await self.get_random_welcome_message(induction_member)} :tada:\n"
-                f"Remember to grab your roles in {roles_channel_mention} "
-                "and say hello to everyone here! :wave:",
+            INDUCT_AUDIT_MESSAGE: Final[str] = (
+                f'{ctx.user} used TeX Bot slash-command: "/induct"'
             )
 
-        await induction_member.add_roles(
-            guest_role,
-            reason=INDUCT_AUDIT_MESSAGE,
-        )
+            intro_channel: discord.TextChannel | None = discord.utils.get(
+                main_guild.text_channels,
+                name="introductions",
+            )
 
-        # noinspection PyUnusedLocal
-        applicant_role: discord.Role | None = None
-        with contextlib.suppress(ApplicantRoleDoesNotExistError):
-            applicant_role = await ctx.bot.applicant_role
+            if induction_member.bot:
+                await self.command_send_error(
+                    ctx,
+                    message="Member cannot be inducted because they are a bot.",
+                )
+                return
 
-        if applicant_role and applicant_role in induction_member.roles:
-            await induction_member.remove_roles(
-                applicant_role,
+            if guest_role in induction_member.roles:
+                await ctx.respond(
+                    content=(
+                        ":information_source: No changes made. "
+                        "User has already been inducted. :information_source:"
+                    ),
+                    ephemeral=True,
+                )
+                return
+
+            if not silent:
+                general_channel: discord.TextChannel = await self.bot.general_channel
+
+                # noinspection PyUnusedLocal
+                roles_channel_mention: str = "**`#roles`**"
+                with contextlib.suppress(RolesChannelDoesNotExistError):
+                    roles_channel_mention = (await self.bot.roles_channel).mention
+
+                await general_channel.send(
+                    f"{await self.get_random_welcome_message(induction_member)} :tada:\n"
+                    f"Remember to grab your roles in {roles_channel_mention} "
+                    "and say hello to everyone here! :wave:",
+                )
+
+            await induction_member.add_roles(
+                guest_role,
                 reason=INDUCT_AUDIT_MESSAGE,
             )
 
-        tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
-        if not tex_emoji:
-            tex_emoji = discord.utils.get(main_guild.emojis, name="TeX")
+            # noinspection PyUnusedLocal
+            applicant_role: discord.Role | None = None
+            with contextlib.suppress(ApplicantRoleDoesNotExistError):
+                applicant_role = await ctx.bot.applicant_role
 
-        if intro_channel:
-            recent_message: discord.Message
-            for recent_message in await intro_channel.history(limit=30).flatten():
-                if recent_message.author.id == induction_member.id:
-                    forbidden_error: discord.Forbidden
-                    try:
-                        if tex_emoji:
-                            await recent_message.add_reaction(tex_emoji)
-                        await recent_message.add_reaction("👋")
-                    except discord.Forbidden as forbidden_error:
-                        if "90001" not in str(forbidden_error):
-                            raise forbidden_error from forbidden_error
+            if applicant_role and applicant_role in induction_member.roles:
+                await induction_member.remove_roles(
+                    applicant_role,
+                    reason=INDUCT_AUDIT_MESSAGE,
+                )
 
-                        logger.info(
-                            "Failed to add reactions because the user, %s, "
-                            "has blocked TeX-Bot.",
-                            recent_message.author,
-                        )
-                    break
+            tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
+            if not tex_emoji:
+                tex_emoji = discord.utils.get(main_guild.emojis, name="TeX")
 
-        await initial_response.edit(content=":white_check_mark: User inducted successfully.")
+            if intro_channel:
+                recent_message: discord.Message
+                for recent_message in await intro_channel.history(limit=30).flatten():
+                    if recent_message.author.id == induction_member.id:
+                        try:
+                            if tex_emoji:
+                                await recent_message.add_reaction(tex_emoji)
+                            await recent_message.add_reaction("👋")
+                        except discord.Forbidden as e:
+                            if "90001" not in str(e):
+                                raise e from e
+
+                            logger.info(
+                                "Failed to add reactions because the user, %s, "
+                                "has blocked TeX-Bot.",
+                                recent_message.author,
+                            )
+                        break
+
+            await ctx.followup.send(
+                content=":white_check_mark: User inducted successfully.",
+                ephemeral=True,
+            )
 
 
 class InductSlashCommandCog(BaseInductCog):
@@ -341,7 +343,7 @@ class InductSlashCommandCog(BaseInductCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def induct(
+    async def induct(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", str_induct_member_id: str, *, silent: bool
     ) -> None:
         """
@@ -368,7 +370,7 @@ class InductContextCommandsCog(BaseInductCog):
     @discord.user_command(name="Induct User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def non_silent_user_induct(
+    async def non_silent_user_induct(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", member: discord.Member
     ) -> None:
         """
@@ -384,7 +386,7 @@ class InductContextCommandsCog(BaseInductCog):
     @discord.user_command(name="Silently Induct User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def silent_user_induct(
+    async def silent_user_induct(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", member: discord.Member
     ) -> None:
         """
@@ -400,7 +402,7 @@ class InductContextCommandsCog(BaseInductCog):
     @discord.message_command(name="Induct Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def non_silent_message_induct(
+    async def non_silent_message_induct(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", message: discord.Message
     ) -> None:
         """
@@ -428,37 +430,6 @@ class InductContextCommandsCog(BaseInductCog):
 
         await self._perform_induction(ctx, member, silent=False)
 
-    @discord.message_command(name="Silently Induct Message Author")  # type: ignore[no-untyped-call, misc]
-    @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_main_guild
-    async def silent_message_induct(
-        self, ctx: "TeXBotApplicationContext", message: discord.Message
-    ) -> None:
-        """
-        Definition and callback response of the "silent_induct" message-context-command.
-
-        The "silent_induct" command executes the same process as the "induct" slash-command,
-        using the message-context-menu.
-        Therefore, it will induct a given member into your group's Discord guild
-        by giving them the "Guest" role, only without broadcasting a welcome message.
-        """
-        try:
-            member: discord.Member = await self.bot.get_member_from_str_id(
-                str(message.author.id),
-            )
-        except ValueError:
-            await ctx.respond(
-                (
-                    ":information_source: No changes made. User cannot be inducted "
-                    "because they have left the server "
-                    ":information_source:"
-                ),
-                ephemeral=True,
-            )
-            return
-
-        await self._perform_induction(ctx, member, silent=True)
-
 
 class EnsureMembersInductedCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/ensure-members-inducted" command and call-back method."""
@@ -470,7 +441,7 @@ class EnsureMembersInductedCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def ensure_members_inducted(self, ctx: "TeXBotApplicationContext") -> None:
+    async def ensure_members_inducted(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
         """
         Definition & callback response of the "ensure_members_inducted" command.
 

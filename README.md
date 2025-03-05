@@ -1,10 +1,11 @@
 # TeX-Bot-Py-V2
 
 [![Python Version](https://img.shields.io/badge/Python-3.12-blue?&logo=Python&logoColor=white)](https://python.org/downloads/release/python-3122)
-[![Pycord Version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSUoB%2FTeX-Bot-Py-V2%2Fmain%2Fpoetry.lock&query=%24.package%5B%3F%28%40.name%3D%3D%27py-cord%27%29%5D.version&logo=Discord&label=Pycord&logoColor=white)](https://pycord.dev)
+[![Pycord Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Ftoml-version-finder.carrotmanmatt.com%2Flock%2FCSSUoB%2FTeX-Bot-Py-V2%2Fpy-cord&query=%24.package_version&logo=Discord&label=Pycord&logoColor=white)](https://pycord.dev)
 [![Tests Status](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yaml/badge.svg)](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yaml)
 [![Mypy Status](https://img.shields.io/badge/mypy-checked-%232EBB4E&label=mypy)](https://mypy-lang.org)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://ruff.rs)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://astral.sh/uv)
 [![pre-commit Status](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://pre-commit.com)
 [![PyMarkdown Status](https://img.shields.io/badge/validated-brightgreen?logo=markdown&label=PyMarkdown)](https://github.com/jackdewinter/pymarkdown)
 [![CSS Discord Server](https://img.shields.io/badge/Discord-5865F2?logo=discord&logoColor=white)](https://cssbham.com/discord)
@@ -89,8 +90,9 @@ The conditions for each [task](https://docs.pycord.dev/en/stable/ext/tasks) are 
 ## Deploying in Production
 
 The only supported way to deploy TeX-Bot in production is by using our pre-built [docker container](https://docs.docker.com/resources/what-container).
-It is [built automatically](.github/workflows/update-container-image.yaml) when new changes are made to [the `main` branch](https://github.com/CSSUoB/TeX-Bot-Py-V2/tree/main), and can be pulled from the [GitHub Container Registry](https://docs.github.com/packages/working-with-a-github-packages-registry/working-with-the-container-registry) with this identifier: [`ghcr.io/CSSUoB/tex-bot-py-v2:latest`](https://github.com/CSSUoB/TeX-Bot-Py-V2/pkgs/container/tex-bot-py-v2).
+It can be pulled from the [GitHub Container Registry](https://docs.github.com/packages/working-with-a-github-packages-registry/working-with-the-container-registry) with this identifier: [`ghcr.io/CSSUoB/tex-bot-py-v2:latest`](https://github.com/CSSUoB/TeX-Bot-Py-V2/pkgs/container/tex-bot-py-v2).
 (An introduction on how to use a [docker-compose deployment](https://docs.docker.com/compose) can be found [here](https://docs.docker.com/get-started/08_using_compose).)
+See [**Versioning**](#versioning) for the full list of available version tags for each release.
 
 Before running the [container](https://docs.docker.com/resources/what-container), some [environment variables](https://wikipedia.org/wiki/Environment_variable) will need to be set.
 These can be defined in your [`compose.yaml`](https://docs.docker.com/compose/compose-application-model#the-compose-file) file.
@@ -100,31 +102,17 @@ The required [environment variables](https://wikipedia.org/wiki/Environment_vari
 
 ### Installing Dependencies
 
-1. Ensure that you have [Poetry](https://python-poetry.org) installed
+1. Ensure that you have [uv](https://docs.astral.sh/uv/getting-started/installation) installed
 2. Navigate to this project's repository root folder
 3. To install the required dependencies, execute the following command:
 
 ```shell
-poetry install --no-root --sync
+uv sync
 ```
 
-* The [`--no-root` flag](https://python-poetry.org/docs/cli#options-2) installs the dependencies without installing the [root project](https://packaging.python.org/glossary#term-Project) as a [package](https://packaging.python.org/glossary#term-Distribution-Package).
-[Poetry](https://python-poetry.org) attempts to install the [project](https://packaging.python.org/glossary#term-Project) as a [package](https://packaging.python.org/glossary#term-Distribution-Package) by default because [Poetry](https://python-poetry.org) is often used to develop [library packages](https://packaging.python.org/glossary#term-Distribution-Package), which need to be installed themselves.
+> [!TIP]
+> Syncing the dependencies is not required. uv performs this automatically every time the `uv run` command is used
 
-* The [`--sync` flag](https://python-poetry.org/docs/cli#options-2) uninstalls any additional [packages](https://packaging.python.org/glossary#term-Distribution-Package) that have already been installed in the [local environment](https://packaging.python.org/glossary#term-Virtual-Environment), but are not required in the [`pyproject.toml`](pyproject.toml)
-
-### Activating the [Poetry](https://python-poetry.org) [Environment](https://packaging.python.org/glossary#term-Virtual-Environment)
-
-To use the installed dependencies, the [environment](https://packaging.python.org/glossary#term-Virtual-Environment) they were installed within must be activated.
-The easiest way to do this (as described by [Poetry's guide](https://python-poetry.org/docs/basic-usage#activating-the-virtual-environment)) is with the below command:
-
-```shell
-poetry shell
-```
-
-If you do not want to activate the [virtual environment](https://packaging.python.org/glossary#term-Virtual-Environment), every [command](https://wikipedia.org/wiki/Command-line_interface#Anatomy_of_a_shell_CLI) can be run prepended with [`poetry run`](https://python-poetry.org/docs/cli#run), to run the given [command](https://wikipedia.org/wiki/Command-line_interface#Anatomy_of_a_shell_CLI) within the [Poetry context](https://python-poetry.org/docs/basic-usage#activating-the-virtual-environment).
-(Every [command](https://wikipedia.org/wiki/Command-line_interface#Anatomy_of_a_shell_CLI) within the documentation within this project will include the [`poetry run`](https://python-poetry.org/docs/cli#run) prefix for convenience.
-**It can be excluded if you have already [activated the virtual environment](https://python-poetry.org/docs/basic-usage#activating-the-virtual-environment).**)
 
 ### Creating Your [Bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)
 
@@ -133,7 +121,7 @@ A full guide on how to create your bot's account can be found [here; on Pycord's
 You'll need to create a [Discord bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts) of your own in the [Discord Developer Portal](https://discord.com/developers/applications).
 It's also handy if you have an empty [guild](https://discord.com/developers/docs/resources/guild) for you to test in.
 
-You can retrieve the correct [invite URL](https://docs.pycord.dev/en/stable/discord.html#inviting-your-bot) by simply running TeX-Bot for the first time with DEBUG logging enabled, and the invite url will be printed to the console.
+The correct [invite URL](https://docs.pycord.dev/en/stable/discord.html#inviting-your-bot) will be displayed to you in the console the first time you run the bot (or if you set a high verbosity log level)
 
 ### Setting [Environment Variables](https://wikipedia.org/wiki/Environment_variable)
 
@@ -148,9 +136,7 @@ You'll also need to set a number of [environment variables](https://wikipedia.or
 (This setting is optional.
 Error logs will **always** be sent to the [console](https://wikipedia.org/wiki/Terminal_emulator), this setting allows them to also be sent to a [Discord log channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel).)
 
-* `MEMBERS_LIST_URL`: The [URL](https://wikipedia.org/wiki/URL) to retrieve the list of IDs of people that have purchased a membership to your community group.
-(The [CSS](https://cssbham.com)' members-list is currently found on [the Guild of Students website](https://guildofstudents.com).
-If your members-list is also found on [the Guild of Students website](https://guildofstudents.com), ensure the [URL](https://wikipedia.org/wiki/URL) includes the "sort by groups" option, so that all members are visible without [pagination](https://wikipedia.org/wiki/Pagination).)
+* `ORGANISATION_ID`: Your Guild society ID. This is used to dynamically create the members list among other needed URLs.
 
 * `MEMBERS_LIST_URL_SESSION_COOKIE`: The members-list [URL](https://wikipedia.org/wiki/URL) [session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie).
 (If your group's members-list is stored at a [URL](https://wikipedia.org/wiki/URL) that requires [authentication](https://wikipedia.org/wiki/Authentication), this [session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie) should [authenticate](https://wikipedia.org/wiki/Authentication) TeX-Bot to view your group's members-list, as if it were [logged in to the website](https://wikipedia.org/wiki/Login_session) as a Committee member.
@@ -171,7 +157,7 @@ All other [variables](https://wikipedia.org/wiki/Environment_variable) are optio
 Once everything is set up, you should be able to execute the following command to automatically run TeX-Bot & connect it to your [Discord guild](https://discord.com/developers/docs/resources/guild):
 
 ```shell
-poetry run python -m main
+uv run -m main
 ```
 
 ## Contributing
@@ -184,3 +170,20 @@ If you find any bugs/problems or have any feature suggestions, please [create](h
 
 Before making contributions, it is highly suggested that you read [`CONTRIBUTING.md`](CONTRIBUTING.md).
 This will ensure your code meets the standard required for this project and gives you the greatest chances of your contributions being merged.
+
+## Versioning
+
+This project follows the [semantic versioning scheme](https://semver.org).
+We currently treat TeX-Bot as alpha software, and as such no numbered release has been made yet.
+
+When selecting a version tag to use for [deploying TeX-Bot as a container image](#deploying-in-production) there are multiple tag schemes available:
+
+* `latest` - The most recent numerically tagged version released
+* `br-<branch>` - The most recent commit from a given branch in this repository (E.g. `br-main`) (N.B. this does not include branches of forks of this repository)
+* `v<major>` - The most recent tagged version released with a specific major version (E.g. `v4` could map to the git tag `v4.1.6` or `v4.0.0`)
+* `<major>.<minor>` - The most recent tagged version released with a specific minor and major version (E.g. `4.1` could map to the git tag `v4.1.0` or `v4.1.6`)
+* `<major>.<minor>.<patch>` - A specific tagged version (E.g. `4.1.6` maps to the git tag `v4.1.6` only)
+* `pr-<pr-number>` - The most recent commit from a branch in a specific pull request (E.g. `pr-420`) (N.B this **will** work for pull requests that come from forks of this repository)
+
+To create a new tagged release, create a single git tag matching the full version number, prefixed by a `v` character, on the most recent commit on the main branch (E.g. `v4.1.6`).
+This will initiate the GitHub workflow to generate all the matching container image tags.
