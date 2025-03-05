@@ -173,7 +173,7 @@ This command includes the removal of custom-formatted tables. See the [CCFT-PyMa
 
 Commit messages should be written in the imperative present tense. For example, "Fix bug #1".
 
-Commit subjects should start with a capital letter and **not** end in a full-stop
+Commit subjects should start with a capital letter and **not** end in a full-stop.
 
 Additionally, we request that you keep the commit subject under 80 characters for a comfortable viewing experience on GitHub and other git tools.
 If you need more, please use the body of the commit.
