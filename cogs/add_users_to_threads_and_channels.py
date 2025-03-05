@@ -1,6 +1,7 @@
 """Contains Cog classes for adding users and roles to threads."""
 
 import logging
+from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
 import discord
@@ -76,36 +77,62 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
             for role in main_guild.roles
         }
 
-    async def add_user_or_role_silently(
-        self, user_or_role: discord.Member | discord.Role, thread: discord.Thread
+    async def add_users_or_roles_silently(
+        self,
+        users_or_roles: discord.Member
+        | discord.Role
+        | list[discord.Member]
+        | list[discord.Role],
+        thread: discord.Thread,
     ) -> None:
         """Add a user or role to a thread without pinging them."""
+        if isinstance(users_or_roles, Iterable):
+            user_or_role: discord.Role | discord.Member
+            for user_or_role in users_or_roles:
+                await self.add_users_or_roles_silently(
+                    users_or_roles=user_or_role, thread=thread
+                )
+            return
+
         message: discord.Message = await thread.send(
-            content=f"Adding {user_or_role!r} to thread...",
+            content=f"Adding {users_or_roles!r} to thread...",
             silent=True,
         )
-        await message.edit(content=f"{user_or_role.mention}")
+        await message.edit(content=f"{users_or_roles.mention}")
         await message.delete(delay=1)
 
-    async def add_user_or_role_with_ping(
-        self, user_or_role: discord.Member | discord.Role, thread: discord.Thread
+    async def add_users_or_roles_with_ping(
+        self,
+        users_or_roles: discord.Member
+        | discord.Role
+        | list[discord.Member]
+        | list[discord.Role],
+        thread: discord.Thread,
     ) -> None:
         """Add a user or role to a thread and ping them."""
-        if isinstance(user_or_role, discord.Member):
+        if isinstance(users_or_roles, Iterable):
+            user_or_role: discord.Role | discord.Member
+            for user_or_role in users_or_roles:
+                await self.add_users_or_roles_with_ping(
+                    users_or_roles=user_or_role, thread=thread
+                )
+            return
+
+        if isinstance(users_or_roles, discord.Member):
             try:
-                await thread.add_user(user=user_or_role)
+                await thread.add_user(user=users_or_roles)
             except discord.NotFound:
                 logger.debug(
                     "User: %s has blocked the bot and "
                     "therefore could not be added to thread: %s.",
-                    user_or_role,
+                    users_or_roles,
                     thread,
                 )
             return
 
-        if isinstance(user_or_role, discord.Role):
+        if isinstance(users_or_roles, discord.Role):
             member: discord.Member
-            for member in user_or_role.members:
+            for member in users_or_roles.members:
                 try:
                     await thread.add_user(member)
                 except discord.NotFound:
@@ -132,9 +159,11 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
             return
 
         if "committee" in thread.parent.category.name.lower():
-            await self.add_user_or_role_silently(user_or_role=committee_role, thread=thread)
-            await self.add_user_or_role_silently(
-                user_or_role=committee_elect_role,
+            await self.add_users_or_roles_silently(
+                users_or_roles=committee_role, thread=thread
+            )
+            await self.add_users_or_roles_silently(
+                users_or_roles=committee_elect_role,
                 thread=thread,
             )
 
@@ -197,9 +226,9 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
 
         if isinstance(channel, discord.Thread):
             if silent:
-                await self.add_user_or_role_silently(user_to_add, channel)
+                await self.add_users_or_roles_silently(user_to_add, channel)
             else:
-                await self.add_user_or_role_with_ping(user_to_add, channel)
+                await self.add_users_or_roles_with_ping(user_to_add, channel)
 
         await ctx.respond(
             content=f"User {user_to_add.mention} has been added to the channel.",
@@ -275,9 +304,9 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
 
         if isinstance(channel, discord.Thread):
             if silent:
-                await self.add_user_or_role_silently(role_object, channel)
+                await self.add_users_or_roles_silently(role_object, channel)
             else:
-                await self.add_user_or_role_with_ping(role_object, channel)
+                await self.add_users_or_roles_with_ping(role_object, channel)
 
         await ctx.respond(
             content=f"Role {role_object.mention} has been added to the channel.",
