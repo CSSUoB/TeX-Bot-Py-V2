@@ -43,7 +43,7 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
         members: set[discord.Member] = {
             member
             for member in main_guild.members
-            if not member.bot and guest_role not in member.roles
+            if not member.bot and guest_role in member.roles
         }
 
         if not ctx.value or ctx.value.startswith("@"):
