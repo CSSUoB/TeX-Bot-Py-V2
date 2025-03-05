@@ -125,7 +125,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def archive_category(
+    async def archive_category(  # type: ignore[misc]
         self,
         ctx: "TeXBotApplicationContext",
         str_category_id: str,
@@ -224,7 +224,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def archive_channel(
+    async def archive_channel(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", str_channel_id: str, str_category_id: str
     ) -> None:
         """
