@@ -48,8 +48,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
         return {
             discord.OptionChoice(name=category.name, value=str(category.id))
-            for category
-            in main_guild.categories
+            for category in main_guild.categories
             if "archive" not in category.name.lower()
         }
 
@@ -71,14 +70,13 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
         return {
             discord.OptionChoice(name=category.name, value=str(category.id))
-            for category
-            in main_guild.categories
+            for category in main_guild.categories
             if "archive" in category.name.lower()
         }
 
     @staticmethod
     async def autocomplete_get_channels(
-        ctx: "TeXBotAutocompleteContext"
+        ctx: "TeXBotAutocompleteContext",
     ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """
         Autocpomplete callable that generates the set of channels that the user can archive.
@@ -95,13 +93,14 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
         return {
             discord.OptionChoice(name=channel.name, value=str(channel.id))
-            for channel
-            in main_guild.channels
+            for channel in main_guild.channels
             if (
-                not isinstance(channel, discord.CategoryChannel) and
-                (channel.category and "archive" not in channel.category.name.lower()) and
-                (isinstance(interaction_user, discord.Member) and
-                channel.permissions_for(interaction_user).read_messages)
+                not isinstance(channel, discord.CategoryChannel)
+                and (channel.category and "archive" not in channel.category.name.lower())
+                and (
+                    isinstance(interaction_user, discord.Member)
+                    and channel.permissions_for(interaction_user).read_messages
+                )
             )
         }
 
@@ -126,7 +125,12 @@ class ArchiveCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def archive_category(self, ctx: "TeXBotApplicationContext", str_category_id: str, allow_archivist: bool) -> None:  # noqa: E501, FBT001
+    async def archive_category(
+        self,
+        ctx: "TeXBotApplicationContext",
+        str_category_id: str,
+        allow_archivist: bool,  # noqa: FBT001
+    ) -> None:
         """
         Definition & callback response of the "archive-category" command.
 
@@ -175,7 +179,9 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
         channel: AllChannelTypes
         for channel in category.channels:
-            if isinstance(channel, discord.CategoryChannel):  # NOTE: Categories can not be placed inside other categories, so this will always be false, but is needed due to the typing of the method
+            if isinstance(
+                channel, discord.CategoryChannel
+            ):  # NOTE: Categories can not be placed inside other categories, so this will always be false, but is needed due to the typing of the method
                 continue
 
             await channel.edit(sync_permissions=True)
@@ -218,7 +224,9 @@ class ArchiveCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def archive_channel(self, ctx: "TeXBotApplicationContext", str_channel_id: str, str_category_id: str) -> None:  # noqa: E501
+    async def archive_channel(
+        self, ctx: "TeXBotApplicationContext", str_channel_id: str, str_category_id: str
+    ) -> None:
         """
         Definition & callback response of the "archive-channel" command.
 
