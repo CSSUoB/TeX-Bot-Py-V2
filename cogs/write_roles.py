@@ -26,7 +26,7 @@ class WriteRolesCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def write_roles(self, ctx: "TeXBotApplicationContext") -> None:
+    async def write_roles(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
         """
         Definition & callback response of the "write_roles" command.
 

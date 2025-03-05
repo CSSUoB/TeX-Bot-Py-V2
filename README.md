@@ -5,6 +5,7 @@
 [![Tests Status](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yaml/badge.svg)](https://github.com/CSSUoB/TeX-Bot-Py-V2/actions/workflows/tests.yaml)
 [![Mypy Status](https://img.shields.io/badge/mypy-checked-%232EBB4E&label=mypy)](https://mypy-lang.org)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://ruff.rs)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://astral.sh/uv)
 [![pre-commit Status](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://pre-commit.com)
 [![PyMarkdown Status](https://img.shields.io/badge/validated-brightgreen?logo=markdown&label=PyMarkdown)](https://github.com/jackdewinter/pymarkdown)
 [![CSS Discord Server](https://img.shields.io/badge/Discord-5865F2?logo=discord&logoColor=white)](https://cssbham.com/discord)
@@ -123,8 +124,9 @@ The conditions for each [task](https://docs.pycord.dev/en/stable/ext/tasks) are 
 ## Deploying in Production
 
 The only supported way to deploy TeX-Bot in production is by using our pre-built [docker container](https://docs.docker.com/resources/what-container).
-It is [built automatically](.github/workflows/update-container-image.yaml) when new changes are made to [the `main` branch](https://github.com/CSSUoB/TeX-Bot-Py-V2/tree/main), and can be pulled from the [GitHub Container Registry](https://docs.github.com/packages/working-with-a-github-packages-registry/working-with-the-container-registry) with this identifier: [`ghcr.io/CSSUoB/tex-bot-py-v2:latest`](https://github.com/CSSUoB/TeX-Bot-Py-V2/pkgs/container/tex-bot-py-v2).
+It is can be pulled from the [GitHub Container Registry](https://docs.github.com/packages/working-with-a-github-packages-registry/working-with-the-container-registry) with this identifier: [`ghcr.io/CSSUoB/tex-bot-py-v2:latest`](https://github.com/CSSUoB/TeX-Bot-Py-V2/pkgs/container/tex-bot-py-v2).
 (An introduction on how to use a [docker-compose deployment](https://docs.docker.com/compose) can be found [here](https://docs.docker.com/get-started/08_using_compose).)
+See [**Versioning**](#versioning) for the full list of available version tags for each release.
 
 Before running the [container](https://docs.docker.com/resources/what-container), some [environment variables](https://wikipedia.org/wiki/Environment_variable) will need to be set.
 These can be defined in your [`compose.yaml`](https://docs.docker.com/compose/compose-application-model#the-compose-file) file.
@@ -134,31 +136,17 @@ The required [environment variables](https://wikipedia.org/wiki/Environment_vari
 
 ### Installing Dependencies
 
-1. Ensure that you have [Poetry](https://python-poetry.org) installed
+1. Ensure that you have [uv](https://docs.astral.sh/uv/getting-started/installation) installed
 2. Navigate to this project's repository root folder
 3. To install the required dependencies, execute the following command:
 
 ```shell
-poetry install --no-root --sync
+uv sync
 ```
 
-* The [`--no-root` flag](https://python-poetry.org/docs/cli#options-2) installs the dependencies without installing the [root project](https://packaging.python.org/glossary#term-Project) as a [package](https://packaging.python.org/glossary#term-Distribution-Package).
-[Poetry](https://python-poetry.org) attempts to install the [project](https://packaging.python.org/glossary#term-Project) as a [package](https://packaging.python.org/glossary#term-Distribution-Package) by default because [Poetry](https://python-poetry.org) is often used to develop [library packages](https://packaging.python.org/glossary#term-Distribution-Package), which need to be installed themselves.
+> [!TIP]
+> Syncing the dependencies is not required. uv performs this automatically every time the `uv run` command is used
 
-* The [`--sync` flag](https://python-poetry.org/docs/cli#options-2) uninstalls any additional [packages](https://packaging.python.org/glossary#term-Distribution-Package) that have already been installed in the [local environment](https://packaging.python.org/glossary#term-Virtual-Environment), but are not required in the [`pyproject.toml`](pyproject.toml)
-
-### Activating the [Poetry](https://python-poetry.org) [Environment](https://packaging.python.org/glossary#term-Virtual-Environment)
-
-To use the installed dependencies, the [environment](https://packaging.python.org/glossary#term-Virtual-Environment) they were installed within must be activated.
-The easiest way to do this (as described by [Poetry's guide](https://python-poetry.org/docs/basic-usage#activating-the-virtual-environment)) is with the below command:
-
-```shell
-poetry shell
-```
-
-If you do not want to activate the [virtual environment](https://packaging.python.org/glossary#term-Virtual-Environment), every [command](https://wikipedia.org/wiki/Command-line_interface#Anatomy_of_a_shell_CLI) can be run prepended with [`poetry run`](https://python-poetry.org/docs/cli#run), to run the given [command](https://wikipedia.org/wiki/Command-line_interface#Anatomy_of_a_shell_CLI) within the [Poetry context](https://python-poetry.org/docs/basic-usage#activating-the-virtual-environment).
-(Every [command](https://wikipedia.org/wiki/Command-line_interface#Anatomy_of_a_shell_CLI) within the documentation within this project will include the [`poetry run`](https://python-poetry.org/docs/cli#run) prefix for convenience.
-**It can be excluded if you have already [activated the virtual environment](https://python-poetry.org/docs/basic-usage#activating-the-virtual-environment).**)
 
 ### Creating Your [Bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)
 
@@ -167,15 +155,7 @@ A full guide on how to create your bot's account can be found [here; on Pycord's
 You'll need to create a [Discord bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts) of your own in the [Discord Developer Portal](https://discord.com/developers/applications).
 It's also handy if you have an empty [guild](https://discord.com/developers/docs/resources/guild) for you to test in.
 
-You can retrieve the correct [invite URL](https://docs.pycord.dev/en/stable/discord.html#inviting-your-bot) to use by navigating to the root folder, then running the following command:
-
-```shell
-poetry run python -m utils generate_invite_url {discord_bot_application_id} {discord_guild_id}
-```
-
-* `{discord_bot_application_id}` must be replaced by the [application ID](https://discord.com/developers/applications) of your [bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)
-
-* `{discord_guild_id}` must be replaced by the [snowflake ID](https://discord.com/developers/docs/reference#snowflakes) of your community group's [guild](https://discord.com/developers/docs/resources/guild)
+The correct [invite URL](https://docs.pycord.dev/en/stable/discord.html#inviting-your-bot) will be displayed to you in the console the first time you run the bot (or if you set a high verbosity log level)
 
 ### Setting [Environment Variables](https://wikipedia.org/wiki/Environment_variable)
 
@@ -211,7 +191,7 @@ All other [variables](https://wikipedia.org/wiki/Environment_variable) are optio
 Once everything is set up, you should be able to execute the following command to automatically run TeX-Bot & connect it to your [Discord guild](https://discord.com/developers/docs/resources/guild):
 
 ```shell
-poetry run python -m main
+uv run -m main
 ```
 
 ## Contributing
@@ -224,3 +204,20 @@ If you find any bugs/problems or have any feature suggestions, please [create](h
 
 Before making contributions, it is highly suggested that you read [`CONTRIBUTING.md`](CONTRIBUTING.md).
 This will ensure your code meets the standard required for this project and gives you the greatest chances of your contributions being merged.
+
+## Versioning
+
+This project follows the [semantic versioning scheme](https://semver.org).
+We currently treat TeX-Bot as alpha software, and as such no numbered release has been made yet.
+
+When selecting a version tag to use for [deploying TeX-Bot as a container image](#deploying-in-production) there are multiple tag schemes available:
+
+* `latest` - The most recent numerically tagged version released
+* `br-<branch>` - The most recent commit from a given branch in this repository (E.g. `br-main`) (N.B. this does not include branches of forks of this repository)
+* `v<major>` - The most recent tagged version released with a specific major version (E.g. `v4` could map to the git tag `v4.1.6` or `v4.0.0`)
+* `<major>.<minor>` - The most recent tagged version released with a specific minor and major version (E.g. `4.1` could map to the git tag `v4.1.0` or `v4.1.6`)
+* `<major>.<minor>.<patch>` - A specific tagged version (E.g. `4.1.6` maps to the git tag `v4.1.6` only)
+* `pr-<pr-number>` - The most recent commit from a branch in a specific pull request (E.g. `pr-420`) (N.B this **will** work for pull requests that come from forks of this repository)
+
+To create a new tagged release, create a single git tag matching the full version number, prefixed by a `v` character, on the most recent commit on the main branch (E.g. `v4.1.6`).
+This will initiate the GitHub workflow to generate all the matching container image tags.
