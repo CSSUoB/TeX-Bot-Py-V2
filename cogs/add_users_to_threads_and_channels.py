@@ -177,7 +177,7 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
         required=True,
-        parameter_name="user_or_role",
+        parameter_name="user_id_str",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="silent",
@@ -245,7 +245,7 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_roles),  # type: ignore[arg-type]
         required=True,
-        parameter_name="user_or_role",
+        parameter_name="role_id_str",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="silent",
@@ -257,7 +257,7 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
     async def add_role_to_channel(  # type: ignore[misc]
         self,
         ctx: "TeXBotApplicationContext",
-        role: str,
+        role_id_str: str,
         silent: bool,  # noqa: FBT001
     ) -> None:
         """Command to add a role to a channel."""
@@ -274,10 +274,10 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
         main_guild: discord.Guild = ctx.bot.main_guild
 
         try:
-            role_id: int = int(role)
+            role_id: int = int(role_id_str)
         except ValueError:
-            logger.debug("Role ID: %s is not a valid ID.", role)
-            await ctx.respond(content=f"The role: {role} is not valid.")
+            logger.debug("Role ID: %s is not a valid ID.", role_id_str)
+            await ctx.respond(content=f"The role: {role_id_str} is not valid.")
             return
 
         role_object: discord.Role | None = discord.utils.get(main_guild.roles, id=role_id)
