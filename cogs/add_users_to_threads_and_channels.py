@@ -160,11 +160,7 @@ class AddUsersToThreadsAndChannelsCog(TeXBotBaseCog):
 
         if "committee" in thread.parent.category.name.lower():
             await self.add_users_or_roles_silently(
-                users_or_roles=committee_role, thread=thread
-            )
-            await self.add_users_or_roles_silently(
-                users_or_roles=committee_elect_role,
-                thread=thread,
+                users_or_roles=[committee_role, committee_elect_role], thread=thread
             )
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
