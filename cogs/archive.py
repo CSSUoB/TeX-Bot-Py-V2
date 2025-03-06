@@ -199,7 +199,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         await category.edit(name=f"archive-{category.name}")
 
         await initial_response.edit(
-            content=f":white_check_mark: Category '{category.name}' successfully archived"
+            content=f":white_check_mark: Category '{category.name}' successfully archived."
         )
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
