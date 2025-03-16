@@ -23,7 +23,6 @@ class StrikeTrackingError(BaseTeXBotError, RuntimeError):
     and not tracked correctly.
     """
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:
@@ -38,7 +37,6 @@ class NoAuditLogsStrikeTrackingError(BaseTeXBotError, RuntimeError):
     and not tracked correctly.
     """
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:

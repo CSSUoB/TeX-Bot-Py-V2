@@ -1,4 +1,4 @@
-"""Utility classes & functions."""
+"""Utility classes and functions."""
 
 import hashlib
 import re
@@ -20,7 +20,7 @@ __all__: "Sequence[str]" = ("AsyncBaseModel", "BaseDiscordMemberWrapper", "Disco
 
 class AsyncBaseModel(models.Model):
     """
-    Asynchronous base model, defining extra synchronous & asynchronous utility methods.
+    Asynchronous base model, defining extra synchronous and asynchronous utility methods.
 
     This class is abstract so should not be instantiated or have a table made for it in the
     database (see https://docs.djangoproject.com/en/stable/topics/db/models/#abstract-base-classes).
@@ -84,7 +84,6 @@ class AsyncBaseModel(models.Model):
         field_name: str
         for field_name in set(kwargs.keys()) - self.get_proxy_field_names():
             try:
-                # noinspection PyUnresolvedReferences
                 self._meta.get_field(field_name)
             except FieldDoesNotExist:
                 unexpected_kwargs.add(field_name)
@@ -112,7 +111,6 @@ class AsyncBaseModel(models.Model):
 
     update.alters_data: bool = True  # type: ignore[attr-defined, misc]
 
-    # noinspection SpellCheckingInspection
     async def aupdate(
         self,
         *,

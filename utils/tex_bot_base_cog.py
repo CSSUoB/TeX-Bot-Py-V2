@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, override
 import discord
 from discord import Cog
 
-from exceptions import CommitteeRoleDoesNotExistError, DiscordMemberNotInMainGuildError
+from exceptions import DiscordMemberNotInMainGuildError
 from exceptions.base import (
     BaseDoesNotExistError,
 )
@@ -119,14 +119,10 @@ class TeXBotBaseCog(Cog):
         construct_error_message: str = ":warning:There was an error"
 
         if error_code:
-            # noinspection PyUnusedLocal
-            committee_mention: str = "committee"
-
-            with contextlib.suppress(CommitteeRoleDoesNotExistError):
-                committee_mention = (await bot.committee_role).mention
-
             construct_error_message = (
-                f"**Contact a {committee_mention} member, referencing error code: "
+                f"**Contact a {
+                    await bot.get_mention_string(bot.committee_role, default='committee')
+                } member, referencing error code: "
                 f"{error_code}**\n"
             ) + construct_error_message
 
@@ -180,7 +176,6 @@ class TeXBotBaseCog(Cog):
 
         try:
             main_guild: discord.Guild = ctx.bot.main_guild
-            # noinspection PyUnusedLocal
             channel_permissions_limiter: MentionableMember = await ctx.bot.guest_role
         except BaseDoesNotExistError:
             return set()

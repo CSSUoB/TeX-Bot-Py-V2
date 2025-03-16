@@ -178,7 +178,6 @@ class StatsCommandsCog(TeXBotBaseCog):
         description=f"Various statistics about {_DISCORD_SERVER_NAME} Discord server",
     )
 
-    # noinspection SpellCheckingInspection
     @stats.command(
         name="channel",
         description="Displays the stats for the current/a given channel.",
@@ -511,7 +510,6 @@ class StatsCommandsCog(TeXBotBaseCog):
             ),
         )
 
-    # noinspection SpellCheckingInspection
     @stats.command(
         name="left-members",
         description=f"Displays the stats about members that have left {_DISCORD_SERVER_NAME}",

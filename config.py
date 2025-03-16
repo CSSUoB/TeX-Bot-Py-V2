@@ -1,5 +1,5 @@
 """
-Contains settings values and import & setup functions.
+Contains settings values and import and setup functions.
 
 Settings values are imported from the .env file or the current environment variables.
 These values are used to configure the functionality of the bot at run-time.
@@ -148,7 +148,6 @@ class Settings(abc.ABC):
         logger.setLevel(getattr(logging, raw_console_log_level))
 
         console_logging_handler: logging.Handler = logging.StreamHandler()
-        # noinspection SpellCheckingInspection
         console_logging_handler.setFormatter(
             logging.Formatter("{asctime} | {name} | {levelname:^8} - {message}", style="{"),
         )
@@ -738,8 +737,7 @@ settings: "Final[Settings]" = _settings_class_factory()()
 
 
 def run_setup() -> None:
-    """Execute the setup functions required, before other modules can be run."""
-    # noinspection PyProtectedMember
+    """Execute the required setup functions."""
     settings._setup_env_variables()  # noqa: SLF001
 
     logger.debug("Begin database setup")

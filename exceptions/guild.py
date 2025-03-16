@@ -18,7 +18,6 @@ __all__: "Sequence[str]" = (
 class DiscordMemberNotInMainGuildError(BaseTeXBotError, ValueError):
     """Exception class for when no members of your Discord guild have the given user ID."""
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:
@@ -35,13 +34,11 @@ class DiscordMemberNotInMainGuildError(BaseTeXBotError, ValueError):
 class EveryoneRoleCouldNotBeRetrievedError(BaseErrorWithErrorCode, ValueError):
     """Exception class for when the "@everyone" role could not be retrieved."""
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:
         return 'The reference to the "@everyone" role could not be correctly retrieved.'
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def ERROR_CODE(cls) -> str:
