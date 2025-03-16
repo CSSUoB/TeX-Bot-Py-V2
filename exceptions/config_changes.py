@@ -19,7 +19,6 @@ __all__: "Sequence[str]" = (
 class ImproperlyConfiguredError(BaseTeXBotError, Exception):
     """Exception class to raise when environment variables are not correctly provided."""
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:
@@ -29,7 +28,6 @@ class ImproperlyConfiguredError(BaseTeXBotError, Exception):
 class RestartRequiredDueToConfigChange(BaseTeXBotError, Exception):  # noqa: N818
     """Exception class to raise when a restart is required to apply config changes."""
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:

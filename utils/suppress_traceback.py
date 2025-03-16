@@ -23,19 +23,16 @@ class SuppressTraceback:
 
     @override
     def __init__(self) -> None:
-        # noinspection SpellCheckingInspection
         """
         Initialise a new SuppressTraceback context manager instance.
 
-        The current value of `sys.tracebacklimit` is stored for future reference
-        to revert back to upon exiting the context manager.
+        The current value of `sys.tracebacklimit` is stored for future reference to revert to
+        upon exiting the context manager.
         """
-        # noinspection SpellCheckingInspection
         self.previous_traceback_limit: int | None = getattr(sys, "tracebacklimit", None)
 
     def __enter__(self) -> None:
         """Enter the context manager, suppressing the traceback output."""
-        # noinspection SpellCheckingInspection
         sys.tracebacklimit = 0
 
     def __exit__(
@@ -48,10 +45,8 @@ class SuppressTraceback:
         if exc_type is not None or exc_val is not None or exc_tb is not None:
             return
 
-        # noinspection SpellCheckingInspection
         if hasattr(sys, "tracebacklimit"):
             if self.previous_traceback_limit is None:
                 del sys.tracebacklimit
             else:
-                # noinspection SpellCheckingInspection
                 sys.tracebacklimit = self.previous_traceback_limit

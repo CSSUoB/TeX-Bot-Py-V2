@@ -75,7 +75,7 @@ __all__: "Sequence[str]" = (
     "StartupCog",
     "StatsCommandsCog",
     "StrikeCommandCog",
-    "StrikeUserCommandCog",
+    "StrikeContextCommandsCog",
     "WriteRolesCommandCog",
     "setup",
 )

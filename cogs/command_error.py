@@ -1,6 +1,5 @@
 """Contains cog classes for any command_error interactions."""
 
-import contextlib
 import logging
 from typing import TYPE_CHECKING
 
@@ -8,10 +7,7 @@ import discord
 from discord import Forbidden
 from discord.ext.commands.errors import CheckAnyFailure
 
-from exceptions import (
-    CommitteeRoleDoesNotExistError,
-    GuildDoesNotExistError,
-)
+from exceptions import GuildDoesNotExistError
 from exceptions.base import BaseErrorWithErrorCode
 from utils import CommandChecks, TeXBotBaseCog
 
@@ -52,18 +48,18 @@ class CommandErrorCog(TeXBotBaseCog):
                 error_code = error.original.ERROR_CODE
 
         elif isinstance(error, CheckAnyFailure):
-            if CommandChecks.is_interaction_user_in_main_guild_failure(error.checks[0]):
+            # TODO: Remove type ignore comments once #349 is resolved  # noqa: FIX002
+            if CommandChecks.is_interaction_user_in_main_guild_failure(error.checks[0]):  # type: ignore[arg-type]
                 message = (
                     f"You must be a member of the {self.bot.group_short_name} Discord server "
                     "to use this command."
                 )
 
-            elif CommandChecks.is_interaction_user_has_committee_role_failure(error.checks[0]):
-                # noinspection PyUnusedLocal
-                committee_role_mention: str = "@Committee"
-                with contextlib.suppress(CommitteeRoleDoesNotExistError):
-                    committee_role_mention = (await self.bot.committee_role).mention
-                message = f"Only {committee_role_mention} members can run this command."
+            elif CommandChecks.is_interaction_user_has_committee_role_failure(error.checks[0]):  # type: ignore[arg-type]
+                message = (
+                    f"Only {await self.bot.get_mention_string(self.bot.committee_role)} "
+                    "members can run this command."
+                )
 
         await self.command_send_error(
             ctx,

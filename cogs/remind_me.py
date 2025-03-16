@@ -215,7 +215,6 @@ class RemindMeCommandCog(TeXBotBaseCog):
 
         The "remind_me" command responds with the given message after the specified time.
         """
-        # noinspection PyTypeChecker
         parsed_time: tuple[time.struct_time, int] = parsedatetime.Calendar().parseDT(
             delay,
             tzinfo=timezone.get_current_timezone(),
@@ -289,7 +288,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
     @override
     def cog_unload(self) -> None:
         """
-        Unload hook that ends all running tasks whenever the tasks cog is unloaded.
+        Unload-hook that ends all running tasks whenever the tasks cog is unloaded.
 
         This may be run dynamically or when the bot closes.
         """
@@ -333,7 +332,6 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                     await reminder.adelete()
                     continue
 
-                # noinspection PyUnresolvedReferences
                 channel: discord.PartialMessageable = self.bot.get_partial_messageable(
                     reminder.channel_id,
                     type=reminder.channel_type,

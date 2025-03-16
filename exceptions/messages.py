@@ -19,7 +19,6 @@ __all__: "Sequence[str]" = (
 class InvalidMessagesJSONFileError(ImproperlyConfiguredError):
     """Exception class to raise when the messages.json file has an invalid structure."""
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:
@@ -36,7 +35,6 @@ class InvalidMessagesJSONFileError(ImproperlyConfiguredError):
 class MessagesJSONFileMissingKeyError(InvalidMessagesJSONFileError):
     """Exception class to raise when a key in the messages.json file is missing."""
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:
@@ -60,7 +58,6 @@ class MessagesJSONFileMissingKeyError(InvalidMessagesJSONFileError):
 class MessagesJSONFileValueError(InvalidMessagesJSONFileError):
     """Exception class to raise when a key in the messages.json file has an invalid value."""
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:

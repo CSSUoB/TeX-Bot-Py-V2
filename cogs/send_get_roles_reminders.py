@@ -1,6 +1,5 @@
 """Contains cog classes for any send_get_roles_reminders interactions."""
 
-import contextlib
 import functools
 import logging
 from typing import TYPE_CHECKING, override
@@ -12,7 +11,7 @@ from discord.ext import tasks
 import utils
 from config import settings
 from db.core.models import SentGetRolesReminderMember
-from exceptions import GuestRoleDoesNotExistError, RolesChannelDoesNotExistError
+from exceptions import GuestRoleDoesNotExistError
 from utils import TeXBotBaseCog
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
@@ -46,7 +45,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
     @override
     def cog_unload(self) -> None:
         """
-        Unload hook that ends all running tasks whenever the tasks cog is unloaded.
+        Unload-hook that ends all running tasks whenever the tasks cog is unloaded.
 
         This may be run dynamically or when the bot closes.
         """
@@ -72,13 +71,8 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
+        roles_channel_mention: str = await self.bot.get_mention_string(self.bot.roles_channel)
 
-        # noinspection PyUnusedLocal
-        roles_channel_mention: str = "**`#roles`**"
-        with contextlib.suppress(RolesChannelDoesNotExistError):
-            roles_channel_mention = (await self.bot.roles_channel).mention
-
-        # noinspection SpellCheckingInspection
         OPT_IN_ROLE_NAMES: Final[frozenset[str]] = frozenset(
             {
                 "He / Him",
@@ -131,10 +125,8 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
             if sent_get_roles_reminder_member_exists:
                 continue
 
-            # noinspection PyUnusedLocal
-            guest_role_received_time: datetime.datetime | None = None
-            with contextlib.suppress(StopIteration, StopAsyncIteration):
-                # noinspection PyTypeChecker
+            guest_role_received_time: datetime.datetime | None
+            try:
                 guest_role_received_time = await anext(
                     log.created_at
                     async for log in main_guild.audit_logs(
@@ -146,6 +138,8 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                         and guest_role in log.after.roles
                     )
                 )
+            except (StopIteration, StopAsyncIteration):
+                guest_role_received_time = None
 
             if guest_role_received_time is not None:
                 time_since_role_received: datetime.timedelta = (

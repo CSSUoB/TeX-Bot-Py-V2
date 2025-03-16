@@ -12,6 +12,7 @@ from config import settings
 from exceptions import (
     ApplicantRoleDoesNotExistError,
     ArchivistRoleDoesNotExistError,
+    ChannelDoesNotExistError,
     CommitteeElectRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
     DiscordMemberNotInMainGuildError,
@@ -20,12 +21,13 @@ from exceptions import (
     GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
     MemberRoleDoesNotExistError,
+    RoleDoesNotExistError,
     RolesChannelDoesNotExistError,
     RulesChannelDoesNotExistError,
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Awaitable, Sequence
     from logging import Logger
     from typing import Final, NoReturn
 
@@ -70,7 +72,6 @@ class TeXBot(discord.Bot):
 
         logger.info("TeX-Bot manually terminated.")
 
-    # noinspection PyPep8Naming
     @property
     def EXIT_WAS_DUE_TO_KILL_COMMAND(self) -> bool:  # noqa: N802
         """Return whether the TeX-Bot exited due to the kill command being used."""
@@ -533,3 +534,19 @@ class TeXBot(discord.Bot):
                 raise RuntimeError(LOG_CHANNEL_NOT_FOUND_MESSAGE)
 
             return full_webhook.channel
+
+    @classmethod
+    async def get_mention_string(
+        cls,
+        channel_coroutine: "Awaitable[discord.TextChannel | discord.Role]",
+        default: str | None = None,
+    ) -> str:
+        """Return the mention string for a given role/channel, even if it does not exist."""
+        try:
+            return (await channel_coroutine).mention
+        except RoleDoesNotExistError as e:
+            return f"@{e.ROLE_NAME}" if default is None else default
+        except ChannelDoesNotExistError as e:
+            return f"**`#{e.CHANNEL_NAME}`**" if default is None else default
+        except RulesChannelDoesNotExistError:
+            return "**`#welcome`**" if default is None else default

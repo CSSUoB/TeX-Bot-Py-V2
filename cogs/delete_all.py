@@ -31,7 +31,6 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
         ctx: "TeXBotApplicationContext", delete_model: type["AsyncBaseModel"]
     ) -> None:
         """Perform the actual deletion process of all instances of the given model class."""
-        # noinspection PyProtectedMember
         await delete_model._default_manager.all().adelete()
 
         delete_model_instances_name_plural: str = (

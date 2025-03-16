@@ -132,7 +132,6 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 continue
 
             async for message in member.history():
-                # noinspection PyUnresolvedReferences
                 MESSAGE_CONTAINS_OPT_IN_OUT_BUTTON: bool = bool(
                     bool(message.components)
                     and isinstance(message.components[0], discord.ActionRow)

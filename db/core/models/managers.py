@@ -32,7 +32,6 @@ class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
 
     use_in_migrations: bool = True
 
-    # noinspection SpellCheckingInspection
     @abc.abstractmethod
     def _remove_unhashed_id_from_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:
         """Remove any unhashed ID values from the kwargs dict before executing a query."""
@@ -50,7 +49,6 @@ class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
 
         return self._remove_unhashed_id_from_kwargs(kwargs=kwargs)
 
-    # noinspection SpellCheckingInspection
     @abc.abstractmethod
     async def _aremove_unhashed_id_from_kwargs(
         self, kwargs: dict[str, object]
@@ -88,7 +86,6 @@ class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
             **self._perform_remove_unhashed_id_from_kwargs(kwargs),
         )
 
-    # noinspection SpellCheckingInspection
     async def aexclude(self, *args: object, **kwargs: object) -> "QuerySet[T_model]":
         return super().exclude(
             *args,
@@ -99,7 +96,6 @@ class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
     def create(self, **kwargs: object) -> T_model:
         return super().create(**self._perform_remove_unhashed_id_from_kwargs(kwargs))
 
-    # noinspection SpellCheckingInspection
     @override
     async def acreate(self, **kwargs: object) -> T_model:
         return await super().acreate(**(await self._aremove_unhashed_id_from_kwargs(kwargs)))
@@ -139,7 +135,6 @@ class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
             **self._perform_remove_unhashed_id_from_kwargs(kwargs),
         )
 
-    # noinspection SpellCheckingInspection
     @override
     async def aupdate_or_create(  # type: ignore[override]
         self,
@@ -157,7 +152,6 @@ class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
     def update(self, **kwargs: object) -> int:
         return super().update(**self._perform_remove_unhashed_id_from_kwargs(kwargs))
 
-    # noinspection SpellCheckingInspection
     @override
     async def aupdate(self, **kwargs: object) -> int:
         return await super().aupdate(**(await self._aremove_unhashed_id_from_kwargs(kwargs)))
@@ -165,13 +159,12 @@ class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
 
 class HashedDiscordMemberManager(BaseHashedIDManager["DiscordMember"]):
     """
-    Manager class to create & retrieve DiscordMember model instances.
+    Manager class to create and retrieve DiscordMember model instances.
 
     This manager implements extra functionality to filter/create instances
     using a given discord_id that with be automatically hashed before saved to the database.
     """
 
-    # noinspection SpellCheckingInspection
     @override
     def _remove_unhashed_id_from_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:
         raw_discord_id: object | None = None
@@ -193,7 +186,6 @@ class HashedDiscordMemberManager(BaseHashedIDManager["DiscordMember"]):
 
         return kwargs
 
-    # noinspection SpellCheckingInspection
     @override
     async def _aremove_unhashed_id_from_kwargs(
         self, kwargs: dict[str, object]
@@ -222,13 +214,12 @@ class RelatedDiscordMemberManager[T_BaseDiscordMemberWrapper: "BaseDiscordMember
     BaseHashedIDManager[T_BaseDiscordMemberWrapper]
 ):
     """
-    Manager class to create & retrieve instances of any concrete `BaseDiscordMemberWrapper`.
+    Manager class to create and retrieve instances of any concrete `BaseDiscordMemberWrapper`.
 
     This manager implements extra functionality to filter/create instances
     using a given discord_id that with be automatically hashed before saved to the database.
     """
 
-    # noinspection SpellCheckingInspection
     @override
     def _remove_unhashed_id_from_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:
         raw_discord_id: object | None = None
@@ -260,7 +251,6 @@ class RelatedDiscordMemberManager[T_BaseDiscordMemberWrapper: "BaseDiscordMember
 
         return kwargs
 
-    # noinspection SpellCheckingInspection
     @override
     async def _aremove_unhashed_id_from_kwargs(
         self, kwargs: dict[str, object]

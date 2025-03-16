@@ -25,7 +25,6 @@ with SuppressTraceback():
     config.run_setup()
 
     intents: discord.Intents = discord.Intents.default()
-    # noinspection PyDunderSlots,PyUnresolvedReferences
     intents.members = True
 
     bot: TeXBot = TeXBot(
