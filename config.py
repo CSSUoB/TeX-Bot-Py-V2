@@ -730,7 +730,7 @@ class Settings(abc.ABC):
         are only stored after the input values have been validated.
         """
         if cls._is_env_variables_setup:
-            logging.warning("Environment variables have already been set up.")
+            logger.warning("Environment variables have already been set up.")
             return
 
         dotenv.load_dotenv()
