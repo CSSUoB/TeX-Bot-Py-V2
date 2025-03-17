@@ -1,0 +1,18 @@
+* text=auto
+
+*.py text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+.toml text eol=lf
+.md text eol=lf
+.*ignore text eol=lf
+.env* text eol=lf
+.gitattributes text eol=lf
+.gitlint text eol=lf
+.python-version text eol=lf
+.Dockerfile text eol=lf
+
+LICENSE binary
+uv.lock binary
+db/core/migrations/*.py binary

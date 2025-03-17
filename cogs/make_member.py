@@ -68,8 +68,13 @@ REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
 
 ORGANISATION_ID: "Final[str]" = settings["ORGANISATION_ID"]
 GROUP_NAME: "Final[str]" = settings["_GROUP_FULL_NAME"]
-GROUPED_MEMBRS_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
-BASE_MEMBERS_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}"
+GROUPED_MEMBRS_URL: "Final[str]" = (
+    f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
+)
+BASE_MEMBERS_URL: "Final[str]" = (
+    f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}"
+)
+
 
 class MakeMemberCommandCog(TeXBotBaseCog):
     # noinspection SpellCheckingInspection
@@ -112,7 +117,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         parameter_name="group_member_id",
     )
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_member(self, ctx: "TeXBotApplicationContext", group_member_id: str) -> None:
+    async def make_member(self, ctx: "TeXBotApplicationContext", group_member_id: str) -> None:  # type: ignore[misc]
         """
         Definition & callback response of the "make_member" command.
 
@@ -126,7 +131,6 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 
         await ctx.defer(ephemeral=True)
         async with ctx.typing():
-
             if member_role in interaction_member.roles:
                 await ctx.followup.send(
                     content=(
@@ -147,14 +151,13 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 )
                 return
 
-            GROUP_MEMBER_ID_IS_ALREADY_USED: Final[bool] = (
-                await GroupMadeMember.objects.filter(
-                    hashed_group_member_id=GroupMadeMember.hash_group_member_id(
-                        group_member_id,
-                        self.bot.group_member_id_type,
-                    )
-                ).aexists()
-            )
+            GROUP_MEMBER_ID_IS_ALREADY_USED: Final[
+                bool
+            ] = await GroupMadeMember.objects.filter(
+                hashed_group_member_id=GroupMadeMember.hash_group_member_id(
+                    group_member_id, self.bot.group_member_id_type
+                )
+            ).aexists()
             if GROUP_MEMBER_ID_IS_ALREADY_USED:
                 # noinspection PyUnusedLocal
                 committee_mention: str = "committee"
@@ -216,6 +219,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                     reason='TeX Bot slash-command: "/makemember"',
                 )
 
+
 class MemberCountCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/membercount" command and its call-back method."""
 
@@ -223,7 +227,7 @@ class MemberCountCommandCog(TeXBotBaseCog):
         name="membercount",
         description="Displays the number of members in the group.",
     )
-    async def member_count(self, ctx: "TeXBotApplicationContext") -> None:
+    async def member_count(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
         """Definition & callback response of the "member_count" command."""
         await ctx.defer(ephemeral=False)
 

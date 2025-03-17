@@ -105,12 +105,12 @@ async def perform_moderation_action(
 class ConfirmStrikeMemberView(View):
     """A discord.View containing two buttons to confirm giving the member a strike."""
 
-    @discord.ui.button(  # type: ignore[misc]
+    @discord.ui.button(
         label="Yes",
         style=discord.ButtonStyle.red,
         custom_id="yes_strike_member",
     )
-    async def yes_strike_member_button_callback(
+    async def yes_strike_member_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
@@ -126,12 +126,12 @@ class ConfirmStrikeMemberView(View):
             view=None
         )  # NOTE: Despite removing the view within the normal command processing loop, the view also needs to be removed here to prevent an Unknown Webhook error
 
-    @discord.ui.button(  # type: ignore[misc]
+    @discord.ui.button(
         label="No",
         style=discord.ButtonStyle.grey,
         custom_id="no_strike_member",
     )
-    async def no_strike_member_button_callback(
+    async def no_strike_member_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
@@ -151,12 +151,12 @@ class ConfirmStrikeMemberView(View):
 class ConfirmManualModerationView(View):
     """A discord.View to confirm manually applying a moderation action."""
 
-    @discord.ui.button(  # type: ignore[misc]
+    @discord.ui.button(
         label="Yes",
         style=discord.ButtonStyle.red,
         custom_id="yes_manual_moderation_action",
     )
-    async def yes_manual_moderation_action_button_callback(
+    async def yes_manual_moderation_action_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
@@ -173,12 +173,12 @@ class ConfirmManualModerationView(View):
             view=None
         )  # NOTE: Despite removing the view within the normal command processing loop, the view also needs to be removed here to prevent an Unknown Webhook error
 
-    @discord.ui.button(  # type: ignore[misc]
+    @discord.ui.button(
         label="No",
         style=discord.ButtonStyle.grey,
         custom_id="no_manual_moderation_action",
     )
-    async def no_manual_moderation_action_button_callback(
+    async def no_manual_moderation_action_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
@@ -199,12 +199,12 @@ class ConfirmManualModerationView(View):
 class ConfirmStrikesOutOfSyncWithBanView(View):
     """A discord.View containing two buttons to confirm banning a member with > 3 strikes."""
 
-    @discord.ui.button(  # type: ignore[misc]
+    @discord.ui.button(
         label="Yes",
         style=discord.ButtonStyle.red,
         custom_id="yes_out_of_sync_ban_member",
     )
-    async def yes_out_of_sync_ban_member_button_callback(
+    async def yes_out_of_sync_ban_member_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
@@ -221,12 +221,12 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
             view=None
         )  # NOTE: Despite removing the view within the normal command processing loop, the view also needs to be removed here to prevent an Unknown Webhook error
 
-    @discord.ui.button(  # type: ignore[misc]
+    @discord.ui.button(
         label="No",
         style=discord.ButtonStyle.grey,
         custom_id="no_out_of_sync_ban_member",
     )
-    async def no_out_of_sync_ban_member_button_callback(
+    async def no_out_of_sync_ban_member_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
@@ -400,8 +400,7 @@ class BaseStrikeCog(TeXBotBaseCog):
                     "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
                     f"""{
                         discord.utils.format_dt(
-                            discord.utils.utcnow() + datetime.timedelta(minutes=2),
-                            "R"
+                            discord.utils.utcnow() + datetime.timedelta(minutes=2), "R"
                         )
                     }"""
                 ),
@@ -412,7 +411,7 @@ class BaseStrikeCog(TeXBotBaseCog):
 
         if not isinstance(strike_user, discord.Member):
             INCORRECT_STRIKE_USER_TYPE_MESSAGE: Final[str] = (
-                f"Incorrect type for {"strike_user"!r}: got {type(strike_user).__name__!r}, "
+                f"Incorrect type for {'strike_user'!r}: got {type(strike_user).__name__!r}, "
                 f"expected {discord.Member.__name__!r}."
             )
             raise RuntimeError(INCORRECT_STRIKE_USER_TYPE_MESSAGE)  # noqa: TRY004
@@ -627,8 +626,7 @@ class ManualModerationCog(BaseStrikeCog):
                         "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
                         f"""{
                             discord.utils.format_dt(
-                                discord.utils.utcnow() + datetime.timedelta(minutes=2),
-                                "R"
+                                discord.utils.utcnow() + datetime.timedelta(minutes=2), "R"
                             )
                         }"""
                     ),
@@ -658,8 +656,7 @@ class ManualModerationCog(BaseStrikeCog):
                         "\nᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
                         f"""{
                             discord.utils.format_dt(
-                                discord.utils.utcnow() + datetime.timedelta(minutes=2),
-                                "R"
+                                discord.utils.utcnow() + datetime.timedelta(minutes=2), "R"
                             )
                         }"""
                     ),
@@ -722,8 +719,7 @@ class ManualModerationCog(BaseStrikeCog):
                     "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
                     f"""{
                         discord.utils.format_dt(
-                            discord.utils.utcnow() + datetime.timedelta(minutes=2),
-                            "R"
+                            discord.utils.utcnow() + datetime.timedelta(minutes=2), "R"
                         )
                     }"""
                 ),
@@ -868,7 +864,7 @@ class StrikeCommandCog(BaseStrikeCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def strike(self, ctx: "TeXBotApplicationContext", str_strike_member_id: str) -> None:
+    async def strike(self, ctx: "TeXBotApplicationContext", str_strike_member_id: str) -> None:  # type: ignore[misc]
         """
         Definition & callback response of the "strike" command.
 
@@ -890,7 +886,9 @@ class StrikeCommandCog(BaseStrikeCog):
 class StrikeContextCommandsCog(BaseStrikeCog):
     """Cog class that defines the context menu strike command & its call-back method."""
 
-    async def _send_message_to_committee(self, ctx: "TeXBotApplicationContext", message: discord.Message) -> None:  # noqa: E501
+    async def _send_message_to_committee(
+        self, ctx: "TeXBotApplicationContext", message: discord.Message
+    ) -> None:
         """Send a provided message to committee channels."""
         discord_channel: discord.TextChannel | None = discord.utils.get(
             self.bot.main_guild.text_channels,
@@ -957,16 +955,18 @@ class StrikeContextCommandsCog(BaseStrikeCog):
     @discord.user_command(name="Strike User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def user_strike(
+    async def user_strike(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", member: discord.Member
     ) -> None:
         """Call the _strike command, providing the required command arguments."""
         await self._command_perform_strike(ctx, member)
 
-    @discord.message_command(name="Strike Message Author") # type: ignore[no-untyped-call, misc]
+    @discord.message_command(name="Strike Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def strike_message_author(self, ctx: "TeXBotApplicationContext", message: discord.Message) -> None:  # noqa: E501
+    async def strike_message_author(  # type: ignore[misc]
+        self, ctx: "TeXBotApplicationContext", message: discord.Message
+    ) -> None:
         """Call the _strike command on the message author."""
         strike_user: discord.Member = await self.bot.get_member_from_str_id(
             str(message.author.id),
@@ -980,6 +980,8 @@ class StrikeContextCommandsCog(BaseStrikeCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def send_message_to_committee(self, ctx: "TeXBotApplicationContext", message: discord.Message) -> None:  # noqa: E501
+    async def send_message_to_committee(  # type: ignore[misc]
+        self, ctx: "TeXBotApplicationContext", message: discord.Message
+    ) -> None:
         """Send a copy of the selected message to committee channels for review."""
         await self._send_message_to_committee(ctx, message=message)

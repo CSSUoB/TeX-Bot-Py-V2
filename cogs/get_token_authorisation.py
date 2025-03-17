@@ -44,7 +44,7 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def get_token_authorisation(self, ctx: "TeXBotApplicationContext") -> None:
+    async def get_token_authorisation(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
         """
         Definition of the "get_token_authorisation" command.
 
@@ -74,7 +74,7 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
             )
             return
 
-        if ("Login" in str(page_title)):
+        if "Login" in str(page_title):
             BAD_TOKEN_MESSAGE: Final[str] = (
                 "Unable to fetch profile page because the token was not valid."  # noqa: S105
             )
@@ -135,8 +135,8 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
 
         await ctx.respond(
             f"Admin token has access to the following MSL Organisations as "
-            f"{user_name.text}:\n{', \n'.join(
-                organisation for organisation in organisations
-            )}",
+            f"{user_name.text}:\n{
+                ', \n'.join(organisation for organisation in organisations)
+            }",
             ephemeral=True,
         )
