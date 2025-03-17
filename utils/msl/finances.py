@@ -42,10 +42,10 @@ class TransactionType(Enum):
 
     """
 
-    PERSONAL_EXPENSE: str = "Personal Expense"
-    EXTERNAL_PAYMENT: str = "External Payment"
-    PURCHASE_ORDER: str = "Purchase Order"
-    INVOICE: str = "Invoice"
+    PERSONAL_EXPENSE = "Personal Expense"
+    EXTERNAL_PAYMENT = "External Payment"
+    PURCHASE_ORDER = "Purchase Order"
+    INVOICE = "Invoice"
 
 
 async def get_account_balance() -> float | None:
