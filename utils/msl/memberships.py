@@ -13,9 +13,15 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from logging import Logger
 
-__all__: "Sequence[str]" = ("get_full_membership_list", "get_membership_count", "is_student_id_member")
+__all__: "Sequence[str]" = (
+    "get_full_membership_list",
+    "get_membership_count",
+    "is_student_id_member",
+)
 
-MEMBERS_LIST_URL: Final[str] = f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
+MEMBERS_LIST_URL: Final[str] = (
+    f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
+)
 
 persistent_membership_list: set[tuple[str, int]] = set()
 
@@ -52,9 +58,8 @@ async def get_full_membership_list() -> set[tuple[str, int]]:
         logger.debug(response_html)
         return set()
 
-    if (
-        isinstance(standard_members_table, bs4.NavigableString) or
-        isinstance(all_members_table, bs4.NavigableString)
+    if isinstance(standard_members_table, bs4.NavigableString) or isinstance(
+        all_members_table, bs4.NavigableString
     ):
         logger.warning(
             "Both membership tables were found but one or both are the wrong format!",
@@ -69,9 +74,12 @@ async def get_full_membership_list() -> set[tuple[str, int]]:
     standard_members.pop(0)
     all_members.pop(0)
 
-    member_list: set[tuple[str, int]] = {(
-        member.find_all(name="td")[0].text.strip(),
-        member.find_all(name="td")[1].text.strip(),  # NOTE: This will not properly handle external members who do not have an ID... There does not appear to be a solution to this other than simply checking manually.
+    member_list: set[tuple[str, int]] = {
+        (
+            member.find_all(name="td")[0].text.strip(),
+            member.find_all(name="td")[
+                1
+            ].text.strip(),  # NOTE: This will not properly handle external members who do not have an ID... There does not appear to be a solution to this other than simply checking manually.
         )
         for member in standard_members + all_members
     }
@@ -84,9 +92,7 @@ async def get_full_membership_list() -> set[tuple[str, int]]:
 
 async def is_student_id_member(student_id: str | int) -> bool:
     """Check if the student ID is a member of the society."""
-    all_ids: set[str] = {
-        str(member[1]) for member in persistent_membership_list
-    }
+    all_ids: set[str] = {str(member[1]) for member in persistent_membership_list}
 
     if str(student_id) in all_ids:
         return True

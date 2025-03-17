@@ -19,7 +19,9 @@ EVENTS_FROM_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$datesFilte
 EVENTS_TO_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$datesFilter$txtToDate"
 EVENTS_BUTTON_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$fsSetDates$btnSubmit"
 EVENTS_TABLE_ID: Final[str] = "ctl00_ctl00_Main_AdminPageContent_gvEvents"
-CREATE_EVENT_URL: Final[str] = f"https://www.guildofstudents.com/events/edit/event/{ORGANISATION_ID}/"
+CREATE_EVENT_URL: Final[str] = (
+    f"https://www.guildofstudents.com/events/edit/event/{ORGANISATION_ID}/"
+)
 EVENT_LIST_URL: Final[str] = f"https://www.guildofstudents.com/events/edit/{ORGANISATION_ID}/"
 
 
@@ -45,7 +47,10 @@ async def get_all_guild_events(from_date: str, to_date: str) -> dict[str, str]:
         headers=BASE_HEADERS,
         cookies=cookies,
     )
-    async with session_v2, session_v2.post(url=EVENT_LIST_URL, data=data_fields) as http_response:  # noqa: E501
+    async with (
+        session_v2,
+        session_v2.post(url=EVENT_LIST_URL, data=data_fields) as http_response,
+    ):
         if http_response.status != 200:
             logger.debug("Returned a non 200 status code!!")
             logger.debug(http_response)
@@ -54,12 +59,12 @@ async def get_all_guild_events(from_date: str, to_date: str) -> dict[str, str]:
         response_html: str = await http_response.text()
 
     event_table_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-            markup=response_html,
-            features="html.parser",
-        ).find(
-            name="table",
-            attrs={"id": EVENTS_TABLE_ID},
-        )
+        markup=response_html,
+        features="html.parser",
+    ).find(
+        name="table",
+        attrs={"id": EVENTS_TABLE_ID},
+    )
 
     if event_table_html is None or isinstance(event_table_html, bs4.NavigableString):
         logger.debug("Something went wrong!")

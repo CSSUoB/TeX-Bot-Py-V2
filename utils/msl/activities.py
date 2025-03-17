@@ -20,7 +20,9 @@ __all__: "Sequence[str]" = ()
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-ACTIVITIES_URL: Final[str] = f"https://www.guildofstudents.com/organisation/admin/activities/all/{ORGANISATION_ID}/"
+ACTIVITIES_URL: Final[str] = (
+    f"https://www.guildofstudents.com/organisation/admin/activities/all/{ORGANISATION_ID}/"
+)
 
 ACTIVITIES_BUTTON_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$fsFilter$btnSubmit"
 ACTIVITIES_TABLE_ID: Final[str] = "ctl00_ctl00_Main_AdminPageContent_gvResults"
@@ -67,7 +69,10 @@ async def fetch_guild_activities(from_date: "datetime", to_date: "datetime") -> 
         headers=BASE_HEADERS,
         cookies=cookies,
     )
-    async with session_v2, session_v2.post(url=ACTIVITIES_URL, data=data_fields) as http_response:  # noqa: E501
+    async with (
+        session_v2,
+        session_v2.post(url=ACTIVITIES_URL, data=data_fields) as http_response,
+    ):
         if http_response.status != 200:
             logger.debug("Returned a non 200 status code!!")
             logger.debug(http_response)
@@ -97,7 +102,9 @@ async def fetch_guild_activities(from_date: "datetime", to_date: "datetime") -> 
     activities_list.pop(0)
 
     return {
-        activity.find(name="a").get("href").split("/")[7]: activity.find_all(name="td")[1].text.strip()  # type: ignore[union-attr]  # noqa: E501
+        activity.find(name="a").get("href").split("/")[7]: activity.find_all(name="td")[
+            1
+        ].text.strip()  # type: ignore[union-attr]
         for activity in activities_list
     }
 

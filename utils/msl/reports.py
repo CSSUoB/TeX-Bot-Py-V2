@@ -30,7 +30,9 @@ __all__: "Sequence[str]" = (
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-SALES_REPORTS_URL: Final[str] = f"https://www.guildofstudents.com/organisation/salesreports/{ORGANISATION_ID}/"
+SALES_REPORTS_URL: Final[str] = (
+    f"https://www.guildofstudents.com/organisation/salesreports/{ORGANISATION_ID}/"
+)
 SALES_FROM_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtFromDate"
 SALES_FROM_TIME_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtFromTime"
 SALES_TO_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtToDate"
@@ -52,7 +54,9 @@ class ReportType(Enum):
     CUSTOMISATION = "Customisations"
 
 
-async def fetch_report_url_and_cookies(report_type: ReportType, *, from_date: datetime, to_date: datetime) -> tuple[str | None, dict[str, str]]:  # noqa: E501
+async def fetch_report_url_and_cookies(
+    report_type: ReportType, *, from_date: datetime, to_date: datetime
+) -> tuple[str | None, dict[str, str]]:
     """Fetch the specified report from the guild website."""
     data_fields, cookies = await get_msl_context(url=SALES_REPORTS_URL)
 
@@ -74,7 +78,10 @@ async def fetch_report_url_and_cookies(report_type: ReportType, *, from_date: da
         headers=BASE_HEADERS,
         cookies=cookies,
     )
-    async with session_v2, session_v2.post(url=SALES_REPORTS_URL, data=data_fields) as http_response:  # noqa: E501
+    async with (
+        session_v2,
+        session_v2.post(url=SALES_REPORTS_URL, data=data_fields) as http_response,
+    ):
         if http_response.status != 200:
             logger.debug("Returned a non 200 status code!!")
             logger.debug(http_response)
@@ -135,10 +142,9 @@ async def update_current_year_sales_report() -> None:
                 values: list[bytes] = line.split(b",")
 
                 product_name_and_id: bytes = values[0]
-                product_id: bytes = ((
-                        product_name_and_id.split(b" ")[0].removeprefix(b"[")
-                    ).removesuffix(b"]")
-                )
+                product_id: bytes = (
+                    product_name_and_id.split(b" ")[0].removeprefix(b"[")
+                ).removesuffix(b"]")
                 product_name: bytes = b" ".join(
                     product_name_and_id.split(b" ")[1:],
                 )
@@ -148,12 +154,18 @@ async def update_current_year_sales_report() -> None:
                 total: bytes = values[8]
 
                 await report_file.write(
-                    product_id + b"," +
-                    product_name + b"," +
-                    date + b"," +
-                    quantity + b"," +
-                    unit_price + b"," +
-                    total + b"\n",
+                    product_id
+                    + b","
+                    + product_name
+                    + b","
+                    + date
+                    + b","
+                    + quantity
+                    + b","
+                    + unit_price
+                    + b","
+                    + total
+                    + b"\n",
                 )
 
             logger.debug("Sales report updated successfully!!")
@@ -178,7 +190,7 @@ async def get_product_customisations(product_id: str) -> set[dict[str, str]]:
     report_url, cookies = await fetch_report_url_and_cookies(
         report_type=ReportType.CUSTOMISATION,
         to_date=datetime.now(tz=timezone.utc),  # noqa: UP017
-        from_date=datetime.now(tz=timezone.utc)-timedelta(weeks=52),  # noqa: UP017
+        from_date=datetime.now(tz=timezone.utc) - timedelta(weeks=52),  # noqa: UP017
     )
 
     if report_url is None:

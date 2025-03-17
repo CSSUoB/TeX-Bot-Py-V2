@@ -21,9 +21,13 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = ()
 
-FINANCE_REDIRECT_URL: Final[str] = f"https://www.guildofstudents.com/sgf/{ORGANISATION_ID}/Landing/Member"
+FINANCE_REDIRECT_URL: Final[str] = (
+    f"https://www.guildofstudents.com/sgf/{ORGANISATION_ID}/Landing/Member"
+)
 FINANCES_URL: Final[str] = f"https://guildofstudents.com/sgf/{ORGANISATION_ID}/Home/Dashboard/"
-BASE_EXPENSE_URL: Final[str] = f"https://guildofstudents.com/sgf/{ORGANISATION_ID}/Request/Edit?RequestId="
+BASE_EXPENSE_URL: Final[str] = (
+    f"https://guildofstudents.com/sgf/{ORGANISATION_ID}/Request/Edit?RequestId="
+)
 
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
@@ -63,8 +67,9 @@ async def get_available_balance() -> float | None:
         headers=BASE_HEADERS,
         cookies=BASE_COOKIES,
     )
-    async with cookie_session, cookie_session.get(url=ORGANISATION_ADMIN_URL) as (
-        cookie_response
+    async with (
+        cookie_session,
+        cookie_session.get(url=ORGANISATION_ADMIN_URL) as (cookie_response),
     ):
         if cookie_response.status != 200:
             logger.debug("Returned a non 200 status code!!")
@@ -110,7 +115,10 @@ async def get_available_balance() -> float | None:
 
     return None
 
-async def fetch_financial_transactions(limit: int | None = None, transaction_type: TransactionType | None = None) -> dict[str, str]:  # noqa: E501
+
+async def fetch_financial_transactions(
+    limit: int | None = None, transaction_type: TransactionType | None = None
+) -> dict[str, str]:
     """
     Return the most recent `limit` transactions.
 

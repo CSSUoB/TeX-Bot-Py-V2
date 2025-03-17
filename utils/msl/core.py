@@ -50,7 +50,9 @@ BASE_COOKIES: Final["Mapping[str, str]"] = {
 
 ORGANISATION_ID: Final[str] = settings["ORGANISATION_ID"]
 
-ORGANISATION_ADMIN_URL: Final[str] = f"https://www.guildofstudents.com/organisation/admin/{ORGANISATION_ID}/"
+ORGANISATION_ADMIN_URL: Final[str] = (
+    f"https://www.guildofstudents.com/organisation/admin/{ORGANISATION_ID}/"
+)
 
 
 async def get_msl_context(url: str) -> tuple[dict[str, str], dict[str, str]]:
@@ -60,7 +62,7 @@ async def get_msl_context(url: str) -> tuple[dict[str, str], dict[str, str]]:
         cookies=BASE_COOKIES,
     )
     data_fields: dict[str, str] = {}
-    cookies: dict[str ,str] = {}
+    cookies: dict[str, str] = {}
     async with http_session, http_session.get(url=url) as field_data:
         data_response = BeautifulSoup(
             markup=await field_data.text(),
