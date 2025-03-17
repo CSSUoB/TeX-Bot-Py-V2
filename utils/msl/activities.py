@@ -102,9 +102,9 @@ async def fetch_guild_activities(from_date: "datetime", to_date: "datetime") -> 
     activities_list.pop(0)
 
     return {
-        activity.find(name="a").get("href").split("/")[7]: activity.find_all(name="td")[
+        activity.find(name="a").get("href").split("/")[7]: activity.find_all(name="td")[  # type: ignore[union-attr]
             1
-        ].text.strip()  # type: ignore[union-attr]
+        ].text.strip()
         for activity in activities_list
     }
 
