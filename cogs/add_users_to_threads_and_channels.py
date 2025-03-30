@@ -262,8 +262,6 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
             )
             return
 
-        channel: discord.TextChannel | discord.Thread = ctx.channel
-
         main_guild: discord.Guild = ctx.bot.main_guild
 
         try:
@@ -282,8 +280,8 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
             )
             return
 
-        if isinstance(channel, discord.TextChannel):
-            await channel.set_permissions(
+        if isinstance(ctx.channel, discord.TextChannel):
+            await ctx.channel.set_permissions(
                 target=role_to_add,
                 read_messages=True,
                 send_messages=True,
@@ -291,15 +289,15 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
             )
 
             if not silent:
-                await channel.send(
+                await ctx.channel.send(
                     content=f"{role_to_add.mention} has been added to the channel."
                 )
 
-        if isinstance(channel, discord.Thread):
+        if isinstance(ctx.channel, discord.Thread):
             if silent:
-                await self.add_users_or_roles_silently(role_to_add, channel)
+                await self.add_users_or_roles_silently(role_to_add, ctx.channel)
             else:
-                await self.add_users_or_roles_with_ping(role_to_add, channel)
+                await self.add_users_or_roles_with_ping(role_to_add, ctx.channel)
 
         await ctx.respond(
             content=f"Role {role_to_add.mention} has been added to the channel.",
