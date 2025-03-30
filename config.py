@@ -731,7 +731,7 @@ class Settings(abc.ABC):
         cls._setup_statistics_roles()
         cls._setup_moderation_document_url()
         cls._setup_strike_performed_manually_warning_location()
-        cls._setup_add_committee_to_threads()
+        cls._setup_auto_add_committee_to_threads()
 
         cls._is_env_variables_setup = True
 
