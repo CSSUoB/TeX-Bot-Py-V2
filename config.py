@@ -680,17 +680,19 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_add_committee_to_threads(cls) -> None:
-        raw_add_committee_to_threads: str = str(
-            os.getenv("ADD_COMMITTEE_TO_THREADS", "True")
+        raw_auto_add_committee_to_threads: str = str(
+            os.getenv("AUTO_ADD_COMMITTEE_TO_THREADS", "True")
         ).lower()
 
-        if raw_add_committee_to_threads not in TRUE_VALUES | FALSE_VALUES:
-            INVALID_ADD_COMMITTEE_TO_THREADS_MESSAGE: Final[str] = (
-                "ADD_COMMITTEE_TO_THREADS must be a boolean value."
+        if raw_auto_add_committee_to_threads not in TRUE_VALUES | FALSE_VALUES:
+            INVALID_AUTO_ADD_COMMITTEE_TO_THREADS_MESSAGE: Final[str] = (
+                "AUTO_ADD_COMMITTEE_TO_THREADS must be a boolean value."
             )
-            raise ImproperlyConfiguredError(INVALID_ADD_COMMITTEE_TO_THREADS_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_AUTO_ADD_COMMITTEE_TO_THREADS_MESSAGE)
 
-        cls._settings["ADD_COMMITTEE_TO_THREADS"] = raw_add_committee_to_threads in TRUE_VALUES
+        cls._settings["AUTO_ADD_COMMITTEE_TO_THREADS"] = (
+            raw_auto_add_committee_to_threads in TRUE_VALUES
+        )
 
     @classmethod
     def _setup_env_variables(cls) -> None:

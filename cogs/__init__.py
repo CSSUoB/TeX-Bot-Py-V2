@@ -7,7 +7,7 @@ cogs for each activity.
 
 from typing import TYPE_CHECKING
 
-from .add_users_to_threads_and_channels import AddUsersToThreadsAndChannelsCog
+from .add_users_to_threads_and_channels import AddUsersToThreadsAndChannelsCommandCog
 from .annual_handover_and_reset import (
     AnnualRolesResetCommandCog,
     AnnualYearChannelsIncrementCommandCog,
@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     from utils import TeXBot, TeXBotBaseCog
 
 __all__: "Sequence[str]" = (
-    "AddUsersToThreadsAndChannelsCog",
+    "AddUsersToThreadsAndChannelsCommandCog",
     "AnnualRolesResetCommandCog",
     "AnnualYearChannelsIncrementCommandCog",
     "ArchiveCommandCog",
@@ -86,7 +86,7 @@ __all__: "Sequence[str]" = (
 def setup(bot: "TeXBot") -> None:
     """Add all the cogs to the bot, at bot startup."""
     cogs: Iterable[type[TeXBotBaseCog]] = (
-        AddUsersToThreadsAndChannelsCog,
+        AddUsersToThreadsAndChannelsCommandCog,
         AnnualRolesResetCommandCog,
         AnnualYearChannelsIncrementCommandCog,
         ArchiveCommandCog,
