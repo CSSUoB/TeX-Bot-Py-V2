@@ -679,7 +679,7 @@ class Settings(abc.ABC):
         )
 
     @classmethod
-    def _setup_add_committee_to_threads(cls) -> None:
+    def _setup_auto_add_committee_to_threads(cls) -> None:
         raw_auto_add_committee_to_threads: str = str(
             os.getenv("AUTO_ADD_COMMITTEE_TO_THREADS", "True")
         ).lower()
