@@ -130,19 +130,17 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
                 )
             return
 
-        if isinstance(users_or_roles, discord.Role):
-            member: discord.Member
-            for member in users_or_roles.members:
-                try:
-                    await thread.add_user(member)
-                except discord.NotFound:
-                    logger.debug(
-                        "User: %s has blocked the bot and "
-                        "therefore could not be added to thread: %s.",
-                        member,
-                        thread,
-                    )
-            return
+        member: discord.Member
+        for member in users_or_roles.members:
+            try:
+                await thread.add_user(member)
+            except discord.NotFound:
+                logger.debug(
+                    "User: %s has blocked the bot and "
+                    "therefore could not be added to thread: %s.",
+                    member,
+                    thread,
+                )
 
     @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
