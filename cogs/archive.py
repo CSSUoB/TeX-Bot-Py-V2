@@ -96,11 +96,10 @@ class ArchiveCommandCog(TeXBotBaseCog):
             for channel in main_guild.channels
             if (
                 not isinstance(channel, discord.CategoryChannel)
-                and (channel.category and "archive" not in channel.category.name.lower())
-                and (
-                    isinstance(interaction_user, discord.Member)
-                    and channel.permissions_for(interaction_user).read_messages
-                )
+                and channel.category
+                and "archive" not in channel.category.name.lower()
+                and isinstance(interaction_user, discord.Member)
+                and channel.permissions_for(interaction_user).read_messages
             )
         }
 
