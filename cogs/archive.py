@@ -80,6 +80,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
     ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """
         Autocomplete callable that generates the set of channels that the user can archive.
+
         The list of channels will include all types of channels except categories,
         that have not been archived.
         """
