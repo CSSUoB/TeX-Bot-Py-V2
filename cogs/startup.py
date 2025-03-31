@@ -40,24 +40,26 @@ class StartupCog(TeXBotBaseCog):
         Shortcut accessors should only be populated once TeX-Bot is ready to make API requests.
         """
         if settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
-            if isinstance(logger.handlers[1], DiscordHandler):
-                logger.removeHandler(logger.handlers[1])
+            for handler in logger.handlers:
+                if isinstance(handler, DiscordHandler):
+                    logger.removeHandler(handler)
 
-                discord_logging_handler: DiscordHandler = DiscordHandler(  # type: ignore[no-any-unimported]
-                    service_name=self.bot.user.name if self.bot.user else "TeX-Bot",
-                    webhook_url=settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
-                    avatar_url=(
-                        self.bot.user.avatar.url
-                        if self.bot.user and self.bot.user.avatar
-                        else None
-                    ),
-                )
-                discord_logging_handler.setLevel(logging.WARNING)
-                discord_logging_handler.setFormatter(
-                    logging.Formatter("{levelname} | {message}", style="{"),
-                )
+            discord_logging_handler: DiscordHandler = DiscordHandler(  # type: ignore[no-any-unimported]
+                service_name=self.bot.user.name if self.bot.user else "TeX-Bot",
+                webhook_url=settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
+                avatar_url=(
+                    self.bot.user.avatar.url
+                    if self.bot.user and self.bot.user.avatar
+                    else None
+                ),
+            )
 
-                logger.addHandler(discord_logging_handler)
+            discord_logging_handler.setLevel(logging.WARNING)
+            discord_logging_handler.setFormatter(
+                logging.Formatter("{levelname} | {message}", style="{"),
+            )
+
+            logger.addHandler(discord_logging_handler)
         else:
             logger.warning(
                 "DISCORD_LOG_CHANNEL_WEBHOOK_URL was not set, "
