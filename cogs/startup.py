@@ -44,7 +44,7 @@ class StartupCog(TeXBotBaseCog):
                 if isinstance(handler, DiscordHandler):
                     logger.removeHandler(handler)
 
-            discord_logging_handler: DiscordHandler = DiscordHandler(  # type: ignore[no-any-unimported]
+            discord_logging_handler: logging.Handler = DiscordHandler(
                 service_name=self.bot.user.name if self.bot.user else "TeX-Bot",
                 webhook_url=settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
                 avatar_url=(
@@ -53,13 +53,13 @@ class StartupCog(TeXBotBaseCog):
                     else None
                 ),
             )
-
             discord_logging_handler.setLevel(logging.WARNING)
             discord_logging_handler.setFormatter(
                 logging.Formatter("{levelname} | {message}", style="{"),
             )
 
             logger.addHandler(discord_logging_handler)
+
         else:
             logger.warning(
                 "DISCORD_LOG_CHANNEL_WEBHOOK_URL was not set, "
