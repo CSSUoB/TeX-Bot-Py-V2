@@ -101,6 +101,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
             )
             await message.edit(content=f"{users_or_roles.mention}")
             await message.delete(delay=1)
+            return
 
         await channel_or_thread.set_permissions(
             target=users_or_roles,
@@ -151,6 +152,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
                         channel_or_thread,
                     )
                     return
+            return
 
         await channel_or_thread.set_permissions(
             target=users_or_roles,
