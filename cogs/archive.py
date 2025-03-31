@@ -133,7 +133,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         Definition & callback response of the "archive-category" command.
 
         The "archive" command hides a given category from view of casual members unless they
-        have the "Archivist" role. This can be overriden via a boolean parameter to allow
+        have the "Archivist" role. This can be overridden via a boolean parameter to allow
         for committee channels to be archived with the same command but not be visible.
         """
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
