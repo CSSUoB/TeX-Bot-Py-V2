@@ -274,7 +274,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
                 ctx=ctx,
                 message=(
                     "Supplied channel to archive is a category - "
-                    "please use the archive-channel command to archive categories.."
+                    "please use the archive-channel command to archive categories."
                 ),
             )
             return
