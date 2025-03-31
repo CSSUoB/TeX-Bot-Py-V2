@@ -151,7 +151,6 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
                         member,
                         channel_or_thread,
                     )
-                    return
             return
 
         await channel_or_thread.set_permissions(
