@@ -40,10 +40,6 @@ class StartupCog(TeXBotBaseCog):
         Shortcut accessors should only be populated once TeX-Bot is ready to make API requests.
         """
         if settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
-            for handler in logger.handlers:
-                if isinstance(handler, DiscordHandler):
-                    logger.removeHandler(handler)
-
             discord_logging_handler: logging.Handler = DiscordHandler(
                 service_name=self.bot.user.name if self.bot.user else "TeX-Bot",
                 webhook_url=settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
@@ -55,7 +51,7 @@ class StartupCog(TeXBotBaseCog):
             )
             discord_logging_handler.setLevel(logging.WARNING)
             discord_logging_handler.setFormatter(
-                logging.Formatter("{levelname} | {message}", style="{"),
+                logging.Formatter("{levelname} | {message}", style="{")
             )
 
             logger.addHandler(discord_logging_handler)
@@ -63,7 +59,7 @@ class StartupCog(TeXBotBaseCog):
         else:
             logger.warning(
                 "DISCORD_LOG_CHANNEL_WEBHOOK_URL was not set, "
-                "so error logs will not be sent to the Discord log channel.",
+                "so error logs will not be sent to the Discord log channel."
             )
 
         try:

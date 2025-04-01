@@ -215,22 +215,6 @@ class Settings(abc.ABC):
         return webhook_config_logger
 
     @classmethod
-    def _setup_discord_logging_channel(cls) -> None:
-        if cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
-            discord_logging_handler: logging.Handler = DiscordHandler(
-                service_name="TeX-Bot",
-                webhook_url=cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
-            )
-
-            discord_logging_handler.setLevel(logging.WARNING)
-
-            discord_logging_handler.setFormatter(
-                logging.Formatter("{levelname} | {message}", style="{"),
-            )
-
-            logger.addHandler(discord_logging_handler)
-
-    @classmethod
     def _setup_discord_guild_id(cls) -> None:
         raw_discord_guild_id: str | None = os.getenv("DISCORD_GUILD_ID")
 
@@ -742,7 +726,6 @@ class Settings(abc.ABC):
         try:
             cls._setup_logging()
             cls._setup_discord_bot_token()
-            cls._setup_discord_logging_channel()
             cls._setup_discord_guild_id()
             cls._setup_group_full_name()
             cls._setup_group_short_name()
