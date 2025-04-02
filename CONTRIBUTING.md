@@ -218,6 +218,8 @@ Happy contributing!
 
 ### Creating a New Cog
 
+Firstly, create a new file in the `cogs` folder. You should name the file something representative of what the cog will do.
+
 
 ### Creating a New Environment Variable
 
