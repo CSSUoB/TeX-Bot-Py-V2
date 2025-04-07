@@ -160,6 +160,7 @@ banned-from = ["abc", "re", "regex"]
 extend-ignore-names = ["_base_manager", "_default_manager", "_get_wrap_line_width", "_meta"]
 
 [tool.ruff.lint.flake8-type-checking]
+exempt-modules = []
 quote-annotations = true
 strict = true
 
