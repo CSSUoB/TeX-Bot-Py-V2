@@ -185,7 +185,7 @@ async def get_product_sales(product_id: str) -> dict[str, int]:
     return product_sales_data
 
 
-async def get_product_customisations(product_id: str) -> set[dict[str, str]]:
+async def get_product_customisations(product_id: str) -> list[dict[str, str]]:
     """Get the set of product customisations for a given product ID, checking the past year."""
     report_url, cookies = await fetch_report_url_and_cookies(
         report_type=ReportType.CUSTOMISATION,
@@ -195,9 +195,9 @@ async def get_product_customisations(product_id: str) -> set[dict[str, str]]:
 
     if report_url is None:
         logger.warning("Failed to retrieve customisations report URL.")
-        return set()
+        return []
 
-    customisation_records: set[dict[str, str]] = set()
+    customisation_records: list[dict[str, str]] = []
     file_session: aiohttp.ClientSession = aiohttp.ClientSession(
         headers=BASE_HEADERS,
         cookies=cookies,
@@ -206,7 +206,7 @@ async def get_product_customisations(product_id: str) -> set[dict[str, str]]:
         if file_response.status != 200:
             logger.warning("Customisation report file session returned a non 200 status code.")
             logger.debug(file_response)
-            return set()
+            return []
 
         for line in (await file_response.content.read()).split(b"\n")[7:]:
             if line == b"\r" or not line:
@@ -241,7 +241,7 @@ async def get_product_customisations(product_id: str) -> set[dict[str, str]]:
                     logger.debug(item)
                     break
 
-                customisation_records.add(
+                customisation_records.append(
                     {
                         "product_id": product_id,
                         "product_name": file_product_name,

@@ -836,6 +836,7 @@ name = "tex-bot-py-v2"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "aiohttp" },
     { name = "anyio" },
 ]
 
@@ -880,7 +881,10 @@ type-check = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "anyio", specifier = ">=4.9.0" }]
+requires-dist = [
+    { name = "aiohttp", specifier = ">=3.11.14" },
+    { name = "anyio", specifier = ">=4.9.0" },
+]
 
 [package.metadata.requires-dev]
 dev = [
