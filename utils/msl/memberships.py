@@ -97,9 +97,7 @@ async def is_student_id_member(student_id: str | int) -> bool:
     if str(student_id) in all_ids:
         return True
 
-    new_ids: set[str] = {
-        str(member[1] for member in await get_full_membership_list()),
-    }
+    new_ids: set[str] = {str(member[1]) for member in await get_full_membership_list()}
 
     return str(student_id) in new_ids
 
