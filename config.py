@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, final
 
 import dotenv
 import validators
+from discord_logging.handler import DiscordHandler
 
 from exceptions import (
     ImproperlyConfiguredError,
@@ -177,29 +178,41 @@ class Settings(abc.ABC):
         cls._settings["DISCORD_BOT_TOKEN"] = raw_discord_bot_token
 
     @classmethod
-    def _setup_discord_log_channel_webhook_url(cls) -> None:
+    def _setup_discord_log_channel_webhook(cls) -> "Logger":
         raw_discord_log_channel_webhook_url: str = os.getenv(
-            "DISCORD_LOG_CHANNEL_WEBHOOK_URL",
-            "",
+            "DISCORD_LOG_CHANNEL_WEBHOOK_URL", ""
         )
 
-        DISCORD_LOG_CHANNEL_WEBHOOK_URL_IS_VALID: Final[bool] = bool(
-            not raw_discord_log_channel_webhook_url
-            or (
-                validators.url(raw_discord_log_channel_webhook_url)
-                and raw_discord_log_channel_webhook_url.startswith(
-                    "https://discord.com/api/webhooks/",
-                )
-            ),
-        )
-        if not DISCORD_LOG_CHANNEL_WEBHOOK_URL_IS_VALID:
+        if raw_discord_log_channel_webhook_url and (
+            not validators.url(raw_discord_log_channel_webhook_url)
+            or not raw_discord_log_channel_webhook_url.startswith(
+                "https://discord.com/api/webhooks/"
+            )
+        ):
             INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE: Final[str] = (
                 "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL "
                 "that points to a discord channel where logs should be displayed."
             )
             raise ImproperlyConfiguredError(INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE)
 
+        webhook_config_logger: Logger = logging.getLogger("_temp_webhook_config")
+
+        if raw_discord_log_channel_webhook_url:
+            discord_logging_handler: logging.Handler = DiscordHandler(
+                service_name="TeX-Bot", webhook_url=raw_discord_log_channel_webhook_url
+            )
+
+            discord_logging_handler.setLevel(logging.WARNING)
+
+            discord_logging_handler.setFormatter(
+                logging.Formatter("{levelname} | {message}", style="{")
+            )
+
+            webhook_config_logger.addHandler(discord_logging_handler)
+
         cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = raw_discord_log_channel_webhook_url
+
+        return webhook_config_logger
 
     @classmethod
     def _setup_discord_guild_id(cls) -> None:
@@ -708,30 +721,35 @@ class Settings(abc.ABC):
 
         dotenv.load_dotenv()
 
-        cls._setup_logging()
-        cls._setup_discord_bot_token()
-        cls._setup_discord_log_channel_webhook_url()
-        cls._setup_discord_guild_id()
-        cls._setup_group_full_name()
-        cls._setup_group_short_name()
-        cls._setup_ping_command_easter_egg_probability()
-        cls._setup_welcome_messages()
-        cls._setup_roles_messages()
-        cls._setup_organisation_id()
-        cls._setup_members_list_auth_session_cookie()
-        cls._setup_membership_perks_url()
-        cls._setup_purchase_membership_url()
-        cls._setup_send_introduction_reminders()
-        cls._setup_send_introduction_reminders_delay()
-        cls._setup_send_introduction_reminders_interval()
-        cls._setup_send_get_roles_reminders()
-        cls._setup_send_get_roles_reminders_delay()
-        cls._setup_advanced_send_get_roles_reminders_interval()
-        cls._setup_statistics_days()
-        cls._setup_statistics_roles()
-        cls._setup_moderation_document_url()
-        cls._setup_strike_performed_manually_warning_location()
-        cls._setup_auto_add_committee_to_threads()
+        webhook_config_logger: Logger = cls._setup_discord_log_channel_webhook()
+
+        try:
+            cls._setup_logging()
+            cls._setup_discord_bot_token()
+            cls._setup_discord_guild_id()
+            cls._setup_group_full_name()
+            cls._setup_group_short_name()
+            cls._setup_ping_command_easter_egg_probability()
+            cls._setup_welcome_messages()
+            cls._setup_roles_messages()
+            cls._setup_organisation_id()
+            cls._setup_members_list_auth_session_cookie()
+            cls._setup_membership_perks_url()
+            cls._setup_purchase_membership_url()
+            cls._setup_send_introduction_reminders()
+            cls._setup_send_introduction_reminders_delay()
+            cls._setup_send_introduction_reminders_interval()
+            cls._setup_send_get_roles_reminders()
+            cls._setup_send_get_roles_reminders_delay()
+            cls._setup_advanced_send_get_roles_reminders_interval()
+            cls._setup_statistics_days()
+            cls._setup_statistics_roles()
+            cls._setup_moderation_document_url()
+            cls._setup_strike_performed_manually_warning_location()
+            cls._setup_auto_add_committee_to_threads()
+        except ImproperlyConfiguredError as improper_config_error:
+            webhook_config_logger.error(improper_config_error.message)  # noqa: TRY400
+            raise improper_config_error from improper_config_error
 
         cls._is_env_variables_setup = True
 

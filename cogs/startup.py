@@ -41,8 +41,8 @@ class StartupCog(TeXBotBaseCog):
         """
         if settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
             discord_logging_handler: logging.Handler = DiscordHandler(
-                self.bot.user.name if self.bot.user else "TeXBot",
-                settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
+                service_name=self.bot.user.name if self.bot.user else "TeX-Bot",
+                webhook_url=settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
                 avatar_url=(
                     self.bot.user.avatar.url
                     if self.bot.user and self.bot.user.avatar
@@ -50,9 +50,8 @@ class StartupCog(TeXBotBaseCog):
                 ),
             )
             discord_logging_handler.setLevel(logging.WARNING)
-            # noinspection SpellCheckingInspection
             discord_logging_handler.setFormatter(
-                logging.Formatter("{levelname} | {message}", style="{"),
+                logging.Formatter("{levelname} | {message}", style="{")
             )
 
             logger.addHandler(discord_logging_handler)
@@ -60,7 +59,7 @@ class StartupCog(TeXBotBaseCog):
         else:
             logger.warning(
                 "DISCORD_LOG_CHANNEL_WEBHOOK_URL was not set, "
-                "so error logs will not be sent to the Discord log channel.",
+                "so error logs will not be sent to the Discord log channel."
             )
 
         try:
