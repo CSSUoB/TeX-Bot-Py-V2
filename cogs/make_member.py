@@ -159,10 +159,18 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 )
             ).aexists()
             if GROUP_MEMBER_ID_IS_ALREADY_USED:
-                # noinspection PyUnusedLocal
                 committee_mention: str = "committee"
                 with contextlib.suppress(CommitteeRoleDoesNotExistError):
                     committee_mention = (await self.bot.committee_role).mention
+                await ctx.followup.send(
+                    content=(
+                        ":information_source: No changes made. This student ID has already "
+                        f"been used. Please contact a {committee_mention} member if this is "
+                        "an error. :information_source:"
+                    ),
+                    ephemeral=True,
+                )
+                return
 
         if not await is_student_id_member(student_id=group_member_id):
             await self.command_send_error(
@@ -176,20 +184,20 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 ),
             )
 
-            try:
-                await GroupMadeMember.objects.acreate(group_member_id=group_member_id)  # type: ignore[misc]
-            except ValidationError as create_group_made_member_error:
-                error_is_already_exists: bool = (
-                    "hashed_group_member_id" in create_group_made_member_error.message_dict
-                    and any(
-                        "already exists" in error
-                        for error in create_group_made_member_error.message_dict[
-                            "hashed_group_member_id"
-                        ]
-                    )
+        try:
+            await GroupMadeMember.objects.acreate(group_member_id=group_member_id)  # type: ignore[misc]
+        except ValidationError as create_group_made_member_error:
+            error_is_already_exists: bool = (
+                "hashed_group_member_id" in create_group_made_member_error.message_dict
+                and any(
+                    "already exists" in error
+                    for error in create_group_made_member_error.message_dict[
+                        "hashed_group_member_id"
+                    ]
                 )
-                if not error_is_already_exists:
-                    raise
+            )
+            if not error_is_already_exists:
+                raise create_group_made_member_error from create_group_made_member_error
 
             await ctx.followup.send(content="Successfully made you a member!", ephemeral=True)
 
