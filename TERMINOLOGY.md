@@ -49,7 +49,7 @@ For more example usages, check the [Guides](CONTRIBUTING#Guides) section of the 
 #### [Message Commands](https://discord.com/developers/docs/interactions/application-commands#message-commands)
 
 
-Message commands, also known as `Message-Context Commands`, are executed via right-clicking on a [Message](https://discord.com/developers/docs/resources/message), clicking "Apps", then selecting the command from the menu. 
+Message commands, also known as `Message-Context Commands`, are executed via right-clicking on a [Message](https://discord.com/developers/docs/resources/message), clicking "Apps", then selecting the command from the menu.
 
 The main difference between [Context Commands](#context-commands) and [Slash Commands](#slash-commands) is that [Context Commands](#context-commands) do not take user defined arguments and are limited to the [Message](https://discord.com/developers/docs/resources/message) that the command is issued on and the context which is passed along side it.
 
