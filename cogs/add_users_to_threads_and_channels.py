@@ -61,15 +61,11 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
         ctx: "TeXBotAutocompleteContext",
     ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """Autocomplete callable that generates the set of available selectable roles."""
-        logger.debug("Roles autocomplete called!")
         try:
-            logger.debug("Getting main guild...")
             main_guild: discord.Guild = ctx.bot.main_guild
         except GuildDoesNotExistError:
-            logger.debug("Main guild does not exist.")
             return set()
 
-        logger.debug("Main guild found!")
         logger.debug(main_guild.name)
         return {
             discord.OptionChoice(name=role.name, value=str(role.id))
