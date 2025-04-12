@@ -40,8 +40,6 @@ class RestartRequiredDueToConfigChange(BaseTeXBotError, Exception):  # noqa: N81
         self, message: str | None = None, changed_settings: "AbstractSet[str] | None" = None
     ) -> None:
         """Initialise an Exception to apply configuration changes."""
-        self.changed_settings: AbstractSet[str] | None = (
-            changed_settings if changed_settings else set()
-        )
+        self.changed_settings: AbstractSet[str] | None = changed_settings or set()
 
         super().__init__(message)

@@ -232,7 +232,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         In normal use the autocomplete should be used, but a discord ID can be
         used directly if the user wishes to action a user not included in the autocomplete.
         """
-        member_id: str = action_member_id if action_member_id else str(ctx.user.id)
+        member_id: str = action_member_id or str(ctx.user.id)
 
         try:
             action_user: discord.Member = await self.bot.get_member_from_str_id(
