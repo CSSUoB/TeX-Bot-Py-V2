@@ -61,17 +61,16 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
         ctx: "TeXBotAutocompleteContext",
     ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """Autocomplete callable that generates the set of available selectable roles."""
+        logger.debug("Roles autocomplete called!")
         try:
+            logger.debug("Getting main guild...")
             main_guild: discord.Guild = ctx.bot.main_guild
         except GuildDoesNotExistError:
+            logger.debug("Main guild does not exist.")
             return set()
 
-        if not ctx.value or ctx.value.startswith("@"):
-            return {
-                discord.OptionChoice(name=f"@{role.name}", value=str(role.id))
-                for role in main_guild.roles
-            }
-
+        logger.debug("Main guild found!")
+        logger.debug(main_guild.name)
         return {
             discord.OptionChoice(name=role.name, value=str(role.id))
             for role in main_guild.roles
@@ -185,7 +184,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
         )
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="add_users_to_channel",
+        name="add-users-to-channel",
         description="Adds selected users to a channel or thread.",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
@@ -237,7 +236,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
         )
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="add_role_to_channel",
+        name="add-role-to-channel",
         description="Adds the selected role and it's users to a channel or thread.",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
