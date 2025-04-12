@@ -66,7 +66,12 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
         except GuildDoesNotExistError:
             return set()
 
-        logger.debug(main_guild.name)
+        if not ctx.value or ctx.value.startswith("@"):
+            return {
+                discord.OptionChoice(name=f"@{role.name}", value=str(role.id))
+                for role in main_guild.roles
+            }
+
         return {
             discord.OptionChoice(name=role.name, value=str(role.id))
             for role in main_guild.roles
