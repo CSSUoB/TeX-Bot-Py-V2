@@ -229,6 +229,7 @@ class Settings(abc.ABC):
                 "GROUP_NAME must not contain any invalid characters."
             )
             raise ImproperlyConfiguredError(INVALID_GROUP_FULL_NAME)
+
         cls._settings["_GROUP_FULL_NAME"] = raw_group_full_name
 
     @classmethod
@@ -244,6 +245,7 @@ class Settings(abc.ABC):
                 "GROUP_SHORT_NAME must not contain any invalid characters."
             )
             raise ImproperlyConfiguredError(INVALID_GROUP_SHORT_NAME)
+
         cls._settings["_GROUP_SHORT_NAME"] = raw_group_short_name
 
     @classmethod
@@ -372,6 +374,7 @@ class Settings(abc.ABC):
                 dict_key="roles_messages",
                 invalid_value=messages_dict["roles_messages"],
             )
+
         cls._settings["ROLES_MESSAGES"] = set(messages_dict["roles_messages"])  # type: ignore[call-overload]
 
     @classmethod
