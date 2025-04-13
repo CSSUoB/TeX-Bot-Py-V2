@@ -2,7 +2,7 @@
 
 import hashlib
 import re
-from typing import TYPE_CHECKING, Final, override
+from typing import TYPE_CHECKING, override
 
 import discord
 from django.core.exceptions import ValidationError
@@ -14,6 +14,7 @@ from .utils import AsyncBaseModel, BaseDiscordMemberWrapper, DiscordMember
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from typing import Final
 
 __all__: "Sequence[str]" = (
     "AssignedCommitteeAction",

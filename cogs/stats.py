@@ -6,7 +6,7 @@ import re
 from typing import TYPE_CHECKING
 
 import discord
-import matplotlib.pyplot as plt
+import matplotlib.pyplot
 import mplcyberpunk
 
 from config import settings
@@ -52,7 +52,7 @@ def plot_bar_chart(
     extra_text: str = "",
 ) -> discord.File:
     """Generate an image of a plot bar chart from the given data & format variables."""
-    plt.style.use("cyberpunk")
+    matplotlib.pyplot.style.use("cyberpunk")
 
     max_data_value: int = max(data.values()) + 1
 
@@ -68,15 +68,15 @@ def plot_bar_chart(
             if value > 0 or index <= 4
         }
 
-    bars = plt.bar(*zip(*data.items(), strict=True))
+    bars = matplotlib.pyplot.bar(*zip(*data.items(), strict=True))
 
     if extra_values:
-        extra_bars = plt.bar(*zip(*extra_values.items(), strict=True))
+        extra_bars = matplotlib.pyplot.bar(*zip(*extra_values.items(), strict=True))
         mplcyberpunk.add_bar_gradient(extra_bars)
 
     mplcyberpunk.add_bar_gradient(bars)
 
-    x_tick_labels: Collection[Plot_Text] = plt.gca().get_xticklabels()
+    x_tick_labels: Collection[Plot_Text] = matplotlib.pyplot.gca().get_xticklabels()
     count_x_tick_labels: int = len(x_tick_labels)
 
     index: int
@@ -89,9 +89,9 @@ def plot_bar_chart(
         if index % 2 == 1 and count_x_tick_labels > 4:
             tick_label.set_y(tick_label.get_position()[1] - 0.044)
 
-    plt.yticks(range(0, max_data_value, math.ceil(max_data_value / 15)))
+    matplotlib.pyplot.yticks(range(0, max_data_value, math.ceil(max_data_value / 15)))
 
-    x_label_obj: Plot_Text = plt.xlabel(
+    x_label_obj: Plot_Text = matplotlib.pyplot.xlabel(
         x_label,
         fontweight="bold",
         fontsize="large",
@@ -99,7 +99,7 @@ def plot_bar_chart(
     )
     x_label_obj._get_wrap_line_width = lambda: 475  # type: ignore[attr-defined]
 
-    y_label_obj: Plot_Text = plt.ylabel(
+    y_label_obj: Plot_Text = matplotlib.pyplot.ylabel(
         y_label,
         fontweight="bold",
         fontsize="large",
@@ -107,26 +107,26 @@ def plot_bar_chart(
     )
     y_label_obj._get_wrap_line_width = lambda: 375  # type: ignore[attr-defined]
 
-    title_obj: Plot_Text = plt.title(title, fontsize="x-large", wrap=True)
+    title_obj: Plot_Text = matplotlib.pyplot.title(title, fontsize="x-large", wrap=True)
     title_obj._get_wrap_line_width = lambda: 500  # type: ignore[attr-defined]
 
     if extra_text:
-        extra_text_obj: Plot_Text = plt.text(
+        extra_text_obj: Plot_Text = matplotlib.pyplot.text(
             0.5,
             -0.27,
             extra_text,
             ha="center",
-            transform=plt.gca().transAxes,
+            transform=matplotlib.pyplot.gca().transAxes,
             wrap=True,
             fontstyle="italic",
             fontsize="small",
         )
         extra_text_obj._get_wrap_line_width = lambda: 400  # type: ignore[attr-defined]
-        plt.subplots_adjust(bottom=0.2)
+        matplotlib.pyplot.subplots_adjust(bottom=0.2)
 
     plot_file = io.BytesIO()
-    plt.savefig(plot_file, format="png")
-    plt.close()
+    matplotlib.pyplot.savefig(plot_file, format="png")
+    matplotlib.pyplot.close()
     plot_file.seek(0)
 
     discord_plot_file: discord.File = discord.File(
