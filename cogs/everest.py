@@ -27,18 +27,21 @@ class EverestCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/everest" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_course_types(ctx: "TeXBotAutocompleteContext",) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":  # noqa: E501, ARG004
+    async def autocomplete_get_course_types(
+        ctx: "TeXBotAutocompleteContext",  # noqa: ARG004
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """Autocomplete for the course type option."""
         return POSSIBLE_COURSE_TYPES
 
     @staticmethod
-    async def autocomplete_get_course_years(ctx: "TeXBotAutocompleteContext",) -> "AbstractSet[discord.OptionChoice] | AbstractSet[int]":  # noqa: E501, ARG004
+    async def autocomplete_get_course_years(
+        ctx: "TeXBotAutocompleteContext",  # noqa: ARG004
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[int]":
         """Autocomplete for the course year option."""
         return POSSIBLE_YEARS
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="everest",
-        description="How many steps of everest is your assignment worth?"
+        name="everest", description="How many steps of everest is your assignment worth?"
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="course-type",
@@ -62,7 +65,13 @@ class EverestCommandCog(TeXBotBaseCog):
         input_type=float,
         required=True,
     )
-    async def everest(self, ctx: "TeXBotApplicationContext", course_type: str, current_course_year: int, module_percentage: float) -> None:
+    async def everest(  # type: ignore[misc]
+        self,
+        ctx: "TeXBotApplicationContext",
+        course_type: str,
+        current_course_year: int,
+        module_percentage: float,
+    ) -> None:
         """Calculate how many steps of Mount Everest an assignment is worth."""
         if course_type not in POSSIBLE_COURSE_TYPES:
             await ctx.respond(
@@ -83,8 +92,8 @@ class EverestCommandCog(TeXBotBaseCog):
             return
 
         if current_course_year not in POSSIBLE_YEARS:
-                await ctx.respond(content=INVALID_COURSE_YEAR_MESSAGE)
-                return
+            await ctx.respond(content=INVALID_COURSE_YEAR_MESSAGE)
+            return
 
         INVALID_MODULE_WEIGHT_MESSAGE: Final[str] = (
             f"Module weight: {module_percentage} is not valid."
@@ -99,7 +108,6 @@ class EverestCommandCog(TeXBotBaseCog):
         if module_weight < 0 or module_weight > 100:
             await ctx.respond(content=INVALID_MODULE_WEIGHT_MESSAGE)
             return
-
 
         if current_course_year == 4 and course_type == "B.Sc.":
             await ctx.respond(
@@ -117,7 +125,9 @@ class EverestCommandCog(TeXBotBaseCog):
         if course_type == "msci":
             year_value = MSCI_WEIGHTINGS[current_course_year - 1]
 
-        steps = (module_weight / 100) * 1 / 6 * year_value * 44250  # NOTE: Assumes all modules are 20 credits
+        steps = (
+            (module_weight / 100) * 1 / 6 * year_value * 44250
+        )  # NOTE: Assumes all modules are 20 credits
 
         await ctx.respond(
             content=(
