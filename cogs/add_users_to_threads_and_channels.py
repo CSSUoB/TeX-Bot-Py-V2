@@ -185,7 +185,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
         )
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="add_users_to_channel",
+        name="add-users-to-channel",
         description="Adds selected users to a channel or thread.",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
@@ -237,7 +237,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
         )
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="add_role_to_channel",
+        name="add-role-to-channel",
         description="Adds the selected role and it's users to a channel or thread.",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
