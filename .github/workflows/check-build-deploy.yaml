@@ -275,7 +275,7 @@ jobs:
             contents: write
             id-token: write
 
-        if: github.ref_type == 'tag'
+        if: github.ref_type == 'tag' && github.event.pull_request.head.repo.full_name == 'CSSUoB/TeX-Bot-Py-V2'
 
         steps:
             - name: Create GitHub Release
