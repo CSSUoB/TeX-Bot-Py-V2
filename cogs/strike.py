@@ -8,8 +8,6 @@ import re
 from typing import TYPE_CHECKING
 
 import discord
-
-# noinspection SpellCheckingInspection
 from asyncstdlib.builtins import any as asyncany
 from discord.ui import View
 
@@ -275,20 +273,23 @@ class BaseStrikeCog(TeXBotBaseCog):
 
         actual_strike_amount: int = min(3, member_strikes.strikes)
 
-        await strike_user.send(
-            "Hi, a recent incident occurred in which you may have broken one or more of "
-            f"the {self.bot.group_short_name} Discord server's rules.\n"
-            "We have increased the number of strikes associated with your account "
-            f"to {actual_strike_amount} and "
-            "the corresponding moderation action will soon be applied to you. "
-            "To find what moderation action corresponds to which strike level, "
-            "you can view "
-            f"the {self.bot.group_short_name} Discord server moderation document "
-            f"[here](<{settings.MODERATION_DOCUMENT_URL}>)\nPlease ensure you have read "
-            f"the rules in {rules_channel_mention} so that your future behaviour adheres "
-            f"to them.{includes_ban_message}\n\nA committee member will be in contact "
-            "with you shortly, to discuss this further.",
-        )
+        try:
+            await strike_user.send(
+                "Hi, a recent incident occurred in which you may have broken one or more of "
+                f"the {self.bot.group_short_name} Discord server's rules.\n"
+                "We have increased the number of strikes associated with your account "
+                f"to {actual_strike_amount} and "
+                "the corresponding moderation action will soon be applied to you. "
+                "To find what moderation action corresponds to which strike level, "
+                "you can view "
+                f"the {self.bot.group_short_name} Discord server moderation document "
+                f"[here](<{settings.MODERATION_DOCUMENT_URL}>)\nPlease ensure you have read "
+                f"the rules in {rules_channel_mention} so that your future behaviour adheres "
+                f"to them.{includes_ban_message}\n\nA committee member will be in contact "
+                "with you shortly, to discuss this further.",
+            )
+        except discord.Forbidden:
+            logger.warning("Unable to send strike message to %s", strike_user)
 
     async def _confirm_perform_moderation_action(
         self,
@@ -392,7 +393,6 @@ class BaseStrikeCog(TeXBotBaseCog):
                 )
 
         if not perform_action:
-            # noinspection SpellCheckingInspection
             await message_sender_component.send(
                 content=(
                     f"{confirm_strike_message}\n"
@@ -648,7 +648,6 @@ class ManualModerationCog(BaseStrikeCog):
                         "with number of strikes**"
                     ),
                 )
-                # noinspection SpellCheckingInspection
                 await out_of_sync_ban_confirmation_message.edit(
                     content=(
                         f"Successfully banned {strike_user.mention}.\n"
