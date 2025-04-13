@@ -160,7 +160,6 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 )
             ).aexists()
             if GROUP_MEMBER_ID_IS_ALREADY_USED:
-                # noinspection PyUnusedLocal
                 committee_mention: str = "committee"
                 with contextlib.suppress(CommitteeRoleDoesNotExistError):
                     committee_mention = (await self.bot.committee_role).mention
@@ -279,7 +278,6 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                         reason='TeX Bot slash-command: "/makemember"',
                     )
 
-            # noinspection PyUnusedLocal
             applicant_role: discord.Role | None = None
             with contextlib.suppress(ApplicantRoleDoesNotExistError):
                 applicant_role = await ctx.bot.applicant_role

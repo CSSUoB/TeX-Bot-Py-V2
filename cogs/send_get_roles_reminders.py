@@ -131,10 +131,8 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
             if sent_get_roles_reminder_member_exists:
                 continue
 
-            # noinspection PyUnusedLocal
             guest_role_received_time: datetime.datetime | None = None
             with contextlib.suppress(StopIteration, StopAsyncIteration):
-                # noinspection PyTypeChecker
                 guest_role_received_time = await anext(
                     log.created_at
                     async for log in main_guild.audit_logs(

@@ -88,12 +88,10 @@ class InductSendMessageCog(TeXBotBaseCog):
                     reason="Delete introduction reminders after member is inducted.",
                 )
 
-        # noinspection PyUnusedLocal
         rules_channel_mention: str = "**`#welcome`**"
         with contextlib.suppress(RulesChannelDoesNotExistError):
             rules_channel_mention = (await self.bot.rules_channel).mention
 
-        # noinspection PyUnusedLocal
         roles_channel_mention: str = "**`#roles`**"
         with contextlib.suppress(RolesChannelDoesNotExistError):
             roles_channel_mention = (await self.bot.roles_channel).mention
@@ -229,7 +227,6 @@ class BaseInductCog(TeXBotBaseCog):
             if not silent:
                 general_channel: discord.TextChannel = await self.bot.general_channel
 
-                # noinspection PyUnusedLocal
                 roles_channel_mention: str = "**`#roles`**"
                 with contextlib.suppress(RolesChannelDoesNotExistError):
                     roles_channel_mention = (await self.bot.roles_channel).mention
@@ -245,7 +242,6 @@ class BaseInductCog(TeXBotBaseCog):
                 reason=INDUCT_AUDIT_MESSAGE,
             )
 
-            # noinspection PyUnusedLocal
             applicant_role: discord.Role | None = None
             with contextlib.suppress(ApplicantRoleDoesNotExistError):
                 applicant_role = await ctx.bot.applicant_role
