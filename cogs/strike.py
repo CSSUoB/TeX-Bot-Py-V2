@@ -897,18 +897,23 @@ class StrikeCommandCog(BaseStrikeCog):
             await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
             return
 
-        strike_obj: DiscordMemberStrikes = next(
-            strike_object
-            for strike_object in [
-                all_strike_object
-                async for all_strike_object in DiscordMemberStrikes.objects.select_related().all()  # noqa: E501 # NOTE: I tried to reformat this to avoid the ruff error but the stupid fucking reformat put it all back on one line again
-            ]
-            if str(strike_object.discord_member)  # type: ignore[has-type]
-            == (DiscordMember.hash_discord_id(strike_member.id))
-        )
+        strike_obj: DiscordMemberStrikes | None = None
+        try:
+            strike_obj = next(
+                strike_object
+                for strike_object in [
+                    all_strike_object
+                    async for all_strike_object in DiscordMemberStrikes.objects.select_related().all()  # noqa: E501 # NOTE: I tried to reformat this to avoid the ruff error but the stupid fucking reformat put it all back on one line again
+                ]
+                if str(strike_object.discord_member)  # type: ignore[has-type]
+                == (DiscordMember.hash_discord_id(strike_member.id))
+            )
+        except StopIteration:
+            logger.debug("No strikes found for user %s", strike_member)
 
         await ctx.respond(
-            f"User {strike_member.mention} has {strike_obj.strikes or 0} strikes."
+            f"User {strike_member.mention} has "
+            f"{strike_obj.strikes if strike_obj else 0} strikes."
         )
 
 
