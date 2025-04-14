@@ -929,9 +929,9 @@ class StrikeCommandCog(BaseStrikeCog):
         required=True,
         parameter_name="str_user_id",
     )
-    async def decrement_strikes(
+    async def decrement_strikes(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", str_user_id: str
-    ) -> None:  # type: ignore[misc, no-untyped-call]
+    ) -> None:
         """
         Definition & callback response of the "decrease-strikes" command.
 
