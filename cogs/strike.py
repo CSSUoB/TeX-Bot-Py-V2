@@ -918,7 +918,7 @@ class StrikeCommandCog(BaseStrikeCog):
         )
 
     @discord.slash_command(  # type: ignore[misc, no-untyped-call]
-        name="decrease-strikes",
+        name="decrement-strikes",
         description="Decrement the number of strikes a user has by 1.",
     )
     @discord.option(  # type: ignore[misc, no-untyped-call]
@@ -933,9 +933,10 @@ class StrikeCommandCog(BaseStrikeCog):
         self, ctx: "TeXBotApplicationContext", str_user_id: str
     ) -> None:
         """
-        Definition & callback response of the "decrease-strikes" command.
+        Definition & callback response of the "decrement-strikes" command.
 
-        The "decrease-strikes" command removes a strike from the given member.
+        The "decrement-strikes" command removes a strike from the given member.
+        If the user only has one strike, the object will be deleted from the database.
         """
         try:
             strike_member: discord.Member = await self.bot.get_member_from_str_id(
@@ -972,6 +973,12 @@ class StrikeCommandCog(BaseStrikeCog):
 
         strike_obj.strikes -= 1
         await strike_obj.asave()
+        await ctx.respond(
+            content=(
+                f"Successfully removed a strike from {strike_member.mention}. "
+                f"User now has {strike_obj.strikes} strikes."
+            )
+        )
 
 
 class StrikeContextCommandsCog(BaseStrikeCog):
