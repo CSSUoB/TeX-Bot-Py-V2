@@ -15,8 +15,6 @@ from exceptions import (
     GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
     MemberRoleDoesNotExistError,
-    RolesChannelDoesNotExistError,
-    RulesChannelDoesNotExistError,
 )
 from utils import (
     CommandChecks,
@@ -77,57 +75,60 @@ class InductSendMessageCog(TeXBotBaseCog):
                 await IntroductionReminderOptOutMember.objects.aget(discord_id=before.id)
             ).adelete()
 
-        async for message in after.history():
+        reminder_message: discord.Message
+        async for reminder_message in after.history():
             MESSAGE_IS_INTRODUCTION_REMINDER: bool = bool(
-                ("joined the " in message.content)
-                and (" Discord guild but have not yet introduced" in message.content)
-                and message.author.bot
+                ("joined the " in reminder_message.content)
+                and (" Discord guild but have not yet introduced" in reminder_message.content)
+                and reminder_message.author.bot
             )
             if MESSAGE_IS_INTRODUCTION_REMINDER:
-                await message.delete(
+                await reminder_message.delete(
                     reason="Delete introduction reminders after member is inducted.",
                 )
 
-        rules_channel_mention: str = "**`#welcome`**"
-        with contextlib.suppress(RulesChannelDoesNotExistError):
-            rules_channel_mention = (await self.bot.rules_channel).mention
-
-        roles_channel_mention: str = "**`#roles`**"
-        with contextlib.suppress(RolesChannelDoesNotExistError):
-            roles_channel_mention = (await self.bot.roles_channel).mention
-
-        user_type: Literal["guest", "member"] = "guest"
-        with contextlib.suppress(MemberRoleDoesNotExistError):
-            if await self.bot.member_role in after.roles:
-                user_type = "member"
-
+        user_type: Literal["guest", "member"]
         try:
-            await after.send(
+            user_type = "member" if await self.bot.member_role in after.roles else "guest"
+        except MemberRoleDoesNotExistError:
+            user_type = "guest"
+
+        messages_to_send: list[str] = [
+            (
                 f"**Congrats on joining the {self.bot.group_short_name} Discord server "
                 f"as a {user_type}!** "
                 "You now have access to communicate in all the public channels.\n\n"
                 "Some things to do to get started:\n"
-                f"1. Check out our rules in {rules_channel_mention}\n"
-                f"2. Head to {roles_channel_mention} and click on the icons to get "
-                "optional roles like pronouns and year groups\n"
+                f"1. Check out our rules in {
+                    await self.bot.get_mention_string(self.bot.rules_channel)
+                }\n"
+                f"2. Head to {
+                    await self.bot.get_mention_string(self.bot.roles_channel)
+                } and click on the icons to get optional roles like pronouns and year groups\n"
                 "3. Change your nickname to whatever you wish others to refer to you as "
                 "(You can do this by right-clicking your name in the members-list "
-                'to the right & selecting "Edit Server Profile").',
+                'to the right & selecting "Edit Server Profile").'
+            ),
+        ]
+
+        if user_type != "member":
+            messages_to_send.append(
+                f"You can also get yourself an annual membership "
+                f"to {self.bot.group_full_name} for only £5! "
+                f"Just head to {settings['PURCHASE_MEMBERSHIP_URL']}. "
+                "You'll get awesome perks like a free T-shirt:shirt:, "
+                "access to member only events:calendar_spiral: and a cool green name on "
+                f"the {self.bot.group_short_name} Discord server:green_square:! "
+                f"Checkout all the perks at {settings['MEMBERSHIP_PERKS_URL']}",
             )
-            if user_type != "member":
-                await after.send(
-                    f"You can also get yourself an annual membership "
-                    f"to {self.bot.group_full_name} for only £5! "
-                    f"Just head to {settings['PURCHASE_MEMBERSHIP_URL']}. "
-                    "You'll get awesome perks like a free T-shirt:shirt:, "
-                    "access to member only events:calendar_spiral: and a cool green name on "
-                    f"the {self.bot.group_short_name} Discord server:green_square:! "
-                    f"Checkout all the perks at {settings['MEMBERSHIP_PERKS_URL']}",
-                )
+
+        try:
+            message_to_send: str
+            for message_to_send in messages_to_send:
+                await after.send(message_to_send)
         except discord.Forbidden:
             logger.info(
-                "Failed to open DM channel to user %s so no welcome message was sent.",
-                after,
+                "Failed to open DM channel to user %s so no welcome message was sent.", after
             )
 
 
@@ -225,16 +226,11 @@ class BaseInductCog(TeXBotBaseCog):
                 return
 
             if not silent:
-                general_channel: discord.TextChannel = await self.bot.general_channel
-
-                roles_channel_mention: str = "**`#roles`**"
-                with contextlib.suppress(RolesChannelDoesNotExistError):
-                    roles_channel_mention = (await self.bot.roles_channel).mention
-
-                await general_channel.send(
+                await (await self.bot.general_channel).send(
                     f"{await self.get_random_welcome_message(induction_member)} :tada:\n"
-                    f"Remember to grab your roles in {roles_channel_mention} "
-                    "and say hello to everyone here! :wave:",
+                    f"Remember to grab your roles in {
+                        await self.bot.get_mention_string(self.bot.roles_channel)
+                    } and say hello to everyone here! :wave:",
                 )
 
             await induction_member.add_roles(
@@ -242,15 +238,16 @@ class BaseInductCog(TeXBotBaseCog):
                 reason=INDUCT_AUDIT_MESSAGE,
             )
 
-            applicant_role: discord.Role | None = None
-            with contextlib.suppress(ApplicantRoleDoesNotExistError):
-                applicant_role = await ctx.bot.applicant_role
-
-            if applicant_role and applicant_role in induction_member.roles:
-                await induction_member.remove_roles(
-                    applicant_role,
-                    reason=INDUCT_AUDIT_MESSAGE,
-                )
+            try:
+                applicant_role: discord.Role = await ctx.bot.applicant_role
+            except ApplicantRoleDoesNotExistError:
+                pass
+            else:
+                if applicant_role in induction_member.roles:
+                    await induction_member.remove_roles(
+                        applicant_role,
+                        reason=INDUCT_AUDIT_MESSAGE,
+                    )
 
             tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
             if not tex_emoji:
@@ -361,7 +358,7 @@ class InductSlashCommandCog(BaseInductCog):
 
 
 class InductContextCommandsCog(BaseInductCog):
-    """Cog class that defines the context-menu induction commands & their call-back methods."""
+    """Cog class to define the context-menu induction commands and their call-back methods."""
 
     @discord.user_command(name="Induct User")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
@@ -430,7 +427,6 @@ class InductContextCommandsCog(BaseInductCog):
 class EnsureMembersInductedCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/ensure-members-inducted" command and call-back method."""
 
-    # noinspection SpellCheckingInspection
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="ensure-members-inducted",
         description="Ensures all users with the @Member role also have the @Guest role.",

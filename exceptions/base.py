@@ -19,7 +19,6 @@ __all__: "Sequence[str]" = (
 class BaseTeXBotError(BaseException, abc.ABC):
     """Base exception parent class."""
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
     def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802
@@ -55,7 +54,6 @@ class BaseTeXBotError(BaseException, abc.ABC):
 class BaseErrorWithErrorCode(BaseTeXBotError, abc.ABC):  # noqa: N818
     """Base class for exception errors that have an error code."""
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
     def ERROR_CODE(cls) -> str:  # noqa: N802
@@ -65,7 +63,6 @@ class BaseErrorWithErrorCode(BaseTeXBotError, abc.ABC):  # noqa: N818
 class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
     """Exception class to raise when a required Discord entity is missing."""
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802
         """
@@ -76,7 +73,6 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
         """
         return frozenset()
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     def DEPENDENT_TASKS(cls) -> frozenset[str]:  # noqa: N802
         """
@@ -87,7 +83,6 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
         """
         return frozenset()
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     def DEPENDENT_EVENTS(cls) -> frozenset[str]:  # noqa: N802
         """
@@ -98,7 +93,6 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
         """
         return frozenset()
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
     def DOES_NOT_EXIST_TYPE(cls) -> str:  # noqa: N802
