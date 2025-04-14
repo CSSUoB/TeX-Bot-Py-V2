@@ -871,7 +871,7 @@ class StrikeCommandCog(BaseStrikeCog):
     )
     @discord.option(  # type: ignore[misc, no-untyped-call]
         name="user",
-        description="The user to give a strike to.",
+        description="The user to check the number of strikes for.",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
         required=True,
@@ -887,7 +887,6 @@ class StrikeCommandCog(BaseStrikeCog):
 
         Returns the number of strikes a user has.
         """
-        member_id_not_integer_error: ValueError  # type: ignore[misc]
         try:
             strike_member: discord.Member = await self.bot.get_member_from_str_id(
                 str_user_id,
@@ -917,6 +916,62 @@ class StrikeCommandCog(BaseStrikeCog):
             ),
             ephemeral=True,
         )
+
+    @discord.slash_command(  # type: ignore[misc, no-untyped-call]
+        name="decrease-strikes",
+        description="Decrement the number of strikes a user has by 1.",
+    )
+    @discord.option(  # type: ignore[misc, no-untyped-call]
+        name="user",
+        description="The user to remove a strike from.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
+        required=True,
+        parameter_name="str_user_id",
+    )
+    async def decrement_strikes(
+        self, ctx: "TeXBotApplicationContext", str_user_id: str
+    ) -> None:  # type: ignore[misc, no-untyped-call]
+        """
+        Definition & callback response of the "decrease-strikes" command.
+
+        The "decrease-strikes" command removes a strike from the given member.
+        """
+        try:
+            strike_member: discord.Member = await self.bot.get_member_from_str_id(
+                str_user_id,
+            )
+        except ValueError as member_id_not_integer_error:
+            await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
+            return
+
+        strike_obj: DiscordMemberStrikes | None = None
+        try:
+            strike_obj = next(
+                strike_object
+                for strike_object in [
+                    all_strike_object
+                    async for all_strike_object in DiscordMemberStrikes.objects.select_related().all()  # noqa: E501 # NOTE: I tried to reformat this to avoid the ruff error but the stupid fucking reformat put it all back on one line again
+                ]
+                if str(strike_object.discord_member)  # type: ignore[has-type]
+                == (DiscordMember.hash_discord_id(strike_member.id))
+            )
+        except StopIteration:
+            await self.command_send_error(
+                ctx=ctx,
+                message="Cannot decrement strikes of user that has no strikes.",
+            )
+            return
+
+        if strike_obj.strikes == 1:
+            await strike_obj.adelete()
+            await ctx.respond(
+                content=f"Successfully removed all strikes from {strike_member.mention}."
+            )
+            return
+
+        strike_obj.strikes -= 1
+        await strike_obj.asave()
 
 
 class StrikeContextCommandsCog(BaseStrikeCog):
