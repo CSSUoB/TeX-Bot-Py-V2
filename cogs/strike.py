@@ -254,30 +254,35 @@ class BaseStrikeCog(TeXBotBaseCog):
     async def _send_strike_user_message(
         self, strike_user: discord.User | discord.Member, member_strikes: DiscordMemberStrikes
     ) -> None:
-        await strike_user.send(
-            "Hi, a recent incident occurred in which you may have broken one or more of "
-            f"the {self.bot.group_short_name} Discord server's rules.\n"
-            "We have increased the number of strikes associated with your account "
-            f"to {min(3, member_strikes.strikes)} and "
-            "the corresponding moderation action will soon be applied to you. "
-            "To find what moderation action corresponds to which strike level, "
-            "you can view "
-            f"the {self.bot.group_short_name} Discord server moderation document "
-            f"[here](<{settings.MODERATION_DOCUMENT_URL}>)\nPlease ensure you have read "
-            f"the rules in {await self.bot.get_mention_string(self.bot.rules_channel)} so "
-            "that your future behaviour adheres to them."
-            f"{
-                (
-                    '\nBecause you now have been given 3 strikes, you have been banned from '
-                    f'the {self.bot.group_short_name} Discord server '
-                    f'and we have contacted {self.bot.group_moderation_contact} for '
-                    'further action & advice.'
-                )
-                if member_strikes.strikes >= 3
-                else ''
-            }\n\n"
-            "A committee member will be in contact with you shortly, to discuss this further."
-        )
+        try:
+            await strike_user.send(
+                "Hi, a recent incident occurred in which you may have broken one or more of "
+                f"the {self.bot.group_short_name} Discord server's rules.\n"
+                "We have increased the number of strikes associated with your account "
+                f"to {min(3, member_strikes.strikes)} and "
+                "the corresponding moderation action will soon be applied to you. "
+                "To find what moderation action corresponds to which strike level, "
+                "you can view "
+                f"the {self.bot.group_short_name} Discord server moderation document "
+                f"[here](<{settings.MODERATION_DOCUMENT_URL}>)\nPlease ensure you have read "
+                f"the rules in {await self.bot.get_mention_string(self.bot.rules_channel)} so "
+                "that your future behaviour adheres to them."
+                f"{
+                    (
+                        '\nBecause you now have been given 3 strikes, '
+                        'you have been banned from '
+                        f'the {self.bot.group_short_name} Discord server '
+                        f'and we have contacted {self.bot.group_moderation_contact} for '
+                        'further action & advice.'
+                    )
+                    if member_strikes.strikes >= 3
+                    else ''
+                }\n\n"
+                "A committee member will be in contact with you shortly, "
+                "to discuss this further."
+            )
+        except discord.Forbidden:
+            logger.warning("Failed to send strike message to %s", strike_user)
 
     async def _confirm_perform_moderation_action(
         self,
