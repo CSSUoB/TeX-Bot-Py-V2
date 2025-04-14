@@ -897,11 +897,6 @@ class StrikeCommandCog(BaseStrikeCog):
             await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
             return
 
-        all_strike_objects: list[DiscordMemberStrikes] = [
-            strike_object
-            async for strike_object in DiscordMemberStrikes.objects.select_related().all()
-        ]
-
         strike_obj: DiscordMemberStrikes = next(
             strike_object
             for strike_object in [
@@ -912,11 +907,8 @@ class StrikeCommandCog(BaseStrikeCog):
             == (DiscordMember.hash_discord_id(strike_member.id))
         )
 
-        logger.debug(all_strike_objects)
-        logger.debug(strike_obj)
-
         await ctx.respond(
-            f"User {strike_member.mention} has the following strikes: {strike_obj.strikes}"
+            f"User {strike_member.mention} has {strike_obj.strikes or 0} strikes."
         )
 
 
