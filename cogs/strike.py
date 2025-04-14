@@ -892,7 +892,6 @@ class StrikeCommandCog(BaseStrikeCog):
             strike_member: discord.Member = await self.bot.get_member_from_str_id(
                 str_user_id,
             )
-            logger.debug("Found user: %s", strike_member)
         except ValueError as member_id_not_integer_error:
             await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
             return
@@ -912,8 +911,11 @@ class StrikeCommandCog(BaseStrikeCog):
             logger.debug("No strikes found for user %s", strike_member)
 
         await ctx.respond(
-            f"User {strike_member.mention} has "
-            f"{strike_obj.strikes if strike_obj else 0} strikes."
+            content=(
+                f"User {strike_member.mention} has "
+                f"{strike_obj.strikes if strike_obj else 0} strikes."
+            ),
+            ephemeral=True,
         )
 
 
