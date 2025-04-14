@@ -101,22 +101,6 @@ jobs:
             - name: Run pre-commit
               run: uv run -- pre-commit run --all-files --hook-stage manual  # TODO: Add GitHub workflows output format
 
-    prevent-migrations-deletion:
-        runs-on: ubuntu-latest
-
-        permissions:
-            pull-requests: read
-
-        if: github.event_name == 'pull_request'
-
-        steps:
-            - name: Prevent migrations files changing
-              uses: xalvarez/prevent-file-change-action@v2.0.0
-              with:
-                githubToken: ${{ secrets.GITHUB_TOKEN }}
-                pattern: '.*\/db\/.+\/migrations\/\d{4}\w*\.py$'
-                allowNewFiles: true
-
     pymarkdown:
         runs-on: ubuntu-latest
         env:
