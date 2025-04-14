@@ -888,7 +888,7 @@ class StrikeCommandCog(BaseStrikeCog):
 
         Returns the number of strikes a user has.
         """
-        member_id_not_integer_error: ValueError
+        member_id_not_integer_error: ValueError  # type: ignore[misc]
         try:
             strike_member: discord.Member = await self.bot.get_member_from_str_id(
                 str_user_id,
@@ -906,7 +906,7 @@ class StrikeCommandCog(BaseStrikeCog):
         strike_obj: DiscordMemberStrikes = next(
             strike_object
             for strike_object in all_strike_objects
-            if str(strike_object.discord_member)
+            if str(strike_object.discord_member)  # type: ignore[has-type]
             == DiscordMember.hash_discord_id(strike_member.id)
         )
 
