@@ -904,9 +904,12 @@ class StrikeCommandCog(BaseStrikeCog):
 
         strike_obj: DiscordMemberStrikes = next(
             strike_object
-            for strike_object in all_strike_objects
+            for strike_object in [
+                all_strike_object
+                async for all_strike_object in DiscordMemberStrikes.objects.select_related().all()  # noqa: E501 # NOTE: I tried to reformat this to avoid the ruff error but the stupid fucking reformat put it all back on one line again
+            ]
             if str(strike_object.discord_member)  # type: ignore[has-type]
-            == DiscordMember.hash_discord_id(strike_member.id)
+            == (DiscordMember.hash_discord_id(strike_member.id))
         )
 
         logger.debug(all_strike_objects)
