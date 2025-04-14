@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 import discord
 from asyncstdlib.builtins import any as asyncany
 from discord.ui import View
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 
 from config import settings
 from db.core.models import DiscordMemberStrikes
@@ -896,15 +897,30 @@ class StrikeCommandCog(BaseStrikeCog):
             await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
             return
 
-        member_strikes = [
-            strike
-            async for strike in await DiscordMemberStrikes.objects.afilter(
-                discord_id=str(strike_member.id),
+        logger.debug(DiscordMemberStrikes.objects)
+
+        try:
+            member_strike_object: DiscordMemberStrikes = (
+                await DiscordMemberStrikes.objects.select_related().aget(
+                    discord_id=str(strike_member.id),
+                )
             )
-        ]
+        except ObjectDoesNotExist:
+            await ctx.respond(f"User {strike_member.mention} does not have any strikes.")
+            return
+        except MultipleObjectsReturned:
+            await self.command_send_error(
+                ctx=ctx,
+                message=(
+                    "Multiple objects returned when trying to get strikes for user! "
+                    "This should never happen!"
+                ),
+            )
+            return
 
         await ctx.respond(
-            f"User {strike_member.mention} has the following strikes: {member_strikes}"
+            f"User {strike_member.mention} has the following strikes: "
+            f"{member_strike_object.strikes}"
         )
 
 
