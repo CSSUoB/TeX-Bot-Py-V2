@@ -13,7 +13,7 @@ from discord.ui import View
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 
 from config import settings
-from db.core.models import DiscordMemberStrikes
+from db.core.models import DiscordMember, DiscordMemberStrikes
 from exceptions import (
     GuildDoesNotExistError,
     NoAuditLogsStrikeTrackingError,
@@ -876,12 +876,12 @@ class StrikeCommandCog(BaseStrikeCog):
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
         required=True,
-        parameter_name="str_strike_member_id",
+        parameter_name="str_user_id",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def get_strikes(  # type: ignore[misc]
-        self, ctx: "TeXBotApplicationContext", str_strike_member_id: str
+        self, ctx: "TeXBotApplicationContext", str_user_id: str
     ) -> None:
         """
         Define method and callback response of of the "get-strikes" command.
@@ -891,18 +891,17 @@ class StrikeCommandCog(BaseStrikeCog):
         member_id_not_integer_error: ValueError
         try:
             strike_member: discord.Member = await self.bot.get_member_from_str_id(
-                str_strike_member_id,
+                str_user_id,
             )
+            logger.debug("Found user: %s", strike_member)
         except ValueError as member_id_not_integer_error:
             await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
             return
 
-        logger.debug(DiscordMemberStrikes.objects)
-
         try:
             member_strike_object: DiscordMemberStrikes = (
                 await DiscordMemberStrikes.objects.select_related().aget(
-                    discord_member_id=str(strike_member.id),
+                    discord_member=DiscordMember.hash_discord_id(strike_member.id),
                 )
             )
         except ObjectDoesNotExist:
