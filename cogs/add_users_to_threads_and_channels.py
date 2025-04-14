@@ -233,7 +233,8 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
             content=(
                 f"Successfully added {user_to_add.mention} "
                 f"to the channel: {ctx.channel.mention}."
-            )
+            ),
+            ephemeral=True,
         )
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
