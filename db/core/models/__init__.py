@@ -2,7 +2,7 @@
 
 import hashlib
 import re
-from typing import TYPE_CHECKING, Final, override
+from typing import TYPE_CHECKING, override
 
 import discord
 from django.core.exceptions import ValidationError
@@ -14,8 +14,10 @@ from .utils import AsyncBaseModel, BaseDiscordMemberWrapper, DiscordMember
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from typing import Final
 
 __all__: "Sequence[str]" = (
+    "AssignedCommitteeAction",
     "DiscordMember",
     "DiscordMemberStrikes",
     "DiscordReminder",
@@ -31,6 +33,8 @@ class AssignedCommitteeAction(BaseDiscordMemberWrapper):
     """Model to represent an action that has been assigned to a Discord committee-member."""
 
     class Status(models.TextChoices):
+        """The named status and shortcode associated with the progress of each action."""
+
         BLOCKED = "BLK", _("Blocked")
         CANCELLED = "CND", _("Cancelled")
         COMPLETE = "CMP", _("Complete")
@@ -62,7 +66,7 @@ class AssignedCommitteeAction(BaseDiscordMemberWrapper):
         blank=False,
     )
 
-    class Meta:
+    class Meta:  # noqa: D106
         verbose_name = "Assigned Committee Action"
         constraints = [  # noqa: RUF012
             models.UniqueConstraint(
@@ -312,7 +316,6 @@ class DiscordReminder(BaseDiscordMemberWrapper):
     def channel_type(self, channel_type: discord.ChannelType | int) -> None:
         if isinstance(channel_type, discord.ChannelType):
             try:
-                # noinspection PyUnresolvedReferences
                 channel_type = int(channel_type.value)
             except ValueError:
                 INVALID_CHANNEL_TYPE_MESSAGE: Final[str] = (
@@ -407,7 +410,6 @@ class LeftDiscordMember(AsyncBaseModel):
 
     @override
     def __str__(self) -> str:
-        # noinspection PyUnresolvedReferences
         return f"{self.id}: {', '.join(self.roles)}"
 
     @override
