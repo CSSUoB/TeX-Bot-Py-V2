@@ -25,7 +25,6 @@ __all__: "Sequence[str]" = ("EditMessageCommandCog",)
 
 
 class EditMessageCommandCog(TeXBotBaseCog):
-    # noinspection SpellCheckingInspection
     """Cog class that defines the "/edit-message" command and its call-back method."""
 
     @staticmethod
@@ -50,7 +49,6 @@ class EditMessageCommandCog(TeXBotBaseCog):
 
         return await TeXBotBaseCog.autocomplete_get_text_channels(ctx)
 
-    # noinspection SpellCheckingInspection
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="edit-message",
         description="Edits a message sent by TeX-Bot to the value supplied.",

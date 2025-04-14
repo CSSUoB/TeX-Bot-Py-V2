@@ -19,12 +19,29 @@ __all__: "Sequence[str]" = (
     "ResponseMessageSender",
 )
 
+if TYPE_CHECKING:
+
+    class _BaseChannelSendKwargs(TypedDict):
+        """Type-hint for the required kwargs to the channel-send-function."""
+
+        content: str
+
+    class _ChannelSendKwargs(_BaseChannelSendKwargs, total=False):
+        """
+        Type-hint-definition for all kwargs to the channel-send-function.
+
+        Includes both required & optional kwargs.
+        """
+
+        view: "View"
+
 
 class MessageSavingSenderComponent(abc.ABC):
     """
     Abstract protocol definition of a sending component that saves the sent-message.
 
-    Defines the way to send a provided message content & optional view to the defined endpoint.
+    Defines the way to send a provided message content
+    and optional view to the defined endpoint.
     """
 
     @override
@@ -38,7 +55,7 @@ class MessageSavingSenderComponent(abc.ABC):
         """
         Subclass implementation of `send()` method.
 
-        Implementations should send the provided message content & optional view
+        Implementations should send the provided message content and optional view
         to the defined endpoint.
         """
 
@@ -85,23 +102,7 @@ class ChannelMessageSender(MessageSavingSenderComponent):
     async def _send(
         self, content: str, *, view: "View | None" = None
     ) -> discord.Message | discord.Interaction:
-        if TYPE_CHECKING:
-
-            class _BaseChannelSendKwargs(TypedDict):
-                """Type-hint for the required kwargs to the channel-send-function."""
-
-                content: str
-
-            class ChannelSendKwargs(_BaseChannelSendKwargs, total=False):
-                """
-                Type-hint-definition for all kwargs to the channel-send-function.
-
-                Includes both required & optional kwargs.
-                """
-
-                view: "View"
-
-        send_kwargs: ChannelSendKwargs = {"content": content}
+        send_kwargs: _ChannelSendKwargs = {"content": content}
         if view:
             send_kwargs["view"] = view
 
