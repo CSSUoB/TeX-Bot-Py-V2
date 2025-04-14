@@ -902,7 +902,7 @@ class StrikeCommandCog(BaseStrikeCog):
         try:
             member_strike_object: DiscordMemberStrikes = (
                 await DiscordMemberStrikes.objects.select_related().aget(
-                    discord_id=str(strike_member.id),
+                    discord_member_id=str(strike_member.id),
                 )
             )
         except ObjectDoesNotExist:
