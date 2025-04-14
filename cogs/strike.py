@@ -879,9 +879,9 @@ class StrikeCommandCog(BaseStrikeCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def get_strikes(
+    async def get_strikes(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", str_strike_member_id: str
-    ) -> None:  # type: ignore[misc]
+    ) -> None:
         """
         Define method and callback response of of the "get-strikes" command.
 
