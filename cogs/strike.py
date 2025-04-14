@@ -865,6 +865,48 @@ class StrikeCommandCog(BaseStrikeCog):
 
         await self._command_perform_strike(ctx, strike_member)
 
+    @discord.slash_command(  # type: ignore[misc, no-untyped-call]
+        name="get-strikes",
+        description="Get the number of strikes a user has.",
+    )
+    @discord.option(  # type: ignore[misc, no-untyped-call]
+        name="user",
+        description="The user to give a strike to.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
+        required=True,
+        parameter_name="str_strike_member_id",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def get_strikes(
+        self, ctx: "TeXBotApplicationContext", str_strike_member_id: str
+    ) -> None:  # type: ignore[misc]
+        """
+        Define method and callback response of of the "get-strikes" command.
+
+        Returns the number of strikes a user has.
+        """
+        member_id_not_integer_error: ValueError
+        try:
+            strike_member: discord.Member = await self.bot.get_member_from_str_id(
+                str_strike_member_id,
+            )
+        except ValueError as member_id_not_integer_error:
+            await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
+            return
+
+        member_strikes = [
+            strike
+            async for strike in await DiscordMemberStrikes.objects.afilter(
+                discord_id=str(strike_member.id),
+            )
+        ]
+
+        await ctx.respond(
+            f"User {strike_member.mention} has the following strikes: {member_strikes}"
+        )
+
 
 class StrikeContextCommandsCog(BaseStrikeCog):
     """Cog class that defines the context menu strike command and its call-back method."""
