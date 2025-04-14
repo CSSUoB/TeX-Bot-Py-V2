@@ -206,7 +206,7 @@ jobs:
             github.event.pull_request.head.repo.full_name == 'CSSUoB/TeX-Bot-Py-V2'
         runs-on: ubuntu-latest
         environment: publish
-        needs: [mypy, pre-commit, prevent-migrations-deletion, pymarkdown, pytest, ruff-lint, uv-check]
+        needs: [mypy, pre-commit, pymarkdown, pytest, ruff-lint, uv-check]
         permissions:
             contents: read
             packages: write
