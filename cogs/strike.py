@@ -898,6 +898,21 @@ class StrikeCommandCog(BaseStrikeCog):
             await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
             return
 
+        all_strike_objects: list[DiscordMemberStrikes] = [
+            strike_object
+            async for strike_object in DiscordMemberStrikes.objects.select_related().all()
+        ]
+
+        strike_obj: DiscordMemberStrikes = next(
+            strike_object
+            for strike_object in all_strike_objects
+            if str(strike_object.discord_member)
+            == DiscordMember.hash_discord_id(strike_member.id)
+        )
+
+        logger.debug(all_strike_objects)
+        logger.debug(strike_obj)
+
         try:
             member_strike_object: DiscordMemberStrikes = (
                 await DiscordMemberStrikes.objects.select_related().aget(
