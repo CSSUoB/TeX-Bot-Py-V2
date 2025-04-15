@@ -83,7 +83,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
                             if "90001" not in str(e):
                                 raise e from e
 
-                            logger.warning(
+                            logger.info(
                                 "Failed to add reactions because the user, %s, "
                                 "has blocked TeX-Bot.",
                                 recent_message.author,
