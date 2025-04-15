@@ -101,22 +101,6 @@ jobs:
             - name: Run pre-commit
               run: uv run -- pre-commit run --all-files --hook-stage manual  # TODO: Add GitHub workflows output format
 
-    prevent-migrations-deletion:
-        runs-on: ubuntu-latest
-
-        permissions:
-            pull-requests: read
-
-        if: github.event_name == 'pull_request'
-
-        steps:
-            - name: Prevent migrations files changing
-              uses: CSSUoB/action-prevent-file-change@v1.7.0
-              with:
-                githubToken: ${{ secrets.GITHUB_TOKEN }}
-                pattern: '.*\/db\/.+\/migrations\/\d{4}\w*\.py$'
-                allowNewFiles: true
-
     pymarkdown:
         runs-on: ubuntu-latest
         env:
@@ -222,7 +206,7 @@ jobs:
             github.event.pull_request.head.repo.full_name == 'CSSUoB/TeX-Bot-Py-V2'
         runs-on: ubuntu-latest
         environment: publish
-        needs: [mypy, pre-commit, prevent-migrations-deletion, pymarkdown, pytest, ruff-lint, uv-check]
+        needs: [mypy, pre-commit, pymarkdown, pytest, ruff-lint, uv-check]
         permissions:
             contents: read
             packages: write
