@@ -83,12 +83,40 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
                             if "90001" not in str(e):
                                 raise e from e
 
-                            logger.info(
+                            logger.warning(
                                 "Failed to add reactions because the user, %s, "
                                 "has blocked TeX-Bot.",
                                 recent_message.author,
                             )
                         break
+
+            try:
+                await applicant_member.send(
+                    content=(
+                        f"Congratulations {applicant_member.mention}, "
+                        "you are now an applicant! "
+                        "As you are not yet a student at the University, "
+                        "you only have limited access to the server.\n\n"
+                        "If you're already a student, please contact a committee member and "
+                        "we can manually give you access.\n\n"
+                        "If you've already purchased a membership, you can run the "
+                        f"/make-member command, and you will be given full access by "
+                        f"{self.bot.user.display_name if self.bot.user else 'TeX-Bot'}.\n\n"
+                        "Some things to do to get started:\n"
+                        f"1. Check out our rules in "
+                        f"{await self.bot.get_mention_string(self.bot.rules_channel)}\n"
+                        "2. Head to "
+                        f"{await self.bot.get_mention_string(self.bot.roles_channel)}"
+                        " and click on the icons to get optional roles like "
+                        "pronouns and year groups\n"
+                        "3. Change your nickname to whatever "
+                        "you wish others to refer to you as."
+                    ),
+                )
+            except discord.Forbidden:
+                logger.warning(
+                    "Failed to send applicant induction DM to user %s", applicant_member
+                )
 
             await ctx.followup.send(
                 content=":white_check_mark: User is now an applicant.",
