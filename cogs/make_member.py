@@ -64,7 +64,7 @@ REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
 
 ORGANISATION_ID: "Final[str]" = settings["ORGANISATION_ID"]
 GROUP_NAME: "Final[str]" = settings["_GROUP_FULL_NAME"]
-GROUPED_MEMBRS_URL: "Final[str]" = (
+GROUPED_MEMBERS_URL: "Final[str]" = (
     f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
 )
 BASE_MEMBERS_URL: "Final[str]" = (
