@@ -167,7 +167,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 headers=REQUEST_HEADERS,
                 cookies=REQUEST_COOKIES,
             )
-            async with http_session, http_session.get(GROUPED_MEMBRS_URL) as http_response:
+            async with http_session, http_session.get(GROUPED_MEMBERS_URL) as http_response:
                 response_html: str = await http_response.text()
 
             MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
