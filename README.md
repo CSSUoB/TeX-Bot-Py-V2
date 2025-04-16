@@ -172,6 +172,8 @@ Error logs will **always** be sent to the [console](https://wikipedia.org/wiki/T
 
 * `ORGANISATION_ID`: Your Guild society ID. This is used to dynamically create the members list among other needed URLs.
 
+* `MEMBERS_LIST_BASE_URL`: The base URL for your organization's membership system (without trailing slash). For example, if your members-list is found on the UoB Guild of Students website, the base URL is https://guildofstudents.com
+
 * `MEMBERS_LIST_URL_SESSION_COOKIE`: The members-list [URL](https://wikipedia.org/wiki/URL) [session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie).
 (If your group's members-list is stored at a [URL](https://wikipedia.org/wiki/URL) that requires [authentication](https://wikipedia.org/wiki/Authentication), this [session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie) should [authenticate](https://wikipedia.org/wiki/Authentication) TeX-Bot to view your group's members-list, as if it were [logged in to the website](https://wikipedia.org/wiki/Login_session) as a Committee member.
 This can be [extracted from your web-browser](https://wikihow.com/View-Cookies), after logging in to view your members-list yourself.

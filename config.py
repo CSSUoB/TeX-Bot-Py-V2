@@ -710,6 +710,25 @@ class Settings(abc.ABC):
         )
 
     @classmethod
+    def _setup_members_list_base_url(cls) -> None:
+        raw_members_list_base_url: str | None = os.getenv("MEMBERS_LIST_BASE_URL")
+
+        MEMBERS_LIST_BASE_URL_IS_VALID: Final[bool] = bool(
+            raw_members_list_base_url and validators.url(raw_members_list_base_url)
+        )
+        if not MEMBERS_LIST_BASE_URL_IS_VALID:
+            INVALID_MEMBERS_LIST_BASE_URL_MESSAGE: Final[str] = (
+                "MEMBERS_LIST_BASE_URL must be a valid URL base (without trailing slash)."
+            )
+            raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_BASE_URL_MESSAGE)
+
+        # Remove trailing slash if present
+        if raw_members_list_base_url.endswith("/"):
+            raw_members_list_base_url = raw_members_list_base_url[:-1]
+
+        cls._settings["MEMBERS_LIST_BASE_URL"] = raw_members_list_base_url
+
+    @classmethod
     def _setup_env_variables(cls) -> None:
         """
         Load environment values into the settings dictionary.
@@ -749,6 +768,7 @@ class Settings(abc.ABC):
             cls._setup_moderation_document_url()
             cls._setup_strike_performed_manually_warning_location()
             cls._setup_auto_add_committee_to_threads()
+            cls._setup_members_list_base_url()
         except ImproperlyConfiguredError as improper_config_error:
             webhook_config_logger.error(improper_config_error.message)  # noqa: TRY400
             raise improper_config_error from improper_config_error
