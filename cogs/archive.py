@@ -39,7 +39,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         """
         Autocomplete callable that generates the set of available selectable categories.
 
-        The list of categories only includes those that do not contain the word "archive".
+        The set of selectable categories only includes those that do not contain the word "archive".
         """
         try:
             main_guild: discord.Guild = ctx.bot.main_guild
