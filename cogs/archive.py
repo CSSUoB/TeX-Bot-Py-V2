@@ -39,7 +39,8 @@ class ArchiveCommandCog(TeXBotBaseCog):
         """
         Autocomplete callable that generates the set of available selectable categories.
 
-        The set of selectable categories only includes those that do not contain the word "archive".
+        Returns the set of selectable categories.
+        Only categories which do not contain the word "archive" are selectable.
         """
         try:
             main_guild: discord.Guild = ctx.bot.main_guild
@@ -59,7 +60,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         """
         Autocomplete callable that generates the set of categories to hold archived channels.
 
-        The list of categories only includes those that contain the word "archive".
+        The set of categories only includes those that contain the word "archive".
         These are the categories that channels are to be placed into for archiving.
         It is assumed that the categories have the correct permission configuration.
         """
@@ -75,13 +76,13 @@ class ArchiveCommandCog(TeXBotBaseCog):
         }
 
     @staticmethod
-    async def autocomplete_get_channels(
+    async def autocomplete_get_non_archived_channels(
         ctx: "TeXBotAutocompleteContext",
     ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """
         Autocomplete callable that generates the set of channels that the user can archive.
 
-        The list of channels will include all types of channels except categories,
+        The list of channels will include all types of channels and categories, except those
         that have not been archived.
         """
         try:
@@ -172,8 +173,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
             return
 
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-            content=f"Archiving {category.name}...",
-            ephemeral=True,
+            content=f"Archiving {category.name}...", ephemeral=True
         )
 
         channel: AllChannelTypes
@@ -185,6 +185,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
             await channel.edit(sync_permissions=True)
 
+        overwrite: discord.Member | discord.Role
         for overwrite in category.overwrites:
             await category.set_permissions(overwrite, overwrite=None)
 
@@ -209,7 +210,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         name="channel",
         description="The channel to archive.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_channels),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_non_archived_channels),  # type: ignore[arg-type]
         required=True,
         parameter_name="str_channel_id",
     )
@@ -232,36 +233,21 @@ class ArchiveCommandCog(TeXBotBaseCog):
         The "archive-channel" command moves the channel into the selected category
         and syncs the permissions to the category's permissions.
         """
+        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
-        if not (re.fullmatch(r"\A\d{17,20}\Z", str_category_id)) or not re.fullmatch(
+        if not re.fullmatch(r"\A\d{17,20}\Z", str_category_id) or not re.fullmatch(
             r"\A\d{17,20}\Z", str_channel_id
         ):
             await self.command_send_error(
-                ctx=ctx,
-                message=f"{str_category_id!r} is not a valid category ID.",
+                ctx=ctx, message=f"{str_category_id!r} is not a valid category ID."
             )
             return
 
         category_id: int = int(str_category_id)
         channel_id: int = int(str_channel_id)
 
-        category: discord.CategoryChannel | None = discord.utils.get(
-            main_guild.categories,
-            id=category_id,
-        )
-
-        if not category:
-            await self.command_send_error(
-                ctx=ctx,
-                message=f"Category with ID {str(category_id)!r} does not exist.",
-            )
-            return
-
-        channel: AllChannelTypes | None = discord.utils.get(
-            main_guild.channels,
-            id=channel_id,
-        )
+        channel: AllChannelTypes | None = discord.utils.get(main_guild.channels, id=channel_id)
 
         if not channel:
             await self.command_send_error(
@@ -277,6 +263,17 @@ class ArchiveCommandCog(TeXBotBaseCog):
                     "Supplied channel to archive is a category - "
                     "please use the archive-channel command to archive categories."
                 ),
+            )
+            return
+
+        category: discord.CategoryChannel | None = discord.utils.get(
+            main_guild.categories, id=category_id
+        )
+
+        if not category:
+            await self.command_send_error(
+                ctx=ctx,
+                message=f"Category with ID {str(category_id)!r} does not exist.",
             )
             return
 
