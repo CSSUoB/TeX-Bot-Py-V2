@@ -94,7 +94,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
                 await applicant_member.send(
                     content=(
                         f"Congratulations {applicant_member.mention}, you've "
-                        "now been allowed access to the CSS Discord server as an applicant! "
+                        "now been given applicant access to the CSS Discord server! "
                         "As you are not yet a student at the University, "
                         "you only have limited access to participate in certain channels.\n\n"
                         "If you are already a student and your induction as an applicant was"
