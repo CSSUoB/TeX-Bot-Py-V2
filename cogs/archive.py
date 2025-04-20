@@ -33,7 +33,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/archive" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_categories(
+    async def autocomplete_get_non_archival_categories(
         ctx: "TeXBotAutocompleteContext",
     ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """
@@ -112,7 +112,9 @@ class ArchiveCommandCog(TeXBotBaseCog):
         name="category",
         description="The category to archive.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_categories),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(
+            autocomplete_get_non_archival_categories
+        ),  # type: ignore[arg-type]
         required=True,
         parameter_name="str_category_id",
     )
