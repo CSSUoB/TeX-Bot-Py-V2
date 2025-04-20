@@ -237,15 +237,12 @@ class ArchiveCommandCog(TeXBotBaseCog):
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
-        if not re.fullmatch(r"\A\d{17,20}\Z", str_category_id) or not re.fullmatch(
-            r"\A\d{17,20}\Z", str_channel_id
-        ):
+        if not re.fullmatch(r"\A\d{17,20}\Z", str_channel_id):
             await self.command_send_error(
                 ctx=ctx, message=f"{str_category_id!r} is not a valid category ID."
             )
             return
 
-        category_id: int = int(str_category_id)
         channel_id: int = int(str_channel_id)
 
         channel: AllChannelTypes | None = discord.utils.get(main_guild.channels, id=channel_id)
@@ -266,6 +263,14 @@ class ArchiveCommandCog(TeXBotBaseCog):
                 ),
             )
             return
+
+        if not re.fullmatch(r"\A\d{17,20}\Z", str_category_id):
+            await self.command_send_error(
+                ctx=ctx,
+                message=f"{str_category_id!r} is not a valid category ID.",
+            )
+
+        category_id: int = int(str_category_id)
 
         category: discord.CategoryChannel | None = discord.utils.get(
             main_guild.categories, id=category_id
