@@ -113,8 +113,8 @@ class ArchiveCommandCog(TeXBotBaseCog):
         description="The category to archive.",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(
-            autocomplete_get_non_archival_categories
-        ),  # type: ignore[arg-type]
+            autocomplete_get_non_archival_categories  # type: ignore[arg-type]
+        ),
         required=True,
         parameter_name="str_category_id",
     )
@@ -180,9 +180,8 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
         channel: AllChannelTypes
         for channel in category.channels:
-            if isinstance(
-                channel, discord.CategoryChannel
-            ):  # NOTE: Categories can not be placed inside other categories, so this will always be false, but is needed due to the typing of the method
+            # NOTE: Categories can not be placed inside other categories, so this will always be false, but is needed due to the typing of the method
+            if isinstance(channel, discord.CategoryChannel):
                 continue
 
             await channel.edit(sync_permissions=True)
