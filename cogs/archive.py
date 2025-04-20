@@ -239,7 +239,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
         if not re.fullmatch(r"\A\d{17,20}\Z", str_channel_id):
             await self.command_send_error(
-                ctx=ctx, message=f"{str_category_id!r} is not a valid category ID."
+                ctx=ctx, message=f"{str_channel_id!r} is not a valid channel ID."
             )
             return
 
@@ -280,6 +280,14 @@ class ArchiveCommandCog(TeXBotBaseCog):
             await self.command_send_error(
                 ctx=ctx,
                 message=f"Category with ID {str(category_id)!r} does not exist.",
+            )
+            return
+
+        if len(category.channels) >= 50:
+            await self.command_send_error(
+                ctx=ctx,
+                message=f"Category with ID {str(category_id)!r} is full. "
+                "Please select a different category.",
             )
             return
 
