@@ -12,7 +12,7 @@ from utils import (
     CommandChecks,
     TeXBotBaseCog,
     amount_of_time_formatter,
-    get_message_counts,
+    get_channel_message_counts,
     plot_bar_chart,
 )
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
@@ -115,7 +115,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
         await ctx.defer(ephemeral=True)
 
-        message_counts: dict[str, int] = await get_message_counts(
+        message_counts: dict[str, int] = await get_channel_message_counts(
             main_guild=main_guild, channel=channel
         )
 

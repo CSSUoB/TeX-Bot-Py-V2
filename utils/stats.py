@@ -15,7 +15,11 @@ if TYPE_CHECKING:
 
     from matplotlib.text import Text as Plot_Text
 
-__all__: "Sequence[str]" = ("amount_of_time_formatter", "get_message_counts", "plot_bar_chart")
+__all__: "Sequence[str]" = (
+    "amount_of_time_formatter",
+    "get_channel_message_counts",
+    "plot_bar_chart",
+)
 
 
 def amount_of_time_formatter(value: float, time_scale: str) -> str:
@@ -133,7 +137,7 @@ def plot_bar_chart(
     return discord_plot_file
 
 
-async def get_message_counts(
+async def get_channel_message_counts(
     main_guild: discord.Guild, channel: discord.TextChannel
 ) -> dict[str, int]:
     """
