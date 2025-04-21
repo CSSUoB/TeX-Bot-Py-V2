@@ -7,6 +7,7 @@ import discord
 
 from .command_checks import CommandChecks
 from .message_sender_components import MessageSavingSenderComponent
+from .stats import amount_of_time_formatter, get_message_counts, plot_bar_chart
 from .suppress_traceback import SuppressTraceback
 from .tex_bot import TeXBot
 from .tex_bot_base_cog import TeXBotBaseCog
@@ -24,9 +25,12 @@ __all__: "Sequence[str]" = (
     "TeXBotApplicationContext",
     "TeXBotAutocompleteContext",
     "TeXBotBaseCog",
+    "amount_of_time_formatter",
     "generate_invite_url",
+    "get_message_counts",
     "is_member_inducted",
     "is_running_in_async",
+    "plot_bar_chart",
 )
 
 if TYPE_CHECKING:
