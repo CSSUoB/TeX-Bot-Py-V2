@@ -11,11 +11,11 @@ from db.core.models import LeftDiscordMember
 from utils import (
     CommandChecks,
     TeXBotBaseCog,
-    amount_of_time_formatter,
-    get_channel_message_counts,
-    plot_bar_chart,
 )
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
+
+from .counts import get_channel_message_counts
+from .graphs import amount_of_time_formatter, plot_bar_chart
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterable, Sequence
