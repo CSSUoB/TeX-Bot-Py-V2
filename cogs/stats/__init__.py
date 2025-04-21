@@ -14,7 +14,7 @@ from utils import (
 )
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
-from .counts import get_channel_message_counts
+from .counts import get_channel_message_counts, get_server_message_counts
 from .graphs import amount_of_time_formatter, plot_bar_chart
 
 if TYPE_CHECKING:
@@ -169,57 +169,9 @@ class StatsCommandsCog(TeXBotBaseCog):
 
         await ctx.defer(ephemeral=True)
 
-        message_counts: dict[str, dict[str, int]] = {
-            "roles": {"Total": 0},
-            "channels": {},
-        }
-
-        role_name: str
-        for role_name in settings["STATISTICS_ROLES"]:
-            if discord.utils.get(main_guild.roles, name=role_name):
-                message_counts["roles"][f"@{role_name}"] = 0
-
-        channel: discord.TextChannel
-        for channel in main_guild.text_channels:
-            member_has_access_to_channel: bool = channel.permissions_for(
-                guest_role,
-            ).is_superset(
-                discord.Permissions(send_messages=True),
-            )
-            if not member_has_access_to_channel:
-                continue
-
-            message_counts["channels"][f"#{channel.name}"] = 0
-
-            message_history_period: AsyncIterable[discord.Message] = channel.history(
-                after=discord.utils.utcnow() - settings["STATISTICS_DAYS"],
-            )
-            message: discord.Message
-            async for message in message_history_period:
-                if message.author.bot:
-                    continue
-
-                message_counts["channels"][f"#{channel.name}"] += 1
-                message_counts["roles"]["Total"] += 1
-
-                if isinstance(message.author, discord.User):
-                    continue
-
-                author_role_names: set[str] = {
-                    author_role.name for author_role in message.author.roles
-                }
-
-                author_role_name: str
-                for author_role_name in author_role_names:
-                    if f"@{author_role_name}" in message_counts["roles"]:
-                        is_author_role_committee: bool = author_role_name == "Committee"
-                        if is_author_role_committee and "Committee-Elect" in author_role_names:
-                            continue
-
-                        if author_role_name == "Guest" and "Member" in author_role_names:
-                            continue
-
-                        message_counts["roles"][f"@{author_role_name}"] += 1
+        message_counts: dict[str, dict[str, int]] = await get_server_message_counts(
+            main_guild=main_guild, guest_role=guest_role
+        )
 
         TOO_FEW_ROLES_STATS: Final[bool] = (
             math.ceil(max(message_counts["roles"].values()) / 15) < 1
