@@ -56,7 +56,12 @@ class AsyncBaseModel(models.Model):
     ) -> None:
         self.full_clean()
 
-        return super().save(force_insert, force_update, using, update_fields)
+        return super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields,
+        )
 
     def update(
         self,
