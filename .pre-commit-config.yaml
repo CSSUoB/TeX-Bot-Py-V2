@@ -11,14 +11,14 @@ repos:
         - id: hadolint
 
     - repo: https://github.com/renovatebot/pre-commit-hooks
-      rev: 39.227.2
+      rev: 39.264.0
       hooks:
         - id: renovate-config-validator
           args: [--strict]
           stages: [manual]
 
     - repo: https://github.com/python-jsonschema/check-jsonschema
-      rev: 0.32.1
+      rev: 0.33.0
       hooks:
         - id: check-github-workflows
 
@@ -29,7 +29,7 @@ repos:
         - id: gitlint-ci
 
     - repo: https://github.com/gitleaks/gitleaks
-      rev: v8.24.2
+      rev: v8.25.0
       hooks:
         - id: gitleaks
 
@@ -74,7 +74,7 @@ repos:
           stages: [manual]
 
     - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.11.4
+      rev: v0.11.7
       hooks:
         - id: ruff
           args: [--fix]
@@ -82,7 +82,7 @@ repos:
         - id: ruff-format
 
     - repo: https://github.com/astral-sh/uv-pre-commit
-      rev: 0.6.13
+      rev: 0.7.0
       hooks:
         - id: uv-lock
           always_run: true

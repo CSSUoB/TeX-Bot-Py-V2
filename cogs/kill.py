@@ -1,6 +1,5 @@
 """Contains cog classes for any killing interactions."""
 
-import contextlib
 import logging
 from typing import TYPE_CHECKING
 
@@ -64,9 +63,11 @@ class KillCommandCog(TeXBotBaseCog):
         The "kill" command shuts down TeX-Bot,
         but only after the user has confirmed that this is the action they wish to take.
         """
-        committee_role: discord.Role | None = None
-        with contextlib.suppress(CommitteeRoleDoesNotExistError):
+        committee_role: discord.Role | None
+        try:
             committee_role = await self.bot.committee_role
+        except CommitteeRoleDoesNotExistError:
+            committee_role = None
 
         response: discord.Message | discord.Interaction = await ctx.respond(
             content=(
