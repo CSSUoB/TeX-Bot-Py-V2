@@ -1,8 +1,7 @@
 """Module for handling society events in a Discord bot."""
 
 import logging
-from datetime import datetime
-from datetime import timezone
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 import discord
@@ -39,8 +38,8 @@ class SocietyEventsSlashCommands(TeXBotBaseCog):
     async def list_all_events(self, ctx: "TeXBotApplicationContext") -> None:
         """List all society events."""
         activities: dict[str, str] = await fetch_guild_activities(
-            from_date=datetime.strptime("2023-01-01", "%Y-%m-%d").replace(tzinfo=timezone.UTC),
-            to_date=datetime.strptime("2026-01-01", "%Y-%m-%d").replace(tzinfo=timezone.UTC),
+            from_date=datetime.strptime("2023-01-01", "%Y-%m-%d"),  # noqa: DTZ007
+            to_date=datetime.strptime("2026-01-01", "%Y-%m-%d"),  # noqa: DTZ007
         )
 
         await ctx.respond(
