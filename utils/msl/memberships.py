@@ -1,7 +1,7 @@
 """Module for checking membership status."""
 
 import logging
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
 import aiohttp
 import bs4
@@ -12,6 +12,7 @@ from .core import BASE_COOKIES, BASE_HEADERS, ORGANISATION_ID
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from logging import Logger
+    from typing import Final
 
 __all__: "Sequence[str]" = (
     "get_full_membership_list",
@@ -19,7 +20,7 @@ __all__: "Sequence[str]" = (
     "is_student_id_member",
 )
 
-MEMBERS_LIST_URL: Final[str] = (
+MEMBERS_LIST_URL: "Final[str]" = (
     f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
 )
 

@@ -2,7 +2,7 @@
 
 import logging
 from enum import Enum
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
 import aiohttp
 import bs4
@@ -18,14 +18,17 @@ from .core import (
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from logging import Logger
+    from typing import Final
 
 __all__: "Sequence[str]" = ()
 
-FINANCE_REDIRECT_URL: Final[str] = (
+FINANCE_REDIRECT_URL: "Final[str]" = (
     f"https://www.guildofstudents.com/sgf/{ORGANISATION_ID}/Landing/Member"
 )
-FINANCES_URL: Final[str] = f"https://guildofstudents.com/sgf/{ORGANISATION_ID}/Home/Dashboard/"
-BASE_EXPENSE_URL: Final[str] = (
+FINANCES_URL: "Final[str]" = (
+    f"https://guildofstudents.com/sgf/{ORGANISATION_ID}/Home/Dashboard/"
+)
+BASE_EXPENSE_URL: "Final[str]" = (
     f"https://guildofstudents.com/sgf/{ORGANISATION_ID}/Request/Edit?RequestId="
 )
 

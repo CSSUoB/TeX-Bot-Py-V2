@@ -4,7 +4,7 @@ import logging
 import re
 from datetime import datetime, timedelta, timezone
 from enum import Enum
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
 import aiohttp
 import anyio
@@ -20,6 +20,7 @@ from .core import (
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from logging import Logger
+    from typing import Final
 
 __all__: "Sequence[str]" = (
     "get_product_customisations",
@@ -30,13 +31,13 @@ __all__: "Sequence[str]" = (
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-SALES_REPORTS_URL: Final[str] = (
+SALES_REPORTS_URL: "Final[str]" = (
     f"https://www.guildofstudents.com/organisation/salesreports/{ORGANISATION_ID}/"
 )
-SALES_FROM_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtFromDate"
-SALES_FROM_TIME_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtFromTime"
-SALES_TO_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtToDate"
-SALES_TO_TIME_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtToTime"
+SALES_FROM_DATE_KEY: "Final[str]" = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtFromDate"
+SALES_FROM_TIME_KEY: "Final[str]" = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtFromTime"
+SALES_TO_DATE_KEY: "Final[str]" = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtToDate"
+SALES_TO_TIME_KEY: "Final[str]" = "ctl00$ctl00$Main$AdminPageContent$drDateRange$txtToTime"
 
 
 class ReportType(Enum):

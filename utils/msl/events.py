@@ -1,7 +1,7 @@
 """Module for fetching events from the guild website."""
 
 import logging
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
 import aiohttp
 import bs4
@@ -12,17 +12,22 @@ from .core import BASE_HEADERS, ORGANISATION_ID, get_msl_context
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from logging import Logger
+    from typing import Final
 
 __all__: "Sequence[str]" = ("create_event", "get_all_guild_events")
 
-EVENTS_FROM_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$datesFilter$txtFromDate"
-EVENTS_TO_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$datesFilter$txtToDate"
-EVENTS_BUTTON_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$fsSetDates$btnSubmit"
-EVENTS_TABLE_ID: Final[str] = "ctl00_ctl00_Main_AdminPageContent_gvEvents"
-CREATE_EVENT_URL: Final[str] = (
+EVENTS_FROM_DATE_KEY: "Final[str]" = (
+    "ctl00$ctl00$Main$AdminPageContent$datesFilter$txtFromDate"
+)
+EVENTS_TO_DATE_KEY: "Final[str]" = "ctl00$ctl00$Main$AdminPageContent$datesFilter$txtToDate"
+EVENTS_BUTTON_KEY: "Final[str]" = "ctl00$ctl00$Main$AdminPageContent$fsSetDates$btnSubmit"
+EVENTS_TABLE_ID: "Final[str]" = "ctl00_ctl00_Main_AdminPageContent_gvEvents"
+CREATE_EVENT_URL: "Final[str]" = (
     f"https://www.guildofstudents.com/events/edit/event/{ORGANISATION_ID}/"
 )
-EVENT_LIST_URL: Final[str] = f"https://www.guildofstudents.com/events/edit/{ORGANISATION_ID}/"
+EVENT_LIST_URL: "Final[str]" = (
+    f"https://www.guildofstudents.com/events/edit/{ORGANISATION_ID}/"
+)
 
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")

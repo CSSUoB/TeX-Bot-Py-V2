@@ -2,7 +2,7 @@
 
 import logging
 from enum import Enum
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
 import aiohttp
 import bs4
@@ -14,24 +14,25 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from datetime import datetime
     from logging import Logger
+    from typing import Final
 
 __all__: "Sequence[str]" = ("fetch_guild_activities",)
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-ALL_ACTIVITIES_URL: Final[str] = (
+ALL_ACTIVITIES_URL: "Final[str]" = (
     f"https://www.guildofstudents.com/organisation/admin/activities/all/{ORGANISATION_ID}/"
 )
 
-INDIVIDUAL_ACTIVITIES_URL: Final[str] = (
-    f"https://www.guildofstudents.com/organisation/admin/activities/activity/status/{ORGANISATION_ID}/"
-)
+INDIVIDUAL_ACTIVITIES_URL: "Final[str]" = f"https://www.guildofstudents.com/organisation/admin/activities/activity/status/{ORGANISATION_ID}/"
 
-ACTIVITIES_BUTTON_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$fsFilter$btnSubmit"
-ACTIVITIES_TABLE_ID: Final[str] = "ctl00_ctl00_Main_AdminPageContent_gvResults"
-ACTIVITIES_START_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$drDates$txtFromDate"
-ACTIVITIES_END_DATE_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$drDates$txtToDate"
+ACTIVITIES_BUTTON_KEY: "Final[str]" = "ctl00$ctl00$Main$AdminPageContent$fsFilter$btnSubmit"
+ACTIVITIES_TABLE_ID: "Final[str]" = "ctl00_ctl00_Main_AdminPageContent_gvResults"
+ACTIVITIES_START_DATE_KEY: "Final[str]" = (
+    "ctl00$ctl00$Main$AdminPageContent$drDates$txtFromDate"
+)
+ACTIVITIES_END_DATE_KEY: "Final[str]" = "ctl00$ctl00$Main$AdminPageContent$drDates$txtToDate"
 
 
 class ActivityStatus(Enum):
@@ -81,8 +82,8 @@ class Activity:
         activity_id: int,
         name: str,
         status: ActivityStatus,
-        start_date: datetime,
-        end_date: datetime,
+        start_date: "datetime",
+        end_date: "datetime",
         location: str,
         description: str,
     ) -> None:

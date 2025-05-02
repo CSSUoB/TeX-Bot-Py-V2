@@ -3,7 +3,7 @@
 import datetime as dt
 import logging
 from datetime import datetime
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
 import aiohttp
 from bs4 import BeautifulSoup
@@ -15,42 +15,43 @@ if TYPE_CHECKING:
     from datetime import timezone
     from http.cookies import Morsel
     from logging import Logger
+    from typing import Final
 
 __all__: "Sequence[str]" = ()
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-DEFAULT_TIMEZONE: Final["timezone"] = dt.UTC
-TODAYS_DATE: Final[datetime] = datetime.now(tz=DEFAULT_TIMEZONE)
+DEFAULT_TIMEZONE: "Final[timezone]" = dt.UTC
+TODAYS_DATE: "Final[datetime]" = datetime.now(tz=DEFAULT_TIMEZONE)
 
-CURRENT_YEAR_START_DATE: Final[datetime] = datetime(
+CURRENT_YEAR_START_DATE: "Final[datetime]" = datetime(
     year=TODAYS_DATE.year if TODAYS_DATE.month >= 7 else TODAYS_DATE.year - 1,
     month=7,
     day=1,
     tzinfo=DEFAULT_TIMEZONE,
 )
 
-CURRENT_YEAR_END_DATE: Final[datetime] = datetime(
+CURRENT_YEAR_END_DATE: "Final[datetime]" = datetime(
     year=TODAYS_DATE.year if TODAYS_DATE.month >= 7 else TODAYS_DATE.year - 1,
     month=6,
     day=30,
     tzinfo=DEFAULT_TIMEZONE,
 )
 
-BASE_HEADERS: Final["Mapping[str, str]"] = {
+BASE_HEADERS: "Final[Mapping[str, str]]" = {
     "Cache-Control": "no-cache",
     "Pragma": "no-cache",
     "Expires": "0",
 }
 
-BASE_COOKIES: Final["Mapping[str, str]"] = {
+BASE_COOKIES: "Final[Mapping[str, str]]" = {
     ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
 }
 
-ORGANISATION_ID: Final[str] = settings["ORGANISATION_ID"]
+ORGANISATION_ID: "Final[str]" = settings["ORGANISATION_ID"]
 
-ORGANISATION_ADMIN_URL: Final[str] = (
+ORGANISATION_ADMIN_URL: "Final[str]" = (
     f"https://www.guildofstudents.com/organisation/admin/{ORGANISATION_ID}/"
 )
 

@@ -1,7 +1,7 @@
 """Module for handling society events in a Discord bot."""
 
 import logging
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
 import discord
 
@@ -11,11 +11,12 @@ from utils.msl import fetch_guild_activities
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from logging import Logger
+    from typing import Final
 
     from utils import TeXBotApplicationContext
 
 
-__all__: "Sequence[str]" = ()
+__all__: "Sequence[str]" = ("SocietyEventsSlashCommands",)
 
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
