@@ -1,7 +1,7 @@
 """Module for handling society events in a Discord bot."""
 
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 import discord
