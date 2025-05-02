@@ -2,6 +2,7 @@
 
 from typing import TYPE_CHECKING
 
+from .activities import fetch_guild_activities
 from .events import create_event, get_all_guild_events
 from .finances import (
     fetch_financial_transactions,
@@ -21,6 +22,7 @@ if TYPE_CHECKING:
 __all__: "Sequence[str]" = (
     "create_event",
     "fetch_financial_transactions",
+    "fetch_guild_activities",
     "fetch_transaction_from_id",
     "get_account_balance",
     "get_all_guild_events",

@@ -15,13 +15,17 @@ if TYPE_CHECKING:
     from datetime import datetime
     from logging import Logger
 
-__all__: "Sequence[str]" = ()
+__all__: "Sequence[str]" = ("fetch_guild_activities",)
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-ACTIVITIES_URL: Final[str] = (
+ALL_ACTIVITIES_URL: Final[str] = (
     f"https://www.guildofstudents.com/organisation/admin/activities/all/{ORGANISATION_ID}/"
+)
+
+INDIVIDUAL_ACTIVITIES_URL: Final[str] = (
+    f"https://www.guildofstudents.com/organisation/admin/activities/activity/status/{ORGANISATION_ID}/"
 )
 
 ACTIVITIES_BUTTON_KEY: Final[str] = "ctl00$ctl00$Main$AdminPageContent$fsFilter$btnSubmit"
@@ -48,9 +52,52 @@ class ActivityStatus(Enum):
     QUERIED = "Queried"
 
 
+class Activity:
+    """
+    Class to represent an activity on the guild website.
+
+    Attributes:
+        activity_id (int): The ID of the activity.
+        name (str): The name of the activity.
+        status (ActivityStatus): The status of the activity.
+        start_date (datetime): The start date of the activity.
+        end_date (datetime): The end date of the activity.
+        location (str): The location of the activity.
+        description (str): The description of the activity.
+    """
+
+    __slots__ = (
+        "activity_id",
+        "description",
+        "end_date",
+        "location",
+        "name",
+        "start_date",
+        "status",
+    )
+
+    def __init__(
+        self,
+        activity_id: int,
+        name: str,
+        status: ActivityStatus,
+        start_date: datetime,
+        end_date: datetime,
+        location: str,
+        description: str,
+    ) -> None:
+        self.activity_id = activity_id
+        self.name = name
+        self.status = status
+        self.start_date = start_date
+        self.end_date = end_date
+        self.location = location
+        self.description = description
+
+
 async def fetch_guild_activities(from_date: "datetime", to_date: "datetime") -> dict[str, str]:
     """Fetch all activities on the guild website."""
-    data_fields, cookies = await get_msl_context(url=ACTIVITIES_URL)
+    data_fields, cookies = await get_msl_context(url=ALL_ACTIVITIES_URL)
 
     form_data: dict[str, str] = {
         ACTIVITIES_START_DATE_KEY: from_date.strftime("%d/%m/%Y"),
@@ -71,7 +118,7 @@ async def fetch_guild_activities(from_date: "datetime", to_date: "datetime") -> 
     )
     async with (
         session_v2,
-        session_v2.post(url=ACTIVITIES_URL, data=data_fields) as http_response,
+        session_v2.post(url=ALL_ACTIVITIES_URL, data=data_fields) as http_response,
     ):
         if http_response.status != 200:
             logger.debug("Returned a non 200 status code!!")
