@@ -22,7 +22,10 @@ if TYPE_CHECKING:
 
     from utils import TeXBot, TeXBotApplicationContext
 
-__all__: "Sequence[str]" = ("GetTokenAuthorisationCommandCog","TokenAuthorisationCheckTaskCog")
+__all__: "Sequence[str]" = (
+    "GetTokenAuthorisationCommandCog",
+    "TokenAuthorisationCheckTaskCog",
+)
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
