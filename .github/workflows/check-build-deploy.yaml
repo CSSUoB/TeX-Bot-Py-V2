@@ -101,7 +101,7 @@ jobs:
             - name: Run pre-commit
               run: uv run -- pre-commit run --all-files --hook-stage manual  # TODO: Add GitHub workflows output format
 
-            - uses: pre-commit-ci/lite-action@v1
+            - uses: pre-commit-ci/lite-action@v1.1.0
               if: ${{ !cancelled() }}
 
     pymarkdown:
