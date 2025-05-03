@@ -11,12 +11,16 @@ jobs:
     auto-pre-commit:
         runs-on: ubuntu-latest
         steps:
-          - uses: actions/checkout@v3
-          - uses: actions/setup-python@v4
+          - name: Checkout Repository
+            uses: actions/checkout@v3
+          - name: Set Up Python
+            uses: actions/setup-python@v4
             with:
                 python-version-file: .python-version
-          - uses: pre-commit/action@v3.0.1
-          - uses: pre-commit-ci/lite-action@v1.1.0
+          - name: Run Pre-Commit Hooks
+            uses: pre-commit/action@v3.0.1
+          - name: Run Pre-Commit CI Lite
+            uses: pre-commit-ci/lite-action@v1.1.0
 
     uv-check:
         needs: [auto-pre-commit]
