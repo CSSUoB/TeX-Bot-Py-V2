@@ -429,7 +429,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_auto_auth_session_cookie_checking(cls) -> None:
         raw_auto_auth_session_cookie_checking: str | bool = str(
-            os.getenv("AUTO_AUTH_SESSION_COOKIE_CHECKING", "false"),
+            os.getenv("AUTO_AUTH_SESSION_COOKIE_CHECKING", "False"),
         )
 
         if raw_auto_auth_session_cookie_checking in FALSE_VALUES:
