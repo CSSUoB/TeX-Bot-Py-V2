@@ -75,6 +75,7 @@ jobs:
               run: uv run -- mypy .  # TODO: Add GitHub workflows output format
 
     pre-commit:
+        needs: [auto-pre-commit]
         runs-on: ubuntu-latest
         env:
             UV_NO_SYNC: true
