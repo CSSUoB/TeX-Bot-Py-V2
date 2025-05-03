@@ -103,6 +103,7 @@ jobs:
 
             - name: Run auto-fix pre-commit
               uses: pre-commit-ci/lite-action@v1.1.0
+              if: always()
 
     pymarkdown:
         runs-on: ubuntu-latest
