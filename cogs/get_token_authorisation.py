@@ -147,9 +147,7 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
 
         constructed_organisations: str = (
             f"Admin token has access to the following MSL Organisations as "
-            f"{user_name.text}:\n{
-                ', \n'.join(organisation for organisation in organisations)
-            }"
+            f"{user_name.text}:\n{', \n'.join(organisation for organisation in organisations)}"
         )
 
         return organisations if iterable else constructed_organisations
@@ -178,6 +176,7 @@ class GetTokenAuthorisationCommandCog(TokenAuthorisationBaseCog):
                 content=str(await self.get_token_groups(iterable=False)),
                 ephemeral=True,
             )
+
 
 class TokenAuthorisationCheckTaskCog(TokenAuthorisationBaseCog):
     """Cog class that defines the background task for token authorisation checks."""
@@ -215,6 +214,4 @@ class TokenAuthorisationCheckTaskCog(TokenAuthorisationBaseCog):
         if not token_valid:
             logger.warning("Token is not valid!")
 
-            await self.bot.fetch_log_channel().send(
-                "Auth token has expired!"
-            )
+            await self.bot.fetch_log_channel().send("Auth token has expired!")
