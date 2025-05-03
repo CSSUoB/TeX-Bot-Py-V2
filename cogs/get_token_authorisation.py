@@ -66,7 +66,7 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
 
         return "Login" in str(page_title)
 
-    async def get_token_groups(self, iterable: bool) -> str | Iterable[str]:  # noqa: FBT001
+    async def get_token_groups(self, iterable: bool) -> str | "Iterable"[str]:  # noqa: FBT001
         """
         Definition of method to get the groups the token has access to.
 
