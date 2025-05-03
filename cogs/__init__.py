@@ -21,7 +21,10 @@ from .committee_actions_tracking import (
 )
 from .delete_all import DeleteAllCommandsCog
 from .edit_message import EditMessageCommandCog
-from .get_token_authorisation import GetTokenAuthorisationCommandCog
+from .get_token_authorisation import (
+    GetTokenAuthorisationCommandCog,
+    TokenAuthorisationCheckTaskCog,
+)
 from .induct import (
     EnsureMembersInductedCommandCog,
     InductContextCommandsCog,
@@ -78,6 +81,7 @@ __all__: "Sequence[str]" = (
     "StatsCommandsCog",
     "StrikeCommandCog",
     "StrikeContextCommandsCog",
+    "TokenAuthorisationCheckTaskCog",
     "WriteRolesCommandCog",
     "setup",
 )
@@ -117,6 +121,7 @@ def setup(bot: "TeXBot") -> None:
         StatsCommandsCog,
         StrikeCommandCog,
         StrikeContextCommandsCog,
+        TokenAuthorisationCheckTaskCog,
         WriteRolesCommandCog,
     )
     Cog: type[TeXBotBaseCog]
