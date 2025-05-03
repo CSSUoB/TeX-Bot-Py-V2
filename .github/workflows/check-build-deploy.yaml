@@ -8,7 +8,7 @@ on:
         tags: ["v*"]
 
 jobs:
-    pre-commit:
+    auto-pre-commit:
         runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v3
@@ -19,6 +19,7 @@ jobs:
           - uses: pre-commit-ci/lite-action@v1.1.0
 
     uv-check:
+        needs: [auto-pre-commit]
         runs-on: ubuntu-latest
 
         steps:
