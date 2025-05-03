@@ -429,10 +429,8 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_auto_auth_session_cookie_checking(cls) -> None:
         raw_auto_auth_session_cookie_checking: str | bool = str(
-            os.getenv("AUTO_AUTH_SESSION_COOKIE_CHECKING", "False"),
+            os.getenv("AUTO_AUTH_SESSION_COOKIE_CHECKING", "false"),
         )
-
-        logger.debug(raw_auto_auth_session_cookie_checking)
 
         if raw_auto_auth_session_cookie_checking in FALSE_VALUES:
             cls._settings["AUTO_AUTH_SESSION_COOKIE_CHECKING"] = False
@@ -451,6 +449,7 @@ class Settings(abc.ABC):
                 "AUTO_AUTH_SESSION_COOKIE_CHECKING must contain the delay "
                 "in any combination of seconds, minutes, hours, days or weeks."
             )
+            logger.debug(raw_auto_auth_session_cookie_checking)
             raise ImproperlyConfiguredError(
                 INVALID_AUTO_AUTH_CHECKING_DELAY_MESSAGE,
             )
