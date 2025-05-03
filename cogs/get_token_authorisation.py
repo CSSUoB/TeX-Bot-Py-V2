@@ -184,7 +184,7 @@ class TokenAuthorisationCheckTaskCog(TokenAuthorisationBaseCog):
     @override
     def __init__(self, bot: "TeXBot") -> None:
         """Start all task managers when this cog is initialised."""
-        if settings["TOKEN_AUTHORISATION_CHECK_TASK"]:
+        if settings["AUTO_AUTH_SESSION_COOKIE_CHECKING"]:
             _ = self.token_authorisation_check_task.start()
 
         super().__init__(bot)
@@ -198,7 +198,7 @@ class TokenAuthorisationCheckTaskCog(TokenAuthorisationBaseCog):
         """
         self.token_authorisation_check_task.cancel()
 
-    @tasks.loop(**settings["TOKEN_AUTHORISATION_CHECK_TASK_INTERVAL"])
+    @tasks.loop(**settings["AUTO_AUTH_SESSION_COOKIE_CHECKING"])
     @capture_guild_does_not_exist_error
     async def token_authorisation_check_task(self) -> None:
         """
