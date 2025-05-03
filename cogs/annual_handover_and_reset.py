@@ -34,7 +34,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def committee_handover(self, ctx: "TeXBotApplicationContext") -> None:
+    async def committee_handover(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
         """
         Definition & callback response of the "committee_handover" command.
 
