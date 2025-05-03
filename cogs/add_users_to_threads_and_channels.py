@@ -30,7 +30,9 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
     """Cog for adding users to threads."""
 
     @staticmethod
-    async def autocomplete_get_members(ctx: "TeXBotAutocompleteContext") -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+    async def autocomplete_get_members(
+        ctx: "TeXBotAutocompleteContext",
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """Autocomplete callable that generates the set of available selectable members."""
         try:
             main_guild: discord.Guild = ctx.bot.main_guild
