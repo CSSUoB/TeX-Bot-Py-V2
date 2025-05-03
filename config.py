@@ -427,6 +427,53 @@ class Settings(abc.ABC):
         )
 
     @classmethod
+    def _setup_auto_auth_session_cookie_checking(cls) -> None:
+        raw_auto_auth_session_cookie_checking: str | bool = str(
+            os.getenv("AUTO_AUTH_SESSION_COOKIE_CHECKING", "False"),
+        )
+
+        if raw_auto_auth_session_cookie_checking in FALSE_VALUES:
+            cls._settings["AUTO_AUTH_SESSION_COOKIE_CHECKING"] = False
+            return
+
+        if raw_auto_auth_session_cookie_checking in TRUE_VALUES:
+            raw_auto_auth_session_cookie_checking = "24h"
+
+        raw_auto_auth_session_cookie_checking_delay: re.Match[str] | None = re.fullmatch(
+            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
+            str(raw_auto_auth_session_cookie_checking),
+        )
+
+        if not raw_auto_auth_session_cookie_checking_delay:
+            INVALID_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE: Final[str] = (
+                "SEND_INTRODUCTION_REMINDERS_DELAY must contain the delay "
+                "in any combination of seconds, minutes, hours, days or weeks."
+            )
+            raise ImproperlyConfiguredError(
+                INVALID_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE,
+            )
+
+        raw_timedelta_auto_auth_session_cookie_checking_delay: timedelta = timedelta(
+            **{
+                key: float(value)
+                for key, value in (
+                    raw_auto_auth_session_cookie_checking_delay.groupdict().items()
+                )
+                if value
+            },
+        )
+
+        if raw_timedelta_auto_auth_session_cookie_checking_delay < timedelta(days=1):
+            logger.warning(
+                "Automatic checking of the MSL session cookie is below the "
+                "recommended minimum (24h) which could cause performance issues."
+            )
+
+        cls._settings["AUTO_AUTH_SESSION_COOKIE_CHECKING"] = (
+            raw_timedelta_auto_auth_session_cookie_checking_delay
+        )
+
+    @classmethod
     def _setup_send_introduction_reminders(cls) -> None:
         raw_send_introduction_reminders: str | bool = str(
             os.getenv("SEND_INTRODUCTION_REMINDERS", "Once"),
