@@ -204,7 +204,7 @@ class TokenAuthorisationCheckTaskCog(TokenAuthorisationBaseCog):
         """
         self.token_authorisation_check_task.cancel()
 
-    @tasks.loop(**settings["AUTO_AUTH_SESSION_COOKIE_CHECKING"])
+    @tasks.loop(**settings["AUTO_AUTH_SESSION_COOKIE_CHECKING_INTERVAL"])
     @capture_guild_does_not_exist_error
     async def token_authorisation_check_task(self) -> None:
         """
