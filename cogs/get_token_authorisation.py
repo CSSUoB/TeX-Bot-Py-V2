@@ -99,8 +99,11 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
             return PROFILE_PAGE_INVALID
 
         if "Login" in str(page_title):
-            logger.warning("Unable to fetch profile page because the token was not valid.")
-            return []
+            EXPIRED_AUTH_MESSAGE: Final[str] = (
+                "Authentication redirected to login page. Token is invalid or expired."
+            )
+            logger.warning(EXPIRED_AUTH_MESSAGE)
+            return EXPIRED_AUTH_MESSAGE
 
         profile_section_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
             "div",
