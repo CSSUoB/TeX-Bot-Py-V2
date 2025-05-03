@@ -8,22 +8,7 @@ on:
         tags: ["v*"]
 
 jobs:
-    auto-pre-commit:
-        runs-on: ubuntu-latest
-        steps:
-          - name: Checkout Repository
-            uses: actions/checkout@v3
-          - name: Set Up Python
-            uses: actions/setup-python@v4
-            with:
-                python-version-file: .python-version
-          - name: Run Pre-Commit Hooks
-            uses: pre-commit/action@v3.0.1
-          - name: Run Pre-Commit CI Lite
-            uses: pre-commit-ci/lite-action@v1.1.0
-
     uv-check:
-        needs: [auto-pre-commit]
         runs-on: ubuntu-latest
 
         steps:
@@ -75,7 +60,6 @@ jobs:
               run: uv run -- mypy .  # TODO: Add GitHub workflows output format
 
     pre-commit:
-        needs: [auto-pre-commit]
         runs-on: ubuntu-latest
         env:
             UV_NO_SYNC: true
@@ -116,6 +100,9 @@ jobs:
 
             - name: Run pre-commit
               run: uv run -- pre-commit run --all-files --hook-stage manual  # TODO: Add GitHub workflows output format
+
+            - name: Run auto-fix pre-commit
+              uses: pre-commit-ci/lite-action@v1.1.0
 
     pymarkdown:
         runs-on: ubuntu-latest
