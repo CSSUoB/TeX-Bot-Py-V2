@@ -432,7 +432,11 @@ class Settings(abc.ABC):
             os.getenv("AUTO_AUTH_SESSION_COOKIE_CHECKING", "False"),
         )
 
-        if raw_auto_auth_session_cookie_checking in FALSE_VALUES:
+        if (
+            raw_auto_auth_session_cookie_checking in FALSE_VALUES
+            or raw_auto_auth_session_cookie_checking == "False"
+        ):
+            logger.debug("Setting AUTO_AUTH_SESSION_COOKIE_CHECKING to False.")
             cls._settings["AUTO_AUTH_SESSION_COOKIE_CHECKING"] = False
             return
 
@@ -443,6 +447,8 @@ class Settings(abc.ABC):
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
             str(raw_auto_auth_session_cookie_checking),
         )
+
+        logger.debug(raw_auto_auth_session_cookie_checking_delay)
 
         if not raw_auto_auth_session_cookie_checking_delay:
             INVALID_AUTO_AUTH_CHECKING_DELAY_MESSAGE: Final[str] = (
