@@ -111,22 +111,23 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
         )
 
         if profile_section_html is None:
-            logger.warning(
+            NO_PROFILE_WARNING_MESSAGE: Final[str] = (
                 "Couldn't find the profile section of the user"
-                "when scraping the website's HTML!",
+                "when scraping the website's HTML!"
             )
+            logger.warning(NO_PROFILE_WARNING_MESSAGE)
             logger.debug("Retrieved HTML: %s", response_html)
-            return "Something went wrong when fetching the profile page!"
+            return NO_PROFILE_WARNING_MESSAGE
 
         user_name: bs4.Tag | bs4.NavigableString | int | None = profile_section_html.find("h1")
 
         if not isinstance(user_name, bs4.Tag):
             NO_PROFILE_DEBUG_MESSAGE: Final[str] = (
-                "Found user profile but couldn't find their name!"
+                "Found user profile but couldn't find their name."
             )
             logger.warning(NO_PROFILE_DEBUG_MESSAGE)
             logger.debug("Retrieved HTML: %s", response_html)
-            return "Something went wrong when fetching the profile page!"
+            return NO_PROFILE_DEBUG_MESSAGE
 
         parsed_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
             "ul",
