@@ -67,9 +67,9 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
 
         page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
 
-        return "Login" in str(page_title)
+        return "Login" not in str(page_title)
 
-    async def get_token_groups(self, iterable: bool) -> str | "Iterable"[str]:  # noqa: FBT001
+    async def get_token_groups(self, iterable: bool) -> "str | Iterable[str]":  # noqa: FBT001
         """
         Definition of method to get the groups the token has access to.
 
@@ -218,6 +218,4 @@ class TokenAuthorisationCheckTaskCog(TokenAuthorisationBaseCog):
         token_valid: bool = await self.is_token_valid()
 
         if not token_valid:
-            logger.warning("Token is not valid!")
-
-            await self.bot.fetch_log_channel().send("Auth token has expired!")
+            logger.warning("Session cookie is invalid or expired!")
