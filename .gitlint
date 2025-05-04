@@ -11,5 +11,8 @@ ignore = T1,B1,B5,B6
 regex = \AMerge\s+[a-f0-9]{8,64}\s+into\s+[a-f0-9]{8,64}\Z
 ignore = T1,B5,B6
 
+[ignore-body-lines]
+regex = (?i)^Co-Authored-By
+
 [title-must-not-contain-word]
 words = fuck,stupid,annoying,rubbish,shit,crap
