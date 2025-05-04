@@ -60,6 +60,17 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
         VALID = "valid"
         AUTHORISED = "authorised"
 
+    async def fetch_with_session(self, url: str) -> str:
+        """Fetch a URL using a shared aiohttp session."""
+        async with (
+            aiohttp.ClientSession(
+                headers=REQUEST_HEADERS,
+                cookies=REQUEST_COOKIES,
+            ) as http_session,
+            http_session.get(url) as http_response,
+        ):
+            return await http_response.text()
+
     async def get_profile_page(self) -> bs4.BeautifulSoup:
         """
         Definition of method to get the profile page.
@@ -67,14 +78,7 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
         This is done by requesting the user profile page and
         scraping the HTML for the list of groups.
         """
-        http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-            headers=REQUEST_HEADERS,
-            cookies=REQUEST_COOKIES,
-        )
-
-        async with http_session, http_session.get(PROFILE_URL) as http_response:
-            response_html: str = await http_response.text()
-
+        response_html: str = await self.fetch_with_session(PROFILE_URL)
         return BeautifulSoup(response_html, "html.parser")
 
     async def get_token_status(self) -> TokenStatus:
@@ -91,15 +95,7 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
             return self.TokenStatus.INVALID
 
         organisation_admin_url: str = f"{ORGANISATION_URL}/{settings['ORGANISATION_ID']}"
-
-        async with (
-            aiohttp.ClientSession(
-                headers=REQUEST_HEADERS,
-                cookies=REQUEST_COOKIES,
-            ) as http_session,
-            http_session.get(organisation_admin_url) as http_response,
-        ):
-            response_html: str = await http_response.text()
+        response_html: str = await self.fetch_with_session(organisation_admin_url)
 
         return (
             self.TokenStatus.AUTHORISED
