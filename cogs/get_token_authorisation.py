@@ -1,6 +1,7 @@
 """Contains cog classes for token authorisation check interactions."""
 
 import logging
+from enum import Enum
 from typing import TYPE_CHECKING, override
 
 import aiohttp
@@ -39,39 +40,29 @@ REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
     ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
 }
 
-REQUEST_URL: "Final[str]" = "https://guildofstudents.com/profile"
+PROFILE_URL: "Final[str]" = "https://guildofstudents.com/profile"
+ORGANISATION_URL: "Final[str]" = "https://www.guildofstudents.com/organisation/admin"
 
 
 class TokenAuthorisationBaseCog(TeXBotBaseCog):
     """Cog class that defines the base for token authorisation functions."""
 
-    async def is_token_valid(self) -> bool:
+    class TokenStatus(Enum):
         """
-        Definition of method to check if the authorisation token is valid.
+        Enum class that defines the status of the token.
 
-        This is done by requesting the user profile page and
-        checking if the page title contains "Login".
+        INVALID: The token does not have access to a user, meaning it is invalid or expired.
+        VALID: The token is a valid user, but not neccessarily to an organisation.
+        AUTHORISED: The token is a valid user and has access to an organisation.
         """
-        http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-            headers=REQUEST_HEADERS,
-            cookies=REQUEST_COOKIES,
-        )
 
-        async with http_session, http_session.get(REQUEST_URL) as http_response:
-            response_html: str = await http_response.text()
+        INVALID = "invalid"
+        VALID = "valid"
+        AUTHORISED = "authorised"
 
-        response_object: bs4.BeautifulSoup = BeautifulSoup(
-            response_html,
-            "html.parser",
-        )
-
-        page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
-
-        return "Login" not in str(page_title)
-
-    async def get_token_groups(self, iterable: bool) -> "str | Iterable[str]":  # noqa: FBT001
+    async def get_profile_page(self) -> bs4.BeautifulSoup:
         """
-        Definition of method to get the groups the token has access to.
+        Definition of method to get the profile page.
 
         This is done by requesting the user profile page and
         scraping the HTML for the list of groups.
@@ -81,13 +72,49 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
             cookies=REQUEST_COOKIES,
         )
 
-        async with http_session, http_session.get(REQUEST_URL) as http_response:
+        async with http_session, http_session.get(PROFILE_URL) as http_response:
             response_html: str = await http_response.text()
 
-        response_object: bs4.BeautifulSoup = BeautifulSoup(
-            response_html,
-            "html.parser",
+        return BeautifulSoup(response_html, "html.parser")
+
+    async def get_token_status(self) -> TokenStatus:
+        """
+        Definition of method to get the status of the token.
+
+        This is done by checking if the token is valid and if it is,
+        checking if the token has access to the organisation.
+        """
+        response_object: bs4.BeautifulSoup = await self.get_profile_page()
+        page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
+        if not page_title or "Login" in str(page_title):
+            logger.debug("Token is invalid or expired.")
+            return self.TokenStatus.INVALID
+
+        organisation_admin_url: str = f"{ORGANISATION_URL}/{settings['ORGANISATION_ID']}"
+
+        async with (
+            aiohttp.ClientSession(
+                headers=REQUEST_HEADERS,
+                cookies=REQUEST_COOKIES,
+            ) as http_session,
+            http_session.get(organisation_admin_url) as http_response,
+        ):
+            response_html: str = await http_response.text()
+
+        return (
+            self.TokenStatus.AUTHORISED
+            if "Admin Tools" in response_html
+            else self.TokenStatus.VALID
         )
+
+    async def get_token_groups(self, iterable: bool) -> "str | Iterable[str]":  # noqa: FBT001
+        """
+        Definition of method to get the groups the token has access to.
+
+        This is done by requesting the user profile page and
+        scraping the HTML for the list of groups.
+        """
+        response_object: bs4.BeautifulSoup = await self.get_profile_page()
 
         page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
 
@@ -116,7 +143,7 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
                 "when scraping the website's HTML!"
             )
             logger.warning(NO_PROFILE_WARNING_MESSAGE)
-            logger.debug("Retrieved HTML: %s", response_html)
+            logger.debug("Retrieved HTML: %s", response_object.text)
             return NO_PROFILE_WARNING_MESSAGE
 
         user_name: bs4.Tag | bs4.NavigableString | int | None = profile_section_html.find("h1")
@@ -126,7 +153,7 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
                 "Found user profile but couldn't find their name."
             )
             logger.warning(NO_PROFILE_DEBUG_MESSAGE)
-            logger.debug("Retrieved HTML: %s", response_html)
+            logger.debug("Retrieved HTML: %s", response_object.text)
             return NO_PROFILE_DEBUG_MESSAGE
 
         parsed_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
@@ -216,7 +243,12 @@ class TokenAuthorisationCheckTaskCog(TokenAuthorisationBaseCog):
         """
         logger.debug("Running token authorisation check task...")
 
-        token_valid: bool = await self.is_token_valid()
+        token_status: TokenAuthorisationBaseCog.TokenStatus = await self.get_token_status()
 
-        if not token_valid:
-            logger.warning("Session cookie is invalid or expired!")
+        if token_status == self.TokenStatus.INVALID:
+            logger.warning("Token is invalid or expired.")
+            return
+
+        if token_status == self.TokenStatus.VALID:
+            logger.warning("Token is valid but does not have access to the organisation.")
+            return
