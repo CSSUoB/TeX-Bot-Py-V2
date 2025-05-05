@@ -28,6 +28,13 @@
     },
     "packageRules": [
         {
+            "description": "Only update major Python versions manually",
+            "matchPackageNames": [
+                "python"
+            ],
+            "enabled": false
+        },
+        {
             "groupName": "pep621",
             "matchManagers": [
                 "pep621"
@@ -58,7 +65,7 @@
             ]
         },
         {
-            "description": "Update frquently changing pre-commit hooks on Tuesday mornings",
+            "description": "Update frequently changing pre-commit hooks on Tuesday mornings",
             "matchManagers": [
                 "pre-commit"
             ],
