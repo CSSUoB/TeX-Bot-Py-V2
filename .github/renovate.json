@@ -29,10 +29,10 @@
     "packageRules": [
         {
             "description": "Only update major Python versions manually",
+            "enabled": false,
             "matchPackageNames": [
                 "python"
-            ],
-            "enabled": false
+            ]
         },
         {
             "groupName": "pep621",
