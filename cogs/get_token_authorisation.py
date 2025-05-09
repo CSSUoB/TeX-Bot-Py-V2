@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, override
 import aiohttp
 import bs4
 import discord
-from bs4 import BeautifulSoup
 from discord.ext import tasks
 
 from config import settings
@@ -52,7 +51,7 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
         Enum class that defines the status of the token.
 
         INVALID: The token does not have access to a user, meaning it is invalid or expired.
-        VALID: The token is a valid user, but not neccessarily to an organisation.
+        VALID: The token is a valid user, but not neccessarily admin to an organisation.
         AUTHORISED: The token is a valid user and has access to an organisation.
         """
 
@@ -71,16 +70,6 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
         ):
             return await http_response.text()
 
-    async def get_profile_page(self) -> bs4.BeautifulSoup:
-        """
-        Definition of method to get the profile page.
-
-        This is done by requesting the user profile page and
-        scraping the HTML for the list of groups.
-        """
-        response_html: str = await self.fetch_with_session(PROFILE_URL)
-        return BeautifulSoup(response_html, "html.parser")
-
     async def get_token_status(self) -> TokenStatus:
         """
         Definition of method to get the status of the token.
@@ -88,7 +77,9 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
         This is done by checking if the token is valid and if it is,
         checking if the token has access to the organisation.
         """
-        response_object: bs4.BeautifulSoup = await self.get_profile_page()
+        response_object: bs4.BeautifulSoup = bs4.BeautifulSoup(
+            await self.fetch_with_session(PROFILE_URL), "html.parser"
+        )
         page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
         if not page_title or "Login" in str(page_title):
             logger.debug("Token is invalid or expired.")
@@ -97,11 +88,17 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
         organisation_admin_url: str = f"{ORGANISATION_URL}/{settings['ORGANISATION_ID']}"
         response_html: str = await self.fetch_with_session(organisation_admin_url)
 
-        return (
-            self.TokenStatus.AUTHORISED
-            if "Admin Tools" in response_html
-            else self.TokenStatus.VALID
-        )
+        if "admin tools" in response_html.lower():
+            logger.debug(response_html)
+            return self.TokenStatus.AUTHORISED
+
+        if "You do not have any permissions for this organisation" in response_html.lower():
+            logger.debug(response_html)
+            return self.TokenStatus.VALID
+
+        logger.warning("Unexpected response when checking token authorisation.")
+        logger.debug(response_html)
+        return self.TokenStatus.INVALID
 
     async def get_token_groups(self, iterable: bool) -> "str | Iterable[str]":  # noqa: FBT001
         """
@@ -110,7 +107,9 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
         This is done by requesting the user profile page and
         scraping the HTML for the list of groups.
         """
-        response_object: bs4.BeautifulSoup = await self.get_profile_page()
+        response_object: bs4.BeautifulSoup = bs4.BeautifulSoup(
+            await self.fetch_with_session(PROFILE_URL), "html.parser"
+        )
 
         page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
 
