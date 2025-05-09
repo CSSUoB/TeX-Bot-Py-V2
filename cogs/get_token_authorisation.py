@@ -100,7 +100,7 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
         logger.debug(response_html)
         return self.TokenStatus.INVALID
 
-    async def get_token_groups(self, iterable: bool) -> "str | Iterable[str]":  # noqa: FBT001
+    async def get_token_groups(self) -> "Iterable[str]":
         """
         Definition of method to get the groups the token has access to.
 
@@ -118,14 +118,14 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
                 "Profile page returned no content when checking token authorisation."
             )
             logger.warning(PROFILE_PAGE_INVALID)
-            return PROFILE_PAGE_INVALID
+            return []
 
         if "Login" in str(page_title):
             EXPIRED_AUTH_MESSAGE: Final[str] = (
                 "Authentication redirected to login page. Token is invalid or expired."
             )
             logger.warning(EXPIRED_AUTH_MESSAGE)
-            return EXPIRED_AUTH_MESSAGE
+            return []
 
         profile_section_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
             "div",
@@ -139,7 +139,7 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
             )
             logger.warning(NO_PROFILE_WARNING_MESSAGE)
             logger.debug("Retrieved HTML: %s", response_object.text)
-            return NO_PROFILE_WARNING_MESSAGE
+            return []
 
         user_name: bs4.Tag | bs4.NavigableString | int | None = profile_section_html.find("h1")
 
@@ -149,7 +149,7 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
             )
             logger.warning(NO_PROFILE_DEBUG_MESSAGE)
             logger.debug("Retrieved HTML: %s", response_object.text)
-            return NO_PROFILE_DEBUG_MESSAGE
+            return []
 
         parsed_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
             "ul",
@@ -162,7 +162,7 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
                 "Please check you have used the correct token!"
             )
             logger.warning(NO_ADMIN_TABLE_MESSAGE)
-            return NO_ADMIN_TABLE_MESSAGE
+            return []
 
         organisations: Iterable[str] = [
             list_item.get_text(strip=True) for list_item in parsed_html.find_all("li")
@@ -174,12 +174,7 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
             user_name.text,
         )
 
-        constructed_organisations: str = (
-            f"Admin token has access to the following MSL Organisations as "
-            f"{user_name.text}:\n{', \n'.join(organisation for organisation in organisations)}"
-        )
-
-        return organisations if iterable else constructed_organisations
+        return organisations
 
 
 class GetTokenAuthorisationCommandCog(TokenAuthorisationBaseCog):
@@ -202,7 +197,14 @@ class GetTokenAuthorisationCommandCog(TokenAuthorisationBaseCog):
         await ctx.defer(ephemeral=True)
         async with ctx.typing():
             await ctx.followup.send(
-                content=str(await self.get_token_groups(iterable=False)),
+                content=(
+                    f"Admin token has access to the following MSL Organisations: "
+                    f"\n{
+                        ', \n'.join(
+                            organisation for organisation in await self.get_token_groups()
+                        )
+                    }"
+                ),
                 ephemeral=True,
             )
 
