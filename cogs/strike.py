@@ -900,26 +900,16 @@ class StrikeCommandCog(BaseStrikeCog):
             await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
             return
 
-        strike_obj: DiscordMemberStrikes | None = None
+        strikes_count: int = 0
         try:
-            strike_obj = next(
-                strike_object
-                for strike_object in [
-                    all_strike_object
-                    async for all_strike_object in DiscordMemberStrikes.objects.select_related().all()  # noqa: E501
-                ]
-                if str(strike_object.discord_member)  # type: ignore[has-type]
-                == (DiscordMember.hash_discord_id(strike_member.id))
-            )
-        except StopIteration:
+            strikes_count = (
+                await DiscordMemberStrikes.objects.aget(discord_id=strike_member.id)
+            ).strikes
+        except DiscordMemberStrikes.DoesNotExist:
             logger.debug("No strikes found for user %s", strike_member)
 
         await ctx.respond(
-            content=(
-                f"User {strike_member.mention} has "
-                f"{strike_obj.strikes if strike_obj else 0} strikes."
-            ),
-            ephemeral=True,
+            content=(f"User {strike_member.mention} has {strikes_count} strikes.")
         )
 
     @discord.slash_command(  # type: ignore[misc, no-untyped-call]
