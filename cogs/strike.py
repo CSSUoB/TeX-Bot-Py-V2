@@ -356,8 +356,7 @@ class BaseStrikeCog(TeXBotBaseCog):
             raise TypeError(STRIKE_USER_TYPE_ERROR_MESSAGE)
 
         if member_strikes.strikes < 3:
-            member_strikes.strikes += 1
-            await member_strikes.asave()
+            await member_strikes.aupdate(strikes=F("strikes") + 1)
 
         await self._send_strike_user_message(strike_user, member_strikes)
 
