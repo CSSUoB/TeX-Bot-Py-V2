@@ -7,7 +7,8 @@ import discord
 from config import settings
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterable, Sequence
+    from collections.abc import AsyncIterable, Mapping, Sequence
+
 
 __all__: "Sequence[str]" = ("get_channel_message_counts", "get_server_message_counts")
 
@@ -65,8 +66,11 @@ async def get_server_message_counts(
     """
     Get the message counts for each channel in the given server.
 
-    The message counts are stored in a mapping. It contains a key "roles" which is a mapping of role names (prefixed by `@`) to the message counts for each role across the entire server.
-    The mapping also contains a key "channels" which is a mapping with the channel name as a key and the number of messages sent in that channel as the value.
+    The message counts are stored in a mapping. It contains a key "roles" which is
+    a mapping of role names (prefixed by `@`) to the message counts
+    for each role across the entire server.
+    The mapping also contains a key "channels" which is a mapping with the channel
+    name as a key and the number of messages sent in that channel as the value.
     The "roles" sub-mapping also includes a "Total" key for the total number of messages.
     """
     message_counts: dict[str, dict[str, int]] = {

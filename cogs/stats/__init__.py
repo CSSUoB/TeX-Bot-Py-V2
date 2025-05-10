@@ -18,7 +18,7 @@ from .counts import get_channel_message_counts, get_server_message_counts
 from .graphs import amount_of_time_formatter, plot_bar_chart
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterable, Sequence
+    from collections.abc import AsyncIterable, Mapping, Sequence
     from typing import Final
 
     from utils import TeXBotApplicationContext
@@ -115,9 +115,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
         await ctx.defer(ephemeral=True)
 
-        message_counts: dict[str, int] = await get_channel_message_counts(
-            main_guild=main_guild, channel=channel
-        )
+        message_counts: Mapping[str, int] = await get_channel_message_counts(channel=channel)
 
         if math.ceil(max(message_counts.values()) / 15) < 1:
             await self.command_send_error(
@@ -169,8 +167,8 @@ class StatsCommandsCog(TeXBotBaseCog):
 
         await ctx.defer(ephemeral=True)
 
-        message_counts: dict[str, dict[str, int]] = await get_server_message_counts(
-            main_guild=main_guild, guest_role=guest_role
+        message_counts: Mapping[str, Mapping[str, int]] = await get_server_message_counts(
+            guild=main_guild, guest_role=guest_role
         )
 
         TOO_FEW_ROLES_STATS: Final[bool] = (

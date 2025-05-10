@@ -9,7 +9,7 @@ import matplotlib.pyplot
 import mplcyberpunk
 
 if TYPE_CHECKING:
-    from collections.abc import Collection, Sequence
+    from collections.abc import Collection, Mapping, Sequence
 
     from matplotlib.text import Text as Plot_Text
 
@@ -37,7 +37,7 @@ def amount_of_time_formatter(value: float, time_scale: str) -> str:
 
 
 def plot_bar_chart(
-    data: dict[str, int],
+    data: "Mapping[str, int]",
     x_label: str,
     y_label: str,
     title: str,
@@ -53,7 +53,7 @@ def plot_bar_chart(
     # NOTE: The "extra_values" dictionary represents columns of data that should be formatted differently to the standard data columns
     extra_values: dict[str, int] = {}
     if "Total" in data:
-        extra_values["Total"] = data.pop("Total")
+        extra_values["Total"] = data["Total"]
 
     if len(data) > 4:
         data = {
