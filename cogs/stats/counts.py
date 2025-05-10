@@ -12,21 +12,19 @@ if TYPE_CHECKING:
 __all__: "Sequence[str]" = ("get_channel_message_counts", "get_server_message_counts")
 
 
-async def get_channel_message_counts(
-    main_guild: discord.Guild, channel: discord.TextChannel
-) -> dict[str, int]:
+async def get_channel_message_counts(channel: discord.TextChannel) -> "Mapping[str, int]":
     """
     Get the message counts for each role in the given channel.
 
-    The message counts are stored in a dictionary with the role name as the key
+    The message counts are stored in a mapping with the role name (prefixed by `@`) as the key
     and the number of messages sent by users with that role as the value.
-    The dictionary also includes a "Total" key for the total number of messages.
+    The mapping also includes a "Total" key for the total number of messages.
     """
     message_counts: dict[str, int] = {"Total": 0}
 
     role_name: str
     for role_name in settings["STATISTICS_ROLES"]:
-        if discord.utils.get(main_guild.roles, name=role_name):
+        if discord.utils.get(channel.guild.roles, name=role_name):
             message_counts[f"@{role_name}"] = 0
 
     message_history_period: AsyncIterable[discord.Message] = channel.history(
@@ -63,16 +61,13 @@ async def get_channel_message_counts(
 
 async def get_server_message_counts(
     main_guild: discord.Guild, guest_role: discord.Role
-) -> dict[str, dict[str, int]]:
+) -> "Mapping[str, Mapping[str, int]]":
     """
-    Get the message counts for every channel in the server.
+    Get the message counts for each channel in the given server.
 
-    The message counts are stored in a dictionary with the channel name as the key
-    and the number of messages sent in that channel as the value.
-    The dictionary also includes a "Total" key for the total number of messages.
-    The dictionary also includes a "roles" key for the message counts for each role.
-    The message counts for each role are stored in a dictionary with the role name as the key
-    and the number of messages sent by users with that role as the value.
+    The message counts are stored in a mapping. It contains a key "roles" which is a mapping of role names (prefixed by `@`) to the message counts for each role across the entire server.
+    The mapping also contains a key "channels" which is a mapping with the channel name as a key and the number of messages sent in that channel as the value.
+    The "roles" sub-mapping also includes a "Total" key for the total number of messages.
     """
     message_counts: dict[str, dict[str, int]] = {
         "roles": {"Total": 0},
@@ -81,11 +76,11 @@ async def get_server_message_counts(
 
     role_name: str
     for role_name in settings["STATISTICS_ROLES"]:
-        if discord.utils.get(main_guild.roles, name=role_name):
+        if discord.utils.get(guild.roles, name=role_name):
             message_counts["roles"][f"@{role_name}"] = 0
 
     channel: discord.TextChannel
-    for channel in main_guild.text_channels:
+    for channel in guild.text_channels:
         member_has_access_to_channel: bool = channel.permissions_for(
             guest_role,
         ).is_superset(
