@@ -890,11 +890,11 @@ class StrikeCommandCog(BaseStrikeCog):
         """
         Define method and callback response of of the "get-strikes" command.
 
-        Returns the number of strikes a user has.
+        Responds with the number of strikes a user has.
         """
         try:
             strike_member: discord.Member = await self.bot.get_member_from_str_id(
-                str_user_id,
+                str_user_id
             )
         except ValueError as member_id_not_integer_error:
             await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
@@ -931,7 +931,8 @@ class StrikeCommandCog(BaseStrikeCog):
         Definition & callback response of the "decrement-strikes" command.
 
         The "decrement-strikes" command removes a strike from the given member.
-        If the user only has one strike, the object will be deleted from the database.
+        If the member only has one strike, the corresponding `DiscordMemberStrikes`
+        object will be deleted from the database.
         """
         try:
             strike_member: discord.Member = await self.bot.get_member_from_str_id(
@@ -941,38 +942,52 @@ class StrikeCommandCog(BaseStrikeCog):
             await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
             return
 
-        strike_obj: DiscordMemberStrikes | None = None
         try:
-            strike_obj = next(
-                strike_object
-                for strike_object in [
-                    all_strike_object
-                    async for all_strike_object in DiscordMemberStrikes.objects.select_related().all()  # noqa: E501 # NOTE: I tried to reformat this to avoid the ruff error but the stupid fucking reformat put it all back on one line again
-                ]
-                if str(strike_object.discord_member)  # type: ignore[has-type]
-                == (DiscordMember.hash_discord_id(strike_member.id))
+            discord_member_strikes: DiscordMemberStrikes = (
+                await DiscordMemberStrikes.objects.select_related().aget(
+                    discord_id=strike_member.id
+                )
             )
-        except StopIteration:
-            await self.command_send_error(
-                ctx=ctx,
-                message="Cannot decrement strikes of user that has no strikes.",
+        except DiscordMemberStrikes.DoesNotExist:
+            await ctx.respond(
+                content=(
+                    ":information_source: No action taken."
+                    f"User {strike_member.mention} does not have any strikes to remove!"
+                ),
+                ephemeral=True,
+            )
+            logger.info(
+                "%s attempted to remove a strike from user %s, but they had none",
+                ctx.user,
+                strike_member,
             )
             return
 
-        if strike_obj.strikes == 1:
-            await strike_obj.adelete()
+        if discord_member_strikes.strikes == 1:
+            await discord_member_strikes.adelete()
             await ctx.respond(
                 content=f"Successfully removed all strikes from {strike_member.mention}."
             )
+            logger.info(
+                "%s removed all strikes from user %s",
+                ctx.user,
+                strike_member,
+            )
             return
 
-        strike_obj.strikes -= 1
-        await strike_obj.asave()
+        discord_member_strikes.strikes -= 1
+        await discord_member_strikes.asave()
         await ctx.respond(
             content=(
                 f"Successfully removed a strike from {strike_member.mention}. "
-                f"User now has {strike_obj.strikes} strikes."
+                f"User now has {discord_member_strikes.strikes} strikes."
             )
+        )
+        logger.info(
+            "%s removed 1 strike from user %s, they now have %s",
+            ctx.user,
+            strike_member,
+            discord_member_strikes.strikes,
         )
 
 
