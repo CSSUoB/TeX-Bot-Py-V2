@@ -10,9 +10,10 @@ from typing import TYPE_CHECKING
 import discord
 from asyncstdlib.builtins import any as asyncany
 from discord.ui import View
+from django.db.models import F
 
 from config import settings
-from db.core.models import DiscordMember, DiscordMemberStrikes
+from db.core.models import DiscordMemberStrikes
 from exceptions import (
     GuildDoesNotExistError,
     NoAuditLogsStrikeTrackingError,
@@ -880,12 +881,12 @@ class StrikeCommandCog(BaseStrikeCog):
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
         required=True,
-        parameter_name="str_user_id",
+        parameter_name="str_strike_member_id",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def get_strikes(  # type: ignore[misc]
-        self, ctx: "TeXBotApplicationContext", str_user_id: str
+        self, ctx: "TeXBotApplicationContext", str_strike_member_id: str
     ) -> None:
         """
         Define method and callback response of of the "get-strikes" command.
@@ -894,7 +895,7 @@ class StrikeCommandCog(BaseStrikeCog):
         """
         try:
             strike_member: discord.Member = await self.bot.get_member_from_str_id(
-                str_user_id
+                str_member_id=str_strike_member_id
             )
         except ValueError as member_id_not_integer_error:
             await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
@@ -914,7 +915,7 @@ class StrikeCommandCog(BaseStrikeCog):
 
     @discord.slash_command(  # type: ignore[misc, no-untyped-call]
         name="decrement-strikes",
-        description="Decrement the number of strikes a user has by 1.",
+        description="Remove a single strike from a user.",
     )
     @discord.option(  # type: ignore[misc, no-untyped-call]
         name="user",
@@ -922,10 +923,10 @@ class StrikeCommandCog(BaseStrikeCog):
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
         required=True,
-        parameter_name="str_user_id",
+        parameter_name="str_strike_member_id",
     )
     async def decrement_strikes(  # type: ignore[misc]
-        self, ctx: "TeXBotApplicationContext", str_user_id: str
+        self, ctx: "TeXBotApplicationContext", str_strike_member_id: str
     ) -> None:
         """
         Definition & callback response of the "decrement-strikes" command.
@@ -936,7 +937,7 @@ class StrikeCommandCog(BaseStrikeCog):
         """
         try:
             strike_member: discord.Member = await self.bot.get_member_from_str_id(
-                str_user_id,
+                str_member_id=str_strike_member_id,
             )
         except ValueError as member_id_not_integer_error:
             await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
@@ -963,7 +964,7 @@ class StrikeCommandCog(BaseStrikeCog):
             )
             return
 
-        if discord_member_strikes.strikes == 1:
+        if discord_member_strikes.strikes <= 1:
             await discord_member_strikes.adelete()
             await ctx.respond(
                 content=f"Successfully removed all strikes from {strike_member.mention}."
@@ -975,8 +976,7 @@ class StrikeCommandCog(BaseStrikeCog):
             )
             return
 
-        discord_member_strikes.strikes -= 1
-        await discord_member_strikes.asave()
+        await discord_member_strikes.aupdate(strikes=F("strikes") - 1)
         await ctx.respond(
             content=(
                 f"Successfully removed a strike from {strike_member.mention}. "
