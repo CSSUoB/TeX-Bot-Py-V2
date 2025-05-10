@@ -53,7 +53,7 @@ def plot_bar_chart(
     # NOTE: The "extra_values" dictionary represents columns of data that should be formatted differently to the standard data columns
     extra_values: dict[str, int] = {}
     if "Total" in data:
-        extra_values["Total"] = data["Total"]
+        extra_values["Total"] = data.pop("Total")
 
     if len(data) > 4:
         data = {
