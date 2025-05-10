@@ -335,5 +335,61 @@ To add a new environment variable to the project, follow these steps:
 
 ### Creating a Response Button
 
+Response buttons are interactive UI components that allow users to respond to bot messages with predefined actions. To create a response button, follow these steps:
+
+1. **Define the Button Class**
+   - Create a class that inherits from `discord.ui.View`.
+   - Add button methods using the `@discord.ui.button` decorator.
+   - Each button method should define the button's label, style, and custom ID.
+
+   Example:
+   ```python
+   from discord.ui import View
+
+   class ConfirmActionView(View):
+       """A discord.View containing buttons to confirm or cancel an action."""
+
+       @discord.ui.button(
+           label="Yes",
+           style=discord.ButtonStyle.green,
+           custom_id="confirm_yes",
+       )
+       async def confirm_yes(self, button: discord.Button, interaction: discord.Interaction) -> None:
+           # Handle the 'Yes' button click
+           await interaction.response.send_message("Action confirmed.", ephemeral=True)
+
+       @discord.ui.button(
+           label="No",
+           style=discord.ButtonStyle.red,
+           custom_id="confirm_no",
+       )
+       async def confirm_no(self, button: discord.Button, interaction: discord.Interaction) -> None:
+           # Handle the 'No' button click
+           await interaction.response.send_message("Action canceled.", ephemeral=True)
+   ```
+
+2. **Send the View with a Message**
+   - Use the `view` parameter of the `send` or `respond` method to attach the button view to a message.
+
+   Example:
+   ```python
+   await ctx.send(
+       content="Do you want to proceed?",
+       view=ConfirmActionView(),
+   )
+   ```
+
+3. **Handle Button Interactions**
+   - Define logic within each button method to handle user interactions.
+   - Use `interaction.response` to send feedback or perform actions based on the button clicked.
+
+4. **Test the Button**
+   - Run the bot and ensure the buttons appear and function as expected.
+   - Test edge cases, such as multiple users interacting with the buttons simultaneously.
+
+5. **Document the Button**
+   - Add comments and docstrings to explain the purpose and functionality of the button.
+   - Update relevant documentation if necessary.
+
 
 
