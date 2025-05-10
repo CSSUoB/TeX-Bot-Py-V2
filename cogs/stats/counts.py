@@ -60,7 +60,7 @@ async def get_channel_message_counts(channel: discord.TextChannel) -> "Mapping[s
 
 
 async def get_server_message_counts(
-    main_guild: discord.Guild, guest_role: discord.Role
+    guild: discord.Guild, *, guest_role: discord.Role
 ) -> "Mapping[str, Mapping[str, int]]":
     """
     Get the message counts for each channel in the given server.
