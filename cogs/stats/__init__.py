@@ -115,7 +115,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
         await ctx.defer(ephemeral=True)
 
-        message_counts: Mapping[str, int] = await get_channel_message_counts(channel=channel)
+        message_counts: dict[str, int] = await get_channel_message_counts(channel=channel)
 
         if math.ceil(max(message_counts.values()) / 15) < 1:
             await self.command_send_error(
@@ -167,7 +167,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
         await ctx.defer(ephemeral=True)
 
-        message_counts: Mapping[str, Mapping[str, int]] = await get_server_message_counts(
+        message_counts: dict[str, dict[str, int]] = await get_server_message_counts(
             guild=main_guild, guest_role=guest_role
         )
 

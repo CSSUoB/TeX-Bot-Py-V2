@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 __all__: "Sequence[str]" = ("get_channel_message_counts", "get_server_message_counts")
 
 
-async def get_channel_message_counts(channel: discord.TextChannel) -> "Mapping[str, int]":
+async def get_channel_message_counts(channel: discord.TextChannel) -> dict[str, int]:
     """
     Get the message counts for each role in the given channel.
 
@@ -62,7 +62,7 @@ async def get_channel_message_counts(channel: discord.TextChannel) -> "Mapping[s
 
 async def get_server_message_counts(
     guild: discord.Guild, *, guest_role: discord.Role
-) -> "Mapping[str, Mapping[str, int]]":
+) -> dict[str, dict[str, int]]:
     """
     Get the message counts for each channel in the given server.
 

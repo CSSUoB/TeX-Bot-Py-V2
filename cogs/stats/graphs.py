@@ -37,7 +37,7 @@ def amount_of_time_formatter(value: float, time_scale: str) -> str:
 
 
 def plot_bar_chart(
-    data: "Mapping[str, int]",
+    data: dict[str, int],
     x_label: str,
     y_label: str,
     title: str,
