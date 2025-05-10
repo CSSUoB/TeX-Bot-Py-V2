@@ -212,8 +212,79 @@ Happy contributing!
 
 ### Creating a New Cog
 
-Firstly, create a new file in the `cogs` folder. You should name the file something representative of what the cog will do.
+Cogs are modular components of the bot that group related commands and listeners into a single class. To create a new cog, follow these steps:
 
+1. **Create the Cog File**
+   - Navigate to the `cogs` folder.
+   - Create a new Python file with a name that reflects the purpose of the cog (e.g., `example_cog.py`).
+
+2. **Define the Cog Class**
+   - Import the necessary modules, including `TeXBotBaseCog` from `utils`.
+   - Define a class that inherits from `TeXBotBaseCog`.
+   - Add a docstring to describe the purpose of the cog.
+
+   Example:
+   ```python
+   from utils import TeXBotBaseCog
+
+   class ExampleCog(TeXBotBaseCog):
+       """A cog for demonstrating functionality."""
+
+       def __init__(self, bot):
+           self.bot = bot
+   ```
+
+3. **Add Commands and Listeners**
+   - Define methods within the class for commands and event listeners.
+   - Use decorators like `@discord.slash_command` or `@TeXBotBaseCog.listener` to specify their purpose.
+   - Include any necessary checks using `CommandChecks` decorators.
+
+   Example:
+   ```python
+   import discord
+   from utils import CommandChecks
+
+    __all__: "Sequence[str]" = (
+        "ExampleCog",
+    )
+
+   class ExampleCog(TeXBotBaseCog):
+       """A cog for demonstrating functionality."""
+
+   ```
+
+4. **Register the Cog**
+   - Open `cogs/__init__.py`.
+   - Add your new cog class to the list of cogs in the `setup` function.
+   - Also, include the cog in the `__all__` sequence to ensure it is properly exported.
+
+   Example:
+   ```python
+   from .example_cog import ExampleCog
+
+   __all__: "Sequence[str]" = (
+       ...existing cogs...
+       "ExampleCog",
+   )
+
+   def setup(bot: "TeXBot") -> None:
+       """Add all the cogs to the bot, at bot startup."""
+       cogs: Iterable[type[TeXBotBaseCog]] = (
+           ...existing cogs...
+           ExampleCog,
+       )
+       Cog: type[TeXBotBaseCog]
+       for Cog in cogs:
+           bot.add_cog(Cog(bot))
+   ```
+
+5. **Test the Cog**
+   - Run the bot and ensure the new cog is loaded without errors.
+   - Test the commands and listeners to verify they work as expected.
+
+6. **Document the Cog**
+   - Add comments and docstrings to explain the functionality of the cog.
+   - Update the `CONTRIBUTING.md` file or other relevant documentation if necessary.
 
 ### Creating a New Environment Variable
 
