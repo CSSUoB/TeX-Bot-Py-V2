@@ -207,7 +207,6 @@ If you are stuck, need help, or have a question, the best place to ask is on our
 
 Happy contributing!
 
-
 ## Guides
 
 ### Creating a New Cog
@@ -288,6 +287,51 @@ Cogs are modular components of the bot that group related commands and listeners
 
 ### Creating a New Environment Variable
 
+To add a new environment variable to the project, follow these steps:
+
+1. **Define the Variable in `.env`**
+   - Open the `.env` file in the root directory (or create one if it doesn't exist).
+   - Add the new variable in the format `VARIABLE_NAME=value`.
+   - Ensure the variable name is descriptive and uses uppercase letters with underscores.
+
+2. **Update `config.py`**
+   - Open the `config.py` file.
+   - Add a new setup method in the `Settings` class to validate and load the variable. For example:
+     ```python
+     @classmethod
+     def _setup_new_variable(cls) -> None:
+         raw_value: str | None = os.getenv("NEW_VARIABLE")
+
+         if not raw_value or not re.fullmatch(r"<validation_regex>", raw_value):
+             raise ImproperlyConfiguredError("NEW_VARIABLE is invalid or missing.")
+
+         cls._settings["NEW_VARIABLE"] = raw_value
+     ```
+   - Replace `<validation_regex>` with a regular expression to validate the variable's format, if applicable.
+
+3. **Call the Setup Method**
+   - Add the new setup method to the `_setup_env_variables` method in `config.py`:
+     ```python
+     @classmethod
+     def _setup_env_variables(cls) -> None:
+         if cls._is_env_variables_setup:
+             logger.warning("Environment variables have already been set up.")
+             return
+
+         cls._settings = {}
+
+         cls._setup_new_variable()
+         # Add other setup methods here
+
+         cls._is_env_variables_setup = True
+     ```
+
+4. **Document the Variable**
+   - Update the `README.md` file under the "Setting Environment Variables" section to include the new variable, its purpose, and any valid values.
+
+5. **Test the Variable**
+   - Run the bot and ensure the new variable is loaded correctly.
+   - Test edge cases, such as missing or invalid values, to confirm proper error handling.
 
 ### Creating a Response Button
 
