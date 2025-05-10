@@ -8,8 +8,6 @@ import re
 from typing import TYPE_CHECKING
 
 import discord
-
-# noinspection SpellCheckingInspection
 from asyncstdlib.builtins import any as asyncany
 from discord.ui import View
 
@@ -18,7 +16,6 @@ from db.core.models import DiscordMemberStrikes
 from exceptions import (
     GuildDoesNotExistError,
     NoAuditLogsStrikeTrackingError,
-    RulesChannelDoesNotExistError,
     StrikeTrackingError,
 )
 from utils import (
@@ -257,38 +254,35 @@ class BaseStrikeCog(TeXBotBaseCog):
     async def _send_strike_user_message(
         self, strike_user: discord.User | discord.Member, member_strikes: DiscordMemberStrikes
     ) -> None:
-        # noinspection PyUnusedLocal
-        rules_channel_mention: str = "**`#welcome`**"
-        with contextlib.suppress(RulesChannelDoesNotExistError):
-            rules_channel_mention = (await self.bot.rules_channel).mention
-
-        includes_ban_message: str = (
-            (
-                "\nBecause you now have been given 3 strikes, you have been banned from "
-                f"the {self.bot.group_short_name} Discord server "
-                f"and we have contacted {self.bot.group_moderation_contact} for "
-                "further action & advice."
+        try:
+            await strike_user.send(
+                "Hi, a recent incident occurred in which you may have broken one or more of "
+                f"the {self.bot.group_short_name} Discord server's rules.\n"
+                "We have increased the number of strikes associated with your account "
+                f"to {min(3, member_strikes.strikes)} and "
+                "the corresponding moderation action will soon be applied to you. "
+                "To find what moderation action corresponds to which strike level, "
+                "you can view "
+                f"the {self.bot.group_short_name} Discord server moderation document "
+                f"[here](<{settings.MODERATION_DOCUMENT_URL}>)\nPlease ensure you have read "
+                f"the rules in {await self.bot.get_mention_string(self.bot.rules_channel)} so "
+                "that your future behaviour adheres to them."
+                f"{
+                    (
+                        '\nBecause you now have been given 3 strikes, '
+                        'you have been banned from '
+                        f'the {self.bot.group_short_name} Discord server '
+                        f'and we have contacted {self.bot.group_moderation_contact} for '
+                        'further action & advice.'
+                    )
+                    if member_strikes.strikes >= 3
+                    else ''
+                }\n\n"
+                "A committee member will be in contact with you shortly, "
+                "to discuss this further."
             )
-            if member_strikes.strikes >= 3
-            else ""
-        )
-
-        actual_strike_amount: int = min(3, member_strikes.strikes)
-
-        await strike_user.send(
-            "Hi, a recent incident occurred in which you may have broken one or more of "
-            f"the {self.bot.group_short_name} Discord server's rules.\n"
-            "We have increased the number of strikes associated with your account "
-            f"to {actual_strike_amount} and "
-            "the corresponding moderation action will soon be applied to you. "
-            "To find what moderation action corresponds to which strike level, "
-            "you can view "
-            f"the {self.bot.group_short_name} Discord server moderation document "
-            f"[here](<{settings.MODERATION_DOCUMENT_URL}>)\nPlease ensure you have read "
-            f"the rules in {rules_channel_mention} so that your future behaviour adheres "
-            f"to them.{includes_ban_message}\n\nA committee member will be in contact "
-            "with you shortly, to discuss this further.",
-        )
+        except discord.Forbidden:
+            logger.warning("Failed to send strike message to %s", strike_user)
 
     async def _confirm_perform_moderation_action(
         self,
@@ -392,7 +386,6 @@ class BaseStrikeCog(TeXBotBaseCog):
                 )
 
         if not perform_action:
-            # noinspection SpellCheckingInspection
             await message_sender_component.send(
                 content=(
                     f"{confirm_strike_message}\n"
@@ -510,7 +503,6 @@ class ManualModerationCog(BaseStrikeCog):
 
         return guild_confirmation_message_channel
 
-    # noinspection PyTypeHints
     @capture_strike_tracking_error
     async def _confirm_manual_add_strike(
         self, strike_user: discord.User | discord.Member, action: discord.AuditLogAction
@@ -520,7 +512,6 @@ class ManualModerationCog(BaseStrikeCog):
         committee_role: discord.Role = await self.bot.committee_role
 
         try:
-            # noinspection PyTypeChecker
             audit_log_entry: discord.AuditLogEntry = await anext(
                 _audit_log_entry
                 async for _audit_log_entry in main_guild.audit_logs(
@@ -648,7 +639,6 @@ class ManualModerationCog(BaseStrikeCog):
                         "with number of strikes**"
                     ),
                 )
-                # noinspection SpellCheckingInspection
                 await out_of_sync_ban_confirmation_message.edit(
                     content=(
                         f"Successfully banned {strike_user.mention}.\n"
@@ -710,7 +700,6 @@ class ManualModerationCog(BaseStrikeCog):
         )
 
         if button_interaction.data["custom_id"] == "no_manual_moderation_action":  # type: ignore[index, typeddict-item]
-            # noinspection SpellCheckingInspection
             await confirmation_message.edit(
                 content=(
                     f"Aborted increasing {strike_user.mention}'s strikes "
@@ -750,7 +739,7 @@ class ManualModerationCog(BaseStrikeCog):
     @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
     async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
-        """Flag manually applied timeout & track strikes accordingly."""
+        """Flag manually applied timeout and track strikes accordingly."""
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
@@ -762,10 +751,9 @@ class ManualModerationCog(BaseStrikeCog):
 
         audit_log_entry: discord.AuditLogEntry
         async for audit_log_entry in main_guild.audit_logs(limit=5):
-            FOUND_CORRECT_AUDIT_LOG_ENTRY: bool = (
-                audit_log_entry.target.id == after.id
-                and audit_log_entry.action
-                == (discord.AuditLogAction.auto_moderation_user_communication_disabled)
+            FOUND_CORRECT_AUDIT_LOG_ENTRY: bool = audit_log_entry.target.id == after.id and (
+                audit_log_entry.action
+                == discord.AuditLogAction.auto_moderation_user_communication_disabled
             )
             if FOUND_CORRECT_AUDIT_LOG_ENTRY:
                 await self._confirm_manual_add_strike(
@@ -782,7 +770,7 @@ class ManualModerationCog(BaseStrikeCog):
     @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
     async def on_member_remove(self, member: discord.Member) -> None:
-        """Flag manually applied kick & track strikes accordingly."""
+        """Flag manually applied kick and track strikes accordingly."""
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
@@ -805,7 +793,7 @@ class ManualModerationCog(BaseStrikeCog):
     async def on_member_ban(
         self, guild: discord.Guild, user: discord.User | discord.Member
     ) -> None:
-        """Flag manually applied ban & track strikes accordingly."""
+        """Flag manually applied ban and track strikes accordingly."""
         if guild != self.bot.main_guild or user.bot:
             return
 
@@ -884,7 +872,7 @@ class StrikeCommandCog(BaseStrikeCog):
 
 
 class StrikeContextCommandsCog(BaseStrikeCog):
-    """Cog class that defines the context menu strike command & its call-back method."""
+    """Cog class that defines the context menu strike command and its call-back method."""
 
     async def _send_message_to_committee(
         self, ctx: "TeXBotApplicationContext", message: discord.Message
