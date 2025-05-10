@@ -945,7 +945,7 @@ class StrikeCommandCog(BaseStrikeCog):
 
         try:
             discord_member_strikes: DiscordMemberStrikes = (
-                await DiscordMemberStrikes.objects.select_related().aget(
+                await DiscordMemberStrikes.objects.aget(
                     discord_id=strike_member.id
                 )
             )
