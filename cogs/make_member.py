@@ -1,6 +1,5 @@
 """Contains cog classes for any make_member interactions."""
 
-import contextlib
 import logging
 import re
 from typing import TYPE_CHECKING
@@ -13,11 +12,7 @@ from django.core.exceptions import ValidationError
 
 from config import settings
 from db.core.models import GroupMadeMember
-from exceptions import (
-    ApplicantRoleDoesNotExistError,
-    CommitteeRoleDoesNotExistError,
-    GuestRoleDoesNotExistError,
-)
+from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
@@ -69,7 +64,7 @@ REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
 
 ORGANISATION_ID: "Final[str]" = settings["ORGANISATION_ID"]
 GROUP_NAME: "Final[str]" = settings["_GROUP_FULL_NAME"]
-GROUPED_MEMBRS_URL: "Final[str]" = (
+GROUPED_MEMBERS_URL: "Final[str]" = (
     f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
 )
 BASE_MEMBERS_URL: "Final[str]" = (
@@ -78,10 +73,8 @@ BASE_MEMBERS_URL: "Final[str]" = (
 
 
 class MakeMemberCommandCog(TeXBotBaseCog):
-    # noinspection SpellCheckingInspection
     """Cog class that defines the "/makemember" command and its call-back method."""
 
-    # noinspection SpellCheckingInspection
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="makemember",
         description=(
@@ -118,7 +111,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         parameter_name="group_member_id",
     )
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_member(self, ctx: "TeXBotApplicationContext", group_member_id: str) -> None:  # type: ignore[misc]  # noqa: PLR0915
+    async def make_member(self, ctx: "TeXBotApplicationContext", group_member_id: str) -> None:  # type: ignore[misc]
         """
         Definition & callback response of the "make_member" command.
 
@@ -152,24 +145,17 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 )
                 return
 
-            GROUP_MEMBER_ID_IS_ALREADY_USED: Final[
-                bool
-            ] = await GroupMadeMember.objects.filter(
+            if await GroupMadeMember.objects.filter(
                 hashed_group_member_id=GroupMadeMember.hash_group_member_id(
                     group_member_id, self.bot.group_member_id_type
                 )
-            ).aexists()
-            if GROUP_MEMBER_ID_IS_ALREADY_USED:
-                # noinspection PyUnusedLocal
-                committee_mention: str = "committee"
-                with contextlib.suppress(CommitteeRoleDoesNotExistError):
-                    committee_mention = (await self.bot.committee_role).mention
-
+            ).aexists():
                 await ctx.followup.send(
                     content=(
                         ":information_source: No changes made. This student ID has already "
-                        f"been used. Please contact a {committee_mention} member if this is "
-                        "an error. :information_source:"
+                        f"been used. Please contact a {
+                            await self.bot.get_mention_string(self.bot.committee_role)
+                        } member if this is an error. :information_source:"
                     ),
                     ephemeral=True,
                 )
@@ -181,7 +167,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 headers=REQUEST_HEADERS,
                 cookies=REQUEST_COOKIES,
             )
-            async with http_session, http_session.get(GROUPED_MEMBRS_URL) as http_response:
+            async with http_session, http_session.get(GROUPED_MEMBERS_URL) as http_response:
                 response_html: str = await http_response.text()
 
             MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
@@ -278,11 +264,11 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                         guest_role,
                         reason='TeX Bot slash-command: "/makemember"',
                     )
-
-            # noinspection PyUnusedLocal
-            applicant_role: discord.Role | None = None
-            with contextlib.suppress(ApplicantRoleDoesNotExistError):
+            applicant_role: discord.Role | None
+            try:
                 applicant_role = await ctx.bot.applicant_role
+            except ApplicantRoleDoesNotExistError:
+                applicant_role = None
 
             if applicant_role and applicant_role in interaction_member.roles:
                 await interaction_member.remove_roles(

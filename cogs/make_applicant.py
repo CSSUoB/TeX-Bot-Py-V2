@@ -90,6 +90,34 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
                             )
                         break
 
+            try:
+                await applicant_member.send(
+                    content=(
+                        f"Congratulations {applicant_member.mention}, you've "
+                        "now been given applicant access to the CSS Discord server! "
+                        "As you are not yet a student at the University, "
+                        "you only have limited access to participate in certain channels.\n\n"
+                        "If you are already a student and your induction as an applicant was"
+                        " a mistake, please contact a committee member.\n\n"
+                        "If you have already purchased a membership, you can run the "
+                        "`/makemember` command, and you will be given full access by "
+                        f"{self.bot.user.display_name if self.bot.user else 'TeX-Bot'}.\n\n"
+                        "Some things to do to get started:\n"
+                        "1. Check out our rules in "
+                        f"{await self.bot.get_mention_string(self.bot.rules_channel)}\n"
+                        "2. Head to "
+                        f"{await self.bot.get_mention_string(self.bot.roles_channel)}"
+                        " and click on the icons to get optional roles like "
+                        "pronouns and year group\n"
+                        "3. Change your nickname to whatever "
+                        "you wish others to refer to you as"
+                    ),
+                )
+            except discord.Forbidden:
+                logger.warning(
+                    "Failed to send applicant induction DM to user %s", applicant_member
+                )
+
             await ctx.followup.send(
                 content=":white_check_mark: User is now an applicant.",
                 ephemeral=True,

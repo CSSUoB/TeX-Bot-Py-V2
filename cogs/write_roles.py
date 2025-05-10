@@ -16,10 +16,8 @@ __all__: "Sequence[str]" = ("WriteRolesCommandCog",)
 
 
 class WriteRolesCommandCog(TeXBotBaseCog):
-    # noinspection SpellCheckingInspection
     """Cog class that defines the "/write-roles" command and its call-back method."""
 
-    # noinspection SpellCheckingInspection
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="write-roles",
         description="Populates #roles with the correct messages.",
