@@ -9,7 +9,7 @@ import matplotlib.pyplot
 import mplcyberpunk
 
 if TYPE_CHECKING:
-    from collections.abc import Collection, Mapping, Sequence
+    from collections.abc import Collection, Sequence
 
     from matplotlib.text import Text as Plot_Text
 

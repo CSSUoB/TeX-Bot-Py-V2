@@ -7,7 +7,7 @@ import discord
 from config import settings
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterable, Mapping, Sequence
+    from collections.abc import AsyncIterable, Sequence
 
 
 __all__: "Sequence[str]" = ("get_channel_message_counts", "get_server_message_counts")

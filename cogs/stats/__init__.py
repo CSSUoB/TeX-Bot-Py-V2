@@ -18,7 +18,7 @@ from .counts import get_channel_message_counts, get_server_message_counts
 from .graphs import amount_of_time_formatter, plot_bar_chart
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterable, Mapping, Sequence
+    from collections.abc import AsyncIterable, Sequence
     from typing import Final
 
     from utils import TeXBotApplicationContext
