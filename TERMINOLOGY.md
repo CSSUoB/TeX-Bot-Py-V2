@@ -11,9 +11,13 @@ The term "main guild" is used throughout the code in this repository to refer sp
 
 ## [Interactions](https://discord.com/developers/docs/interactions/overview)
 
+Interactions in Discord are a way for bots to communicate with users in a structured and interactive manner. They include various types of commands and events that allow users to interact with the bot. The primary types of interactions are:
 
+1. **Application Commands**: These include Slash Commands, Message Commands, and User Commands. They are predefined commands that users can invoke to perform specific actions.
+2. **Message Components**: These are interactive elements like buttons, select menus, and modals that can be attached to messages to provide a richer user experience.
+3. **Modal Submissions**: These are forms that users can fill out and submit, allowing bots to collect structured input from users, though TeX-Bot does not currently make use of these.
 
-
+For more details, refer to the [Discord Developer Documentation on Interactions](https://discord.com/developers/docs/interactions/overview).
 
 
 ## [Application Commands](https://discord.com/developers/docs/interactions/application-commands)
