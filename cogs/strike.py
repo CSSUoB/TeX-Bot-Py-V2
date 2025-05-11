@@ -909,7 +909,8 @@ class StrikeCommandCog(BaseStrikeCog):
             logger.debug("No strikes found for user %s", strike_member)
 
         await ctx.respond(
-            content=(f"User {strike_member.mention} has {strikes_count} strikes.")
+            content=(f"User {strike_member.mention} has {strikes_count} strikes."),
+            ephemeral=True,
         )
 
     @discord.slash_command(  # type: ignore[misc, no-untyped-call]
@@ -964,7 +965,8 @@ class StrikeCommandCog(BaseStrikeCog):
         if discord_member_strikes.strikes <= 1:
             await discord_member_strikes.adelete()
             await ctx.respond(
-                content=f"Successfully removed all strikes from {strike_member.mention}."
+                content=f"Successfully removed all strikes from {strike_member.mention}.",
+                ephemeral=True,
             )
             logger.info(
                 "%s removed all strikes from user %s",
@@ -978,7 +980,7 @@ class StrikeCommandCog(BaseStrikeCog):
             content=(
                 f"Successfully removed a strike from {strike_member.mention}. "
                 f"User now has {discord_member_strikes.strikes} strikes."
-            )
+            ), ephemeral=True
         )
         logger.info(
             "%s removed 1 strike from user %s, they now have %s",
