@@ -1,143 +1,29 @@
 """Contains cog classes for any stats interactions."""
 
-import io
 import math
 import re
 from typing import TYPE_CHECKING
 
 import discord
-import matplotlib.pyplot
-import mplcyberpunk
 
 from config import settings
 from db.core.models import LeftDiscordMember
-from utils import CommandChecks, TeXBotBaseCog
+from utils import (
+    CommandChecks,
+    TeXBotBaseCog,
+)
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
-if TYPE_CHECKING:
-    from collections.abc import AsyncIterable, Collection, Sequence
-    from typing import Final
+from .counts import get_channel_message_counts, get_server_message_counts
+from .graphs import amount_of_time_formatter, plot_bar_chart
 
-    from matplotlib.text import Text as Plot_Text
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterable, Sequence
+    from typing import Final
 
     from utils import TeXBotApplicationContext
 
-__all__: "Sequence[str]" = ("StatsCommandsCog", "amount_of_time_formatter", "plot_bar_chart")
-
-
-def amount_of_time_formatter(value: float, time_scale: str) -> str:
-    """
-    Format the amount of time value according to the provided time_scale.
-
-    E.g. past "1 days" => past "day",
-    past "2.00 weeks" => past "2 weeks",
-    past "3.14159 months" => past "3.14 months"
-    """
-    if value == 1 or float(f"{value:.2f}") == 1:
-        return f"{time_scale}"
-
-    if value % 1 == 0 or float(f"{value:.2f}") % 1 == 0:
-        return f"{int(value)} {time_scale}s"
-
-    return f"{value:.2f} {time_scale}s"
-
-
-def plot_bar_chart(
-    data: dict[str, int],
-    x_label: str,
-    y_label: str,
-    title: str,
-    filename: str,
-    description: str,
-    extra_text: str = "",
-) -> discord.File:
-    """Generate an image of a plot bar chart from the given data & format variables."""
-    matplotlib.pyplot.style.use("cyberpunk")
-
-    max_data_value: int = max(data.values()) + 1
-
-    # NOTE: The "extra_values" dictionary represents columns of data that should be formatted differently to the standard data columns
-    extra_values: dict[str, int] = {}
-    if "Total" in data:
-        extra_values["Total"] = data.pop("Total")
-
-    if len(data) > 4:
-        data = {
-            key: value
-            for index, (key, value) in enumerate(data.items())
-            if value > 0 or index <= 4
-        }
-
-    bars = matplotlib.pyplot.bar(*zip(*data.items(), strict=True))
-
-    if extra_values:
-        extra_bars = matplotlib.pyplot.bar(*zip(*extra_values.items(), strict=True))
-        mplcyberpunk.add_bar_gradient(extra_bars)
-
-    mplcyberpunk.add_bar_gradient(bars)
-
-    x_tick_labels: Collection[Plot_Text] = matplotlib.pyplot.gca().get_xticklabels()
-    count_x_tick_labels: int = len(x_tick_labels)
-
-    index: int
-    tick_label: Plot_Text
-    for index, tick_label in enumerate(x_tick_labels):
-        if tick_label.get_text() == "Total":
-            tick_label.set_fontweight("bold")
-
-        # NOTE: Shifts the y location of every other horizontal label down so that they do not overlap with one-another
-        if index % 2 == 1 and count_x_tick_labels > 4:
-            tick_label.set_y(tick_label.get_position()[1] - 0.044)
-
-    matplotlib.pyplot.yticks(range(0, max_data_value, math.ceil(max_data_value / 15)))
-
-    x_label_obj: Plot_Text = matplotlib.pyplot.xlabel(
-        x_label,
-        fontweight="bold",
-        fontsize="large",
-        wrap=True,
-    )
-    x_label_obj._get_wrap_line_width = lambda: 475  # type: ignore[attr-defined]
-
-    y_label_obj: Plot_Text = matplotlib.pyplot.ylabel(
-        y_label,
-        fontweight="bold",
-        fontsize="large",
-        wrap=True,
-    )
-    y_label_obj._get_wrap_line_width = lambda: 375  # type: ignore[attr-defined]
-
-    title_obj: Plot_Text = matplotlib.pyplot.title(title, fontsize="x-large", wrap=True)
-    title_obj._get_wrap_line_width = lambda: 500  # type: ignore[attr-defined]
-
-    if extra_text:
-        extra_text_obj: Plot_Text = matplotlib.pyplot.text(
-            0.5,
-            -0.27,
-            extra_text,
-            ha="center",
-            transform=matplotlib.pyplot.gca().transAxes,
-            wrap=True,
-            fontstyle="italic",
-            fontsize="small",
-        )
-        extra_text_obj._get_wrap_line_width = lambda: 400  # type: ignore[attr-defined]
-        matplotlib.pyplot.subplots_adjust(bottom=0.2)
-
-    plot_file = io.BytesIO()
-    matplotlib.pyplot.savefig(plot_file, format="png")
-    matplotlib.pyplot.close()
-    plot_file.seek(0)
-
-    discord_plot_file: discord.File = discord.File(
-        plot_file,
-        filename,
-        description=description,
-    )
-
-    plot_file.close()
-
-    return discord_plot_file
+__all__: "Sequence[str]" = ("StatsCommandsCog",)
 
 
 class StatsCommandsCog(TeXBotBaseCog):
@@ -229,45 +115,11 @@ class StatsCommandsCog(TeXBotBaseCog):
 
         await ctx.defer(ephemeral=True)
 
-        message_counts: dict[str, int] = {"Total": 0}
-
-        role_name: str
-        for role_name in settings["STATISTICS_ROLES"]:
-            if discord.utils.get(main_guild.roles, name=role_name):
-                message_counts[f"@{role_name}"] = 0
-
-        message_history_period: AsyncIterable[discord.Message] = channel.history(
-            after=discord.utils.utcnow() - settings["STATISTICS_DAYS"],
-        )
-        message: discord.Message
-        async for message in message_history_period:
-            if message.author.bot:
-                continue
-
-            message_counts["Total"] += 1
-
-            if isinstance(message.author, discord.User):
-                continue
-
-            author_role_names: set[str] = {
-                author_role.name for author_role in message.author.roles
-            }
-
-            author_role_name: str
-            for author_role_name in author_role_names:
-                if f"@{author_role_name}" in message_counts:
-                    is_author_role_name: bool = author_role_name == "Committee"
-                    if is_author_role_name and "Committee-Elect" in author_role_names:
-                        continue
-
-                    if author_role_name == "Guest" and "Member" in author_role_names:
-                        continue
-
-                    message_counts[f"@{author_role_name}"] += 1
+        message_counts: dict[str, int] = await get_channel_message_counts(channel=channel)
 
         if math.ceil(max(message_counts.values()) / 15) < 1:
             await self.command_send_error(
-                ctx,
+                ctx=ctx,
                 message="There are not enough messages sent in this channel.",
             )
             return
@@ -315,57 +167,9 @@ class StatsCommandsCog(TeXBotBaseCog):
 
         await ctx.defer(ephemeral=True)
 
-        message_counts: dict[str, dict[str, int]] = {
-            "roles": {"Total": 0},
-            "channels": {},
-        }
-
-        role_name: str
-        for role_name in settings["STATISTICS_ROLES"]:
-            if discord.utils.get(main_guild.roles, name=role_name):
-                message_counts["roles"][f"@{role_name}"] = 0
-
-        channel: discord.TextChannel
-        for channel in main_guild.text_channels:
-            member_has_access_to_channel: bool = channel.permissions_for(
-                guest_role,
-            ).is_superset(
-                discord.Permissions(send_messages=True),
-            )
-            if not member_has_access_to_channel:
-                continue
-
-            message_counts["channels"][f"#{channel.name}"] = 0
-
-            message_history_period: AsyncIterable[discord.Message] = channel.history(
-                after=discord.utils.utcnow() - settings["STATISTICS_DAYS"],
-            )
-            message: discord.Message
-            async for message in message_history_period:
-                if message.author.bot:
-                    continue
-
-                message_counts["channels"][f"#{channel.name}"] += 1
-                message_counts["roles"]["Total"] += 1
-
-                if isinstance(message.author, discord.User):
-                    continue
-
-                author_role_names: set[str] = {
-                    author_role.name for author_role in message.author.roles
-                }
-
-                author_role_name: str
-                for author_role_name in author_role_names:
-                    if f"@{author_role_name}" in message_counts["roles"]:
-                        is_author_role_committee: bool = author_role_name == "Committee"
-                        if is_author_role_committee and "Committee-Elect" in author_role_names:
-                            continue
-
-                        if author_role_name == "Guest" and "Member" in author_role_names:
-                            continue
-
-                        message_counts["roles"][f"@{author_role_name}"] += 1
+        message_counts: dict[str, dict[str, int]] = await get_server_message_counts(
+            guild=main_guild, guest_role=guest_role
+        )
 
         TOO_FEW_ROLES_STATS: Final[bool] = (
             math.ceil(max(message_counts["roles"].values()) / 15) < 1
