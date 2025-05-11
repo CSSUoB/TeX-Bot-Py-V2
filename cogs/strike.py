@@ -980,7 +980,8 @@ class StrikeCommandCog(BaseStrikeCog):
             content=(
                 f"Successfully removed a strike from {strike_member.mention}. "
                 f"User now has {discord_member_strikes.strikes} strikes."
-            ), ephemeral=True
+            ),
+            ephemeral=True,
         )
         logger.info(
             "%s removed 1 strike from user %s, they now have %s",
