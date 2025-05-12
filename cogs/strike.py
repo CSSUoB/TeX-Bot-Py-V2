@@ -355,7 +355,8 @@ class BaseStrikeCog(TeXBotBaseCog):
             raise TypeError(STRIKE_USER_TYPE_ERROR_MESSAGE)
 
         if member_strikes.strikes < 3:
-            await member_strikes.aupdate(strikes=member_strikes.strikes + 1)
+            member_strikes.strikes += 1
+            await member_strikes.asave()
 
         await self._send_strike_user_message(strike_user, member_strikes)
 
@@ -974,7 +975,8 @@ class StrikeCommandCog(BaseStrikeCog):
             )
             return
 
-        await discord_member_strikes.aupdate(strikes=discord_member_strikes.strikes - 1)
+        discord_member_strikes.strikes -= 1
+        await discord_member_strikes.asave()
         await ctx.respond(
             content=(
                 f"Successfully removed a strike from {strike_member.mention}. "
