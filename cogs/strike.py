@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING
 import discord
 from asyncstdlib.builtins import any as asyncany
 from discord.ui import View
-from django.db.models import F
 
 from config import settings
 from db.core.models import DiscordMemberStrikes
