@@ -89,15 +89,12 @@ class TokenAuthorisationBaseCog(TeXBotBaseCog):
         response_html: str = await self.fetch_with_session(organisation_admin_url)
 
         if "admin tools" in response_html.lower():
-            logger.debug(response_html)
             return self.TokenStatus.AUTHORISED
 
         if "You do not have any permissions for this organisation" in response_html.lower():
-            logger.debug(response_html)
             return self.TokenStatus.VALID
 
         logger.warning("Unexpected response when checking token authorisation.")
-        logger.debug(response_html)
         return self.TokenStatus.INVALID
 
     async def get_token_groups(self) -> "Iterable[str]":
