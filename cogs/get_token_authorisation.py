@@ -242,10 +242,15 @@ class TokenAuthorisationCheckTaskCog(TokenAuthorisationBaseCog):
 
         token_status: TokenAuthorisationBaseCog.TokenStatus = await self.get_token_status()
 
-        if token_status == self.TokenStatus.INVALID:
-            logger.warning("Token is invalid or expired.")
-            return
+        match token_status:
+            case self.TokenStatus.AUTHORISED:
+                logger.info("Token is valid and has access to the organisation.")
+                return
 
-        if token_status == self.TokenStatus.VALID:
-            logger.warning("Token is valid but does not have access to the organisation.")
-            return
+            case self.TokenStatus.VALID:
+                logger.warning("Token is valid but does not have access to the organisation.")
+                return
+
+            case self.TokenStatus.INVALID:
+                logger.warning("Token is invalid or expired.")
+                return
