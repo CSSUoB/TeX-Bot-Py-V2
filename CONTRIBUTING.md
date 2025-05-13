@@ -229,8 +229,8 @@ Cogs are modular components of the bot that group related commands and listeners
    class ExampleCog(TeXBotBaseCog):
        """A cog for demonstrating functionality."""
 
-       def __init__(self, bot):
-           self.bot = bot
+       def do_something(arguments):
+        print("do something")
    ```
 
 3. **Add Commands and Listeners**
