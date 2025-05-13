@@ -427,6 +427,68 @@ class Settings(abc.ABC):
         )
 
     @classmethod
+    def _setup_auto_auth_session_cookie_checking(cls) -> None:
+        raw_auto_auth_session_cookie_checking: str = str(
+            os.getenv("AUTO_AUTH_SESSION_COOKIE_CHECKING", "false"),
+        )
+
+        if raw_auto_auth_session_cookie_checking.lower() not in TRUE_VALUES | FALSE_VALUES:
+            INVALID_AUTO_AUTH_CHECKING_MESSAGE: Final[str] = (
+                "AUTO_AUTH_SESSION_COOKIE_CHECKING must be a boolean value."
+            )
+            raise ImproperlyConfiguredError(INVALID_AUTO_AUTH_CHECKING_MESSAGE)
+
+        cls._settings["AUTO_AUTH_SESSION_COOKIE_CHECKING"] = bool(
+            raw_auto_auth_session_cookie_checking.lower() in TRUE_VALUES
+        )
+
+    @classmethod
+    def _setup_auto_auth_session_cookie_checking_interval(cls) -> None:
+        if "AUTO_AUTH_SESSION_COOKIE_CHECKING" not in cls._settings:
+            INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+                "Invalid setup order: AUTO_AUTH_SESSION_COOKIE_CHECKING must be set up "
+                "before AUTO_AUTH_SESSION_COOKIE_CHECKING_INTERVAL can be set up."
+            )
+            raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
+
+        if not cls._settings["AUTO_AUTH_SESSION_COOKIE_CHECKING"]:
+            cls._settings["AUTO_AUTH_SESSION_COOKIE_CHECKING_INTERVAL"] = {
+                "hours": 24,
+            }
+            return
+
+        raw_auto_auth_session_cookie_checking_interval: re.Match[str] | None = re.fullmatch(
+            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
+            str(os.getenv("AUTO_AUTH_SESSION_COOKIE_CHECKING_INTERVAL", "24h")),
+        )
+
+        if not raw_auto_auth_session_cookie_checking_interval:
+            INVALID_AUTO_AUTH_CHECKING_DELAY_MESSAGE: Final[str] = (
+                "AUTO_AUTH_SESSION_COOKIE_CHECKING_INTERVAL must contain the delay "
+                "in any combination of seconds, minutes, hours, days or weeks."
+            )
+            logger.debug(raw_auto_auth_session_cookie_checking_interval)
+            raise ImproperlyConfiguredError(
+                INVALID_AUTO_AUTH_CHECKING_DELAY_MESSAGE,
+            )
+
+        raw_timedelta_auto_auth_session_cookie_checking_interval: Mapping[str, float] = {
+            "hours": 24,
+        }
+
+        raw_timedelta_auto_auth_session_cookie_checking_interval = {
+            key: float(value)
+            for key, value in (
+                raw_auto_auth_session_cookie_checking_interval.groupdict().items()
+            )
+            if value
+        }
+
+        cls._settings["AUTO_AUTH_SESSION_COOKIE_CHECKING_INTERVAL"] = (
+            raw_timedelta_auto_auth_session_cookie_checking_interval
+        )
+
+    @classmethod
     def _setup_send_introduction_reminders(cls) -> None:
         raw_send_introduction_reminders: str | bool = str(
             os.getenv("SEND_INTRODUCTION_REMINDERS", "Once"),
@@ -736,6 +798,8 @@ class Settings(abc.ABC):
             cls._setup_roles_messages()
             cls._setup_organisation_id()
             cls._setup_members_list_auth_session_cookie()
+            cls._setup_auto_auth_session_cookie_checking()
+            cls._setup_auto_auth_session_cookie_checking_interval()
             cls._setup_membership_perks_url()
             cls._setup_purchase_membership_url()
             cls._setup_send_introduction_reminders()
