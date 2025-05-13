@@ -4,7 +4,12 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from db.core.models import AssignedCommitteeAction, DiscordReminder, GroupMadeMember
+from db.core.models import (
+    AssignedCommitteeAction,
+    DiscordMemberStrikes,
+    DiscordReminder,
+    GroupMadeMember,
+)
 from utils import CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
@@ -88,3 +93,18 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
         to delete all `Action` instance objects stored in the database.
         """
         await self._delete_all(ctx, delete_model=AssignedCommitteeAction)
+
+    @delete_all.command(
+        name="strikes",
+        description="Deletes all the Strikes from the backend database.",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def delete_all_strikes(self, ctx: "TeXBotApplicationContext") -> None:
+        """
+        Definition & callback response of the "delete-all-strikes" command.
+
+        The "delete-all-strikes" command uses the _delete_all() function
+        to delete all `Strike` instance objects stored in the database.
+        """
+        await self._delete_all(ctx, delete_model=DiscordMemberStrikes)
