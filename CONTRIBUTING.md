@@ -391,5 +391,102 @@ Response buttons are interactive UI components that allow users to respond to bo
    - Add comments and docstrings to explain the purpose and functionality of the button.
    - Update relevant documentation if necessary.
 
+### Creating and Interacting with Django Models
+
+Django models are used to interact with the database in this project. They allow you to define the structure of your data and provide an API to query and manipulate it. To create and interact with Django models, follow these steps:
+
+1. **Define a Model**
+   - Navigate to the `db/core/models/` directory.
+   - Create a new Python file with a name that reflects the purpose of the model (e.g., `example_model.py`).
+   - Define a class that inherits from `django.db.models.Model`.
+   - Add fields to the class to represent the data structure.
+
+   Example:
+   ```python
+   from django.db import models
+
+   class ExampleModel(models.Model):
+       """A model for demonstrating functionality."""
+       name = models.CharField(max_length=255)
+       created_at = models.DateTimeField(auto_now_add=True)
+   ```
+
+2. **Apply Migrations**
+   - Run the following commands to create and apply migrations for your new model:
+     ```shell
+     uv run python manage.py makemigrations
+     uv run python manage.py migrate
+     ```
+
+3. **Query the Model**
+   - Use Django's ORM to interact with the model. For example:
+     ```python
+     from db.core.models.example_model import ExampleModel
+
+     class ExampleCog(TeXBotBaseCog):
+         """A cog for demonstrating model access."""
+
+         async def create_example(self, name: str) -> None:
+             """Create a new instance of ExampleModel."""
+             await ExampleModel.objects.acreate(name=name)
+
+         async def retrieve_examples(self) -> list[ExampleModel]:
+             """Retrieve all instances of ExampleModel."""
+             return await ExampleModel.objects.all()
+
+         async def filter_examples(self, name: str) -> list[ExampleModel]:
+             """Filter instances of ExampleModel by name."""
+             return await ExampleModel.objects.filter(name=name)
+
+         async def update_example(self, example: ExampleModel, new_name: str) -> None:
+             """Update the name of an ExampleModel instance."""
+             example.name = new_name
+             await example.asave()
+
+         async def delete_example(self, example: ExampleModel) -> None:
+             """Delete an ExampleModel instance."""
+             await example.adelete()
+     ```
+
+4. **Document the Model**
+   - Add comments and docstrings to explain the purpose and functionality of the model.
+
+### Member Retrieval DB Queries via Hashed Discord ID
+
+To retrieve members from the database using their hashed Discord ID, follow these steps:
+
+1. **Hash the Discord ID**
+   - Use a consistent hashing algorithm to hash the Discord ID before storing or querying it in the database.
+
+   Example:
+   ```python
+   import hashlib
+
+   def hash_discord_id(discord_id: str) -> str:
+       return hashlib.sha256(discord_id.encode()).hexdigest()
+   ```
+
+2. **Query the Database**
+   - Use the hashed Discord ID to retrieve the corresponding member from the database.
+
+   Example:
+   ```python
+   from db.core.models.member import Member
+
+   hashed_id = hash_discord_id("123456789012345678")
+   member = Member.objects.filter(hashed_discord_id=hashed_id).first()
+
+   if member:
+       print(f"Member found: {member.name}")
+   else:
+       print("Member not found.")
+   ```
+
+3. **Test the Query**
+   - Ensure the query works as expected by testing it with valid and invalid hashed Discord IDs.
+
+4. **Document the Query**
+   - Add comments and docstrings to explain the purpose and functionality of the query.
+
 
 
