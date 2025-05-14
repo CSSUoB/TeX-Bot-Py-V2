@@ -991,6 +991,22 @@ class StrikeCommandCog(BaseStrikeCog):
             discord_member_strikes.strikes,
         )
 
+    @discord.slash_command(  # type: ignore[misc, no-untyped-call]
+        name="list-strikes",
+        description="List all users with strikes.",
+    )
+    async def list_strikes(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc, no-untyped-call]
+        """
+        Definition & callback response of the "list-strikes" command.
+
+        The "list-strikes" command lists all users with strikes.
+        """
+        strikes_counts: dict[str, int] = {
+            str(strike.discord_member): strike.strikes
+            async for strike in DiscordMemberStrikes.objects.select_related().all()
+        }
+        await ctx.respond(strikes_counts)
+
 
 class StrikeContextCommandsCog(BaseStrikeCog):
     """Cog class that defines the context menu strike command and its call-back method."""
