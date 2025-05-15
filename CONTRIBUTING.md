@@ -73,6 +73,8 @@ There are separate cog files for each activity, and one [`__init__.py`](cogs/__i
 
 * [`cogs/__init__.py`](cogs/__init__.py): instantiates all the cog classes within this directory
 
+* [`cogs/annual_handover_and_reset.py`](cogs/annual_handover_and_reset.py): cogs for annual handover procedures and role resets
+
 * [`cogs/archive.py`](cogs/archive.py): cogs for archiving categories of channels within your group's Discord guild
 
 * [`cogs/command_error.py`](cogs/command_error.py): cogs for sending error messages when commands fail to complete/execute
@@ -81,9 +83,13 @@ There are separate cog files for each activity, and one [`__init__.py`](cogs/__i
 
 * [`cogs/edit_message.py`](cogs/edit_message.py): cogs for editing messages that were previously sent by TeX-Bot
 
+* [`cogs/get_token_authorisation.py`](cogs/get_token_authorisation.py): cogs for retrieving the current status of the supplied authentication token
+
 * [`cogs/induct.py`](cogs/induct.py): cogs for inducting people into your group's Discord guild
 
 * [`cogs/kill.py`](cogs/kill.py): cogs related to the shutdown of TeX-Bot
+
+* [`cogs/make_applicant`](cogs/make_applicant.py): cogs related to making users into applicants
 
 * [`cogs/make_member.py`](cogs/make_member.py): cogs related to making guests into members
 
@@ -200,3 +206,292 @@ If you see an error, we encourage you to **be bold** and fix it yourself, rather
 If you are stuck, need help, or have a question, the best place to ask is on our Discord.
 
 Happy contributing!
+
+## Guides
+
+### Creating a New Cog
+
+Cogs are modular components of the bot that group related commands and listeners into a single class. To create a new cog, follow these steps:
+
+1. **Create the Cog File**
+   - Navigate to the `cogs` folder.
+   - Create a new Python file with a name that reflects the purpose of the cog (e.g., `example_cog.py`).
+
+2. **Define the Cog Class**
+   - Import the necessary modules, including `TeXBotBaseCog` from `utils`.
+   - Define a class that inherits from `TeXBotBaseCog`.
+   - Add a docstring to describe the purpose of the cog.
+
+   Example:
+   ```python
+   from utils import TeXBotBaseCog
+
+   class ExampleCog(TeXBotBaseCog):
+       """A cog for demonstrating functionality."""
+
+       def do_something(arguments):
+        print("do something")
+   ```
+
+3. **Add Commands and Listeners**
+   - Define methods within the class for commands and event listeners.
+   - Use decorators like `@discord.slash_command` or `@TeXBotBaseCog.listener` to specify their purpose.
+   - Include any necessary checks using `CommandChecks` decorators.
+
+   Example:
+   ```python
+   import discord
+   from utils import CommandChecks
+
+    __all__: "Sequence[str]" = (
+        "ExampleCog",
+    )
+
+   class ExampleCog(TeXBotBaseCog):
+       """A cog for demonstrating functionality."""
+
+   ```
+
+4. **Register the Cog**
+   - Open `cogs/__init__.py`.
+   - Add your new cog class to the list of cogs in the `setup` function.
+   - Also, include the cog in the `__all__` sequence to ensure it is properly exported.
+
+   Example:
+   ```python
+   from .example_cog import ExampleCog
+
+   __all__: "Sequence[str]" = (
+       ...existing cogs...
+       "ExampleCog",
+   )
+
+   def setup(bot: "TeXBot") -> None:
+       """Add all the cogs to the bot, at bot startup."""
+       cogs: Iterable[type[TeXBotBaseCog]] = (
+           ...existing cogs...
+           ExampleCog,
+       )
+       Cog: type[TeXBotBaseCog]
+       for Cog in cogs:
+           bot.add_cog(Cog(bot))
+   ```
+
+5. **Test the Cog**
+   - Run the bot and ensure the new cog is loaded without errors.
+   - Test the commands and listeners to verify they work as expected.
+
+6. **Document the Cog**
+   - Add comments and docstrings to explain the functionality of the cog.
+   - Update the `CONTRIBUTING.md` file or other relevant documentation if necessary.
+
+### Creating a New Environment Variable
+
+To add a new environment variable to the project, follow these steps:
+
+1. **Define the Variable in `.env`**
+   - Open the `.env` file in the root directory (or create one if it doesn't exist).
+   - Add the new variable in the format `VARIABLE_NAME=value`.
+   - Ensure the variable name is descriptive and uses uppercase letters with underscores.
+
+2. **Update `config.py`**
+   - Open the `config.py` file.
+   - Add a new setup method in the `Settings` class to validate and load the variable. For example:
+     ```python
+     @classmethod
+     def _setup_new_variable(cls) -> None:
+         raw_value: str | None = os.getenv("NEW_VARIABLE")
+
+         if not raw_value or not re.fullmatch(r"<validation_regex>", raw_value):
+             raise ImproperlyConfiguredError("NEW_VARIABLE is invalid or missing.")
+
+         cls._settings["NEW_VARIABLE"] = raw_value
+     ```
+   - Replace `<validation_regex>` with a regular expression to validate the variable's format, if applicable.
+
+3. **Call the Setup Method**
+   - Add the new setup method to the `_setup_env_variables` method in `config.py`:
+     ```python
+     @classmethod
+     def _setup_env_variables(cls) -> None:
+         if cls._is_env_variables_setup:
+             logger.warning("Environment variables have already been set up.")
+             return
+
+         cls._settings = {}
+
+         cls._setup_new_variable()
+         # Add other setup methods here
+
+         cls._is_env_variables_setup = True
+     ```
+
+4. **Document the Variable**
+   - Update the `README.md` file under the "Setting Environment Variables" section to include the new variable, its purpose, and any valid values.
+
+5. **Test the Variable**
+   - Run the bot and ensure the new variable is loaded correctly.
+   - Test edge cases, such as missing or invalid values, to confirm proper error handling.
+
+### Creating a Response Button
+
+Response buttons are interactive UI components that allow users to respond to bot messages with predefined actions. To create a response button, follow these steps:
+
+1. **Define the Button Class**
+   - Create a class that inherits from `discord.ui.View`.
+   - Add button methods using the `@discord.ui.button` decorator.
+   - Each button method should define the button's label, style, and custom ID.
+
+   Example:
+   ```python
+   from discord.ui import View
+
+   class ConfirmActionView(View):
+       """A discord.View containing buttons to confirm or cancel an action."""
+
+       @discord.ui.button(
+           label="Yes",
+           style=discord.ButtonStyle.green,
+           custom_id="confirm_yes",
+       )
+       async def confirm_yes(self, button: discord.Button, interaction: discord.Interaction) -> None:
+           # Handle the 'Yes' button click
+           await interaction.response.send_message("Action confirmed.", ephemeral=True)
+
+       @discord.ui.button(
+           label="No",
+           style=discord.ButtonStyle.red,
+           custom_id="confirm_no",
+       )
+       async def confirm_no(self, button: discord.Button, interaction: discord.Interaction) -> None:
+           # Handle the 'No' button click
+           await interaction.response.send_message("Action canceled.", ephemeral=True)
+   ```
+
+2. **Send the View with a Message**
+   - Use the `view` parameter of the `send` or `respond` method to attach the button view to a message.
+
+   Example:
+   ```python
+   await ctx.send(
+       content="Do you want to proceed?",
+       view=ConfirmActionView(),
+   )
+   ```
+
+3. **Handle Button Interactions**
+   - Define logic within each button method to handle user interactions.
+   - Use `interaction.response` to send feedback or perform actions based on the button clicked.
+
+4. **Test the Button**
+   - Run the bot and ensure the buttons appear and function as expected.
+   - Test edge cases, such as multiple users interacting with the buttons simultaneously.
+
+5. **Document the Button**
+   - Add comments and docstrings to explain the purpose and functionality of the button.
+   - Update relevant documentation if necessary.
+
+### Creating and Interacting with Django Models
+
+#### Data Protection Consideration
+
+When making changes to the database model, it is essential to consider the data protection implications of these changes. If personal data is being collected, stored or processed, it is essential that this is in compliance with the law. In the UK, the relevant law is the [Data Protection Act 2018](https://www.legislation.gov.uk/ukpga/2018/12/contents). As a general rule, any changes that have data protection implications should be checked and approved by the organisation responsible for running the application.
+
+
+Django models are used to interact with the database in this project. They allow you to define the structure of your data and provide an API to query and manipulate it. To create and interact with Django models, follow these steps:
+
+1. **Define a Model**
+   - Navigate to the `db/core/models/` directory.
+   - Create a new Python file with a name that reflects the purpose of the model (e.g., `example_model.py`).
+   - Define a class that inherits from `django.db.models.Model`.
+   - Add fields to the class to represent the data structure.
+
+   Example:
+   ```python
+   from django.db import models
+
+   class ExampleModel(models.Model):
+       """A model for demonstrating functionality."""
+       name = models.CharField(max_length=255)
+       created_at = models.DateTimeField(auto_now_add=True)
+   ```
+
+2. **Apply Migrations**
+   - Run the following commands to create and apply migrations for your new model:
+     ```shell
+     uv run python manage.py makemigrations
+     uv run python manage.py migrate
+     ```
+
+3. **Query the Model**
+   - Use Django's ORM to interact with the model. For example:
+     ```python
+     from db.core.models.example_model import ExampleModel
+
+     class ExampleCog(TeXBotBaseCog):
+         """A cog for demonstrating model access."""
+
+         async def create_example(self, name: str) -> None:
+             """Create a new instance of ExampleModel."""
+             await ExampleModel.objects.acreate(name=name)
+
+         async def retrieve_examples(self) -> list[ExampleModel]:
+             """Retrieve all instances of ExampleModel."""
+             return await ExampleModel.objects.all()
+
+         async def filter_examples(self, name: str) -> list[ExampleModel]:
+             """Filter instances of ExampleModel by name."""
+             return await ExampleModel.objects.filter(name=name)
+
+         async def update_example(self, example: ExampleModel, new_name: str) -> None:
+             """Update the name of an ExampleModel instance."""
+             example.name = new_name
+             await example.asave()
+
+         async def delete_example(self, example: ExampleModel) -> None:
+             """Delete an ExampleModel instance."""
+             await example.adelete()
+     ```
+
+4. **Document the Model**
+   - Add comments and docstrings to explain the purpose and functionality of the model.
+
+### Member Retrieval DB Queries via Hashed Discord ID
+
+To retrieve members from the database using their hashed Discord ID, follow these steps:
+
+1. **Hash the Discord ID**
+   - Use a consistent hashing algorithm to hash the Discord ID before storing or querying it in the database.
+
+   Example:
+   ```python
+   import hashlib
+
+   def hash_discord_id(discord_id: str) -> str:
+       return hashlib.sha256(discord_id.encode()).hexdigest()
+   ```
+
+2. **Query the Database**
+   - Use the hashed Discord ID to retrieve the corresponding member from the database.
+
+   Example:
+   ```python
+   from db.core.models.member import Member
+
+   hashed_id = hash_discord_id("123456789012345678")
+   member = Member.objects.filter(hashed_discord_id=hashed_id).first()
+
+   if member:
+       print(f"Member found: {member.name}")
+   else:
+       print("Member not found.")
+   ```
+
+3. **Test the Query**
+   - Ensure the query works as expected by testing it with valid and invalid hashed Discord IDs.
+
+4. **Document the Query**
+   - Add comments and docstrings to explain the purpose and functionality of the query.
+
+
+
