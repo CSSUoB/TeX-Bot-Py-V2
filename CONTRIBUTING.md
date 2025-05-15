@@ -393,6 +393,11 @@ Response buttons are interactive UI components that allow users to respond to bo
 
 ### Creating and Interacting with Django Models
 
+#### Data Protection Consideration
+
+When making changes to the database model, it is essential to consider the data protection implications of these changes. If personal data is being collected, stored or processed, it is essential that this is in compliance with the law. In the UK, the relevant law is the [Data Protection Act 2018](https://www.legislation.gov.uk/ukpga/2018/12/contents). As a general rule, any changes that have data protection implications should be checked and approved by the organisation responsible for running the application.
+
+
 Django models are used to interact with the database in this project. They allow you to define the structure of your data and provide an API to query and manipulate it. To create and interact with Django models, follow these steps:
 
 1. **Define a Model**
