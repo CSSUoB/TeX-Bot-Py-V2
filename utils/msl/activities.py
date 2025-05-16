@@ -193,7 +193,9 @@ async def fetch_activity(activity_id: int) -> Activity | None:
     )
     async with (
         session_v2,
-        session_v2.post(url=f"{INDIVIDUAL_ACTIVITIES_URL}/{activity_id}", data=data_fields) as http_response,
+        session_v2.post(
+            url=f"{INDIVIDUAL_ACTIVITIES_URL}/{activity_id}", data=data_fields
+        ) as http_response,
     ):
         if http_response.status != 200:
             logger.debug("Returned a non 200 status code!!")
