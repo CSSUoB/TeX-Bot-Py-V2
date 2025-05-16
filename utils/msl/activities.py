@@ -173,6 +173,35 @@ async def create_activity() -> int:
     raise NotImplementedError
 
 
-async def fetch_activity(activity_id: int) -> dict[str, str]:
+async def fetch_activity(activity_id: int) -> Activity | None:
     """Fetch a specific activity from the guild website."""
+    data_fields, cookies = await get_msl_context(url=ALL_ACTIVITIES_URL)
+
+    form_data: dict[str, str] = {
+        "__EVENTTARGET": "",
+        "__EVENTARGUMENT": "",
+        "__VIEWSTATEENCRYPTED": "",
+    }
+
+    data_fields.update(form_data)
+
+    data_fields.pop("ctl00$ctl00$Main$AdminPageContent$fsFilter$btnCancel")
+
+    session_v2: aiohttp.ClientSession = aiohttp.ClientSession(
+        headers=BASE_HEADERS,
+        cookies=cookies,
+    )
+    async with (
+        session_v2,
+        session_v2.post(url=f"{INDIVIDUAL_ACTIVITIES_URL}/{activity_id}", data=data_fields) as http_response,
+    ):
+        if http_response.status != 200:
+            logger.debug("Returned a non 200 status code!!")
+            logger.debug(http_response)
+            return None
+
+        response_html: str = await http_response.text()
+
+    logger.debug(response_html)
+
     raise NotImplementedError
