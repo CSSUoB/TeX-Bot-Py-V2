@@ -149,11 +149,20 @@ async def fetch_guild_activities(from_date: "datetime", to_date: "datetime") -> 
 
     activities_list.pop(0)
 
+    return_list: list[bs4.Tag] = []
+
+    # NOTE: The below will only get the first page of activities, more work is needed.
+
+    try:
+        for i, activity in enumerate(activities_list):
+            activity_id: str = activity.find_all("a")[0].get("href").split("/")[7]
+            return_list.append(activity)
+    except IndexError:
+        pass
+
     return {
-        activity.find(name="a").get("href").split("/")[7]: activity.find_all(name="td")[  # type: ignore[union-attr]
-            1
-        ].text.strip()
-        for activity in activities_list
+        activity.find_all("a")[0].get("href").split("/")[7]: activity.find_all("td")[1].text.strip()
+        for activity in return_list
     }
 
 

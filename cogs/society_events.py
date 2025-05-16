@@ -17,13 +17,13 @@ if TYPE_CHECKING:
     from utils import TeXBotApplicationContext
 
 
-__all__: "Sequence[str]" = ("SocietyEventsSlashCommands",)
+__all__: "Sequence[str]" = ("SocietyEventsSlashCommandsCog",)
 
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-class SocietyEventsSlashCommands(TeXBotBaseCog):
+class SocietyEventsSlashCommandsCog(TeXBotBaseCog):
     """Cog Class for handling society event commands."""
 
     society_events: discord.SlashCommandGroup = discord.SlashCommandGroup(
@@ -37,12 +37,13 @@ class SocietyEventsSlashCommands(TeXBotBaseCog):
     )
     async def list_all_events(self, ctx: "TeXBotApplicationContext") -> None:
         """List all society events."""
+        await ctx.defer(ephemeral=True)
         activities: dict[str, str] = await fetch_guild_activities(
             from_date=datetime.strptime("2023-01-01", "%Y-%m-%d"),  # noqa: DTZ007
             to_date=datetime.strptime("2026-01-01", "%Y-%m-%d"),  # noqa: DTZ007
         )
 
-        await ctx.respond(
-            content=activities,
+        await ctx.followup.send(
+            content=str(activities),
             ephemeral=True,
         )
