@@ -154,14 +154,16 @@ async def fetch_guild_activities(from_date: "datetime", to_date: "datetime") -> 
     # NOTE: The below will only get the first page of activities, more work is needed.
 
     try:
-        for i, activity in enumerate(activities_list):
-            activity_id: str = activity.find_all("a")[0].get("href").split("/")[7]
+        for activity in activities_list:
+            activity.find_all("a")[0].get("href").split("/")[7]
             return_list.append(activity)
     except IndexError:
         pass
 
     return {
-        activity.find_all("a")[0].get("href").split("/")[7]: activity.find_all("td")[1].text.strip()
+        activity.find_all("a")[0].get("href").split("/")[7]: activity.find_all("td")[
+            1
+        ].text.strip()
         for activity in return_list
     }
 
