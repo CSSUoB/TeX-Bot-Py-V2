@@ -3,12 +3,14 @@
 import logging
 import random
 from enum import Enum
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, overload, override
 
 import discord
+from discord.ext import tasks
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 from django.db.models import Q
 
+from config import settings
 from db.core.models import AssignedCommitteeAction, DiscordMember
 from exceptions import (
     CommitteeRoleDoesNotExistError,
@@ -19,6 +21,7 @@ from utils import (
     CommandChecks,
     TeXBotBaseCog,
 )
+from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
@@ -27,6 +30,7 @@ if TYPE_CHECKING:
     from typing import Final
 
     from utils import (
+        TeXBot,
         TeXBotApplicationContext,
         TeXBotAutocompleteContext,
     )
@@ -34,6 +38,7 @@ if TYPE_CHECKING:
 __all__: "Sequence[str]" = (
     "CommitteeActionsTrackingBaseCog",
     "CommitteeActionsTrackingContextCommandsCog",
+    "CommitteeActionsTrackingRemindersTaskCog",
     "CommitteeActionsTrackingSlashCommandsCog",
 )
 
@@ -175,6 +180,38 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
         return {
             committee: actions for committee, actions in committee_actions.items() if actions
         }
+
+
+class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
+    """Cog class that defines the committee-actions tracking reminders task functionality."""
+
+    @override
+    def __init__(self, bot: "TeXBot") -> None:
+        """Start all task managers when this cog is initialised."""
+        if settings["COMMITTEE_ACTIONS_TRACKING_REMINDERS"]:
+            _ = self.committee_actions_reminders_task.start()
+
+        super().__init__(bot)
+
+    @override
+    def cog_unload(self) -> None:
+        """
+        Unload-hook that ends all running tasks whenever the tasks cog is unloaded.
+
+        This may be run dynamically or when the bot closes.
+        """
+        self.committee_actions_reminders_task.cancel()
+
+    @tasks.loop(**settings["COMMITTEE_ACTIONS_TRACKING_REMINDERS_INTERVAL"])
+    @capture_guild_does_not_exist_error
+    async def committee_actions_reminders_task(self) -> None:
+        """
+        Definition of the background task that sends reminders of committee actions.
+
+        The task will run every interval specified in the settings and will send reminders
+        to all committee members who have actions that are either in progress or not started.
+        """
+        raise NotImplementedError
 
 
 class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):

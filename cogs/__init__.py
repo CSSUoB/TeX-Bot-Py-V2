@@ -17,6 +17,7 @@ from .archive import ArchiveCommandCog
 from .command_error import CommandErrorCog
 from .committee_actions_tracking import (
     CommitteeActionsTrackingContextCommandsCog,
+    CommitteeActionsTrackingRemindersTaskCog,
     CommitteeActionsTrackingSlashCommandsCog,
 )
 from .delete_all import DeleteAllCommandsCog
@@ -55,6 +56,7 @@ __all__: "Sequence[str]" = (
     "ClearRemindersBacklogTaskCog",
     "CommandErrorCog",
     "CommitteeActionsTrackingContextCommandsCog",
+    "CommitteeActionsTrackingRemindersTaskCog",
     "CommitteeActionsTrackingSlashCommandsCog",
     "CommitteeHandoverCommandCog",
     "DeleteAllCommandsCog",
@@ -95,6 +97,7 @@ def setup(bot: "TeXBot") -> None:
         ClearRemindersBacklogTaskCog,
         CommandErrorCog,
         CommitteeActionsTrackingSlashCommandsCog,
+        CommitteeActionsTrackingRemindersTaskCog,
         CommitteeActionsTrackingContextCommandsCog,
         CommitteeHandoverCommandCog,
         DeleteAllCommandsCog,

@@ -725,6 +725,62 @@ class Settings(abc.ABC):
         )
 
     @classmethod
+    def _setup_committee_actions_reminders(cls) -> None:
+        raw_committee_actions_reminders: str = str(
+            os.getenv("COMMITTEE_ACTIONS_REMINDERS", "True"),
+        ).lower()
+
+        if raw_committee_actions_reminders not in TRUE_VALUES | FALSE_VALUES:
+            INVALID_COMMITTEE_ACTIONS_REMINDERS_MESSAGE: Final[str] = (
+                "COMMITTEE_ACTIONS_REMINDERS must be a boolean value."
+            )
+            raise ImproperlyConfiguredError(INVALID_COMMITTEE_ACTIONS_REMINDERS_MESSAGE)
+
+        cls._settings["COMMITTEE_ACTIONS_REMINDERS"] = (
+            raw_committee_actions_reminders in TRUE_VALUES
+        )
+
+    @classmethod
+    def _setup_committee_actions_reminders_interval(cls) -> None:
+        if "COMMITTEE_ACTIONS_REMINDERS" not in cls._settings:
+            INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+                "Invalid setup order: COMMITTEE_ACTIONS_REMINDERS must be set up "
+                "before COMMITTEE_ACTIONS_REMINDERS_INTERVAL can be set up."
+            )
+            raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
+
+        raw_committee_actions_reminders_interval: re.Match[str] | None = re.fullmatch(
+            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
+            str(os.getenv("COMMITTEE_ACTIONS_REMINDERS_INTERVAL", "24h")),
+        )
+
+        raw_timedelta_details_committee_actions_reminders_interval: Mapping[str, float] = {
+            "hours": 24,
+        }
+
+        if cls._settings["COMMITTEE_ACTIONS_REMINDERS"]:
+            if not raw_committee_actions_reminders_interval:
+                INVALID_COMMITTEE_ACTIONS_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
+                    "COMMITTEE_ACTIONS_REMINDERS_INTERVAL must contain the interval "
+                    "in any combination of seconds, minutes or hours."
+                )
+                raise ImproperlyConfiguredError(
+                    INVALID_COMMITTEE_ACTIONS_REMINDERS_INTERVAL_MESSAGE,
+                )
+
+            raw_timedelta_details_committee_actions_reminders_interval = {
+                key: float(value)
+                for key, value in (
+                    raw_committee_actions_reminders_interval.groupdict().items()
+                )
+                if value
+            }
+
+        cls._settings["COMMITTEE_ACTIONS_REMINDERS_INTERVAL"] = (
+            raw_timedelta_details_committee_actions_reminders_interval
+        )
+
+    @classmethod
     def _setup_env_variables(cls) -> None:
         """
         Load environment values into the settings dictionary.
@@ -765,6 +821,8 @@ class Settings(abc.ABC):
             cls._setup_moderation_document_url()
             cls._setup_strike_performed_manually_warning_location()
             cls._setup_auto_add_committee_to_threads()
+            cls._setup_committee_actions_reminders()
+            cls._setup_committee_actions_reminders_interval()
         except ImproperlyConfiguredError as improper_config_error:
             webhook_config_logger.error(improper_config_error.message)  # noqa: TRY400
             raise improper_config_error from improper_config_error
