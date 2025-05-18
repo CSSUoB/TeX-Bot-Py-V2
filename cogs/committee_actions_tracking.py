@@ -3,7 +3,7 @@
 import logging
 import random
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, overload
 
 import discord
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
@@ -21,7 +21,7 @@ from utils import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Iterable, Sequence
     from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
@@ -109,6 +109,74 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 message=DUPLICATE_ACTION_MESSAGE,
             ) from create_action_error
         return action
+
+    @overload
+    async def get_user_actions(
+        self, action_user: discord.Member | discord.User, status: str
+    ) -> list[AssignedCommitteeAction]: ...
+
+    @overload
+    async def get_user_actions(
+        self, action_user: Iterable[discord.Member] | Iterable[discord.User], status: list[str]
+    ) -> dict[discord.Member, list[AssignedCommitteeAction]]: ...
+
+    async def get_user_actions(
+        self,
+        action_user: discord.Member
+        | discord.User
+        | Iterable[discord.Member]
+        | Iterable[discord.User],
+        status: str | list[str],
+    ) -> list[AssignedCommitteeAction] | dict[discord.Member, list[AssignedCommitteeAction]]:
+        """
+        Get the actions for a given user.
+
+        Takes in the user and returns a list of their actions.
+        """
+        if isinstance(action_user, (discord.User, discord.Member)):
+            user_actions: list[AssignedCommitteeAction]
+
+            if not status:
+                user_actions = [
+                    action
+                    async for action in await AssignedCommitteeAction.objects.afilter(
+                        (
+                            Q(status=Status.IN_PROGRESS.value)
+                            | Q(status=Status.BLOCKED.value)
+                            | Q(status=Status.NOT_STARTED.value)
+                        ),
+                        discord_id=int(action_user.id),
+                    )
+                ]
+            else:
+                user_actions = [
+                    action
+                    async for action in await AssignedCommitteeAction.objects.afilter(
+                        status=status,
+                        discord_id=int(action_user.id),
+                    )
+                ]
+
+            return user_actions
+
+        actions: list[AssignedCommitteeAction] = [
+            action async for action in AssignedCommitteeAction.objects.select_related().all()
+        ]
+
+        committee_actions: dict[discord.Member, list[AssignedCommitteeAction]] = {
+            committee: [
+                action
+                for action in actions
+                if str(action.discord_member) == DiscordMember.hash_discord_id(committee.id)  # type: ignore[has-type]
+                and action.status in status
+            ]
+            for committee in action_user
+            if isinstance(committee, discord.Member)
+        }
+
+        return {
+            committee: actions for committee, actions in committee_actions.items() if actions
+        }
 
 
 class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
@@ -585,28 +653,10 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         else:
             action_member = ctx.user
 
-        user_actions: list[AssignedCommitteeAction]
-
-        if not status:
-            user_actions = [
-                action
-                async for action in await AssignedCommitteeAction.objects.afilter(
-                    (
-                        Q(status=Status.IN_PROGRESS.value)
-                        | Q(status=Status.BLOCKED.value)
-                        | Q(status=Status.NOT_STARTED.value)
-                    ),
-                    discord_id=int(action_member.id),
-                )
-            ]
-        else:
-            user_actions = [
-                action
-                async for action in await AssignedCommitteeAction.objects.afilter(
-                    status=status,
-                    discord_id=int(action_member.id),
-                )
-            ]
+        user_actions: list[AssignedCommitteeAction] = await self.get_user_actions(
+            action_user=action_member,
+            status=status,
+        )
 
         if not user_actions:
             await ctx.respond(
@@ -743,10 +793,6 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         """List all actions."""  # NOTE: this doesn't actually list *all* actions as it is possible for non-committee to be actioned.
         committee_role: discord.Role = await self.bot.committee_role
 
-        actions: list[AssignedCommitteeAction] = [
-            action async for action in AssignedCommitteeAction.objects.select_related().all()
-        ]
-
         desired_status: list[str] = (
             [status]
             if status
@@ -759,21 +805,11 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         committee_members: list[discord.Member] = committee_role.members
 
-        committee_actions: dict[discord.Member, list[AssignedCommitteeAction]] = {
-            committee: [
-                action
-                for action in actions
-                if str(action.discord_member) == DiscordMember.hash_discord_id(committee.id)  # type: ignore[has-type]
-                and action.status in desired_status
-            ]
-            for committee in committee_members
-        }
+        committee_actions: dict[discord.Member, list[AssignedCommitteeAction]] = (
+            await self.get_user_actions(action_user=committee_members,status=desired_status)
+        )
 
-        filtered_committee_actions = {
-            committee: actions for committee, actions in committee_actions.items() if actions
-        }
-
-        if not filtered_committee_actions:
+        if not committee_actions:
             await ctx.respond(content="No one has any actions that match the request!")
             logger.debug("No actions found with the status filter: %s", status)
             return
@@ -782,7 +818,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             [
                 f"\n{committee.mention if ping else committee}, Actions:"
                 f"\n{', \n'.join(str(action.description) + f' ({AssignedCommitteeAction.Status(action.status).label})' for action in actions)}"  # noqa: E501
-                for committee, actions in filtered_committee_actions.items()
+                for committee, actions in committee_actions.items()
             ],
         )
 
