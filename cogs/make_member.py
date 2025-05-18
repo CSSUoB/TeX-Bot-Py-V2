@@ -62,14 +62,10 @@ REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
     ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
 }
 
-ORGANISATION_ID: "Final[str]" = settings["ORGANISATION_ID"]
-GROUP_NAME: "Final[str]" = settings["_GROUP_FULL_NAME"]
-GROUPED_MEMBERS_URL: "Final[str]" = (
-    f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
-)
 BASE_MEMBERS_URL: "Final[str]" = (
-    f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}"
+    f"https://guildofstudents.com/organisation/memberlist/{settings['ORGANISATION_ID']}"
 )
+GROUPED_MEMBERS_URL: "Final[str]" = f"{BASE_MEMBERS_URL}/?sort=groups"
 
 
 class MakeMemberCommandCog(TeXBotBaseCog):
@@ -317,7 +313,7 @@ class MemberCountCommandCog(TeXBotBaseCog):
             if "showing 100 of" in member_list_div.text.lower():
                 member_count: str = member_list_div.text.split(" ")[3]
                 await ctx.followup.send(
-                    content=f"{GROUP_NAME} has {member_count} members! :tada:",
+                    content=f"{self.bot.group_full_name} has {member_count} members! :tada:",
                 )
                 return
 
@@ -340,7 +336,7 @@ class MemberCountCommandCog(TeXBotBaseCog):
                 return
 
             await ctx.followup.send(
-                content=f"{GROUP_NAME} has {
+                content=f"{self.bot.group_full_name} has {
                     len(member_table.find_all('tr', {'class': ['msl_row', 'msl_altrow']}))
                 } members! :tada:"
             )
