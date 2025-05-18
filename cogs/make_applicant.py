@@ -125,7 +125,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
 
 
 class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
-    """Cog class that defines the "/make_applicant" slash-command."""
+    """Cog class that defines the "/make-applicant" slash-command."""
 
     @staticmethod
     async def autocomplete_get_members(
@@ -195,7 +195,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
 
 
 class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
-    """Cog class that defines the "/make_applicant" context commands."""
+    """Cog class that defines the context menu make-applicant commands."""
 
     @discord.user_command(name="Make Applicant")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
