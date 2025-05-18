@@ -40,7 +40,7 @@ class AutomaticSlowModeCommandCog(AutomaticSlowModeBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def toggle_auto_slow_mode(  # type: ignore[misc, no-untyped-call]
+    async def toggle_auto_slow_mode(  # type: ignore[misc]
         self,
         ctx: "TeXBotApplicationContext",
     ) -> None:
