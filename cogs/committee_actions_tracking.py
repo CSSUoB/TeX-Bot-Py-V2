@@ -117,15 +117,14 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
 
     @overload
     async def get_user_actions(
-        self, action_user: Iterable[discord.Member] | Iterable[discord.User], status: list[str]
+        self,
+        action_user: "Iterable[discord.Member]",
+        status: list[str],
     ) -> dict[discord.Member, list[AssignedCommitteeAction]]: ...
 
     async def get_user_actions(
         self,
-        action_user: discord.Member
-        | discord.User
-        | Iterable[discord.Member]
-        | Iterable[discord.User],
+        action_user: "discord.Member | discord.User | Iterable[discord.Member]",
         status: str | list[str],
     ) -> list[AssignedCommitteeAction] | dict[discord.Member, list[AssignedCommitteeAction]]:
         """
@@ -171,7 +170,6 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 and action.status in status
             ]
             for committee in action_user
-            if isinstance(committee, discord.Member)
         }
 
         return {
@@ -805,9 +803,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         committee_members: list[discord.Member] = committee_role.members
 
-        committee_actions: dict[discord.Member, list[AssignedCommitteeAction]] = (
-            await self.get_user_actions(action_user=committee_members,status=desired_status)
-        )
+        committee_actions: dict[
+            discord.Member, list[AssignedCommitteeAction]
+        ] = await self.get_user_actions(action_user=committee_members, status=desired_status)
 
         if not committee_actions:
             await ctx.respond(content="No one has any actions that match the request!")
