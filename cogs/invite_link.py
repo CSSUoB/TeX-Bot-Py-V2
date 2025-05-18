@@ -12,15 +12,17 @@ if TYPE_CHECKING:
 
     from utils import TeXBotApplicationContext
 
-__all__: "Sequence[str]" = ("LinkCommandCog",)
+__all__: "Sequence[str]" = ("InviteLinkCommandCog",)
 
 
-class LinkCommandCog(TeXBotBaseCog):
-    """Cog class that defines the "/link" command and its call-back method."""
+class InviteLinkCommandCog(TeXBotBaseCog):
+    """Cog class that defines the "/invite-link" command and its call-back method."""
 
-    @discord.slash_command(description="Display the invite link to this server.")  # type: ignore[no-untyped-call, misc]
-    async def link(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
-        """Definition & callback response of the "link" command."""
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        name="invite-link", description="Display the invite link to this server."
+    )
+    async def invite_link(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+        """Definition & callback response of the "invite-link" command."""
         await ctx.respond(
             (
                 f"Invite your friends to the {self.bot.group_short_name} Discord server: "
