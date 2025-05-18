@@ -21,7 +21,9 @@ logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 class AutomaticSlowModeBaseCog(TeXBotBaseCog):
     """Base class for automatic slow mode functionality."""
 
-    async def calculate_message_rate(ctx: TeXBotApplicationContext, channel: discord.Channel) -> None:
+    async def calculate_message_rate(
+        ctx: TeXBotApplicationContext, channel: discord.Channel
+    ) -> None:
         """Calculate the message rate for a given channel."""
         raise NotImplementedError
 
