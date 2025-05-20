@@ -225,5 +225,6 @@ class MemberCountCommandCog(TeXBotBaseCog):
 
         async with ctx.typing():
             await ctx.followup.send(
-                content=f"{GROUP_NAME} has {await get_membership_count()} members! :tada:",
+                content=f"{settings["GROUP_NAME"]} has {await get_membership_count()} "
+                "members! :tada:",
             )
