@@ -8,7 +8,7 @@ import discord
 
 from config import settings
 from exceptions import GuestRoleDoesNotExistError, GuildDoesNotExistError
-from utils import TeXBotBaseCog, CommandChecks
+from utils import CommandChecks, TeXBotBaseCog
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 if TYPE_CHECKING:
