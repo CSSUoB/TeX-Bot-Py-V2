@@ -28,6 +28,7 @@ from .induct import (
     InductSendMessageCog,
     InductSlashCommandCog,
 )
+from .invite_link import InviteLinkCommandCog
 from .kill import KillCommandCog
 from .make_applicant import MakeApplicantContextCommandsCog, MakeApplicantSlashCommandCog
 from .make_member import MakeMemberCommandCog, MemberCountCommandCog
@@ -64,6 +65,7 @@ __all__: "Sequence[str]" = (
     "InductContextCommandsCog",
     "InductSendMessageCog",
     "InductSlashCommandCog",
+    "InviteLinkCommandCog",
     "KillCommandCog",
     "MakeApplicantContextCommandsCog",
     "MakeApplicantSlashCommandCog",
@@ -105,6 +107,7 @@ def setup(bot: "TeXBot") -> None:
         InductSendMessageCog,
         InductSlashCommandCog,
         KillCommandCog,
+        InviteLinkCommandCog,
         MakeApplicantContextCommandsCog,
         MakeApplicantSlashCommandCog,
         MakeMemberCommandCog,

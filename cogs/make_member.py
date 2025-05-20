@@ -61,14 +61,10 @@ REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
     ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
 }
 
-ORGANISATION_ID: "Final[str]" = settings["ORGANISATION_ID"]
-GROUP_NAME: "Final[str]" = settings["_GROUP_FULL_NAME"]
-GROUPED_MEMBERS_URL: "Final[str]" = (
-    f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
-)
 BASE_MEMBERS_URL: "Final[str]" = (
-    f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}"
+    f"https://guildofstudents.com/organisation/memberlist/{settings['ORGANISATION_ID']}"
 )
+GROUPED_MEMBERS_URL: "Final[str]" = f"{BASE_MEMBERS_URL}/?sort=groups"
 
 
 class MakeMemberCommandCog(TeXBotBaseCog):
