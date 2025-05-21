@@ -215,6 +215,7 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
             self.bot.main_guild.text_channels,
             name="committee-general",  # TODO: Make this user-configurable  # noqa: FIX002
         )
+
         if not committee_general_channel:
             logger.warning(
                 "Committee-general channel could not be found! "
@@ -240,9 +241,20 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
             ],
         )
 
+        if not all_actions_message:
+            await committee_general_channel.send(
+                content="No actions to remind about! :tada:",
+            )
+            return
+
         await committee_general_channel.send(
             content=all_actions_message,
         )
+
+    @committee_actions_reminders_task.before_loop
+    async def before_tasks(self) -> None:
+        """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
+        await self.bot.wait_until_ready()
 
 
 class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):

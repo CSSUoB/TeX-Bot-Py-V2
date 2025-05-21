@@ -754,7 +754,7 @@ class Settings(abc.ABC):
             str(os.getenv("COMMITTEE_ACTIONS_REMINDERS_INTERVAL", "24h")),
         )
 
-        raw_timedelta_details_committee_actions_reminders_interval: Mapping[str, float] = {
+        raw_timedelta_committee_actions_reminders_interval: Mapping[str, float] = {
             "hours": 24,
         }
 
@@ -768,7 +768,7 @@ class Settings(abc.ABC):
                     INVALID_COMMITTEE_ACTIONS_REMINDERS_INTERVAL_MESSAGE,
                 )
 
-            raw_timedelta_details_committee_actions_reminders_interval = {
+            raw_timedelta_committee_actions_reminders_interval = {
                 key: float(value)
                 for key, value in (
                     raw_committee_actions_reminders_interval.groupdict().items()
@@ -777,7 +777,7 @@ class Settings(abc.ABC):
             }
 
         cls._settings["COMMITTEE_ACTIONS_REMINDERS_INTERVAL"] = (
-            raw_timedelta_details_committee_actions_reminders_interval
+            raw_timedelta_committee_actions_reminders_interval
         )
 
     @classmethod
