@@ -251,3 +251,8 @@ class TokenAuthorisationCheckTaskCog(TokenAuthorisationBaseCog):
             case self.TokenStatus.INVALID:
                 logger.warning("Token is invalid or expired.")
                 return
+
+    @token_authorisation_check_task.before_loop
+    async def before_tasks(self) -> None:
+        """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
+        await self.bot.wait_until_ready()
