@@ -202,7 +202,7 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
         """
         self.committee_actions_reminders_task.cancel()
 
-    @tasks.loop(**settings["COMMITTEE_ACTIONS_TRACKING_REMINDERS_INTERVAL"])
+    @tasks.loop(**settings["COMMITTEE_ACTIONS_REMINDERS_INTERVAL"])
     @capture_guild_does_not_exist_error
     async def committee_actions_reminders_task(self) -> None:
         """
