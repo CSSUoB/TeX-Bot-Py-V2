@@ -211,7 +211,38 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
         The task will run every interval specified in the settings and will send reminders
         to all committee members who have actions that are either in progress or not started.
         """
-        raise NotImplementedError
+        committee_general_channel: discord.TextChannel | None = discord.utils.get(
+            self.bot.main_guild.text_channels,
+            name="committee-general",  # TODO: Make this user-configurable  # noqa: FIX002
+        )
+        if not committee_general_channel:
+            logger.warning(
+                "Committee-general channel could not be found! "
+                "Actions reminders task will not run until next restart."
+            )
+            self.committee_actions_reminders_task.cancel()
+            return
+
+        committee_role: discord.Role = await self.bot.committee_role
+        committee_members: list[discord.Member] = committee_role.members
+        all_actions: dict[
+            discord.Member, list[AssignedCommitteeAction]
+        ] = await self.get_user_actions(
+            committee_members,
+            [Status.NOT_STARTED.value, Status.IN_PROGRESS.value, Status.BLOCKED.value],
+        )
+
+        all_actions_message: str = "\n".join(
+            [
+                f"\n{committee.mention}, Actions:"
+                f"\n{', \n'.join(str(action.description) + f' ({AssignedCommitteeAction.Status(action.status).label})' for action in actions)}"  # noqa: E501
+                for committee, actions in all_actions.items()
+            ],
+        )
+
+        await committee_general_channel.send(
+            content=all_actions_message,
+        )
 
 
 class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
