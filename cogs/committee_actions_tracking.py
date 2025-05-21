@@ -188,7 +188,7 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
     @override
     def __init__(self, bot: "TeXBot") -> None:
         """Start all task managers when this cog is initialised."""
-        if settings["COMMITTEE_ACTIONS_TRACKING_REMINDERS"]:
+        if settings["COMMITTEE_ACTIONS_REMINDERS"]:
             _ = self.committee_actions_reminders_task.start()
 
         super().__init__(bot)
