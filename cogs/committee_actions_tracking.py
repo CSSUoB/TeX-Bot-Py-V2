@@ -240,9 +240,7 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
         )
 
         if not all_actions_message:
-            await committee_general_channel.send(
-                content="No actions to remind about! :tada:",
-            )
+            logger.info("No actions found for any committee members. No reminders sent.")
             return
 
         await committee_general_channel.send(
