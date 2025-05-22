@@ -214,8 +214,8 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
         all_actions: dict[
             discord.Member, list[AssignedCommitteeAction]
         ] = await self.get_user_actions(
-            committee_members,
-            [Status.NOT_STARTED.value, Status.IN_PROGRESS.value, Status.BLOCKED.value],
+            action_user=committee_members,
+            status=[Status.NOT_STARTED.value, Status.IN_PROGRESS.value, Status.BLOCKED.value],
         )
 
         all_actions_message: str = "\n".join(
