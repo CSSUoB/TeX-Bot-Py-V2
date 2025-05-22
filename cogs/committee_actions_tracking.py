@@ -2,6 +2,8 @@
 
 import logging
 import random
+import time
+from datetime import timedelta
 from enum import Enum
 from typing import TYPE_CHECKING, overload, override
 
@@ -218,6 +220,17 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
             status=[Status.NOT_STARTED.value, Status.IN_PROGRESS.value, Status.BLOCKED.value],
         )
 
+        interval_seconds: float = timedelta(
+            **settings["COMMITTEE_ACTIONS_REMINDERS_INTERVAL"]
+        ).total_seconds()
+        next_reminder_unix = int(time.time() + interval_seconds)
+
+        actions_reminder_info_message: str = (
+            f"Wakey wakey committee!\n"
+            "Here are your actions that are either in progress or not started yet.\n"
+            f"I'll remind you again <t:{next_reminder_unix}:R>"
+        )
+
         all_actions_message: str = "\n".join(
             [
                 f"\n{committee.mention}, Actions:"
@@ -233,7 +246,7 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
             return
 
         await committee_general_channel.send(
-            content=all_actions_message,
+            content=f"{actions_reminder_info_message}\n{all_actions_message}",
         )
 
     @committee_actions_reminders_task.before_loop
