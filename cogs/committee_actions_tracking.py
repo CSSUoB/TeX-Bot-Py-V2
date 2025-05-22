@@ -118,19 +118,20 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
         return action
 
     @overload
+    @staticmethod
     async def get_user_actions(
-        self, action_user: discord.Member | discord.User, status: list[str]
+        action_user: discord.Member | discord.User, status: list[str]
     ) -> list[AssignedCommitteeAction]: ...
 
     @overload
+    @staticmethod
     async def get_user_actions(
-        self,
         action_user: "Iterable[discord.Member]",
         status: list[str],
     ) -> dict[discord.Member, list[AssignedCommitteeAction]]: ...
 
+    @staticmethod
     async def get_user_actions(
-        self,
         action_user: "discord.Member | discord.User | Iterable[discord.Member]",
         status: str | list[str],
     ) -> list[AssignedCommitteeAction] | dict[discord.Member, list[AssignedCommitteeAction]]:
