@@ -117,7 +117,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
 
     @overload
     async def get_user_actions(
-        self, action_user: discord.Member | discord.User, status: str
+        self, action_user: discord.Member | discord.User, status: list[str]
     ) -> list[AssignedCommitteeAction]: ...
 
     @overload
@@ -138,28 +138,13 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
         Takes in the user and returns a list of their actions.
         """
         if isinstance(action_user, (discord.User, discord.Member)):
-            user_actions: list[AssignedCommitteeAction]
-
-            if not status:
-                user_actions = [
-                    action
-                    async for action in await AssignedCommitteeAction.objects.afilter(
-                        (
-                            Q(status=Status.IN_PROGRESS.value)
-                            | Q(status=Status.BLOCKED.value)
-                            | Q(status=Status.NOT_STARTED.value)
-                        ),
-                        discord_id=int(action_user.id),
-                    )
-                ]
-            else:
-                user_actions = [
-                    action
-                    async for action in await AssignedCommitteeAction.objects.afilter(
-                        status=status,
-                        discord_id=int(action_user.id),
-                    )
-                ]
+            user_actions: list[AssignedCommitteeAction] = [
+                action
+                async for action in await AssignedCommitteeAction.objects.afilter(
+                    status=status,
+                    discord_id=int(action_user.id),
+                )
+            ]
 
             return user_actions
 
@@ -731,9 +716,19 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         else:
             action_member = ctx.user
 
+        desired_status: list[str] = (
+            [status]
+            if status
+            else [
+                Status.NOT_STARTED.value,
+                Status.IN_PROGRESS.value,
+                Status.BLOCKED.value,
+            ]
+        )
+
         user_actions: list[AssignedCommitteeAction] = await self.get_user_actions(
             action_user=action_member,
-            status=status,
+            status=desired_status,
         )
 
         if not user_actions:
