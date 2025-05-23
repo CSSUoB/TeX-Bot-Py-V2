@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from utils import TeXBot, TeXBotApplicationContext
 
 
-__all__: "Sequence[str]" = ("AutomaticSlowModeCommandCog",)
+__all__: "Sequence[str]" = ("AutomaticSlowModeCommandCog", "AutomaticSlowModeTaskCog")
 
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
@@ -28,8 +28,28 @@ class AutomaticSlowModeBaseCog(TeXBotBaseCog):
     """Base class for automatic slow mode functionality."""
 
     async def calculate_message_rate(self, channel: discord.TextChannel) -> int:
-        """Calculate the message rate for a given channel."""
-        raise NotImplementedError
+        """
+        Calculate the message rate for a given channel.
+
+        Returns the number of messages per minute, rounded to the nearest integer.
+        This is based on the previous 5 minutes of messages.
+        """
+        from datetime import UTC, datetime, timedelta
+
+        # TODO: Make the time period user configurable.  # noqa: FIX002
+
+        count = len(
+            [
+                message
+                async for message in channel.history(
+                    after=datetime.now(UTC) - timedelta(minutes=5),
+                    oldest_first=False,
+                    limit=None,
+                )
+            ]
+        )
+
+        return round(count / 5)
 
 
 class AutomaticSlowModeTaskCog(AutomaticSlowModeBaseCog):
