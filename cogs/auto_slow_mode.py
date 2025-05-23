@@ -49,6 +49,13 @@ class AutomaticSlowModeBaseCog(TeXBotBaseCog):
             ]
         )
 
+        logger.debug(
+            "Channel: %s | Message count in last 5 minutes: %d | Rate: %d",
+            channel.name,
+            count,
+            round(count / 5),
+        )
+
         return round(count / 5)
 
 
@@ -76,9 +83,23 @@ class AutomaticSlowModeTaskCog(AutomaticSlowModeBaseCog):
     @capture_guild_does_not_exist_error
     async def auto_slow_mode_task(self) -> None:
         """Task to automatically adjust slow mode in channels."""
+        import time
+
+        time.process_time()
         for channel in self.bot.get_all_channels():
             if isinstance(channel, discord.TextChannel):
-                await self.calculate_message_rate(channel)
+                message_rate: int = await self.calculate_message_rate(channel)
+                if message_rate > 5:
+                    await channel.edit(
+                        slowmode_delay=10, reason="TeX-Bot auto slow mode enabled."
+                    )
+                await channel.edit(slowmode_delay=0, reason="TeX-Bot auto slow mode disabled.")
+        logger.debug("Time taken to calculate message rate: %s seconds", time.process_time())
+
+    @auto_slow_mode_task.before_loop
+    async def before_tasks(self) -> None:
+        """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
+        await self.bot.wait_until_ready()
 
 
 class AutomaticSlowModeCommandCog(AutomaticSlowModeBaseCog):
