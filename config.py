@@ -292,6 +292,21 @@ class Settings(abc.ABC):
         cls._settings["MEMBERSHIP_PERKS_URL"] = raw_membership_perks_url
 
     @classmethod
+    def _setup_discord_invite_url(cls) -> None:
+        raw_discord_invite_url: str | None = os.getenv("DISCORD_INVITE_URL")
+
+        DISCORD_INVITE_URL_IS_VALID: Final[bool] = bool(
+            not raw_discord_invite_url or validators.url(raw_discord_invite_url),
+        )
+        if not DISCORD_INVITE_URL_IS_VALID:
+            INVALID_DISCORD_INVITE_URL_MESSAGE: Final[str] = (
+                "DISCORD_INVITE_URL must be a valid URL."
+            )
+            raise ImproperlyConfiguredError(INVALID_DISCORD_INVITE_URL_MESSAGE)
+
+        cls._settings["DISCORD_INVITE_URL"] = raw_discord_invite_url
+
+    @classmethod
     def _setup_ping_command_easter_egg_probability(cls) -> None:
         INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE: Final[str] = (
             "PING_COMMAND_EASTER_EGG_PROBABILITY must be a float between & including 1 & 0."
@@ -738,6 +753,7 @@ class Settings(abc.ABC):
             cls._setup_members_list_auth_session_cookie()
             cls._setup_membership_perks_url()
             cls._setup_purchase_membership_url()
+            cls._setup_discord_invite_url()
             cls._setup_send_introduction_reminders()
             cls._setup_send_introduction_reminders_delay()
             cls._setup_send_introduction_reminders_interval()

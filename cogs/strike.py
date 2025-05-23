@@ -870,6 +870,129 @@ class StrikeCommandCog(BaseStrikeCog):
 
         await self._command_perform_strike(ctx, strike_member)
 
+    @discord.slash_command(  # type: ignore[misc, no-untyped-call]
+        name="get-strikes",
+        description="Get the number of strikes a user has.",
+    )
+    @discord.option(  # type: ignore[misc, no-untyped-call]
+        name="user",
+        description="The user to check the number of strikes for.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
+        required=True,
+        parameter_name="str_strike_member_id",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def get_strikes(  # type: ignore[misc]
+        self, ctx: "TeXBotApplicationContext", str_strike_member_id: str
+    ) -> None:
+        """
+        Define method and callback response of of the "get-strikes" command.
+
+        Responds with the number of strikes a user has.
+        """
+        try:
+            strike_member: discord.Member = await self.bot.get_member_from_str_id(
+                str_member_id=str_strike_member_id
+            )
+        except ValueError as member_id_not_integer_error:
+            await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
+            return
+
+        strikes_count: int = 0
+        try:
+            strikes_count = (
+                await DiscordMemberStrikes.objects.aget(discord_id=strike_member.id)
+            ).strikes
+        except DiscordMemberStrikes.DoesNotExist:
+            logger.debug("No strikes found for user %s", strike_member)
+
+        await ctx.respond(
+            content=(f"User {strike_member.mention} has {strikes_count} strikes."),
+            ephemeral=True,
+        )
+
+    @discord.slash_command(  # type: ignore[misc, no-untyped-call]
+        name="decrement-strikes",
+        description="Remove a single strike from a user.",
+    )
+    @discord.option(  # type: ignore[misc, no-untyped-call]
+        name="user",
+        description="The user to remove a strike from.",
+        input_type=str,
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
+        required=True,
+        parameter_name="str_strike_member_id",
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def decrement_strikes(  # type: ignore[misc]
+        self, ctx: "TeXBotApplicationContext", str_strike_member_id: str
+    ) -> None:
+        """
+        Definition & callback response of the "decrement-strikes" command.
+
+        The "decrement-strikes" command removes a strike from the given member.
+        If the member only has one strike, the corresponding `DiscordMemberStrikes`
+        object will be deleted from the database.
+        """
+        try:
+            strike_member: discord.Member = await self.bot.get_member_from_str_id(
+                str_member_id=str_strike_member_id,
+            )
+        except ValueError as member_id_not_integer_error:
+            await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
+            return
+
+        try:
+            discord_member_strikes: DiscordMemberStrikes = (
+                await DiscordMemberStrikes.objects.aget(discord_id=strike_member.id)
+            )
+        except DiscordMemberStrikes.DoesNotExist:
+            await ctx.respond(
+                content=(
+                    ":information_source: No action taken. "
+                    f"User {strike_member.mention} does not have any strikes to remove!"
+                ),
+                ephemeral=True,
+            )
+            logger.info(
+                "%s attempted to remove a strike from user %s, but they had none",
+                ctx.user,
+                strike_member,
+            )
+            return
+
+        if discord_member_strikes.strikes <= 1:
+            await discord_member_strikes.adelete()
+            await ctx.respond(
+                content=f"Successfully removed all strikes from {strike_member.mention}.",
+                ephemeral=True,
+            )
+            logger.info(
+                "%s removed all strikes from user %s",
+                ctx.user,
+                strike_member,
+            )
+            return
+
+        discord_member_strikes.strikes -= 1
+        await discord_member_strikes.asave()
+        await ctx.respond(
+            content=(
+                f"Successfully removed a strike from {strike_member.mention}. "
+                f"User now has {discord_member_strikes.strikes} strikes."
+            ),
+            ephemeral=True,
+        )
+        logger.info(
+            "%s removed 1 strike from user %s, they now have %s",
+            ctx.user,
+            strike_member,
+            discord_member_strikes.strikes,
+        )
+
 
 class StrikeContextCommandsCog(BaseStrikeCog):
     """Cog class that defines the context menu strike command and its call-back method."""
