@@ -233,11 +233,14 @@ class Settings(abc.ABC):
     def _setup_group_full_name(cls) -> None:
         raw_group_full_name: str | None = os.getenv("GROUP_NAME")
 
-        GROUP_FULL_NAME_IS_VALID: Final[bool] = bool(
-            not raw_group_full_name
-            or re.fullmatch(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", raw_group_full_name),
-        )
-        if not GROUP_FULL_NAME_IS_VALID:
+        if raw_group_full_name is not None:
+            raw_group_full_name = raw_group_full_name.strip()
+
+        if not raw_group_full_name:
+            cls._settings["_GROUP_FULL_NAME"] = None
+            return
+
+        if not re.fullmatch(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", raw_group_full_name):
             INVALID_GROUP_FULL_NAME: Final[str] = (
                 "GROUP_NAME must not contain any invalid characters."
             )
@@ -249,11 +252,14 @@ class Settings(abc.ABC):
     def _setup_group_short_name(cls) -> None:
         raw_group_short_name: str | None = os.getenv("GROUP_SHORT_NAME")
 
-        GROUP_SHORT_NAME_IS_VALID: Final[bool] = bool(
-            not raw_group_short_name
-            or re.fullmatch(r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", raw_group_short_name),
-        )
-        if not GROUP_SHORT_NAME_IS_VALID:
+        if raw_group_short_name is not None:
+            raw_group_short_name = raw_group_short_name.strip()
+
+        if not raw_group_short_name:
+            cls._settings["_GROUP_SHORT_NAME"] = None
+            return
+
+        if not re.fullmatch(r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", raw_group_short_name):
             INVALID_GROUP_SHORT_NAME: Final[str] = (
                 "GROUP_SHORT_NAME must not contain any invalid characters."
             )
@@ -265,10 +271,14 @@ class Settings(abc.ABC):
     def _setup_purchase_membership_url(cls) -> None:
         raw_purchase_membership_url: str | None = os.getenv("PURCHASE_MEMBERSHIP_URL")
 
-        PURCHASE_MEMBERSHIP_URL_IS_VALID: Final[bool] = bool(
-            not raw_purchase_membership_url or validators.url(raw_purchase_membership_url),
-        )
-        if not PURCHASE_MEMBERSHIP_URL_IS_VALID:
+        if raw_purchase_membership_url is not None:
+            raw_purchase_membership_url = raw_purchase_membership_url.strip()
+
+        if not raw_purchase_membership_url:
+            cls._settings["PURCHASE_MEMBERSHIP_URL"] = None
+            return
+
+        if not validators.url(raw_purchase_membership_url):
             INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE: Final[str] = (
                 "PURCHASE_MEMBERSHIP_URL must be a valid URL."
             )
@@ -280,10 +290,14 @@ class Settings(abc.ABC):
     def _setup_membership_perks_url(cls) -> None:
         raw_membership_perks_url: str | None = os.getenv("MEMBERSHIP_PERKS_URL")
 
-        MEMBERSHIP_PERKS_URL_IS_VALID: Final[bool] = bool(
-            not raw_membership_perks_url or validators.url(raw_membership_perks_url),
-        )
-        if not MEMBERSHIP_PERKS_URL_IS_VALID:
+        if raw_membership_perks_url is not None:
+            raw_membership_perks_url = raw_membership_perks_url.strip()
+
+        if not raw_membership_perks_url:
+            cls._settings["MEMBERSHIP_PERKS_URL"] = None
+            return
+
+        if not validators.url(raw_membership_perks_url):
             INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (
                 "MEMBERSHIP_PERKS_URL must be a valid URL."
             )
@@ -292,30 +306,47 @@ class Settings(abc.ABC):
         cls._settings["MEMBERSHIP_PERKS_URL"] = raw_membership_perks_url
 
     @classmethod
-    def _setup_discord_invite_url(cls) -> None:
-        raw_discord_invite_url: str | None = os.getenv("DISCORD_INVITE_URL")
+    def _setup_custom_discord_invite_url(cls) -> None:
+        raw_custom_discord_invite_url: str | None = os.getenv("CUSTOM_DISCORD_INVITE_URL")
 
-        DISCORD_INVITE_URL_IS_VALID: Final[bool] = bool(
-            not raw_discord_invite_url or validators.url(raw_discord_invite_url),
-        )
-        if not DISCORD_INVITE_URL_IS_VALID:
-            INVALID_DISCORD_INVITE_URL_MESSAGE: Final[str] = (
-                "DISCORD_INVITE_URL must be a valid URL."
+        if raw_custom_discord_invite_url is not None:
+            raw_custom_discord_invite_url = raw_custom_discord_invite_url.strip()
+
+        if not raw_custom_discord_invite_url:
+            cls._settings["CUSTOM_DISCORD_INVITE_URL"] = None
+            return
+
+        if not validators.url(raw_custom_discord_invite_url):
+            INVALID_CUSTOM_DISCORD_INVITE_URL_MESSAGE: Final[str] = (
+                "CUSTOM_DISCORD_INVITE_URL must be a valid URL."
             )
-            raise ImproperlyConfiguredError(INVALID_DISCORD_INVITE_URL_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_CUSTOM_DISCORD_INVITE_URL_MESSAGE)
 
-        cls._settings["DISCORD_INVITE_URL"] = raw_discord_invite_url
+        cls._settings["CUSTOM_DISCORD_INVITE_URL"] = raw_custom_discord_invite_url
 
     @classmethod
     def _setup_ping_command_easter_egg_probability(cls) -> None:
+        raw_ping_command_easter_egg_probability_string: str | None = os.getenv(
+            "PING_COMMAND_EASTER_EGG_PROBABILITY"
+        )
+
+        if raw_ping_command_easter_egg_probability_string is not None:
+            raw_ping_command_easter_egg_probability_string = (
+                raw_ping_command_easter_egg_probability_string.strip()
+            )
+
+        if not raw_ping_command_easter_egg_probability_string:
+            cls._settings["PING_COMMAND_EASTER_EGG_PROBABILITY"] = 1
+            return
+
         INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE: Final[str] = (
-            "PING_COMMAND_EASTER_EGG_PROBABILITY must be a float between & including 1 & 0."
+            "PING_COMMAND_EASTER_EGG_PROBABILITY must be a float between & including 0 to 1."
         )
 
         e: ValueError
         try:
             raw_ping_command_easter_egg_probability: float = 100 * float(
-                os.getenv("PING_COMMAND_EASTER_EGG_PROBABILITY", "0.01"),
+                raw_ping_command_easter_egg_probability_string
             )
         except ValueError as e:
             raise (
@@ -324,7 +355,7 @@ class Settings(abc.ABC):
 
         if not 0 <= raw_ping_command_easter_egg_probability <= 100:
             raise ImproperlyConfiguredError(
-                INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE,
+                INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE
             )
 
         cls._settings["PING_COMMAND_EASTER_EGG_PROBABILITY"] = (
@@ -753,7 +784,7 @@ class Settings(abc.ABC):
             cls._setup_members_list_auth_session_cookie()
             cls._setup_membership_perks_url()
             cls._setup_purchase_membership_url()
-            cls._setup_discord_invite_url()
+            cls._setup_custom_discord_invite_url()
             cls._setup_send_introduction_reminders()
             cls._setup_send_introduction_reminders_delay()
             cls._setup_send_introduction_reminders_interval()
