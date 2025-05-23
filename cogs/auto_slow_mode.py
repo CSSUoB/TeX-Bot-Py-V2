@@ -95,11 +95,21 @@ class AutomaticSlowModeCommandCog(AutomaticSlowModeBaseCog):
         ctx: "TeXBotApplicationContext",
     ) -> None:
         """Enable or disable automatic slow mode for a channel."""
-        # NOTE: This should be replaced when the settings are refactored in the draft PR.
+        # NOTE: This should be replaced when the settings improved in PR #221
         if settings["AUTO_SLOW_MODE"]:
             settings["AUTO_SLOW_MODE"] = False
-            await ctx.send("Automatic slow mode is now disabled.")
+            await ctx.respond(
+                "Automatic slow mode is now disabled."
+                "If you would like to keep it disabled, please remember to "
+                "update the deployment variables as well. "
+                "If you do not, it will be re-enabled when the bot restarts.",
+            )
             return
 
         settings["AUTO_SLOW_MODE"] = True
-        await ctx.send("Automatic slow mode is now enabled.")
+        await ctx.respond(
+            "Automatic slow mode is now disabled."
+            "If you would like to keep it disabled, please remember to "
+            "update the deployment variables as well. "
+            "If you do not, it will be re-enabled when the bot restarts.",
+        )
