@@ -1,7 +1,7 @@
 """Manager classes used for DB access upon models."""
 
 import logging
-from typing import TYPE_CHECKING, override
+from typing import override
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Manager
