@@ -108,8 +108,8 @@ class AutomaticSlowModeCommandCog(AutomaticSlowModeBaseCog):
 
         settings["AUTO_SLOW_MODE"] = True
         await ctx.respond(
-            "Automatic slow mode is now disabled."
-            "If you would like to keep it disabled, please remember to "
+            "Automatic slow mode is now enabled."
+            "If you would like to keep it enabled, please remember to "
             "update the deployment variables as well. "
-            "If you do not, it will be re-enabled when the bot restarts.",
+            "If you do not, it will be disabled again when the bot restarts.",
         )
