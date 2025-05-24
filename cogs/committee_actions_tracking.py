@@ -138,9 +138,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             discord.OptionChoice(
                 name=f"{member.display_name} ({member.global_name})", value=str(member.id)
             )
-            for member in committee_role.members and 
+            for member in committee_role.members and
                 ((for member in committee_elect_role.members and not in committee_role.members)
-                if committee_elect_role else []) 
+                if committee_elect_role else [])
             if not member.bot
         }
 
