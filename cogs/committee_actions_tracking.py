@@ -602,6 +602,12 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 content="Committee role required to list actions for other users.",
                 ephemeral=True,
             )
+            logger.debug(
+                "User: %s, tried to list actions for user: %s, "
+                "but did not have the committee role.",
+                ctx.user,
+                action_member,
+            )
             return
 
         user_actions: list[AssignedCommitteeAction]
