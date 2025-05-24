@@ -134,20 +134,13 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         with contextlib.suppress(CommitteeElectRoleDoesNotExistError):
             committee_elect_role: discord.Role | None = await ctx.bot.committee_elect_role
 
-        committee_members = [member for member in committee_role.members if not member.bot]
-
-        # Add committee-elect if the role is found
-        if committee_elect_role:
-            for member in committee_elect_role.members:
-                if member in committee_members or member.bot:
-                    continue
-                committee_members.append(member)
-
         return {
             discord.OptionChoice(
                 name=f"{member.display_name} ({member.global_name})", value=str(member.id)
             )
-            for member in committee_members
+            for member in set(committee_role.members)
+            | set((committee_elect_role.members) if committee_elect_role else set())
+            if not member.bot
         }
 
     @staticmethod
