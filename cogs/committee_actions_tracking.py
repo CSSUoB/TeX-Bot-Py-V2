@@ -108,9 +108,14 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 f"\n{committee}, Actions:"
                 f"\n{
                     ', \n'.join(
-                        f'{(":red_circle:" if action.status == Status.NOT_STARTED.value else ":yellow_circle:" if action.status == Status.IN_PROGRESS.value else ":no_entry:" if action.status == Status.BLOCKED.value else "")} '
-                        f'{action.description} '
-                        f'({AssignedCommitteeAction.Status(action.status).label})'
+                        (
+                            ':red_circle:' if action.status == Status.NOT_STARTED.value
+                            else ':yellow_circle:' if action.status == Status.IN_PROGRESS.value
+                            else ':no_entry:' if action.status == Status.BLOCKED.value
+                            else ''
+                        ) + ' '
+                        + f'{action.description} '
+                        + f'({AssignedCommitteeAction.Status(action.status).label})'
                         for action in actions
                     )
                 }"
