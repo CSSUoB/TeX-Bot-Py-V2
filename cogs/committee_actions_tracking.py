@@ -109,11 +109,15 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 f"\n{
                     ', \n'.join(
                         (
-                            ':red_circle:' if action.status == Status.NOT_STARTED.value
-                            else ':yellow_circle:' if action.status == Status.IN_PROGRESS.value
-                            else ':no_entry:' if action.status == Status.BLOCKED.value
+                            ':red_circle:'
+                            if action.status == Status.NOT_STARTED.value
+                            else ':yellow_circle:'
+                            if action.status == Status.IN_PROGRESS.value
+                            else ':no_entry:'
+                            if action.status == Status.BLOCKED.value
                             else ''
-                        ) + ' '
+                        )
+                        + ' '
                         + f'{action.description} '
                         + f'({AssignedCommitteeAction.Status(action.status).label})'
                         for action in actions
@@ -182,6 +186,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
             raise InvalidActionDescriptionError(
                 message=DUPLICATE_ACTION_MESSAGE,
             ) from create_action_error
+        await self._update_action_board()
         return action
 
     @overload
@@ -561,6 +566,8 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         await action.aupdate(status=new_status)
 
+        await self._update_action_board()
+
         await ctx.respond(
             content=f"Status for action`{action.description}` updated to `{action.status}`",
             ephemeral=True,
@@ -624,6 +631,8 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         old_description: str = action.description
 
         await action.aupdate(description=new_description)
+
+        await self._update_action_board()
 
         await ctx.respond(
             content=f"Action `{old_description}` updated to `{action.description}`!",
@@ -1056,6 +1065,8 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         action_description: str = action.description
 
         await action.adelete()
+
+        await self._update_action_board()
 
         await ctx.respond(content=f"Action `{action_description}` successfully deleted.")
 
