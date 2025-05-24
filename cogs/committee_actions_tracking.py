@@ -306,23 +306,21 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
 
         all_actions_message: str = "\n".join(
             [
-                f"\n{committee.mention}, Actions:"
+                f"\n{committee}, Actions:"
                 f"\n{
                     ', \n'.join(
                         (
-                            (
-                                '🔴'
-                                if action.status == Status.NOT_STARTED.value
-                                else '\ud83d\udfe1'
-                                if action.status == Status.IN_PROGRESS.value
-                                else '❌'
-                                if action.status == Status.BLOCKED.value
-                                else ''
-                            )
-                            + ' '
-                            + str(action.description)
-                            + f' ({AssignedCommitteeAction.Status(action.status).label})'
+                            ':red_circle:'
+                            if action.status == Status.NOT_STARTED.value
+                            else ':yellow_circle:'
+                            if action.status == Status.IN_PROGRESS.value
+                            else ':no_entry:'
+                            if action.status == Status.BLOCKED.value
+                            else ''
                         )
+                        + ' '
+                        + f'{action.description} '
+                        + f'({AssignedCommitteeAction.Status(action.status).label})'
                         for action in actions
                     )
                 }"
