@@ -109,11 +109,15 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 f"\n{
                     ', \n'.join(
                         (
-                            ':red_circle:' if action.status == Status.NOT_STARTED.value
-                            else ':yellow_circle:' if action.status == Status.IN_PROGRESS.value
-                            else ':no_entry:' if action.status == Status.BLOCKED.value
+                            ':red_circle:'
+                            if action.status == Status.NOT_STARTED.value
+                            else ':yellow_circle:'
+                            if action.status == Status.IN_PROGRESS.value
+                            else ':no_entry:'
+                            if action.status == Status.BLOCKED.value
                             else ''
-                        ) + ' '
+                        )
+                        + ' '
                         + f'{action.description} '
                         + f'({AssignedCommitteeAction.Status(action.status).label})'
                         for action in actions
