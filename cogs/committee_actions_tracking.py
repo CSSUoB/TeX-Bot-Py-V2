@@ -1,5 +1,6 @@
 """Contains cog classes for tracking committee-actions."""
 
+import contextlib
 import logging
 import random
 from enum import Enum
@@ -11,6 +12,7 @@ from django.db.models import Q
 
 from db.core.models import AssignedCommitteeAction, DiscordMember
 from exceptions import (
+    CommitteeElectRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
     InvalidActionDescriptionError,
     InvalidActionTargetError,
