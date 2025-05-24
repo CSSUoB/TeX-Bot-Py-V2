@@ -129,10 +129,8 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         except CommitteeRoleDoesNotExistError:
             return set()
 
-        try:
-            committee_elect_role: discord.Role = await ctx.bot.committee_elect_role
-        except CommitteeElectRoleDoesNotExistError:
-            pass  # We'll just continue with the fact that committee exists
+        with contextlib.suppress(CommitteeElectRoleDoesNotExistError):
+            committee_elect_role: discord.Role | None = await ctx.bot.committee_elect_role
 
         committee_members = [member for member in committee_role.members if not member.bot]
 
