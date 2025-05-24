@@ -65,6 +65,19 @@ class CommandChecks:
             )
         )(func)
 
+    @staticmethod
+    def check_interation_user_has_committee_or_elect_role[T: TeXBotBaseCog, **P](
+        func: "Callable[Concatenate[T, P], Awaitable[None]]",
+    ) -> "Callable[Concatenate[T, P], Awaitable[None]]":
+        async def _check(ctx: "TeXBotApplicationContext") -> bool:
+            return await ctx.bot.check_user_has_committee_or_elect_role(ctx.user)
+
+        return commands.check_any(
+            commands.check(
+                _check  # type: ignore[arg-type]
+            )
+        )(func)
+
     @classmethod
     def is_interaction_user_in_main_guild_failure(cls, check: "CheckFailure") -> bool:
         """Whether the check failed due to the user not being in your Discord guild."""

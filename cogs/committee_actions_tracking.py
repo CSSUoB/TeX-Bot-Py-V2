@@ -129,11 +129,18 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         except CommitteeRoleDoesNotExistError:
             return set()
 
+        try:
+            committee_elect_role: discord.Role = await ctx.bot.committee_elect_role
+        except CommitteeElectRoleDoesNotExistError:
+            pass  # We'll just continue with the fact that committee exists
+
         return {
             discord.OptionChoice(
                 name=f"{member.display_name} ({member.global_name})", value=str(member.id)
             )
-            for member in committee_role.members
+            for member in committee_role.members and 
+                ((for member in committee_elect_role.members and not in committee_role.members)
+                if committee_elect_role else []) 
             if not member.bot
         }
 
@@ -281,7 +288,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         required=True,
         parameter_name="status",
     )
-    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_has_committee_or_elect_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def update_status(
         self, ctx: "TeXBotApplicationContext", action_id: str, status: str
