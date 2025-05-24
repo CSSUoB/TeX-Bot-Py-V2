@@ -134,14 +134,20 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         except CommitteeElectRoleDoesNotExistError:
             pass  # We'll just continue with the fact that committee exists
 
+        committee_members = [member for member in committee_role.members if not member.bot]
+
+        # Add committee-elect if the role is found
+        if committee_elect_role:
+            for member in committee_elect_role.members:
+                if member in committee_members or member.bot:
+                    continue
+                committee_members.append(member)
+
         return {
             discord.OptionChoice(
                 name=f"{member.display_name} ({member.global_name})", value=str(member.id)
             )
-            for member in committee_role.members and
-                ((for member in committee_elect_role.members and not in committee_role.members)
-                if committee_elect_role else [])
-            if not member.bot
+            for member in committee_members
         }
 
     @staticmethod
@@ -288,7 +294,6 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         required=True,
         parameter_name="status",
     )
-    @CommandChecks.check_interaction_user_has_committee_or_elect_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def update_status(
         self, ctx: "TeXBotApplicationContext", action_id: str, status: str

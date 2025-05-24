@@ -455,7 +455,7 @@ class TeXBot(discord.Bot):
     ) -> bool:
         """Util method to validate whether the given user has the "Committee" or "Committee-Elect" role."""
         return (
-            await check_user_has_committee_role(self, user)
+            await self.check_user_has_committee_role(self, user)
             or await self.committee_elect_role
             in (await self.get_main_guild_member(user)).roles
         )
