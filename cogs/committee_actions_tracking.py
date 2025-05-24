@@ -60,6 +60,68 @@ class Status(Enum):
 class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
     """Base cog class that defines methods for committee actions tracking."""
 
+    async def _update_action_board(self) -> None:
+        """
+        Update the action board message with the current actions.
+
+        This method should be called after any action is created, updated or deleted.
+        """
+        action_board_channel: discord.TextChannel | None = discord.utils.get(
+            self.bot.main_guild.text_channels,
+            name="actions",  # TODO: Make this user-configurable  # noqa: FIX002
+        )
+
+        if not action_board_channel:
+            logger.warning(
+                "Action board channel could not be found so "
+                "the action board will not be updated."
+            )
+            return
+
+        if not action_board_channel.last_message_id and not action_board_channel.last_message:
+            await action_board_channel.send(content="**Committee Actions Tracking Board**\n")
+
+        action_board_message: discord.Message | None = action_board_channel.last_message
+
+        if not action_board_message or action_board_message.author != self.bot.user:
+            logger.warning(
+                "Action board message could not be found! "
+                "Creating a new action board message.",
+            )
+
+            action_board_message = await action_board_channel.send(
+                content="**Committee Actions Tracking Board**\n"
+            )
+
+        committee_actions: dict[
+            discord.Member, list[AssignedCommitteeAction]
+        ] = await self.get_user_actions(
+            action_user=(await self.bot.committee_role).members,
+            status=[Status.NOT_STARTED.value, Status.IN_PROGRESS.value, Status.BLOCKED.value],
+        )
+
+        if not committee_actions:
+            return
+
+        all_actions_message: str = "\n".join(
+            [
+                f"\n{committee}, Actions:"
+                f"\n{
+                    ', \n'.join(
+                        f'{(":red_circle:" if action.status == Status.NOT_STARTED.value else ":yellow_circle:" if action.status == Status.IN_PROGRESS.value else ":no_entry:" if action.status == Status.BLOCKED.value else "")} '
+                        f'{action.description} '
+                        f'({AssignedCommitteeAction.Status(action.status).label})'
+                        for action in actions
+                    )
+                }"
+                for committee, actions in committee_actions.items()
+            ],
+        )
+
+        await action_board_message.edit(
+            content=(f"**Committee Actions Tracking Board**\n{all_actions_message}"),
+        )
+
     async def _create_action(
         self, ctx: "TeXBotApplicationContext", action_user: discord.Member, description: str
     ) -> AssignedCommitteeAction | None:
@@ -235,7 +297,25 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
         all_actions_message: str = "\n".join(
             [
                 f"\n{committee.mention}, Actions:"
-                f"\n{', \n'.join(str(action.description) + f' ({AssignedCommitteeAction.Status(action.status).label})' for action in actions)}"  # noqa: E501
+                f"\n{
+                    ', \n'.join(
+                        (
+                            (
+                                '🔴'
+                                if action.status == Status.NOT_STARTED.value
+                                else '\ud83d\udfe1'
+                                if action.status == Status.IN_PROGRESS.value
+                                else '❌'
+                                if action.status == Status.BLOCKED.value
+                                else ''
+                            )
+                            + ' '
+                            + str(action.description)
+                            + f' ({AssignedCommitteeAction.Status(action.status).label})'
+                        )
+                        for action in actions
+                    )
+                }"
                 for committee, actions in all_actions.items()
             ],
         )
@@ -902,7 +982,25 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         all_actions_message: str = "\n".join(
             [
                 f"\n{committee.mention if ping else committee}, Actions:"
-                f"\n{', \n'.join(str(action.description) + f' ({AssignedCommitteeAction.Status(action.status).label})' for action in actions)}"  # noqa: E501
+                f"\n{
+                    ', \n'.join(
+                        (
+                            (
+                                '🔴'
+                                if action.status == Status.NOT_STARTED.value
+                                else '\ud83d\udfe1'
+                                if action.status == Status.IN_PROGRESS.value
+                                else '❌'
+                                if action.status == Status.BLOCKED.value
+                                else ''
+                            )
+                            + ' '
+                            + str(action.description)
+                            + f' ({AssignedCommitteeAction.Status(action.status).label})'
+                        )
+                        for action in actions
+                    )
+                }"
                 for committee, actions in committee_actions.items()
             ],
         )
