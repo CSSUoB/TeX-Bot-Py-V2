@@ -105,7 +105,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
 
         all_actions_message: str = "\n".join(
             [
-                f"\n{committee}, Actions:"
+                f"\n{committee.mention}, Actions:"
                 f"\n{
                     ', \n'.join(
                         (
