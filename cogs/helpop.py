@@ -27,12 +27,12 @@ class HelpopCommandCog(TeXBotBaseCog):
         description="Commands for creating and managing helpop channels.",
     )
 
-    @helpop_commands.command(  # type: ignore[no-untyped-call, misc]
+    @helpop_commands.command(
         name="open",
         description="Create a private channel with committee.",
     )
     @CommandChecks.check_interaction_user_in_main_guild
-    async def open(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def open(self, ctx: "TeXBotApplicationContext") -> None:
         """Create a private channel with committee."""
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
@@ -82,11 +82,11 @@ class HelpopCommandCog(TeXBotBaseCog):
             ephemeral=True,
         )
 
-    @helpop_commands.command(  # type: ignore[no-untyped-call, misc]
+    @helpop_commands.command(
         name="close",
         description="Close the helpop channel.",
     )
-    async def close(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def close(self, ctx: "TeXBotApplicationContext") -> None:
         """Close the helpop channel."""
         if (
             not isinstance(ctx.channel, discord.TextChannel)
