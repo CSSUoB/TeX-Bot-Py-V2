@@ -9,7 +9,7 @@ import matplotlib.pyplot
 import mplcyberpunk
 
 if TYPE_CHECKING:
-    from collections.abc import Collection, Sequence
+    from collections.abc import Collection, Mapping, Sequence
 
     from matplotlib.text import Text as Plot_Text
 
@@ -37,7 +37,7 @@ def amount_of_time_formatter(value: float, time_scale: str) -> str:
 
 
 def plot_bar_chart(
-    data: dict[str, int],
+    data: "Mapping[str, int]",
     x_label: str,
     y_label: str,
     title: str,
@@ -45,10 +45,12 @@ def plot_bar_chart(
     description: str,
     extra_text: str = "",
 ) -> discord.File:
-    """Generate an image of a plot bar chart from the given data & format variables."""
+    """Generate an image of a plot bar chart from the given data and format variables."""
     matplotlib.pyplot.style.use("cyberpunk")
 
     max_data_value: int = max(data.values()) + 1
+
+    data = dict(data)
 
     # NOTE: The "extra_values" dictionary represents columns of data that should be formatted differently to the standard data columns
     extra_values: dict[str, int] = {}
