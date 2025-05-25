@@ -925,6 +925,8 @@ class StrikeCommandCog(BaseStrikeCog):
         required=True,
         parameter_name="str_strike_member_id",
     )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
     async def decrement_strikes(  # type: ignore[misc]
         self, ctx: "TeXBotApplicationContext", str_strike_member_id: str
     ) -> None:
