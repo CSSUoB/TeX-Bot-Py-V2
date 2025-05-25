@@ -73,7 +73,7 @@ class HelpopCommandCog(TeXBotBaseCog):
 
         await new_channel.send(
             content=f"Hello {ctx.author.mention}, this is a private channel with the committee"
-            " to discuss an issue or concern. Please use the `/close-helpop` command "
+            " to discuss an issue or concern. Please use the `/helpop close` command "
             "after the issue is resolved."
         )
 
