@@ -22,6 +22,7 @@ from .committee_actions_tracking import (
 from .delete_all import DeleteAllCommandsCog
 from .edit_message import EditMessageCommandCog
 from .get_token_authorisation import GetTokenAuthorisationCommandCog
+from .helpop import HelpopCommandCog
 from .induct import (
     EnsureMembersInductedCommandCog,
     InductContextCommandsCog,
@@ -61,6 +62,7 @@ __all__: "Sequence[str]" = (
     "EditMessageCommandCog",
     "EnsureMembersInductedCommandCog",
     "GetTokenAuthorisationCommandCog",
+    "HelpopCommandCog",
     "InductContextCommandsCog",
     "InductSendMessageCog",
     "InductSlashCommandCog",
@@ -101,6 +103,7 @@ def setup(bot: "TeXBot") -> None:
         EditMessageCommandCog,
         EnsureMembersInductedCommandCog,
         GetTokenAuthorisationCommandCog,
+        HelpopCommandCog,
         InductContextCommandsCog,
         InductSendMessageCog,
         InductSlashCommandCog,
