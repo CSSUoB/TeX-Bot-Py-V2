@@ -59,7 +59,7 @@ class HelpopCommandCog(TeXBotBaseCog):
         new_channel: discord.TextChannel = await main_guild.create_text_channel(
             name=f"helpop-{ctx.author.name}",
             category=committee_external_category,
-            reason=f'{ctx.user} used TeX Bot slash-command: "/helpop"'
+            reason=f'{ctx.user} used TeX Bot slash-command: "/helpop"',
         )
 
         await new_channel.edit(sync_permissions=True)
