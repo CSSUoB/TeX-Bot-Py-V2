@@ -22,12 +22,17 @@ logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 class HelpopCommandCog(TeXBotBaseCog):
     """Cog for helpop commands."""
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    helpop_commands: discord.SlashCommandGroup = discord.SlashCommandGroup(
         name="helpop",
+        description="Commands for creating and managing helpop channels.",
+    )
+
+    @helpop_commands.command(  # type: ignore[no-untyped-call, misc]
+        name="open",
         description="Create a private channel with committee.",
     )
     @CommandChecks.check_interaction_user_in_main_guild
-    async def helpop(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def open(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
         """Create a private channel with committee."""
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
@@ -54,6 +59,7 @@ class HelpopCommandCog(TeXBotBaseCog):
         new_channel: discord.TextChannel = await main_guild.create_text_channel(
             name=f"helpop-{ctx.author.name}",
             category=committee_external_category,
+            reason=f'{ctx.user} used TeX Bot slash-command: "/helpop"'
         )
 
         await new_channel.edit(sync_permissions=True)
@@ -71,11 +77,16 @@ class HelpopCommandCog(TeXBotBaseCog):
             "after the issue is resolved."
         )
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="close-helpop",
+        await ctx.respond(
+            content=f"Helpop channel created: {new_channel.mention}",
+            ephemeral=True,
+        )
+
+    @helpop_commands.command(  # type: ignore[no-untyped-call, misc]
+        name="close",
         description="Close the helpop channel.",
     )
-    async def close_helpop(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def close(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
         """Close the helpop channel."""
         if (
             not isinstance(ctx.channel, discord.TextChannel)
