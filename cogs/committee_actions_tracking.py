@@ -141,7 +141,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             for member in (
                 set(committee_role.members)
-                | set(committee_elect_role.members if committee_elect_role is not None else set())
+                | set(
+                    committee_elect_role.members if committee_elect_role is not None else set()
+                )
             )
             if not member.bot
         }
