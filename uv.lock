@@ -917,6 +917,7 @@ pre-commit = [
     { name = "pre-commit" },
 ]
 test = [
+    { name = "gitpython" },
     { name = "pytest" },
     { name = "pytest-cov" },
 ]
@@ -960,6 +961,7 @@ main = [
 ]
 pre-commit = [{ name = "pre-commit", specifier = ">=4.0" }]
 test = [
+    { name = "gitpython", specifier = ">=3.1.44" },
     { name = "pytest", specifier = ">=8.3" },
     { name = "pytest-cov", specifier = ">=6.1.1" },
 ]
