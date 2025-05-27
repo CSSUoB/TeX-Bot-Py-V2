@@ -165,7 +165,7 @@ jobs:
                 key: pytest|${{steps.store-hashed-python-version.outputs.hashed_python_version}}
 
             - name: Run pytest
-              run: pytest --cov --cov-branch --cov-report=xml --junitxml=junit.xml
+              run: uv run pytest --cov --cov-branch --cov-report=xml --junitxml=junit.xml
 
             - name: Upload test results to Codecov
               if: ${{ !cancelled() }}
