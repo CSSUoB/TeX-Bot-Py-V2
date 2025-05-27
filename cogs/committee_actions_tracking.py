@@ -131,15 +131,18 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         except CommitteeRoleDoesNotExistError:
             return set()
 
+        committee_elect_role: discord.Role | None = None
         with contextlib.suppress(CommitteeElectRoleDoesNotExistError):
-            committee_elect_role: discord.Role | None = await ctx.bot.committee_elect_role
+            committee_elect_role = await ctx.bot.committee_elect_role
 
         return {
             discord.OptionChoice(
                 name=f"{member.display_name} ({member.global_name})", value=str(member.id)
             )
-            for member in set(committee_role.members)
-            | set((committee_elect_role.members) if committee_elect_role else set())
+            for member in (
+                set(committee_role.members)
+                | set(committee_elect_role.members if committee_elect_role is not None else set())
+            )
             if not member.bot
         }
 
@@ -590,7 +593,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         else:
             action_member = ctx.user
 
-        if committee_role not in ctx.user.roles and action_member != ctx.user:
+        if action_member != ctx.user and committee_role not in ctx.user.roles:
             await ctx.respond(
                 content="Committee role is required to list actions for other users.",
                 ephemeral=True,
