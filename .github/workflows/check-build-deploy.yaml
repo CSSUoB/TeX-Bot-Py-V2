@@ -165,7 +165,14 @@ jobs:
                 key: pytest|${{steps.store-hashed-python-version.outputs.hashed_python_version}}
 
             - name: Run pytest
-              run: uv run -- pytest  # TODO: Add GitHub workflows output format
+              run: pytest --cov --cov-branch --cov-report=xml --junitxml=junit.xml
+
+            - name: Upload test results to Codecov
+              if: ${{ !cancelled() }}
+              uses: codecov/test-results-action@v1
+
+            - name: Upload results to Codecov
+              uses: codecov/codecov-action@v5
 
     ruff-lint:
         runs-on: ubuntu-latest
