@@ -592,7 +592,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         if committee_role not in ctx.user.roles and action_member != ctx.user:
             await ctx.respond(
-                content="Committee role required to list actions for other users.",
+                content="Committee role is required to list actions for other users.",
                 ephemeral=True,
             )
             logger.debug(
