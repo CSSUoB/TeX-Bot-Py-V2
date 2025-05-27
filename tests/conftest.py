@@ -24,7 +24,7 @@ MISSING_ENV_VARIABLES: Final[Mapping[str, object]] = {
             "MODERATION_DOCUMENT_URL": "https://google.com",
             "MEMBERS_LIST_URL": "https://google.com",
             "MEMBERS_LIST_URL_SESSION_COOKIE": (
-                "".join(random.choices(string.hexdigits, k=random.randint(128, 256)))
+                "".join(random.choices(string.hexdigits, k=random.randint(128, 256)))  # noqa: S311
             ),
         }.items()
     )
@@ -43,7 +43,6 @@ if MISSING_ENV_VARIABLES:
         dotenv_file_path = Path(RAW_DOTENV_FILE_PATH)
 
 
-# noinspection SpellCheckingInspection,PyUnusedLocal
 def pytest_sessionstart(session: pytest.Session) -> None:  # noqa: ARG001
     """
     Called after the Session object has been created and before performing collection and entering the run test loop.
