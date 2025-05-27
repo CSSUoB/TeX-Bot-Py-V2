@@ -585,15 +585,13 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         Takes in a user and lists out their current actions.
         """
-        action_member: discord.Member | discord.User
         committee_role: discord.Role = await self.bot.committee_role
 
-        if action_member_id:
-            action_member = await self.bot.get_member_from_str_id(
-                action_member_id,
-            )
-        else:
-            action_member = ctx.user
+        action_member: discord.Member | discord.User = (
+            await self.bot.get_member_from_str_id(action_member_id)
+            if action_member_id.strip()
+            else ctx.user
+        )
 
         if action_member != ctx.user and committee_role not in ctx.user.roles:
             await ctx.respond(
