@@ -226,7 +226,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             # NOTE: The "Member" role must be added to the user **before** the "Guest" role to ensure that the welcome message does not include the suggestion to purchase membership
             await interaction_member.add_roles(
                 member_role,
-                reason='TeX Bot slash-command: "/makemember"',
+                reason=f'{ctx.user} used TeX Bot slash-command: "/makemember"',
             )
 
             try:
@@ -258,7 +258,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 if guest_role not in interaction_member.roles:
                     await interaction_member.add_roles(
                         guest_role,
-                        reason='TeX Bot slash-command: "/makemember"',
+                        reason=f'{ctx.user} used TeX Bot slash-command: "/makemember"',
                     )
             applicant_role: discord.Role | None
             try:
@@ -269,7 +269,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             if applicant_role and applicant_role in interaction_member.roles:
                 await interaction_member.remove_roles(
                     applicant_role,
-                    reason='TeX Bot slash-command: "/makemember"',
+                    reason=f'{ctx.user} used TeX Bot slash-command: "/makemember"',
                 )
 
 
