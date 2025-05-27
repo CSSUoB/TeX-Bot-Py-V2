@@ -8,7 +8,7 @@ from typing import Final
 
 import discord
 import pytest
-from classproperties import classproperty
+from typed_classproperties import classproperty
 from discord import HTTPClient, MessageCommand, SlashCommand, UserCommand
 from discord.state import ConnectionState
 
@@ -17,11 +17,10 @@ from utils import TeXBot
 
 
 class BaseTestDiscordCommand:
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def COMMAND(cls) -> SlashCommand | UserCommand | MessageCommand:  # noqa: N802,N805
-        """The Discord command the cog, linked to this test case, has the functionality for."""  # noqa: D401
+    def COMMAND(cls) -> SlashCommand | UserCommand | MessageCommand:  # noqa: N802
+        """The Discord command the cog, linked to this test case, has the functionality for."""
 
     @classmethod
     def execute_command(cls, ctx: TestingApplicationContext, **kwargs: object) -> None:
@@ -37,7 +36,6 @@ class BaseTestDiscordCommand:
             ),
         )
 
-    # noinspection PyPep8Naming
     @pytest.fixture(autouse=True)
     def CONTEXT(self) -> TestingApplicationContext:  # noqa: N802
         bot: TeXBot = TeXBot()

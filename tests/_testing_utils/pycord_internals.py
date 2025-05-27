@@ -14,26 +14,38 @@ from utils import TeXBotApplicationContext
 
 
 class TestingResponse:
-    def __init__(self, content: str | None = None, *, tts: bool = False, ephemeral: bool = False, file: File | None = None, files: Iterable[File] | None = None, embed: Embed | None = None, embeds: Iterable[Embed] | None = None, view: View | None = None, delete_after: float | None = None) -> None:  # noqa: PLR0913,E501
+    def __init__(
+        self,
+        content: str | None = None,
+        *,
+        tts: bool = False,
+        ephemeral: bool = False,
+        file: File | None = None,
+        files: Iterable[File] | None = None,
+        embed: Embed | None = None,
+        embeds: Iterable[Embed] | None = None,
+        view: View | None = None,
+        delete_after: float | None = None,
+    ) -> None:  # noqa: PLR0913,E501
         if content is not None and not content.strip():
-            EMPTY_CONTENT_MESSAGE: Final[str] = f"Parameter {"content"!r} cannot be empty."
+            EMPTY_CONTENT_MESSAGE: Final[str] = f"Parameter {'content'!r} cannot be empty."
             raise ValueError(EMPTY_CONTENT_MESSAGE)
 
         if file is not None and files is not None:
             INCOMPATIBLE_FILES_PARAMETERS_MESSAGE: Final[str] = (
-                f"Parameters {"file"!r} & {"files"!r} cannot both be given."
+                f"Parameters {'file'!r} & {'files'!r} cannot both be given."
             )
             raise ValueError(INCOMPATIBLE_FILES_PARAMETERS_MESSAGE)
 
         if embed is not None and embeds is not None:
             INCOMPATIBLE_EMBEDS_PARAMETERS_MESSAGE: Final[str] = (
-                f"Parameters {"embed"!r} & {"embeds"!r} cannot both be given."
+                f"Parameters {'embed'!r} & {'embeds'!r} cannot both be given."
             )
             raise ValueError(INCOMPATIBLE_EMBEDS_PARAMETERS_MESSAGE)
 
         if delete_after is not None and delete_after <= 0:
             INVALID_DELETE_AFTER_MESSAGE: Final[str] = (
-                f"Parameter {"delete_after"!r} must be greater than 0."
+                f"Parameter {'delete_after'!r} must be greater than 0."
             )
             raise ValueError(INVALID_DELETE_AFTER_MESSAGE)
 
@@ -99,11 +111,27 @@ class TestingResponse:
 
 
 class TestingInteraction(discord.Interaction):
-    def __init__(self, *, data: discord.types.interactions.Interaction, state: ConnectionState) -> None:  # noqa: E501
+    def __init__(
+        self, *, data: discord.types.interactions.Interaction, state: ConnectionState
+    ) -> None:  # noqa: E501
         self._responses: MutableSequence[TestingResponse] = []
         super().__init__(data=data, state=state)
 
-    async def respond(self, content: str | None = None, *, username: str | None = None, avatar_url: str | None = None, tts: bool = False, ephemeral: bool = False, file: File | None = None, files: Iterable[File] | None = None, embed: Embed | None = None, embeds: Iterable[Embed] | None = None, view: View | None = None, delete_after: float | None = None) -> discord.Interaction | discord.WebhookMessage:  # noqa: ARG002, PLR0913, E501
+    async def respond(
+        self,
+        content: str | None = None,
+        *,
+        username: str | None = None,
+        avatar_url: str | None = None,
+        tts: bool = False,
+        ephemeral: bool = False,
+        file: File | None = None,
+        files: Iterable[File] | None = None,
+        embed: Embed | None = None,
+        embeds: Iterable[Embed] | None = None,
+        view: View | None = None,
+        delete_after: float | None = None,
+    ) -> discord.Interaction | discord.WebhookMessage:  # noqa: ARG002, PLR0913, E501
         response: TestingResponse = TestingResponse(
             content=content,
             tts=tts,

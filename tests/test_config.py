@@ -23,17 +23,15 @@ from exceptions import (
     MessagesJSONFileMissingKeyError,
     MessagesJSONFileValueError,
 )
-
-# noinspection PyProtectedMember
 from tests._testing_utils import EnvVariableDeleter, FileTemporaryDeleter
-from utils import (
+
+from .test_utils._testing_utils import (
     RandomDiscordBotTokenGenerator,
     RandomDiscordGuildIDGenerator,
     RandomDiscordLogChannelWebhookURLGenerator,
 )
 
 if TYPE_CHECKING:
-    # noinspection PyProtectedMember
     from _pytest._code import ExceptionInfo
     from _pytest.logging import LogCaptureFixture
 
@@ -42,7 +40,11 @@ class TestSettings:
     """Test case to unit-test the `Settings` class & its instances."""
 
     @classmethod
-    def replace_setup_methods(cls, ignore_methods: Iterable[str] | None = None, replacement_method: Callable[[str], None] | None = None) -> type[Settings]:  # noqa: E501
+    def replace_setup_methods(
+        cls,
+        ignore_methods: Iterable[str] | None = None,
+        replacement_method: Callable[[str], None] | None = None,
+    ) -> type[Settings]:
         """Return a new runtime version of the `Settings` class, with replaced methods."""
         if ignore_methods is None:
             ignore_methods = set()
@@ -54,8 +56,7 @@ class TestSettings:
 
         SETUP_METHOD_NAMES: Final[Iterable[str]] = {
             setup_method_name
-            for setup_method_name
-            in dir(RuntimeSettings)
+            for setup_method_name in dir(RuntimeSettings)
             if (
                 setup_method_name.startswith("_setup_")
                 and setup_method_name not in ignore_methods
@@ -84,8 +85,10 @@ class TestSettings:
     @pytest.mark.parametrize("TEST_ITEM_NAME", ("item_1",))
     def test_get_invalid_settings_key_message(self, TEST_ITEM_NAME: str) -> None:  # noqa: N803
         """Test that the `get_invalid_settings_key_message()` method returns correctly."""
-        INVALID_SETTINGS_KEY_MESSAGE: Final[str] = settings.get_invalid_settings_key_message_for_item_name(  # noqa: E501
-            TEST_ITEM_NAME,
+        INVALID_SETTINGS_KEY_MESSAGE: Final[str] = (
+            settings.get_invalid_settings_key_message_for_item_name(  # noqa: E501
+                TEST_ITEM_NAME,
+            )
         )
 
         assert TEST_ITEM_NAME in INVALID_SETTINGS_KEY_MESSAGE
@@ -136,7 +139,9 @@ class TestSettings:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_ITEM_NAME", ("ITEM_1",))
     @pytest.mark.parametrize("TEST_ITEM_VALUE", ("value_1",))
-    def test_getattr_sets_up_env_variables(self, TEST_ITEM_NAME: str, TEST_ITEM_VALUE: str) -> None:  # noqa: N803,E501
+    def test_getattr_sets_up_env_variables(
+        self, TEST_ITEM_NAME: str, TEST_ITEM_VALUE: str
+    ) -> None:  # noqa: N803,E501
         """
         Test that requesting a settings variable sets them all up if they have not been.
 
@@ -200,7 +205,9 @@ class TestSettings:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_ITEM_NAME", ("ITEM_1",))
     @pytest.mark.parametrize("TEST_ITEM_VALUE", ("value_1",))
-    def test_getitem_sets_up_env_variables(self, TEST_ITEM_NAME: str, TEST_ITEM_VALUE: str) -> None:  # noqa: N803,E501
+    def test_getitem_sets_up_env_variables(
+        self, TEST_ITEM_NAME: str, TEST_ITEM_VALUE: str
+    ) -> None:  # noqa: N803,E501
         """
         Test that requesting a settings variable sets them all up if they have not been.
 
@@ -251,8 +258,7 @@ class TestSettings:
             CALLED_SETUP_METHODS  # noqa: SIM300
             == {
                 setup_method_name
-                for setup_method_name
-                in dir(RuntimeSettings)
+                for setup_method_name in dir(RuntimeSettings)
                 if (
                     setup_method_name.startswith("_setup_")
                     and setup_method_name != "_setup_env_variables"
@@ -263,7 +269,9 @@ class TestSettings:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_ITEM_NAME", ("ITEM_1",))
     @pytest.mark.parametrize("TEST_ITEM_VALUE", ("value_1",))
-    def test_cannot_setup_more_than_once(self, caplog: "LogCaptureFixture", TEST_ITEM_NAME: str, TEST_ITEM_VALUE: str) -> None:  # noqa: N803,E501
+    def test_cannot_setup_more_than_once(
+        self, caplog: "LogCaptureFixture", TEST_ITEM_NAME: str, TEST_ITEM_VALUE: str
+    ) -> None:  # noqa: N803,E501
         """Test that the Env Variables cannot be set more than once."""
         RuntimeSettings: Final[type[Settings]] = self.replace_setup_methods(
             ignore_methods=("_setup_env_variables",),
@@ -311,9 +319,8 @@ class TestSetupLogging:
             RuntimeSettings._setup_logging()  # noqa: SLF001
 
         assert "texbot" in set(logging.root.manager.loggerDict)
-        assert (
-            logging.getLogger("texbot").getEffectiveLevel()
-            == getattr(logging, TEST_LOG_LEVEL)
+        assert logging.getLogger("texbot").getEffectiveLevel() == getattr(
+            logging, TEST_LOG_LEVEL
         )
 
     def test_default_console_log_level(self) -> None:
@@ -391,7 +398,9 @@ class TestSetupDiscordBotToken:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
         with EnvVariableDeleter("DISCORD_BOT_TOKEN"):  # noqa: SIM117
-            with pytest.raises(ImproperlyConfiguredError, match=r"DISCORD_BOT_TOKEN.*valid.*Discord bot token"):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError, match=r"DISCORD_BOT_TOKEN.*valid.*Discord bot token"
+            ):  # noqa: E501
                 RuntimeSettings._setup_discord_bot_token()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -409,23 +418,21 @@ class TestSetupDiscordBotToken:
             ),
             re.sub(
                 r"\A[A-Za-z0-9]{24,26}\.",
-                f"{"".join(random.choices(string.ascii_letters + string.digits, k=2))}.",
+                f"{''.join(random.choices(string.ascii_letters + string.digits, k=2))}.",
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"\A[A-Za-z0-9]{24,26}\.",
-                f"{"".join(random.choices(string.ascii_letters + string.digits, k=50))}.",
+                f"{''.join(random.choices(string.ascii_letters + string.digits, k=50))}.",
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"\A[A-Za-z0-9]{24,26}\.",
                 (
-                    f"{
-                        "".join(random.choices(string.ascii_letters + string.digits, k=12))
-                    }>{
-                        "".join(random.choices(string.ascii_letters + string.digits, k=12))
+                    f"{''.join(random.choices(string.ascii_letters + string.digits, k=12))}>{
+                        ''.join(random.choices(string.ascii_letters + string.digits, k=12))
                     }."
                 ),
                 string=RandomDiscordBotTokenGenerator.single_value(),
@@ -433,25 +440,21 @@ class TestSetupDiscordBotToken:
             ),
             re.sub(
                 r"\.[A-Za-z0-9]{6}\.",
-                f".{"".join(random.choices(string.ascii_letters + string.digits, k=2))}.",
+                f".{''.join(random.choices(string.ascii_letters + string.digits, k=2))}.",
+                string=RandomDiscordBotTokenGenerator.single_value(),
+                count=1,
+            ),
+            re.sub(
+                r"\.[A-Za-z0-9]{6}\.",
+                (f".{''.join(random.choices(string.ascii_letters + string.digits, k=50))}."),
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"\.[A-Za-z0-9]{6}\.",
                 (
-                    f".{"".join(random.choices(string.ascii_letters + string.digits, k=50))}."
-                ),
-                string=RandomDiscordBotTokenGenerator.single_value(),
-                count=1,
-            ),
-            re.sub(
-                r"\.[A-Za-z0-9]{6}\.",
-                (
-                    f".{
-                        "".join(random.choices(string.ascii_letters + string.digits, k=3))
-                    }>{
-                        "".join(random.choices(string.ascii_letters + string.digits, k=2))
+                    f".{''.join(random.choices(string.ascii_letters + string.digits, k=3))}>{
+                        ''.join(random.choices(string.ascii_letters + string.digits, k=2))
                     }."
                 ),
                 string=RandomDiscordBotTokenGenerator.single_value(),
@@ -461,8 +464,8 @@ class TestSetupDiscordBotToken:
                 r"\.[A-Za-z0-9_-]{27,38}\Z",
                 (
                     f".{
-                        "".join(
-                            random.choices(string.ascii_letters + string.digits + "_-", k=2)
+                        ''.join(
+                            random.choices(string.ascii_letters + string.digits + '_-', k=2)
                         )
                     }"
                 ),
@@ -473,8 +476,8 @@ class TestSetupDiscordBotToken:
                 r"\.[A-Za-z0-9_-]{27,38}\Z",
                 (
                     f".{
-                        "".join(
-                            random.choices(string.ascii_letters + string.digits + "_-", k=50)
+                        ''.join(
+                            random.choices(string.ascii_letters + string.digits + '_-', k=50)
                         )
                     }"
                 ),
@@ -485,12 +488,12 @@ class TestSetupDiscordBotToken:
                 r"\.[A-Za-z0-9_-]{27,38}\Z",
                 (
                     f".{
-                        "".join(
-                            random.choices(string.ascii_letters + string.digits + "_-", k=16)
+                        ''.join(
+                            random.choices(string.ascii_letters + string.digits + '_-', k=16)
                         )
                     }>{
-                        "".join(
-                            random.choices(string.ascii_letters + string.digits + "_-", k=16)
+                        ''.join(
+                            random.choices(string.ascii_letters + string.digits + '_-', k=16)
                         )
                     }"
                 ),
@@ -510,7 +513,9 @@ class TestSetupDiscordBotToken:
         with EnvVariableDeleter("DISCORD_BOT_TOKEN"):
             os.environ["DISCORD_BOT_TOKEN"] = INVALID_DISCORD_BOT_TOKEN
 
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_DISCORD_BOT_TOKEN_MESSAGE):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError, match=INVALID_DISCORD_BOT_TOKEN_MESSAGE
+            ):  # noqa: E501
                 RuntimeSettings._setup_discord_bot_token()  # noqa: SLF001
 
 
@@ -531,7 +536,9 @@ class TestSetupDiscordLogChannelWebhookURL:
             (f"    {RandomDiscordLogChannelWebhookURLGenerator.single_value()}   ",),
         ),
     )
-    def test_setup_discord_log_channel_webhook_url_successful(self, TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str) -> None:  # noqa: N803,E501
+    def test_setup_discord_log_channel_webhook_url_successful(
+        self, TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str
+    ) -> None:  # noqa: N803,E501
         """
         Test that the given `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is used when provided.
 
@@ -582,23 +589,21 @@ class TestSetupDiscordLogChannelWebhookURL:
             ),
             re.sub(
                 r"/\d{17,20}/",
-                f"/{"".join(random.choices(string.digits, k=2))}/",
+                f"/{''.join(random.choices(string.digits, k=2))}/",
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"/\d{17,20}/",
-                f"/{"".join(random.choices(string.digits, k=50))}/",
+                f"/{''.join(random.choices(string.digits, k=50))}/",
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"/\d{17,20}/",
                 (
-                    f"/{
-                        "".join(random.choices(string.ascii_letters + string.digits, k=9))
-                    }>{
-                        "".join(random.choices(string.ascii_letters + string.digits, k=9))
+                    f"/{''.join(random.choices(string.ascii_letters + string.digits, k=9))}>{
+                        ''.join(random.choices(string.ascii_letters + string.digits, k=9))
                     }/"
                 ),
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
@@ -606,25 +611,21 @@ class TestSetupDiscordLogChannelWebhookURL:
             ),
             re.sub(
                 r"/[a-zA-Z\d]{60,90}",
-                f"/{"".join(random.choices(string.ascii_letters + string.digits, k=2))}",
+                f"/{''.join(random.choices(string.ascii_letters + string.digits, k=2))}",
+                string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
+                count=1,
+            ),
+            re.sub(
+                r"/[a-zA-Z\d]{60,90}",
+                (f"/{''.join(random.choices(string.ascii_letters + string.digits, k=150))}"),
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"/[a-zA-Z\d]{60,90}",
                 (
-                    f"/{"".join(random.choices(string.ascii_letters + string.digits, k=150))}"
-                ),
-                string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
-                count=1,
-            ),
-            re.sub(
-                r"/[a-zA-Z\d]{60,90}",
-                (
-                    f"/{
-                        "".join(random.choices(string.ascii_letters + string.digits, k=37))
-                    }>{
-                        "".join(random.choices(string.ascii_letters + string.digits, k=37))
+                    f"/{''.join(random.choices(string.ascii_letters + string.digits, k=37))}>{
+                        ''.join(random.choices(string.ascii_letters + string.digits, k=37))
                     }"
                 ),
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
@@ -632,7 +633,9 @@ class TestSetupDiscordLogChannelWebhookURL:
             ),
         ),
     )
-    def test_invalid_discord_log_channel_webhook_url(self, INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str) -> None:  # noqa: N803,E501
+    def test_invalid_discord_log_channel_webhook_url(
+        self, INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str
+    ) -> None:  # noqa: N803,E501
         """Test that an error occurs when `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is invalid."""
         INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE: Final[str] = (
             "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL"
@@ -645,7 +648,10 @@ class TestSetupDiscordLogChannelWebhookURL:
                 INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL
             )
 
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError,
+                match=INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE,
+            ):  # noqa: E501
                 RuntimeSettings._setup_discord_log_channel_webhook_url()  # noqa: SLF001
 
 
@@ -678,7 +684,9 @@ class TestSetupDiscordGuildID:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
         with EnvVariableDeleter("DISCORD_GUILD_ID"):  # noqa: SIM117
-            with pytest.raises(ImproperlyConfiguredError, match=r"DISCORD_GUILD_ID.*valid.*Discord guild ID"):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError, match=r"DISCORD_GUILD_ID.*valid.*Discord guild ID"
+            ):  # noqa: E501
                 RuntimeSettings._setup_discord_guild_id()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -709,7 +717,9 @@ class TestSetupDiscordGuildID:
         with EnvVariableDeleter("DISCORD_GUILD_ID"):
             os.environ["DISCORD_GUILD_ID"] = INVALID_DISCORD_GUILD_ID
 
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_DISCORD_GUILD_ID_MESSAGE):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError, match=INVALID_DISCORD_GUILD_ID_MESSAGE
+            ):  # noqa: E501
                 RuntimeSettings._setup_discord_guild_id()  # noqa: SLF001
 
 
@@ -749,8 +759,7 @@ class TestSetupGroupFullName:
         assert RuntimeSettings()["_GROUP_FULL_NAME"] == TEST_GROUP_FULL_NAME.strip().translate(
             {
                 ord(unicode_char): ascii_char
-                for unicode_char, ascii_char
-                in zip("‘’´“”–-", "''`\"\"--", strict=True)  # noqa: RUF001
+                for unicode_char, ascii_char in zip("‘’´“”–-", "''`\"\"--", strict=True)  # noqa: RUF001
             },
         )
 
@@ -845,8 +854,7 @@ class TestSetupGroupShortName:
             TEST_GROUP_SHORT_NAME.strip().translate(
                 {
                     ord(unicode_char): ascii_char
-                    for unicode_char, ascii_char
-                    in zip("‘’´“”–-", "''`\"\"--", strict=True)  # noqa: RUF001
+                    for unicode_char, ascii_char in zip("‘’´“”–-", "''`\"\"--", strict=True)  # noqa: RUF001
                 },
             )
         )
@@ -887,7 +895,9 @@ class TestSetupGroupShortName:
             "(Computer Science Society)",
         ),
     )
-    def test_resolved_value_group_short_name_with_group_full_name(self, TEST_GROUP_FULL_NAME: str) -> None:  # noqa: N803,E501
+    def test_resolved_value_group_short_name_with_group_full_name(
+        self, TEST_GROUP_FULL_NAME: str
+    ) -> None:  # noqa: N803,E501
         """
         Test that a resolved value is used when no `GROUP_SHORT_NAME` is provided.
 
@@ -907,38 +917,48 @@ class TestSetupGroupShortName:
 
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
-        assert RuntimeSettings()["_GROUP_SHORT_NAME"] == (
-            "CSS"
-            if (
-                "computer science society" in TEST_GROUP_FULL_NAME.lower()
-                or "css" in TEST_GROUP_FULL_NAME.lower()
+        assert (
+            RuntimeSettings()["_GROUP_SHORT_NAME"]
+            == (
+                "CSS"
+                if (
+                    "computer science society" in TEST_GROUP_FULL_NAME.lower()
+                    or "css" in TEST_GROUP_FULL_NAME.lower()
+                )
+                else TEST_GROUP_FULL_NAME
             )
-            else TEST_GROUP_FULL_NAME
-        ).replace(
-            "the",
-            "",
-        ).replace(
-            "THE",
-            "",
-        ).replace(
-            "The",
-            "",
-        ).replace(
-            " ",
-            "",
-        ).replace(
-            "\t",
-            "",
-        ).replace(
-            "\n",
-            "",
-        ).translate(
-            {
-                ord(unicode_char): ascii_char
-                for unicode_char, ascii_char
-                in zip("‘’´“”–-", "''`\"\"--", strict=True)  # noqa: RUF001
-            },
-        ).strip()
+            .replace(
+                "the",
+                "",
+            )
+            .replace(
+                "THE",
+                "",
+            )
+            .replace(
+                "The",
+                "",
+            )
+            .replace(
+                " ",
+                "",
+            )
+            .replace(
+                "\t",
+                "",
+            )
+            .replace(
+                "\n",
+                "",
+            )
+            .translate(
+                {
+                    ord(unicode_char): ascii_char
+                    for unicode_char, ascii_char in zip("‘’´“”–-", "''`\"\"--", strict=True)  # noqa: RUF001
+                },
+            )
+            .strip()
+        )
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
@@ -979,7 +999,9 @@ class TestSetupGroupShortName:
         with EnvVariableDeleter("GROUP_SHORT_NAME"):
             os.environ["GROUP_SHORT_NAME"] = INVALID_GROUP_SHORT_NAME
 
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_GROUP_SHORT_NAME_MESSAGE):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError, match=INVALID_GROUP_SHORT_NAME_MESSAGE
+            ):  # noqa: E501
                 RuntimeSettings._setup_group_short_name()  # noqa: SLF001
 
 
@@ -991,7 +1013,9 @@ class TestSetupPurchaseMembershipURL:
         "TEST_PURCHASE_MEMBERSHIP_URL",
         ("https://google.com", "www.google.com/", "    https://google.com   "),
     )
-    def test_setup_purchase_membership_url_successful(self, TEST_PURCHASE_MEMBERSHIP_URL: str) -> None:  # noqa: N803,E501
+    def test_setup_purchase_membership_url_successful(
+        self, TEST_PURCHASE_MEMBERSHIP_URL: str
+    ) -> None:  # noqa: N803,E501
         """Test that the given valid `PURCHASE_MEMBERSHIP_URL` is used when one is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1027,7 +1051,9 @@ class TestSetupPurchaseMembershipURL:
         "INVALID_PURCHASE_MEMBERSHIP_URL",
         ("INVALID_PURCHASE_MEMBERSHIP_URL", "www.google..com/", "", "  "),
     )
-    def test_invalid_purchase_membership_url(self, INVALID_PURCHASE_MEMBERSHIP_URL: str) -> None:  # noqa: N803,E501
+    def test_invalid_purchase_membership_url(
+        self, INVALID_PURCHASE_MEMBERSHIP_URL: str
+    ) -> None:  # noqa: N803,E501
         """Test that an error occurs when the provided `PURCHASE_MEMBERSHIP_URL` is invalid."""
         INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE: Final[str] = (
             "PURCHASE_MEMBERSHIP_URL must be a valid URL"
@@ -1038,7 +1064,9 @@ class TestSetupPurchaseMembershipURL:
         with EnvVariableDeleter("PURCHASE_MEMBERSHIP_URL"):
             os.environ["PURCHASE_MEMBERSHIP_URL"] = INVALID_PURCHASE_MEMBERSHIP_URL
 
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError, match=INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE
+            ):  # noqa: E501
                 RuntimeSettings._setup_purchase_membership_url()  # noqa: SLF001
 
 
@@ -1050,7 +1078,9 @@ class TestSetupMembershipPerksURL:
         "TEST_MEMBERSHIP_PERKS_URL",
         ("https://google.com", "www.google.com/", "    https://google.com   "),
     )
-    def test_setup_membership_perks_url_successful(self, TEST_MEMBERSHIP_PERKS_URL: str) -> None:  # noqa: N803,E501
+    def test_setup_membership_perks_url_successful(
+        self, TEST_MEMBERSHIP_PERKS_URL: str
+    ) -> None:  # noqa: N803,E501
         """Test that the given valid `MEMBERSHIP_PERKS_URL` is used when one is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1097,7 +1127,9 @@ class TestSetupMembershipPerksURL:
         with EnvVariableDeleter("MEMBERSHIP_PERKS_URL"):
             os.environ["MEMBERSHIP_PERKS_URL"] = INVALID_MEMBERSHIP_PERKS_URL
 
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MEMBERSHIP_PERKS_URL_MESSAGE):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError, match=INVALID_MEMBERSHIP_PERKS_URL_MESSAGE
+            ):  # noqa: E501
                 RuntimeSettings._setup_membership_perks_url()  # noqa: SLF001
 
 
@@ -1109,7 +1141,9 @@ class TestSetupPingCommandEasterEggProbability:
         "TEST_PING_COMMAND_EASTER_EGG_PROBABILITY",
         ("1", "0", "0.5", "    0.5   "),
     )
-    def test_setup_ping_command_easter_egg_probability_successful(self, TEST_PING_COMMAND_EASTER_EGG_PROBABILITY: str) -> None:  # noqa: N803,E501
+    def test_setup_ping_command_easter_egg_probability_successful(
+        self, TEST_PING_COMMAND_EASTER_EGG_PROBABILITY: str
+    ) -> None:  # noqa: N803,E501
         """
         Test that the given `PING_COMMAND_EASTER_EGG_PROBABILITY` is used when provided.
 
@@ -1151,7 +1185,9 @@ class TestSetupPingCommandEasterEggProbability:
         "INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY",
         ("INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY", "", "  ", "-5", "1.1", "5", "-0.01"),
     )
-    def test_invalid_ping_command_easter_egg_probability(self, INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY: str) -> None:  # noqa: N803,E501
+    def test_invalid_ping_command_easter_egg_probability(
+        self, INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY: str
+    ) -> None:  # noqa: N803,E501
         """Test that errors when provided `PING_COMMAND_EASTER_EGG_PROBABILITY` is invalid."""
         INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE: Final[str] = (
             r"PING_COMMAND_EASTER_EGG_PROBABILITY must be a float.*between.*1.*0"
@@ -1164,7 +1200,10 @@ class TestSetupPingCommandEasterEggProbability:
                 INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY
             )
 
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError,
+                match=INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE,
+            ):  # noqa: E501
                 RuntimeSettings._setup_ping_command_easter_egg_probability()  # noqa: SLF001
 
 
@@ -1176,7 +1215,9 @@ class TestSetupMessagesFile:
         "RAW_INVALID_MESSAGES_FILE_PATH",
         ("messages.json.invalid", "", "  "),
     )
-    def test_get_messages_dict_with_invalid_messages_file_path(self, RAW_INVALID_MESSAGES_FILE_PATH: str) -> None:  # noqa: N803,E501
+    def test_get_messages_dict_with_invalid_messages_file_path(
+        self, RAW_INVALID_MESSAGES_FILE_PATH: str
+    ) -> None:  # noqa: N803,E501
         """Test that an error occurs when the provided `messages_file_path` is invalid."""
         INVALID_MESSAGES_FILE_PATH: Path = Path(RAW_INVALID_MESSAGES_FILE_PATH.strip())
 
@@ -1184,12 +1225,16 @@ class TestSetupMessagesFile:
             INVALID_MESSAGES_FILE_PATH_MESSAGE: Final[str] = (
                 "MESSAGES_FILE_PATH must be a path to a file that exists"
             )
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MESSAGES_FILE_PATH_MESSAGE):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError, match=INVALID_MESSAGES_FILE_PATH_MESSAGE
+            ):  # noqa: E501
                 Settings._get_messages_dict(RAW_INVALID_MESSAGES_FILE_PATH)  # noqa: SLF001
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"welcome_messages": ["Welcome!"]},))
-    def test_get_messages_dict_with_no_messages_file_path(self, TEST_MESSAGES_DICT: Mapping[str, object]) -> None:  # noqa: N803,E501
+    def test_get_messages_dict_with_no_messages_file_path(
+        self, TEST_MESSAGES_DICT: Mapping[str, object]
+    ) -> None:  # noqa: N803,E501
         """Test that the default value is used when no `messages_file_path` is provided."""
         DEFAULT_MESSAGES_FILE_PATH: Path = config.PROJECT_ROOT / "messages.json"
 
@@ -1206,7 +1251,9 @@ class TestSetupMessagesFile:
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"welcome_messages": ["Welcome!"]},))
-    def test_get_messages_dict_successful(self, TEST_MESSAGES_DICT: Mapping[str, object]) -> None:  # noqa: N803,E501
+    def test_get_messages_dict_successful(
+        self, TEST_MESSAGES_DICT: Mapping[str, object]
+    ) -> None:  # noqa: N803,E501
         """Test that the given path is used when a `messages_file_path` is provided."""
         temporary_messages_file: IO[str]
         with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
@@ -1230,11 +1277,12 @@ class TestSetupMessagesFile:
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
-        "INVALID_MESSAGES_JSON", (
-            "{\"welcome_messages\": [\"Welcome!\"}",
+        "INVALID_MESSAGES_JSON",
+        (
+            '{"welcome_messages": ["Welcome!"}',
             "[]",
-            "[\"Welcome!\"]",
-            "\"Welcome!\"",
+            '["Welcome!"]',
+            '"Welcome!"',
             "99",
             "null",
             "true",
@@ -1259,7 +1307,9 @@ class TestSetupMessagesFile:
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"welcome_messages": ["Welcome!"]},))
-    def test_setup_welcome_messages_successful_with_messages_file_path(self, TEST_MESSAGES_DICT: Mapping[str, Iterable[str]]) -> None:  # noqa: N803,E501
+    def test_setup_welcome_messages_successful_with_messages_file_path(
+        self, TEST_MESSAGES_DICT: Mapping[str, Iterable[str]]
+    ) -> None:  # noqa: N803,E501
         """Test that correct welcome messages are loaded when `MESSAGES_FILE_PATH` is valid."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1282,7 +1332,9 @@ class TestSetupMessagesFile:
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"welcome_messages": ["Welcome!"]},))
-    def test_setup_welcome_messages_successful_with_no_messages_file_path(self, TEST_MESSAGES_DICT: Mapping[str, Iterable[str]]) -> None:  # noqa: N803,E501
+    def test_setup_welcome_messages_successful_with_no_messages_file_path(
+        self, TEST_MESSAGES_DICT: Mapping[str, Iterable[str]]
+    ) -> None:  # noqa: N803,E501
         """Test that correct welcome messages are loaded when no `MESSAGES_FILE_PATH` given."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1306,7 +1358,9 @@ class TestSetupMessagesFile:
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("NO_WELCOME_MESSAGES_DICT", ({"other_messages": ["Welcome!"]},))
-    def test_welcome_messages_key_not_in_messages_json(self, NO_WELCOME_MESSAGES_DICT: Mapping[str, Iterable[str]]) -> None:  # noqa: N803,E501
+    def test_welcome_messages_key_not_in_messages_json(
+        self, NO_WELCOME_MESSAGES_DICT: Mapping[str, Iterable[str]]
+    ) -> None:  # noqa: N803,E501
         """Test that error is raised when messages-file not contain `welcome_messages` key."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1338,7 +1392,9 @@ class TestSetupMessagesFile:
             {"welcome_messages": False},
         ),
     )
-    def test_invalid_welcome_messages(self, INVALID_WELCOME_MESSAGES_DICT: Mapping[str, object]) -> None:  # noqa: N803,E501
+    def test_invalid_welcome_messages(
+        self, INVALID_WELCOME_MESSAGES_DICT: Mapping[str, object]
+    ) -> None:  # noqa: N803,E501
         """Test that error is raised when the `welcome_messages` is not a valid value."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1356,13 +1412,15 @@ class TestSetupMessagesFile:
                     RuntimeSettings._setup_welcome_messages()  # noqa: SLF001
 
         assert exc_info.value.dict_key == "welcome_messages"
-        assert exc_info.value.invalid_value == INVALID_WELCOME_MESSAGES_DICT[
-            "welcome_messages"
-        ]
+        assert (
+            exc_info.value.invalid_value == INVALID_WELCOME_MESSAGES_DICT["welcome_messages"]
+        )
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"roles_messages": ["Gaming"]},))
-    def test_setup_roles_messages_successful_with_messages_file_path(self, TEST_MESSAGES_DICT: Mapping[str, Iterable[str]]) -> None:  # noqa: N803,E501
+    def test_setup_roles_messages_successful_with_messages_file_path(
+        self, TEST_MESSAGES_DICT: Mapping[str, Iterable[str]]
+    ) -> None:  # noqa: N803,E501
         """Test that correct roles messages are loaded when `MESSAGES_FILE_PATH` is valid."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1385,7 +1443,9 @@ class TestSetupMessagesFile:
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"roles_messages": ["Gaming"]},))
-    def test_setup_roles_messages_successful_with_no_messages_file_path(self, TEST_MESSAGES_DICT: Mapping[str, Iterable[str]]) -> None:  # noqa: N803,E501
+    def test_setup_roles_messages_successful_with_no_messages_file_path(
+        self, TEST_MESSAGES_DICT: Mapping[str, Iterable[str]]
+    ) -> None:  # noqa: N803,E501
         """Test that correct roles messages are loaded when no `MESSAGES_FILE_PATH` given."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1409,7 +1469,9 @@ class TestSetupMessagesFile:
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("NO_ROLES_MESSAGES_DICT", ({"other_messages": ["Gaming"]},))
-    def test_roles_messages_key_not_in_messages_json(self, NO_ROLES_MESSAGES_DICT: Mapping[str, Iterable[str]]) -> None:  # noqa: N803,E501
+    def test_roles_messages_key_not_in_messages_json(
+        self, NO_ROLES_MESSAGES_DICT: Mapping[str, Iterable[str]]
+    ) -> None:  # noqa: N803,E501
         """Test that error is raised when messages-file not contain `roles_messages` key."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1441,7 +1503,9 @@ class TestSetupMessagesFile:
             {"roles_messages": False},
         ),
     )
-    def test_invalid_roles_messages(self, INVALID_ROLES_MESSAGES_DICT: Mapping[str, object]) -> None:  # noqa: N803,E501
+    def test_invalid_roles_messages(
+        self, INVALID_ROLES_MESSAGES_DICT: Mapping[str, object]
+    ) -> None:  # noqa: N803,E501
         """Test that error is raised when the `roles_messages` is not a valid value."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1492,7 +1556,9 @@ class TestSetupMembersListURL:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
         with EnvVariableDeleter("MEMBERS_LIST_URL"):  # noqa: SIM117
-            with pytest.raises(ImproperlyConfiguredError, match=r"MEMBERS_LIST_URL.*valid.*URL"):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError, match=r"MEMBERS_LIST_URL.*valid.*URL"
+            ):  # noqa: E501
                 RuntimeSettings._setup_members_list_url()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -1502,16 +1568,16 @@ class TestSetupMembersListURL:
     )
     def test_invalid_members_list_url(self, INVALID_MEMBERS_LIST_URL: str) -> None:  # noqa: N803
         """Test that an error occurs when the provided `MEMBERS_LIST_URL` is invalid."""
-        INVALID_MEMBERS_LIST_URL_MESSAGE: Final[str] = (
-            "MEMBERS_LIST_URL must be a valid URL"
-        )
+        INVALID_MEMBERS_LIST_URL_MESSAGE: Final[str] = "MEMBERS_LIST_URL must be a valid URL"
 
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
         with EnvVariableDeleter("MEMBERS_LIST_URL"):
             os.environ["MEMBERS_LIST_URL"] = INVALID_MEMBERS_LIST_URL
 
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MEMBERS_LIST_URL_MESSAGE):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError, match=INVALID_MEMBERS_LIST_URL_MESSAGE
+            ):  # noqa: E501
                 RuntimeSettings._setup_members_list_url()  # noqa: SLF001
 
 
@@ -1523,10 +1589,12 @@ class TestSetupMembersListURLSessionCookie:
         "TEST_MEMBERS_LIST_URL_SESSION_COOKIE",
         (
             "".join(random.choices(string.hexdigits, k=random.randint(128, 256))),
-            f"  {"".join(random.choices(string.hexdigits, k=random.randint(128, 256)))}   ",
+            f"  {''.join(random.choices(string.hexdigits, k=random.randint(128, 256)))}   ",
         ),
     )
-    def test_setup_members_list_url_session_cookie_successful(self, TEST_MEMBERS_LIST_URL_SESSION_COOKIE: str) -> None:  # noqa: N803,E501
+    def test_setup_members_list_url_session_cookie_successful(
+        self, TEST_MEMBERS_LIST_URL_SESSION_COOKIE: str
+    ) -> None:  # noqa: N803,E501
         """
         Test that the given `TEST_MEMBERS_LIST_URL_SESSION_COOKIE` is used when provided.
 
@@ -1553,7 +1621,10 @@ class TestSetupMembersListURLSessionCookie:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
         with EnvVariableDeleter("MEMBERS_LIST_URL_SESSION_COOKIE"):  # noqa: SIM117
-            with pytest.raises(ImproperlyConfiguredError, match=r"MEMBERS_LIST_URL_SESSION_COOKIE.*valid.*\.ASPXAUTH cookie"):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError,
+                match=r"MEMBERS_LIST_URL_SESSION_COOKIE.*valid.*\.ASPXAUTH cookie",
+            ):  # noqa: E501
                 RuntimeSettings._setup_members_list_url_session_cookie()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -1566,15 +1637,15 @@ class TestSetupMembersListURLSessionCookie:
             "".join(random.choices(string.hexdigits, k=5)),
             "".join(random.choices(string.hexdigits, k=500)),
             (
-                f"{
-                    "".join(random.choices(string.hexdigits, k=64))
-                }>{
-                    "".join(random.choices(string.hexdigits, k=64))
+                f"{''.join(random.choices(string.hexdigits, k=64))}>{
+                    ''.join(random.choices(string.hexdigits, k=64))
                 }"
             ),
         ),
     )
-    def test_invalid_members_list_url_session_cookie(self, INVALID_MEMBERS_LIST_URL_SESSION_COOKIE: str) -> None:  # noqa: N803,E501
+    def test_invalid_members_list_url_session_cookie(
+        self, INVALID_MEMBERS_LIST_URL_SESSION_COOKIE: str
+    ) -> None:  # noqa: N803,E501
         """Test that an error occurs when `MEMBERS_LIST_URL_SESSION_COOKIE` is invalid."""
         INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
             "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie"
@@ -1587,7 +1658,10 @@ class TestSetupMembersListURLSessionCookie:
                 INVALID_MEMBERS_LIST_URL_SESSION_COOKIE
             )
 
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError,
+                match=INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE,
+            ):  # noqa: E501
                 RuntimeSettings._setup_members_list_url_session_cookie()  # noqa: SLF001
 
 
@@ -1605,8 +1679,7 @@ class TestSetupSendIntroductionReminders:
                         next(
                             iter(
                                 value
-                                for value
-                                in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
+                                for value in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
                                 if value.isalpha()
                             )
                         )
@@ -1614,27 +1687,23 @@ class TestSetupSendIntroductionReminders:
                     next(
                         iter(
                             value
-                            for value
-                            in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
+                            for value in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
                             if value.isalpha()
                         ),
                     ).lower(),
                     next(
                         iter(
                             value
-                            for value
-                            in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
+                            for value in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
                             if value.isalpha()
                         ),
                     ).upper(),
                     "".join(
                         random.choice((str.upper, str.lower))(character)
-                        for character
-                        in next(
+                        for character in next(
                             iter(
                                 value
-                                for value
-                                in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
+                                for value in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
                                 if value.isalpha()
                             ),
                         )
@@ -1643,7 +1712,9 @@ class TestSetupSendIntroductionReminders:
             ),
         ),
     )
-    def test_setup_send_introduction_reminders_successful(self, TEST_SEND_INTRODUCTION_REMINDERS_VALUE: str) -> None:  # noqa: N803,E501
+    def test_setup_send_introduction_reminders_successful(
+        self, TEST_SEND_INTRODUCTION_REMINDERS_VALUE: str
+    ) -> None:  # noqa: N803,E501
         """Test that setup is successful when a valid option is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1659,7 +1730,8 @@ class TestSetupSendIntroductionReminders:
             if TEST_SEND_INTRODUCTION_REMINDERS_VALUE.lower().strip() in config.TRUE_VALUES
             else (
                 False
-                if TEST_SEND_INTRODUCTION_REMINDERS_VALUE.lower().strip() not in (
+                if TEST_SEND_INTRODUCTION_REMINDERS_VALUE.lower().strip()
+                not in (
                     "once",
                     "interval",
                 )
@@ -1693,10 +1765,12 @@ class TestSetupSendIntroductionReminders:
             ),
         ),
     )
-    def test_invalid_send_introduction_reminders(self, INVALID_SEND_INTRODUCTION_REMINDERS_VALUE: str) -> None:  # noqa: N803,E501
+    def test_invalid_send_introduction_reminders(
+        self, INVALID_SEND_INTRODUCTION_REMINDERS_VALUE: str
+    ) -> None:  # noqa: N803,E501
         """Test that an error occurs when an invalid introduction-reminders-flag is given."""
         INVALID_SEND_INTRODUCTION_REMINDERS_VALUE_MESSAGE: Final[str] = (
-            "SEND_INTRODUCTION_REMINDERS must be one of: \"Once\", \"Interval\" or \"False\""
+            'SEND_INTRODUCTION_REMINDERS must be one of: "Once", "Interval" or "False"'
         )
 
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
@@ -1706,7 +1780,10 @@ class TestSetupSendIntroductionReminders:
                 INVALID_SEND_INTRODUCTION_REMINDERS_VALUE
             )
 
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_SEND_INTRODUCTION_REMINDERS_VALUE_MESSAGE):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError,
+                match=INVALID_SEND_INTRODUCTION_REMINDERS_VALUE_MESSAGE,
+            ):  # noqa: E501
                 RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -1716,47 +1793,33 @@ class TestSetupSendIntroductionReminders:
             f"{random.randint(3, 999)}s",
             f"{random.randint(3, 999)}.{random.randint(0, 999)}s",
             (
-                f"  {
-                    random.randint(3, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
+                f"  {random.randint(3, 999)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
                 }s   "
             ),
-            f"{random.randint(1, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}m",
-            f"{random.randint(1, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}h",
+            f"{random.randint(1, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}m",
+            f"{random.randint(1, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}h",
             (
-                f"{
-                    random.randint(3, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
-                }s{
+                f"{random.randint(3, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}s{
                     random.randint(0, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
-                }m{
-                    random.randint(0, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
+                }{random.choice(('', f'.{random.randint(0, 999)}'))}m{random.randint(0, 999)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
                 }h"
             ),
             (
-                f"{
-                    random.randint(3, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
-                } s  {
-                    random.randint(0, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
-                }   m   {
-                    random.randint(0, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
+                f"{random.randint(3, 999)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
+                } s  {random.randint(0, 999)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
+                }   m   {random.randint(0, 999)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
                 }  h"
             ),
         ),
     )
-    def test_setup_send_introduction_reminders_interval_successful(self, TEST_SEND_INTRODUCTION_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
+    def test_setup_send_introduction_reminders_interval_successful(
+        self, TEST_SEND_INTRODUCTION_REMINDERS_INTERVAL: str
+    ) -> None:  # noqa: N803,E501
         """
         Test that the given `SEND_INTRODUCTION_REMINDERS_INTERVAL` is used when provided.
 
@@ -1777,12 +1840,13 @@ class TestSetupSendIntroductionReminders:
 
         assert RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"] == {
             key: float(value)
-            for key, value
-            in (
+            for key, value in (
                 re.match(
                     r"\A(?:(?P<seconds>(?:\d*\.)?\d+)\s*s)?\s*(?:(?P<minutes>(?:\d*\.)?\d+)\s*m)?\s*(?:(?P<hours>(?:\d*\.)?\d+)\s*h)?\Z",
                     TEST_SEND_INTRODUCTION_REMINDERS_INTERVAL.lower().strip(),
-                ).groupdict().items()  # type: ignore[union-attr]
+                )
+                .groupdict()
+                .items()  # type: ignore[union-attr]
             )
             if value
         }
@@ -1795,16 +1859,14 @@ class TestSetupSendIntroductionReminders:
 
         assert all(
             isinstance(value, float)
-            for value
-            in RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"].values()
+            for value in RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"].values()
         )
 
         timedelta_error: TypeError
         try:
-            assert (
-                timedelta(**RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"])
-                > timedelta(seconds=3)
-            )
+            assert timedelta(
+                **RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"]
+            ) > timedelta(seconds=3)
 
         except TypeError as timedelta_error:
             if "invalid keyword argument for __new__()" not in str(timedelta_error):
@@ -1839,16 +1901,14 @@ class TestSetupSendIntroductionReminders:
 
         assert all(
             isinstance(value, float)
-            for value
-            in RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"].values()
+            for value in RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"].values()
         )
 
         timedelta_error: TypeError
         try:
-            assert (
-                timedelta(**RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"])
-                > timedelta(seconds=3)
-            )
+            assert timedelta(
+                **RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"]
+            ) > timedelta(seconds=3)
 
         except TypeError as timedelta_error:
             if "invalid keyword argument for __new__()" not in str(timedelta_error):
@@ -1862,7 +1922,9 @@ class TestSetupSendIntroductionReminders:
                 pytrace=False,
             )
 
-    def test_setup_send_introduction_reminders_interval_without_send_introduction_reminders_setup(self) -> None:  # noqa: E501
+    def test_setup_send_introduction_reminders_interval_without_send_introduction_reminders_setup(
+        self,
+    ) -> None:  # noqa: E501
         """Test that an error is raised when setting up the interval without the flag."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1882,7 +1944,9 @@ class TestSetupSendIntroductionReminders:
             f"{random.randint(3, 999)},{random.randint(0, 999)}s",
         ),
     )
-    def test_invalid_send_introduction_reminders_interval_flag_disabled(self, INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
+    def test_invalid_send_introduction_reminders_interval_flag_disabled(
+        self, INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL: str
+    ) -> None:  # noqa: N803,E501
         """
         Test that no error is raised when `SEND_INTRODUCTION_REMINDERS_INTERVAL` is invalid.
 
@@ -1917,7 +1981,11 @@ class TestSetupSendIntroductionReminders:
         ),
     )
     @pytest.mark.parametrize("SEND_INTRODUCTION_REMINDERS_VALUE", ("once", "interval"))
-    def test_invalid_send_introduction_reminders_interval_flag_enabled(self, INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL: str, SEND_INTRODUCTION_REMINDERS_VALUE: str) -> None:  # noqa: N803,ARG002,E501
+    def test_invalid_send_introduction_reminders_interval_flag_enabled(
+        self,
+        INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL: str,
+        SEND_INTRODUCTION_REMINDERS_VALUE: str,
+    ) -> None:  # noqa: N803,ARG002,E501
         """
         Test that an error is raised when `SEND_INTRODUCTION_REMINDERS_INTERVAL` is invalid.
 
@@ -1941,7 +2009,10 @@ class TestSetupSendIntroductionReminders:
                 os.environ["SEND_INTRODUCTION_REMINDERS"] = random.choice(("once", "interval"))
                 RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
 
-                with pytest.raises(ImproperlyConfiguredError, match=INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE):  # noqa: E501
+                with pytest.raises(
+                    ImproperlyConfiguredError,
+                    match=INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE,
+                ):  # noqa: E501
                     RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -1949,7 +2020,9 @@ class TestSetupSendIntroductionReminders:
         "TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL",
         ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h"),
     )
-    def test_too_small_send_introduction_reminders_interval_flag_disabled(self, TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
+    def test_too_small_send_introduction_reminders_interval_flag_disabled(
+        self, TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL: str
+    ) -> None:  # noqa: N803,E501
         """
         Test that no error is raised when `SEND_INTRODUCTION_REMINDERS_INTERVAL` is too small.
 
@@ -1978,7 +2051,11 @@ class TestSetupSendIntroductionReminders:
         ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h"),
     )
     @pytest.mark.parametrize("SEND_INTRODUCTION_REMINDERS_VALUE", ("once", "interval"))
-    def test_too_small_send_introduction_reminders_interval_flag_enabled(self, TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL: str, SEND_INTRODUCTION_REMINDERS_VALUE: str) -> None:  # noqa: N803,ARG002,E501
+    def test_too_small_send_introduction_reminders_interval_flag_enabled(
+        self,
+        TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL: str,
+        SEND_INTRODUCTION_REMINDERS_VALUE: str,
+    ) -> None:  # noqa: N803,ARG002,E501
         """
         Test that an error is raised when `SEND_INTRODUCTION_REMINDERS_INTERVAL` is too small.
 
@@ -2001,7 +2078,10 @@ class TestSetupSendIntroductionReminders:
                 os.environ["SEND_INTRODUCTION_REMINDERS"] = random.choice(("once", "interval"))
                 RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
 
-                with pytest.raises(ImproperlyConfiguredError, match=TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE):  # noqa: E501
+                with pytest.raises(
+                    ImproperlyConfiguredError,
+                    match=TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE,
+                ):  # noqa: E501
                     RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
 
 
@@ -2025,8 +2105,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
                         next(
                             iter(
                                 value
-                                for value
-                                in config.TRUE_VALUES | config.FALSE_VALUES
+                                for value in config.TRUE_VALUES | config.FALSE_VALUES
                                 if value.isalpha()
                             )
                         )
@@ -2034,27 +2113,23 @@ class TestSetupKickNoIntroductionDiscordMembers:
                     next(
                         iter(
                             value
-                            for value
-                            in config.TRUE_VALUES | config.FALSE_VALUES
+                            for value in config.TRUE_VALUES | config.FALSE_VALUES
                             if value.isalpha()
                         ),
                     ).lower(),
                     next(
                         iter(
                             value
-                            for value
-                            in config.TRUE_VALUES | config.FALSE_VALUES
+                            for value in config.TRUE_VALUES | config.FALSE_VALUES
                             if value.isalpha()
                         ),
                     ).upper(),
                     "".join(
                         random.choice((str.upper, str.lower))(character)
-                        for character
-                        in next(
+                        for character in next(
                             iter(
                                 value
-                                for value
-                                in config.TRUE_VALUES | config.FALSE_VALUES
+                                for value in config.TRUE_VALUES | config.FALSE_VALUES
                                 if value.isalpha()
                             ),
                         )
@@ -2063,7 +2138,9 @@ class TestSetupKickNoIntroductionDiscordMembers:
             ),
         ),
     )
-    def test_setup_kick_no_introduction_discord_members_successful(self, TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE: str) -> None:  # noqa: N803,E501
+    def test_setup_kick_no_introduction_discord_members_successful(
+        self, TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE: str
+    ) -> None:  # noqa: N803,E501
         """Test that setup is successful when a valid option is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -2107,7 +2184,9 @@ class TestSetupKickNoIntroductionDiscordMembers:
             ),
         ),
     )
-    def test_invalid_kick_no_introduction_discord_members(self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE: str) -> None:  # noqa: N803,E501
+    def test_invalid_kick_no_introduction_discord_members(
+        self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE: str
+    ) -> None:  # noqa: N803,E501
         """Test that an error occurs when an invalid kick-no-introductions-flag is given."""
         INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE_MESSAGE: Final[str] = (
             "KICK_NO_INTRODUCTION_DISCORD_MEMBERS must be a boolean value"
@@ -2120,7 +2199,10 @@ class TestSetupKickNoIntroductionDiscordMembers:
                 INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE
             )
 
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE_MESSAGE):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError,
+                match=INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE_MESSAGE,
+            ):  # noqa: E501
                 RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -2130,71 +2212,47 @@ class TestSetupKickNoIntroductionDiscordMembers:
             f"{random.randint(86400, 777600)}s",
             f"{random.randint(86400, 777600)}.{random.randint(0, 999)}s",
             (
-                f"  {
-                    random.randint(86400, 777600)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
+                f"  {random.randint(86400, 777600)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
                 }s   "
             ),
             (
-                f"{
-                    random.randint(1440, 12960)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
+                f"{random.randint(1440, 12960)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
                 }m"
             ),
-            f"{random.randint(24, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}h",
-            f"{random.randint(1, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}d",
-            f"{random.randint(1, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}w",
+            f"{random.randint(24, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}h",
+            f"{random.randint(1, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}d",
+            f"{random.randint(1, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}w",
             (
-                f"{
-                    random.randint(86400, 777600)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
-                }s{
-                    random.randint(0, 12960)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
-                }m{
+                f"{random.randint(86400, 777600)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
+                }s{random.randint(0, 12960)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
+                }m{random.randint(0, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}h{
                     random.randint(0, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
-                }h{
-                    random.randint(0, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
-                }d{
-                    random.randint(0, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
+                }{random.choice(('', f'.{random.randint(0, 999)}'))}d{random.randint(0, 999)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
                 }w"
             ),
             (
-                f"{
-                    random.randint(86400, 777600)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
-                } s  {
-                    random.randint(0, 12960)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
-                }   m   {
-                    random.randint(0, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
-                }  h  {
-                    random.randint(0, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
-                }    d   {
-                    random.randint(0, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
+                f"{random.randint(86400, 777600)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
+                } s  {random.randint(0, 12960)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
+                }   m   {random.randint(0, 999)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
+                }  h  {random.randint(0, 999)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
+                }    d   {random.randint(0, 999)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
                 } w"
             ),
         ),
     )
-    def test_setup_kick_no_introduction_discord_members_delay_successful(self, TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,E501
+    def test_setup_kick_no_introduction_discord_members_delay_successful(
+        self, TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str
+    ) -> None:  # noqa: N803,E501
         """
         Test that the given `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is used when provided.
 
@@ -2216,19 +2274,20 @@ class TestSetupKickNoIntroductionDiscordMembers:
         assert RuntimeSettings()["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] == timedelta(
             **{
                 key: float(value)
-                for key, value
-                in (
+                for key, value in (
                     re.match(
                         r"\A(?:(?P<seconds>(?:\d*\.)?\d+)\s*s)?\s*(?:(?P<minutes>(?:\d*\.)?\d+)\s*m)?\s*(?:(?P<hours>(?:\d*\.)?\d+)\s*h)?\s*(?:(?P<days>(?:\d*\.)?\d+)\s*d)?\s*(?:(?P<weeks>(?:\d*\.)?\d+)\s*w)?\Z",
                         TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY.lower().strip(),
-                    ).groupdict().items()  # type: ignore[union-attr]
+                    )
+                    .groupdict()
+                    .items()  # type: ignore[union-attr]
                 )
                 if value
             },
         )
 
-        assert (
-            RuntimeSettings()["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] > timedelta(days=1)
+        assert RuntimeSettings()["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] > timedelta(
+            days=1
         )
 
     def test_default_kick_no_introduction_discord_members_delay(self) -> None:
@@ -2249,11 +2308,13 @@ class TestSetupKickNoIntroductionDiscordMembers:
             timedelta,
         )
 
-        assert (
-            RuntimeSettings()["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] > timedelta(days=1)
+        assert RuntimeSettings()["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] > timedelta(
+            days=1
         )
 
-    def test_setup_kick_no_introduction_discord_members_delay_without_kick_no_introduction_discord_members_setup(self) -> None:  # noqa: E501
+    def test_setup_kick_no_introduction_discord_members_delay_without_kick_no_introduction_discord_members_setup(
+        self,
+    ) -> None:  # noqa: E501
         """Test that an error is raised when setting up the delay without the kick flag."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -2273,7 +2334,9 @@ class TestSetupKickNoIntroductionDiscordMembers:
             f"{random.randint(86400, 777600)},{random.randint(0, 999)}s",
         ),
     )
-    def test_invalid_kick_no_introduction_discord_members_delay_flag_disabled(self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,E501
+    def test_invalid_kick_no_introduction_discord_members_delay_flag_disabled(
+        self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str
+    ) -> None:  # noqa: N803,E501
         """
         Test no error is raised when `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is invalid.
 
@@ -2307,7 +2370,9 @@ class TestSetupKickNoIntroductionDiscordMembers:
             f"{random.randint(86400, 777600)},{random.randint(0, 999)}s",
         ),
     )
-    def test_invalid_kick_no_introduction_discord_members_delay_flag_enabled(self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,E501
+    def test_invalid_kick_no_introduction_discord_members_delay_flag_enabled(
+        self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str
+    ) -> None:  # noqa: N803,E501
         """
         Test an error is raised when `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is invalid.
 
@@ -2331,7 +2396,10 @@ class TestSetupKickNoIntroductionDiscordMembers:
                 os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = "true"
                 RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
 
-                with pytest.raises(ImproperlyConfiguredError, match=INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE):  # noqa: E501
+                with pytest.raises(
+                    ImproperlyConfiguredError,
+                    match=INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE,
+                ):  # noqa: E501
                     RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -2339,7 +2407,9 @@ class TestSetupKickNoIntroductionDiscordMembers:
         "TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
         ("0.5s", "0s", "0.5m", "0m", "0.5h", "0h", "0.5d", "0d", "0.05w", "0w"),
     )
-    def test_too_small_kick_no_introduction_discord_members_delay_flag_disabled(self, TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,E501
+    def test_too_small_kick_no_introduction_discord_members_delay_flag_disabled(
+        self, TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str
+    ) -> None:  # noqa: N803,E501
         """
         Test no error is raised when `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is too small.
 
@@ -2367,7 +2437,9 @@ class TestSetupKickNoIntroductionDiscordMembers:
         "TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
         ("0.5s", "0s", "0.5m", "0m", "0.5h", "0h", "0.5d", "0d", "0.05w", "0w"),
     )
-    def test_too_small_kick_no_introduction_discord_members_delay_flag_enabled(self, TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str) -> None:  # noqa: N803,E501
+    def test_too_small_kick_no_introduction_discord_members_delay_flag_enabled(
+        self, TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str
+    ) -> None:  # noqa: N803,E501
         """
         Test an error is raised when `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is too small.
 
@@ -2390,7 +2462,10 @@ class TestSetupKickNoIntroductionDiscordMembers:
                 os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = "true"
                 RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
 
-                with pytest.raises(ImproperlyConfiguredError, match=TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE):  # noqa: E501
+                with pytest.raises(
+                    ImproperlyConfiguredError,
+                    match=TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE,
+                ):  # noqa: E501
                     RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
 
 
@@ -2408,8 +2483,7 @@ class TestSetupSendGetRolesReminders:
                         next(
                             iter(
                                 value
-                                for value
-                                in config.TRUE_VALUES | config.FALSE_VALUES
+                                for value in config.TRUE_VALUES | config.FALSE_VALUES
                                 if value.isalpha()
                             )
                         )
@@ -2417,27 +2491,23 @@ class TestSetupSendGetRolesReminders:
                     next(
                         iter(
                             value
-                            for value
-                            in config.TRUE_VALUES | config.FALSE_VALUES
+                            for value in config.TRUE_VALUES | config.FALSE_VALUES
                             if value.isalpha()
                         ),
                     ).lower(),
                     next(
                         iter(
                             value
-                            for value
-                            in config.TRUE_VALUES | config.FALSE_VALUES
+                            for value in config.TRUE_VALUES | config.FALSE_VALUES
                             if value.isalpha()
                         ),
                     ).upper(),
                     "".join(
                         random.choice((str.upper, str.lower))(character)
-                        for character
-                        in next(
+                        for character in next(
                             iter(
                                 value
-                                for value
-                                in config.TRUE_VALUES | config.FALSE_VALUES
+                                for value in config.TRUE_VALUES | config.FALSE_VALUES
                                 if value.isalpha()
                             ),
                         )
@@ -2446,7 +2516,9 @@ class TestSetupSendGetRolesReminders:
             ),
         ),
     )
-    def test_setup_send_get_roles_reminders_successful(self, TEST_SEND_GET_ROLES_REMINDERS_VALUE: str) -> None:  # noqa: N803,E501
+    def test_setup_send_get_roles_reminders_successful(
+        self, TEST_SEND_GET_ROLES_REMINDERS_VALUE: str
+    ) -> None:  # noqa: N803,E501
         """Test that setup is successful when a valid option is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -2487,7 +2559,9 @@ class TestSetupSendGetRolesReminders:
             ),
         ),
     )
-    def test_invalid_send_get_roles_reminders(self, INVALID_SEND_GET_ROLES_REMINDERS_VALUE: str) -> None:  # noqa: N803,E501
+    def test_invalid_send_get_roles_reminders(
+        self, INVALID_SEND_GET_ROLES_REMINDERS_VALUE: str
+    ) -> None:  # noqa: N803,E501
         """Test that an error occurs when an invalid get-roles-reminders-flag is given."""
         INVALID_SEND_GET_ROLES_REMINDERS_VALUE_MESSAGE: Final[str] = (
             "SEND_GET_ROLES_REMINDERS must be a boolean value"
@@ -2496,11 +2570,11 @@ class TestSetupSendGetRolesReminders:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
         with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"):
-            os.environ["SEND_GET_ROLES_REMINDERS"] = (
-                INVALID_SEND_GET_ROLES_REMINDERS_VALUE
-            )
+            os.environ["SEND_GET_ROLES_REMINDERS"] = INVALID_SEND_GET_ROLES_REMINDERS_VALUE
 
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_SEND_GET_ROLES_REMINDERS_VALUE_MESSAGE):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError, match=INVALID_SEND_GET_ROLES_REMINDERS_VALUE_MESSAGE
+            ):  # noqa: E501
                 RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -2510,47 +2584,33 @@ class TestSetupSendGetRolesReminders:
             f"{random.randint(3, 999)}s",
             f"{random.randint(3, 999)}.{random.randint(0, 999)}s",
             (
-                f"  {
-                    random.randint(3, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
+                f"  {random.randint(3, 999)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
                 }s   "
             ),
-            f"{random.randint(1, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}m",
-            f"{random.randint(1, 999)}{random.choice(("", f".{random.randint(0, 999)}"))}h",
+            f"{random.randint(1, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}m",
+            f"{random.randint(1, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}h",
             (
-                f"{
-                    random.randint(3, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
-                }s{
+                f"{random.randint(3, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}s{
                     random.randint(0, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
-                }m{
-                    random.randint(0, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
+                }{random.choice(('', f'.{random.randint(0, 999)}'))}m{random.randint(0, 999)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
                 }h"
             ),
             (
-                f"{
-                    random.randint(3, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
-                } s  {
-                    random.randint(0, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
-                }   m   {
-                    random.randint(0, 999)
-                }{
-                    random.choice(("", f".{random.randint(0, 999)}"))
+                f"{random.randint(3, 999)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
+                } s  {random.randint(0, 999)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
+                }   m   {random.randint(0, 999)}{
+                    random.choice(('', f'.{random.randint(0, 999)}'))
                 }  h"
             ),
         ),
     )
-    def test_setup_send_get_roles_reminders_interval_successful(self, TEST_SEND_GET_ROLES_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
+    def test_setup_send_get_roles_reminders_interval_successful(
+        self, TEST_SEND_GET_ROLES_REMINDERS_INTERVAL: str
+    ) -> None:  # noqa: N803,E501
         """
         Test that the given `SEND_GET_ROLES_REMINDERS_INTERVAL` is used when provided.
 
@@ -2571,12 +2631,13 @@ class TestSetupSendGetRolesReminders:
 
         assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"] == {
             key: float(value)
-            for key, value
-            in (
+            for key, value in (
                 re.match(
                     r"\A(?:(?P<seconds>(?:\d*\.)?\d+)\s*s)?\s*(?:(?P<minutes>(?:\d*\.)?\d+)\s*m)?\s*(?:(?P<hours>(?:\d*\.)?\d+)\s*h)?\Z",
                     TEST_SEND_GET_ROLES_REMINDERS_INTERVAL.lower().strip(),
-                ).groupdict().items()  # type: ignore[union-attr]
+                )
+                .groupdict()
+                .items()  # type: ignore[union-attr]
             )
             if value
         }
@@ -2589,16 +2650,14 @@ class TestSetupSendGetRolesReminders:
 
         assert all(
             isinstance(value, float)
-            for value
-            in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"].values()
+            for value in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"].values()
         )
 
         timedelta_error: TypeError
         try:
-            assert (
-                timedelta(**RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"])
-                > timedelta(seconds=3)
-            )
+            assert timedelta(
+                **RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"]
+            ) > timedelta(seconds=3)
 
         except TypeError as timedelta_error:
             if "invalid keyword argument for __new__()" not in str(timedelta_error):
@@ -2633,16 +2692,14 @@ class TestSetupSendGetRolesReminders:
 
         assert all(
             isinstance(value, float)
-            for value
-            in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"].values()
+            for value in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"].values()
         )
 
         timedelta_error: TypeError
         try:
-            assert (
-                timedelta(**RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"])
-                > timedelta(seconds=3)
-            )
+            assert timedelta(
+                **RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"]
+            ) > timedelta(seconds=3)
 
         except TypeError as timedelta_error:
             if "invalid keyword argument for __new__()" not in str(timedelta_error):
@@ -2656,7 +2713,9 @@ class TestSetupSendGetRolesReminders:
                 pytrace=False,
             )
 
-    def test_setup_send_get_roles_reminders_interval_without_send_get_roles_reminders_setup(self) -> None:  # noqa: E501
+    def test_setup_send_get_roles_reminders_interval_without_send_get_roles_reminders_setup(
+        self,
+    ) -> None:  # noqa: E501
         """Test that an error is raised when setting up the interval without the flag."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -2676,7 +2735,9 @@ class TestSetupSendGetRolesReminders:
             f"{random.randint(3, 999)},{random.randint(0, 999)}s",
         ),
     )
-    def test_invalid_send_get_roles_reminders_interval_flag_disabled(self, INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
+    def test_invalid_send_get_roles_reminders_interval_flag_disabled(
+        self, INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL: str
+    ) -> None:  # noqa: N803,E501
         """
         Test that no error is raised when `SEND_GET_ROLES_REMINDERS_INTERVAL` is invalid.
 
@@ -2710,7 +2771,9 @@ class TestSetupSendGetRolesReminders:
             f"{random.randint(3, 999)},{random.randint(0, 999)}s",
         ),
     )
-    def test_invalid_send_get_roles_reminders_interval_flag_enabled(self, INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
+    def test_invalid_send_get_roles_reminders_interval_flag_enabled(
+        self, INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL: str
+    ) -> None:  # noqa: N803,E501
         """
         Test that an error is raised when `SEND_GET_ROLES_REMINDERS_INTERVAL` is invalid.
 
@@ -2734,7 +2797,10 @@ class TestSetupSendGetRolesReminders:
                 os.environ["SEND_GET_ROLES_REMINDERS"] = "true"
                 RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
 
-                with pytest.raises(ImproperlyConfiguredError, match=INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE):  # noqa: E501
+                with pytest.raises(
+                    ImproperlyConfiguredError,
+                    match=INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE,
+                ):  # noqa: E501
                     RuntimeSettings._setup_send_get_roles_reminders_interval()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -2742,7 +2808,9 @@ class TestSetupSendGetRolesReminders:
         "TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL",
         ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h"),
     )
-    def test_too_small_send_get_roles_reminders_interval_flag_disabled(self, TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
+    def test_too_small_send_get_roles_reminders_interval_flag_disabled(
+        self, TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL: str
+    ) -> None:  # noqa: N803,E501
         """
         Test that no error is raised when `SEND_GET_ROLES_REMINDERS_INTERVAL` is too small.
 
@@ -2770,7 +2838,9 @@ class TestSetupSendGetRolesReminders:
         "TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL",
         ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h"),
     )
-    def test_too_small_send_introduction_reminders_interval_flag_enabled(self, TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL: str) -> None:  # noqa: N803,E501
+    def test_too_small_send_introduction_reminders_interval_flag_enabled(
+        self, TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL: str
+    ) -> None:  # noqa: N803,E501
         """
         Test that an error is raised when `SEND_GET_ROLES_REMINDERS_INTERVAL` is too small.
 
@@ -2793,7 +2863,10 @@ class TestSetupSendGetRolesReminders:
                 os.environ["SEND_GET_ROLES_REMINDERS"] = "true"
                 RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
 
-                with pytest.raises(ImproperlyConfiguredError, match=TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE):  # noqa: E501
+                with pytest.raises(
+                    ImproperlyConfiguredError,
+                    match=TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE,
+                ):  # noqa: E501
                     RuntimeSettings._setup_send_get_roles_reminders_interval()  # noqa: SLF001
 
 
@@ -2859,7 +2932,9 @@ class TestSetupStatisticsDays:
         with EnvVariableDeleter("STATISTICS_DAYS"):
             os.environ["STATISTICS_DAYS"] = INVALID_STATISTICS_DAYS
 
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_STATISTICS_DAYS_MESSAGE):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError, match=INVALID_STATISTICS_DAYS_MESSAGE
+            ):  # noqa: E501
                 RuntimeSettings._setup_statistics_days()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -2878,7 +2953,9 @@ class TestSetupStatisticsDays:
         with EnvVariableDeleter("STATISTICS_DAYS"):
             os.environ["STATISTICS_DAYS"] = TOO_SMALL_STATISTICS_DAYS
 
-            with pytest.raises(ImproperlyConfiguredError, match=TOO_SMALL_STATISTICS_DAYS_MESSAGE):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError, match=TOO_SMALL_STATISTICS_DAYS_MESSAGE
+            ):  # noqa: E501
                 RuntimeSettings._setup_statistics_days()  # noqa: SLF001
 
 
@@ -2909,8 +2986,7 @@ class TestSetupStatisticsRoles:
 
         assert RuntimeSettings()["STATISTICS_ROLES"] == {
             test_statistics_role.strip()
-            for test_statistics_role
-            in TEST_STATISTICS_ROLES.strip().split(",")
+            for test_statistics_role in TEST_STATISTICS_ROLES.strip().split(",")
             if test_statistics_role.strip()
         }
 
@@ -2932,8 +3008,7 @@ class TestSetupStatisticsRoles:
 
         assert all(
             isinstance(statistics_role, str) and bool(statistics_role)
-            for statistics_role
-            in RuntimeSettings()["STATISTICS_ROLES"]
+            for statistics_role in RuntimeSettings()["STATISTICS_ROLES"]
         )
 
 
@@ -2945,7 +3020,9 @@ class TestSetupModerationDocumentURL:
         "TEST_MODERATION_DOCUMENT_URL",
         ("https://google.com", "www.google.com/", "    https://google.com   "),
     )
-    def test_setup_moderation_document_url_successful(self, TEST_MODERATION_DOCUMENT_URL: str) -> None:  # noqa: N803,E501
+    def test_setup_moderation_document_url_successful(
+        self, TEST_MODERATION_DOCUMENT_URL: str
+    ) -> None:  # noqa: N803,E501
         """Test that the given valid `MODERATION_DOCUMENT_URL` is used when one is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -2967,7 +3044,9 @@ class TestSetupModerationDocumentURL:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
         with EnvVariableDeleter("MODERATION_DOCUMENT_URL"):  # noqa: SIM117
-            with pytest.raises(ImproperlyConfiguredError, match=r"MODERATION_DOCUMENT_URL.*valid.*URL"):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError, match=r"MODERATION_DOCUMENT_URL.*valid.*URL"
+            ):  # noqa: E501
                 RuntimeSettings._setup_moderation_document_url()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -2975,7 +3054,9 @@ class TestSetupModerationDocumentURL:
         "INVALID_MODERATION_DOCUMENT_URL",
         ("INVALID_MODERATION_DOCUMENT_URL", "www.google..com/", "", "  "),
     )
-    def test_invalid_moderation_document_url(self, INVALID_MODERATION_DOCUMENT_URL: str) -> None:  # noqa: N803,E501
+    def test_invalid_moderation_document_url(
+        self, INVALID_MODERATION_DOCUMENT_URL: str
+    ) -> None:  # noqa: N803,E501
         """Test that an error occurs when the provided `MODERATION_DOCUMENT_URL` is invalid."""
         INVALID_MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
             "MODERATION_DOCUMENT_URL must be a valid URL"
@@ -2986,7 +3067,9 @@ class TestSetupModerationDocumentURL:
         with EnvVariableDeleter("MODERATION_DOCUMENT_URL"):
             os.environ["MODERATION_DOCUMENT_URL"] = INVALID_MODERATION_DOCUMENT_URL
 
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MODERATION_DOCUMENT_URL_MESSAGE):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError, match=INVALID_MODERATION_DOCUMENT_URL_MESSAGE
+            ):  # noqa: E501
                 RuntimeSettings._setup_moderation_document_url()  # noqa: SLF001
 
 
@@ -2998,7 +3081,9 @@ class TestSetupManualModerationWarningMessageLocation:
         "TEST_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION",
         ("DM", "dm", "general", "Memes", "   general  ", "JUST-CHATTING", "Talking4"),
     )
-    def test_setup_manual_moderation_warning_message_location_successful(self, TEST_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION: str) -> None:  # noqa: N803,E501
+    def test_setup_manual_moderation_warning_message_location_successful(
+        self, TEST_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION: str
+    ) -> None:  # noqa: N803,E501
         """Test that the given valid `MANUAL_MODERATION_WARNING_MESSAGE_LOCATION` is used."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -3033,7 +3118,9 @@ class TestSetupManualModerationWarningMessageLocation:
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION", ("", "  "))
-    def test_invalid_manual_moderation_warning_message_location(self, INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION: str) -> None:  # noqa: N803,E501
+    def test_invalid_manual_moderation_warning_message_location(
+        self, INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION: str
+    ) -> None:  # noqa: N803,E501
         """Test error raised when `MANUAL_MODERATION_WARNING_MESSAGE_LOCATION` is invalid."""
         INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE: Final[str] = (
             "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION must be a valid name "
@@ -3047,5 +3134,8 @@ class TestSetupManualModerationWarningMessageLocation:
                 INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION
             )
 
-            with pytest.raises(ImproperlyConfiguredError, match=INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE):  # noqa: E501
+            with pytest.raises(
+                ImproperlyConfiguredError,
+                match=INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE,
+            ):  # noqa: E501
                 RuntimeSettings._setup_manual_moderation_warning_message_location()  # noqa: SLF001

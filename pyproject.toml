@@ -4,6 +4,9 @@ dev = [
     { include-group = "pre-commit" },
     { include-group = "test" },
     { include-group = "type-check" },
+    "gitpython>=3.1.44",
+    "pytest-cov>=6.1.1",
+    "pytest>=8.3.5",
 ]
 lint-format = ["ccft-pymarkdown>=2.0", "ruff>=0.9"]
 main = [

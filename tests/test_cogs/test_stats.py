@@ -1,30 +1,26 @@
 """Automated test suite for the `stats.py` cog."""
+
 import random
 import string
 from typing import Final
 
 import discord
 import pytest
-from classproperties import classproperty
 from discord import MessageCommand, SlashCommand, UserCommand
+from typed_classproperties import classproperty
 
 from cogs.stats import (
     StatsCommandsCog,
     amount_of_time_formatter,
     plot_bar_chart,
 )
-
-# noinspection PyProtectedMember
 from tests._testing_utils import BaseTestDiscordCommand
-
-# noinspection PyProtectedMember
 from tests._testing_utils.pycord_internals import TestingApplicationContext
 
 
 class TestAmountOfTimeFormatter:
     """Test case to unit-test the amount_of_time_formatter function."""
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_TIME_VALUE", (1, 1.0, 0.999999, 1.000001))
     @pytest.mark.parametrize("TIME_SCALE", ("day",))
     def test_format_unit_value(self, TEST_TIME_VALUE: float, TIME_SCALE: str) -> None:  # noqa: N803
@@ -34,7 +30,6 @@ class TestAmountOfTimeFormatter:
         assert formatted_amount_of_time == TIME_SCALE
         assert not formatted_amount_of_time.endswith("s")
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_TIME_VALUE",
         (*range(2, 21), 2.00, 0, 0.0, 25.0, -0, -0.0, -25.0),
@@ -42,20 +37,25 @@ class TestAmountOfTimeFormatter:
     @pytest.mark.parametrize("TIME_SCALE", ("day",))
     def test_format_integer_value(self, TEST_TIME_VALUE: float, TIME_SCALE: str) -> None:  # noqa: N803
         """Test that an integer value includes the value and time_scale pluralized."""
-        assert amount_of_time_formatter(
-            TEST_TIME_VALUE,
-            TIME_SCALE,
-        ) == f"{int(TEST_TIME_VALUE)} {TIME_SCALE}s"
+        assert (
+            amount_of_time_formatter(
+                TEST_TIME_VALUE,
+                TIME_SCALE,
+            )
+            == f"{int(TEST_TIME_VALUE)} {TIME_SCALE}s"
+        )
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_TIME_VALUE", (3.14159, 0.005, 25.0333333))
     @pytest.mark.parametrize("TIME_SCALE", ("day",))
     def test_format_float_value(self, TEST_TIME_VALUE: float, TIME_SCALE: str) -> None:  # noqa: N803
         """Test that a float value includes the rounded value and time_scale pluralized."""
-        assert amount_of_time_formatter(
-            TEST_TIME_VALUE,
-            TIME_SCALE,
-        ) == f"{TEST_TIME_VALUE:.2f} {TIME_SCALE}s"
+        assert (
+            amount_of_time_formatter(
+                TEST_TIME_VALUE,
+                TIME_SCALE,
+            )
+            == f"{TEST_TIME_VALUE:.2f} {TIME_SCALE}s"
+        )
 
 
 class TestPlotBarChart:
@@ -99,8 +99,8 @@ class TestChannelStatsCommand(BaseTestDiscordCommand):
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def COMMAND(cls) -> SlashCommand | UserCommand | MessageCommand:  # noqa: N802,N805
-        """The Discord command the cog, linked to this test case, has the functionality for."""  # noqa: D401
+    def COMMAND(cls) -> SlashCommand | UserCommand | MessageCommand:  # noqa: N802
+        """The Discord command the cog, linked to this test case, has the functionality for."""
         # noinspection PyTypeChecker
         return StatsCommandsCog.channel_stats
 
@@ -120,8 +120,7 @@ class TestChannelStatsCommand(BaseTestDiscordCommand):
                 and option._parameter_name is not None  # noqa: SLF001
                 and "id" in option._parameter_name.lower()  # noqa: SLF001
             )
-            for option
-            in StatsCommandsCog.channel_stats.options
+            for option in StatsCommandsCog.channel_stats.options
         )
 
     # noinspection PyPep8Naming
@@ -139,7 +138,9 @@ class TestChannelStatsCommand(BaseTestDiscordCommand):
             "".join(random.choices(string.digits, k=50)),
         ),
     )
-    def test_invalid_channel_id(self, INVALID_CHANNEL_ID: str, CONTEXT: TestingApplicationContext) -> None:  # noqa: N803, E501
+    def test_invalid_channel_id(
+        self, INVALID_CHANNEL_ID: str, CONTEXT: TestingApplicationContext
+    ) -> None:  # noqa: N803, E501
         """Test that an error occurs when running the command with an invalid channel ID."""
         self.execute_command(
             ctx=CONTEXT,

@@ -3,11 +3,11 @@
 from typing import TYPE_CHECKING, Final
 
 import pytest
-from classproperties import classproperty
+from typed_classproperties import classproperty
+
+from exceptions.base import BaseDoesNotExistError, BaseTeXBotError
 
 from exceptions import (
-    BaseDoesNotExistError,
-    BaseTeXBotError,
     ChannelDoesNotExistError,
     DiscordMemberNotInMainGuildError,
     GuildDoesNotExistError,
@@ -64,7 +64,9 @@ class TestBaseTeXBotError:
         with a subclass that has a new instance attribute (compared to the parent base class).
         """
 
-        def __init__(self, message: str | None = None, test_attribute_value: object | None = None) -> None:  # noqa: E501
+        def __init__(
+            self, message: str | None = None, test_attribute_value: object | None = None
+        ) -> None:  # noqa: E501
             """Initialize a new exception with the given error message."""
             self.test_attribute: object | None = test_attribute_value
 
@@ -112,7 +114,9 @@ class TestBaseTeXBotError:
             _AttributesBaseTeXBotErrorSubclass(test_attribute_value=7),
         ),
     )
-    def test_repr_with_attributes(self, TEST_ATTRIBUTES_BASE_TEXBOT_ERROR_SUBCLASS: _AttributesBaseTeXBotErrorSubclass) -> None:  # noqa: N803,E501
+    def test_repr_with_attributes(
+        self, TEST_ATTRIBUTES_BASE_TEXBOT_ERROR_SUBCLASS: _AttributesBaseTeXBotErrorSubclass
+    ) -> None:  # noqa: N803,E501
         """Test that the exception message contains any instance attributes."""
         assert (
             f"test_attribute={TEST_ATTRIBUTES_BASE_TEXBOT_ERROR_SUBCLASS.test_attribute!r}"
@@ -159,7 +163,9 @@ class TestBaseDoesNotExistError:
             """The name of the Discord entity that this `DoesNotExistError` is attached to."""  # noqa: D401
             return "object_type"
 
-    class _OneDependentCommandBaseDoesNotExistErrorSubclass(_NoDependantsBaseDoesNotExistErrorSubclass):  # noqa: E501
+    class _OneDependentCommandBaseDoesNotExistErrorSubclass(
+        _NoDependantsBaseDoesNotExistErrorSubclass
+    ):  # noqa: E501
         """
         Custom subclass implementation of `BaseDoesNotExistError`.
 
@@ -178,7 +184,9 @@ class TestBaseDoesNotExistError:
             """  # noqa: D401
             return frozenset(("command_1",))
 
-    class _MultipleDependentCommandsBaseDoesNotExistErrorSubclass(_NoDependantsBaseDoesNotExistErrorSubclass):  # noqa: E501
+    class _MultipleDependentCommandsBaseDoesNotExistErrorSubclass(
+        _NoDependantsBaseDoesNotExistErrorSubclass
+    ):  # noqa: E501
         """
         Custom subclass implementation of `BaseDoesNotExistError`.
 
@@ -197,7 +205,9 @@ class TestBaseDoesNotExistError:
             """  # noqa: D401
             return frozenset(("command_1", "command_2", "command_3"))
 
-    class _OneDependentTaskBaseDoesNotExistErrorSubclass(_NoDependantsBaseDoesNotExistErrorSubclass):  # noqa: E501
+    class _OneDependentTaskBaseDoesNotExistErrorSubclass(
+        _NoDependantsBaseDoesNotExistErrorSubclass
+    ):  # noqa: E501
         """
         Custom subclass implementation of `BaseDoesNotExistError`.
 
@@ -216,7 +226,9 @@ class TestBaseDoesNotExistError:
             """  # noqa: D401
             return frozenset(("task_1",))
 
-    class _MultipleDependentTasksBaseDoesNotExistErrorSubclass(_NoDependantsBaseDoesNotExistErrorSubclass):  # noqa: E501
+    class _MultipleDependentTasksBaseDoesNotExistErrorSubclass(
+        _NoDependantsBaseDoesNotExistErrorSubclass
+    ):  # noqa: E501
         """
         Custom subclass implementation of `BaseDoesNotExistError`.
 
@@ -235,7 +247,9 @@ class TestBaseDoesNotExistError:
             """  # noqa: D401
             return frozenset(("task_1", "task_2", "task_3"))
 
-    class _OneDependentEventBaseDoesNotExistErrorSubclass(_NoDependantsBaseDoesNotExistErrorSubclass):  # noqa: E501
+    class _OneDependentEventBaseDoesNotExistErrorSubclass(
+        _NoDependantsBaseDoesNotExistErrorSubclass
+    ):  # noqa: E501
         """
         Custom subclass implementation of `BaseDoesNotExistError`.
 
@@ -254,7 +268,9 @@ class TestBaseDoesNotExistError:
             """  # noqa: D401
             return frozenset(("event_1",))
 
-    class _MultipleDependentEventsBaseDoesNotExistErrorSubclass(_NoDependantsBaseDoesNotExistErrorSubclass):  # noqa: E501
+    class _MultipleDependentEventsBaseDoesNotExistErrorSubclass(
+        _NoDependantsBaseDoesNotExistErrorSubclass
+    ):  # noqa: E501
         """
         Custom subclass implementation of `BaseDoesNotExistError`.
 
@@ -273,7 +289,9 @@ class TestBaseDoesNotExistError:
             """  # noqa: D401
             return frozenset(("event_1", "event_2", "event_3"))
 
-    class _ChannelDoesNotExistTypeBaseDoesNotExistErrorSubclass(_NoDependantsBaseDoesNotExistErrorSubclass):  # noqa: E501
+    class _ChannelDoesNotExistTypeBaseDoesNotExistErrorSubclass(
+        _NoDependantsBaseDoesNotExistErrorSubclass
+    ):  # noqa: E501
         """
         Custom subclass implementation of `BaseDoesNotExistError`.
 
@@ -321,7 +339,13 @@ class TestBaseDoesNotExistError:
         ),
     )
     @pytest.mark.parametrize("TEST_NON_EXISTENT_OBJECT_IDENTIFIER", ("object_1",))
-    def test_get_formatted_message_with_dependent_commands(self, DependentCommandsBaseDoesNotExistErrorSubclass: type[_NoDependantsBaseDoesNotExistErrorSubclass], TEST_NON_EXISTENT_OBJECT_IDENTIFIER: str) -> None:  # noqa: N803,E501
+    def test_get_formatted_message_with_dependent_commands(
+        self,
+        DependentCommandsBaseDoesNotExistErrorSubclass: type[
+            _NoDependantsBaseDoesNotExistErrorSubclass
+        ],
+        TEST_NON_EXISTENT_OBJECT_IDENTIFIER: str,
+    ) -> None:  # noqa: N803,E501
         """
         Test that the `get_formatted_message()` function returns the correct value.
 
@@ -337,29 +361,21 @@ class TestBaseDoesNotExistError:
         )
 
         assert (
-            (
-                f"\"{TEST_NON_EXISTENT_OBJECT_IDENTIFIER}\" "
-                f"{DependentCommandsBaseDoesNotExistErrorSubclass.DOES_NOT_EXIST_TYPE} "
-                f"must exist"
-            )
-            in FORMATTED_MESSAGE
-        )
+            f'"{TEST_NON_EXISTENT_OBJECT_IDENTIFIER}" '
+            f"{DependentCommandsBaseDoesNotExistErrorSubclass.DOES_NOT_EXIST_TYPE} "
+            f"must exist"
+        ) in FORMATTED_MESSAGE
 
         if len(DependentCommandsBaseDoesNotExistErrorSubclass.DEPENDENT_COMMANDS) == 1:
             assert (
-                (
-                    "the "
-                    f"""\"/{
-                        next(
-                            iter(
-                                DependentCommandsBaseDoesNotExistErrorSubclass.DEPENDENT_COMMANDS
-                            )
-                        )
-                    }\" """
-                    "command"
-                )
-                in FORMATTED_MESSAGE
-            )
+                "the "
+                f"""\"/{
+                    next(
+                        iter(DependentCommandsBaseDoesNotExistErrorSubclass.DEPENDENT_COMMANDS)
+                    )
+                }\" """
+                "command"
+            ) in FORMATTED_MESSAGE
 
         elif len(DependentCommandsBaseDoesNotExistErrorSubclass.DEPENDENT_COMMANDS) > 1:
             DEPENDENT_COMMANDS: Final[Iterator[str]] = iter(
@@ -367,12 +383,9 @@ class TestBaseDoesNotExistError:
             )
 
             assert (
-                (
-                    f"the \"/{next(DEPENDENT_COMMANDS)}\", \"/{next(DEPENDENT_COMMANDS)}\" & "
-                    f"\"/{next(DEPENDENT_COMMANDS)}\" commands"
-                )
-                in FORMATTED_MESSAGE
-            )
+                f'the "/{next(DEPENDENT_COMMANDS)}", "/{next(DEPENDENT_COMMANDS)}" & '
+                f'"/{next(DEPENDENT_COMMANDS)}" commands'
+            ) in FORMATTED_MESSAGE
 
         else:
             raise NotImplementedError
@@ -386,7 +399,13 @@ class TestBaseDoesNotExistError:
         ),
     )
     @pytest.mark.parametrize("TEST_NON_EXISTENT_OBJECT_IDENTIFIER", ("object_1",))
-    def test_get_formatted_message_with_dependent_tasks(self, DependentTasksBaseDoesNotExistErrorSubclass: type[_NoDependantsBaseDoesNotExistErrorSubclass], TEST_NON_EXISTENT_OBJECT_IDENTIFIER: str) -> None:  # noqa: N803,E501
+    def test_get_formatted_message_with_dependent_tasks(
+        self,
+        DependentTasksBaseDoesNotExistErrorSubclass: type[
+            _NoDependantsBaseDoesNotExistErrorSubclass
+        ],
+        TEST_NON_EXISTENT_OBJECT_IDENTIFIER: str,
+    ) -> None:  # noqa: N803,E501
         """
         Test that the `get_formatted_message()` function returns the correct value.
 
@@ -402,25 +421,19 @@ class TestBaseDoesNotExistError:
         )
 
         assert (
-            (
-                f"\"{TEST_NON_EXISTENT_OBJECT_IDENTIFIER}\" "
-                f"{DependentTasksBaseDoesNotExistErrorSubclass.DOES_NOT_EXIST_TYPE} "
-                f"must exist"
-            )
-            in FORMATTED_MESSAGE
-        )
+            f'"{TEST_NON_EXISTENT_OBJECT_IDENTIFIER}" '
+            f"{DependentTasksBaseDoesNotExistErrorSubclass.DOES_NOT_EXIST_TYPE} "
+            f"must exist"
+        ) in FORMATTED_MESSAGE
 
         if len(DependentTasksBaseDoesNotExistErrorSubclass.DEPENDENT_TASKS) == 1:
             assert (
-                (
-                    "the "
-                    f"""\"{
-                        next(iter(DependentTasksBaseDoesNotExistErrorSubclass.DEPENDENT_TASKS))
-                    }\" """
-                    "task"
-                )
-                in FORMATTED_MESSAGE
-            )
+                "the "
+                f"""\"{
+                    next(iter(DependentTasksBaseDoesNotExistErrorSubclass.DEPENDENT_TASKS))
+                }\" """
+                "task"
+            ) in FORMATTED_MESSAGE
 
         elif len(DependentTasksBaseDoesNotExistErrorSubclass.DEPENDENT_TASKS) > 1:
             DEPENDENT_TASKS: Final[Iterator[str]] = iter(
@@ -428,12 +441,9 @@ class TestBaseDoesNotExistError:
             )
 
             assert (
-                (
-                    f"the \"{next(DEPENDENT_TASKS)}\", \"{next(DEPENDENT_TASKS)}\" & "
-                    f"\"{next(DEPENDENT_TASKS)}\" tasks"
-                )
-                in FORMATTED_MESSAGE
-            )
+                f'the "{next(DEPENDENT_TASKS)}", "{next(DEPENDENT_TASKS)}" & '
+                f'"{next(DEPENDENT_TASKS)}" tasks'
+            ) in FORMATTED_MESSAGE
 
         else:
             raise NotImplementedError
@@ -447,7 +457,13 @@ class TestBaseDoesNotExistError:
         ),
     )
     @pytest.mark.parametrize("TEST_NON_EXISTENT_OBJECT_IDENTIFIER", ("object_1",))
-    def test_get_formatted_message_with_dependent_events(self, DependentEventsBaseDoesNotExistErrorSubclass: type[_NoDependantsBaseDoesNotExistErrorSubclass], TEST_NON_EXISTENT_OBJECT_IDENTIFIER: str) -> None:  # noqa: N803,E501
+    def test_get_formatted_message_with_dependent_events(
+        self,
+        DependentEventsBaseDoesNotExistErrorSubclass: type[
+            _NoDependantsBaseDoesNotExistErrorSubclass
+        ],
+        TEST_NON_EXISTENT_OBJECT_IDENTIFIER: str,
+    ) -> None:  # noqa: N803,E501
         """
         Test that the `get_formatted_message()` function returns the correct value.
 
@@ -463,27 +479,19 @@ class TestBaseDoesNotExistError:
         )
 
         assert (
-            (
-                f"\"{TEST_NON_EXISTENT_OBJECT_IDENTIFIER}\" "
-                f"{DependentEventsBaseDoesNotExistErrorSubclass.DOES_NOT_EXIST_TYPE} "
-                f"must exist"
-            )
-            in FORMATTED_MESSAGE
-        )
+            f'"{TEST_NON_EXISTENT_OBJECT_IDENTIFIER}" '
+            f"{DependentEventsBaseDoesNotExistErrorSubclass.DOES_NOT_EXIST_TYPE} "
+            f"must exist"
+        ) in FORMATTED_MESSAGE
 
         if len(DependentEventsBaseDoesNotExistErrorSubclass.DEPENDENT_EVENTS) == 1:
             assert (
-                (
-                    "the "
-                    f"""\"{
-                        next(
-                            iter(DependentEventsBaseDoesNotExistErrorSubclass.DEPENDENT_EVENTS)
-                        )
-                    }\" """
-                    "event"
-                )
-                in FORMATTED_MESSAGE
-            )
+                "the "
+                f"""\"{
+                    next(iter(DependentEventsBaseDoesNotExistErrorSubclass.DEPENDENT_EVENTS))
+                }\" """
+                "event"
+            ) in FORMATTED_MESSAGE
 
         elif len(DependentEventsBaseDoesNotExistErrorSubclass.DEPENDENT_EVENTS) > 1:
             DEPENDENT_EVENTS: Final[Iterator[str]] = iter(
@@ -491,19 +499,18 @@ class TestBaseDoesNotExistError:
             )
 
             assert (
-                (
-                    f"the \"{next(DEPENDENT_EVENTS)}\", \"{next(DEPENDENT_EVENTS)}\" & "
-                    f"\"{next(DEPENDENT_EVENTS)}\" events"
-                )
-                in FORMATTED_MESSAGE
-            )
+                f'the "{next(DEPENDENT_EVENTS)}", "{next(DEPENDENT_EVENTS)}" & '
+                f'"{next(DEPENDENT_EVENTS)}" events'
+            ) in FORMATTED_MESSAGE
 
         else:
             raise NotImplementedError
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_NON_EXISTENT_OBJECT_IDENTIFIER", ("object_1",))
-    def test_get_formatted_message_with_channel_does_not_exist_type(self, TEST_NON_EXISTENT_OBJECT_IDENTIFIER: str) -> None:  # noqa: N803,E501
+    def test_get_formatted_message_with_channel_does_not_exist_type(
+        self, TEST_NON_EXISTENT_OBJECT_IDENTIFIER: str
+    ) -> None:  # noqa: N803,E501
         """
         Test that the `get_formatted_message()` function returns the correct value.
 
@@ -514,16 +521,13 @@ class TestBaseDoesNotExistError:
         as well as the word "channel".
         """
         assert (
-            (
-                f"\"#{TEST_NON_EXISTENT_OBJECT_IDENTIFIER}\" "
-                f"""{
-                    self._ChannelDoesNotExistTypeBaseDoesNotExistErrorSubclass.DOES_NOT_EXIST_TYPE
-                } """
-                "must exist"
-            )
-            in self._ChannelDoesNotExistTypeBaseDoesNotExistErrorSubclass.get_formatted_message(  # noqa: E501
-                non_existent_object_identifier=TEST_NON_EXISTENT_OBJECT_IDENTIFIER,
-            )
+            f'"#{TEST_NON_EXISTENT_OBJECT_IDENTIFIER}" '
+            f"""{
+                self._ChannelDoesNotExistTypeBaseDoesNotExistErrorSubclass.DOES_NOT_EXIST_TYPE
+            } """
+            "must exist"
+        ) in self._ChannelDoesNotExistTypeBaseDoesNotExistErrorSubclass.get_formatted_message(  # noqa: E501
+            non_existent_object_identifier=TEST_NON_EXISTENT_OBJECT_IDENTIFIER,
         )
 
 
@@ -544,9 +548,8 @@ class TestDiscordMemberNotInMainGuildError:
     @pytest.mark.parametrize("TEST_USER_ID", (99999,))
     def test_user_id_in_repr(self, TEST_USER_ID: int) -> None:  # noqa: N803
         """Test that the exception message contains the given Discord user ID."""
-        assert (
-            f"user_id={TEST_USER_ID!r}"
-            in repr(DiscordMemberNotInMainGuildError(user_id=TEST_USER_ID))
+        assert f"user_id={TEST_USER_ID!r}" in repr(
+            DiscordMemberNotInMainGuildError(user_id=TEST_USER_ID)
         )
 
 
@@ -567,9 +570,8 @@ class TestInvalidMessagesJSONFileError:
     @pytest.mark.parametrize("TEST_DICT_KEY", ("key_1",))
     def test_dict_key_in_repr(self, TEST_DICT_KEY: str) -> None:  # noqa: N803
         """Test that the exception message contains the given dict key."""
-        assert (
-            f"dict_key={TEST_DICT_KEY!r}"
-            in repr(InvalidMessagesJSONFileError(dict_key=TEST_DICT_KEY))
+        assert f"dict_key={TEST_DICT_KEY!r}" in repr(
+            InvalidMessagesJSONFileError(dict_key=TEST_DICT_KEY)
         )
 
 
@@ -580,9 +582,8 @@ class TestMessagesJSONFileMissingKeyError:
     @pytest.mark.parametrize("TEST_MISSING_KEY", ("key_1",))
     def test_missing_key_in_repr(self, TEST_MISSING_KEY: str) -> None:  # noqa: N803
         """Test that the exception message contains the given JSON file missing key name."""
-        assert (
-            f"dict_key={TEST_MISSING_KEY!r}"
-            in repr(MessagesJSONFileMissingKeyError(missing_key=TEST_MISSING_KEY))
+        assert f"dict_key={TEST_MISSING_KEY!r}" in repr(
+            MessagesJSONFileMissingKeyError(missing_key=TEST_MISSING_KEY)
         )
 
 
@@ -593,9 +594,8 @@ class TestMessagesJSONFileValueError:
     @pytest.mark.parametrize("TEST_JSON_FILE_INVALID_VALUE", ("value_1",))
     def test_invalid_value_in_repr(self, TEST_JSON_FILE_INVALID_VALUE: str) -> None:  # noqa: N803
         """Test that the exception message contains the given invalid JSON file value."""
-        assert (
-            f"invalid_value={TEST_JSON_FILE_INVALID_VALUE!r}"
-            in repr(MessagesJSONFileValueError(invalid_value=TEST_JSON_FILE_INVALID_VALUE))
+        assert f"invalid_value={TEST_JSON_FILE_INVALID_VALUE!r}" in repr(
+            MessagesJSONFileValueError(invalid_value=TEST_JSON_FILE_INVALID_VALUE)
         )
 
 
@@ -616,9 +616,8 @@ class TestGuildDoesNotExistError:
     @pytest.mark.parametrize("TEST_GUILD_ID", (99999,))
     def test_guild_id_in_repr(self, TEST_GUILD_ID: int) -> None:  # noqa: N803
         """Test that the exception message contains the given Discord guild ID."""
-        assert (
-            f"guild_id={TEST_GUILD_ID!r}"
-            in repr(GuildDoesNotExistError(guild_id=TEST_GUILD_ID))
+        assert f"guild_id={TEST_GUILD_ID!r}" in repr(
+            GuildDoesNotExistError(guild_id=TEST_GUILD_ID)
         )
 
     # noinspection PyPep8Naming
@@ -631,9 +630,7 @@ class TestGuildDoesNotExistError:
         with a specific Discord guild ID,
         so the default error message should also contain the given Discord guild ID.
         """
-        assert (
-            f"ID \"{TEST_GUILD_ID}\"" in str(GuildDoesNotExistError(guild_id=TEST_GUILD_ID))
-        )
+        assert f'ID "{TEST_GUILD_ID}"' in str(GuildDoesNotExistError(guild_id=TEST_GUILD_ID))
 
     def test_default_message_without_guild_id(self) -> None:
         """
@@ -677,12 +674,9 @@ class TestRoleDoesNotExistError:
 
     def test_str_contains_formatted_message(self) -> None:
         """Test that the exception message contains the auto-generated formatted message."""
-        assert (
-            self._RoleDoesNotExistErrorSubclass.get_formatted_message(
-                non_existent_object_identifier=self._RoleDoesNotExistErrorSubclass.ROLE_NAME,
-            )
-            in str(self._RoleDoesNotExistErrorSubclass())
-        )
+        assert self._RoleDoesNotExistErrorSubclass.get_formatted_message(
+            non_existent_object_identifier=self._RoleDoesNotExistErrorSubclass.ROLE_NAME,
+        ) in str(self._RoleDoesNotExistErrorSubclass())
 
     def test_role_name_in_str(self) -> None:
         """
@@ -691,9 +685,8 @@ class TestRoleDoesNotExistError:
         The correct channel name is the `ROLE_NAME` class-property
         associated with the given `RoleDoesNotExistError` subclass.
         """
-        assert (
-            self._RoleDoesNotExistErrorSubclass.ROLE_NAME
-            in str(self._RoleDoesNotExistErrorSubclass())
+        assert self._RoleDoesNotExistErrorSubclass.ROLE_NAME in str(
+            self._RoleDoesNotExistErrorSubclass()
         )
 
 
@@ -768,12 +761,9 @@ class TestChannelDoesNotExistError:
 
     def test_str_contains_formatted_message(self) -> None:
         """Test that the exception message contains the auto-generated formatted message."""
-        assert (
-            self._ChannelDoesNotExistErrorSubclass.get_formatted_message(
-                non_existent_object_identifier=self._ChannelDoesNotExistErrorSubclass.CHANNEL_NAME,
-            )
-            in str(self._ChannelDoesNotExistErrorSubclass())
-        )
+        assert self._ChannelDoesNotExistErrorSubclass.get_formatted_message(
+            non_existent_object_identifier=self._ChannelDoesNotExistErrorSubclass.CHANNEL_NAME,
+        ) in str(self._ChannelDoesNotExistErrorSubclass())
 
     def test_channel_name_in_str(self) -> None:
         """
@@ -782,9 +772,8 @@ class TestChannelDoesNotExistError:
         The correct channel name is the `CHANNEL_NAME` class-property
         associated with the given `ChannelDoesNotExistError` subclass.
         """
-        assert (
-            self._ChannelDoesNotExistErrorSubclass.CHANNEL_NAME
-            in str(self._ChannelDoesNotExistErrorSubclass())
+        assert self._ChannelDoesNotExistErrorSubclass.CHANNEL_NAME in str(
+            self._ChannelDoesNotExistErrorSubclass()
         )
 
 

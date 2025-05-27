@@ -2,8 +2,8 @@ from collections.abc import Sequence
 
 __all__: Sequence[str] = (
     "EnvVariableDeleter",
-    "TemporarySettingsKeyReplacer",
     "FileTemporaryDeleter",
+    "TemporarySettingsKeyReplacer",
 )
 
 import hashlib
@@ -30,9 +30,9 @@ class EnvVariableDeleter:
         """Store the current state of any instances of the stored environment variable."""
         self.env_variable_name: str = env_variable_name
 
-        PROJECT_ROOT: Final[str | git.PathLike | None] = (
-            git.Repo(".", search_parent_directories=True).working_tree_dir
-        )
+        PROJECT_ROOT: Final[str | git.PathLike | None] = git.Repo(
+            ".", search_parent_directories=True
+        ).working_tree_dir
         if PROJECT_ROOT is None:
             NO_ROOT_DIRECTORY_MESSAGE: Final[str] = "Could not locate project root directory."
             raise FileNotFoundError(NO_ROOT_DIRECTORY_MESSAGE)
@@ -50,7 +50,12 @@ class EnvVariableDeleter:
         if self.old_env_value is not None:
             del os.environ[self.env_variable_name]
 
-    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None) -> None:  # noqa: E501
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:  # noqa: E501
         """Restore the deleted environment variable to its previous states."""
         if self.env_file_path.is_file():
             self.env_file_path.rename(self.env_file_path.parent / Path(".env"))
@@ -85,7 +90,12 @@ class TemporarySettingsKeyReplacer:  # TODO: Delete if has no uses
         # noinspection PyProtectedMember
         settings._settings[self.settings_key_name] = self.new_settings_value  # noqa: SLF001
 
-    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None) -> None:  # noqa: E501
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:  # noqa: E501
         """Restore the replaced settings value with the original value if it existed."""
         if self.old_settings_value is self.NOT_SET:
             # noinspection PyProtectedMember
@@ -122,7 +132,7 @@ class FileTemporaryDeleter:
                 f"{
                     hashlib.sha1(
                         str(self.file_path.resolve(strict=False)).encode(),
-                        usedforsecurity=False
+                        usedforsecurity=False,
                     ).hexdigest()[:10]
                 }-"
                 f"invalid"
@@ -138,7 +148,12 @@ class FileTemporaryDeleter:
             self.file_path.replace(new_file_path)
             self._temp_file_path = new_file_path
 
-    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None) -> None:  # noqa: E501
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:  # noqa: E501
         """Restore the deleted file at the stored file path."""
         if self._temp_file_path is not None:
             if not self._temp_file_path.exists():

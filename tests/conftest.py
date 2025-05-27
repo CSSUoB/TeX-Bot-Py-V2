@@ -11,13 +11,13 @@ import dotenv
 import pytest
 
 import config
-from utils import RandomDiscordBotTokenGenerator, RandomDiscordGuildIDGenerator
+
+from .test_utils import RandomDiscordBotTokenGenerator, RandomDiscordGuildIDGenerator
 
 _EXISTING_ENV_VARIABLES: Final[Mapping[str, object]] = {**dotenv.dotenv_values(), **os.environ}
 MISSING_ENV_VARIABLES: Final[Mapping[str, object]] = {
     key: value
-    for key, value
-    in (
+    for key, value in (
         {
             "DISCORD_BOT_TOKEN": RandomDiscordBotTokenGenerator.single_value(),
             "DISCORD_GUILD_ID": RandomDiscordGuildIDGenerator.single_value(),
@@ -82,8 +82,7 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int | pytest.ExitC
                     "\n".join(
                         [
                             env_variable.strip()
-                            for env_variable
-                            in ENV_VARIABLES
+                            for env_variable in ENV_VARIABLES
                             if (
                                 env_variable.strip()
                                 and (
