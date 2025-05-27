@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, final
 
 import dotenv
+import regex
 import validators
 from discord_logging.handler import DiscordHandler
 
@@ -92,9 +93,9 @@ class Settings(abc.ABC):
     _settings: "ClassVar[dict[str, object]]"
 
     @classmethod
-    def get_invalid_settings_key_message(cls, item: str) -> str:
+    def get_invalid_settings_key_message_for_item_name(cls, item_name: str) -> str:
         """Return the message to state that the given settings key is invalid."""
-        return f"{item!r} is not a valid settings key."
+        return f"{item_name!r} is not a valid settings key."
 
     def __getattr__(self, item: str) -> "Any":  # type: ignore[explicit-any]  # noqa: ANN401
         """Retrieve settings value by attribute lookup."""
@@ -134,11 +135,20 @@ class Settings(abc.ABC):
 
             raise KeyError(key_error_message) from None
 
-    @staticmethod
-    def _setup_logging() -> None:
-        raw_console_log_level: str = str(os.getenv("CONSOLE_LOG_LEVEL", "INFO")).upper()
+    @classmethod
+    def _setup_logging(cls) -> None:
+        raw_console_log_level: str | None = os.getenv("CONSOLE_LOG_LEVEL")
+        console_log_level: str = (
+            "INFO"
+            if raw_console_log_level is None
+            else (
+                raw_console_log_level.upper().strip()
+                if raw_console_log_level.upper().strip()
+                else raw_console_log_level
+            )
+        )
 
-        if raw_console_log_level not in LOG_LEVEL_CHOICES:
+        if console_log_level not in LOG_LEVEL_CHOICES:
             INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"""LOG_LEVEL must be one of {
                 ",".join(
                     f"{log_level_choice!r}" for log_level_choice in LOG_LEVEL_CHOICES[:-1]
@@ -146,15 +156,14 @@ class Settings(abc.ABC):
             } or {LOG_LEVEL_CHOICES[-1]!r}."""
             raise ImproperlyConfiguredError(INVALID_LOG_LEVEL_MESSAGE)
 
-        logger.setLevel(getattr(logging, raw_console_log_level))
+        logger.setLevel(getattr(logging, console_log_level))
 
         console_logging_handler: logging.Handler = logging.StreamHandler()
         console_logging_handler.setFormatter(
-            logging.Formatter("{asctime} | {name} | {levelname:^8} - {message}", style="{"),
+            logging.Formatter("[{asctime}] {name} | {levelname:^8} - {message}", style="{"),
         )
 
-        logger.addHandler(console_logging_handler)
-        logger.propagate = False
+        logging.getLogger("").addHandler(console_logging_handler)
 
     @classmethod
     def _setup_discord_bot_token(cls) -> None:
@@ -174,7 +183,7 @@ class Settings(abc.ABC):
             )
             raise ImproperlyConfiguredError(INVALID_DISCORD_BOT_TOKEN_MESSAGE)
 
-        cls._settings["DISCORD_BOT_TOKEN"] = raw_discord_bot_token
+        cls._settings["DISCORD_BOT_TOKEN"] = raw_discord_bot_token.strip()  # type: ignore[union-attr]
 
     @classmethod
     def _setup_discord_log_channel_webhook(cls) -> "Logger":
@@ -284,7 +293,11 @@ class Settings(abc.ABC):
             )
             raise ImproperlyConfiguredError(INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE)
 
-        cls._settings["PURCHASE_MEMBERSHIP_URL"] = raw_purchase_membership_url
+        cls._settings["PURCHASE_MEMBERSHIP_URL"] = (
+            raw_purchase_membership_url.strip()
+            if raw_purchase_membership_url is not None
+            else raw_purchase_membership_url
+        )
 
     @classmethod
     def _setup_membership_perks_url(cls) -> None:
@@ -303,7 +316,11 @@ class Settings(abc.ABC):
             )
             raise ImproperlyConfiguredError(INVALID_MEMBERSHIP_PERKS_URL_MESSAGE)
 
-        cls._settings["MEMBERSHIP_PERKS_URL"] = raw_membership_perks_url
+        cls._settings["MEMBERSHIP_PERKS_URL"] = (
+            raw_membership_perks_url.strip()
+            if raw_membership_perks_url is not None
+            else raw_membership_perks_url
+        )
 
     @classmethod
     def _setup_custom_discord_invite_url(cls) -> None:
@@ -343,6 +360,10 @@ class Settings(abc.ABC):
             "PING_COMMAND_EASTER_EGG_PROBABILITY must be a float between & including 0 to 1."
         )
 
+        raw_ping_command_easter_egg_probability: str | None = (
+            os.getenv("PING_COMMAND_EASTER_EGG_PROBABILITY")
+        )
+
         e: ValueError
         try:
             raw_ping_command_easter_egg_probability: float = 100 * float(
@@ -353,13 +374,13 @@ class Settings(abc.ABC):
                 ImproperlyConfiguredError(INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE)
             ) from e
 
-        if not 0 <= raw_ping_command_easter_egg_probability <= 100:
+        if not 0 <= ping_command_easter_egg_probability <= 100:
             raise ImproperlyConfiguredError(
                 INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE
             )
 
         cls._settings["PING_COMMAND_EASTER_EGG_PROBABILITY"] = (
-            raw_ping_command_easter_egg_probability
+            ping_command_easter_egg_probability
         )
 
     @classmethod
@@ -369,17 +390,20 @@ class Settings(abc.ABC):
             "Messages JSON file must contain a JSON string that can be decoded "
             "into a Python dict object."
         )
+        MESSAGES_FILE_PATH_DOES_NOT_EXIST_MESSAGE: Final[str] = (
+            "MESSAGES_FILE_PATH must be a path to a file that exists."
+        )
+
+        if raw_messages_file_path is not None and not raw_messages_file_path.strip():
+            raise ImproperlyConfiguredError(MESSAGES_FILE_PATH_DOES_NOT_EXIST_MESSAGE)
 
         messages_file_path: Path = (
-            Path(raw_messages_file_path)
-            if raw_messages_file_path
+            Path(raw_messages_file_path.strip())
+            if raw_messages_file_path is not None
             else PROJECT_ROOT / Path("messages.json")
         )
 
         if not messages_file_path.is_file():
-            MESSAGES_FILE_PATH_DOES_NOT_EXIST_MESSAGE: Final[str] = (
-                "MESSAGES_FILE_PATH must be a path to a file that exists."
-            )
             raise ImproperlyConfiguredError(MESSAGES_FILE_PATH_DOES_NOT_EXIST_MESSAGE)
 
         messages_file: IO[str]
@@ -474,23 +498,45 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_send_introduction_reminders(cls) -> None:
-        raw_send_introduction_reminders: str | bool = str(
-            os.getenv("SEND_INTRODUCTION_REMINDERS", "Once"),
-        ).lower()
+        raw_send_introduction_reminders: str | None = os.getenv("SEND_INTRODUCTION_REMINDERS")
 
-        if raw_send_introduction_reminders not in VALID_SEND_INTRODUCTION_REMINDERS_VALUES:
+        # noinspection PyTypeChecker
+        send_introduction_reminders: str | bool = (
+            "Once".lower().strip()
+            if raw_send_introduction_reminders is None
+            else (
+                raw_send_introduction_reminders.lower().strip()
+                if raw_send_introduction_reminders.lower().strip()
+                else raw_send_introduction_reminders
+            )
+        )
+
+        if send_introduction_reminders not in VALID_SEND_INTRODUCTION_REMINDERS_VALUES:
             INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE: Final[str] = (
                 'SEND_INTRODUCTION_REMINDERS must be one of: "Once", "Interval" or "False".'
             )
             raise ImproperlyConfiguredError(INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE)
 
-        if raw_send_introduction_reminders in TRUE_VALUES:
-            raw_send_introduction_reminders = "once"
+        cls._settings["SEND_INTRODUCTION_REMINDERS"] = (
+            "once"
+            if send_introduction_reminders in TRUE_VALUES
+            else (
+                False
+                if send_introduction_reminders not in ("once", "interval")
+                else send_introduction_reminders
+            )
+        )
 
-        elif raw_send_introduction_reminders not in ("once", "interval"):
-            raw_send_introduction_reminders = False
+    @classmethod
+    def _error_setup_send_introduction_reminders_interval(cls, msg: str | None = None) -> None:
+        if cls._settings["SEND_INTRODUCTION_REMINDERS"]:
+            msg = msg if msg is not None else (
+                "SEND_INTRODUCTION_REMINDERS_INTERVAL must contain the interval "
+                "in any combination of seconds, minutes or hours."
+            )
+            raise ImproperlyConfiguredError(msg)
 
-        cls._settings["SEND_INTRODUCTION_REMINDERS"] = raw_send_introduction_reminders
+        cls._settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = {"hours": 6}
 
     @classmethod
     def _setup_send_introduction_reminders_delay(cls) -> None:
@@ -553,19 +599,33 @@ class Settings(abc.ABC):
             str(os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h")),
         )
 
-        raw_timedelta_details_send_introduction_reminders_interval: Mapping[str, float] = {
-            "hours": 6,
+        send_introduction_reminders_interval: Match[str] | None = re.match(
+            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)\s*s)?\s*(?:(?P<minutes>(?:\d*\.)?\d+)\s*m)?\s*(?:(?P<hours>(?:\d*\.)?\d+)\s*h)?\Z",
+            (
+                "6h"
+                if raw_send_introduction_reminders_interval is None
+                else (
+                    raw_send_introduction_reminders_interval.lower().strip()
+                    if raw_send_introduction_reminders_interval.lower().strip()
+                    else raw_send_introduction_reminders_interval
+                )
+            ),
+        )
+
+        if send_introduction_reminders_interval is None:
+            cls._error_setup_send_introduction_reminders_interval()
+            return
+
+        details_send_introduction_reminders_interval: dict[str, float] = {
+            key: float(value)
+            for key, value
+            in send_introduction_reminders_interval.groupdict().items()
+            if value
         }
 
-        if cls._settings["SEND_INTRODUCTION_REMINDERS"]:
-            if not raw_send_introduction_reminders_interval:
-                INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
-                    "SEND_INTRODUCTION_REMINDERS_INTERVAL must contain the interval "
-                    "in any combination of seconds, minutes or hours."
-                )
-                raise ImproperlyConfiguredError(
-                    INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE,
-                )
+        if not details_send_introduction_reminders_interval:
+            cls._error_setup_send_introduction_reminders_interval()
+            return
 
             raw_timedelta_details_send_introduction_reminders_interval = {
                 key: float(value)
@@ -574,7 +634,7 @@ class Settings(abc.ABC):
             }
 
         cls._settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
-            raw_timedelta_details_send_introduction_reminders_interval
+            details_send_introduction_reminders_interval
         )
 
     @classmethod
@@ -590,6 +650,17 @@ class Settings(abc.ABC):
             raise ImproperlyConfiguredError(INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE)
 
         cls._settings["SEND_GET_ROLES_REMINDERS"] = raw_send_get_roles_reminders in TRUE_VALUES
+
+    @classmethod
+    def _error_setup_kick_no_introduction_discord_members_delay(cls, msg: str | None = None) -> None:  # noqa: E501
+        if cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"]:
+            msg = msg if msg is not None else (
+                "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must contain the delay "
+                "in any combination of seconds, minutes, hours, days or weeks."
+            )
+            raise ImproperlyConfiguredError(msg)
+
+        cls._settings["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = timedelta()
 
     @classmethod
     def _setup_send_get_roles_reminders_delay(cls) -> None:
@@ -639,6 +710,17 @@ class Settings(abc.ABC):
         )
 
     @classmethod
+    def _error_setup_send_get_roles_reminders_interval(cls, msg: str | None = None) -> None:
+        if cls._settings["SEND_GET_ROLES_REMINDERS"]:
+            msg = msg if msg is not None else (
+                "SEND_GET_ROLES_REMINDERS_INTERVAL must contain the interval "
+                "in any combination of seconds, minutes or hours."
+            )
+            raise ImproperlyConfiguredError(msg)
+
+        cls._settings["SEND_GET_ROLES_REMINDERS_INTERVAL"] = {"hours": 24}
+
+    @classmethod
     def _setup_advanced_send_get_roles_reminders_interval(cls) -> None:
         if "SEND_GET_ROLES_REMINDERS" not in cls._settings:
             INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
@@ -682,22 +764,32 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_statistics_days(cls) -> None:
+        raw_statistics_days: str | None = os.getenv("STATISTICS_DAYS")
+
         e: ValueError
         try:
-            raw_statistics_days: float = float(os.getenv("STATISTICS_DAYS", "30"))
+            statistics_days: float = (
+                30 if raw_statistics_days is None else float(raw_statistics_days.strip())
+            )
         except ValueError as e:
             INVALID_STATISTICS_DAYS_MESSAGE: Final[str] = (
                 "STATISTICS_DAYS must contain the statistics period in days."
             )
             raise ImproperlyConfiguredError(INVALID_STATISTICS_DAYS_MESSAGE) from e
 
-        cls._settings["STATISTICS_DAYS"] = timedelta(days=raw_statistics_days)
+        if statistics_days <= 1:
+            TOO_SMALL_STATISTICS_DAYS_MESSAGE: Final[str] = (
+                "STATISTICS_DAYS cannot be less than (or equal to) 1 day."
+            )
+            raise ImproperlyConfiguredError(TOO_SMALL_STATISTICS_DAYS_MESSAGE)
+
+        cls._settings["STATISTICS_DAYS"] = timedelta(days=statistics_days)
 
     @classmethod
     def _setup_statistics_roles(cls) -> None:
         raw_statistics_roles: str | None = os.getenv("STATISTICS_ROLES")
 
-        if not raw_statistics_roles:
+        if raw_statistics_roles is None:
             cls._settings["STATISTICS_ROLES"] = DEFAULT_STATISTICS_ROLES
 
         else:
@@ -711,6 +803,13 @@ class Settings(abc.ABC):
     def _setup_moderation_document_url(cls) -> None:
         raw_moderation_document_url: str | None = os.getenv("MODERATION_DOCUMENT_URL")
 
+        RAW_MODERATION_DOCUMENT_URL_HAS_NO_SCHEME: Final[bool] = bool(
+            raw_moderation_document_url is not None
+            and "://" not in raw_moderation_document_url.strip(),
+        )
+        if RAW_MODERATION_DOCUMENT_URL_HAS_NO_SCHEME:
+            raw_moderation_document_url = f"https://{raw_moderation_document_url.strip()}"  # type: ignore[union-attr]
+
         MODERATION_DOCUMENT_URL_IS_VALID: Final[bool] = bool(
             raw_moderation_document_url and validators.url(raw_moderation_document_url),
         )
@@ -720,7 +819,7 @@ class Settings(abc.ABC):
             )
             raise ImproperlyConfiguredError(MODERATION_DOCUMENT_URL_MESSAGE)
 
-        cls._settings["MODERATION_DOCUMENT_URL"] = raw_moderation_document_url
+        cls._settings["MODERATION_DOCUMENT_URL"] = raw_moderation_document_url.strip()  # type: ignore[union-attr]
 
     @classmethod
     def _setup_strike_performed_manually_warning_location(cls) -> None:

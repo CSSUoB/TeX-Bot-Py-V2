@@ -68,8 +68,8 @@ class ErrorCaptureDecorators:
 
         return wrapper  # type: ignore[return-value]
 
-    @staticmethod
-    def critical_error_close_func(error: BaseException) -> None:
+    @classmethod
+    def critical_error_close_func(cls, error: BaseException) -> None:
         """Component function to send logging messages when a critical error is encountered."""
         logger.critical(str(error).rstrip(".:"))
 
