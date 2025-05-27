@@ -196,7 +196,7 @@ class TeXBot(discord.Bot):
         """
         Shortcut accessor to the archivist role.
 
-        The archivist role is the one that allows members to see channels & categories
+        The archivist role is the one that allows members to see channels and categories
         that are no longer in use, which are hidden from all other members.
 
         Raises `ArchivistRoleDoesNotExist` if the role does not exist.
@@ -268,7 +268,7 @@ class TeXBot(discord.Bot):
         """
         Shortcut accessor to the rules text channel.
 
-        The rules text channel is the one that contains the welcome message & rules.
+        The rules text channel is the one that contains the welcome message and rules.
 
         Raises `RulesChannelDoesNotExist` if the channel does not exist.
         """
