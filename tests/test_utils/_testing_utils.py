@@ -36,6 +36,7 @@ class EmptyContextManager:
     ) -> None:  # noqa: E501
         """Exit the context manager and execute no additional logic."""
 
+
 class BaseRandomEnvVariableValueGenerator(Generic[T], ABC):
     """Generates random values for a specific environment variable."""
 
