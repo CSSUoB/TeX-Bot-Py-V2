@@ -81,12 +81,11 @@ class TestSettings:
 
         return RuntimeSettings
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_ITEM_NAME", ("item_1",))
     def test_get_invalid_settings_key_message(self, TEST_ITEM_NAME: str) -> None:  # noqa: N803
         """Test that the `get_invalid_settings_key_message()` method returns correctly."""
         INVALID_SETTINGS_KEY_MESSAGE: Final[str] = (
-            settings.get_invalid_settings_key_message_for_item_name(  # noqa: E501
+            settings.get_invalid_settings_key_message_for_item_name(
                 TEST_ITEM_NAME,
             )
         )
@@ -94,7 +93,6 @@ class TestSettings:
         assert TEST_ITEM_NAME in INVALID_SETTINGS_KEY_MESSAGE
         assert "not a valid settings key" in INVALID_SETTINGS_KEY_MESSAGE
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_ITEM_NAME", ("ITEM_1",))
     @pytest.mark.parametrize("TEST_ITEM_VALUE", ("value_1",))
     def test_getattr_success(self, TEST_ITEM_NAME: str, TEST_ITEM_VALUE: str) -> None:  # noqa: N803
@@ -106,7 +104,6 @@ class TestSettings:
 
         assert getattr(RuntimeSettings(), TEST_ITEM_NAME) == TEST_ITEM_VALUE
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("MISSING_ITEM_NAME", ("ITEM",))
     def test_getattr_missing_item(self, MISSING_ITEM_NAME: str) -> None:  # noqa: N803
         """
@@ -118,14 +115,11 @@ class TestSettings:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
-        INVALID_SETTINGS_KEY_MESSAGE: Final[str] = (
-            RuntimeSettings.get_invalid_settings_key_message_for_item_name(MISSING_ITEM_NAME)
-        )
-
-        with pytest.raises(AttributeError, match=INVALID_SETTINGS_KEY_MESSAGE):
+        with pytest.raises(
+            AttributeError, match=f"'{MISSING_ITEM_NAME}' is not a valid settings key."
+        ):
             assert getattr(RuntimeSettings(), MISSING_ITEM_NAME)
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("INVALID_ITEM_NAME", ("item_1", "ITEM__1", "!ITEM_1"))
     def test_getattr_invalid_name(self, INVALID_ITEM_NAME: str) -> None:  # noqa: N803
         """Test that requesting an invalid settings variable by attr-lookup raises an error."""
@@ -136,12 +130,11 @@ class TestSettings:
         with pytest.raises(AttributeError, match=f"no attribute {INVALID_ITEM_NAME!r}"):
             assert getattr(RuntimeSettings(), INVALID_ITEM_NAME)
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_ITEM_NAME", ("ITEM_1",))
     @pytest.mark.parametrize("TEST_ITEM_VALUE", ("value_1",))
     def test_getattr_sets_up_env_variables(
         self, TEST_ITEM_NAME: str, TEST_ITEM_VALUE: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """
         Test that requesting a settings variable sets them all up if they have not been.
 
@@ -173,7 +166,6 @@ class TestSettings:
 
         assert RuntimeSettings()[TEST_ITEM_NAME] == TEST_ITEM_VALUE
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("MISSING_ITEM_NAME", ("ITEM",))
     def test_getitem_missing_item(self, MISSING_ITEM_NAME: str) -> None:  # noqa: N803
         """
@@ -185,11 +177,9 @@ class TestSettings:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
-        INVALID_SETTINGS_KEY_MESSAGE: Final[str] = (
-            RuntimeSettings.get_invalid_settings_key_message_for_item_name(MISSING_ITEM_NAME)
-        )
-
-        with pytest.raises(KeyError, match=INVALID_SETTINGS_KEY_MESSAGE):
+        with pytest.raises(
+            KeyError, match=f"'{MISSING_ITEM_NAME}' is not a valid settings key."
+        ):
             assert RuntimeSettings()[MISSING_ITEM_NAME]
 
     # noinspection PyPep8Naming

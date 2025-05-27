@@ -86,7 +86,7 @@ class RandomDiscordLogChannelWebhookURLGenerator(BaseRandomEnvVariableValueGener
     @classmethod
     def multiple_values(
         cls, count: int = 5, *, with_trailing_slash: bool | None = None
-    ) -> Iterable[str]:  # noqa: E501
+    ) -> Iterable[str]:
         """Return `count` number of random `DISCORD_LOG_CHANNEL_WEBHOOK_URL` values."""
         return (
             f"https://discord.com/api/webhooks/{
@@ -103,7 +103,7 @@ class RandomDiscordLogChannelWebhookURLGenerator(BaseRandomEnvVariableValueGener
                     if with_trailing_slash
                     else (random.choice(('', '/')) if with_trailing_slash is None else '')
                 )
-            }"
+            }"  # noqa: S311
             for _ in range(count)
         )
 
@@ -120,7 +120,7 @@ class RandomDiscordGuildIDGenerator(BaseRandomEnvVariableValueGenerator[str]):
     def multiple_values(cls, count: int = 5) -> Iterable[str]:
         """Return `count` number of random `DISCORD_GUILD_ID` values."""
         return (
-            "".join(random.choices(string.digits, k=random.randint(17, 20)))
+            "".join(random.choices(string.digits, k=random.randint(17, 20)))  # noqa: S311
             for _ in range(count)
         )
 

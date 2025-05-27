@@ -1,3 +1,5 @@
+"""Test case to unit-test the generate_invite_url utility function."""
+
 from collections.abc import Sequence
 
 __all__: Sequence[str] = ("TestGenerateInviteURL",)
@@ -15,11 +17,11 @@ class TestGenerateInviteURL:
     @staticmethod
     def test_url_generates() -> None:
         """Test that the invite URL generates successfully when valid arguments are passed."""
-        DISCORD_BOT_APPLICATION_ID: Final[int] = random.randint(
+        DISCORD_BOT_APPLICATION_ID: Final[int] = random.randint(  # noqa: S311
             10000000000000000,
             99999999999999999999,
         )
-        DISCORD_GUILD_ID: Final[int] = random.randint(
+        DISCORD_GUILD_ID: Final[int] = random.randint(  # noqa: S311
             10000000000000000,
             99999999999999999999,
         )

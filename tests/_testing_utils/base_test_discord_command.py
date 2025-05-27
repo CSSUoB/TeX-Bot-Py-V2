@@ -8,9 +8,9 @@ from typing import Final
 
 import discord
 import pytest
-from typed_classproperties import classproperty
 from discord import HTTPClient, MessageCommand, SlashCommand, UserCommand
 from discord.state import ConnectionState
+from typed_classproperties import classproperty
 
 from tests._testing_utils.pycord_internals import TestingApplicationContext, TestingInteraction
 from utils import TeXBot
