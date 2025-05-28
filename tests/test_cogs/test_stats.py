@@ -143,7 +143,9 @@ class TestChannelStatsCommand(BaseTestDiscordCommand):
         ),
     )
     def test_invalid_channel_id(
-        self, INVALID_CHANNEL_ID: str, CONTEXT: "TestingApplicationContext"  # noqa: N803
+        self,
+        INVALID_CHANNEL_ID: str,
+        CONTEXT: "TestingApplicationContext",  # noqa: N803
     ) -> None:
         """Test that an error occurs when running the command with an invalid channel ID."""
         self.execute_command(
