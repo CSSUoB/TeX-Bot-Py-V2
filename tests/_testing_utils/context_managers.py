@@ -93,7 +93,6 @@ class TemporarySettingsKeyReplacer:  # TODO: Delete if has no uses
 
     def __enter__(self) -> None:
         """Replace the settings value with the new value provided."""
-        # noinspection PyProtectedMember
         settings._settings[self.settings_key_name] = self.new_settings_value  # noqa: SLF001
 
     def __exit__(
@@ -104,11 +103,9 @@ class TemporarySettingsKeyReplacer:  # TODO: Delete if has no uses
     ) -> None:
         """Restore the replaced settings value with the original value if it existed."""
         if self.old_settings_value is self.NOT_SET:
-            # noinspection PyProtectedMember
             settings._settings.pop(self.settings_key_name)  # noqa: SLF001
 
         else:
-            # noinspection PyProtectedMember
             settings._settings[self.settings_key_name] = self.old_settings_value  # noqa: SLF001
 
 

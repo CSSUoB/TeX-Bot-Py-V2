@@ -145,7 +145,6 @@ class TestSettings:
 
         assert is_env_variables_setup is True
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_ITEM_NAME", ("ITEM_1",))
     @pytest.mark.parametrize("TEST_ITEM_VALUE", ("value_1",))
     def test_getitem_success(self, TEST_ITEM_NAME: str, TEST_ITEM_VALUE: str) -> None:  # noqa: N803
@@ -173,7 +172,6 @@ class TestSettings:
         ):
             assert RuntimeSettings()[MISSING_ITEM_NAME]
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("INVALID_ITEM_NAME", ("item_1", "ITEM__1", "!ITEM_1"))
     def test_getitem_invalid_name(self, INVALID_ITEM_NAME: str) -> None:  # noqa: N803
         """Test that requesting an invalid settings variable by key-lookup raises an error."""
@@ -183,7 +181,6 @@ class TestSettings:
         with pytest.raises(KeyError, match=str(KeyError(INVALID_ITEM_NAME))):
             assert RuntimeSettings()[INVALID_ITEM_NAME]
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_ITEM_NAME", ("ITEM_1",))
     @pytest.mark.parametrize("TEST_ITEM_VALUE", ("value_1",))
     def test_getitem_sets_up_env_variables(
