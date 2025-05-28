@@ -140,6 +140,7 @@ class TestChannelStatsCommand(BaseTestDiscordCommand):
             "".join(random.choices(string.digits, k=2)),  # noqa: S311
             "".join(random.choices(string.digits, k=50)),  # noqa: S311
         ),
+        ids=[f"case_{i}" for i in range(4)],
     )
     def test_invalid_channel_id(
         self,
