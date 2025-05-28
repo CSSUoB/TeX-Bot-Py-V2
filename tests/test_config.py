@@ -481,8 +481,9 @@ class TestSetupDiscordBotToken:
                 count=1,
             ),
         ),
+        ids=[f"case_{i}" for i in range(13)],
     )
-    def test_invalid_discord_bot_token(self, INVALID_DISCORD_BOT_TOKEN: str) -> None:  # noqa: N803
+    def test_invalid_discord_bot_token(self, INVALID_DISCORD_BOT_TOKEN: str) -> None:
         """Test that an error is raised when an invalid `DISCORD_BOT_TOKEN` is provided."""
         INVALID_DISCORD_BOT_TOKEN_MESSAGE: Final[str] = (
             "DISCORD_BOT_TOKEN must be a valid Discord bot token"
@@ -581,9 +582,8 @@ class TestSetupDiscordLogChannelWebhookURL:
             re.sub(
                 r"/\d{17,20}/",
                 (
-                    f"/{''.join(random.choices(string.ascii_letters + string.digits, k=9))}>{
-                        ''.join(random.choices(string.ascii_letters + string.digits, k=9))
-                    }/"  # noqa: S311
+                    f"/{''.join(random.choices(string.ascii_letters + string.digits, k=9))}>"
+                    f"{''.join(random.choices(string.ascii_letters + string.digits, k=9))}/"  # noqa: S311
                 ),
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1,
@@ -603,21 +603,20 @@ class TestSetupDiscordLogChannelWebhookURL:
             re.sub(
                 r"/[a-zA-Z\d]{60,90}",
                 (
-                    f"/{''.join(random.choices(string.ascii_letters + string.digits, k=37))}>{
-                        ''.join(random.choices(string.ascii_letters + string.digits, k=37))
-                    }"  # noqa: S311
+                    f"/{''.join(random.choices(string.ascii_letters + string.digits, k=37))}>"
+                    f"{''.join(random.choices(string.ascii_letters + string.digits, k=37))}"  # noqa: S311
                 ),
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1,
             ),
         ),
-        ids=[f"case_{i}" for i in range(10)]
+        ids=[f"case_{i}" for i in range(10)],
     )
     def test_invalid_discord_log_channel_webhook_url(
         self,
         INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str,  # noqa: N803
     ) -> None:
-        """Test that an error occurs when `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is invalid."""
+        """Test that an error occurs when an invalid `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is provided."""
         INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE: Final[str] = (
             "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL "
             "that points to a discord channel where logs should be displayed."
@@ -685,6 +684,7 @@ class TestSetupDiscordGuildID:
             "".join(random.choices(string.digits, k=2)),  # noqa: S311
             "".join(random.choices(string.digits, k=50)),  # noqa: S311
         ),
+        ids=[f"case_{i}" for i in range(6)],
     )
     def test_invalid_discord_guild_id(self, INVALID_DISCORD_GUILD_ID: str) -> None:  # noqa: N803
         """Test that an error is raised when an invalid `DISCORD_GUILD_ID` is provided."""
@@ -782,6 +782,7 @@ class TestSetupGroupFullName:
             "  ",
             "".join(random.choices(string.digits, k=30)),  # noqa: S311
         ),
+        ids=[f"case_{i}" for i in range(22)],
     )
     def test_invalid_group_full_name(self, INVALID_GROUP_FULL_NAME: str) -> None:  # noqa: N803
         """Test that an error is raised when an invalid `GROUP_NAME` is provided."""
@@ -964,6 +965,7 @@ class TestSetupGroupShortName:
             "  ",
             "".join(random.choices(string.digits, k=30)),
         ),
+        ids=[f"case_{i}" for i in range(22)],
     )
     def test_invalid_group_short_name(self, INVALID_GROUP_SHORT_NAME: str) -> None:  # noqa: N803
         """Test that an error is raised when an invalid `GROUP_SHORT_NAME` is provided."""
@@ -1738,6 +1740,7 @@ class TestSetupSendIntroductionReminders:
                 }  h"
             ),
         ),
+        ids=[f"case_{i}" for i in range(7)],
     )
     def test_setup_send_introduction_reminders_interval_successful(
         self, TEST_SEND_INTRODUCTION_REMINDERS_INTERVAL: str
