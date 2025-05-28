@@ -11,6 +11,7 @@ __all__: "Sequence[str]" = (
     "RandomDiscordBotTokenGenerator",
     "RandomDiscordGuildIDGenerator",
     "RandomDiscordLogChannelWebhookURLGenerator",
+    "RandomOrganisationIDGenerator",
 )
 
 import abc
@@ -133,4 +134,23 @@ class RandomDiscordGuildIDGenerator(BaseRandomEnvVariableValueGenerator[str]):
     @override
     def single_value(cls) -> str:
         """Return a single random `DISCORD_GUILD_ID` value."""
+        return super().single_value()
+
+
+class RandomOrganisationIDGenerator(BaseRandomEnvVariableValueGenerator[str]):
+    """Generates random values that are valid organisation IDs."""
+
+    @classmethod
+    @override
+    def multiple_values(cls, count: int = 5) -> "Iterable[str]":
+        """Return `count` number of random `ORGANISATION_ID` values."""
+        return (
+            "".join(random.choices(string.digits, k=random.randint(4, 5)))  # noqa: S311
+            for _ in range(count)
+        )
+
+    @classmethod
+    @override
+    def single_value(cls) -> str:
+        """Return a single random `ORGANISATION_ID` value."""
         return super().single_value()

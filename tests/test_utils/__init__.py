@@ -11,6 +11,7 @@ __all__: "Sequence[str]" = (
     "RandomDiscordBotTokenGenerator",
     "RandomDiscordGuildIDGenerator",
     "RandomDiscordLogChannelWebhookURLGenerator",
+    "RandomOrganisationIDGenerator",
 )
 
 from ._testing_utils import (
@@ -19,4 +20,5 @@ from ._testing_utils import (
     RandomDiscordBotTokenGenerator,
     RandomDiscordGuildIDGenerator,
     RandomDiscordLogChannelWebhookURLGenerator,
+    RandomOrganisationIDGenerator,
 )

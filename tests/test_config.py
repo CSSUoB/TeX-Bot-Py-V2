@@ -29,6 +29,7 @@ from .test_utils._testing_utils import (
     RandomDiscordBotTokenGenerator,
     RandomDiscordGuildIDGenerator,
     RandomDiscordLogChannelWebhookURLGenerator,
+    RandomOrganisationIDGenerator,
 )
 
 if TYPE_CHECKING:
@@ -353,7 +354,6 @@ class TestSetupLogging:
 class TestSetupDiscordBotToken:
     """Test case to unit-test the `_setup_discord_bot_token()` function."""
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_DISCORD_BOT_TOKEN",
         itertools.chain(
@@ -384,7 +384,6 @@ class TestSetupDiscordBotToken:
             ):
                 RuntimeSettings._setup_discord_bot_token()  # noqa: SLF001
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_DISCORD_BOT_TOKEN",
         (

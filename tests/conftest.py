@@ -10,7 +10,11 @@ import dotenv
 
 import config
 
-from .test_utils import RandomDiscordBotTokenGenerator, RandomDiscordGuildIDGenerator
+from .test_utils import (
+    RandomDiscordBotTokenGenerator,
+    RandomDiscordGuildIDGenerator,
+    RandomOrganisationIDGenerator,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
@@ -28,8 +32,8 @@ MISSING_ENV_VARIABLES: "Final[Mapping[str, object]]" = {
         {
             "DISCORD_BOT_TOKEN": RandomDiscordBotTokenGenerator.single_value(),
             "DISCORD_GUILD_ID": RandomDiscordGuildIDGenerator.single_value(),
+            "ORGANISATION_ID": RandomOrganisationIDGenerator.single_value(),
             "MODERATION_DOCUMENT_URL": "https://google.com",
-            "MEMBERS_LIST_URL": "https://google.com",
             "MEMBERS_LIST_URL_SESSION_COOKIE": (
                 "".join(random.choices(string.hexdigits, k=random.randint(128, 256)))  # noqa: S311
             ),
