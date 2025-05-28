@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 import config
-from config import Settings, settings
+from config import Settings
 from exceptions import (
     ImproperlyConfiguredError,
     MessagesJSONFileMissingKeyError,

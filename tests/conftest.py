@@ -69,7 +69,7 @@ def pytest_sessionstart(session: "pytest.Session") -> None:  # noqa: ARG001
 # noinspection SpellCheckingInspection,PyUnusedLocal
 def pytest_sessionfinish(
     session: "pytest.Session", exitstatus: "int | pytest.ExitCode"
-) -> None:  # noqa: ARG001
+) -> None:
     """
     Called after whole test run finished, right before returning the exit status to the system.
 
