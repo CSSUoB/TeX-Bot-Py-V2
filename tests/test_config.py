@@ -611,6 +611,7 @@ class TestSetupDiscordLogChannelWebhookURL:
                 count=1,
             ),
         ),
+        ids=[f"case_{i}" for i in range(10)]
     )
     def test_invalid_discord_log_channel_webhook_url(
         self,
@@ -618,7 +619,8 @@ class TestSetupDiscordLogChannelWebhookURL:
     ) -> None:
         """Test that an error occurs when `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is invalid."""
         INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE: Final[str] = (
-            "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL"
+            "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL "
+            "that points to a discord channel where logs should be displayed."
         )
 
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
@@ -638,7 +640,6 @@ class TestSetupDiscordLogChannelWebhookURL:
 class TestSetupDiscordGuildID:
     """Test case to unit-test the `_setup_discord_guild_id()` function."""
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_DISCORD_GUILD_ID",
         itertools.chain(
