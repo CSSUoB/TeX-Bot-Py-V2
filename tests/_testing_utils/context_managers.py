@@ -1,6 +1,10 @@
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = (
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import Final
+
+__all__: "Sequence[str]" = (
     "EnvVariableDeleter",
     "FileTemporaryDeleter",
     "TemporarySettingsKeyReplacer",
@@ -9,12 +13,14 @@ __all__: Sequence[str] = (
 import hashlib
 import os
 from pathlib import Path
-from types import TracebackType
-from typing import Final
+from typing import TYPE_CHECKING
 
 import git
 
 from config import settings
+
+if TYPE_CHECKING:
+    from types import TracebackType
 
 
 class EnvVariableDeleter:
@@ -54,8 +60,8 @@ class EnvVariableDeleter:
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
-        exc_tb: TracebackType | None,
-    ) -> None:  # noqa: E501
+        exc_tb: "TracebackType | None",
+    ) -> None:
         """Restore the deleted environment variable to its previous states."""
         if self.env_file_path.is_file():
             self.env_file_path.rename(self.env_file_path.parent / Path(".env"))
@@ -67,7 +73,7 @@ class EnvVariableDeleter:
 class TemporarySettingsKeyReplacer:  # TODO: Delete if has no uses
     """Context manager that temporarily replaces the value at the given settings key."""
 
-    NOT_SET: Final[object] = object()
+    NOT_SET: "Final[object]" = object()
 
     @classmethod
     def _get_old_settings_value(cls, settings_key_name: str) -> object:
@@ -94,8 +100,8 @@ class TemporarySettingsKeyReplacer:  # TODO: Delete if has no uses
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
-        exc_tb: TracebackType | None,
-    ) -> None:  # noqa: E501
+        exc_tb: "TracebackType | None",
+    ) -> None:
         """Restore the replaced settings value with the original value if it existed."""
         if self.old_settings_value is self.NOT_SET:
             # noinspection PyProtectedMember
@@ -152,8 +158,8 @@ class FileTemporaryDeleter:
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
-        exc_tb: TracebackType | None,
-    ) -> None:  # noqa: E501
+        exc_tb: "TracebackType | None",
+    ) -> None:
         """Restore the deleted file at the stored file path."""
         if self._temp_file_path is not None:
             if not self._temp_file_path.exists():

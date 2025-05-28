@@ -1,16 +1,23 @@
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = ("TestingApplicationContext", "TestingInteraction", "TestingResponse")
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import Final
 
-from collections.abc import Iterable, MutableSequence
-from typing import Final
+    from discord import Embed, File
+    from discord.state import ConnectionState
+    from discord.ui import View
+
+__all__: "Sequence[str]" = ("TestingApplicationContext", "TestingInteraction", "TestingResponse")
+
+from typing import TYPE_CHECKING
 
 import discord
-from discord import Embed, File
-from discord.state import ConnectionState
-from discord.ui import View
 
 from utils import TeXBotApplicationContext
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, MutableSequence
 
 
 class TestingResponse:
@@ -20,13 +27,13 @@ class TestingResponse:
         *,
         tts: bool = False,
         ephemeral: bool = False,
-        file: File | None = None,
-        files: Iterable[File] | None = None,
-        embed: Embed | None = None,
-        embeds: Iterable[Embed] | None = None,
-        view: View | None = None,
+        file: "File | None" = None,
+        files: "Iterable[File] | None" = None,
+        embed: "Embed | None" = None,
+        embeds: "Iterable[Embed] | None" = None,
+        view: "View | None" = None,
         delete_after: float | None = None,
-    ) -> None:  # noqa: PLR0913,E501
+    ) -> None:
         if content is not None and not content.strip():
             EMPTY_CONTENT_MESSAGE: Final[str] = f"Parameter {'content'!r} cannot be empty."
             raise ValueError(EMPTY_CONTENT_MESSAGE)
@@ -86,23 +93,23 @@ class TestingResponse:
         return self._ephemeral
 
     @property
-    def file(self) -> File | None:
+    def file(self) -> "File | None":
         return self._file
 
     @property
-    def files(self) -> Iterable[File] | None:
+    def files(self) -> "Iterable[File] | None":
         return self._files
 
     @property
-    def embed(self) -> Embed | None:
+    def embed(self) -> "Embed | None":
         return self._embed
 
     @property
-    def embeds(self) -> Iterable[Embed] | None:
+    def embeds(self) -> "Iterable[Embed] | None":
         return self._embeds
 
     @property
-    def view(self) -> View | None:
+    def view(self) -> "View | None":
         return self._view
 
     @property
@@ -112,8 +119,8 @@ class TestingResponse:
 
 class TestingInteraction(discord.Interaction):
     def __init__(
-        self, *, data: discord.types.interactions.Interaction, state: ConnectionState
-    ) -> None:  # noqa: E501
+        self, *, data: discord.types.interactions.Interaction, state: "ConnectionState"
+    ) -> None:
         self._responses: MutableSequence[TestingResponse] = []
         super().__init__(data=data, state=state)
 
@@ -125,13 +132,13 @@ class TestingInteraction(discord.Interaction):
         avatar_url: str | None = None,
         tts: bool = False,
         ephemeral: bool = False,
-        file: File | None = None,
-        files: Iterable[File] | None = None,
-        embed: Embed | None = None,
-        embeds: Iterable[Embed] | None = None,
-        view: View | None = None,
+        file: "File | None" = None,
+        files: "Iterable[File] | None" = None,
+        embed: "Embed | None" = None,
+        embeds: "Iterable[Embed] | None" = None,
+        view: "View | None" = None,
         delete_after: float | None = None,
-    ) -> discord.Interaction | discord.WebhookMessage:  # noqa: ARG002, PLR0913, E501
+    ) -> discord.Interaction | discord.WebhookMessage:
         response: TestingResponse = TestingResponse(
             content=content,
             tts=tts,
@@ -149,7 +156,7 @@ class TestingInteraction(discord.Interaction):
         return self
 
     @property
-    def responses(self) -> MutableSequence[TestingResponse]:
+    def responses(self) -> "MutableSequence[TestingResponse]":
         return self._responses
 
 

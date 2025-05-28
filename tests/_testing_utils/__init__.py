@@ -1,13 +1,16 @@
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = (
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__: "Sequence[str]" = (
+    "BaseTestDiscordCommand",
     "EnvVariableDeleter",
-    "TemporarySettingsKeyReplacer",
     "FileTemporaryDeleter",
+    "TemporarySettingsKeyReplacer",
+    "TestingApplicationContext",
     "TestingInteraction",
     "TestingResponse",
-    "TestingApplicationContext",
-    "BaseTestDiscordCommand",
 )
 
 from tests._testing_utils.base_test_discord_command import BaseTestDiscordCommand

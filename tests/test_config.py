@@ -8,11 +8,11 @@ import os
 import random
 import re
 import string
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Iterable
 from datetime import timedelta
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import IO, TYPE_CHECKING, Final, TextIO
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -32,6 +32,9 @@ from .test_utils._testing_utils import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Mapping
+    from typing import IO, Final, TextIO
+
     from _pytest._code import ExceptionInfo
     from _pytest.logging import LogCaptureFixture
 
@@ -43,7 +46,7 @@ class TestSettings:
     def replace_setup_methods(
         cls,
         ignore_methods: Iterable[str] | None = None,
-        replacement_method: Callable[[str], None] | None = None,
+        replacement_method: "Callable[[str], None] | None" = None,
     ) -> type[Settings]:
         """Return a new runtime version of the `Settings` class, with replaced methods."""
         if ignore_methods is None:
@@ -196,8 +199,10 @@ class TestSettings:
     @pytest.mark.parametrize("TEST_ITEM_NAME", ("ITEM_1",))
     @pytest.mark.parametrize("TEST_ITEM_VALUE", ("value_1",))
     def test_getitem_sets_up_env_variables(
-        self, TEST_ITEM_NAME: str, TEST_ITEM_VALUE: str
-    ) -> None:  # noqa: N803,E501
+        self,
+        TEST_ITEM_NAME: str,
+        TEST_ITEM_VALUE: str,  # noqa: N803
+    ) -> None:
         """
         Test that requesting a settings variable sets them all up if they have not been.
 
@@ -256,12 +261,14 @@ class TestSettings:
             }
         )
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_ITEM_NAME", ("ITEM_1",))
     @pytest.mark.parametrize("TEST_ITEM_VALUE", ("value_1",))
     def test_cannot_setup_more_than_once(
-        self, caplog: "LogCaptureFixture", TEST_ITEM_NAME: str, TEST_ITEM_VALUE: str
-    ) -> None:  # noqa: N803,E501
+        self,
+        caplog: "LogCaptureFixture",
+        TEST_ITEM_NAME: str,
+        TEST_ITEM_VALUE: str,  # noqa: N803
+    ) -> None:
         """Test that the Env Variables cannot be set more than once."""
         RuntimeSettings: Final[type[Settings]] = self.replace_setup_methods(
             ignore_methods=("_setup_env_variables",),
@@ -390,7 +397,7 @@ class TestSetupDiscordBotToken:
         with EnvVariableDeleter("DISCORD_BOT_TOKEN"):  # noqa: SIM117
             with pytest.raises(
                 ImproperlyConfiguredError, match=r"DISCORD_BOT_TOKEN.*valid.*Discord bot token"
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_discord_bot_token()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -401,20 +408,20 @@ class TestSetupDiscordBotToken:
             "",
             "  ",
             "".join(
-                random.choices(
+                random.choices(  # noqa: S311
                     string.ascii_letters + string.digits + string.punctuation,
                     k=18,
                 ),
             ),
             re.sub(
                 r"\A[A-Za-z0-9]{24,26}\.",
-                f"{''.join(random.choices(string.ascii_letters + string.digits, k=2))}.",
+                f"{''.join(random.choices(string.ascii_letters + string.digits, k=2))}.",  # noqa: S311
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"\A[A-Za-z0-9]{24,26}\.",
-                f"{''.join(random.choices(string.ascii_letters + string.digits, k=50))}.",
+                f"{''.join(random.choices(string.ascii_letters + string.digits, k=50))}.",  # noqa: S311
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
             ),
@@ -423,20 +430,20 @@ class TestSetupDiscordBotToken:
                 (
                     f"{''.join(random.choices(string.ascii_letters + string.digits, k=12))}>{
                         ''.join(random.choices(string.ascii_letters + string.digits, k=12))
-                    }."
+                    }."  # noqa: S311
                 ),
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"\.[A-Za-z0-9]{6}\.",
-                f".{''.join(random.choices(string.ascii_letters + string.digits, k=2))}.",
+                f".{''.join(random.choices(string.ascii_letters + string.digits, k=2))}.",  # noqa: S311
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"\.[A-Za-z0-9]{6}\.",
-                (f".{''.join(random.choices(string.ascii_letters + string.digits, k=50))}."),
+                (f".{''.join(random.choices(string.ascii_letters + string.digits, k=50))}."),  # noqa: S311
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
             ),
@@ -445,7 +452,7 @@ class TestSetupDiscordBotToken:
                 (
                     f".{''.join(random.choices(string.ascii_letters + string.digits, k=3))}>{
                         ''.join(random.choices(string.ascii_letters + string.digits, k=2))
-                    }."
+                    }."  # noqa: S311
                 ),
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
@@ -457,7 +464,7 @@ class TestSetupDiscordBotToken:
                         ''.join(
                             random.choices(string.ascii_letters + string.digits + '_-', k=2)
                         )
-                    }"
+                    }"  # noqa: S311
                 ),
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
@@ -469,7 +476,7 @@ class TestSetupDiscordBotToken:
                         ''.join(
                             random.choices(string.ascii_letters + string.digits + '_-', k=50)
                         )
-                    }"
+                    }"  # noqa: S311
                 ),
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
@@ -485,7 +492,7 @@ class TestSetupDiscordBotToken:
                         ''.join(
                             random.choices(string.ascii_letters + string.digits + '_-', k=16)
                         )
-                    }"
+                    }"  # noqa: S311
                 ),
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
@@ -505,14 +512,13 @@ class TestSetupDiscordBotToken:
 
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_DISCORD_BOT_TOKEN_MESSAGE
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_discord_bot_token()  # noqa: SLF001
 
 
 class TestSetupDiscordLogChannelWebhookURL:
     """Test case to unit-test the `_setup_discord_log_channel_webhook_url()` function."""
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL",
         itertools.chain(
@@ -527,8 +533,9 @@ class TestSetupDiscordLogChannelWebhookURL:
         ),
     )
     def test_setup_discord_log_channel_webhook_url_successful(
-        self, TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str
-    ) -> None:  # noqa: N803,E501
+        self,
+        TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str,  # noqa: N803
+    ) -> None:
         """
         Test that the given `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is used when provided.
 
@@ -564,7 +571,6 @@ class TestSetupDiscordLogChannelWebhookURL:
 
         assert not RuntimeSettings()["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL",
         (
@@ -572,20 +578,20 @@ class TestSetupDiscordLogChannelWebhookURL:
             "",
             "  ",
             "".join(
-                random.choices(
+                random.choices(  # noqa: S311
                     string.ascii_letters + string.digits + string.punctuation,
                     k=18,
                 ),
             ),
             re.sub(
                 r"/\d{17,20}/",
-                f"/{''.join(random.choices(string.digits, k=2))}/",
+                f"/{''.join(random.choices(string.digits, k=2))}/",  # noqa: S311
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"/\d{17,20}/",
-                f"/{''.join(random.choices(string.digits, k=50))}/",
+                f"/{''.join(random.choices(string.digits, k=50))}/",  # noqa: S311
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1,
             ),
@@ -594,20 +600,20 @@ class TestSetupDiscordLogChannelWebhookURL:
                 (
                     f"/{''.join(random.choices(string.ascii_letters + string.digits, k=9))}>{
                         ''.join(random.choices(string.ascii_letters + string.digits, k=9))
-                    }/"
+                    }/"  # noqa: S311
                 ),
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"/[a-zA-Z\d]{60,90}",
-                f"/{''.join(random.choices(string.ascii_letters + string.digits, k=2))}",
+                f"/{''.join(random.choices(string.ascii_letters + string.digits, k=2))}",  # noqa: S311
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"/[a-zA-Z\d]{60,90}",
-                (f"/{''.join(random.choices(string.ascii_letters + string.digits, k=150))}"),
+                (f"/{''.join(random.choices(string.ascii_letters + string.digits, k=150))}"),  # noqa: S311
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1,
             ),
@@ -616,7 +622,7 @@ class TestSetupDiscordLogChannelWebhookURL:
                 (
                     f"/{''.join(random.choices(string.ascii_letters + string.digits, k=37))}>{
                         ''.join(random.choices(string.ascii_letters + string.digits, k=37))
-                    }"
+                    }"  # noqa: S311
                 ),
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1,
@@ -624,8 +630,9 @@ class TestSetupDiscordLogChannelWebhookURL:
         ),
     )
     def test_invalid_discord_log_channel_webhook_url(
-        self, INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str
-    ) -> None:  # noqa: N803,E501
+        self,
+        INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str,  # noqa: N803
+    ) -> None:
         """Test that an error occurs when `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is invalid."""
         INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE: Final[str] = (
             "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL"
@@ -641,7 +648,7 @@ class TestSetupDiscordLogChannelWebhookURL:
             with pytest.raises(
                 ImproperlyConfiguredError,
                 match=INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE,
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_discord_log_channel_webhook_url()  # noqa: SLF001
 
 
@@ -676,10 +683,9 @@ class TestSetupDiscordGuildID:
         with EnvVariableDeleter("DISCORD_GUILD_ID"):  # noqa: SIM117
             with pytest.raises(
                 ImproperlyConfiguredError, match=r"DISCORD_GUILD_ID.*valid.*Discord guild ID"
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_discord_guild_id()  # noqa: SLF001
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_DISCORD_GUILD_ID",
         (
@@ -687,13 +693,13 @@ class TestSetupDiscordGuildID:
             "",
             "  ",
             "".join(
-                random.choices(
+                random.choices(  # noqa: S311
                     string.ascii_letters + string.digits + string.punctuation,
                     k=18,
                 ),
             ),
-            "".join(random.choices(string.digits, k=2)),
-            "".join(random.choices(string.digits, k=50)),
+            "".join(random.choices(string.digits, k=2)),  # noqa: S311
+            "".join(random.choices(string.digits, k=50)),  # noqa: S311
         ),
     )
     def test_invalid_discord_guild_id(self, INVALID_DISCORD_GUILD_ID: str) -> None:  # noqa: N803
@@ -709,14 +715,13 @@ class TestSetupDiscordGuildID:
 
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_DISCORD_GUILD_ID_MESSAGE
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_discord_guild_id()  # noqa: SLF001
 
 
 class TestSetupGroupFullName:
     """Test case to unit-test the `_setup_group_full_name()` function."""
 
-    # noinspection PyPep8Naming,SpellCheckingInspection
     @pytest.mark.parametrize(
         "TEST_GROUP_FULL_NAME",
         (
@@ -767,7 +772,6 @@ class TestSetupGroupFullName:
 
         assert not RuntimeSettings()["_GROUP_FULL_NAME"]
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_GROUP_FULL_NAME",
         (
@@ -792,7 +796,7 @@ class TestSetupGroupFullName:
             "-Computer Science Society",
             "",
             "  ",
-            "".join(random.choices(string.digits, k=30)),
+            "".join(random.choices(string.digits, k=30)),  # noqa: S311
         ),
     )
     def test_invalid_group_full_name(self, INVALID_GROUP_FULL_NAME: str) -> None:  # noqa: N803
@@ -813,7 +817,6 @@ class TestSetupGroupFullName:
 class TestSetupGroupShortName:
     """Test case to unit-test the `_setup_group_short_name()` function."""
 
-    # noinspection PyPep8Naming,SpellCheckingInspection
     @pytest.mark.parametrize(
         "TEST_GROUP_SHORT_NAME",
         (
@@ -886,8 +889,9 @@ class TestSetupGroupShortName:
         ),
     )
     def test_resolved_value_group_short_name_with_group_full_name(
-        self, TEST_GROUP_FULL_NAME: str
-    ) -> None:  # noqa: N803,E501
+        self,
+        TEST_GROUP_FULL_NAME: str,  # noqa: N803
+    ) -> None:
         """
         Test that a resolved value is used when no `GROUP_SHORT_NAME` is provided.
 
@@ -950,7 +954,6 @@ class TestSetupGroupShortName:
             .strip()
         )
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_GROUP_SHORT_NAME",
         (
@@ -991,7 +994,7 @@ class TestSetupGroupShortName:
 
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_GROUP_SHORT_NAME_MESSAGE
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_group_short_name()  # noqa: SLF001
 
 
@@ -1005,7 +1008,7 @@ class TestSetupPurchaseMembershipURL:
     )
     def test_setup_purchase_membership_url_successful(
         self, TEST_PURCHASE_MEMBERSHIP_URL: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """Test that the given valid `PURCHASE_MEMBERSHIP_URL` is used when one is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1043,7 +1046,7 @@ class TestSetupPurchaseMembershipURL:
     )
     def test_invalid_purchase_membership_url(
         self, INVALID_PURCHASE_MEMBERSHIP_URL: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """Test that an error occurs when the provided `PURCHASE_MEMBERSHIP_URL` is invalid."""
         INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE: Final[str] = (
             "PURCHASE_MEMBERSHIP_URL must be a valid URL"
@@ -1056,7 +1059,7 @@ class TestSetupPurchaseMembershipURL:
 
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_purchase_membership_url()  # noqa: SLF001
 
 
@@ -1070,7 +1073,7 @@ class TestSetupMembershipPerksURL:
     )
     def test_setup_membership_perks_url_successful(
         self, TEST_MEMBERSHIP_PERKS_URL: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """Test that the given valid `MEMBERSHIP_PERKS_URL` is used when one is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1119,7 +1122,7 @@ class TestSetupMembershipPerksURL:
 
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_MEMBERSHIP_PERKS_URL_MESSAGE
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_membership_perks_url()  # noqa: SLF001
 
 
@@ -1133,7 +1136,7 @@ class TestSetupPingCommandEasterEggProbability:
     )
     def test_setup_ping_command_easter_egg_probability_successful(
         self, TEST_PING_COMMAND_EASTER_EGG_PROBABILITY: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """
         Test that the given `PING_COMMAND_EASTER_EGG_PROBABILITY` is used when provided.
 
@@ -1177,7 +1180,7 @@ class TestSetupPingCommandEasterEggProbability:
     )
     def test_invalid_ping_command_easter_egg_probability(
         self, INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """Test that errors when provided `PING_COMMAND_EASTER_EGG_PROBABILITY` is invalid."""
         INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE: Final[str] = (
             r"PING_COMMAND_EASTER_EGG_PROBABILITY must be a float.*between.*1.*0"
@@ -1193,7 +1196,7 @@ class TestSetupPingCommandEasterEggProbability:
             with pytest.raises(
                 ImproperlyConfiguredError,
                 match=INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE,
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_ping_command_easter_egg_probability()  # noqa: SLF001
 
 
@@ -1207,7 +1210,7 @@ class TestSetupMessagesFile:
     )
     def test_get_messages_dict_with_invalid_messages_file_path(
         self, RAW_INVALID_MESSAGES_FILE_PATH: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """Test that an error occurs when the provided `messages_file_path` is invalid."""
         INVALID_MESSAGES_FILE_PATH: Path = Path(RAW_INVALID_MESSAGES_FILE_PATH.strip())
 
@@ -1217,14 +1220,14 @@ class TestSetupMessagesFile:
             )
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_MESSAGES_FILE_PATH_MESSAGE
-            ):  # noqa: E501
+            ):
                 Settings._get_messages_dict(RAW_INVALID_MESSAGES_FILE_PATH)  # noqa: SLF001
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"welcome_messages": ["Welcome!"]},))
     def test_get_messages_dict_with_no_messages_file_path(
-        self, TEST_MESSAGES_DICT: Mapping[str, object]
-    ) -> None:  # noqa: N803,E501
+        self, TEST_MESSAGES_DICT: "Mapping[str, object]"
+    ) -> None:
         """Test that the default value is used when no `messages_file_path` is provided."""
         DEFAULT_MESSAGES_FILE_PATH: Path = config.PROJECT_ROOT / "messages.json"
 
@@ -1242,8 +1245,8 @@ class TestSetupMessagesFile:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"welcome_messages": ["Welcome!"]},))
     def test_get_messages_dict_successful(
-        self, TEST_MESSAGES_DICT: Mapping[str, object]
-    ) -> None:  # noqa: N803,E501
+        self, TEST_MESSAGES_DICT: "Mapping[str, object]"
+    ) -> None:
         """Test that the given path is used when a `messages_file_path` is provided."""
         temporary_messages_file: IO[str]
         with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
@@ -1298,8 +1301,8 @@ class TestSetupMessagesFile:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"welcome_messages": ["Welcome!"]},))
     def test_setup_welcome_messages_successful_with_messages_file_path(
-        self, TEST_MESSAGES_DICT: Mapping[str, Iterable[str]]
-    ) -> None:  # noqa: N803,E501
+        self, TEST_MESSAGES_DICT: "Mapping[str, Iterable[str]]"
+    ) -> None:
         """Test that correct welcome messages are loaded when `MESSAGES_FILE_PATH` is valid."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1323,8 +1326,8 @@ class TestSetupMessagesFile:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"welcome_messages": ["Welcome!"]},))
     def test_setup_welcome_messages_successful_with_no_messages_file_path(
-        self, TEST_MESSAGES_DICT: Mapping[str, Iterable[str]]
-    ) -> None:  # noqa: N803,E501
+        self, TEST_MESSAGES_DICT: "Mapping[str, Iterable[str]]"
+    ) -> None:
         """Test that correct welcome messages are loaded when no `MESSAGES_FILE_PATH` given."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1349,8 +1352,8 @@ class TestSetupMessagesFile:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("NO_WELCOME_MESSAGES_DICT", ({"other_messages": ["Welcome!"]},))
     def test_welcome_messages_key_not_in_messages_json(
-        self, NO_WELCOME_MESSAGES_DICT: Mapping[str, Iterable[str]]
-    ) -> None:  # noqa: N803,E501
+        self, NO_WELCOME_MESSAGES_DICT: "Mapping[str, Iterable[str]]"
+    ) -> None:
         """Test that error is raised when messages-file not contain `welcome_messages` key."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1363,7 +1366,7 @@ class TestSetupMessagesFile:
             with EnvVariableDeleter("MESSAGES_FILE_PATH"):
                 os.environ["MESSAGES_FILE_PATH"] = temporary_messages_file.name
 
-                exc_info: "ExceptionInfo[MessagesJSONFileMissingKeyError]"
+                exc_info: ExceptionInfo[MessagesJSONFileMissingKeyError]
                 with pytest.raises(MessagesJSONFileMissingKeyError) as exc_info:
                     RuntimeSettings._setup_welcome_messages()  # noqa: SLF001
 
@@ -1383,8 +1386,8 @@ class TestSetupMessagesFile:
         ),
     )
     def test_invalid_welcome_messages(
-        self, INVALID_WELCOME_MESSAGES_DICT: Mapping[str, object]
-    ) -> None:  # noqa: N803,E501
+        self, INVALID_WELCOME_MESSAGES_DICT: "Mapping[str, object]"
+    ) -> None:
         """Test that error is raised when the `welcome_messages` is not a valid value."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1397,7 +1400,7 @@ class TestSetupMessagesFile:
             with EnvVariableDeleter("MESSAGES_FILE_PATH"):
                 os.environ["MESSAGES_FILE_PATH"] = temporary_messages_file.name
 
-                exc_info: "ExceptionInfo[MessagesJSONFileValueError]"
+                exc_info: ExceptionInfo[MessagesJSONFileValueError]
                 with pytest.raises(MessagesJSONFileValueError) as exc_info:
                     RuntimeSettings._setup_welcome_messages()  # noqa: SLF001
 
@@ -1409,8 +1412,8 @@ class TestSetupMessagesFile:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"roles_messages": ["Gaming"]},))
     def test_setup_roles_messages_successful_with_messages_file_path(
-        self, TEST_MESSAGES_DICT: Mapping[str, Iterable[str]]
-    ) -> None:  # noqa: N803,E501
+        self, TEST_MESSAGES_DICT: "Mapping[str, Iterable[str]]"
+    ) -> None:
         """Test that correct roles messages are loaded when `MESSAGES_FILE_PATH` is valid."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1434,8 +1437,8 @@ class TestSetupMessagesFile:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"roles_messages": ["Gaming"]},))
     def test_setup_roles_messages_successful_with_no_messages_file_path(
-        self, TEST_MESSAGES_DICT: Mapping[str, Iterable[str]]
-    ) -> None:  # noqa: N803,E501
+        self, TEST_MESSAGES_DICT: "Mapping[str, Iterable[str]]"
+    ) -> None:
         """Test that correct roles messages are loaded when no `MESSAGES_FILE_PATH` given."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1460,8 +1463,8 @@ class TestSetupMessagesFile:
     # noinspection PyPep8Naming
     @pytest.mark.parametrize("NO_ROLES_MESSAGES_DICT", ({"other_messages": ["Gaming"]},))
     def test_roles_messages_key_not_in_messages_json(
-        self, NO_ROLES_MESSAGES_DICT: Mapping[str, Iterable[str]]
-    ) -> None:  # noqa: N803,E501
+        self, NO_ROLES_MESSAGES_DICT: "Mapping[str, Iterable[str]]"
+    ) -> None:
         """Test that error is raised when messages-file not contain `roles_messages` key."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1474,7 +1477,7 @@ class TestSetupMessagesFile:
             with EnvVariableDeleter("MESSAGES_FILE_PATH"):
                 os.environ["MESSAGES_FILE_PATH"] = temporary_messages_file.name
 
-                exc_info: "ExceptionInfo[MessagesJSONFileMissingKeyError]"
+                exc_info: ExceptionInfo[MessagesJSONFileMissingKeyError]
                 with pytest.raises(MessagesJSONFileMissingKeyError) as exc_info:
                     RuntimeSettings._setup_roles_messages()  # noqa: SLF001
 
@@ -1494,8 +1497,8 @@ class TestSetupMessagesFile:
         ),
     )
     def test_invalid_roles_messages(
-        self, INVALID_ROLES_MESSAGES_DICT: Mapping[str, object]
-    ) -> None:  # noqa: N803,E501
+        self, INVALID_ROLES_MESSAGES_DICT: "Mapping[str, object]"
+    ) -> None:
         """Test that error is raised when the `roles_messages` is not a valid value."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1508,7 +1511,7 @@ class TestSetupMessagesFile:
             with EnvVariableDeleter("MESSAGES_FILE_PATH"):
                 os.environ["MESSAGES_FILE_PATH"] = temporary_messages_file.name
 
-                exc_info: "ExceptionInfo[MessagesJSONFileValueError]"
+                exc_info: ExceptionInfo[MessagesJSONFileValueError]
                 with pytest.raises(MessagesJSONFileValueError) as exc_info:
                     RuntimeSettings._setup_roles_messages()  # noqa: SLF001
 
@@ -1548,7 +1551,7 @@ class TestSetupMembersListURL:
         with EnvVariableDeleter("MEMBERS_LIST_URL"):  # noqa: SIM117
             with pytest.raises(
                 ImproperlyConfiguredError, match=r"MEMBERS_LIST_URL.*valid.*URL"
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_members_list_url()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -1567,7 +1570,7 @@ class TestSetupMembersListURL:
 
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_MEMBERS_LIST_URL_MESSAGE
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_members_list_url()  # noqa: SLF001
 
 
@@ -1584,7 +1587,7 @@ class TestSetupMembersListURLSessionCookie:
     )
     def test_setup_members_list_url_session_cookie_successful(
         self, TEST_MEMBERS_LIST_URL_SESSION_COOKIE: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """
         Test that the given `TEST_MEMBERS_LIST_URL_SESSION_COOKIE` is used when provided.
 
@@ -1614,7 +1617,7 @@ class TestSetupMembersListURLSessionCookie:
             with pytest.raises(
                 ImproperlyConfiguredError,
                 match=r"MEMBERS_LIST_URL_SESSION_COOKIE.*valid.*\.ASPXAUTH cookie",
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_members_list_url_session_cookie()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -1635,7 +1638,7 @@ class TestSetupMembersListURLSessionCookie:
     )
     def test_invalid_members_list_url_session_cookie(
         self, INVALID_MEMBERS_LIST_URL_SESSION_COOKIE: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """Test that an error occurs when `MEMBERS_LIST_URL_SESSION_COOKIE` is invalid."""
         INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
             "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie"
@@ -1651,7 +1654,7 @@ class TestSetupMembersListURLSessionCookie:
             with pytest.raises(
                 ImproperlyConfiguredError,
                 match=INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE,
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_members_list_url_session_cookie()  # noqa: SLF001
 
 
@@ -1704,7 +1707,7 @@ class TestSetupSendIntroductionReminders:
     )
     def test_setup_send_introduction_reminders_successful(
         self, TEST_SEND_INTRODUCTION_REMINDERS_VALUE: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """Test that setup is successful when a valid option is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1757,7 +1760,7 @@ class TestSetupSendIntroductionReminders:
     )
     def test_invalid_send_introduction_reminders(
         self, INVALID_SEND_INTRODUCTION_REMINDERS_VALUE: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """Test that an error occurs when an invalid introduction-reminders-flag is given."""
         INVALID_SEND_INTRODUCTION_REMINDERS_VALUE_MESSAGE: Final[str] = (
             'SEND_INTRODUCTION_REMINDERS must be one of: "Once", "Interval" or "False"'
@@ -1773,7 +1776,7 @@ class TestSetupSendIntroductionReminders:
             with pytest.raises(
                 ImproperlyConfiguredError,
                 match=INVALID_SEND_INTRODUCTION_REMINDERS_VALUE_MESSAGE,
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -1809,7 +1812,7 @@ class TestSetupSendIntroductionReminders:
     )
     def test_setup_send_introduction_reminders_interval_successful(
         self, TEST_SEND_INTRODUCTION_REMINDERS_INTERVAL: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """
         Test that the given `SEND_INTRODUCTION_REMINDERS_INTERVAL` is used when provided.
 
@@ -1912,9 +1915,9 @@ class TestSetupSendIntroductionReminders:
                 pytrace=False,
             )
 
-    def test_setup_send_introduction_reminders_interval_without_send_introduction_reminders_setup(
+    def test_setup_send_introduction_reminders_interval_without_send_introduction_reminders_setup(  # noqa: E501
         self,
-    ) -> None:  # noqa: E501
+    ) -> None:
         """Test that an error is raised when setting up the interval without the flag."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -1923,20 +1926,19 @@ class TestSetupSendIntroductionReminders:
         with pytest.raises(RuntimeError, match="Invalid setup order"):
             RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL",
         (
             "INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL",
             "",
             "  ",
-            f"{random.randint(1, 999)}d",
-            f"{random.randint(3, 999)},{random.randint(0, 999)}s",
+            f"{random.randint(1, 999)}d",  # noqa: S311
+            f"{random.randint(3, 999)},{random.randint(0, 999)}s",  # noqa: S311
         ),
     )
     def test_invalid_send_introduction_reminders_interval_flag_disabled(
         self, INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """
         Test that no error is raised when `SEND_INTRODUCTION_REMINDERS_INTERVAL` is invalid.
 
@@ -1975,7 +1977,7 @@ class TestSetupSendIntroductionReminders:
         self,
         INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL: str,
         SEND_INTRODUCTION_REMINDERS_VALUE: str,
-    ) -> None:  # noqa: N803,ARG002,E501
+    ) -> None:
         """
         Test that an error is raised when `SEND_INTRODUCTION_REMINDERS_INTERVAL` is invalid.
 
@@ -2002,17 +2004,16 @@ class TestSetupSendIntroductionReminders:
                 with pytest.raises(
                     ImproperlyConfiguredError,
                     match=INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE,
-                ):  # noqa: E501
+                ):
                     RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL",
         ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h"),
     )
     def test_too_small_send_introduction_reminders_interval_flag_disabled(
         self, TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """
         Test that no error is raised when `SEND_INTRODUCTION_REMINDERS_INTERVAL` is too small.
 
@@ -2045,7 +2046,7 @@ class TestSetupSendIntroductionReminders:
         self,
         TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL: str,
         SEND_INTRODUCTION_REMINDERS_VALUE: str,
-    ) -> None:  # noqa: N803,ARG002,E501
+    ) -> None:
         """
         Test that an error is raised when `SEND_INTRODUCTION_REMINDERS_INTERVAL` is too small.
 
@@ -2071,7 +2072,7 @@ class TestSetupSendIntroductionReminders:
                 with pytest.raises(
                     ImproperlyConfiguredError,
                     match=TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE,
-                ):  # noqa: E501
+                ):
                     RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
 
 
@@ -2130,7 +2131,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
     )
     def test_setup_kick_no_introduction_discord_members_successful(
         self, TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """Test that setup is successful when a valid option is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -2176,7 +2177,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
     )
     def test_invalid_kick_no_introduction_discord_members(
         self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """Test that an error occurs when an invalid kick-no-introductions-flag is given."""
         INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE_MESSAGE: Final[str] = (
             "KICK_NO_INTRODUCTION_DISCORD_MEMBERS must be a boolean value"
@@ -2192,7 +2193,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
             with pytest.raises(
                 ImproperlyConfiguredError,
                 match=INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE_MESSAGE,
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -2242,7 +2243,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
     )
     def test_setup_kick_no_introduction_discord_members_delay_successful(
         self, TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """
         Test that the given `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is used when provided.
 
@@ -2304,7 +2305,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
 
     def test_setup_kick_no_introduction_discord_members_delay_without_kick_no_introduction_discord_members_setup(
         self,
-    ) -> None:  # noqa: E501
+    ) -> None:
         """Test that an error is raised when setting up the delay without the kick flag."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -2326,7 +2327,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
     )
     def test_invalid_kick_no_introduction_discord_members_delay_flag_disabled(
         self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """
         Test no error is raised when `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is invalid.
 
@@ -2362,7 +2363,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
     )
     def test_invalid_kick_no_introduction_discord_members_delay_flag_enabled(
         self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """
         Test an error is raised when `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is invalid.
 
@@ -2389,7 +2390,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
                 with pytest.raises(
                     ImproperlyConfiguredError,
                     match=INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE,
-                ):  # noqa: E501
+                ):
                     RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -2399,7 +2400,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
     )
     def test_too_small_kick_no_introduction_discord_members_delay_flag_disabled(
         self, TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """
         Test no error is raised when `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is too small.
 
@@ -2429,7 +2430,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
     )
     def test_too_small_kick_no_introduction_discord_members_delay_flag_enabled(
         self, TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """
         Test an error is raised when `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is too small.
 
@@ -2455,7 +2456,7 @@ class TestSetupKickNoIntroductionDiscordMembers:
                 with pytest.raises(
                     ImproperlyConfiguredError,
                     match=TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE,
-                ):  # noqa: E501
+                ):
                     RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
 
 
@@ -2508,7 +2509,7 @@ class TestSetupSendGetRolesReminders:
     )
     def test_setup_send_get_roles_reminders_successful(
         self, TEST_SEND_GET_ROLES_REMINDERS_VALUE: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """Test that setup is successful when a valid option is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -2551,7 +2552,7 @@ class TestSetupSendGetRolesReminders:
     )
     def test_invalid_send_get_roles_reminders(
         self, INVALID_SEND_GET_ROLES_REMINDERS_VALUE: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """Test that an error occurs when an invalid get-roles-reminders-flag is given."""
         INVALID_SEND_GET_ROLES_REMINDERS_VALUE_MESSAGE: Final[str] = (
             "SEND_GET_ROLES_REMINDERS must be a boolean value"
@@ -2564,7 +2565,7 @@ class TestSetupSendGetRolesReminders:
 
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_SEND_GET_ROLES_REMINDERS_VALUE_MESSAGE
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -2600,7 +2601,7 @@ class TestSetupSendGetRolesReminders:
     )
     def test_setup_send_get_roles_reminders_interval_successful(
         self, TEST_SEND_GET_ROLES_REMINDERS_INTERVAL: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """
         Test that the given `SEND_GET_ROLES_REMINDERS_INTERVAL` is used when provided.
 
@@ -2705,7 +2706,7 @@ class TestSetupSendGetRolesReminders:
 
     def test_setup_send_get_roles_reminders_interval_without_send_get_roles_reminders_setup(
         self,
-    ) -> None:  # noqa: E501
+    ) -> None:
         """Test that an error is raised when setting up the interval without the flag."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -2727,7 +2728,7 @@ class TestSetupSendGetRolesReminders:
     )
     def test_invalid_send_get_roles_reminders_interval_flag_disabled(
         self, INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """
         Test that no error is raised when `SEND_GET_ROLES_REMINDERS_INTERVAL` is invalid.
 
@@ -2763,7 +2764,7 @@ class TestSetupSendGetRolesReminders:
     )
     def test_invalid_send_get_roles_reminders_interval_flag_enabled(
         self, INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """
         Test that an error is raised when `SEND_GET_ROLES_REMINDERS_INTERVAL` is invalid.
 
@@ -2790,7 +2791,7 @@ class TestSetupSendGetRolesReminders:
                 with pytest.raises(
                     ImproperlyConfiguredError,
                     match=INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE,
-                ):  # noqa: E501
+                ):
                     RuntimeSettings._setup_send_get_roles_reminders_interval()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -2800,7 +2801,7 @@ class TestSetupSendGetRolesReminders:
     )
     def test_too_small_send_get_roles_reminders_interval_flag_disabled(
         self, TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """
         Test that no error is raised when `SEND_GET_ROLES_REMINDERS_INTERVAL` is too small.
 
@@ -2830,7 +2831,7 @@ class TestSetupSendGetRolesReminders:
     )
     def test_too_small_send_introduction_reminders_interval_flag_enabled(
         self, TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """
         Test that an error is raised when `SEND_GET_ROLES_REMINDERS_INTERVAL` is too small.
 
@@ -2856,7 +2857,7 @@ class TestSetupSendGetRolesReminders:
                 with pytest.raises(
                     ImproperlyConfiguredError,
                     match=TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE,
-                ):  # noqa: E501
+                ):
                     RuntimeSettings._setup_send_get_roles_reminders_interval()  # noqa: SLF001
 
 
@@ -2924,7 +2925,7 @@ class TestSetupStatisticsDays:
 
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_STATISTICS_DAYS_MESSAGE
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_statistics_days()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -2945,7 +2946,7 @@ class TestSetupStatisticsDays:
 
             with pytest.raises(
                 ImproperlyConfiguredError, match=TOO_SMALL_STATISTICS_DAYS_MESSAGE
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_statistics_days()  # noqa: SLF001
 
 
@@ -3012,7 +3013,7 @@ class TestSetupModerationDocumentURL:
     )
     def test_setup_moderation_document_url_successful(
         self, TEST_MODERATION_DOCUMENT_URL: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """Test that the given valid `MODERATION_DOCUMENT_URL` is used when one is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -3036,7 +3037,7 @@ class TestSetupModerationDocumentURL:
         with EnvVariableDeleter("MODERATION_DOCUMENT_URL"):  # noqa: SIM117
             with pytest.raises(
                 ImproperlyConfiguredError, match=r"MODERATION_DOCUMENT_URL.*valid.*URL"
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_moderation_document_url()  # noqa: SLF001
 
     # noinspection PyPep8Naming
@@ -3046,7 +3047,7 @@ class TestSetupModerationDocumentURL:
     )
     def test_invalid_moderation_document_url(
         self, INVALID_MODERATION_DOCUMENT_URL: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """Test that an error occurs when the provided `MODERATION_DOCUMENT_URL` is invalid."""
         INVALID_MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
             "MODERATION_DOCUMENT_URL must be a valid URL"
@@ -3059,7 +3060,7 @@ class TestSetupModerationDocumentURL:
 
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_MODERATION_DOCUMENT_URL_MESSAGE
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_moderation_document_url()  # noqa: SLF001
 
 
@@ -3073,7 +3074,7 @@ class TestSetupManualModerationWarningMessageLocation:
     )
     def test_setup_manual_moderation_warning_message_location_successful(
         self, TEST_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """Test that the given valid `MANUAL_MODERATION_WARNING_MESSAGE_LOCATION` is used."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -3110,7 +3111,7 @@ class TestSetupManualModerationWarningMessageLocation:
     @pytest.mark.parametrize("INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION", ("", "  "))
     def test_invalid_manual_moderation_warning_message_location(
         self, INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION: str
-    ) -> None:  # noqa: N803,E501
+    ) -> None:
         """Test error raised when `MANUAL_MODERATION_WARNING_MESSAGE_LOCATION` is invalid."""
         INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE: Final[str] = (
             "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION must be a valid name "
@@ -3127,5 +3128,5 @@ class TestSetupManualModerationWarningMessageLocation:
             with pytest.raises(
                 ImproperlyConfiguredError,
                 match=INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE,
-            ):  # noqa: E501
+            ):
                 RuntimeSettings._setup_manual_moderation_warning_message_location()  # noqa: SLF001

@@ -1,8 +1,11 @@
 """Contains the test suite for all utils modules."""
 
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = (
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__: "Sequence[str]" = (
     "BaseRandomEnvVariableValueGenerator",
     "EmptyContextManager",
     "RandomDiscordBotTokenGenerator",

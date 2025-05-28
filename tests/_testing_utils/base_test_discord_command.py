@@ -1,25 +1,32 @@
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = ("BaseTestDiscordCommand",)
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import Final
+
+__all__: "Sequence[str]" = ("BaseTestDiscordCommand",)
 
 import abc
 import asyncio
-from typing import Final
+from typing import TYPE_CHECKING
 
 import discord
 import pytest
-from discord import HTTPClient, MessageCommand, SlashCommand, UserCommand
+from discord import HTTPClient
 from discord.state import ConnectionState
 from typed_classproperties import classproperty
 
 from tests._testing_utils.pycord_internals import TestingApplicationContext, TestingInteraction
 from utils import TeXBot
 
+if TYPE_CHECKING:
+    from discord import MessageCommand, SlashCommand, UserCommand
+
 
 class BaseTestDiscordCommand:
     @classproperty
     @abc.abstractmethod
-    def COMMAND(cls) -> SlashCommand | UserCommand | MessageCommand:  # noqa: N802
+    def COMMAND(cls) -> "SlashCommand | UserCommand | MessageCommand":  # noqa: N802
         """The Discord command the cog, linked to this test case, has the functionality for."""
 
     @classmethod

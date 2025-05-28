@@ -1,14 +1,20 @@
 """Test case to unit-test the generate_invite_url utility function."""
 
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = ("TestGenerateInviteURL",)
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__: "Sequence[str]" = ("TestGenerateInviteURL",)
 
 import random
 import re
-from typing import Final
+from typing import TYPE_CHECKING
 
 import utils
+
+if TYPE_CHECKING:
+    from typing import Final
 
 
 class TestGenerateInviteURL:

@@ -3,19 +3,23 @@
 import os
 import random
 import string
-from collections.abc import Iterable, Mapping
 from pathlib import Path
-from typing import Final, Literal, TextIO
+from typing import TYPE_CHECKING
 
 import dotenv
-import pytest
 
 import config
 
 from .test_utils import RandomDiscordBotTokenGenerator, RandomDiscordGuildIDGenerator
 
-_EXISTING_ENV_VARIABLES: Final[Mapping[str, object]] = {**dotenv.dotenv_values(), **os.environ}
-MISSING_ENV_VARIABLES: Final[Mapping[str, object]] = {
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Mapping
+    from typing import Final, Literal, TextIO
+
+    import pytest
+
+_EXISTING_ENV_VARIABLES: "Final[Mapping[str, object]]" = {**dotenv.dotenv_values(), **os.environ}
+MISSING_ENV_VARIABLES: "Final[Mapping[str, object]]" = {
     key: value
     for key, value in (
         {
@@ -32,10 +36,10 @@ MISSING_ENV_VARIABLES: Final[Mapping[str, object]] = {
 }
 
 dotenv_file_path: Path | None = None
-dotenv_file_open_method: Literal["a"] | Literal["w"] = "a"
+dotenv_file_open_method: "Literal['a', 'w']" = "a"
 
 if MISSING_ENV_VARIABLES:
-    RAW_DOTENV_FILE_PATH: Final[str] = dotenv.find_dotenv()
+    RAW_DOTENV_FILE_PATH: "Final[str]" = dotenv.find_dotenv()
     if not RAW_DOTENV_FILE_PATH:
         dotenv_file_path = config.PROJECT_ROOT / ".env"
         dotenv_file_open_method = "w"
@@ -43,7 +47,7 @@ if MISSING_ENV_VARIABLES:
         dotenv_file_path = Path(RAW_DOTENV_FILE_PATH)
 
 
-def pytest_sessionstart(session: pytest.Session) -> None:  # noqa: ARG001
+def pytest_sessionstart(session: "pytest.Session") -> None:  # noqa: ARG001
     """
     Called after the Session object has been created and before performing collection and entering the run test loop.
 
@@ -60,7 +64,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:  # noqa: ARG001
 
 
 # noinspection SpellCheckingInspection,PyUnusedLocal
-def pytest_sessionfinish(session: pytest.Session, exitstatus: int | pytest.ExitCode) -> None:  # noqa: ARG001
+def pytest_sessionfinish(session: "pytest.Session", exitstatus: "int | pytest.ExitCode") -> None:  # noqa: ARG001
     """
     Called after whole test run finished, right before returning the exit status to the system.
 

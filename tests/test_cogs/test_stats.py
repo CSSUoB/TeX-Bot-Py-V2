@@ -2,11 +2,10 @@
 
 import random
 import string
-from typing import Final
+from typing import TYPE_CHECKING
 
 import discord
 import pytest
-from discord import MessageCommand, SlashCommand, UserCommand
 from typed_classproperties import classproperty
 
 from cogs.stats import (
@@ -15,7 +14,13 @@ from cogs.stats import (
     plot_bar_chart,
 )
 from tests._testing_utils import BaseTestDiscordCommand
-from tests._testing_utils.pycord_internals import TestingApplicationContext
+
+if TYPE_CHECKING:
+    from typing import Final
+
+    from discord import MessageCommand, SlashCommand, UserCommand
+
+    from tests._testing_utils.pycord_internals import TestingApplicationContext
 
 
 class TestAmountOfTimeFormatter:
@@ -99,7 +104,7 @@ class TestChannelStatsCommand(BaseTestDiscordCommand):
 
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def COMMAND(cls) -> SlashCommand | UserCommand | MessageCommand:  # noqa: N802
+    def COMMAND(cls) -> "SlashCommand | UserCommand | MessageCommand":  # noqa: N802
         """The Discord command the cog, linked to this test case, has the functionality for."""
         # noinspection PyTypeChecker
         return StatsCommandsCog.channel_stats
@@ -139,8 +144,8 @@ class TestChannelStatsCommand(BaseTestDiscordCommand):
         ),
     )
     def test_invalid_channel_id(
-        self, INVALID_CHANNEL_ID: str, CONTEXT: TestingApplicationContext
-    ) -> None:  # noqa: N803, E501
+        self, INVALID_CHANNEL_ID: str, CONTEXT: "TestingApplicationContext"
+    ) -> None:
         """Test that an error occurs when running the command with an invalid channel ID."""
         self.execute_command(
             ctx=CONTEXT,
