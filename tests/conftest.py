@@ -18,7 +18,10 @@ if TYPE_CHECKING:
 
     import pytest
 
-_EXISTING_ENV_VARIABLES: "Final[Mapping[str, object]]" = {**dotenv.dotenv_values(), **os.environ}
+_EXISTING_ENV_VARIABLES: "Final[Mapping[str, object]]" = {
+    **dotenv.dotenv_values(),
+    **os.environ,
+}
 MISSING_ENV_VARIABLES: "Final[Mapping[str, object]]" = {
     key: value
     for key, value in (
@@ -64,7 +67,9 @@ def pytest_sessionstart(session: "pytest.Session") -> None:  # noqa: ARG001
 
 
 # noinspection SpellCheckingInspection,PyUnusedLocal
-def pytest_sessionfinish(session: "pytest.Session", exitstatus: "int | pytest.ExitCode") -> None:  # noqa: ARG001
+def pytest_sessionfinish(
+    session: "pytest.Session", exitstatus: "int | pytest.ExitCode"
+) -> None:  # noqa: ARG001
     """
     Called after whole test run finished, right before returning the exit status to the system.
 

@@ -517,7 +517,7 @@ class TestSetupDiscordBotToken:
 
 
 class TestSetupDiscordLogChannelWebhookURL:
-    """Test case to unit-test the `_setup_discord_log_channel_webhook_url()` function."""
+    """Test case to unit-test the `_setup_discord_log_channel_webhook()` function."""
 
     @pytest.mark.parametrize(
         "TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL",
@@ -532,7 +532,7 @@ class TestSetupDiscordLogChannelWebhookURL:
             (f"    {RandomDiscordLogChannelWebhookURLGenerator.single_value()}   ",),
         ),
     )
-    def test_setup_discord_log_channel_webhook_url_successful(
+    def test_setup_discord_log_channel_webhook_successful(
         self,
         TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str,  # noqa: N803
     ) -> None:
@@ -549,7 +549,7 @@ class TestSetupDiscordLogChannelWebhookURL:
                 TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL
             )
 
-            RuntimeSettings._setup_discord_log_channel_webhook_url()  # noqa: SLF001
+            RuntimeSettings._setup_discord_log_channel_webhook()  # noqa: SLF001
 
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
@@ -563,7 +563,7 @@ class TestSetupDiscordLogChannelWebhookURL:
 
         with EnvVariableDeleter("DISCORD_LOG_CHANNEL_WEBHOOK_URL"):
             try:
-                RuntimeSettings._setup_discord_log_channel_webhook_url()  # noqa: SLF001
+                RuntimeSettings._setup_discord_log_channel_webhook()  # noqa: SLF001
             except ImproperlyConfiguredError:
                 pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
@@ -649,7 +649,7 @@ class TestSetupDiscordLogChannelWebhookURL:
                 ImproperlyConfiguredError,
                 match=INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE,
             ):
-                RuntimeSettings._setup_discord_log_channel_webhook_url()  # noqa: SLF001
+                RuntimeSettings._setup_discord_log_channel_webhook()  # noqa: SLF001
 
 
 class TestSetupDiscordGuildID:
@@ -1519,63 +1519,8 @@ class TestSetupMessagesFile:
         assert exc_info.value.invalid_value == INVALID_ROLES_MESSAGES_DICT["roles_messages"]
 
 
-class TestSetupMembersListURL:
-    """Test case to unit-test the `_setup_members_list_url()` function."""
-
-    # noinspection PyPep8Naming
-    @pytest.mark.parametrize(
-        "TEST_MEMBERS_LIST_URL",
-        ("https://google.com", "www.google.com/", "    https://google.com   "),
-    )
-    def test_setup_members_list_url_successful(self, TEST_MEMBERS_LIST_URL: str) -> None:  # noqa: N803
-        """Test that the given `MEMBERS_LIST_URL` is used when a valid one is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-
-        with EnvVariableDeleter("MEMBERS_LIST_URL"):
-            os.environ["MEMBERS_LIST_URL"] = TEST_MEMBERS_LIST_URL
-
-            RuntimeSettings._setup_members_list_url()  # noqa: SLF001
-
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
-
-        assert RuntimeSettings()["MEMBERS_LIST_URL"] == (
-            f"https://{TEST_MEMBERS_LIST_URL.strip()}"
-            if "://" not in TEST_MEMBERS_LIST_URL.strip()
-            else TEST_MEMBERS_LIST_URL.strip()
-        )
-
-    def test_missing_members_list_url(self) -> None:
-        """Test that an error is raised when no `MEMBERS_LIST_URL` is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-
-        with EnvVariableDeleter("MEMBERS_LIST_URL"):  # noqa: SIM117
-            with pytest.raises(
-                ImproperlyConfiguredError, match=r"MEMBERS_LIST_URL.*valid.*URL"
-            ):
-                RuntimeSettings._setup_members_list_url()  # noqa: SLF001
-
-    # noinspection PyPep8Naming
-    @pytest.mark.parametrize(
-        "INVALID_MEMBERS_LIST_URL",
-        ("INVALID_MEMBERS_LIST_URL", "www.google..com/", "", "  "),
-    )
-    def test_invalid_members_list_url(self, INVALID_MEMBERS_LIST_URL: str) -> None:  # noqa: N803
-        """Test that an error occurs when the provided `MEMBERS_LIST_URL` is invalid."""
-        INVALID_MEMBERS_LIST_URL_MESSAGE: Final[str] = "MEMBERS_LIST_URL must be a valid URL"
-
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-
-        with EnvVariableDeleter("MEMBERS_LIST_URL"):
-            os.environ["MEMBERS_LIST_URL"] = INVALID_MEMBERS_LIST_URL
-
-            with pytest.raises(
-                ImproperlyConfiguredError, match=INVALID_MEMBERS_LIST_URL_MESSAGE
-            ):
-                RuntimeSettings._setup_members_list_url()  # noqa: SLF001
-
-
 class TestSetupMembersListURLSessionCookie:
-    """Test case to unit-test the `_setup_members_list_url_session_cookie()` function."""
+    """Test case to unit-test the `_setup_members_list_auth_session_cookie()` function."""
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
@@ -1585,7 +1530,7 @@ class TestSetupMembersListURLSessionCookie:
             f"  {''.join(random.choices(string.hexdigits, k=random.randint(128, 256)))}   ",
         ),
     )
-    def test_setup_members_list_url_session_cookie_successful(
+    def test_setup_members_list_auth_session_cookie_successful(
         self, TEST_MEMBERS_LIST_URL_SESSION_COOKIE: str
     ) -> None:
         """
@@ -1601,7 +1546,7 @@ class TestSetupMembersListURLSessionCookie:
                 TEST_MEMBERS_LIST_URL_SESSION_COOKIE
             )
 
-            RuntimeSettings._setup_members_list_url_session_cookie()  # noqa: SLF001
+            RuntimeSettings._setup_members_list_auth_session_cookie()  # noqa: SLF001
 
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
@@ -1618,7 +1563,7 @@ class TestSetupMembersListURLSessionCookie:
                 ImproperlyConfiguredError,
                 match=r"MEMBERS_LIST_URL_SESSION_COOKIE.*valid.*\.ASPXAUTH cookie",
             ):
-                RuntimeSettings._setup_members_list_url_session_cookie()  # noqa: SLF001
+                RuntimeSettings._setup_members_list_auth_session_cookie()  # noqa: SLF001
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
@@ -1655,7 +1600,7 @@ class TestSetupMembersListURLSessionCookie:
                 ImproperlyConfiguredError,
                 match=INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE,
             ):
-                RuntimeSettings._setup_members_list_url_session_cookie()  # noqa: SLF001
+                RuntimeSettings._setup_members_list_auth_session_cookie()  # noqa: SLF001
 
 
 class TestSetupSendIntroductionReminders:
@@ -2076,390 +2021,6 @@ class TestSetupSendIntroductionReminders:
                     RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
 
 
-class TestSetupKickNoIntroductionDiscordMembers:
-    """
-    Test case to unit-test the configuration for kicking no-introduction Discord members.
-
-    The no-introduction Discord members are those Discord members
-    that have joined your group's Discord server but have not yet sent a message
-    introducing themselves.
-    """
-
-    # noinspection PyPep8Naming
-    @pytest.mark.parametrize(
-        "TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE",
-        set(
-            itertools.chain(
-                config.TRUE_VALUES | config.FALSE_VALUES,
-                (
-                    f"  {
-                        next(
-                            iter(
-                                value
-                                for value in config.TRUE_VALUES | config.FALSE_VALUES
-                                if value.isalpha()
-                            )
-                        )
-                    }   ",
-                    next(
-                        iter(
-                            value
-                            for value in config.TRUE_VALUES | config.FALSE_VALUES
-                            if value.isalpha()
-                        ),
-                    ).lower(),
-                    next(
-                        iter(
-                            value
-                            for value in config.TRUE_VALUES | config.FALSE_VALUES
-                            if value.isalpha()
-                        ),
-                    ).upper(),
-                    "".join(
-                        random.choice((str.upper, str.lower))(character)
-                        for character in next(
-                            iter(
-                                value
-                                for value in config.TRUE_VALUES | config.FALSE_VALUES
-                                if value.isalpha()
-                            ),
-                        )
-                    ),
-                ),
-            ),
-        ),
-    )
-    def test_setup_kick_no_introduction_discord_members_successful(
-        self, TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE: str
-    ) -> None:
-        """Test that setup is successful when a valid option is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-
-        with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS"):
-            os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = (
-                TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE
-            )
-
-            RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
-
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
-
-        assert RuntimeSettings()["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] == (
-            TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE.lower().strip()
-            in config.TRUE_VALUES
-        )
-
-    def test_default_kick_no_introduction_discord_members_value(self) -> None:
-        """Test that a default value is used when no kick-no-introductions-flag is given."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-
-        with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS"):
-            try:
-                RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
-
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
-
-        assert RuntimeSettings()["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] in (True, False)
-
-    # noinspection PyPep8Naming
-    @pytest.mark.parametrize(
-        "INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE",
-        (
-            "INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE",
-            "",
-            "  ",
-            "".join(
-                random.choices(string.ascii_letters + string.digits + string.punctuation, k=8),
-            ),
-        ),
-    )
-    def test_invalid_kick_no_introduction_discord_members(
-        self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE: str
-    ) -> None:
-        """Test that an error occurs when an invalid kick-no-introductions-flag is given."""
-        INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE_MESSAGE: Final[str] = (
-            "KICK_NO_INTRODUCTION_DISCORD_MEMBERS must be a boolean value"
-        )
-
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-
-        with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS"):
-            os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = (
-                INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE
-            )
-
-            with pytest.raises(
-                ImproperlyConfiguredError,
-                match=INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_VALUE_MESSAGE,
-            ):
-                RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
-
-    # noinspection PyPep8Naming
-    @pytest.mark.parametrize(
-        "TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
-        (
-            f"{random.randint(86400, 777600)}s",
-            f"{random.randint(86400, 777600)}.{random.randint(0, 999)}s",
-            (
-                f"  {random.randint(86400, 777600)}{
-                    random.choice(('', f'.{random.randint(0, 999)}'))
-                }s   "
-            ),
-            (
-                f"{random.randint(1440, 12960)}{
-                    random.choice(('', f'.{random.randint(0, 999)}'))
-                }m"
-            ),
-            f"{random.randint(24, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}h",
-            f"{random.randint(1, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}d",
-            f"{random.randint(1, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}w",
-            (
-                f"{random.randint(86400, 777600)}{
-                    random.choice(('', f'.{random.randint(0, 999)}'))
-                }s{random.randint(0, 12960)}{
-                    random.choice(('', f'.{random.randint(0, 999)}'))
-                }m{random.randint(0, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}h{
-                    random.randint(0, 999)
-                }{random.choice(('', f'.{random.randint(0, 999)}'))}d{random.randint(0, 999)}{
-                    random.choice(('', f'.{random.randint(0, 999)}'))
-                }w"
-            ),
-            (
-                f"{random.randint(86400, 777600)}{
-                    random.choice(('', f'.{random.randint(0, 999)}'))
-                } s  {random.randint(0, 12960)}{
-                    random.choice(('', f'.{random.randint(0, 999)}'))
-                }   m   {random.randint(0, 999)}{
-                    random.choice(('', f'.{random.randint(0, 999)}'))
-                }  h  {random.randint(0, 999)}{
-                    random.choice(('', f'.{random.randint(0, 999)}'))
-                }    d   {random.randint(0, 999)}{
-                    random.choice(('', f'.{random.randint(0, 999)}'))
-                } w"
-            ),
-        ),
-    )
-    def test_setup_kick_no_introduction_discord_members_delay_successful(
-        self, TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str
-    ) -> None:
-        """
-        Test that the given `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is used when provided.
-
-        In this test, the provided `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is valid
-        and so must be saved successfully.
-        """
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-        RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
-
-        with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"):
-            os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
-                TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY
-            )
-
-            RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
-
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
-
-        assert RuntimeSettings()["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] == timedelta(
-            **{
-                key: float(value)
-                for key, value in (
-                    re.match(
-                        r"\A(?:(?P<seconds>(?:\d*\.)?\d+)\s*s)?\s*(?:(?P<minutes>(?:\d*\.)?\d+)\s*m)?\s*(?:(?P<hours>(?:\d*\.)?\d+)\s*h)?\s*(?:(?P<days>(?:\d*\.)?\d+)\s*d)?\s*(?:(?P<weeks>(?:\d*\.)?\d+)\s*w)?\Z",
-                        TEST_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY.lower().strip(),
-                    )
-                    .groupdict()
-                    .items()  # type: ignore[union-attr]
-                )
-                if value
-            },
-        )
-
-        assert RuntimeSettings()["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] > timedelta(
-            days=1
-        )
-
-    def test_default_kick_no_introduction_discord_members_delay(self) -> None:
-        """Test default value is used when no `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY`."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-        RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
-
-        with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"):
-            try:
-                RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
-
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
-
-        assert isinstance(
-            RuntimeSettings()["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"],
-            timedelta,
-        )
-
-        assert RuntimeSettings()["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] > timedelta(
-            days=1
-        )
-
-    def test_setup_kick_no_introduction_discord_members_delay_without_kick_no_introduction_discord_members_setup(
-        self,
-    ) -> None:
-        """Test that an error is raised when setting up the delay without the kick flag."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-
-        RuntimeSettings._settings.pop("KICK_NO_INTRODUCTION_DISCORD_MEMBERS", None)  # noqa: SLF001
-
-        with pytest.raises(RuntimeError, match="Invalid setup order"):
-            RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
-
-    # noinspection PyPep8Naming
-    @pytest.mark.parametrize(
-        "INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
-        (
-            "INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
-            "",
-            "  ",
-            f"{random.randint(86400, 777600)}y",
-            f"{random.randint(86400, 777600)},{random.randint(0, 999)}s",
-        ),
-    )
-    def test_invalid_kick_no_introduction_discord_members_delay_flag_disabled(
-        self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str
-    ) -> None:
-        """
-        Test no error is raised when `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is invalid.
-
-        The enable/disable flag `KICK_NO_INTRODUCTION_DISCORD_MEMBERS` is disabled
-        (set to `False`) during this test, so an invalid delay value should be ignored.
-        """
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-
-        with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"):
-            os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
-                INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY
-            )
-
-            with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS"):
-                os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = "false"
-                RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
-
-                try:
-                    RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
-                except ImproperlyConfiguredError:
-                    pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
-
-    # noinspection PyPep8Naming
-    @pytest.mark.parametrize(
-        "INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
-        (
-            "INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
-            "",
-            "  ",
-            f"{random.randint(86400, 777600)}y",
-            f"{random.randint(86400, 777600)},{random.randint(0, 999)}s",
-        ),
-    )
-    def test_invalid_kick_no_introduction_discord_members_delay_flag_enabled(
-        self, INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str
-    ) -> None:
-        """
-        Test an error is raised when `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is invalid.
-
-        The enable/disable flag `KICK_NO_INTRODUCTION_DISCORD_MEMBERS` is enabled
-        (set to `True`) during this test, so an invalid delay value should not be ignored,
-        and an error should be raised.
-        """
-        INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE: Final[str] = (
-            "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must contain the delay "
-            "in any combination of seconds, minutes, hours, days or weeks."
-        )
-
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-
-        with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"):
-            os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
-                INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY
-            )
-
-            with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS"):
-                os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = "true"
-                RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
-
-                with pytest.raises(
-                    ImproperlyConfiguredError,
-                    match=INVALID_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE,
-                ):
-                    RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
-
-    # noinspection PyPep8Naming
-    @pytest.mark.parametrize(
-        "TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
-        ("0.5s", "0s", "0.5m", "0m", "0.5h", "0h", "0.5d", "0d", "0.05w", "0w"),
-    )
-    def test_too_small_kick_no_introduction_discord_members_delay_flag_disabled(
-        self, TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str
-    ) -> None:
-        """
-        Test no error is raised when `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is too small.
-
-        The enable/disable flag `KICK_NO_INTRODUCTION_DISCORD_MEMBERS` is disabled
-        (set to `False`) during this test, so an invalid delay value should be ignored.
-        """
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-
-        with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"):
-            os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
-                TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY
-            )
-
-            with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS"):
-                os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = "false"
-                RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
-
-                try:
-                    RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
-                except ImproperlyConfiguredError:
-                    pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
-
-    # noinspection PyPep8Naming
-    @pytest.mark.parametrize(
-        "TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY",
-        ("0.5s", "0s", "0.5m", "0m", "0.5h", "0h", "0.5d", "0d", "0.05w", "0w"),
-    )
-    def test_too_small_kick_no_introduction_discord_members_delay_flag_enabled(
-        self, TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY: str
-    ) -> None:
-        """
-        Test an error is raised when `KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY` is too small.
-
-        The enable/disable flag `KICK_NO_INTRODUCTION_DISCORD_MEMBERS` is enabled
-        (set to `True`) during this test, so an invalid delay value should not be ignored,
-        and an error should be raised.
-        """
-        TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE: Final[str] = (
-            "KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY must be greater than 1 day"
-        )
-
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-
-        with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"):
-            os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY"] = (
-                TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY
-            )
-
-            with EnvVariableDeleter("KICK_NO_INTRODUCTION_DISCORD_MEMBERS"):
-                os.environ["KICK_NO_INTRODUCTION_DISCORD_MEMBERS"] = "true"
-                RuntimeSettings._setup_kick_no_introduction_discord_members()  # noqa: SLF001
-
-                with pytest.raises(
-                    ImproperlyConfiguredError,
-                    match=TOO_SMALL_KICK_NO_INTRODUCTION_DISCORD_MEMBERS_DELAY_MESSAGE,
-                ):
-                    RuntimeSettings._setup_kick_no_introduction_discord_members_delay()  # noqa: SLF001
-
-
 class TestSetupSendGetRolesReminders:
     """Test case to unit-test the configuration for sending get-roles reminders."""
 
@@ -2567,298 +2128,6 @@ class TestSetupSendGetRolesReminders:
                 ImproperlyConfiguredError, match=INVALID_SEND_GET_ROLES_REMINDERS_VALUE_MESSAGE
             ):
                 RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
-
-    # noinspection PyPep8Naming
-    @pytest.mark.parametrize(
-        "TEST_SEND_GET_ROLES_REMINDERS_INTERVAL",
-        (
-            f"{random.randint(3, 999)}s",
-            f"{random.randint(3, 999)}.{random.randint(0, 999)}s",
-            (
-                f"  {random.randint(3, 999)}{
-                    random.choice(('', f'.{random.randint(0, 999)}'))
-                }s   "
-            ),
-            f"{random.randint(1, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}m",
-            f"{random.randint(1, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}h",
-            (
-                f"{random.randint(3, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}s{
-                    random.randint(0, 999)
-                }{random.choice(('', f'.{random.randint(0, 999)}'))}m{random.randint(0, 999)}{
-                    random.choice(('', f'.{random.randint(0, 999)}'))
-                }h"
-            ),
-            (
-                f"{random.randint(3, 999)}{
-                    random.choice(('', f'.{random.randint(0, 999)}'))
-                } s  {random.randint(0, 999)}{
-                    random.choice(('', f'.{random.randint(0, 999)}'))
-                }   m   {random.randint(0, 999)}{
-                    random.choice(('', f'.{random.randint(0, 999)}'))
-                }  h"
-            ),
-        ),
-    )
-    def test_setup_send_get_roles_reminders_interval_successful(
-        self, TEST_SEND_GET_ROLES_REMINDERS_INTERVAL: str
-    ) -> None:
-        """
-        Test that the given `SEND_GET_ROLES_REMINDERS_INTERVAL` is used when provided.
-
-        In this test, the provided `SEND_GET_ROLES_REMINDERS_INTERVAL` is valid
-        and so must be saved successfully.
-        """
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-        RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
-
-        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_INTERVAL"):
-            os.environ["SEND_GET_ROLES_REMINDERS_INTERVAL"] = (
-                TEST_SEND_GET_ROLES_REMINDERS_INTERVAL
-            )
-
-            RuntimeSettings._setup_send_get_roles_reminders_interval()  # noqa: SLF001
-
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
-
-        assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"] == {
-            key: float(value)
-            for key, value in (
-                re.match(
-                    r"\A(?:(?P<seconds>(?:\d*\.)?\d+)\s*s)?\s*(?:(?P<minutes>(?:\d*\.)?\d+)\s*m)?\s*(?:(?P<hours>(?:\d*\.)?\d+)\s*h)?\Z",
-                    TEST_SEND_GET_ROLES_REMINDERS_INTERVAL.lower().strip(),
-                )
-                .groupdict()
-                .items()  # type: ignore[union-attr]
-            )
-            if value
-        }
-
-        assert (
-            "seconds" in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"]
-            or "minutes" in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"]
-            or "hours" in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"]
-        )
-
-        assert all(
-            isinstance(value, float)
-            for value in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"].values()
-        )
-
-        timedelta_error: TypeError
-        try:
-            assert timedelta(
-                **RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"]
-            ) > timedelta(seconds=3)
-
-        except TypeError as timedelta_error:
-            if "invalid keyword argument for __new__()" not in str(timedelta_error):
-                raise timedelta_error from timedelta_error
-
-            pytest.fail(
-                (
-                    "Failed to construct `timedelta` object "
-                    "from given `SEND_GET_ROLES_REMINDERS_INTERVAL`"
-                ),
-                pytrace=False,
-            )
-
-    def test_default_send_get_roles_reminders_interval(self) -> None:
-        """Test that a default value is used when no `SEND_GET_ROLES_REMINDERS_INTERVAL`."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-        RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
-
-        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_INTERVAL"):
-            try:
-                RuntimeSettings._setup_send_get_roles_reminders_interval()  # noqa: SLF001
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
-
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
-
-        assert (
-            "seconds" in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"]
-            or "minutes" in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"]
-            or "hours" in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"]
-        )
-
-        assert all(
-            isinstance(value, float)
-            for value in RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"].values()
-        )
-
-        timedelta_error: TypeError
-        try:
-            assert timedelta(
-                **RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"]
-            ) > timedelta(seconds=3)
-
-        except TypeError as timedelta_error:
-            if "invalid keyword argument for __new__()" not in str(timedelta_error):
-                raise timedelta_error from timedelta_error
-
-            pytest.fail(
-                (
-                    "Failed to construct `timedelta` object "
-                    "from given `SEND_GET_ROLES_REMINDERS_INTERVAL`"
-                ),
-                pytrace=False,
-            )
-
-    def test_setup_send_get_roles_reminders_interval_without_send_get_roles_reminders_setup(
-        self,
-    ) -> None:
-        """Test that an error is raised when setting up the interval without the flag."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-
-        RuntimeSettings._settings.pop("SEND_GET_ROLES_REMINDERS", None)  # noqa: SLF001
-
-        with pytest.raises(RuntimeError, match="Invalid setup order"):
-            RuntimeSettings._setup_send_get_roles_reminders_interval()  # noqa: SLF001
-
-    # noinspection PyPep8Naming
-    @pytest.mark.parametrize(
-        "INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL",
-        (
-            "INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL",
-            "",
-            "  ",
-            f"{random.randint(1, 999)}d",
-            f"{random.randint(3, 999)},{random.randint(0, 999)}s",
-        ),
-    )
-    def test_invalid_send_get_roles_reminders_interval_flag_disabled(
-        self, INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL: str
-    ) -> None:
-        """
-        Test that no error is raised when `SEND_GET_ROLES_REMINDERS_INTERVAL` is invalid.
-
-        The enable/disable flag `SEND_GET_ROLES_REMINDERS` is disabled (set to `False`)
-        during this test, so an invalid interval value should be ignored.
-        """
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-
-        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_INTERVAL"):
-            os.environ["SEND_GET_ROLES_REMINDERS_INTERVAL"] = (
-                INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL
-            )
-
-            with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"):
-                os.environ["SEND_GET_ROLES_REMINDERS"] = "false"
-                RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
-
-                try:
-                    RuntimeSettings._setup_send_get_roles_reminders_interval()  # noqa: SLF001
-                except ImproperlyConfiguredError:
-                    pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
-
-    # noinspection PyPep8Naming
-    @pytest.mark.parametrize(
-        "INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL",
-        (
-            "INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL",
-            "",
-            "  ",
-            f"{random.randint(1, 999)}d",
-            f"{random.randint(3, 999)},{random.randint(0, 999)}s",
-        ),
-    )
-    def test_invalid_send_get_roles_reminders_interval_flag_enabled(
-        self, INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL: str
-    ) -> None:
-        """
-        Test that an error is raised when `SEND_GET_ROLES_REMINDERS_INTERVAL` is invalid.
-
-        The enable/disable flag `SEND_GET_ROLES_REMINDERS` is enabled (set to `True`)
-        during this test, so an invalid interval value should not be ignored,
-        and an error should be raised.
-        """
-        INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
-            "SEND_GET_ROLES_REMINDERS_INTERVAL must contain the interval "
-            "in any combination of seconds, minutes or hours"
-        )
-
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-
-        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_INTERVAL"):
-            os.environ["SEND_GET_ROLES_REMINDERS_INTERVAL"] = (
-                INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL
-            )
-
-            with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"):
-                os.environ["SEND_GET_ROLES_REMINDERS"] = "true"
-                RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
-
-                with pytest.raises(
-                    ImproperlyConfiguredError,
-                    match=INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE,
-                ):
-                    RuntimeSettings._setup_send_get_roles_reminders_interval()  # noqa: SLF001
-
-    # noinspection PyPep8Naming
-    @pytest.mark.parametrize(
-        "TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL",
-        ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h"),
-    )
-    def test_too_small_send_get_roles_reminders_interval_flag_disabled(
-        self, TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL: str
-    ) -> None:
-        """
-        Test that no error is raised when `SEND_GET_ROLES_REMINDERS_INTERVAL` is too small.
-
-        The enable/disable flag `SEND_GET_ROLES_REMINDERS` is disabled (set to `False`)
-        during this test, so an invalid interval value should be ignored.
-        """
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-
-        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_INTERVAL"):
-            os.environ["SEND_GET_ROLES_REMINDERS_INTERVAL"] = (
-                TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL
-            )
-
-            with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"):
-                os.environ["SEND_GET_ROLES_REMINDERS"] = "false"
-                RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
-
-                try:
-                    RuntimeSettings._setup_send_get_roles_reminders_interval()  # noqa: SLF001
-                except ImproperlyConfiguredError:
-                    pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
-
-    # noinspection PyPep8Naming
-    @pytest.mark.parametrize(
-        "TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL",
-        ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h"),
-    )
-    def test_too_small_send_introduction_reminders_interval_flag_enabled(
-        self, TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL: str
-    ) -> None:
-        """
-        Test that an error is raised when `SEND_GET_ROLES_REMINDERS_INTERVAL` is too small.
-
-        The enable/disable flag `SEND_GET_ROLES_REMINDERS` is enabled (set to `True`)
-        during this test, so an invalid interval value should not be ignored,
-        and an error should be raised.
-        """
-        TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
-            "SEND_GET_ROLES_REMINDERS_INTERVAL must be greater than 3 seconds"
-        )
-
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-
-        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_INTERVAL"):
-            os.environ["SEND_GET_ROLES_REMINDERS_INTERVAL"] = (
-                TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL
-            )
-
-            with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"):
-                os.environ["SEND_GET_ROLES_REMINDERS"] = "true"
-                RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
-
-                with pytest.raises(
-                    ImproperlyConfiguredError,
-                    match=TOO_SMALL_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE,
-                ):
-                    RuntimeSettings._setup_send_get_roles_reminders_interval()  # noqa: SLF001
 
 
 class TestSetupStatisticsDays:
@@ -3065,14 +2334,14 @@ class TestSetupModerationDocumentURL:
 
 
 class TestSetupManualModerationWarningMessageLocation:
-    """Test case for the `_setup_manual_moderation_warning_message_location()` function."""
+    """Test case for the `_setup_strike_performed_manually_warning_location()` function."""
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION",
         ("DM", "dm", "general", "Memes", "   general  ", "JUST-CHATTING", "Talking4"),
     )
-    def test_setup_manual_moderation_warning_message_location_successful(
+    def test_setup_strike_performed_manually_warning_location_successful(
         self, TEST_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION: str
     ) -> None:
         """Test that the given valid `MANUAL_MODERATION_WARNING_MESSAGE_LOCATION` is used."""
@@ -3083,7 +2352,7 @@ class TestSetupManualModerationWarningMessageLocation:
                 TEST_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION
             )
 
-            RuntimeSettings._setup_manual_moderation_warning_message_location()  # noqa: SLF001
+            RuntimeSettings._setup_strike_performed_manually_warning_location()  # noqa: SLF001
 
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
@@ -3097,7 +2366,7 @@ class TestSetupManualModerationWarningMessageLocation:
 
         with EnvVariableDeleter("MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"):
             try:
-                RuntimeSettings._setup_manual_moderation_warning_message_location()  # noqa: SLF001
+                RuntimeSettings._setup_strike_performed_manually_warning_location()  # noqa: SLF001
             except ImproperlyConfiguredError:
                 pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
@@ -3129,4 +2398,4 @@ class TestSetupManualModerationWarningMessageLocation:
                 ImproperlyConfiguredError,
                 match=INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE,
             ):
-                RuntimeSettings._setup_manual_moderation_warning_message_location()  # noqa: SLF001
+                RuntimeSettings._setup_strike_performed_manually_warning_location()  # noqa: SLF001

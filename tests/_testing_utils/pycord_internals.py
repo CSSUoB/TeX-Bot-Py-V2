@@ -8,7 +8,11 @@ if TYPE_CHECKING:
     from discord.state import ConnectionState
     from discord.ui import View
 
-__all__: "Sequence[str]" = ("TestingApplicationContext", "TestingInteraction", "TestingResponse")
+__all__: "Sequence[str]" = (
+    "TestingApplicationContext",
+    "TestingInteraction",
+    "TestingResponse",
+)
 
 from typing import TYPE_CHECKING
 
