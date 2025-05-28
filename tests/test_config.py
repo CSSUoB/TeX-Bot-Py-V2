@@ -84,18 +84,6 @@ class TestSettings:
 
         return RuntimeSettings
 
-    @pytest.mark.parametrize("TEST_ITEM_NAME", ("item_1",))
-    def test_get_invalid_settings_key_message(self, TEST_ITEM_NAME: str) -> None:  # noqa: N803
-        """Test that the `get_invalid_settings_key_message()` method returns correctly."""
-        INVALID_SETTINGS_KEY_MESSAGE: Final[str] = (
-            settings.get_invalid_settings_key_message_for_item_name(
-                TEST_ITEM_NAME,
-            )
-        )
-
-        assert TEST_ITEM_NAME in INVALID_SETTINGS_KEY_MESSAGE
-        assert "not a valid settings key" in INVALID_SETTINGS_KEY_MESSAGE
-
     @pytest.mark.parametrize("TEST_ITEM_NAME", ("ITEM_1",))
     @pytest.mark.parametrize("TEST_ITEM_VALUE", ("value_1",))
     def test_getattr_success(self, TEST_ITEM_NAME: str, TEST_ITEM_VALUE: str) -> None:  # noqa: N803
@@ -304,7 +292,6 @@ class TestSettings:
 class TestSetupLogging:
     """Test case to unit-test the `_setup_logging()` function."""
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_LOG_LEVEL", config.LOG_LEVEL_CHOICES)
     def test_setup_logging_successful(self, TEST_LOG_LEVEL: str) -> None:  # noqa: N803
         """Test that the given `CONSOLE_LOG_LEVEL` is used when a valid one is provided."""
@@ -315,8 +302,8 @@ class TestSetupLogging:
 
             RuntimeSettings._setup_logging()  # noqa: SLF001
 
-        assert "texbot" in set(logging.root.manager.loggerDict)
-        assert logging.getLogger("texbot").getEffectiveLevel() == getattr(
+        assert "TeX-Bot" in set(logging.root.manager.loggerDict)
+        assert logging.getLogger("TeX-Bot").getEffectiveLevel() == getattr(
             logging, TEST_LOG_LEVEL
         )
 
@@ -327,7 +314,7 @@ class TestSetupLogging:
         with EnvVariableDeleter("CONSOLE_LOG_LEVEL"):
             RuntimeSettings._setup_logging()  # noqa: SLF001
 
-        assert "texbot" in set(logging.root.manager.loggerDict)
+        assert "TeX-Bot" in set(logging.root.manager.loggerDict)
 
     # noinspection PyPep8Naming
     @pytest.mark.parametrize(

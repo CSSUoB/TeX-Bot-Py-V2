@@ -106,7 +106,6 @@ class TestChannelStatsCommand(BaseTestDiscordCommand):
     @classproperty
     def COMMAND(cls) -> "SlashCommand | UserCommand | MessageCommand":  # noqa: N802
         """The Discord command the cog, linked to this test case, has the functionality for."""
-        # noinspection PyTypeChecker
         return StatsCommandsCog.channel_stats
 
     def test_command_description(self) -> None:
