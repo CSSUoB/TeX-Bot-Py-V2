@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
@@ -55,6 +55,7 @@ class RandomDiscordBotTokenGenerator(BaseRandomEnvVariableValueGenerator[str]):
     """Generates random values that are valid Discord bot tokens."""
 
     @classmethod
+    @override
     def multiple_values(cls, count: int = 5) -> "Iterable[str]":
         """Return `count` number of random `DISCORD_BOT_TOKEN` values."""
         return (
@@ -70,11 +71,12 @@ class RandomDiscordBotTokenGenerator(BaseRandomEnvVariableValueGenerator[str]):
                         string.ascii_letters + string.digits + '_-', k=random.randint(27, 38)
                     )
                 )
-            }"
+            }"  # noqa: S311
             for _ in range(count)
         )
 
     @classmethod
+    @override
     def single_value(cls) -> str:
         """Return a single random `DISCORD_BOT_TOKEN` value."""
         return super().single_value()
@@ -84,6 +86,7 @@ class RandomDiscordLogChannelWebhookURLGenerator(BaseRandomEnvVariableValueGener
     """Generates random values that are valid Discord log channel webhook URLs."""
 
     @classmethod
+    @override
     def multiple_values(
         cls, count: int = 5, *, with_trailing_slash: bool | None = None
     ) -> "Iterable[str]":
@@ -108,6 +111,7 @@ class RandomDiscordLogChannelWebhookURLGenerator(BaseRandomEnvVariableValueGener
         )
 
     @classmethod
+    @override
     def single_value(cls) -> str:
         """Return a single random `DISCORD_LOG_CHANNEL_WEBHOOK_URL` value."""
         return super().single_value()
@@ -117,6 +121,7 @@ class RandomDiscordGuildIDGenerator(BaseRandomEnvVariableValueGenerator[str]):
     """Generates random values that are valid Discord guild IDs."""
 
     @classmethod
+    @override
     def multiple_values(cls, count: int = 5) -> "Iterable[str]":
         """Return `count` number of random `DISCORD_GUILD_ID` values."""
         return (
@@ -125,6 +130,7 @@ class RandomDiscordGuildIDGenerator(BaseRandomEnvVariableValueGenerator[str]):
         )
 
     @classmethod
+    @override
     def single_value(cls) -> str:
         """Return a single random `DISCORD_GUILD_ID` value."""
         return super().single_value()

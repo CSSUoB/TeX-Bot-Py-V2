@@ -66,7 +66,6 @@ def pytest_sessionstart(session: "pytest.Session") -> None:  # noqa: ARG001
             dotenv_file.write("\n")
 
 
-# noinspection SpellCheckingInspection,PyUnusedLocal
 def pytest_sessionfinish(
     session: "pytest.Session", exitstatus: "int | pytest.ExitCode"
 ) -> None:

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -128,6 +128,7 @@ class TestingInteraction(discord.Interaction):
         self._responses: MutableSequence[TestingResponse] = []
         super().__init__(data=data, state=state)
 
+    @override
     async def respond(
         self,
         content: str | None = None,

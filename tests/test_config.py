@@ -76,7 +76,7 @@ class TestSettings:
                 RuntimeSettings,
                 setup_method_name,
                 (
-                    functools.partial(replacement_method, setup_method_name=setup_method_name)
+                    functools.partial(replacement_method, setup_method_name)
                     if replacement_method is not None
                     else empty_setup_method
                 ),

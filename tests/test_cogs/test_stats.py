@@ -2,7 +2,7 @@
 
 import random
 import string
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 import discord
 import pytest
@@ -102,9 +102,9 @@ class TestStatsCommandGroup:
 class TestChannelStatsCommand(BaseTestDiscordCommand):
     """Test case to unit-test the channel stats command."""
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
-    def COMMAND(cls) -> "SlashCommand | UserCommand | MessageCommand":  # noqa: N802
+    @override
+    def COMMAND(cls) -> "SlashCommand | UserCommand | MessageCommand":
         """The Discord command the cog, linked to this test case, has the functionality for."""
         return StatsCommandsCog.channel_stats
 
@@ -143,7 +143,7 @@ class TestChannelStatsCommand(BaseTestDiscordCommand):
     )
     def test_invalid_channel_id(
         self,
-        INVALID_CHANNEL_ID: str,
+        INVALID_CHANNEL_ID: str,  # noqa: N803
         CONTEXT: "TestingApplicationContext",  # noqa: N803
     ) -> None:
         """Test that an error occurs when running the command with an invalid channel ID."""
