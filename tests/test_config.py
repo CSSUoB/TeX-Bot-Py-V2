@@ -313,7 +313,6 @@ class TestSetupLogging:
 
         assert "TeX-Bot" in set(logging.root.manager.loggerDict)
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_LOG_LEVEL",
         (
@@ -321,12 +320,13 @@ class TestSetupLogging:
             "",
             "  ",
             "".join(
-                random.choices(
+                random.choices(  # noqa: S311
                     string.ascii_letters + string.digits + string.punctuation,
                     k=18,
                 ),
             ),
         ),
+        ids=[f"case_{i}" for i in range(4)],
     )
     def test_invalid_console_log_level(self, INVALID_LOG_LEVEL: str) -> None:  # noqa: N803
         """Test that an error is raised when an invalid `CONSOLE_LOG_LEVEL` is provided."""
@@ -338,7 +338,6 @@ class TestSetupLogging:
             with pytest.raises(ImproperlyConfiguredError, match="LOG_LEVEL must be one of"):
                 RuntimeSettings._setup_logging()  # noqa: SLF001
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("LOWERCASE_LOG_LEVEL", ("info",))
     def test_valid_lowercase_console_log_level(self, LOWERCASE_LOG_LEVEL: str) -> None:  # noqa: N803
         """Test that the provided `CONSOLE_LOG_LEVEL` is fixed & used if it is in lowercase."""
@@ -1511,9 +1510,10 @@ class TestSetupMembersListURLSessionCookie:
     @pytest.mark.parametrize(
         "TEST_MEMBERS_LIST_URL_SESSION_COOKIE",
         (
-            "".join(random.choices(string.hexdigits, k=random.randint(128, 256))),
-            f"  {''.join(random.choices(string.hexdigits, k=random.randint(128, 256)))}   ",
+            "".join(random.choices(string.hexdigits, k=random.randint(128, 256))),  # noqa: S311
+            f"  {''.join(random.choices(string.hexdigits, k=random.randint(128, 256)))}   ",  # noqa: S311
         ),
+        ids=[f"case_{i}" for i in range(2)],
     )
     def test_setup_members_list_auth_session_cookie_successful(
         self, TEST_MEMBERS_LIST_URL_SESSION_COOKIE: str
@@ -1550,21 +1550,21 @@ class TestSetupMembersListURLSessionCookie:
             ):
                 RuntimeSettings._setup_members_list_auth_session_cookie()  # noqa: SLF001
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_MEMBERS_LIST_URL_SESSION_COOKIE",
         (
             "INVALID_MEMBERS_LIST_URL_SESSION_COOKIE",
             "",
             "  ",
-            "".join(random.choices(string.hexdigits, k=5)),
-            "".join(random.choices(string.hexdigits, k=500)),
+            "".join(random.choices(string.hexdigits, k=5)),  # noqa: S311
+            "".join(random.choices(string.hexdigits, k=500)),  # noqa: S311
             (
                 f"{''.join(random.choices(string.hexdigits, k=64))}>{
                     ''.join(random.choices(string.hexdigits, k=64))
-                }"
+                }"  # noqa: S311
             ),
         ),
+        ids=[f"case_{i}" for i in range(6)],
     )
     def test_invalid_members_list_url_session_cookie(
         self, INVALID_MEMBERS_LIST_URL_SESSION_COOKIE: str
@@ -1591,7 +1591,6 @@ class TestSetupMembersListURLSessionCookie:
 class TestSetupSendIntroductionReminders:
     """Test case to unit-test the configuration for sending introduction reminders."""
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_SEND_INTRODUCTION_REMINDERS_VALUE",
         set(
@@ -1622,7 +1621,7 @@ class TestSetupSendIntroductionReminders:
                         ),
                     ).upper(),
                     "".join(
-                        random.choice((str.upper, str.lower))(character)
+                        random.choice((str.upper, str.lower))(character)  # noqa: S311
                         for character in next(
                             iter(
                                 value
@@ -1634,6 +1633,7 @@ class TestSetupSendIntroductionReminders:
                 ),
             ),
         ),
+        ids=[f"case_{i}" for i in range(16)],
     )
     def test_setup_send_introduction_reminders_successful(
         self, TEST_SEND_INTRODUCTION_REMINDERS_VALUE: str
@@ -1687,6 +1687,7 @@ class TestSetupSendIntroductionReminders:
                 random.choices(string.ascii_letters + string.digits + string.punctuation, k=8),
             ),
         ),
+        ids=[f"case_{i}" for i in range(4)],
     )
     def test_invalid_send_introduction_reminders(
         self, INVALID_SEND_INTRODUCTION_REMINDERS_VALUE: str
@@ -2053,6 +2054,7 @@ class TestSetupSendGetRolesReminders:
                 ),
             ),
         ),
+        ids=[f"case_{i}" for i in range(14)],
     )
     def test_setup_send_get_roles_reminders_successful(
         self, TEST_SEND_GET_ROLES_REMINDERS_VALUE: str
@@ -2085,7 +2087,6 @@ class TestSetupSendGetRolesReminders:
 
         assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS"] in (True, False)
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_SEND_GET_ROLES_REMINDERS_VALUE",
         (
@@ -2093,9 +2094,10 @@ class TestSetupSendGetRolesReminders:
             "",
             "  ",
             "".join(
-                random.choices(string.ascii_letters + string.digits + string.punctuation, k=8),
+                random.choices(string.ascii_letters + string.digits + string.punctuation, k=8),  # noqa: S311
             ),
         ),
+        ids=[f"case_{i}" for i in range(4)],
     )
     def test_invalid_send_get_roles_reminders(
         self, INVALID_SEND_GET_ROLES_REMINDERS_VALUE: str
@@ -2119,7 +2121,6 @@ class TestSetupSendGetRolesReminders:
 class TestSetupStatisticsDays:
     """Test case to unit-test the `_setup_statistics_days()` function."""
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_STATISTICS_DAYS", ("5", "3.55", "664", "    5   "))
     def test_setup_statistics_days_successful(self, TEST_STATISTICS_DAYS: str) -> None:  # noqa: N803
         """Test that the given valid `STATISTICS_DAYS` is used when one is provided."""
