@@ -55,6 +55,7 @@ class BaseTestDiscordCommand:
                 "token": "1",
                 "version": 2,
                 "entitlements": [],
+                "authorizing_integration_owners": {"0": 0, "1": 1},
             },
             state=ConnectionState(
                 dispatch=(lambda: None),

@@ -986,7 +986,7 @@ class TestSetupGroupShortName:
 
 class TestSetupPurchaseMembershipURL:
     """Test case to unit-test the `_setup_purchase_membership_url()` function."""
-git add
+
     @pytest.mark.parametrize(
         "TEST_PURCHASE_MEMBERSHIP_URL",
         ("https://google.com", "www.google.com/", "    https://google.com   "),
