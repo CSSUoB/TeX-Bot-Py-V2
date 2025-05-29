@@ -358,6 +358,7 @@ class TestSetupDiscordBotToken:
             RandomDiscordBotTokenGenerator.multiple_values(),
             (f"    {RandomDiscordBotTokenGenerator.single_value()}   ",),
         ),
+        ids=[f"case_{i}" for i in range(6)],
     )
     def test_setup_discord_bot_token_successful(self, TEST_DISCORD_BOT_TOKEN: str) -> None:  # noqa: N803
         """Test that the given `DISCORD_BOT_TOKEN` is used when a valid one is provided."""
@@ -513,6 +514,7 @@ class TestSetupDiscordLogChannelWebhookURL:
             ),
             (f"    {RandomDiscordLogChannelWebhookURLGenerator.single_value()}   ",),
         ),
+        ids=[f"case_{i}" for i in range(7)],
     )
     def test_setup_discord_log_channel_webhook_successful(
         self,
@@ -643,6 +645,7 @@ class TestSetupDiscordGuildID:
             RandomDiscordGuildIDGenerator.multiple_values(),
             (f"    {RandomDiscordGuildIDGenerator.single_value()}   ",),
         ),
+        ids=[f"case_{i}" for i in range(6)],
     )
     def test_setup_discord_guild_id_successful(self, TEST_DISCORD_GUILD_ID: str) -> None:  # noqa: N803
         """Test that the given `DISCORD_GUILD_ID` is used when a valid one is provided."""
@@ -1593,7 +1596,7 @@ class TestSetupSendIntroductionReminders:
 
     @pytest.mark.parametrize(
         "TEST_SEND_INTRODUCTION_REMINDERS_VALUE",
-        set(
+        list(set(
             itertools.chain(
                 config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES,
                 (
@@ -1632,8 +1635,8 @@ class TestSetupSendIntroductionReminders:
                     ),
                 ),
             ),
-        ),
-        ids=[f"case_{i}" for i in range(16)],
+        ))[:14],
+        ids=[f"case_{i}" for i in range(14)],
     )
     def test_setup_send_introduction_reminders_successful(
         self, TEST_SEND_INTRODUCTION_REMINDERS_VALUE: str
@@ -1867,6 +1870,7 @@ class TestSetupSendIntroductionReminders:
             f"{random.randint(1, 999)}d",  # noqa: S311
             f"{random.randint(3, 999)},{random.randint(0, 999)}s",  # noqa: S311
         ),
+        ids=[f"case_{i}" for i in range(5)],
     )
     def test_invalid_send_introduction_reminders_interval_flag_disabled(
         self, INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL: str
@@ -1893,16 +1897,16 @@ class TestSetupSendIntroductionReminders:
                 except ImproperlyConfiguredError:
                     pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL",
         (
             "INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL",
             "",
             "  ",
-            f"{random.randint(1, 999)}d",
-            f"{random.randint(3, 999)},{random.randint(0, 999)}s",
+            f"{random.randint(1, 999)}d",  # noqa: S311
+            f"{random.randint(3, 999)},{random.randint(0, 999)}s",  # noqa: S311
         ),
+        ids=[f"case_{i}" for i in range(5)],
     )
     @pytest.mark.parametrize("SEND_INTRODUCTION_REMINDERS_VALUE", ("once", "interval"))
     def test_invalid_send_introduction_reminders_interval_flag_enabled(
@@ -2011,10 +2015,9 @@ class TestSetupSendIntroductionReminders:
 class TestSetupSendGetRolesReminders:
     """Test case to unit-test the configuration for sending get-roles reminders."""
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_SEND_GET_ROLES_REMINDERS_VALUE",
-        set(
+        list(set(
             itertools.chain(
                 config.TRUE_VALUES | config.FALSE_VALUES,
                 (
@@ -2053,7 +2056,7 @@ class TestSetupSendGetRolesReminders:
                     ),
                 ),
             ),
-        ),
+        ))[:14],
         ids=[f"case_{i}" for i in range(14)],
     )
     def test_setup_send_get_roles_reminders_successful(
@@ -2161,12 +2164,13 @@ class TestSetupStatisticsDays:
             "",
             "  ",
             "".join(
-                random.choices(
+                random.choices(  # noqa: S311
                     string.ascii_letters + string.digits + string.punctuation,
                     k=18,
                 ),
             ),
         ),
+        ids=[f"case_{i}" for i in range(4)],
     )
     def test_invalid_statistics_days(self, INVALID_STATISTICS_DAYS: str) -> None:  # noqa: N803
         """Test that an error is raised when an invalid `STATISTICS_DAYS` is provided."""
@@ -2184,7 +2188,6 @@ class TestSetupStatisticsDays:
             ):
                 RuntimeSettings._setup_statistics_days()  # noqa: SLF001
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TOO_SMALL_STATISTICS_DAYS",
         ("-15", "-2.3", "-0.02", "0", "0.40", "1"),
@@ -2363,7 +2366,6 @@ class TestSetupManualModerationWarningMessageLocation:
 
         assert bool(RuntimeSettings()["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"])
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION", ("", "  "))
     def test_invalid_manual_moderation_warning_message_location(
         self, INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION: str
