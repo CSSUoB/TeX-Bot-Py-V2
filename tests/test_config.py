@@ -1596,46 +1596,48 @@ class TestSetupSendIntroductionReminders:
 
     @pytest.mark.parametrize(
         "TEST_SEND_INTRODUCTION_REMINDERS_VALUE",
-        list(set(
-            itertools.chain(
-                config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES,
-                (
-                    f"  {
+        list(
+            set(
+                itertools.chain(
+                    config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES,
+                    (
+                        f"  {
+                            next(
+                                iter(
+                                    value
+                                    for value in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
+                                    if value.isalpha()
+                                )
+                            )
+                        }   ",
                         next(
                             iter(
                                 value
                                 for value in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
                                 if value.isalpha()
-                            )
-                        )
-                    }   ",
-                    next(
-                        iter(
-                            value
-                            for value in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
-                            if value.isalpha()
-                        ),
-                    ).lower(),
-                    next(
-                        iter(
-                            value
-                            for value in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
-                            if value.isalpha()
-                        ),
-                    ).upper(),
-                    "".join(
-                        random.choice((str.upper, str.lower))(character)  # noqa: S311
-                        for character in next(
+                            ),
+                        ).lower(),
+                        next(
                             iter(
                                 value
                                 for value in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
                                 if value.isalpha()
                             ),
-                        )
+                        ).upper(),
+                        "".join(
+                            random.choice((str.upper, str.lower))(character)  # noqa: S311
+                            for character in next(
+                                iter(
+                                    value
+                                    for value in config.VALID_SEND_INTRODUCTION_REMINDERS_VALUES
+                                    if value.isalpha()
+                                ),
+                            )
+                        ),
                     ),
                 ),
-            ),
-        ))[:14],
+            )
+        )[:14],
         ids=[f"case_{i}" for i in range(14)],
     )
     def test_setup_send_introduction_reminders_successful(
@@ -2017,46 +2019,48 @@ class TestSetupSendGetRolesReminders:
 
     @pytest.mark.parametrize(
         "TEST_SEND_GET_ROLES_REMINDERS_VALUE",
-        list(set(
-            itertools.chain(
-                config.TRUE_VALUES | config.FALSE_VALUES,
-                (
-                    f"  {
+        list(
+            set(
+                itertools.chain(
+                    config.TRUE_VALUES | config.FALSE_VALUES,
+                    (
+                        f"  {
+                            next(
+                                iter(
+                                    value
+                                    for value in config.TRUE_VALUES | config.FALSE_VALUES
+                                    if value.isalpha()
+                                )
+                            )
+                        }   ",
                         next(
                             iter(
                                 value
                                 for value in config.TRUE_VALUES | config.FALSE_VALUES
                                 if value.isalpha()
-                            )
-                        )
-                    }   ",
-                    next(
-                        iter(
-                            value
-                            for value in config.TRUE_VALUES | config.FALSE_VALUES
-                            if value.isalpha()
-                        ),
-                    ).lower(),
-                    next(
-                        iter(
-                            value
-                            for value in config.TRUE_VALUES | config.FALSE_VALUES
-                            if value.isalpha()
-                        ),
-                    ).upper(),
-                    "".join(
-                        random.choice((str.upper, str.lower))(character)
-                        for character in next(
+                            ),
+                        ).lower(),
+                        next(
                             iter(
                                 value
                                 for value in config.TRUE_VALUES | config.FALSE_VALUES
                                 if value.isalpha()
                             ),
-                        )
+                        ).upper(),
+                        "".join(
+                            random.choice((str.upper, str.lower))(character)
+                            for character in next(
+                                iter(
+                                    value
+                                    for value in config.TRUE_VALUES | config.FALSE_VALUES
+                                    if value.isalpha()
+                                ),
+                            )
+                        ),
                     ),
                 ),
-            ),
-        ))[:14],
+            )
+        )[:14],
         ids=[f"case_{i}" for i in range(14)],
     )
     def test_setup_send_get_roles_reminders_successful(
