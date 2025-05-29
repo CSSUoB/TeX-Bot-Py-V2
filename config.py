@@ -158,7 +158,7 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_discord_bot_token(cls) -> None:
-        raw_discord_bot_token: str | None = os.getenv("DISCORD_BOT_TOKEN")
+        raw_discord_bot_token: str | None = os.getenv("DISCORD_BOT_TOKEN").strip()
 
         DISCORD_BOT_TOKEN_IS_VALID: Final[bool] = bool(
             raw_discord_bot_token

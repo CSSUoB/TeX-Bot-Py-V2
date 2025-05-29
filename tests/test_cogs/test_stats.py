@@ -28,7 +28,7 @@ class TestAmountOfTimeFormatter:
 
     @pytest.mark.parametrize("TEST_TIME_VALUE", (1, 1.0, 0.999999, 1.000001))
     @pytest.mark.parametrize("TIME_SCALE", ("day",))
-    def test_format_unit_value(self, TEST_TIME_VALUE: float, TIME_SCALE: str) -> None:  # noqa: N803
+    def test_format_unit_value(self, TEST_TIME_VALUE: float, TIME_SCALE: str) -> None:
         """Test that a value of one only includes the time_scale."""
         formatted_amount_of_time: str = amount_of_time_formatter(TEST_TIME_VALUE, TIME_SCALE)
 
@@ -40,7 +40,7 @@ class TestAmountOfTimeFormatter:
         (*range(2, 21), 2.00, 0, 0.0, 25.0, -0, -0.0, -25.0),
     )
     @pytest.mark.parametrize("TIME_SCALE", ("day",))
-    def test_format_integer_value(self, TEST_TIME_VALUE: float, TIME_SCALE: str) -> None:  # noqa: N803
+    def test_format_integer_value(self, TEST_TIME_VALUE: float, TIME_SCALE: str) -> None:
         """Test that an integer value includes the value and time_scale pluralized."""
         assert (
             amount_of_time_formatter(
@@ -52,7 +52,7 @@ class TestAmountOfTimeFormatter:
 
     @pytest.mark.parametrize("TEST_TIME_VALUE", (3.14159, 0.005, 25.0333333))
     @pytest.mark.parametrize("TIME_SCALE", ("day",))
-    def test_format_float_value(self, TEST_TIME_VALUE: float, TIME_SCALE: str) -> None:  # noqa: N803
+    def test_format_float_value(self, TEST_TIME_VALUE: float, TIME_SCALE: str) -> None:
         """Test that a float value includes the rounded value and time_scale pluralized."""
         assert (
             amount_of_time_formatter(
@@ -144,8 +144,8 @@ class TestChannelStatsCommand(BaseTestDiscordCommand):
     )
     def test_invalid_channel_id(
         self,
-        INVALID_CHANNEL_ID: str,  # noqa: N803
-        CONTEXT: "TestingApplicationContext",  # noqa: N803
+        INVALID_CHANNEL_ID: str,
+        CONTEXT: "TestingApplicationContext",
     ) -> None:
         """Test that an error occurs when running the command with an invalid channel ID."""
         self.execute_command(

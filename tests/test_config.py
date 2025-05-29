@@ -86,7 +86,7 @@ class TestSettings:
 
     @pytest.mark.parametrize("TEST_ITEM_NAME", ("ITEM_1",))
     @pytest.mark.parametrize("TEST_ITEM_VALUE", ("value_1",))
-    def test_getattr_success(self, TEST_ITEM_NAME: str, TEST_ITEM_VALUE: str) -> None:  # noqa: N803
+    def test_getattr_success(self, TEST_ITEM_NAME: str, TEST_ITEM_VALUE: str) -> None:
         """Test that retrieving a settings variable by attr-lookup returns the set value."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -96,7 +96,7 @@ class TestSettings:
         assert getattr(RuntimeSettings(), TEST_ITEM_NAME) == TEST_ITEM_VALUE
 
     @pytest.mark.parametrize("MISSING_ITEM_NAME", ("ITEM",))
-    def test_getattr_missing_item(self, MISSING_ITEM_NAME: str) -> None:  # noqa: N803
+    def test_getattr_missing_item(self, MISSING_ITEM_NAME: str) -> None:
         """
         Test that requesting a missing settings variable by attribute-lookup raises an error.
 
@@ -112,7 +112,7 @@ class TestSettings:
             assert getattr(RuntimeSettings(), MISSING_ITEM_NAME)
 
     @pytest.mark.parametrize("INVALID_ITEM_NAME", ("item_1", "ITEM__1", "!ITEM_1"))
-    def test_getattr_invalid_name(self, INVALID_ITEM_NAME: str) -> None:  # noqa: N803
+    def test_getattr_invalid_name(self, INVALID_ITEM_NAME: str) -> None:
         """Test that requesting an invalid settings variable by attr-lookup raises an error."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -147,7 +147,7 @@ class TestSettings:
 
     @pytest.mark.parametrize("TEST_ITEM_NAME", ("ITEM_1",))
     @pytest.mark.parametrize("TEST_ITEM_VALUE", ("value_1",))
-    def test_getitem_success(self, TEST_ITEM_NAME: str, TEST_ITEM_VALUE: str) -> None:  # noqa: N803
+    def test_getitem_success(self, TEST_ITEM_NAME: str, TEST_ITEM_VALUE: str) -> None:
         """Test that retrieving a settings variable by key-lookup returns the set value."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -157,7 +157,7 @@ class TestSettings:
         assert RuntimeSettings()[TEST_ITEM_NAME] == TEST_ITEM_VALUE
 
     @pytest.mark.parametrize("MISSING_ITEM_NAME", ("ITEM",))
-    def test_getitem_missing_item(self, MISSING_ITEM_NAME: str) -> None:  # noqa: N803
+    def test_getitem_missing_item(self, MISSING_ITEM_NAME: str) -> None:
         """
         Test that requesting a missing settings variable by key-lookup raises an error.
 
@@ -173,7 +173,7 @@ class TestSettings:
             assert RuntimeSettings()[MISSING_ITEM_NAME]
 
     @pytest.mark.parametrize("INVALID_ITEM_NAME", ("item_1", "ITEM__1", "!ITEM_1"))
-    def test_getitem_invalid_name(self, INVALID_ITEM_NAME: str) -> None:  # noqa: N803
+    def test_getitem_invalid_name(self, INVALID_ITEM_NAME: str) -> None:
         """Test that requesting an invalid settings variable by key-lookup raises an error."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
@@ -186,7 +186,7 @@ class TestSettings:
     def test_getitem_sets_up_env_variables(
         self,
         TEST_ITEM_NAME: str,
-        TEST_ITEM_VALUE: str,  # noqa: N803
+        TEST_ITEM_VALUE: str,
     ) -> None:
         """
         Test that requesting a settings variable sets them all up if they have not been.
@@ -252,7 +252,7 @@ class TestSettings:
         self,
         caplog: "LogCaptureFixture",
         TEST_ITEM_NAME: str,
-        TEST_ITEM_VALUE: str,  # noqa: N803
+        TEST_ITEM_VALUE: str,
     ) -> None:
         """Test that the Env Variables cannot be set more than once."""
         RuntimeSettings: Final[type[Settings]] = self.replace_setup_methods(
@@ -290,7 +290,7 @@ class TestSetupLogging:
     """Test case to unit-test the `_setup_logging()` function."""
 
     @pytest.mark.parametrize("TEST_LOG_LEVEL", config.LOG_LEVEL_CHOICES)
-    def test_setup_logging_successful(self, TEST_LOG_LEVEL: str) -> None:  # noqa: N803
+    def test_setup_logging_successful(self, TEST_LOG_LEVEL: str) -> None:
         """Test that the given `CONSOLE_LOG_LEVEL` is used when a valid one is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -328,7 +328,7 @@ class TestSetupLogging:
         ),
         ids=[f"case_{i}" for i in range(4)],
     )
-    def test_invalid_console_log_level(self, INVALID_LOG_LEVEL: str) -> None:  # noqa: N803
+    def test_invalid_console_log_level(self, INVALID_LOG_LEVEL: str) -> None:
         """Test that an error is raised when an invalid `CONSOLE_LOG_LEVEL` is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -339,7 +339,7 @@ class TestSetupLogging:
                 RuntimeSettings._setup_logging()  # noqa: SLF001
 
     @pytest.mark.parametrize("LOWERCASE_LOG_LEVEL", ("info",))
-    def test_valid_lowercase_console_log_level(self, LOWERCASE_LOG_LEVEL: str) -> None:  # noqa: N803
+    def test_valid_lowercase_console_log_level(self, LOWERCASE_LOG_LEVEL: str) -> None:
         """Test that the provided `CONSOLE_LOG_LEVEL` is fixed & used if it is in lowercase."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -360,7 +360,7 @@ class TestSetupDiscordBotToken:
         ),
         ids=[f"case_{i}" for i in range(6)],
     )
-    def test_setup_discord_bot_token_successful(self, TEST_DISCORD_BOT_TOKEN: str) -> None:  # noqa: N803
+    def test_setup_discord_bot_token_successful(self, TEST_DISCORD_BOT_TOKEN: str) -> None:
         """Test that the given `DISCORD_BOT_TOKEN` is used when a valid one is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -518,7 +518,7 @@ class TestSetupDiscordLogChannelWebhookURL:
     )
     def test_setup_discord_log_channel_webhook_successful(
         self,
-        TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str,  # noqa: N803
+        TEST_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str,
     ) -> None:
         """
         Test that the given `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is used when provided.
@@ -614,7 +614,7 @@ class TestSetupDiscordLogChannelWebhookURL:
     )
     def test_invalid_discord_log_channel_webhook_url(
         self,
-        INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str,  # noqa: N803
+        INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL: str,
     ) -> None:
         """Test that an error occurs when an invalid `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is provided."""
         INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE: Final[str] = (
@@ -647,7 +647,7 @@ class TestSetupDiscordGuildID:
         ),
         ids=[f"case_{i}" for i in range(6)],
     )
-    def test_setup_discord_guild_id_successful(self, TEST_DISCORD_GUILD_ID: str) -> None:  # noqa: N803
+    def test_setup_discord_guild_id_successful(self, TEST_DISCORD_GUILD_ID: str) -> None:
         """Test that the given `DISCORD_GUILD_ID` is used when a valid one is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -687,7 +687,7 @@ class TestSetupDiscordGuildID:
         ),
         ids=[f"case_{i}" for i in range(6)],
     )
-    def test_invalid_discord_guild_id(self, INVALID_DISCORD_GUILD_ID: str) -> None:  # noqa: N803
+    def test_invalid_discord_guild_id(self, INVALID_DISCORD_GUILD_ID: str) -> None:
         """Test that an error is raised when an invalid `DISCORD_GUILD_ID` is provided."""
         INVALID_DISCORD_GUILD_ID_MESSAGE: Final[str] = (
             "DISCORD_GUILD_ID must be a valid Discord guild ID"
@@ -725,7 +725,7 @@ class TestSetupGroupFullName:
             "(Computer Science Society)",
         ),
     )
-    def test_setup_group_full_name_successful(self, TEST_GROUP_FULL_NAME: str) -> None:  # noqa: N803
+    def test_setup_group_full_name_successful(self, TEST_GROUP_FULL_NAME: str) -> None:
         """Test that the given `GROUP_NAME` is used when a valid one is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -785,7 +785,7 @@ class TestSetupGroupFullName:
         ),
         ids=[f"case_{i}" for i in range(22)],
     )
-    def test_invalid_group_full_name(self, INVALID_GROUP_FULL_NAME: str) -> None:  # noqa: N803
+    def test_invalid_group_full_name(self, INVALID_GROUP_FULL_NAME: str) -> None:
         """Test that an error is raised when an invalid `GROUP_NAME` is provided."""
         INVALID_GROUP_NAME_MESSAGE: Final[str] = (
             "GROUP_NAME must not contain any invalid characters"
@@ -818,7 +818,7 @@ class TestSetupGroupShortName:
             "(CSS)",
         ),
     )
-    def test_setup_group_short_name_successful(self, TEST_GROUP_SHORT_NAME: str) -> None:  # noqa: N803
+    def test_setup_group_short_name_successful(self, TEST_GROUP_SHORT_NAME: str) -> None:
         """Test that the given `GROUP_SHORT_NAME` is used when a valid one is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -855,7 +855,6 @@ class TestSetupGroupShortName:
 
         assert not RuntimeSettings()["_GROUP_SHORT_NAME"]
 
-    # noinspection PyPep8Naming,SpellCheckingInspection
     @pytest.mark.parametrize(
         "TEST_GROUP_FULL_NAME",
         (
@@ -876,7 +875,7 @@ class TestSetupGroupShortName:
     )
     def test_resolved_value_group_short_name_with_group_full_name(
         self,
-        TEST_GROUP_FULL_NAME: str,  # noqa: N803
+        TEST_GROUP_FULL_NAME: str,
     ) -> None:
         """
         Test that a resolved value is used when no `GROUP_SHORT_NAME` is provided.
@@ -964,11 +963,11 @@ class TestSetupGroupShortName:
             "-CSS",
             "",
             "  ",
-            "".join(random.choices(string.digits, k=30)),
+            "".join(random.choices(string.digits, k=30)),  # noqa: S311
         ),
         ids=[f"case_{i}" for i in range(22)],
     )
-    def test_invalid_group_short_name(self, INVALID_GROUP_SHORT_NAME: str) -> None:  # noqa: N803
+    def test_invalid_group_short_name(self, INVALID_GROUP_SHORT_NAME: str) -> None:
         """Test that an error is raised when an invalid `GROUP_SHORT_NAME` is provided."""
         INVALID_GROUP_SHORT_NAME_MESSAGE: Final[str] = (
             "GROUP_SHORT_NAME must not contain any invalid characters"
@@ -987,8 +986,7 @@ class TestSetupGroupShortName:
 
 class TestSetupPurchaseMembershipURL:
     """Test case to unit-test the `_setup_purchase_membership_url()` function."""
-
-    # noinspection PyPep8Naming
+git add
     @pytest.mark.parametrize(
         "TEST_PURCHASE_MEMBERSHIP_URL",
         ("https://google.com", "www.google.com/", "    https://google.com   "),
@@ -1026,7 +1024,6 @@ class TestSetupPurchaseMembershipURL:
 
         assert not RuntimeSettings()["PURCHASE_MEMBERSHIP_URL"]
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_PURCHASE_MEMBERSHIP_URL",
         ("INVALID_PURCHASE_MEMBERSHIP_URL", "www.google..com/", "", "  "),
@@ -1053,7 +1050,6 @@ class TestSetupPurchaseMembershipURL:
 class TestSetupMembershipPerksURL:
     """Test case to unit-test the `_setup_membership_perks_url()` function."""
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_MEMBERSHIP_PERKS_URL",
         ("https://google.com", "www.google.com/", "    https://google.com   "),
@@ -1091,12 +1087,11 @@ class TestSetupMembershipPerksURL:
 
         assert not RuntimeSettings()["MEMBERSHIP_PERKS_URL"]
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_MEMBERSHIP_PERKS_URL",
         ("INVALID_MEMBERSHIP_PERKS_URL", "www.google..com/", "", "  "),
     )
-    def test_invalid_membership_perks_url(self, INVALID_MEMBERSHIP_PERKS_URL: str) -> None:  # noqa: N803
+    def test_invalid_membership_perks_url(self, INVALID_MEMBERSHIP_PERKS_URL: str) -> None:
         """Test that an error occurs when the provided `MEMBERSHIP_PERKS_URL` is invalid."""
         INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (
             "MEMBERSHIP_PERKS_URL must be a valid URL"
@@ -1116,7 +1111,6 @@ class TestSetupMembershipPerksURL:
 class TestSetupPingCommandEasterEggProbability:
     """Test case to unit-test the `_setup_ping_command_easter_egg_probability()` function."""
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_PING_COMMAND_EASTER_EGG_PROBABILITY",
         ("1", "0", "0.5", "    0.5   "),
@@ -1160,7 +1154,6 @@ class TestSetupPingCommandEasterEggProbability:
         assert isinstance(RuntimeSettings()["PING_COMMAND_EASTER_EGG_PROBABILITY"], float)
         assert 0 <= RuntimeSettings()["PING_COMMAND_EASTER_EGG_PROBABILITY"] <= 100
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY",
         ("INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY", "", "  ", "-5", "1.1", "5", "-0.01"),
@@ -1190,7 +1183,6 @@ class TestSetupPingCommandEasterEggProbability:
 class TestSetupMessagesFile:
     """Test case to unit-test all functions that use/relate to the messages JSON file."""
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "RAW_INVALID_MESSAGES_FILE_PATH",
         ("messages.json.invalid", "", "  "),
@@ -1210,7 +1202,6 @@ class TestSetupMessagesFile:
             ):
                 Settings._get_messages_dict(RAW_INVALID_MESSAGES_FILE_PATH)  # noqa: SLF001
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"welcome_messages": ["Welcome!"]},))
     def test_get_messages_dict_with_no_messages_file_path(
         self, TEST_MESSAGES_DICT: "Mapping[str, object]"
@@ -1229,7 +1220,6 @@ class TestSetupMessagesFile:
 
             DEFAULT_MESSAGES_FILE_PATH.unlink()
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"welcome_messages": ["Welcome!"]},))
     def test_get_messages_dict_successful(
         self, TEST_MESSAGES_DICT: "Mapping[str, object]"
@@ -1255,7 +1245,6 @@ class TestSetupMessagesFile:
                 == TEST_MESSAGES_DICT
             )
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_MESSAGES_JSON",
         (
@@ -1269,7 +1258,7 @@ class TestSetupMessagesFile:
             "false",
         ),
     )
-    def test_get_messages_dict_with_invalid_json(self, INVALID_MESSAGES_JSON: str) -> None:  # noqa: N803
+    def test_get_messages_dict_with_invalid_json(self, INVALID_MESSAGES_JSON: str) -> None:
         """Test that an error is raised when the messages-file contains invalid JSON."""
         temporary_messages_file: IO[str]
         with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
@@ -1285,7 +1274,6 @@ class TestSetupMessagesFile:
                     raw_messages_file_path=temporary_messages_file.name,
                 )
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"welcome_messages": ["Welcome!"]},))
     def test_setup_welcome_messages_successful_with_messages_file_path(
         self, TEST_MESSAGES_DICT: "Mapping[str, Iterable[str]]"
@@ -1310,7 +1298,6 @@ class TestSetupMessagesFile:
             TEST_MESSAGES_DICT["welcome_messages"],
         )
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"welcome_messages": ["Welcome!"]},))
     def test_setup_welcome_messages_successful_with_no_messages_file_path(
         self, TEST_MESSAGES_DICT: "Mapping[str, Iterable[str]]"
@@ -1336,7 +1323,6 @@ class TestSetupMessagesFile:
             TEST_MESSAGES_DICT["welcome_messages"],
         )
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("NO_WELCOME_MESSAGES_DICT", ({"other_messages": ["Welcome!"]},))
     def test_welcome_messages_key_not_in_messages_json(
         self, NO_WELCOME_MESSAGES_DICT: "Mapping[str, Iterable[str]]"
@@ -1359,7 +1345,6 @@ class TestSetupMessagesFile:
 
         assert exc_info.value.missing_key == "welcome_messages"
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_WELCOME_MESSAGES_DICT",
         (
@@ -1396,7 +1381,6 @@ class TestSetupMessagesFile:
             exc_info.value.invalid_value == INVALID_WELCOME_MESSAGES_DICT["welcome_messages"]
         )
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"roles_messages": ["Gaming"]},))
     def test_setup_roles_messages_successful_with_messages_file_path(
         self, TEST_MESSAGES_DICT: "Mapping[str, Iterable[str]]"
@@ -1421,7 +1405,6 @@ class TestSetupMessagesFile:
             TEST_MESSAGES_DICT["roles_messages"],
         )
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("TEST_MESSAGES_DICT", ({"roles_messages": ["Gaming"]},))
     def test_setup_roles_messages_successful_with_no_messages_file_path(
         self, TEST_MESSAGES_DICT: "Mapping[str, Iterable[str]]"
@@ -1447,7 +1430,6 @@ class TestSetupMessagesFile:
             TEST_MESSAGES_DICT["roles_messages"],
         )
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize("NO_ROLES_MESSAGES_DICT", ({"other_messages": ["Gaming"]},))
     def test_roles_messages_key_not_in_messages_json(
         self, NO_ROLES_MESSAGES_DICT: "Mapping[str, Iterable[str]]"
@@ -1470,7 +1452,6 @@ class TestSetupMessagesFile:
 
         assert exc_info.value.missing_key == "roles_messages"
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_ROLES_MESSAGES_DICT",
         (
@@ -1509,7 +1490,6 @@ class TestSetupMessagesFile:
 class TestSetupMembersListURLSessionCookie:
     """Test case to unit-test the `_setup_members_list_auth_session_cookie()` function."""
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_MEMBERS_LIST_URL_SESSION_COOKIE",
         (
@@ -1681,7 +1661,6 @@ class TestSetupSendIntroductionReminders:
 
         assert RuntimeSettings()["SEND_INTRODUCTION_REMINDERS"] in ("once", "interval", False)
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_SEND_INTRODUCTION_REMINDERS_VALUE",
         (
@@ -1715,7 +1694,6 @@ class TestSetupSendIntroductionReminders:
             ):
                 RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_SEND_INTRODUCTION_REMINDERS_INTERVAL",
         (
@@ -1974,7 +1952,6 @@ class TestSetupSendIntroductionReminders:
                 except ImproperlyConfiguredError:
                     pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL",
         ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h"),
@@ -2129,7 +2106,7 @@ class TestSetupStatisticsDays:
     """Test case to unit-test the `_setup_statistics_days()` function."""
 
     @pytest.mark.parametrize("TEST_STATISTICS_DAYS", ("5", "3.55", "664", "    5   "))
-    def test_setup_statistics_days_successful(self, TEST_STATISTICS_DAYS: str) -> None:  # noqa: N803
+    def test_setup_statistics_days_successful(self, TEST_STATISTICS_DAYS: str) -> None:
         """Test that the given valid `STATISTICS_DAYS` is used when one is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -2160,7 +2137,6 @@ class TestSetupStatisticsDays:
 
         assert RuntimeSettings()["STATISTICS_DAYS"] > timedelta(days=1)
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_STATISTICS_DAYS",
         (
@@ -2176,7 +2152,7 @@ class TestSetupStatisticsDays:
         ),
         ids=[f"case_{i}" for i in range(4)],
     )
-    def test_invalid_statistics_days(self, INVALID_STATISTICS_DAYS: str) -> None:  # noqa: N803
+    def test_invalid_statistics_days(self, INVALID_STATISTICS_DAYS: str) -> None:
         """Test that an error is raised when an invalid `STATISTICS_DAYS` is provided."""
         INVALID_STATISTICS_DAYS_MESSAGE: Final[str] = (
             "STATISTICS_DAYS must contain the statistics period in days"
@@ -2196,7 +2172,7 @@ class TestSetupStatisticsDays:
         "TOO_SMALL_STATISTICS_DAYS",
         ("-15", "-2.3", "-0.02", "0", "0.40", "1"),
     )
-    def test_too_small_statistics_days(self, TOO_SMALL_STATISTICS_DAYS: str) -> None:  # noqa: N803
+    def test_too_small_statistics_days(self, TOO_SMALL_STATISTICS_DAYS: str) -> None:
         """Test that an error is raised when a too small `STATISTICS_DAYS` is provided."""
         TOO_SMALL_STATISTICS_DAYS_MESSAGE: Final[str] = (
             r"STATISTICS_DAYS cannot be less than \(or equal to\) 1 day"
@@ -2216,7 +2192,6 @@ class TestSetupStatisticsDays:
 class TestSetupStatisticsRoles:
     """Test case to unit-test the `_setup_statistics_roles()` function."""
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_STATISTICS_ROLES",
         (
@@ -2227,7 +2202,7 @@ class TestSetupStatisticsRoles:
             "    Guest ,   Member  ,Admin   ",
         ),
     )
-    def test_setup_statistics_roles_successful(self, TEST_STATISTICS_ROLES: str) -> None:  # noqa: N803
+    def test_setup_statistics_roles_successful(self, TEST_STATISTICS_ROLES: str) -> None:
         """Test that the given valid `STATISTICS_ROLES` is used when they are provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
@@ -2269,7 +2244,6 @@ class TestSetupStatisticsRoles:
 class TestSetupModerationDocumentURL:
     """Test case to unit-test the `_setup_moderation_document_url()` function."""
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_MODERATION_DOCUMENT_URL",
         ("https://google.com", "www.google.com/", "    https://google.com   "),
@@ -2303,7 +2277,6 @@ class TestSetupModerationDocumentURL:
             ):
                 RuntimeSettings._setup_moderation_document_url()  # noqa: SLF001
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "INVALID_MODERATION_DOCUMENT_URL",
         ("INVALID_MODERATION_DOCUMENT_URL", "www.google..com/", "", "  "),
@@ -2330,7 +2303,6 @@ class TestSetupModerationDocumentURL:
 class TestSetupManualModerationWarningMessageLocation:
     """Test case for the `_setup_strike_performed_manually_warning_location()` function."""
 
-    # noinspection PyPep8Naming
     @pytest.mark.parametrize(
         "TEST_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION",
         ("DM", "dm", "general", "Memes", "   general  ", "JUST-CHATTING", "Talking4"),
