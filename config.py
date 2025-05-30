@@ -158,7 +158,7 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_discord_bot_token(cls) -> None:
-        raw_discord_bot_token: str | None = os.getenv("DISCORD_BOT_TOKEN", default="").strip()
+        raw_discord_bot_token: str = os.getenv("DISCORD_BOT_TOKEN", default="").strip()
 
         DISCORD_BOT_TOKEN_IS_VALID: Final[bool] = bool(
             raw_discord_bot_token
@@ -215,7 +215,7 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_discord_guild_id(cls) -> None:
-        raw_discord_guild_id: str | None = os.getenv("DISCORD_GUILD_ID")
+        raw_discord_guild_id: str = os.getenv("DISCORD_GUILD_ID", default="").strip()
 
         DISCORD_GUILD_ID_IS_VALID: Final[bool] = bool(
             raw_discord_guild_id and re.fullmatch(r"\A\d{17,20}\Z", raw_discord_guild_id),

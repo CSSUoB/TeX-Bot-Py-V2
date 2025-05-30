@@ -649,8 +649,8 @@ class TestSetupDiscordGuildID:
         """Test the given `_DISCORD_MAIN_GUILD_ID` is used when a valid one is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
-        with EnvVariableDeleter("_DISCORD_MAIN_GUILD_ID"):
-            os.environ["_DISCORD_MAIN_GUILD_ID"] = test_discord_guild_id
+        with EnvVariableDeleter("DISCORD_GUILD_ID"):
+            os.environ["DISCORD_GUILD_ID"] = test_discord_guild_id
 
             RuntimeSettings._setup_discord_guild_id()  # noqa: SLF001
 
