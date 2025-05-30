@@ -625,9 +625,7 @@ class TestSetupDiscordLogChannelWebhookURL:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
         with EnvVariableDeleter("DISCORD_LOG_CHANNEL_WEBHOOK_URL"):
-            os.environ["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = (
-                invalid_discord_log_channel_url
-            )
+            os.environ["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = invalid_discord_log_channel_url
 
             with pytest.raises(
                 ImproperlyConfiguredError,
