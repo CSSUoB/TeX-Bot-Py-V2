@@ -23,7 +23,7 @@ from exceptions import (
     MessagesJSONFileMissingKeyError,
     MessagesJSONFileValueError,
 )
-from tests._testing_utils import (
+from utils import (
     EnvVariableDeleter,
     FileTemporaryDeleter,
     RandomDiscordBotTokenGenerator,
