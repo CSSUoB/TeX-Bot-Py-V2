@@ -711,10 +711,10 @@ class Settings(abc.ABC):
             raise ImproperlyConfiguredError(INVALID_STATISTICS_DAYS_MESSAGE) from e
 
         if raw_statistics_days < 1:
-            INVALID_STATISTICS_DAYS_MESSAGE: Final[str] = (
+            TOO_SMALL_STATISTICS_DAYS_MESSAGE: Final[str] = (
                 "STATISTICS_DAYS cannot be less than or equal to 1 day"
             )
-            raise ImproperlyConfiguredError(INVALID_STATISTICS_DAYS_MESSAGE)
+            raise ImproperlyConfiguredError(TOO_SMALL_STATISTICS_DAYS_MESSAGE)
 
         cls._settings["STATISTICS_DAYS"] = timedelta(days=raw_statistics_days)
 
