@@ -1,3 +1,5 @@
+"""Module containing context managers for temporary deletions and replacements."""
+
 import hashlib
 import os
 from pathlib import Path
