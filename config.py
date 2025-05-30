@@ -726,7 +726,7 @@ class Settings(abc.ABC):
         raw_strike_performed_manually_warning_location: str = os.getenv(
             "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION",
             "DM",
-        )
+        ).strip()
         if not raw_strike_performed_manually_warning_location:
             STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_MESSAGE: Final[str] = (
                 "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION must be a valid name "

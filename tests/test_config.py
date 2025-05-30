@@ -2318,7 +2318,7 @@ class TestSetupManualModerationWarningMessageLocation:
 
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
-        assert RuntimeSettings()["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] == (
+        assert RuntimeSettings()["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] == (
             test_manual_moderation_warning_message_location.upper().strip()
         )
 
@@ -2334,9 +2334,9 @@ class TestSetupManualModerationWarningMessageLocation:
 
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
-        assert isinstance(RuntimeSettings()["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"], str)
+        assert isinstance(RuntimeSettings()["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"], str)
 
-        assert bool(RuntimeSettings()["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"])
+        assert bool(RuntimeSettings()["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"])
 
     @pytest.mark.parametrize("invalid_manual_moderation_warning_message_location", ("", "  "))
     def test_invalid_manual_moderation_warning_message_location(
@@ -2350,8 +2350,8 @@ class TestSetupManualModerationWarningMessageLocation:
 
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
-        with EnvVariableDeleter("MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"):
-            os.environ["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] = (
+        with EnvVariableDeleter("STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"):
+            os.environ["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] = (
                 invalid_manual_moderation_warning_message_location
             )
 
