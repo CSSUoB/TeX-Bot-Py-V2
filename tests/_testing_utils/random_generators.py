@@ -1,4 +1,4 @@
-""" "Module for generating random values for environment variables."""
+"""Module for generating random values for environment variables."""
 
 import abc
 import random

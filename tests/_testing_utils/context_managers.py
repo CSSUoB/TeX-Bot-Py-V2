@@ -57,7 +57,7 @@ class EnvVariableDeleter:
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
-        exc_tb: "TracebackType | None",
+        exc_tb: "TracebackType | None",  # noqa: PYI036
     ) -> None:
         """Restore the deleted environment variable to its previous states."""
         if self.env_file_path.is_file():
@@ -67,7 +67,7 @@ class EnvVariableDeleter:
             os.environ[self.env_variable_name] = self.old_env_value
 
 
-class TemporarySettingsKeyReplacer:  # TODO: Delete if has no uses
+class TemporarySettingsKeyReplacer:
     """Context manager that temporarily replaces the value at the given settings key."""
 
     NOT_SET: "Final[object]" = object()
@@ -96,7 +96,7 @@ class TemporarySettingsKeyReplacer:  # TODO: Delete if has no uses
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
-        exc_tb: "TracebackType | None",
+        exc_tb: "TracebackType | None",  # noqa: PYI036
     ) -> None:
         """Restore the replaced settings value with the original value if it existed."""
         if self.old_settings_value is self.NOT_SET:
@@ -152,7 +152,7 @@ class FileTemporaryDeleter:
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
-        exc_tb: "TracebackType | None",
+        exc_tb: "TracebackType | None",  # noqa: PYI036
     ) -> None:
         """Restore the deleted file at the stored file path."""
         if self._temp_file_path is not None:
