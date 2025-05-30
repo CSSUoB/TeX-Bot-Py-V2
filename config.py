@@ -182,7 +182,7 @@ class Settings(abc.ABC):
             "DISCORD_LOG_CHANNEL_WEBHOOK_URL", ""
         )
 
-        if raw_discord_log_channel_webhook_url and (
+        if (
             not validators.url(raw_discord_log_channel_webhook_url)
             or not raw_discord_log_channel_webhook_url.startswith(
                 "https://discord.com/api/webhooks/"
@@ -227,7 +227,7 @@ class Settings(abc.ABC):
             )
             raise ImproperlyConfiguredError(INVALID_DISCORD_GUILD_ID_MESSAGE)
 
-        cls._settings["_DISCORD_MAIN_GUILD_ID"] = int(raw_discord_guild_id)  # type: ignore[arg-type]
+        cls._settings["_DISCORD_MAIN_GUILD_ID"] = int(raw_discord_guild_id)
 
     @classmethod
     def _setup_group_full_name(cls) -> None:
