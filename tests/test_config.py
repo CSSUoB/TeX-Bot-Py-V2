@@ -646,7 +646,7 @@ class TestSetupDiscordGuildID:
         ids=[f"case_{i}" for i in range(6)],
     )
     def test_setup_discord_guild_id_successful(self, test_discord_guild_id: str) -> None:
-        """Test that the given `_DISCORD_MAIN_GUILD_ID` is used when a valid one is provided."""
+        """Test the given `_DISCORD_MAIN_GUILD_ID` is used when a valid one is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
 
         with EnvVariableDeleter("_DISCORD_MAIN_GUILD_ID"):
@@ -656,7 +656,9 @@ class TestSetupDiscordGuildID:
 
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
-        assert RuntimeSettings()["_DISCORD_MAIN_GUILD_ID"] == int(test_discord_guild_id.strip())
+        assert RuntimeSettings()["_DISCORD_MAIN_GUILD_ID"] == int(
+            test_discord_guild_id.strip()
+        )
 
     def test_missing_discord_guild_id(self) -> None:
         """Test that an error is raised when no `DISCORD_GUILD_ID` is provided."""
