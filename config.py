@@ -720,17 +720,17 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_statistics_roles(cls) -> None:
-        raw_statistics_roles: str | None = os.getenv("STATISTICS_ROLES")
+        raw_statistics_roles: str = os.getenv("STATISTICS_ROLES", default="").strip()
 
         if not raw_statistics_roles:
             cls._settings["STATISTICS_ROLES"] = DEFAULT_STATISTICS_ROLES
+            return
 
-        else:
-            cls._settings["STATISTICS_ROLES"] = {
-                raw_statistics_role
-                for raw_statistics_role in raw_statistics_roles.split(",")
-                if raw_statistics_role
-            }
+        cls._settings["STATISTICS_ROLES"] = {
+            raw_statistics_role.strip()
+            for raw_statistics_role in raw_statistics_roles.split(",")
+            if raw_statistics_role
+        }
 
     @classmethod
     def _setup_moderation_document_url(cls) -> None:

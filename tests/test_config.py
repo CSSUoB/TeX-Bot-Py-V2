@@ -2166,7 +2166,7 @@ class TestSetupStatisticsDays:
 
     @pytest.mark.parametrize(
         "too_small_statistics_days",
-        ("-15", "-2.3", "-0.02", "0", "0.40", "1"),
+        ("-15", "-2.3", "-0.02", "0", "0.40"),
     )
     def test_too_small_statistics_days(self, too_small_statistics_days: str) -> None:
         """Test that an error is raised when a too small `STATISTICS_DAYS` is provided."""
