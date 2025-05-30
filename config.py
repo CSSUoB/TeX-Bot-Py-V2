@@ -293,7 +293,7 @@ class Settings(abc.ABC):
             cls._settings["MEMBERSHIP_PERKS_URL"] = None
             return
 
-        if "https://" not in raw_membership_perks_url:
+        if "://" not in raw_membership_perks_url:
             raw_membership_perks_url = "https://" + raw_membership_perks_url
 
         if not validators.url(raw_membership_perks_url):
@@ -370,7 +370,7 @@ class Settings(abc.ABC):
         )
 
         messages_file_path: Path = (
-            Path(raw_messages_file_path)
+            Path(raw_messages_file_path.strip())
             if raw_messages_file_path
             else PROJECT_ROOT / Path("messages.json")
         )
@@ -453,9 +453,10 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_members_list_auth_session_cookie(cls) -> None:
-        raw_members_list_auth_session_cookie: str | None = os.getenv(
+        raw_members_list_auth_session_cookie: str = os.getenv(
             "MEMBERS_LIST_URL_SESSION_COOKIE",
-        )
+            default="",
+        ).strip()
 
         MEMBERS_LIST_AUTH_SESSION_COOKIE_IS_VALID: Final[bool] = bool(
             raw_members_list_auth_session_cookie
@@ -708,7 +709,12 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_moderation_document_url(cls) -> None:
-        raw_moderation_document_url: str | None = os.getenv("MODERATION_DOCUMENT_URL")
+        raw_moderation_document_url: str = os.getenv(
+            "MODERATION_DOCUMENT_URL", default=""
+        ).strip()
+
+        if raw_moderation_document_url and "://" not in raw_moderation_document_url:
+            raw_moderation_document_url = "https://" + raw_moderation_document_url
 
         MODERATION_DOCUMENT_URL_IS_VALID: Final[bool] = bool(
             raw_moderation_document_url and validators.url(raw_moderation_document_url),

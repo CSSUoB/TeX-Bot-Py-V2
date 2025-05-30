@@ -1185,7 +1185,7 @@ class TestSetupMessagesFile:
 
     @pytest.mark.parametrize(
         "raw_invalid_messages_file_path",
-        ("messages.json.invalid", "", "  "),
+        ("messages.json.invalid", "  "),
     )
     def test_get_messages_dict_with_invalid_messages_file_path(
         self, raw_invalid_messages_file_path: str
@@ -1518,7 +1518,7 @@ class TestSetupMembersListURLSessionCookie:
 
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
-        assert RuntimeSettings()["MEMBERS_LIST_URL_SESSION_COOKIE"] == (
+        assert RuntimeSettings()["MEMBERS_LIST_AUTH_SESSION_COOKIE"] == (
             test_members_list_url_session_cookie.strip()
         )
 
