@@ -93,11 +93,11 @@ class StatsCommandsCog(TeXBotBaseCog):
             if not re.fullmatch(r"\A\d{17,20}\Z", str_channel_id):
                 await self.command_send_error(
                     ctx,
-                    message=f"{str_channel_id!r} is not a valid channel ID.",
+                    message=f"{str_channel_id.strip()!r} is not a valid channel ID.",
                 )
                 return
 
-            channel_id = int(str_channel_id)
+            channel_id = int(str_channel_id.strip())
 
         channel: discord.TextChannel | None = discord.utils.get(
             main_guild.text_channels,

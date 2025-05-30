@@ -148,6 +148,8 @@ class BaseInductCog(TeXBotBaseCog):
 
         if "<User>" in random_welcome_message:
             if not induction_member:
+                logger.warning("No user provided, when retrieving a random welcome message.")
+
                 return await self.get_random_welcome_message(induction_member)
 
             random_welcome_message = random_welcome_message.replace(
@@ -159,6 +161,10 @@ class BaseInductCog(TeXBotBaseCog):
             try:
                 committee_role_mention: str = (await self.bot.committee_role).mention
             except CommitteeRoleDoesNotExistError:
+                logger.warning(
+                    "Committee role does not exist, when retrieving a random welcome message.",
+                )
+
                 return await self.get_random_welcome_message(induction_member)
             else:
                 random_welcome_message = random_welcome_message.replace(
@@ -168,6 +174,11 @@ class BaseInductCog(TeXBotBaseCog):
 
         if "<Purchase_Membership_URL>" in random_welcome_message:
             if not settings["PURCHASE_MEMBERSHIP_URL"]:
+                logger.warning(
+                    "Env variable `PURCHASE_MEMBERSHIP_URL` is not set, "
+                    "when retrieving a random welcome message.",
+                )
+
                 return await self.get_random_welcome_message(induction_member)
 
             random_welcome_message = random_welcome_message.replace(
