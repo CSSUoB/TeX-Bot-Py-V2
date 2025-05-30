@@ -182,11 +182,10 @@ class Settings(abc.ABC):
             "DISCORD_LOG_CHANNEL_WEBHOOK_URL", ""
         )
 
-        if (
-            not validators.url(raw_discord_log_channel_webhook_url)
-            or not raw_discord_log_channel_webhook_url.startswith(
-                "https://discord.com/api/webhooks/"
-            )
+        if not validators.url(
+            raw_discord_log_channel_webhook_url
+        ) or not raw_discord_log_channel_webhook_url.startswith(
+            "https://discord.com/api/webhooks/"
         ):
             INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE: Final[str] = (
                 "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL "
