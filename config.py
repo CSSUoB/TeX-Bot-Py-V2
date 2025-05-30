@@ -325,14 +325,10 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_ping_command_easter_egg_probability(cls) -> None:
-        raw_ping_command_easter_egg_probability_string: str | None = os.getenv(
-            "PING_COMMAND_EASTER_EGG_PROBABILITY"
-        )
-
-        if raw_ping_command_easter_egg_probability_string is not None:
-            raw_ping_command_easter_egg_probability_string = (
-                raw_ping_command_easter_egg_probability_string.strip()
-            )
+        raw_ping_command_easter_egg_probability_string: str = os.getenv(
+            "PING_COMMAND_EASTER_EGG_PROBABILITY",
+            default="",
+        ).strip()
 
         if not raw_ping_command_easter_egg_probability_string:
             cls._settings["PING_COMMAND_EASTER_EGG_PROBABILITY"] = 1

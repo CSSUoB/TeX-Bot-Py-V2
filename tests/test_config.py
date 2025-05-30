@@ -1151,19 +1151,21 @@ class TestSetupPingCommandEasterEggProbability:
 
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
-        assert isinstance(RuntimeSettings()["PING_COMMAND_EASTER_EGG_PROBABILITY"], float)
+        assert isinstance(
+            RuntimeSettings()["PING_COMMAND_EASTER_EGG_PROBABILITY"], float | int
+        )
         assert 0 <= RuntimeSettings()["PING_COMMAND_EASTER_EGG_PROBABILITY"] <= 100
 
     @pytest.mark.parametrize(
         "invalid_ping_command_easter_egg_probability",
-        ("invalid_ping_command_easter_egg_probability", "", "  ", "-5", "1.1", "5", "-0.01"),
+        ("invalid_ping_command_easter_egg_probability", "-5", "1.1", "5", "-0.01"),
     )
     def test_invalid_ping_command_easter_egg_probability(
         self, invalid_ping_command_easter_egg_probability: str
     ) -> None:
         """Test that errors when provided `PING_COMMAND_EASTER_EGG_PROBABILITY` is invalid."""
         INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE: Final[str] = (
-            r"PING_COMMAND_EASTER_EGG_PROBABILITY must be a float.*between.*1.*0"
+            "PING_COMMAND_EASTER_EGG_PROBABILITY must be a float between & including 0 to 1."
         )
 
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
