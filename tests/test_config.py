@@ -55,7 +55,7 @@ class TestSettings:
         def empty_setup_method() -> None:
             pass
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         SETUP_METHOD_NAMES: Final[Iterable[str]] = {
             setup_method_name
@@ -88,10 +88,10 @@ class TestSettings:
     @pytest.mark.parametrize("test_item_value", ("value_1",))
     def test_getattr_success(self, test_item_name: str, test_item_value: str) -> None:
         """Test that retrieving a settings variable by attr-lookup returns the set value."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
-        RuntimeSettings._settings[test_item_name] = test_item_value  # noqa: SLF001
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._settings[test_item_name] = test_item_value
+        RuntimeSettings._is_env_variables_setup = True
 
         assert getattr(RuntimeSettings(), test_item_name) == test_item_value
 
@@ -103,8 +103,8 @@ class TestSettings:
         A missing settings variable is one that has a valid name,
         but does not exist within the `_settings` dict (i.e. has not been set).
         """
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+        RuntimeSettings._is_env_variables_setup = True
 
         with pytest.raises(
             AttributeError, match=f"'{missing_item_name}' is not a valid settings key."
@@ -114,9 +114,9 @@ class TestSettings:
     @pytest.mark.parametrize("invalid_item_name", ("item_1", "ITEM__1", "!ITEM_1"))
     def test_getattr_invalid_name(self, invalid_item_name: str) -> None:
         """Test that requesting an invalid settings variable by attr-lookup raises an error."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         with pytest.raises(AttributeError, match=f"no attribute {invalid_item_name!r}"):
             assert getattr(RuntimeSettings(), invalid_item_name)
@@ -137,9 +137,9 @@ class TestSettings:
             nonlocal is_env_variables_setup
             is_env_variables_setup = True
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-        RuntimeSettings._settings[test_item_name] = test_item_value  # noqa: SLF001
-        RuntimeSettings._setup_env_variables = set_is_env_variables_setup  # type: ignore[method-assign] # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+        RuntimeSettings._settings[test_item_name] = test_item_value
+        RuntimeSettings._setup_env_variables = set_is_env_variables_setup  # type: ignore[method-assign]
 
         getattr(RuntimeSettings(), test_item_name)
 
@@ -149,10 +149,10 @@ class TestSettings:
     @pytest.mark.parametrize("test_item_value", ("value_1",))
     def test_getitem_success(self, test_item_name: str, test_item_value: str) -> None:
         """Test that retrieving a settings variable by key-lookup returns the set value."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
-        RuntimeSettings._settings[test_item_name] = test_item_value  # noqa: SLF001
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._settings[test_item_name] = test_item_value
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()[test_item_name] == test_item_value
 
@@ -164,8 +164,8 @@ class TestSettings:
         A missing settings variable is one that has a valid name,
         but does not exist within the `_settings` dict (i.e. has not been set).
         """
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+        RuntimeSettings._is_env_variables_setup = True
 
         with pytest.raises(
             KeyError, match=f"'{missing_item_name}' is not a valid settings key."
@@ -175,8 +175,8 @@ class TestSettings:
     @pytest.mark.parametrize("invalid_item_name", ("item_1", "ITEM__1", "!ITEM_1"))
     def test_getitem_invalid_name(self, invalid_item_name: str) -> None:
         """Test that requesting an invalid settings variable by key-lookup raises an error."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+        RuntimeSettings._is_env_variables_setup = True
 
         with pytest.raises(KeyError, match=str(KeyError(invalid_item_name))):
             assert RuntimeSettings()[invalid_item_name]
@@ -199,9 +199,9 @@ class TestSettings:
             nonlocal is_env_variables_setup
             is_env_variables_setup = True
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-        RuntimeSettings._settings[test_item_name] = test_item_value  # noqa: SLF001
-        RuntimeSettings._setup_env_variables = set_is_env_variables_setup  # type: ignore[method-assign] # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+        RuntimeSettings._settings[test_item_name] = test_item_value
+        RuntimeSettings._setup_env_variables = set_is_env_variables_setup  # type: ignore[method-assign]
 
         RuntimeSettings().__getitem__(test_item_name)
 
@@ -213,11 +213,11 @@ class TestSettings:
             ignore_methods=("_setup_env_variables",),
         )
 
-        assert RuntimeSettings._is_env_variables_setup is False  # noqa: SLF001
+        assert RuntimeSettings._is_env_variables_setup is False
 
-        RuntimeSettings._setup_env_variables()  # noqa: SLF001
+        RuntimeSettings._setup_env_variables()
 
-        assert RuntimeSettings._is_env_variables_setup is True  # noqa: SLF001
+        assert RuntimeSettings._is_env_variables_setup is True
 
     def test_every_setup_method_called(self) -> None:
         """Test that calling `_setup_env_variables()` sets up all Env Variables."""
@@ -232,7 +232,7 @@ class TestSettings:
             replacement_method=add_called_setup_method,
         )
 
-        RuntimeSettings._setup_env_variables()  # noqa: SLF001
+        RuntimeSettings._setup_env_variables()
 
         assert (
             CALLED_SETUP_METHODS  # noqa: SIM300
@@ -259,16 +259,16 @@ class TestSettings:
             ignore_methods=("_setup_env_variables",),
         )
 
-        RuntimeSettings._setup_env_variables()  # noqa: SLF001
-        RuntimeSettings._settings[test_item_name] = test_item_value  # noqa: SLF001
+        RuntimeSettings._setup_env_variables()
+        RuntimeSettings._settings[test_item_name] = test_item_value
 
-        PREVIOUS_SETTINGS: Final[dict[str, object]] = RuntimeSettings._settings.copy()  # noqa: SLF001
+        PREVIOUS_SETTINGS: Final[dict[str, object]] = RuntimeSettings._settings.copy()
 
         assert not caplog.text
 
-        RuntimeSettings._setup_env_variables()  # noqa: SLF001
+        RuntimeSettings._setup_env_variables()
 
-        assert RuntimeSettings._settings == PREVIOUS_SETTINGS  # noqa: SLF001
+        assert RuntimeSettings._settings == PREVIOUS_SETTINGS
         assert "already" in caplog.text
         assert "set up" in caplog.text
 
@@ -278,12 +278,12 @@ class TestSettings:
 
     def test_settings_class_factory(self) -> None:
         """Test that the settings class factory produces valid & separate settings classes."""
-        assert issubclass(config._settings_class_factory(), Settings)  # noqa: SLF001
+        assert issubclass(config._settings_class_factory(), Settings)
 
-        assert config._settings_class_factory()._is_env_variables_setup is False  # noqa: SLF001
-        assert not config._settings_class_factory()._settings  # noqa: SLF001
+        assert config._settings_class_factory()._is_env_variables_setup is False
+        assert not config._settings_class_factory()._settings
 
-        assert config._settings_class_factory() != config._settings_class_factory()  # noqa: SLF001
+        assert config._settings_class_factory() != config._settings_class_factory()
 
 
 class TestSetupLogging:
@@ -292,12 +292,12 @@ class TestSetupLogging:
     @pytest.mark.parametrize("test_log_level", config.LOG_LEVEL_CHOICES)
     def test_setup_logging_successful(self, test_log_level: str) -> None:
         """Test that the given `CONSOLE_LOG_LEVEL` is used when a valid one is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("CONSOLE_LOG_LEVEL"):
             os.environ["CONSOLE_LOG_LEVEL"] = test_log_level
 
-            RuntimeSettings._setup_logging()  # noqa: SLF001
+            RuntimeSettings._setup_logging()
 
         assert "TeX-Bot" in set(logging.root.manager.loggerDict)
         assert logging.getLogger("TeX-Bot").getEffectiveLevel() == getattr(
@@ -306,10 +306,10 @@ class TestSetupLogging:
 
     def test_default_console_log_level(self) -> None:
         """Test that a default value is used when no `CONSOLE_LOG_LEVEL` is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("CONSOLE_LOG_LEVEL"):
-            RuntimeSettings._setup_logging()  # noqa: SLF001
+            RuntimeSettings._setup_logging()
 
         assert "TeX-Bot" in set(logging.root.manager.loggerDict)
 
@@ -330,23 +330,23 @@ class TestSetupLogging:
     )
     def test_invalid_console_log_level(self, invalid_log_level: str) -> None:
         """Test that an error is raised when an invalid `CONSOLE_LOG_LEVEL` is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("CONSOLE_LOG_LEVEL"):
             os.environ["CONSOLE_LOG_LEVEL"] = invalid_log_level
 
             with pytest.raises(ImproperlyConfiguredError, match="LOG_LEVEL must be one of"):
-                RuntimeSettings._setup_logging()  # noqa: SLF001
+                RuntimeSettings._setup_logging()
 
     @pytest.mark.parametrize("lower_case_log_level", ("info",))
     def test_valid_lowercase_console_log_level(self, lower_case_log_level: str) -> None:
         """Test that the provided `CONSOLE_LOG_LEVEL` is fixed & used if it is in lowercase."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("CONSOLE_LOG_LEVEL"):
             os.environ["CONSOLE_LOG_LEVEL"] = lower_case_log_level
 
-            RuntimeSettings._setup_logging()  # noqa: SLF001
+            RuntimeSettings._setup_logging()
 
 
 class TestSetupDiscordBotToken:
@@ -362,26 +362,26 @@ class TestSetupDiscordBotToken:
     )
     def test_setup_discord_bot_token_successful(self, test_discord_bot_token: str) -> None:
         """Test that the given `DISCORD_BOT_TOKEN` is used when a valid one is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("DISCORD_BOT_TOKEN"):
             os.environ["DISCORD_BOT_TOKEN"] = test_discord_bot_token
 
-            RuntimeSettings._setup_discord_bot_token()  # noqa: SLF001
+            RuntimeSettings._setup_discord_bot_token()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["DISCORD_BOT_TOKEN"] == test_discord_bot_token.strip()
 
     def test_missing_discord_bot_token(self) -> None:
         """Test that an error is raised when no `DISCORD_BOT_TOKEN` is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("DISCORD_BOT_TOKEN"):  # noqa: SIM117
             with pytest.raises(
                 ImproperlyConfiguredError, match=r"DISCORD_BOT_TOKEN.*valid.*Discord bot token"
             ):
-                RuntimeSettings._setup_discord_bot_token()  # noqa: SLF001
+                RuntimeSettings._setup_discord_bot_token()
 
     @pytest.mark.parametrize(
         "invalid_discord_bot_token",
@@ -488,7 +488,7 @@ class TestSetupDiscordBotToken:
             "DISCORD_BOT_TOKEN must be a valid Discord bot token"  # noqa: S105
         )
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("DISCORD_BOT_TOKEN"):
             os.environ["DISCORD_BOT_TOKEN"] = invalid_discord_bot_token
@@ -496,7 +496,7 @@ class TestSetupDiscordBotToken:
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_DISCORD_BOT_TOKEN_MESSAGE
             ):
-                RuntimeSettings._setup_discord_bot_token()  # noqa: SLF001
+                RuntimeSettings._setup_discord_bot_token()
 
 
 class TestSetupDiscordLogChannelWebhookURL:
@@ -526,16 +526,16 @@ class TestSetupDiscordLogChannelWebhookURL:
         In this test, the provided `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is valid
         and so must be saved successfully.
         """
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("DISCORD_LOG_CHANNEL_WEBHOOK_URL"):
             os.environ["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = (
                 test_discord_log_channel_webhook_url
             )
 
-            RuntimeSettings._setup_discord_log_channel_webhook()  # noqa: SLF001
+            RuntimeSettings._setup_discord_log_channel_webhook()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] == (
             test_discord_log_channel_webhook_url.strip()
@@ -543,15 +543,15 @@ class TestSetupDiscordLogChannelWebhookURL:
 
     def test_missing_discord_log_channel_webhook_url(self) -> None:
         """Test that no error occurs when no `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("DISCORD_LOG_CHANNEL_WEBHOOK_URL"):
             try:
-                RuntimeSettings._setup_discord_log_channel_webhook()  # noqa: SLF001
+                RuntimeSettings._setup_discord_log_channel_webhook()
             except ImproperlyConfiguredError:
                 pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert not RuntimeSettings()["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]
 
@@ -622,7 +622,7 @@ class TestSetupDiscordLogChannelWebhookURL:
             "that points to a discord channel where logs should be displayed."
         )
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("DISCORD_LOG_CHANNEL_WEBHOOK_URL"):
             os.environ["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = invalid_discord_log_channel_url
@@ -631,7 +631,7 @@ class TestSetupDiscordLogChannelWebhookURL:
                 ImproperlyConfiguredError,
                 match=INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE,
             ):
-                RuntimeSettings._setup_discord_log_channel_webhook()  # noqa: SLF001
+                RuntimeSettings._setup_discord_log_channel_webhook()
 
 
 class TestSetupDiscordGuildID:
@@ -647,14 +647,14 @@ class TestSetupDiscordGuildID:
     )
     def test_setup_discord_guild_id_successful(self, test_discord_guild_id: str) -> None:
         """Test the given `_DISCORD_MAIN_GUILD_ID` is used when a valid one is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("DISCORD_GUILD_ID"):
             os.environ["DISCORD_GUILD_ID"] = test_discord_guild_id
 
-            RuntimeSettings._setup_discord_guild_id()  # noqa: SLF001
+            RuntimeSettings._setup_discord_guild_id()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["_DISCORD_MAIN_GUILD_ID"] == int(
             test_discord_guild_id.strip()
@@ -662,13 +662,13 @@ class TestSetupDiscordGuildID:
 
     def test_missing_discord_guild_id(self) -> None:
         """Test that an error is raised when no `DISCORD_GUILD_ID` is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("DISCORD_GUILD_ID"):  # noqa: SIM117
             with pytest.raises(
                 ImproperlyConfiguredError, match=r"DISCORD_GUILD_ID.*valid.*Discord guild ID"
             ):
-                RuntimeSettings._setup_discord_guild_id()  # noqa: SLF001
+                RuntimeSettings._setup_discord_guild_id()
 
     @pytest.mark.parametrize(
         "invalid_discord_guild_id",
@@ -693,7 +693,7 @@ class TestSetupDiscordGuildID:
             "DISCORD_GUILD_ID must be a valid Discord guild ID"
         )
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("DISCORD_GUILD_ID"):
             os.environ["DISCORD_GUILD_ID"] = invalid_discord_guild_id
@@ -701,7 +701,7 @@ class TestSetupDiscordGuildID:
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_DISCORD_GUILD_ID_MESSAGE
             ):
-                RuntimeSettings._setup_discord_guild_id()  # noqa: SLF001
+                RuntimeSettings._setup_discord_guild_id()
 
 
 class TestSetupGroupFullName:
@@ -727,14 +727,14 @@ class TestSetupGroupFullName:
     )
     def test_setup_group_full_name_successful(self, test_group_full_name: str) -> None:
         """Test that the given `GROUP_NAME` is used when a valid one is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("GROUP_NAME"):
             os.environ["GROUP_NAME"] = test_group_full_name
 
-            RuntimeSettings._setup_group_full_name()  # noqa: SLF001
+            RuntimeSettings._setup_group_full_name()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["_GROUP_FULL_NAME"] == test_group_full_name.strip().translate(
             {
@@ -745,15 +745,15 @@ class TestSetupGroupFullName:
 
     def test_missing_group_full_name(self) -> None:
         """Test that no error occurs when no `GROUP_NAME` is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("GROUP_NAME"):
             try:
-                RuntimeSettings._setup_group_full_name()  # noqa: SLF001
+                RuntimeSettings._setup_group_full_name()
             except ImproperlyConfiguredError:
                 pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert not RuntimeSettings()["_GROUP_FULL_NAME"]
 
@@ -791,13 +791,13 @@ class TestSetupGroupFullName:
             "GROUP_NAME must not contain any invalid characters"
         )
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("GROUP_NAME"):
             os.environ["GROUP_NAME"] = invalid_group_full_name
 
             with pytest.raises(ImproperlyConfiguredError, match=INVALID_GROUP_NAME_MESSAGE):
-                RuntimeSettings._setup_group_full_name()  # noqa: SLF001
+                RuntimeSettings._setup_group_full_name()
 
 
 class TestSetupGroupShortName:
@@ -820,14 +820,14 @@ class TestSetupGroupShortName:
     )
     def test_setup_group_short_name_successful(self, test_group_short_name: str) -> None:
         """Test that the given `GROUP_SHORT_NAME` is used when a valid one is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("GROUP_SHORT_NAME"):
             os.environ["GROUP_SHORT_NAME"] = test_group_short_name
 
-            RuntimeSettings._setup_group_short_name()  # noqa: SLF001
+            RuntimeSettings._setup_group_short_name()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["_GROUP_SHORT_NAME"] == (
             test_group_short_name.strip().translate(
@@ -840,18 +840,18 @@ class TestSetupGroupShortName:
 
     def test_missing_group_short_name_without_group_full_name(self) -> None:
         """Test that no error occurs when no `GROUP_SHORT_NAME` is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("GROUP_SHORT_NAME"), EnvVariableDeleter("GROUP_NAME"):
-            RuntimeSettings._setup_group_full_name()  # noqa: SLF001
-            assert RuntimeSettings._settings["_GROUP_FULL_NAME"] is None  # noqa: SLF001
+            RuntimeSettings._setup_group_full_name()
+            assert RuntimeSettings._settings["_GROUP_FULL_NAME"] is None
 
             try:
-                RuntimeSettings._setup_group_short_name()  # noqa: SLF001
+                RuntimeSettings._setup_group_short_name()
             except ImproperlyConfiguredError:
                 pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert not RuntimeSettings()["_GROUP_SHORT_NAME"]
 
@@ -883,18 +883,18 @@ class TestSetupGroupShortName:
         This test runs with the given value for `GROUP_FULL_NAME`,
         so a resolved value from that should be used for the `GROUP_SHORT_NAME`.
         """
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("GROUP_SHORT_NAME"), EnvVariableDeleter("GROUP_NAME"):
             os.environ["GROUP_NAME"] = test_group_full_name
-            RuntimeSettings._setup_group_full_name()  # noqa: SLF001
+            RuntimeSettings._setup_group_full_name()
 
             try:
-                RuntimeSettings._setup_group_short_name()  # noqa: SLF001
+                RuntimeSettings._setup_group_short_name()
             except ImproperlyConfiguredError:
                 pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert (
             RuntimeSettings()["_GROUP_SHORT_NAME"]
@@ -973,7 +973,7 @@ class TestSetupGroupShortName:
             "GROUP_SHORT_NAME must not contain any invalid characters"
         )
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("GROUP_SHORT_NAME"):
             os.environ["GROUP_SHORT_NAME"] = invalid_group_short_name
@@ -981,7 +981,7 @@ class TestSetupGroupShortName:
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_GROUP_SHORT_NAME_MESSAGE
             ):
-                RuntimeSettings._setup_group_short_name()  # noqa: SLF001
+                RuntimeSettings._setup_group_short_name()
 
 
 class TestSetupPurchaseMembershipURL:
@@ -995,14 +995,14 @@ class TestSetupPurchaseMembershipURL:
         self, test_purchase_membership_url: str
     ) -> None:
         """Test that the given valid `PURCHASE_MEMBERSHIP_URL` is used when one is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("PURCHASE_MEMBERSHIP_URL"):
             os.environ["PURCHASE_MEMBERSHIP_URL"] = test_purchase_membership_url
 
-            RuntimeSettings._setup_purchase_membership_url()  # noqa: SLF001
+            RuntimeSettings._setup_purchase_membership_url()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["PURCHASE_MEMBERSHIP_URL"] == (
             f"https://{test_purchase_membership_url.strip()}"
@@ -1012,15 +1012,15 @@ class TestSetupPurchaseMembershipURL:
 
     def test_missing_purchase_membership_url(self) -> None:
         """Test that no error occurs when no `PURCHASE_MEMBERSHIP_URL` is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("PURCHASE_MEMBERSHIP_URL"):
             try:
-                RuntimeSettings._setup_purchase_membership_url()  # noqa: SLF001
+                RuntimeSettings._setup_purchase_membership_url()
             except ImproperlyConfiguredError:
                 pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert not RuntimeSettings()["PURCHASE_MEMBERSHIP_URL"]
 
@@ -1036,7 +1036,7 @@ class TestSetupPurchaseMembershipURL:
             "PURCHASE_MEMBERSHIP_URL must be a valid URL"
         )
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("PURCHASE_MEMBERSHIP_URL"):
             os.environ["PURCHASE_MEMBERSHIP_URL"] = invalid_purchase_membership_url
@@ -1044,7 +1044,7 @@ class TestSetupPurchaseMembershipURL:
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE
             ):
-                RuntimeSettings._setup_purchase_membership_url()  # noqa: SLF001
+                RuntimeSettings._setup_purchase_membership_url()
 
 
 class TestSetupMembershipPerksURL:
@@ -1058,14 +1058,14 @@ class TestSetupMembershipPerksURL:
         self, test_membership_perks_url: str
     ) -> None:
         """Test that the given valid `MEMBERSHIP_PERKS_URL` is used when one is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("MEMBERSHIP_PERKS_URL"):
             os.environ["MEMBERSHIP_PERKS_URL"] = test_membership_perks_url
 
-            RuntimeSettings._setup_membership_perks_url()  # noqa: SLF001
+            RuntimeSettings._setup_membership_perks_url()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["MEMBERSHIP_PERKS_URL"] == (
             f"https://{test_membership_perks_url.strip()}"
@@ -1075,15 +1075,15 @@ class TestSetupMembershipPerksURL:
 
     def test_missing_membership_perks_url(self) -> None:
         """Test that no error occurs when no `MEMBERSHIP_PERKS_URL` is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("MEMBERSHIP_PERKS_URL"):
             try:
-                RuntimeSettings._setup_membership_perks_url()  # noqa: SLF001
+                RuntimeSettings._setup_membership_perks_url()
             except ImproperlyConfiguredError:
                 pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert not RuntimeSettings()["MEMBERSHIP_PERKS_URL"]
 
@@ -1097,7 +1097,7 @@ class TestSetupMembershipPerksURL:
             "MEMBERSHIP_PERKS_URL must be a valid URL"
         )
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("MEMBERSHIP_PERKS_URL"):
             os.environ["MEMBERSHIP_PERKS_URL"] = invalid_membership_perks_url
@@ -1105,7 +1105,7 @@ class TestSetupMembershipPerksURL:
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_MEMBERSHIP_PERKS_URL_MESSAGE
             ):
-                RuntimeSettings._setup_membership_perks_url()  # noqa: SLF001
+                RuntimeSettings._setup_membership_perks_url()
 
 
 class TestSetupPingCommandEasterEggProbability:
@@ -1124,16 +1124,16 @@ class TestSetupPingCommandEasterEggProbability:
         In this test, the provided `PING_COMMAND_EASTER_EGG_PROBABILITY` is valid
         and so must be saved successfully.
         """
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("PING_COMMAND_EASTER_EGG_PROBABILITY"):
             os.environ["PING_COMMAND_EASTER_EGG_PROBABILITY"] = (
                 test_ping_command_easter_egg_probability
             )
 
-            RuntimeSettings._setup_ping_command_easter_egg_probability()  # noqa: SLF001
+            RuntimeSettings._setup_ping_command_easter_egg_probability()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["PING_COMMAND_EASTER_EGG_PROBABILITY"] == 100 * float(
             test_ping_command_easter_egg_probability.strip(),
@@ -1141,15 +1141,15 @@ class TestSetupPingCommandEasterEggProbability:
 
     def test_default_ping_command_easter_egg_probability(self) -> None:
         """Test that a default value is used if no `PING_COMMAND_EASTER_EGG_PROBABILITY`."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("PING_COMMAND_EASTER_EGG_PROBABILITY"):
             try:
-                RuntimeSettings._setup_ping_command_easter_egg_probability()  # noqa: SLF001
+                RuntimeSettings._setup_ping_command_easter_egg_probability()
             except ImproperlyConfiguredError:
                 pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert isinstance(
             RuntimeSettings()["PING_COMMAND_EASTER_EGG_PROBABILITY"], float | int
@@ -1168,7 +1168,7 @@ class TestSetupPingCommandEasterEggProbability:
             "PING_COMMAND_EASTER_EGG_PROBABILITY must be a float between & including 0 to 1."
         )
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("PING_COMMAND_EASTER_EGG_PROBABILITY"):
             os.environ["PING_COMMAND_EASTER_EGG_PROBABILITY"] = (
@@ -1179,7 +1179,7 @@ class TestSetupPingCommandEasterEggProbability:
                 ImproperlyConfiguredError,
                 match=INVALID_PING_COMMAND_EASTER_EGG_PROBABILITY_MESSAGE,
             ):
-                RuntimeSettings._setup_ping_command_easter_egg_probability()  # noqa: SLF001
+                RuntimeSettings._setup_ping_command_easter_egg_probability()
 
 
 class TestSetupMessagesFile:
@@ -1202,7 +1202,7 @@ class TestSetupMessagesFile:
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_MESSAGES_FILE_PATH_MESSAGE
             ):
-                Settings._get_messages_dict(raw_invalid_messages_file_path)  # noqa: SLF001
+                Settings._get_messages_dict(raw_invalid_messages_file_path)
 
     @pytest.mark.parametrize("test_messages_dict", ({"welcome_messages": ["Welcome!"]},))
     def test_get_messages_dict_with_no_messages_file_path(
@@ -1217,7 +1217,7 @@ class TestSetupMessagesFile:
                 json.dump(test_messages_dict, fp=default_messages_file)
 
             assert (
-                Settings._get_messages_dict(raw_messages_file_path=None) == test_messages_dict  # noqa: SLF001
+                Settings._get_messages_dict(raw_messages_file_path=None) == test_messages_dict
             )
 
             DEFAULT_MESSAGES_FILE_PATH.unlink()
@@ -1234,14 +1234,14 @@ class TestSetupMessagesFile:
             temporary_messages_file.close()
 
             assert (
-                Settings._get_messages_dict(  # noqa: SLF001
+                Settings._get_messages_dict(
                     raw_messages_file_path=temporary_messages_file.name,
                 )
                 == test_messages_dict
             )
 
             assert (
-                Settings._get_messages_dict(  # noqa: SLF001
+                Settings._get_messages_dict(
                     raw_messages_file_path=f"  {temporary_messages_file.name}   ",
                 )
                 == test_messages_dict
@@ -1272,7 +1272,7 @@ class TestSetupMessagesFile:
                 "Messages JSON file must contain a JSON string"
             )
             with pytest.raises(ImproperlyConfiguredError, match=INVALID_MESSAGES_JSON_MESSAGE):
-                Settings._get_messages_dict(  # noqa: SLF001
+                Settings._get_messages_dict(
                     raw_messages_file_path=temporary_messages_file.name,
                 )
 
@@ -1281,7 +1281,7 @@ class TestSetupMessagesFile:
         self, test_messages_dict: "Mapping[str, Iterable[str]]"
     ) -> None:
         """Test that correct welcome messages are loaded when `MESSAGES_FILE_PATH` is valid."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         temporary_messages_file: IO[str]
         with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
@@ -1292,9 +1292,9 @@ class TestSetupMessagesFile:
             with EnvVariableDeleter("MESSAGES_FILE_PATH"):
                 os.environ["MESSAGES_FILE_PATH"] = temporary_messages_file.name
 
-                RuntimeSettings._setup_welcome_messages()  # noqa: SLF001
+                RuntimeSettings._setup_welcome_messages()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["WELCOME_MESSAGES"] == set(
             test_messages_dict["welcome_messages"],
@@ -1305,7 +1305,7 @@ class TestSetupMessagesFile:
         self, test_messages_dict: "Mapping[str, Iterable[str]]"
     ) -> None:
         """Test that correct welcome messages are loaded when no `MESSAGES_FILE_PATH` given."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         DEFAULT_MESSAGES_FILE_PATH: Path = config.PROJECT_ROOT / "messages.json"
 
@@ -1315,11 +1315,11 @@ class TestSetupMessagesFile:
                 json.dump(test_messages_dict, fp=default_messages_file)
 
             with EnvVariableDeleter("MESSAGES_FILE_PATH"):
-                RuntimeSettings._setup_welcome_messages()  # noqa: SLF001
+                RuntimeSettings._setup_welcome_messages()
 
             DEFAULT_MESSAGES_FILE_PATH.unlink()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["WELCOME_MESSAGES"] == set(
             test_messages_dict["welcome_messages"],
@@ -1330,7 +1330,7 @@ class TestSetupMessagesFile:
         self, no_welcome_messages_dict: "Mapping[str, Iterable[str]]"
     ) -> None:
         """Test that error is raised when messages-file not contain `welcome_messages` key."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         temporary_messages_file: IO[str]
         with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
@@ -1343,7 +1343,7 @@ class TestSetupMessagesFile:
 
                 exc_info: ExceptionInfo[MessagesJSONFileMissingKeyError]
                 with pytest.raises(MessagesJSONFileMissingKeyError) as exc_info:
-                    RuntimeSettings._setup_welcome_messages()  # noqa: SLF001
+                    RuntimeSettings._setup_welcome_messages()
 
         assert exc_info.value.missing_key == "welcome_messages"
 
@@ -1363,7 +1363,7 @@ class TestSetupMessagesFile:
         self, invalid_welcome_messages_dict: "Mapping[str, object]"
     ) -> None:
         """Test that error is raised when the `welcome_messages` is not a valid value."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         temporary_messages_file: IO[str]
         with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
@@ -1376,7 +1376,7 @@ class TestSetupMessagesFile:
 
                 exc_info: ExceptionInfo[MessagesJSONFileValueError]
                 with pytest.raises(MessagesJSONFileValueError) as exc_info:
-                    RuntimeSettings._setup_welcome_messages()  # noqa: SLF001
+                    RuntimeSettings._setup_welcome_messages()
 
         assert exc_info.value.dict_key == "welcome_messages"
         assert (
@@ -1388,7 +1388,7 @@ class TestSetupMessagesFile:
         self, test_messages_dict: "Mapping[str, Iterable[str]]"
     ) -> None:
         """Test that correct roles messages are loaded when `MESSAGES_FILE_PATH` is valid."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         temporary_messages_file: IO[str]
         with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
@@ -1399,9 +1399,9 @@ class TestSetupMessagesFile:
             with EnvVariableDeleter("MESSAGES_FILE_PATH"):
                 os.environ["MESSAGES_FILE_PATH"] = temporary_messages_file.name
 
-                RuntimeSettings._setup_roles_messages()  # noqa: SLF001
+                RuntimeSettings._setup_roles_messages()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["ROLES_MESSAGES"] == set(
             test_messages_dict["roles_messages"],
@@ -1412,7 +1412,7 @@ class TestSetupMessagesFile:
         self, test_messages_dict: "Mapping[str, Iterable[str]]"
     ) -> None:
         """Test that correct roles messages are loaded when no `MESSAGES_FILE_PATH` given."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         DEFAULT_MESSAGES_FILE_PATH: Path = config.PROJECT_ROOT / "messages.json"
 
@@ -1422,11 +1422,11 @@ class TestSetupMessagesFile:
                 json.dump(test_messages_dict, fp=default_messages_file)
 
             with EnvVariableDeleter("MESSAGES_FILE_PATH"):
-                RuntimeSettings._setup_roles_messages()  # noqa: SLF001
+                RuntimeSettings._setup_roles_messages()
 
             DEFAULT_MESSAGES_FILE_PATH.unlink()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["ROLES_MESSAGES"] == set(
             test_messages_dict["roles_messages"],
@@ -1437,7 +1437,7 @@ class TestSetupMessagesFile:
         self, no_roles_messages_dict: "Mapping[str, Iterable[str]]"
     ) -> None:
         """Test that error is raised when messages-file not contain `roles_messages` key."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         temporary_messages_file: IO[str]
         with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
@@ -1450,7 +1450,7 @@ class TestSetupMessagesFile:
 
                 exc_info: ExceptionInfo[MessagesJSONFileMissingKeyError]
                 with pytest.raises(MessagesJSONFileMissingKeyError) as exc_info:
-                    RuntimeSettings._setup_roles_messages()  # noqa: SLF001
+                    RuntimeSettings._setup_roles_messages()
 
         assert exc_info.value.missing_key == "roles_messages"
 
@@ -1470,7 +1470,7 @@ class TestSetupMessagesFile:
         self, invalid_roles_messages_dict: "Mapping[str, object]"
     ) -> None:
         """Test that error is raised when the `roles_messages` is not a valid value."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         temporary_messages_file: IO[str]
         with NamedTemporaryFile(mode="w", delete_on_close=False) as temporary_messages_file:
@@ -1483,7 +1483,7 @@ class TestSetupMessagesFile:
 
                 exc_info: ExceptionInfo[MessagesJSONFileValueError]
                 with pytest.raises(MessagesJSONFileValueError) as exc_info:
-                    RuntimeSettings._setup_roles_messages()  # noqa: SLF001
+                    RuntimeSettings._setup_roles_messages()
 
         assert exc_info.value.dict_key == "roles_messages"
         assert exc_info.value.invalid_value == invalid_roles_messages_dict["roles_messages"]
@@ -1509,16 +1509,16 @@ class TestSetupMembersListURLSessionCookie:
         In this test, the provided `test_members_list_url_session_cookie` is valid
         and so must be saved successfully.
         """
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("MEMBERS_LIST_URL_SESSION_COOKIE"):
             os.environ["MEMBERS_LIST_URL_SESSION_COOKIE"] = (
                 test_members_list_url_session_cookie
             )
 
-            RuntimeSettings._setup_members_list_auth_session_cookie()  # noqa: SLF001
+            RuntimeSettings._setup_members_list_auth_session_cookie()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["MEMBERS_LIST_AUTH_SESSION_COOKIE"] == (
             test_members_list_url_session_cookie.strip()
@@ -1526,14 +1526,14 @@ class TestSetupMembersListURLSessionCookie:
 
     def test_missing_members_list_url_session_cookie(self) -> None:
         """Test that an error is raised when no `MEMBERS_LIST_URL_SESSION_COOKIE` is given."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("MEMBERS_LIST_URL_SESSION_COOKIE"):  # noqa: SIM117
             with pytest.raises(
                 ImproperlyConfiguredError,
                 match=r"MEMBERS_LIST_URL_SESSION_COOKIE.*valid.*\.ASPXAUTH cookie",
             ):
-                RuntimeSettings._setup_members_list_auth_session_cookie()  # noqa: SLF001
+                RuntimeSettings._setup_members_list_auth_session_cookie()
 
     @pytest.mark.parametrize(
         "invalid_members_list_url_session_cookie",
@@ -1559,7 +1559,7 @@ class TestSetupMembersListURLSessionCookie:
             "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie"
         )
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("MEMBERS_LIST_URL_SESSION_COOKIE"):
             os.environ["MEMBERS_LIST_URL_SESSION_COOKIE"] = (
@@ -1570,7 +1570,7 @@ class TestSetupMembersListURLSessionCookie:
                 ImproperlyConfiguredError,
                 match=INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE,
             ):
-                RuntimeSettings._setup_members_list_auth_session_cookie()  # noqa: SLF001
+                RuntimeSettings._setup_members_list_auth_session_cookie()
 
 
 class TestSetupSendIntroductionReminders:
@@ -1626,14 +1626,14 @@ class TestSetupSendIntroductionReminders:
         self, test_send_introduction_reminders_value: str
     ) -> None:
         """Test that setup is successful when a valid option is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
             os.environ["SEND_INTRODUCTION_REMINDERS"] = test_send_introduction_reminders_value
 
-            RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+            RuntimeSettings._setup_send_introduction_reminders()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["SEND_INTRODUCTION_REMINDERS"] == (
             "once"
@@ -1651,15 +1651,15 @@ class TestSetupSendIntroductionReminders:
 
     def test_default_send_introduction_reminders_value(self) -> None:
         """Test that a default value is used when no introduction-reminders-flag is given."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
             try:
-                RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+                RuntimeSettings._setup_send_introduction_reminders()
             except ImproperlyConfiguredError:
                 pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["SEND_INTRODUCTION_REMINDERS"] in ("once", "interval", False)
 
@@ -1683,7 +1683,7 @@ class TestSetupSendIntroductionReminders:
             'SEND_INTRODUCTION_REMINDERS must be one of: "Once", "Interval" or "False"'
         )
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
             os.environ["SEND_INTRODUCTION_REMINDERS"] = (
@@ -1694,7 +1694,7 @@ class TestSetupSendIntroductionReminders:
                 ImproperlyConfiguredError,
                 match=INVALID_SEND_INTRODUCTION_REMINDERS_VALUE_MESSAGE,
             ):
-                RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+                RuntimeSettings._setup_send_introduction_reminders()
 
     @pytest.mark.parametrize(
         "test_send_introduction_reminders_interval",
@@ -1736,17 +1736,17 @@ class TestSetupSendIntroductionReminders:
         In this test, the provided `SEND_INTRODUCTION_REMINDERS_INTERVAL` is valid
         and so must be saved successfully.
         """
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-        RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+        RuntimeSettings._setup_send_introduction_reminders()
 
         with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"):
             os.environ["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
                 test_send_introduction_reminders_interval
             )
 
-            RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
+            RuntimeSettings._setup_send_introduction_reminders_interval()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"] == {
             key: float(value)
@@ -1792,16 +1792,16 @@ class TestSetupSendIntroductionReminders:
 
     def test_default_send_introduction_reminders_interval(self) -> None:
         """Test that a default value is used when no `SEND_INTRODUCTION_REMINDERS_INTERVAL`."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
-        RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+        RuntimeSettings._setup_send_introduction_reminders()
 
         with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"):
             try:
-                RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
+                RuntimeSettings._setup_send_introduction_reminders_interval()
             except ImproperlyConfiguredError:
                 pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert (
             "seconds" in RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"]
@@ -1836,12 +1836,12 @@ class TestSetupSendIntroductionReminders:
         self,
     ) -> None:
         """Test that an error is raised when setting up the interval without the flag."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
-        RuntimeSettings._settings.pop("SEND_INTRODUCTION_REMINDERS", None)  # noqa: SLF001
+        RuntimeSettings._settings.pop("SEND_INTRODUCTION_REMINDERS", None)
 
         with pytest.raises(RuntimeError, match="Invalid setup order"):
-            RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
+            RuntimeSettings._setup_send_introduction_reminders_interval()
 
     @pytest.mark.parametrize(
         "invalid_send_introduction_reminders_interval",
@@ -1863,7 +1863,7 @@ class TestSetupSendIntroductionReminders:
         The enable/disable flag `SEND_INTRODUCTION_REMINDERS` is disabled (set to `False`)
         during this test, so an invalid interval value should be ignored.
         """
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"):
             os.environ["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
@@ -1872,10 +1872,10 @@ class TestSetupSendIntroductionReminders:
 
             with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
                 os.environ["SEND_INTRODUCTION_REMINDERS"] = "false"
-                RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+                RuntimeSettings._setup_send_introduction_reminders()
 
                 try:
-                    RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
+                    RuntimeSettings._setup_send_introduction_reminders_interval()
                 except ImproperlyConfiguredError:
                     pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
@@ -1904,7 +1904,7 @@ class TestSetupSendIntroductionReminders:
             "in any combination of seconds, minutes or hours"
         )
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"):
             os.environ["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
@@ -1913,13 +1913,13 @@ class TestSetupSendIntroductionReminders:
 
             with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
                 os.environ["SEND_INTRODUCTION_REMINDERS"] = random.choice(("once", "interval"))
-                RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+                RuntimeSettings._setup_send_introduction_reminders()
 
                 with pytest.raises(
                     ImproperlyConfiguredError,
                     match=INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE,
                 ):
-                    RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
+                    RuntimeSettings._setup_send_introduction_reminders_interval()
 
     @pytest.mark.parametrize(
         "too_small_send_introduction_reminders",
@@ -1934,7 +1934,7 @@ class TestSetupSendIntroductionReminders:
         The enable/disable flag `SEND_INTRODUCTION_REMINDERS` is disabled (set to `False`)
         during this test, so an invalid interval value should be ignored.
         """
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"):
             os.environ["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
@@ -1943,10 +1943,10 @@ class TestSetupSendIntroductionReminders:
 
             with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
                 os.environ["SEND_INTRODUCTION_REMINDERS"] = "false"
-                RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+                RuntimeSettings._setup_send_introduction_reminders()
 
                 try:
-                    RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
+                    RuntimeSettings._setup_send_introduction_reminders_interval()
                 except ImproperlyConfiguredError:
                     pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
@@ -1969,7 +1969,7 @@ class TestSetupSendIntroductionReminders:
             "SEND_INTRODUCTION_REMINDERS_INTERVAL must be longer than 3 seconds."
         )
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"):
             os.environ["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
@@ -1978,13 +1978,13 @@ class TestSetupSendIntroductionReminders:
 
             with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
                 os.environ["SEND_INTRODUCTION_REMINDERS"] = random.choice(("once", "interval"))
-                RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
+                RuntimeSettings._setup_send_introduction_reminders()
 
                 with pytest.raises(
                     ImproperlyConfiguredError,
                     match=TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE,
                 ):
-                    RuntimeSettings._setup_send_introduction_reminders_interval()  # noqa: SLF001
+                    RuntimeSettings._setup_send_introduction_reminders_interval()
 
 
 class TestSetupSendGetRolesReminders:
@@ -2040,14 +2040,14 @@ class TestSetupSendGetRolesReminders:
         self, test_send_get_roles_reminder_value: str
     ) -> None:
         """Test that setup is successful when a valid option is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"):
             os.environ["SEND_GET_ROLES_REMINDERS"] = test_send_get_roles_reminder_value
 
-            RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
+            RuntimeSettings._setup_send_get_roles_reminders()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS"] == (
             test_send_get_roles_reminder_value.lower().strip() in config.TRUE_VALUES
@@ -2055,15 +2055,15 @@ class TestSetupSendGetRolesReminders:
 
     def test_default_send_get_roles_reminders_value(self) -> None:
         """Test that a default value is used when no get-roles-reminders-flag is given."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"):
             try:
-                RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
+                RuntimeSettings._setup_send_get_roles_reminders()
             except ImproperlyConfiguredError:
                 pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS"] in (True, False)
 
@@ -2087,7 +2087,7 @@ class TestSetupSendGetRolesReminders:
             "SEND_GET_ROLES_REMINDERS must be a boolean value"
         )
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"):
             os.environ["SEND_GET_ROLES_REMINDERS"] = invalid_send_get_role_reminders_value
@@ -2095,7 +2095,7 @@ class TestSetupSendGetRolesReminders:
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_SEND_GET_ROLES_REMINDERS_VALUE_MESSAGE
             ):
-                RuntimeSettings._setup_send_get_roles_reminders()  # noqa: SLF001
+                RuntimeSettings._setup_send_get_roles_reminders()
 
 
 class TestSetupStatisticsDays:
@@ -2104,14 +2104,14 @@ class TestSetupStatisticsDays:
     @pytest.mark.parametrize("test_statistics_days", ("5", "3.55", "664", "    5   "))
     def test_setup_statistics_days_successful(self, test_statistics_days: str) -> None:
         """Test that the given valid `STATISTICS_DAYS` is used when one is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("STATISTICS_DAYS"):
             os.environ["STATISTICS_DAYS"] = test_statistics_days
 
-            RuntimeSettings._setup_statistics_days()  # noqa: SLF001
+            RuntimeSettings._setup_statistics_days()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["STATISTICS_DAYS"] == timedelta(
             days=float(test_statistics_days.strip()),
@@ -2119,15 +2119,15 @@ class TestSetupStatisticsDays:
 
     def test_default_statistics_days(self) -> None:
         """Test that a default value is used when no `STATISTICS_DAYS` is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("STATISTICS_DAYS"):
             try:
-                RuntimeSettings._setup_statistics_days()  # noqa: SLF001
+                RuntimeSettings._setup_statistics_days()
             except ImproperlyConfiguredError:
                 pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert isinstance(RuntimeSettings()["STATISTICS_DAYS"], timedelta)
 
@@ -2154,7 +2154,7 @@ class TestSetupStatisticsDays:
             "STATISTICS_DAYS must contain the statistics period in days"
         )
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("STATISTICS_DAYS"):
             os.environ["STATISTICS_DAYS"] = invalid_statistics_days
@@ -2162,7 +2162,7 @@ class TestSetupStatisticsDays:
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_STATISTICS_DAYS_MESSAGE
             ):
-                RuntimeSettings._setup_statistics_days()  # noqa: SLF001
+                RuntimeSettings._setup_statistics_days()
 
     @pytest.mark.parametrize(
         "too_small_statistics_days",
@@ -2174,7 +2174,7 @@ class TestSetupStatisticsDays:
             r"STATISTICS_DAYS cannot be less than \(or equal to\) 1 day"
         )
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("STATISTICS_DAYS"):
             os.environ["STATISTICS_DAYS"] = too_small_statistics_days
@@ -2182,7 +2182,7 @@ class TestSetupStatisticsDays:
             with pytest.raises(
                 ImproperlyConfiguredError, match=TOO_SMALL_STATISTICS_DAYS_MESSAGE
             ):
-                RuntimeSettings._setup_statistics_days()  # noqa: SLF001
+                RuntimeSettings._setup_statistics_days()
 
 
 class TestSetupStatisticsRoles:
@@ -2200,14 +2200,14 @@ class TestSetupStatisticsRoles:
     )
     def test_setup_statistics_roles_successful(self, test_statistics_roles: str) -> None:
         """Test that the given valid `STATISTICS_ROLES` is used when they are provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("STATISTICS_ROLES"):
             os.environ["STATISTICS_ROLES"] = test_statistics_roles
 
-            RuntimeSettings._setup_statistics_roles()  # noqa: SLF001
+            RuntimeSettings._setup_statistics_roles()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["STATISTICS_ROLES"] == {
             test_statistics_role.strip()
@@ -2217,15 +2217,15 @@ class TestSetupStatisticsRoles:
 
     def test_default_statistics_roles(self) -> None:
         """Test that default values are used when no `STATISTICS_ROLES` are provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("STATISTICS_ROLES"):
             try:
-                RuntimeSettings._setup_statistics_roles()  # noqa: SLF001
+                RuntimeSettings._setup_statistics_roles()
             except ImproperlyConfiguredError:
                 pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert isinstance(RuntimeSettings()["STATISTICS_ROLES"], Iterable)
 
@@ -2248,14 +2248,14 @@ class TestSetupModerationDocumentURL:
         self, test_moderation_document_url: str
     ) -> None:
         """Test that the given valid `MODERATION_DOCUMENT_URL` is used when one is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("MODERATION_DOCUMENT_URL"):
             os.environ["MODERATION_DOCUMENT_URL"] = test_moderation_document_url
 
-            RuntimeSettings._setup_moderation_document_url()  # noqa: SLF001
+            RuntimeSettings._setup_moderation_document_url()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["MODERATION_DOCUMENT_URL"] == (
             f"https://{test_moderation_document_url.strip()}"
@@ -2265,13 +2265,13 @@ class TestSetupModerationDocumentURL:
 
     def test_missing_moderation_document_url(self) -> None:
         """Test that an error is raised when no `MODERATION_DOCUMENT_URL` is provided."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("MODERATION_DOCUMENT_URL"):  # noqa: SIM117
             with pytest.raises(
                 ImproperlyConfiguredError, match=r"MODERATION_DOCUMENT_URL.*valid.*URL"
             ):
-                RuntimeSettings._setup_moderation_document_url()  # noqa: SLF001
+                RuntimeSettings._setup_moderation_document_url()
 
     @pytest.mark.parametrize(
         "invalid_moderation_document_url",
@@ -2285,7 +2285,7 @@ class TestSetupModerationDocumentURL:
             "MODERATION_DOCUMENT_URL must be a valid URL"
         )
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("MODERATION_DOCUMENT_URL"):
             os.environ["MODERATION_DOCUMENT_URL"] = invalid_moderation_document_url
@@ -2293,7 +2293,7 @@ class TestSetupModerationDocumentURL:
             with pytest.raises(
                 ImproperlyConfiguredError, match=INVALID_MODERATION_DOCUMENT_URL_MESSAGE
             ):
-                RuntimeSettings._setup_moderation_document_url()  # noqa: SLF001
+                RuntimeSettings._setup_moderation_document_url()
 
 
 class TestSetupManualModerationWarningMessageLocation:
@@ -2307,16 +2307,16 @@ class TestSetupManualModerationWarningMessageLocation:
         self, test_manual_moderation_warning_message_location: str
     ) -> None:
         """Test that the given valid `MANUAL_MODERATION_WARNING_MESSAGE_LOCATION` is used."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"):
             os.environ["MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"] = (
                 test_manual_moderation_warning_message_location
             )
 
-            RuntimeSettings._setup_strike_performed_manually_warning_location()  # noqa: SLF001
+            RuntimeSettings._setup_strike_performed_manually_warning_location()
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert RuntimeSettings()["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] == (
             test_manual_moderation_warning_message_location.strip()
@@ -2324,15 +2324,15 @@ class TestSetupManualModerationWarningMessageLocation:
 
     def test_default_manual_moderation_warning_message_location(self) -> None:
         """Test a default value used when no `MANUAL_MODERATION_WARNING_MESSAGE_LOCATION`."""
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"):
             try:
-                RuntimeSettings._setup_strike_performed_manually_warning_location()  # noqa: SLF001
+                RuntimeSettings._setup_strike_performed_manually_warning_location()
             except ImproperlyConfiguredError:
                 pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
 
-        RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
+        RuntimeSettings._is_env_variables_setup = True
 
         assert isinstance(RuntimeSettings()["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"], str)
 
@@ -2348,7 +2348,7 @@ class TestSetupManualModerationWarningMessageLocation:
             "of a channel in your group's Discord guild."
         )
 
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"):
             os.environ["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] = (
@@ -2359,4 +2359,4 @@ class TestSetupManualModerationWarningMessageLocation:
                 ImproperlyConfiguredError,
                 match=INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE,
             ):
-                RuntimeSettings._setup_strike_performed_manually_warning_location()  # noqa: SLF001
+                RuntimeSettings._setup_strike_performed_manually_warning_location()
