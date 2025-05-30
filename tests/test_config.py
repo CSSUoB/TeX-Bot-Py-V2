@@ -1753,8 +1753,8 @@ class TestSetupSendIntroductionReminders:
                     r"\A(?:(?P<seconds>(?:\d*\.)?\d+)\s*s)?\s*(?:(?P<minutes>(?:\d*\.)?\d+)\s*m)?\s*(?:(?P<hours>(?:\d*\.)?\d+)\s*h)?\Z",
                     TEST_SEND_INTRODUCTION_REMINDERS_INTERVAL.lower().strip(),
                 )
-                .groupdict()
-                .items()  # type: ignore[union-attr]
+                .groupdict()  # type: ignore[union-attr]
+                .items()
             )
             if value
         }

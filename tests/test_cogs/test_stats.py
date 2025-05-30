@@ -8,7 +8,7 @@ import discord
 import pytest
 from typed_classproperties import classproperty
 
-from cogs.stats import (
+from cogs.stats import (  # type: ignore[attr-defined]
     StatsCommandsCog,
     amount_of_time_formatter,
     plot_bar_chart,
