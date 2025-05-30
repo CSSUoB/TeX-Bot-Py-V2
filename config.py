@@ -47,7 +47,7 @@ PROJECT_ROOT: "Final[Path]" = Path(__file__).parent.resolve()
 TRUE_VALUES: "Final[frozenset[str]]" = frozenset({"true", "1", "t", "y", "yes", "on"})
 FALSE_VALUES: "Final[frozenset[str]]" = frozenset({"false", "0", "f", "n", "no", "off"})
 VALID_SEND_INTRODUCTION_REMINDERS_VALUES: "Final[frozenset[str]]" = frozenset(
-    {"once"} | TRUE_VALUES | FALSE_VALUES,
+    {"once"} | TRUE_VALUES | FALSE_VALUES | {"interval"},
 )
 DEFAULT_STATISTICS_ROLES: "Final[frozenset[str]]" = frozenset(
     {
@@ -268,14 +268,16 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_purchase_membership_url(cls) -> None:
-        raw_purchase_membership_url: str | None = os.getenv("PURCHASE_MEMBERSHIP_URL")
-
-        if raw_purchase_membership_url is not None:
-            raw_purchase_membership_url = raw_purchase_membership_url.strip()
+        raw_purchase_membership_url: str = os.getenv(
+            "PURCHASE_MEMBERSHIP_URL", default=""
+        ).strip()
 
         if not raw_purchase_membership_url:
             cls._settings["PURCHASE_MEMBERSHIP_URL"] = None
             return
+
+        if "://" not in raw_purchase_membership_url:
+            raw_purchase_membership_url = "https://" + raw_purchase_membership_url
 
         if not validators.url(raw_purchase_membership_url):
             INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE: Final[str] = (
@@ -470,9 +472,13 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_send_introduction_reminders(cls) -> None:
-        raw_send_introduction_reminders: str | bool = str(
-            os.getenv("SEND_INTRODUCTION_REMINDERS", "Once"),
-        ).lower()
+        raw_send_introduction_reminders: str | bool = (
+            str(
+                os.getenv("SEND_INTRODUCTION_REMINDERS", "Once"),
+            )
+            .lower()
+            .strip()
+        )
 
         if raw_send_introduction_reminders not in VALID_SEND_INTRODUCTION_REMINDERS_VALUES:
             INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE: Final[str] = (
@@ -546,7 +552,11 @@ class Settings(abc.ABC):
 
         raw_send_introduction_reminders_interval: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            str(os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h")),
+            str(
+                os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h")
+                .strip()
+                .replace(" ", "")
+            ),
         )
 
         raw_timedelta_details_send_introduction_reminders_interval: Mapping[str, float] = {

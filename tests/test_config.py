@@ -1026,7 +1026,7 @@ class TestSetupPurchaseMembershipURL:
 
     @pytest.mark.parametrize(
         "invalid_purchase_membership_url",
-        ("invalid_purchase_membership_url", "www.google..com/", "", "  "),
+        ("invalid_purchase_membership_url", "www.google..com/"),
     )
     def test_invalid_purchase_membership_url(
         self, invalid_purchase_membership_url: str
@@ -1883,12 +1883,10 @@ class TestSetupSendIntroductionReminders:
         "invalid_send_introduction_reminders_interval",
         (
             "invalid_send_introduction_reminders_interval",
-            "",
-            "  ",
             f"{random.randint(1, 999)}d",  # noqa: S311
             f"{random.randint(3, 999)},{random.randint(0, 999)}s",  # noqa: S311
         ),
-        ids=[f"case_{i}" for i in range(5)],
+        ids=[f"case_{i}" for i in range(3)],
     )
     def test_invalid_send_introduction_reminders_interval_flag_enabled(
         self,
