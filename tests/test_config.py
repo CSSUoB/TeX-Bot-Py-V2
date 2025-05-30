@@ -320,7 +320,7 @@ class TestSetupLogging:
             "",
             "  ",
             "".join(
-                random.choices(  # noqa: S311
+                random.choices(
                     string.ascii_letters + string.digits + string.punctuation,
                     k=18,
                 ),
@@ -390,20 +390,20 @@ class TestSetupDiscordBotToken:
             "",
             "  ",
             "".join(
-                random.choices(  # noqa: S311
+                random.choices(
                     string.ascii_letters + string.digits + string.punctuation,
                     k=18,
                 ),
             ),
             re.sub(
                 r"\A[A-Za-z0-9]{24,26}\.",
-                f"{''.join(random.choices(string.ascii_letters + string.digits, k=2))}.",  # noqa: S311
+                f"{''.join(random.choices(string.ascii_letters + string.digits, k=2))}.",
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"\A[A-Za-z0-9]{24,26}\.",
-                f"{''.join(random.choices(string.ascii_letters + string.digits, k=50))}.",  # noqa: S311
+                f"{''.join(random.choices(string.ascii_letters + string.digits, k=50))}.",
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
             ),
@@ -412,20 +412,20 @@ class TestSetupDiscordBotToken:
                 (
                     f"{''.join(random.choices(string.ascii_letters + string.digits, k=12))}>{
                         ''.join(random.choices(string.ascii_letters + string.digits, k=12))
-                    }."  # noqa: S311
+                    }."
                 ),
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"\.[A-Za-z0-9]{6}\.",
-                f".{''.join(random.choices(string.ascii_letters + string.digits, k=2))}.",  # noqa: S311
+                f".{''.join(random.choices(string.ascii_letters + string.digits, k=2))}.",
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"\.[A-Za-z0-9]{6}\.",
-                (f".{''.join(random.choices(string.ascii_letters + string.digits, k=50))}."),  # noqa: S311
+                (f".{''.join(random.choices(string.ascii_letters + string.digits, k=50))}."),
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
             ),
@@ -434,7 +434,7 @@ class TestSetupDiscordBotToken:
                 (
                     f".{''.join(random.choices(string.ascii_letters + string.digits, k=3))}>{
                         ''.join(random.choices(string.ascii_letters + string.digits, k=2))
-                    }."  # noqa: S311
+                    }."
                 ),
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
@@ -446,7 +446,7 @@ class TestSetupDiscordBotToken:
                         ''.join(
                             random.choices(string.ascii_letters + string.digits + '_-', k=2)
                         )
-                    }"  # noqa: S311
+                    }"
                 ),
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
@@ -458,7 +458,7 @@ class TestSetupDiscordBotToken:
                         ''.join(
                             random.choices(string.ascii_letters + string.digits + '_-', k=50)
                         )
-                    }"  # noqa: S311
+                    }"
                 ),
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
@@ -474,7 +474,7 @@ class TestSetupDiscordBotToken:
                         ''.join(
                             random.choices(string.ascii_letters + string.digits + '_-', k=16)
                         )
-                    }"  # noqa: S311
+                    }"
                 ),
                 string=RandomDiscordBotTokenGenerator.single_value(),
                 count=1,
@@ -562,49 +562,49 @@ class TestSetupDiscordLogChannelWebhookURL:
             "",
             "  ",
             "".join(
-                random.choices(  # noqa: S311
+                random.choices(
                     string.ascii_letters + string.digits + string.punctuation,
                     k=18,
                 ),
             ),
             re.sub(
                 r"/\d{17,20}/",
-                f"/{''.join(random.choices(string.digits, k=2))}/",  # noqa: S311
+                f"/{''.join(random.choices(string.digits, k=2))}/",
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"/\d{17,20}/",
-                f"/{''.join(random.choices(string.digits, k=50))}/",  # noqa: S311
+                f"/{''.join(random.choices(string.digits, k=50))}/",
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"/\d{17,20}/",
                 (
-                    f"/{''.join(random.choices(string.ascii_letters + string.digits, k=9))}>"  # noqa: S311
-                    f"{''.join(random.choices(string.ascii_letters + string.digits, k=9))}/"  # noqa: S311
+                    f"/{''.join(random.choices(string.ascii_letters + string.digits, k=9))}>"
+                    f"{''.join(random.choices(string.ascii_letters + string.digits, k=9))}/"
                 ),
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"/[a-zA-Z\d]{60,90}",
-                f"/{''.join(random.choices(string.ascii_letters + string.digits, k=2))}",  # noqa: S311
+                f"/{''.join(random.choices(string.ascii_letters + string.digits, k=2))}",
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"/[a-zA-Z\d]{60,90}",
-                (f"/{''.join(random.choices(string.ascii_letters + string.digits, k=150))}"),  # noqa: S311
+                (f"/{''.join(random.choices(string.ascii_letters + string.digits, k=150))}"),
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1,
             ),
             re.sub(
                 r"/[a-zA-Z\d]{60,90}",
                 (
-                    f"/{''.join(random.choices(string.ascii_letters + string.digits, k=37))}>"  # noqa: S311
-                    f"{''.join(random.choices(string.ascii_letters + string.digits, k=37))}"  # noqa: S311
+                    f"/{''.join(random.choices(string.ascii_letters + string.digits, k=37))}>"
+                    f"{''.join(random.choices(string.ascii_letters + string.digits, k=37))}"
                 ),
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1,
@@ -677,13 +677,13 @@ class TestSetupDiscordGuildID:
             "",
             "  ",
             "".join(
-                random.choices(  # noqa: S311
+                random.choices(
                     string.ascii_letters + string.digits + string.punctuation,
                     k=18,
                 ),
             ),
-            "".join(random.choices(string.digits, k=2)),  # noqa: S311
-            "".join(random.choices(string.digits, k=50)),  # noqa: S311
+            "".join(random.choices(string.digits, k=2)),
+            "".join(random.choices(string.digits, k=50)),
         ),
         ids=[f"case_{i}" for i in range(6)],
     )
@@ -781,7 +781,7 @@ class TestSetupGroupFullName:
             "-Computer Science Society",
             "",
             "  ",
-            "".join(random.choices(string.digits, k=30)),  # noqa: S311
+            "".join(random.choices(string.digits, k=30)),
         ),
         ids=[f"case_{i}" for i in range(22)],
     )
@@ -963,7 +963,7 @@ class TestSetupGroupShortName:
             "-CSS",
             "",
             "  ",
-            "".join(random.choices(string.digits, k=30)),  # noqa: S311
+            "".join(random.choices(string.digits, k=30)),
         ),
         ids=[f"case_{i}" for i in range(22)],
     )
@@ -1495,8 +1495,8 @@ class TestSetupMembersListURLSessionCookie:
     @pytest.mark.parametrize(
         "test_members_list_url_session_cookie",
         (
-            "".join(random.choices(string.hexdigits, k=random.randint(128, 256))),  # noqa: S311
-            f"  {''.join(random.choices(string.hexdigits, k=random.randint(128, 256)))}   ",  # noqa: S311
+            "".join(random.choices(string.hexdigits, k=random.randint(128, 256))),
+            f"  {''.join(random.choices(string.hexdigits, k=random.randint(128, 256)))}   ",
         ),
         ids=[f"case_{i}" for i in range(2)],
     )
@@ -1541,12 +1541,12 @@ class TestSetupMembersListURLSessionCookie:
             "invalid_members_list_url_session_cookie",
             "",
             "  ",
-            "".join(random.choices(string.hexdigits, k=5)),  # noqa: S311
-            "".join(random.choices(string.hexdigits, k=500)),  # noqa: S311
+            "".join(random.choices(string.hexdigits, k=5)),
+            "".join(random.choices(string.hexdigits, k=500)),
             (
                 f"{''.join(random.choices(string.hexdigits, k=64))}>{
                     ''.join(random.choices(string.hexdigits, k=64))
-                }"  # noqa: S311
+                }"
             ),
         ),
         ids=[f"case_{i}" for i in range(6)],
@@ -1607,7 +1607,7 @@ class TestSetupSendIntroductionReminders:
                             ),
                         ).upper(),
                         "".join(
-                            random.choice((str.upper, str.lower))(character)  # noqa: S311
+                            random.choice((str.upper, str.lower))(character)
                             for character in next(
                                 iter(
                                     value
@@ -1670,7 +1670,7 @@ class TestSetupSendIntroductionReminders:
             "",
             "  ",
             "".join(
-                random.choices(string.ascii_letters + string.digits + string.punctuation, k=8),  # noqa: S311
+                random.choices(string.ascii_letters + string.digits + string.punctuation, k=8),
             ),
         ),
         ids=[f"case_{i}" for i in range(4)],
@@ -1699,21 +1699,21 @@ class TestSetupSendIntroductionReminders:
     @pytest.mark.parametrize(
         "test_send_introduction_reminders_interval",
         (
-            f"{random.randint(3, 999)}s",  # noqa: S311
-            f"{random.randint(3, 999)}.{random.randint(0, 999)}s",  # noqa: S311
+            f"{random.randint(3, 999)}s",
+            f"{random.randint(3, 999)}.{random.randint(0, 999)}s",
             (
                 f"  {random.randint(3, 999)}{
                     random.choice(('', f'.{random.randint(0, 999)}'))
-                }s   "  # noqa: S311
+                }s   "
             ),
-            f"{random.randint(1, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}m",  # noqa: S311
-            f"{random.randint(1, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}h",  # noqa: S311
+            f"{random.randint(1, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}m",
+            f"{random.randint(1, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}h",
             (
                 f"{random.randint(3, 999)}{random.choice(('', f'.{random.randint(0, 999)}'))}s{
                     random.randint(0, 999)
                 }{random.choice(('', f'.{random.randint(0, 999)}'))}m{random.randint(0, 999)}{
                     random.choice(('', f'.{random.randint(0, 999)}'))
-                }h"  # noqa: S311
+                }h"
             ),
             (
                 f"{random.randint(3, 999)}{
@@ -1722,7 +1722,7 @@ class TestSetupSendIntroductionReminders:
                     random.choice(('', f'.{random.randint(0, 999)}'))
                 }   m   {random.randint(0, 999)}{
                     random.choice(('', f'.{random.randint(0, 999)}'))
-                }  h"  # noqa: S311
+                }  h"
             ),
         ),
         ids=[f"case_{i}" for i in range(7)],
@@ -1849,8 +1849,8 @@ class TestSetupSendIntroductionReminders:
             "invalid_send_introduction_reminders_interval",
             "",
             "  ",
-            f"{random.randint(1, 999)}d",  # noqa: S311
-            f"{random.randint(3, 999)},{random.randint(0, 999)}s",  # noqa: S311
+            f"{random.randint(1, 999)}d",
+            f"{random.randint(3, 999)},{random.randint(0, 999)}s",
         ),
         ids=[f"case_{i}" for i in range(5)],
     )
@@ -1883,8 +1883,8 @@ class TestSetupSendIntroductionReminders:
         "invalid_send_introduction_reminders_interval",
         (
             "invalid_send_introduction_reminders_interval",
-            f"{random.randint(1, 999)}d",  # noqa: S311
-            f"{random.randint(3, 999)},{random.randint(0, 999)}s",  # noqa: S311
+            f"{random.randint(1, 999)}d",
+            f"{random.randint(3, 999)},{random.randint(0, 999)}s",
         ),
         ids=[f"case_{i}" for i in range(3)],
     )
@@ -1912,7 +1912,7 @@ class TestSetupSendIntroductionReminders:
             )
 
             with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
-                os.environ["SEND_INTRODUCTION_REMINDERS"] = random.choice(("once", "interval"))  # noqa: S311
+                os.environ["SEND_INTRODUCTION_REMINDERS"] = random.choice(("once", "interval"))
                 RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
 
                 with pytest.raises(
@@ -1966,7 +1966,7 @@ class TestSetupSendIntroductionReminders:
         so an invalid interval value should not be ignored, and an error should be raised.
         """
         TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
-            "SEND_INTRODUCTION_REMINDERS_INTERVAL must be greater than 3 seconds"
+            "SEND_INTRODUCTION_REMINDERS_INTERVAL must be longer than 3 seconds."
         )
 
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()  # noqa: SLF001
@@ -1977,7 +1977,7 @@ class TestSetupSendIntroductionReminders:
             )
 
             with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
-                os.environ["SEND_INTRODUCTION_REMINDERS"] = random.choice(("once", "interval"))  # noqa: S311
+                os.environ["SEND_INTRODUCTION_REMINDERS"] = random.choice(("once", "interval"))
                 RuntimeSettings._setup_send_introduction_reminders()  # noqa: SLF001
 
                 with pytest.raises(
@@ -2021,7 +2021,7 @@ class TestSetupSendGetRolesReminders:
                             ),
                         ).upper(),
                         "".join(
-                            random.choice((str.upper, str.lower))(character)  # noqa: S311
+                            random.choice((str.upper, str.lower))(character)
                             for character in next(
                                 iter(
                                     value
@@ -2074,7 +2074,7 @@ class TestSetupSendGetRolesReminders:
             "",
             "  ",
             "".join(
-                random.choices(string.ascii_letters + string.digits + string.punctuation, k=8),  # noqa: S311
+                random.choices(string.ascii_letters + string.digits + string.punctuation, k=8),
             ),
         ),
         ids=[f"case_{i}" for i in range(4)],
@@ -2140,7 +2140,7 @@ class TestSetupStatisticsDays:
             "",
             "  ",
             "".join(
-                random.choices(  # noqa: S311
+                random.choices(
                     string.ascii_letters + string.digits + string.punctuation,
                     k=18,
                 ),

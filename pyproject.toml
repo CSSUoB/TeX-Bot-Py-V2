@@ -167,7 +167,7 @@ banned-aliases = { "regex" = [
 banned-from = ["abc", "re", "regex"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/test_*.py" = ["S101"]
+"tests/**/test_*.py" = ["S101", "S311"]
 
 [tool.ruff.lint.flake8-self]
 extend-ignore-names = ["_base_manager", "_default_manager", "_get_wrap_line_width", "_meta"]

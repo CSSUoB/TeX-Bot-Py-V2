@@ -579,6 +579,19 @@ class Settings(abc.ABC):
                 if value
             }
 
+            if (
+                timedelta(
+                    **raw_timedelta_details_send_introduction_reminders_interval
+                ).total_seconds()
+                <= 3
+            ):
+                TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
+                    "SEND_INTRODUCTION_REMINDERS_INTERVAL must be longer than 3 seconds."
+                )
+                raise ImproperlyConfiguredError(
+                    TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE,
+                )
+
         cls._settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
             raw_timedelta_details_send_introduction_reminders_interval
         )
