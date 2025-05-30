@@ -703,12 +703,18 @@ class Settings(abc.ABC):
     def _setup_statistics_days(cls) -> None:
         e: ValueError
         try:
-            raw_statistics_days: float = float(os.getenv("STATISTICS_DAYS", "30"))
+            raw_statistics_days: float = float(os.getenv("STATISTICS_DAYS", "30").strip())
         except ValueError as e:
             INVALID_STATISTICS_DAYS_MESSAGE: Final[str] = (
                 "STATISTICS_DAYS must contain the statistics period in days."
             )
             raise ImproperlyConfiguredError(INVALID_STATISTICS_DAYS_MESSAGE) from e
+
+        if raw_statistics_days < 1:
+            INVALID_STATISTICS_DAYS_MESSAGE: Final[str] = (
+                "STATISTICS_DAYS cannot be less than or equal to 1 day"
+            )
+            raise ImproperlyConfiguredError(INVALID_STATISTICS_DAYS_MESSAGE)
 
         cls._settings["STATISTICS_DAYS"] = timedelta(days=raw_statistics_days)
 

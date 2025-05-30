@@ -2171,7 +2171,7 @@ class TestSetupStatisticsDays:
     def test_too_small_statistics_days(self, too_small_statistics_days: str) -> None:
         """Test that an error is raised when a too small `STATISTICS_DAYS` is provided."""
         TOO_SMALL_STATISTICS_DAYS_MESSAGE: Final[str] = (
-            r"STATISTICS_DAYS cannot be less than \(or equal to\) 1 day"
+            "STATISTICS_DAYS cannot be less than or equal to 1 day"
         )
 
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
