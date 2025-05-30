@@ -287,14 +287,14 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_membership_perks_url(cls) -> None:
-        raw_membership_perks_url: str | None = os.getenv("MEMBERSHIP_PERKS_URL")
-
-        if raw_membership_perks_url is not None:
-            raw_membership_perks_url = raw_membership_perks_url.strip()
+        raw_membership_perks_url: str = os.getenv("MEMBERSHIP_PERKS_URL", default="").strip()
 
         if not raw_membership_perks_url:
             cls._settings["MEMBERSHIP_PERKS_URL"] = None
             return
+
+        if "https://" not in raw_membership_perks_url:
+            raw_membership_perks_url = "https://" + raw_membership_perks_url
 
         if not validators.url(raw_membership_perks_url):
             INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (

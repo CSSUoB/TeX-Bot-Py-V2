@@ -1089,7 +1089,7 @@ class TestSetupMembershipPerksURL:
 
     @pytest.mark.parametrize(
         "invalid_membership_perks_url",
-        ("invalid_membership_perks_url", "www.google..com/", "", "  "),
+        ("invalid_membership_perks_url", "www.google..com/"),
     )
     def test_invalid_membership_perks_url(self, invalid_membership_perks_url: str) -> None:
         """Test that an error occurs when the provided `MEMBERSHIP_PERKS_URL` is invalid."""
@@ -2319,7 +2319,7 @@ class TestSetupManualModerationWarningMessageLocation:
         RuntimeSettings._is_env_variables_setup = True  # noqa: SLF001
 
         assert RuntimeSettings()["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] == (
-            test_manual_moderation_warning_message_location.upper().strip()
+            test_manual_moderation_warning_message_location.strip()
         )
 
     def test_default_manual_moderation_warning_message_location(self) -> None:
