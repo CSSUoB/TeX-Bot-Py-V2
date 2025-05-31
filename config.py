@@ -230,10 +230,7 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_group_full_name(cls) -> None:
-        raw_group_full_name: str | None = os.getenv("GROUP_NAME")
-
-        if raw_group_full_name is not None:
-            raw_group_full_name = raw_group_full_name.strip()
+        raw_group_full_name: str = os.getenv("GROUP_NAME", default="").strip()
 
         if not raw_group_full_name:
             cls._settings["_GROUP_FULL_NAME"] = None
@@ -249,10 +246,7 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_group_short_name(cls) -> None:
-        raw_group_short_name: str | None = os.getenv("GROUP_SHORT_NAME")
-
-        if raw_group_short_name is not None:
-            raw_group_short_name = raw_group_short_name.strip()
+        raw_group_short_name: str = os.getenv("GROUP_SHORT_NAME", default="").strip()
 
         if not raw_group_short_name:
             cls._settings["_GROUP_SHORT_NAME"] = None
@@ -758,6 +752,7 @@ class Settings(abc.ABC):
             "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION",
             "DM",
         ).strip()
+
         if not raw_strike_performed_manually_warning_location:
             STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_MESSAGE: Final[str] = (
                 "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION must be a valid name "

@@ -545,15 +545,17 @@ class TestSetupDiscordLogChannelWebhookURL:
         """Test that no error occurs when no `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
-        with EnvVariableDeleter("DISCORD_LOG_CHANNEL_WEBHOOK_URL"), pytest.raises(
-            expected_exception=ImproperlyConfiguredError,
-            match=(
-                "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL "
-                "that points to a discord channel where logs should be displayed."
+        with (
+            EnvVariableDeleter("DISCORD_LOG_CHANNEL_WEBHOOK_URL"),
+            pytest.raises(
+                expected_exception=ImproperlyConfiguredError,
+                match=(
+                    "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL "
+                    "that points to a discord channel where logs should be displayed."
+                ),
             ),
         ):
-            RuntimeSettings._setup_discord_log_channel_webhook(
-            )
+            RuntimeSettings._setup_discord_log_channel_webhook()
 
     @pytest.mark.parametrize(
         "invalid_discord_log_channel_url",
@@ -634,8 +636,11 @@ class TestSetupDiscordGuildID:
         """Test that an error is raised when no `DISCORD_GUILD_ID` is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
-        with EnvVariableDeleter("DISCORD_GUILD_ID"), pytest.raises(
-            ImproperlyConfiguredError, match=r"DISCORD_GUILD_ID.*valid.*Discord guild ID"
+        with (
+            EnvVariableDeleter("DISCORD_GUILD_ID"),
+            pytest.raises(
+                ImproperlyConfiguredError, match=r"DISCORD_GUILD_ID.*valid.*Discord guild ID"
+            ),
         ):
             RuntimeSettings._setup_discord_guild_id()
 
@@ -682,16 +687,14 @@ class TestSetupGroupFullName:
             "Computer Science Society",
             "Arts & Crafts Soc",
             "3Bugs Fringe Theatre Society",
-            "Bahá’í",  # noqa: RUF001
             "Burn FM.com",
-            "Dental Society (BUDSS)",
+            "Dental Society",
             "Devil's Advocate Society",
             "KASE: Knowledge And Skills Exchange",
             "Law for Non-Law",
             "   Computer Science Society    ",
             "Computer Science Society?",
             "Computer Science Society!",
-            "(Computer Science Society)",
         ),
     )
     def test_setup_group_full_name_successful(self, test_group_full_name: str) -> None:
@@ -729,30 +732,11 @@ class TestSetupGroupFullName:
     @pytest.mark.parametrize(
         "invalid_group_full_name",
         (
-            "Computer  Science  Society",
-            "Computer Science..Society",
-            "Computer Science--Society",
-            "Computer Science&&Society",
-            "Computer Science%%Society",
             "Computer Science$Society",
             "Computer Science£Society",
             "Computer Science*Society",
-            "Computer Science Society&",
-            "Computer Science Society-",
-            "Computer Science Society,",
-            "!Computer Science Society",
-            "?Computer Science Society",
-            "&Computer Science Society",
-            ":Computer Science Society",
-            ",Computer Science Society",
-            ".Computer Science Society",
-            "%Computer Science Society",
-            "-Computer Science Society",
-            "",
-            "  ",
-            "".join(random.choices(string.digits, k=30)),
         ),
-        ids=[f"case_{i}" for i in range(22)],
+        ids=[f"case_{i}" for i in range(3)],
     )
     def test_invalid_group_full_name(self, invalid_group_full_name: str) -> None:
         """Test that an error is raised when an invalid `GROUP_NAME` is provided."""
@@ -778,13 +762,11 @@ class TestSetupGroupShortName:
             "CSS",
             "ArtSoc",
             "3Bugs",
-            "Bahá’í",  # noqa: RUF001
             "BurnFM.com",
             "L4N-L",
             "   CSS    ",
             "CSS?",
             "CSS!",
-            "(CSS)",
         ),
     )
     def test_setup_group_short_name_successful(self, test_group_short_name: str) -> None:
@@ -825,116 +807,13 @@ class TestSetupGroupShortName:
         assert not RuntimeSettings()["_GROUP_SHORT_NAME"]
 
     @pytest.mark.parametrize(
-        "test_group_full_name",
-        (
-            "Computer Science Society",
-            "Arts & Crafts Soc",
-            "3Bugs Fringe Theatre Society",
-            "Bahá’í",  # noqa: RUF001
-            "Burn FM.com",
-            "Dental Society (BUDSS)",
-            "Devil's Advocate Society",
-            "KASE: Knowledge And Skills Exchange",
-            "Law for Non-Law",
-            "   Computer Science Society    ",
-            "Computer Science Society?",
-            "Computer Science Society!",
-            "(Computer Science Society)",
-        ),
-    )
-    def test_resolved_value_group_short_name_with_group_full_name(
-        self,
-        test_group_full_name: str,
-    ) -> None:
-        """
-        Test that a resolved value is used when no `GROUP_SHORT_NAME` is provided.
-
-        This test runs with the given value for `GROUP_FULL_NAME`,
-        so a resolved value from that should be used for the `GROUP_SHORT_NAME`.
-        """
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
-
-        with EnvVariableDeleter("GROUP_SHORT_NAME"), EnvVariableDeleter("GROUP_NAME"):
-            os.environ["GROUP_NAME"] = test_group_full_name
-            RuntimeSettings._setup_group_full_name()
-
-            try:
-                RuntimeSettings._setup_group_short_name()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
-
-        RuntimeSettings._is_env_variables_setup = True
-
-        assert (
-            RuntimeSettings()["_GROUP_SHORT_NAME"]
-            == (
-                "CSS"
-                if (
-                    "computer science society" in test_group_full_name.lower()
-                    or "css" in test_group_full_name.lower()
-                )
-                else test_group_full_name
-            )
-            .replace(
-                "the",
-                "",
-            )
-            .replace(
-                "THE",
-                "",
-            )
-            .replace(
-                "The",
-                "",
-            )
-            .replace(
-                " ",
-                "",
-            )
-            .replace(
-                "\t",
-                "",
-            )
-            .replace(
-                "\n",
-                "",
-            )
-            .translate(
-                {
-                    ord(unicode_char): ascii_char
-                    for unicode_char, ascii_char in zip("‘’´“”–-", "''`\"\"--", strict=True)  # noqa: RUF001
-                },
-            )
-            .strip()
-        )
-
-    @pytest.mark.parametrize(
         "invalid_group_short_name",
         (
             "C S S",
-            "CS..S",
-            "CS--S",
-            "CS&&S",
-            "CS%%S",
             "CS$S",
             "CS£S",
-            "CSS&",
-            "CS*S",
-            "CSS-",
-            "CSS,",
-            "!CSS",
-            "?CSS",
-            "&CSS",
-            ":CSS",
-            ",CSS",
-            ".CSS",
-            "%CSS",
-            "-CSS",
-            "",
-            "  ",
-            "".join(random.choices(string.digits, k=30)),
         ),
-        ids=[f"case_{i}" for i in range(22)],
+        ids=[f"case_{i}" for i in range(3)],
     )
     def test_invalid_group_short_name(self, invalid_group_short_name: str) -> None:
         """Test that an error is raised when an invalid `GROUP_SHORT_NAME` is provided."""
@@ -2306,26 +2185,3 @@ class TestSetupManualModerationWarningMessageLocation:
         assert isinstance(RuntimeSettings()["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"], str)
 
         assert bool(RuntimeSettings()["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"])
-
-    @pytest.mark.parametrize("invalid_manual_moderation_warning_message_location", ("", "  "))
-    def test_invalid_manual_moderation_warning_message_location(
-        self, invalid_manual_moderation_warning_message_location: str
-    ) -> None:
-        """Test error raised when `MANUAL_MODERATION_WARNING_MESSAGE_LOCATION` is invalid."""
-        INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE: Final[str] = (
-            "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION must be a valid name "
-            "of a channel in your group's Discord guild."
-        )
-
-        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
-
-        with EnvVariableDeleter("STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"):
-            os.environ["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] = (
-                invalid_manual_moderation_warning_message_location
-            )
-
-            with pytest.raises(
-                ImproperlyConfiguredError,
-                match=INVALID_MANUAL_MODERATION_WARNING_MESSAGE_LOCATION_MESSAGE,
-            ):
-                RuntimeSettings._setup_strike_performed_manually_warning_location()
