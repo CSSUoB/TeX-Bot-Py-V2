@@ -2321,3 +2321,93 @@ class TestSetupOrganisationID:
                 ImproperlyConfiguredError, match=INVALID_ORGANISATION_ID_MESSAGE
             ):
                 RuntimeSettings._setup_organisation_id()
+
+
+class TestSetupAutoAddCommitteeToThreads:
+    """Test case for the `_setup_auto_add_committee_to_threads()` function."""
+
+    @pytest.mark.parametrize(
+        "test_auto_add_committee_to_threads_value",
+        (
+            "true",
+            "false",
+            "True",
+            "False",
+            "   True   ",
+            "   False   ",
+            "t",
+            "f",
+            "yes",
+            "no",
+            "y",
+            "n",
+            "1",
+            "0",
+            "   1   ",
+            "   0   ",
+        ),
+    )
+    def test_setup_auto_add_committee_to_threads_successful(
+        self, test_auto_add_committee_to_threads_value: str
+    ) -> None:
+        """Test that the given valid `AUTO_ADD_COMMITTEE_TO_THREADS` is used when provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("AUTO_ADD_COMMITTEE_TO_THREADS"):
+            os.environ["AUTO_ADD_COMMITTEE_TO_THREADS"] = (
+                test_auto_add_committee_to_threads_value
+            )
+
+            RuntimeSettings._setup_auto_add_committee_to_threads()
+
+        RuntimeSettings._is_env_variables_setup = True
+
+        assert RuntimeSettings()["AUTO_ADD_COMMITTEE_TO_THREADS"] == (
+            test_auto_add_committee_to_threads_value.lower().strip() in config.TRUE_VALUES
+        )
+
+    def test_default_auto_add_committee_to_threads_value(self) -> None:
+        """Test that the default is used when `AUTO_ADD_COMMITTEE_TO_THREADS` not provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("AUTO_ADD_COMMITTEE_TO_THREADS"):
+            try:
+                RuntimeSettings._setup_auto_add_committee_to_threads()
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True
+
+        assert RuntimeSettings()["AUTO_ADD_COMMITTEE_TO_THREADS"]
+
+    @pytest.mark.parametrize(
+        "invalid_auto_add_commmittee_to_threads",
+        (
+            "invalid_auto_add_commmittee_to_threads",
+            "definitely not a valid value",
+            "won d e r i f t h i s a valid value",
+            "".join(
+                random.choices(string.ascii_letters + string.digits + string.punctuation, k=8),
+            ),
+        ),
+        ids=[f"case_{i}" for i in range(4)],
+    )
+    def test_invalid_auto_add_commmittee_to_threads(
+        self, invalid_auto_add_commmittee_to_threads: str
+    ) -> None:
+        """Test that an error is raised when is `AUTO_ADD_COMMITTEE_TO_THREADS` invalid."""
+        INVALID_AUTO_ADD_COMMITTEE_TO_THREADS_MESSAGE: Final[str] = (
+            "AUTO_ADD_COMMITTEE_TO_THREADS must be a boolean value"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("AUTO_ADD_COMMITTEE_TO_THREADS"):
+            os.environ["AUTO_ADD_COMMITTEE_TO_THREADS"] = (
+                invalid_auto_add_commmittee_to_threads
+            )
+
+            with pytest.raises(
+                ImproperlyConfiguredError, match=INVALID_AUTO_ADD_COMMITTEE_TO_THREADS_MESSAGE
+            ):
+                RuntimeSettings._setup_auto_add_committee_to_threads()

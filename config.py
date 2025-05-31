@@ -772,9 +772,9 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_auto_add_committee_to_threads(cls) -> None:
-        raw_auto_add_committee_to_threads: str = str(
-            os.getenv("AUTO_ADD_COMMITTEE_TO_THREADS", "True")
-        ).lower()
+        raw_auto_add_committee_to_threads: str = (
+            str(os.getenv("AUTO_ADD_COMMITTEE_TO_THREADS", "True")).lower().strip()
+        )
 
         if raw_auto_add_committee_to_threads not in TRUE_VALUES | FALSE_VALUES:
             INVALID_AUTO_ADD_COMMITTEE_TO_THREADS_MESSAGE: Final[str] = (
