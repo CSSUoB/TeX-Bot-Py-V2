@@ -302,7 +302,9 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_custom_discord_invite_url(cls) -> None:
-        raw_custom_discord_invite_url: str = os.getenv("CUSTOM_DISCORD_INVITE_URL", default="").strip()
+        raw_custom_discord_invite_url: str = os.getenv(
+            "CUSTOM_DISCORD_INVITE_URL", default=""
+        ).strip()
 
         if not raw_custom_discord_invite_url:
             cls._settings["CUSTOM_DISCORD_INVITE_URL"] = None
