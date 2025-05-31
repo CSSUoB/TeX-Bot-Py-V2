@@ -207,9 +207,7 @@ parametrize-values-type = "tuple"
 keep-runtime-typing = true
 
 [tool.coverage.report]
-exclude_also = [
-    "if TYPE_CHECKING:"
-]
+exclude_also = ["if TYPE_CHECKING:"]
 skip_covered = true
 sort = "cover"
 
