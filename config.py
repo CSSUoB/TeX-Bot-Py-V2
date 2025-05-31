@@ -592,9 +592,13 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_send_get_roles_reminders(cls) -> None:
-        raw_send_get_roles_reminders: str = str(
-            os.getenv("SEND_GET_ROLES_REMINDERS", "True"),
-        ).lower().strip()
+        raw_send_get_roles_reminders: str = (
+            str(
+                os.getenv("SEND_GET_ROLES_REMINDERS", "True"),
+            )
+            .lower()
+            .strip()
+        )
 
         if raw_send_get_roles_reminders not in TRUE_VALUES | FALSE_VALUES:
             INVALID_SEND_GET_ROLES_REMINDERS_MESSAGE: Final[str] = (
