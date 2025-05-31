@@ -2012,7 +2012,7 @@ class TestSetupSendGetRolesRemindersInterval:
 
 
 class TestSetupSendGetRolesRemindersDelay:
-    """Test case to unit-test the `_setup_advanced_send_get_roles_reminders_delay()` function."""
+    """Test case to unit-test the `_setup_advanced_send_get_roles_reminders_delay()` function."""  # noqa: E501, W505
 
     def test_setup_delay_without_send_roles_reminders_setup(self) -> None:
         """Test that an error is raised when setting up the delay without the flag."""
@@ -2020,7 +2020,7 @@ class TestSetupSendGetRolesRemindersDelay:
 
         INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
             "Invalid setup order: SEND_GET_ROLES_REMINDERS must be set up "
-            "before ADVANCED_SEND_GET_ROLES_REMINDERS_DELAY can be set up."
+            "before SEND_GET_ROLES_REMINDERS_DELAY can be set up."
         )
 
         with (
@@ -2028,7 +2028,74 @@ class TestSetupSendGetRolesRemindersDelay:
             EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"),
             pytest.raises(RuntimeError, match=INVALID_SETUP_ORDER_MESSAGE),
         ):
-            RuntimeSettings._setup_advanced_send_get_roles_reminders_delay()
+            RuntimeSettings._setup_send_get_roles_reminders_delay()
+
+    def test_default_send_get_roles_reminders_delay(self) -> None:
+        """Test that a default value is used when no `SEND_GET_ROLES_REMINDERS_DELAY`."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+        RuntimeSettings._setup_send_get_roles_reminders()
+
+        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_DELAY"):
+            try:
+                RuntimeSettings._setup_send_get_roles_reminders_delay()
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True
+
+        assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS_DELAY"] == timedelta(hours=40)
+
+    @pytest.mark.parametrize(
+        "too_short_get_roles_reminders_delay",
+        ("0.5s", "0s", "0.03m", "0m", "0.0005h", "0h", "0.9d"),
+    )
+    def test_too_short_send_get_roles_reminders_delay(
+        self, too_short_get_roles_reminders_delay: str
+    ) -> None:
+        """Test that an error is thrown if `SEND_GET_ROLES_REMINDERS_DELAY` is too short."""
+        TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE: Final[str] = (
+            "SEND_SEND_GET_ROLES_REMINDERS_DELAY must be longer than or equal to 1 day."
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        RuntimeSettings._setup_send_get_roles_reminders()
+
+        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_DELAY"):
+            os.environ["SEND_GET_ROLES_REMINDERS_DELAY"] = too_short_get_roles_reminders_delay
+
+            with pytest.raises(
+                ImproperlyConfiguredError,
+                match=TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE,
+            ):
+                RuntimeSettings._setup_send_get_roles_reminders_delay()
+
+    @pytest.mark.parametrize(
+        "invalid_send_get_roles_reminders_delay",
+        ("invalid_send_get_roles_reminders_delay", "3.5", "3.5f", "3.5a"),
+    )
+    def test_invalid_send_get_roles_reminders_delay(
+        self, invalid_send_get_roles_reminders_delay: str
+    ) -> None:
+        """Test that an error is raised when an invalid delay is provided."""
+        INVALID_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE: Final[str] = (
+            "SEND_GET_ROLES_REMINDERS_DELAY must contain the delay "
+            "in any combination of seconds, minutes, hours, days or weeks."
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        RuntimeSettings._setup_send_get_roles_reminders()
+
+        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_DELAY"):
+            os.environ["SEND_GET_ROLES_REMINDERS_DELAY"] = (
+                invalid_send_get_roles_reminders_delay
+            )
+
+            with pytest.raises(
+                ImproperlyConfiguredError, match=INVALID_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE
+            ):
+                RuntimeSettings._setup_send_get_roles_reminders_delay()
 
 
 class TestSetupStatisticsDays:

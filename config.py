@@ -621,7 +621,7 @@ class Settings(abc.ABC):
 
         raw_send_get_roles_reminders_delay: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            str(os.getenv("SEND_GET_ROLES_REMINDERS_DELAY", "40h")),
+            str(os.getenv("SEND_GET_ROLES_REMINDERS_DELAY", "40h").strip()),
         )
 
         raw_timedelta_send_get_roles_reminders_delay: timedelta = timedelta()
@@ -646,8 +646,8 @@ class Settings(abc.ABC):
 
             if raw_timedelta_send_get_roles_reminders_delay < timedelta(days=1):
                 TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE: Final[str] = (
-                    "SEND_SEND_GET_ROLES_REMINDERS_DELAY "
-                    "must be longer than or equal to 1 day (in any allowed format)."
+                    "SEND_SEND_GET_ROLES_REMINDERS_DELAY must be "
+                    "longer than or equal to 1 day."
                 )
                 raise ImproperlyConfiguredError(
                     TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE,
