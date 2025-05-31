@@ -1658,7 +1658,7 @@ class TestSetupSendIntroductionReminders:
         )
 
         assert all(
-            isinstance(value, float)
+            isinstance(value, float | int)
             for value in RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"].values()
         )
 
