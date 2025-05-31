@@ -231,22 +231,22 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_group_full_name(cls) -> None:
-        raw_group_name: str | None = os.getenv("GROUP_NAME")
+        raw_group_full_name: str | None = os.getenv("GROUP_NAME")
 
-        if raw_group_name is not None:
-            raw_group_name = raw_group_name.strip()
+        if raw_group_full_name is not None:
+            raw_group_full_name = raw_group_full_name.strip()
 
-        if not raw_group_name:
+        if not raw_group_full_name:
             cls._settings["_GROUP_FULL_NAME"] = None
             return
 
-        if not re.fullmatch(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", raw_group_name):
-            INVALID_GROUP_FULL_NAME: Final[str] = (
+        if not re.fullmatch(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", raw_group_full_name):
+            INVALID_GROUP_NAME: Final[str] = (
                 "GROUP_NAME must not contain any invalid characters."
             )
-            raise ImproperlyConfiguredError(INVALID_GROUP_FULL_NAME)
+            raise ImproperlyConfiguredError(INVALID_GROUP_NAME)
 
-        cls._settings["_GROUP_FULL_NAME"] = raw_group_name
+        cls._settings["_GROUP_FULL_NAME"] = raw_group_full_name
 
     @classmethod
     def _setup_group_short_name(cls) -> None:
@@ -458,17 +458,17 @@ class Settings(abc.ABC):
             "MEMBERS_LIST_URL_SESSION_COOKIE",
         )
 
-        MEMBERS_LIST_AUTH_SESSION_COOKIE_IS_VALID: Final[bool] = bool(
+        MEMBERS_LIST_URL_SESSION_COOKIE_IS_VALID: Final[bool] = bool(
             raw_members_list_url_session_cookie
             and re.fullmatch(r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_url_session_cookie),
         )
         if not MEMBERS_LIST_AUTH_SESSION_COOKIE_IS_VALID:
-            INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE: Final[str] = (
+            INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
                 "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
             )
             raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE)
 
-        cls._settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"] = (
+        cls._settings["MEMBERS_LIST_URL_SESSION_COOKIE"] = (
             raw_members_list_url_session_cookie
         )
 
@@ -724,11 +724,11 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_strike_performed_manually_warning_location(cls) -> None:
-        raw_manual_moderation_warning_message_location: str = os.getenv(
+        raw_strike_performed_manually_warning_location: str = os.getenv(
             "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION",
             "DM",
         )
-        if not raw_manual_moderation_warning_message_location:
+        if not raw_strike_performed_manually_warning_location:
             STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_MESSAGE: Final[str] = (
                 "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION must be a valid name "
                 "of a channel in your group's Discord guild."
@@ -736,7 +736,7 @@ class Settings(abc.ABC):
             raise ImproperlyConfiguredError(STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_MESSAGE)
 
         cls._settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] = (
-            raw_manual_moderation_warning_message_location
+            raw_strike_performed_manually_warning_location
         )
 
     @classmethod
