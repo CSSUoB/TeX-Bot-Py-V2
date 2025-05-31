@@ -1978,9 +1978,37 @@ class TestSetupSendGetRolesRemindersInterval:
 
         RuntimeSettings._is_env_variables_setup = True
 
-        assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"] == {
-            "hours": 24
-        }
+        assert RuntimeSettings()["ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL"] == {"hours": 24}
+
+    @pytest.mark.parametrize(
+        "test_invalid_send_get_roles_reminders_interval",
+        ("obviously not a valid interval", "3.5", "3.5f", "3.5a"),
+    )
+    def test_invalid_send_get_roles_reminders_interval(
+        self, test_invalid_send_get_roles_reminders_interval: str
+    ) -> None:
+        """Test that an error is raised when an invalid interval is provided."""
+        INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
+            "ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL must contain the interval "
+            "in any combination of seconds, minutes or hours"
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        os.environ["SEND_GET_ROLES_REMINDERS"] = "True"
+
+        RuntimeSettings._setup_send_get_roles_reminders()
+
+        with EnvVariableDeleter("ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL"):
+            os.environ["ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL"] = (
+                test_invalid_send_get_roles_reminders_interval
+            )
+
+            with pytest.raises(
+                ImproperlyConfiguredError,
+                match=INVALID_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE,
+            ):
+                RuntimeSettings._setup_advanced_send_get_roles_reminders_interval()
 
 
 class TestSetupStatisticsDays:
