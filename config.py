@@ -180,7 +180,7 @@ class Settings(abc.ABC):
     def _setup_discord_log_channel_webhook(cls) -> "Logger":
         raw_discord_log_channel_webhook_url: str = os.getenv(
             "DISCORD_LOG_CHANNEL_WEBHOOK_URL", ""
-        )
+        ).strip()
 
         if not validators.url(
             raw_discord_log_channel_webhook_url

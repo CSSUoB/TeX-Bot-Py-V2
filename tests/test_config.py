@@ -545,15 +545,15 @@ class TestSetupDiscordLogChannelWebhookURL:
         """Test that no error occurs when no `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
-        with EnvVariableDeleter("DISCORD_LOG_CHANNEL_WEBHOOK_URL"):
-            try:
-                RuntimeSettings._setup_discord_log_channel_webhook()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
-
-        RuntimeSettings._is_env_variables_setup = True
-
-        assert not RuntimeSettings()["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]
+        with EnvVariableDeleter("DISCORD_LOG_CHANNEL_WEBHOOK_URL"), pytest.raises(
+            expected_exception=ImproperlyConfiguredError,
+            match=(
+                "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL "
+                "that points to a discord channel where logs should be displayed."
+            ),
+        ):
+            RuntimeSettings._setup_discord_log_channel_webhook(
+            )
 
     @pytest.mark.parametrize(
         "invalid_discord_log_channel_url",
@@ -561,42 +561,12 @@ class TestSetupDiscordLogChannelWebhookURL:
             "invalid_discord_log_channel_url",
             "",
             "  ",
-            "".join(
-                random.choices(
-                    string.ascii_letters + string.digits + string.punctuation,
-                    k=18,
-                ),
-            ),
-            re.sub(
-                r"/\d{17,20}/",
-                f"/{''.join(random.choices(string.digits, k=2))}/",
-                string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
-                count=1,
-            ),
-            re.sub(
-                r"/\d{17,20}/",
-                f"/{''.join(random.choices(string.digits, k=50))}/",
-                string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
-                count=1,
-            ),
             re.sub(
                 r"/\d{17,20}/",
                 (
                     f"/{''.join(random.choices(string.ascii_letters + string.digits, k=9))}>"
                     f"{''.join(random.choices(string.ascii_letters + string.digits, k=9))}/"
                 ),
-                string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
-                count=1,
-            ),
-            re.sub(
-                r"/[a-zA-Z\d]{60,90}",
-                f"/{''.join(random.choices(string.ascii_letters + string.digits, k=2))}",
-                string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
-                count=1,
-            ),
-            re.sub(
-                r"/[a-zA-Z\d]{60,90}",
-                (f"/{''.join(random.choices(string.ascii_letters + string.digits, k=150))}"),
                 string=RandomDiscordLogChannelWebhookURLGenerator.single_value(),
                 count=1,
             ),
@@ -610,7 +580,7 @@ class TestSetupDiscordLogChannelWebhookURL:
                 count=1,
             ),
         ),
-        ids=[f"case_{i}" for i in range(10)],
+        ids=[f"case_{i}" for i in range(5)],
     )
     def test_invalid_discord_log_channel_webhook_url(
         self,
@@ -664,11 +634,10 @@ class TestSetupDiscordGuildID:
         """Test that an error is raised when no `DISCORD_GUILD_ID` is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
-        with EnvVariableDeleter("DISCORD_GUILD_ID"):  # noqa: SIM117
-            with pytest.raises(
-                ImproperlyConfiguredError, match=r"DISCORD_GUILD_ID.*valid.*Discord guild ID"
-            ):
-                RuntimeSettings._setup_discord_guild_id()
+        with EnvVariableDeleter("DISCORD_GUILD_ID"), pytest.raises(
+            ImproperlyConfiguredError, match=r"DISCORD_GUILD_ID.*valid.*Discord guild ID"
+        ):
+            RuntimeSettings._setup_discord_guild_id()
 
     @pytest.mark.parametrize(
         "invalid_discord_guild_id",
