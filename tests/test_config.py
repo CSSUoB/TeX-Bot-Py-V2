@@ -1544,6 +1544,10 @@ class TestSetupSendIntroductionReminders:
             ):
                 RuntimeSettings._setup_send_introduction_reminders()
 
+
+class TestSetupSendIntroductionRemindersInterval:
+    """Test case to unit-test the `_setup_send_introduction_reminders_interval()` function."""
+
     @pytest.mark.parametrize(
         "test_send_introduction_reminders_interval",
         (
@@ -1835,6 +1839,132 @@ class TestSetupSendIntroductionReminders:
                     RuntimeSettings._setup_send_introduction_reminders_interval()
 
 
+class TestSetupSendIntroductionRemindersDelay:
+    """Test case to unit-test the `_setup_send_introduction_reminders_delay()` function."""
+
+    def test_setup_send_introduction_reminders_delay_without_send_introduction_reminders_setup(
+        self,
+    ) -> None:
+        """Test that an error is raised when setting up the delay without the flag."""
+        INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+            "Invalid setup order: SEND_INTRODUCTION_REMINDERS must be set up "
+            "before SEND_INTRODUCTION_REMINDERS_DELAY can be set up."
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with (
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"),
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"),
+            pytest.raises(RuntimeError, match=INVALID_SETUP_ORDER_MESSAGE),
+        ):
+            RuntimeSettings._setup_send_introduction_reminders_delay()
+
+    def test_default_send_introduction_reminders_delay(self) -> None:
+        """Test that a default value is used when no `SEND_INTRODUCTION_REMINDERS_DELAY`."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+        RuntimeSettings._setup_send_introduction_reminders()
+
+        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"):
+            try:
+                RuntimeSettings._setup_send_introduction_reminders_delay()
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True
+
+        assert RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_DELAY"] == timedelta(hours=40)
+
+    @pytest.mark.parametrize(
+        "too_short_introduction_reminders_delay",
+        ("5h", "2h", "1h", "30m", "10m", "5m", "3s", "1s", "0.5s", "0s"),
+    )
+    def test_too_short_introduction_reminders_delay(
+        self, too_short_introduction_reminders_delay: str
+    ) -> None:
+        """Test that an error is raised when `SEND_INTRODUCTION_REMINDERS_DELAY` too short."""
+        TOO_SHORT_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE: Final[str] = (
+            "SEND_INTRODUCTION_REMINDERS_DELAY must be longer than or equal to 1 day."
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        RuntimeSettings._setup_send_introduction_reminders()
+
+        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"):
+            os.environ["SEND_INTRODUCTION_REMINDERS_DELAY"] = (
+                too_short_introduction_reminders_delay
+            )
+
+            with pytest.raises(
+                ImproperlyConfiguredError,
+                match=TOO_SHORT_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE,
+            ):
+                RuntimeSettings._setup_send_introduction_reminders_delay()
+
+    @pytest.mark.parametrize(
+        "test_invalid_introduction_reminders_delay",
+        ("invalid_introduction_reminders_delay", "3.5", "3.5f", "3.5a"),
+    )
+    def test_invalid_introduction_reminders_delay(
+        self, test_invalid_introduction_reminders_delay: str
+    ) -> None:
+        """Test that an error is raised when `SEND_INTRODUCTION_REMINDERS_DELAY` is invalid."""
+        INVALID_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE: Final[str] = (
+            "SEND_INTRODUCTION_REMINDERS_DELAY must contain the delay "
+            "in any combination of seconds, minutes, hours, days or weeks."
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        RuntimeSettings._setup_send_introduction_reminders()
+
+        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"):
+            os.environ["SEND_INTRODUCTION_REMINDERS_DELAY"] = (
+                test_invalid_introduction_reminders_delay
+            )
+
+            with pytest.raises(
+                ImproperlyConfiguredError,
+                match=INVALID_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE,
+            ):
+                RuntimeSettings._setup_send_introduction_reminders_delay()
+
+    @pytest.mark.parametrize(
+        "test_send_introduction_reminders_delay", ("48h", "40h", "24h", "1d", "2d", "3d")
+    )
+    def test_setup_introduction_reminders_delay_successful(
+        self, test_send_introduction_reminders_delay: str
+    ) -> None:
+        """Test that the given `SEND_INTRODUCTION_REMINDERS_DELAY` is used when provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+        RuntimeSettings._setup_send_introduction_reminders()
+
+        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"):
+            os.environ["SEND_INTRODUCTION_REMINDERS_DELAY"] = (
+                test_send_introduction_reminders_delay
+            )
+
+            RuntimeSettings._setup_send_introduction_reminders_delay()
+
+        RuntimeSettings._is_env_variables_setup = True
+
+        assert RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_DELAY"] == timedelta(
+            **{
+                key: float(value)
+                for key, value in (
+                    re.fullmatch(
+                        r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
+                        test_send_introduction_reminders_delay.lower().strip(),
+                    )
+                )
+                .groupdict()  # type: ignore[union-attr]
+                .items()
+                if value
+            },
+        )
+
+
 class TestSetupSendGetRolesReminders:
     """Test case to unit-test the configuration for sending get-roles reminders."""
 
@@ -2096,6 +2226,39 @@ class TestSetupSendGetRolesRemindersDelay:
                 ImproperlyConfiguredError, match=INVALID_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE
             ):
                 RuntimeSettings._setup_send_get_roles_reminders_delay()
+
+    @pytest.mark.parametrize(
+        "test_send_get_roles_reminders_delay",
+        ("48h", "40h", "24h", "1d", "2d", "3d")
+    )
+    def test_setup_send_get_roles_reminders_delay_successful(self, test_send_get_roles_reminders_delay: str) -> None:
+        """Test that the given `SEND_GET_ROLES_REMINDERS_DELAY` is used when provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+        RuntimeSettings._setup_send_get_roles_reminders()
+
+        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_DELAY"):
+            os.environ["SEND_GET_ROLES_REMINDERS_DELAY"] = (
+                test_send_get_roles_reminders_delay
+            )
+
+            RuntimeSettings._setup_send_get_roles_reminders_delay()
+
+        RuntimeSettings._is_env_variables_setup = True
+
+        assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS_DELAY"] == timedelta(
+            **{
+                key: float(value)
+                for key, value in (
+                    re.fullmatch(
+                        r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",  # noqa: E501
+                        test_send_get_roles_reminders_delay.lower().strip(),
+                    )
+                )
+                .groupdict()  # type: ignore[union-attr]
+                .items()
+                if value
+            },
+        )
 
 
 class TestSetupStatisticsDays:
