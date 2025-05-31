@@ -302,14 +302,14 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_custom_discord_invite_url(cls) -> None:
-        raw_custom_discord_invite_url: str | None = os.getenv("CUSTOM_DISCORD_INVITE_URL")
-
-        if raw_custom_discord_invite_url is not None:
-            raw_custom_discord_invite_url = raw_custom_discord_invite_url.strip()
+        raw_custom_discord_invite_url: str = os.getenv("CUSTOM_DISCORD_INVITE_URL", default="").strip()
 
         if not raw_custom_discord_invite_url:
             cls._settings["CUSTOM_DISCORD_INVITE_URL"] = None
             return
+
+        if "://" not in raw_custom_discord_invite_url:
+            raw_custom_discord_invite_url = "https://" + raw_custom_discord_invite_url
 
         if not validators.url(raw_custom_discord_invite_url):
             INVALID_CUSTOM_DISCORD_INVITE_URL_MESSAGE: Final[str] = (

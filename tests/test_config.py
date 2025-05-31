@@ -2185,3 +2185,76 @@ class TestSetupManualModerationWarningMessageLocation:
         assert isinstance(RuntimeSettings()["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"], str)
 
         assert bool(RuntimeSettings()["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"])
+
+
+class TestSetupCustomDiscordInviteUrl:
+    """Test case for the `_setup_custom_discord_invite_url()` function."""
+
+    @pytest.mark.parametrize(
+        "test_custom_discord_invite_url",
+        (
+            "https://discord.gg/abc123",
+            "https://discord.com/invite/abc123",
+            "   https://discord.gg/abc123   ",
+            "https://cssbham.com",
+            "www.cssbham.com/discord",
+        ),
+    )
+    def test_setup_custom_discord_invite_url_successful(
+        self, test_custom_discord_invite_url: str
+    ) -> None:
+        """Test that a given valid `CUSTOM_DISCORD_INVITE_URL` is used when provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("CUSTOM_DISCORD_INVITE_URL"):
+            os.environ["CUSTOM_DISCORD_INVITE_URL"] = test_custom_discord_invite_url
+
+            RuntimeSettings._setup_custom_discord_invite_url()
+
+        RuntimeSettings._is_env_variables_setup = True
+
+        assert RuntimeSettings()["CUSTOM_DISCORD_INVITE_URL"] == (
+            f"https://{test_custom_discord_invite_url.strip()}"
+            if "://" not in test_custom_discord_invite_url.strip()
+            else test_custom_discord_invite_url.strip()
+        )
+
+    def test_missing_custom_discord_invite_url(self) -> None:
+        """Test that no error is raised when no `CUSTOM_DISCORD_INVITE_URL` is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("CUSTOM_DISCORD_INVITE_URL"):
+            try:
+                RuntimeSettings._setup_custom_discord_invite_url()
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True
+
+        assert not RuntimeSettings()["CUSTOM_DISCORD_INVITE_URL"]
+
+    @pytest.mark.parametrize(
+        "test_invalid_discord_invite_url",
+        (
+            "definitely not a url",
+            "https://couldbeaurlbutactually.com really isnt",
+            "www.ican'tbelieveit'snotbutter",
+        ),
+    )
+    def test_invalid_custom_discord_invite_url(
+        self, test_invalid_discord_invite_url: str
+    ) -> None:
+        """Test that an error is raised when the `CUSTOM_DISCORD_INVITE_URL` is invalid."""
+        INVALID_CUSTOM_DISCORD_INVITE_URL: Final[str] = (
+            "CUSTOM_DISCORD_INVITE_URL must be a valid URL."
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("CUSTOM_DISCORD_INVITE_URL"):
+            os.environ["CUSTOM_DISCORD_INVITE_URL"] = test_invalid_discord_invite_url
+
+            with pytest.raises(
+                ImproperlyConfiguredError, match=INVALID_CUSTOM_DISCORD_INVITE_URL
+            ):
+                RuntimeSettings._setup_custom_discord_invite_url()
