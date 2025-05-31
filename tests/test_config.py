@@ -2228,18 +2228,17 @@ class TestSetupSendGetRolesRemindersDelay:
                 RuntimeSettings._setup_send_get_roles_reminders_delay()
 
     @pytest.mark.parametrize(
-        "test_send_get_roles_reminders_delay",
-        ("48h", "40h", "24h", "1d", "2d", "3d")
+        "test_send_get_roles_reminders_delay", ("48h", "40h", "24h", "1d", "2d", "3d")
     )
-    def test_setup_send_get_roles_reminders_delay_successful(self, test_send_get_roles_reminders_delay: str) -> None:
+    def test_setup_send_get_roles_reminders_delay_successful(
+        self, test_send_get_roles_reminders_delay: str
+    ) -> None:
         """Test that the given `SEND_GET_ROLES_REMINDERS_DELAY` is used when provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
         RuntimeSettings._setup_send_get_roles_reminders()
 
         with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_DELAY"):
-            os.environ["SEND_GET_ROLES_REMINDERS_DELAY"] = (
-                test_send_get_roles_reminders_delay
-            )
+            os.environ["SEND_GET_ROLES_REMINDERS_DELAY"] = test_send_get_roles_reminders_delay
 
             RuntimeSettings._setup_send_get_roles_reminders_delay()
 
@@ -2250,7 +2249,7 @@ class TestSetupSendGetRolesRemindersDelay:
                 key: float(value)
                 for key, value in (
                     re.fullmatch(
-                        r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",  # noqa: E501
+                        r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
                         test_send_get_roles_reminders_delay.lower().strip(),
                     )
                 )
