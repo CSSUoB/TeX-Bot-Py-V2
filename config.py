@@ -642,8 +642,7 @@ class Settings(abc.ABC):
 
             if raw_timedelta_send_get_roles_reminders_delay < timedelta(days=1):
                 TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE: Final[str] = (
-                    "SEND_GET_ROLES_REMINDERS_DELAY must be "
-                    "longer than or equal to 1 day."
+                    "SEND_GET_ROLES_REMINDERS_DELAY must be longer than or equal to 1 day."
                 )
                 raise ImproperlyConfiguredError(
                     TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE,
