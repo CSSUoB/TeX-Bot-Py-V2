@@ -2258,3 +2258,66 @@ class TestSetupCustomDiscordInviteUrl:
                 ImproperlyConfiguredError, match=INVALID_CUSTOM_DISCORD_INVITE_URL
             ):
                 RuntimeSettings._setup_custom_discord_invite_url()
+
+
+class TestSetupOrganisationID:
+    """Test case for the `_setup_organisation_id()` function."""
+
+    @pytest.mark.parametrize(
+        "test_organisation_id", ("13471", "43422", "6531", "39091", "41502")
+    )
+    def test_setup_organisation_id_successful(self, test_organisation_id: str) -> None:
+        """Test that the given valid `ORGANISATION_ID` is used when one is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("ORGANISATION_ID"):
+            os.environ["ORGANISATION_ID"] = test_organisation_id
+
+            RuntimeSettings._setup_organisation_id()
+
+        RuntimeSettings._is_env_variables_setup = True
+
+        assert RuntimeSettings()["ORGANISATION_ID"] == test_organisation_id.strip()
+
+    def test_missing_organisation_id(self) -> None:
+        """Test that an error is raised when no `ORGANISATION_ID` is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with (
+            EnvVariableDeleter("ORGANISATION_ID"),
+            pytest.raises(
+                ImproperlyConfiguredError,
+                match="ORGANISATION_ID must be an integer 4 to 5 digits long.",
+            ),
+        ):
+            RuntimeSettings._setup_organisation_id()
+
+    @pytest.mark.parametrize(
+        "invalid_organisation_id",
+        (
+            "invalid_organisation_id",
+            "123",
+            "123456",
+            "12.34",
+            "12,34",
+            "12.34.56",
+            "12,34,56",
+            "1234a",
+            "a1234",
+        ),
+    )
+    def test_invalid_organisation_id(self, invalid_organisation_id: str) -> None:
+        """Test that an error is raised when the provided `ORGANISATION_ID` is invalid."""
+        INVALID_ORGANISATION_ID_MESSAGE: Final[str] = (
+            "ORGANISATION_ID must be an integer 4 to 5 digits long."
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("ORGANISATION_ID"):
+            os.environ["ORGANISATION_ID"] = invalid_organisation_id
+
+            with pytest.raises(
+                ImproperlyConfiguredError, match=INVALID_ORGANISATION_ID_MESSAGE
+            ):
+                RuntimeSettings._setup_organisation_id()

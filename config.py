@@ -431,10 +431,10 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_organisation_id(cls) -> None:
-        raw_organisation_id: str | None = os.getenv("ORGANISATION_ID")
+        raw_organisation_id: str = os.getenv("ORGANISATION_ID", default="").strip()
 
         ORGANISATION_ID_IS_VALID: Final[bool] = bool(
-            raw_organisation_id and re.fullmatch(r"\A\d{4,5}\Z", raw_organisation_id),
+            re.fullmatch(r"\A\d{4,5}\Z", raw_organisation_id),
         )
 
         if not ORGANISATION_ID_IS_VALID:
