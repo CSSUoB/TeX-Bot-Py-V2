@@ -1978,13 +1978,9 @@ class TestSetupSendGetRolesRemindersInterval:
 
         RuntimeSettings._is_env_variables_setup = True
 
-        assert isinstance(RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"], Mapping[str, float])
-
-        assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"] > timedelta(seconds=3)
-
-        assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"] == timedelta(
-
-        )
+        assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"] == {
+            "hours": 24
+        }
 
 
 class TestSetupStatisticsDays:
