@@ -468,9 +468,7 @@ class Settings(abc.ABC):
             )
             raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE)
 
-        cls._settings["MEMBERS_LIST_URL_SESSION_COOKIE"] = (
-            raw_members_list_url_session_cookie
-        )
+        cls._settings["MEMBERS_LIST_URL_SESSION_COOKIE"] = raw_members_list_url_session_cookie
 
     @classmethod
     def _setup_send_introduction_reminders(cls) -> None:
