@@ -2011,6 +2011,26 @@ class TestSetupSendGetRolesRemindersInterval:
                 RuntimeSettings._setup_advanced_send_get_roles_reminders_interval()
 
 
+class TestSetupSendGetRolesRemindersDelay:
+    """Test case to unit-test the `_setup_advanced_send_get_roles_reminders_delay()` function."""
+
+    def test_setup_delay_without_send_roles_reminders_setup(self) -> None:
+        """Test that an error is raised when setting up the delay without the flag."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+            "Invalid setup order: SEND_GET_ROLES_REMINDERS must be set up "
+            "before ADVANCED_SEND_GET_ROLES_REMINDERS_DELAY can be set up."
+        )
+
+        with (
+            EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_INTERVAL"),
+            EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"),
+            pytest.raises(RuntimeError, match=INVALID_SETUP_ORDER_MESSAGE),
+        ):
+            RuntimeSettings._setup_advanced_send_get_roles_reminders_delay()
+
+
 class TestSetupStatisticsDays:
     """Test case to unit-test the `_setup_statistics_days()` function."""
 
