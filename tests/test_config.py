@@ -1946,6 +1946,47 @@ class TestSetupSendGetRolesReminders:
                 RuntimeSettings._setup_send_get_roles_reminders()
 
 
+class TestSetupSendGetRolesRemindersInterval:
+    """Test case to unit-test the `_setup_advanced_send_get_roles_reminders_interval()` function."""  # noqa: E501, W505
+
+    def test_setup_interval_without_send_roles_reminders_setup(self) -> None:
+        """Test that an error is raised when setting up the interval without the flag."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+            "Invalid setup order: SEND_GET_ROLES_REMINDERS must be set up "
+            "before ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL can be set up."
+        )
+
+        with (
+            EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_INTERVAL"),
+            EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"),
+            pytest.raises(RuntimeError, match=INVALID_SETUP_ORDER_MESSAGE),
+        ):
+            RuntimeSettings._setup_advanced_send_get_roles_reminders_interval()
+
+    def test_default_send_get_roles_reminders_interval(self) -> None:
+        """Test that a default value is used when no `SEND_GET_ROLES_REMINDERS_INTERVAL`."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+        RuntimeSettings._setup_send_get_roles_reminders()
+
+        with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_INTERVAL"):
+            try:
+                RuntimeSettings._setup_advanced_send_get_roles_reminders_interval()
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True
+
+        assert isinstance(RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"], Mapping[str, float])
+
+        assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"] > timedelta(seconds=3)
+
+        assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS_INTERVAL"] == timedelta(
+
+        )
+
+
 class TestSetupStatisticsDays:
     """Test case to unit-test the `_setup_statistics_days()` function."""
 
