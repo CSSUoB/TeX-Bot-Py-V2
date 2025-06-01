@@ -733,6 +733,25 @@ class TestRoleDoesNotExistError:
             ' and the "test_event_1" event.'
         )
 
+    def test_dependent_commands(self) -> None:
+        """Test that the dependent commands are set correctly."""
+        assert (
+            frozenset({"test_command_1"})
+            == self._RoleDoesNotExistErrorSubclass.DEPENDENT_COMMANDS
+        )
+
+    def test_dependent_tasks(self) -> None:
+        """Test that the dependent tasks are set correctly."""
+        assert (
+            frozenset({"test_task_1"}) == self._RoleDoesNotExistErrorSubclass.DEPENDENT_TASKS
+        )
+
+    def test_dependent_events(self) -> None:
+        """Test that the dependent events are set correctly."""
+        assert (
+            frozenset({"test_event_1"}) == self._RoleDoesNotExistErrorSubclass.DEPENDENT_EVENTS
+        )
+
 
 class TestCommitteeRoleDoesNotExistError:
     """Test case to unit-test the `CommitteeRoleDoesNotExistError` exception."""
@@ -767,26 +786,38 @@ class TestCommitteeRoleDoesNotExistError:
             == CommitteeRoleDoesNotExistError.DEPENDENT_COMMANDS
         )
 
+    def test_committee_role_does_not_exist_dependent_tasks(self) -> None:
+        """Test that the dependent tasks are set correctly."""
+        assert frozenset() == (CommitteeRoleDoesNotExistError.DEPENDENT_TASKS)
+
+    def test_committee_role_does_not_exist_dependent_events(self) -> None:
+        """Test that the dependent events are set correctly."""
+        assert frozenset() == (CommitteeRoleDoesNotExistError.DEPENDENT_EVENTS)
+
 
 class TestCommitteeElectRoleDoesNotExistError:
     """Test case to unit-test the `CommitteeElectRoleDoesNotExistError` exception."""
 
-    def test_committee_elector_role_does_not_exist_error_code(self) -> None:
+    def test_committee_elect_role_does_not_exist_error_code(self) -> None:
         """Test that the error code is set correctly."""
         assert "E1026" in (CommitteeElectRoleDoesNotExistError.ERROR_CODE)
 
-    def test_committee_elector_role_does_not_exist_error_default_message(self) -> None:
+    def test_committee_elect_role_does_not_exist_error_default_message(self) -> None:
         """Test that the default message is correct."""
         assert (
             CommitteeElectRoleDoesNotExistError.DEFAULT_MESSAGE
             == 'Role with name "Committee-Elect" does not exist.'
         )
 
-    def test_committee_elector_role_does_not_exist_dependent_commands(self) -> None:
+    def test_committee_elect_role_does_not_exist_dependent_commands(self) -> None:
         """Test that the dependent commands are set correctly."""
         assert frozenset({"handover"}) == (
             CommitteeElectRoleDoesNotExistError.DEPENDENT_COMMANDS
         )
+
+    def test_committee_elect_role_does_not_exist_dependent_tasks(self) -> None:
+        """Test that the dependent tasks are set correctly."""
+        assert frozenset() == (CommitteeElectRoleDoesNotExistError.DEPENDENT_TASKS)
 
 
 class TestApplicantRoleDoesNotExistError:
@@ -808,6 +839,14 @@ class TestApplicantRoleDoesNotExistError:
         assert frozenset({"make_applicant"}) == (
             ApplicantRoleDoesNotExistError.DEPENDENT_COMMANDS
         )
+
+    def test_applicant_role_does_not_exist_dependent_tasks(self) -> None:
+        """Test that the dependent tasks are set correctly."""
+        assert frozenset() == (ApplicantRoleDoesNotExistError.DEPENDENT_TASKS)
+
+    def test_applicant_role_does_not_exist_dependent_events(self) -> None:
+        """Test that the dependent events are set correctly."""
+        assert frozenset() == (ApplicantRoleDoesNotExistError.DEPENDENT_EVENTS)
 
 
 class TestGuestRoleDoesNotExistError:
@@ -839,6 +878,16 @@ class TestGuestRoleDoesNotExistError:
             == GuestRoleDoesNotExistError.DEPENDENT_COMMANDS
         )
 
+    def test_guest_role_does_not_exist_dependent_tasks(self) -> None:
+        """Test that the dependent tasks are set correctly."""
+        assert frozenset({"send_get_roles_reminders"}) == (
+            GuestRoleDoesNotExistError.DEPENDENT_TASKS
+        )
+
+    def test_guest_role_does_not_exist_dependent_events(self) -> None:
+        """Test that the dependent events are set correctly."""
+        assert frozenset() == (GuestRoleDoesNotExistError.DEPENDENT_EVENTS)
+
 
 class TestMemberRoleDoesNotExistError:
     """Test case to unit-test the `MemberRoleDoesNotExistError` exception."""
@@ -860,6 +909,14 @@ class TestMemberRoleDoesNotExistError:
             MemberRoleDoesNotExistError.DEPENDENT_COMMANDS
         )
 
+    def test_member_role_does_not_exist_dependent_tasks(self) -> None:
+        """Test that the dependent tasks are set correctly."""
+        assert frozenset() == (MemberRoleDoesNotExistError.DEPENDENT_TASKS)
+
+    def test_member_role_does_not_exist_dependent_events(self) -> None:
+        """Test that the dependent events are set correctly."""
+        assert frozenset() == (MemberRoleDoesNotExistError.DEPENDENT_EVENTS)
+
 
 class TestArchivistRoleDoesNotExistError:
     """Test case to unit-test the `ArchivistRoleDoesNotExistError` exception."""
@@ -880,6 +937,14 @@ class TestArchivistRoleDoesNotExistError:
         assert frozenset({"archive", "increment-year-channels"}) == (
             ArchivistRoleDoesNotExistError.DEPENDENT_COMMANDS
         )
+
+    def test_archivist_role_does_not_exist_dependent_tasks(self) -> None:
+        """Test that the dependent tasks are set correctly."""
+        assert frozenset() == (ArchivistRoleDoesNotExistError.DEPENDENT_TASKS)
+
+    def test_archivist_role_does_not_exist_dependent_events(self) -> None:
+        """Test that the dependent events are set correctly."""
+        assert frozenset() == (ArchivistRoleDoesNotExistError.DEPENDENT_EVENTS)
 
 
 class TestChannelDoesNotExistError:
@@ -926,6 +991,12 @@ class TestChannelDoesNotExistError:
         """
         assert self._ChannelDoesNotExistErrorSubclass.CHANNEL_NAME in str(
             self._ChannelDoesNotExistErrorSubclass()
+        )
+
+    def test_channel_does_not_exist_default_message(self) -> None:
+        """Test that the default message is correct."""
+        assert self._ChannelDoesNotExistErrorSubclass.DEFAULT_MESSAGE == (
+            'Channel with name "channel_name_1" does not exist.'
         )
 
 
