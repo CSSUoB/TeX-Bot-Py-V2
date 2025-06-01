@@ -826,6 +826,21 @@ class TestCommitteeElectRoleDoesNotExistError:
             == 'Role with name "Committee-Elect" does not exist.'
         )
 
+        assert CommitteeElectRoleDoesNotExistError().message.startswith(
+            '"Committee-Elect" role must exist in order to use the'
+        )
+
+        assert [
+            command in CommitteeElectRoleDoesNotExistError().message
+            for command in (
+                CommitteeElectRoleDoesNotExistError.DEPENDENT_COMMANDS.union(
+                    CommitteeElectRoleDoesNotExistError.DEPENDENT_TASKS.union(
+                        CommitteeElectRoleDoesNotExistError.DEPENDENT_EVENTS
+                    )
+                )
+            )
+        ]
+
     def test_committee_elect_role_does_not_exist_dependent_commands(self) -> None:
         """Test that the dependent commands are set correctly."""
         assert frozenset({"handover"}) == (
@@ -850,6 +865,21 @@ class TestApplicantRoleDoesNotExistError:
             ApplicantRoleDoesNotExistError.DEFAULT_MESSAGE
             == 'Role with name "Applicant" does not exist.'
         )
+
+        assert ApplicantRoleDoesNotExistError().message.startswith(
+            '"Applicant" role must exist in order to use the',
+        )
+
+        assert [
+            command in ApplicantRoleDoesNotExistError().message
+            for command in (
+                ApplicantRoleDoesNotExistError.DEPENDENT_COMMANDS.union(
+                    ApplicantRoleDoesNotExistError.DEPENDENT_TASKS.union(
+                        ApplicantRoleDoesNotExistError.DEPENDENT_EVENTS
+                    )
+                )
+            )
+        ]
 
     def test_applicant_role_does_not_exist_dependent_commands(self) -> None:
         """Test that the dependent commands are set correctly."""
@@ -879,6 +909,21 @@ class TestGuestRoleDoesNotExistError:
             GuestRoleDoesNotExistError.DEFAULT_MESSAGE
             == 'Role with name "Guest" does not exist.'
         )
+
+        assert GuestRoleDoesNotExistError().message.startswith(
+            '"Guest" role must exist in order to use the',
+        )
+
+        assert [
+            command in GuestRoleDoesNotExistError().message
+            for command in (
+                GuestRoleDoesNotExistError.DEPENDENT_COMMANDS.union(
+                    GuestRoleDoesNotExistError.DEPENDENT_TASKS.union(
+                        GuestRoleDoesNotExistError.DEPENDENT_EVENTS
+                    )
+                )
+            )
+        ]
 
     def test_guest_role_does_not_exist_dependent_commands(self) -> None:
         """Test that the dependent commands are set correctly."""
@@ -920,6 +965,21 @@ class TestMemberRoleDoesNotExistError:
             == 'Role with name "Member" does not exist.'
         )
 
+        assert MemberRoleDoesNotExistError().message.startswith(
+            '"Member" role must exist in order to use the',
+        )
+
+        assert [
+            command in MemberRoleDoesNotExistError().message
+            for command in (
+                MemberRoleDoesNotExistError.DEPENDENT_COMMANDS.union(
+                    MemberRoleDoesNotExistError.DEPENDENT_TASKS.union(
+                        MemberRoleDoesNotExistError.DEPENDENT_EVENTS
+                    )
+                )
+            )
+        ]
+
     def test_member_role_does_not_exist_dependent_commands(self) -> None:
         """Test that the dependent commands are set correctly."""
         assert frozenset({"makemember", "ensure-members-inducted", "annual-roles-reset"}) == (
@@ -948,6 +1008,21 @@ class TestArchivistRoleDoesNotExistError:
             ArchivistRoleDoesNotExistError.DEFAULT_MESSAGE
             == 'Role with name "Archivist" does not exist.'
         )
+
+        assert ArchivistRoleDoesNotExistError().message.startswith(
+            '"Archivist" role must exist in order to use the',
+        )
+
+        assert [
+            command in ArchivistRoleDoesNotExistError().message
+            for command in (
+                ArchivistRoleDoesNotExistError.DEPENDENT_COMMANDS.union(
+                    ArchivistRoleDoesNotExistError.DEPENDENT_TASKS.union(
+                        ArchivistRoleDoesNotExistError.DEPENDENT_EVENTS
+                    )
+                )
+            )
+        ]
 
     def test_archivist_role_does_not_exist_dependent_commands(self) -> None:
         """Test that the dependent commands are set correctly."""
