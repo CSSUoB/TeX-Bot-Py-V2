@@ -12,6 +12,7 @@ from exceptions import (
     CommitteeElectRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
     DiscordMemberNotInMainGuildError,
+    GeneralChannelDoesNotExistError,
     GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
     ImproperlyConfiguredError,
@@ -1112,10 +1113,41 @@ class TestRolesChannelDoesNotExistError:
 
 
 class TestGeneralChannelDoesNotExistError:
-    """
-    Test case to unit-test the `GeneralChannelDoesNotExistError` exception.
+    """Test case to unit-test the `GeneralChannelDoesNotExistError` exception."""
 
-    If there are no unit-tests within this test case,
-    it is because all the functionality of `GeneralChannelDoesNotExistError` is inherited
-    from its parent class so is already unit-tested in the parent class's dedicated test case.
-    """
+    def test_general_channel_does_not_exist_error_code(self) -> None:
+        """Test that the error code is set correctly."""
+        assert "E1032" in (GeneralChannelDoesNotExistError.ERROR_CODE)
+
+    def test_general_channel_does_not_exist_error_default_message(self) -> None:
+        """Test that the default message is correct."""
+        assert GeneralChannelDoesNotExistError.DEFAULT_MESSAGE == (
+            'Channel with name "general" does not exist.'
+        )
+
+        assert GeneralChannelDoesNotExistError().message.startswith(
+            '"#general" channel must exist in order to'
+        )
+
+        assert [
+            command in GeneralChannelDoesNotExistError().message
+            for command in (
+                GeneralChannelDoesNotExistError.DEPENDENT_COMMANDS.union(
+                    GeneralChannelDoesNotExistError.DEPENDENT_TASKS.union(
+                        GeneralChannelDoesNotExistError.DEPENDENT_EVENTS
+                    )
+                )
+            )
+        ]
+
+    def test_general_channel_does_not_exist_dependent_commands(self) -> None:
+        """Test that the dependent commands are set correctly."""
+        assert frozenset({"induct"}) == (GeneralChannelDoesNotExistError.DEPENDENT_COMMANDS)
+
+    def test_general_channel_does_not_exist_dependent_tasks(self) -> None:
+        """Test that the dependent tasks are set correctly."""
+        assert frozenset() == (GeneralChannelDoesNotExistError.DEPENDENT_TASKS)
+
+    def test_general_channel_does_not_exist_dependent_events(self) -> None:
+        """Test that the dependent events are set correctly."""
+        assert frozenset() == (GeneralChannelDoesNotExistError.DEPENDENT_EVENTS)
