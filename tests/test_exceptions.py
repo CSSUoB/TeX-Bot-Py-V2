@@ -9,6 +9,7 @@ from exceptions import (
     ChannelDoesNotExistError,
     CommitteeRoleDoesNotExistError,
     DiscordMemberNotInMainGuildError,
+    GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
     ImproperlyConfiguredError,
     InvalidMessagesJSONFileError,
@@ -777,6 +778,30 @@ class TestGuestRoleDoesNotExistError:
     it is because all the functionality of `GuestRoleDoesNotExistError` is inherited
     from its parent class so is already unit-tested in the parent class's dedicated test case.
     """
+
+    def test_guest_role_does_not_exist_error_code(self) -> None:
+        """Test that the error code is set correctly."""
+        assert "E1022" in (GuestRoleDoesNotExistError().ERROR_CODE)
+
+    def test_guest_role_does_not_exist_error_default_message(self) -> None:
+        """Test that the default message is correct."""
+        assert (
+            GuestRoleDoesNotExistError.DEFAULT_MESSAGE
+            == 'Role with name "Guest" does not exist.'
+        )
+
+    def test_guest_role_does_not_exist_dependent_commands(self) -> None:
+        """Test that the dependent commands are set correctly."""
+        assert (
+            frozenset({
+                "induct",
+                "stats",
+                "archive",
+                "ensure-members-inducted",
+                "increment-year-channels",
+            })
+            == GuestRoleDoesNotExistError.DEPENDENT_COMMANDS
+        )
 
 
 class TestMemberRoleDoesNotExistError:
