@@ -6,6 +6,7 @@ import pytest
 from typed_classproperties import classproperty
 
 from exceptions import (
+    ArchivistRoleDoesNotExistError,
     ChannelDoesNotExistError,
     CommitteeRoleDoesNotExistError,
     DiscordMemberNotInMainGuildError,
@@ -13,6 +14,7 @@ from exceptions import (
     GuildDoesNotExistError,
     ImproperlyConfiguredError,
     InvalidMessagesJSONFileError,
+    MemberRoleDoesNotExistError,
     MessagesJSONFileMissingKeyError,
     MessagesJSONFileValueError,
     RoleDoesNotExistError,
@@ -731,13 +733,7 @@ class TestRoleDoesNotExistError:
 
 
 class TestCommitteeRoleDoesNotExistError:
-    """
-    Test case to unit-test the `CommitteeRoleDoesNotExistError` exception.
-
-    If there are no unit-tests within this test case,
-    it is because all the functionality of `CommitteeRoleDoesNotExistError` is inherited
-    from its parent class so is already unit-tested in the parent class's dedicated test case.
-    """
+    """Test case to unit-test the `CommitteeRoleDoesNotExistError` exception."""
 
     def test_committee_role_does_not_exist_error_code(self) -> None:
         """Test that the error code is set correctly."""
@@ -771,13 +767,7 @@ class TestCommitteeRoleDoesNotExistError:
 
 
 class TestGuestRoleDoesNotExistError:
-    """
-    Test case to unit-test the `GuestRoleDoesNotExistError` exception.
-
-    If there are no unit-tests within this test case,
-    it is because all the functionality of `GuestRoleDoesNotExistError` is inherited
-    from its parent class so is already unit-tested in the parent class's dedicated test case.
-    """
+    """Test case to unit-test the `GuestRoleDoesNotExistError` exception."""
 
     def test_guest_role_does_not_exist_error_code(self) -> None:
         """Test that the error code is set correctly."""
@@ -793,35 +783,59 @@ class TestGuestRoleDoesNotExistError:
     def test_guest_role_does_not_exist_dependent_commands(self) -> None:
         """Test that the dependent commands are set correctly."""
         assert (
-            frozenset({
-                "induct",
-                "stats",
-                "archive",
-                "ensure-members-inducted",
-                "increment-year-channels",
-            })
+            frozenset(
+                {
+                    "induct",
+                    "stats",
+                    "archive",
+                    "ensure-members-inducted",
+                    "increment-year-channels",
+                }
+            )
             == GuestRoleDoesNotExistError.DEPENDENT_COMMANDS
         )
 
 
 class TestMemberRoleDoesNotExistError:
-    """
-    Test case to unit-test the `MemberRoleDoesNotExistError` exception.
+    """Test case to unit-test the `MemberRoleDoesNotExistError` exception."""
 
-    If there are no unit-tests within this test case,
-    it is because all the functionality of `MemberRoleDoesNotExistError` is inherited
-    from its parent class so is already unit-tested in the parent class's dedicated test case.
-    """
+    def test_member_role_does_not_exist_error_code(self) -> None:
+        """Test that the error code is set correctly."""
+        assert "E1023" in (MemberRoleDoesNotExistError().ERROR_CODE)
+
+    def test_member_role_does_not_exist_error_default_message(self) -> None:
+        """Test that the default message is correct."""
+        assert (
+            MemberRoleDoesNotExistError.DEFAULT_MESSAGE
+            == 'Role with name "Member" does not exist.'
+        )
+
+    def test_member_role_does_not_exist_dependent_commands(self) -> None:
+        """Test that the dependent commands are set correctly."""
+        assert frozenset({"makemember", "ensure-members-inducted", "annual-roles-reset"}) == (
+            MemberRoleDoesNotExistError.DEPENDENT_COMMANDS
+        )
 
 
 class TestArchivistRoleDoesNotExistError:
-    """
-    Test case to unit-test the `ArchivistRoleDoesNotExistError` exception.
+    """Test case to unit-test the `ArchivistRoleDoesNotExistError` exception."""
 
-    If there are no unit-tests within this test case,
-    it is because all the functionality of `ArchivistRoleDoesNotExistError` is inherited
-    from its parent class so is already unit-tested in the parent class's dedicated test case.
-    """
+    def test_archivist_role_does_not_exist_error_code(self) -> None:
+        """Test that the error code is set correctly."""
+        assert "E1024" in (ArchivistRoleDoesNotExistError().ERROR_CODE)
+
+    def test_archivist_role_does_not_exist_error_default_message(self) -> None:
+        """Test that the default message is correct."""
+        assert (
+            ArchivistRoleDoesNotExistError.DEFAULT_MESSAGE
+            == 'Role with name "Archivist" does not exist.'
+        )
+
+    def test_archivist_role_does_not_exist_dependent_commands(self) -> None:
+        """Test that the dependent commands are set correctly."""
+        assert frozenset({"archive", "increment-year-channels"}) == (
+            ArchivistRoleDoesNotExistError.DEPENDENT_COMMANDS
+        )
 
 
 class TestChannelDoesNotExistError:
