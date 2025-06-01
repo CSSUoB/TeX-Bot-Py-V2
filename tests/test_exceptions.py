@@ -7,6 +7,7 @@ from typed_classproperties import classproperty
 
 from exceptions import (
     ChannelDoesNotExistError,
+    CommitteeRoleDoesNotExistError,
     DiscordMemberNotInMainGuildError,
     GuildDoesNotExistError,
     ImproperlyConfiguredError,
@@ -706,10 +707,8 @@ class TestRoleDoesNotExistError:
 
     def test_default_message(self) -> None:
         """Test that the default message is correct."""
-        assert (
-            self._RoleDoesNotExistErrorSubclass.DEFAULT_MESSAGE == (
-                'Role with name "role_name_1" does not exist.'
-            )
+        assert self._RoleDoesNotExistErrorSubclass.DEFAULT_MESSAGE == (
+            'Role with name "role_name_1" does not exist.'
         )
 
     def test_init_with_custom_message(self) -> None:
@@ -721,15 +720,12 @@ class TestRoleDoesNotExistError:
     def test_default_dependant_message(self) -> None:
         """Test that the default message is correct."""
         test_exception: RoleDoesNotExistError = self._RoleDoesNotExistErrorSubclass()
-        assert (
-            test_exception.get_formatted_message(
-                non_existent_object_identifier=test_exception.ROLE_NAME,
-            )
-            == (
-                f'"{test_exception.ROLE_NAME}" {test_exception.DOES_NOT_EXIST_TYPE} must exist'
-                " in order to use the \"/test_command_1\" command, the \"test_task_1\" task"
-                " and the \"test_event_1\" event."
-            )
+        assert test_exception.get_formatted_message(
+            non_existent_object_identifier=test_exception.ROLE_NAME,
+        ) == (
+            f'"{test_exception.ROLE_NAME}" {test_exception.DOES_NOT_EXIST_TYPE} must exist'
+            ' in order to use the "/test_command_1" command, the "test_task_1" task'
+            ' and the "test_event_1" event.'
         )
 
 
@@ -741,6 +737,36 @@ class TestCommitteeRoleDoesNotExistError:
     it is because all the functionality of `CommitteeRoleDoesNotExistError` is inherited
     from its parent class so is already unit-tested in the parent class's dedicated test case.
     """
+
+    def test_committee_role_does_not_exist_error_code(self) -> None:
+        """Test that the error code is set correctly."""
+        assert "E1021" in (CommitteeRoleDoesNotExistError().ERROR_CODE)
+
+    def test_committee_role_does_not_exist_error_default_message(self) -> None:
+        """Test that the default message is correct."""
+        assert (
+            CommitteeRoleDoesNotExistError.DEFAULT_MESSAGE
+            == 'Role with name "Committee" does not exist.'
+        )
+
+    def test_committee_role_does_not_exist_dependent_commands(self) -> None:
+        """Test that the dependent commands are set correctly."""
+        assert (
+            frozenset(
+                (
+                    "writeroles",
+                    "editmessage",
+                    "induct",
+                    "strike",
+                    "archive",
+                    "delete-all",
+                    "ensure-members-inducted",
+                    "kill",
+                    "committee-handover",
+                )
+            )
+            == CommitteeRoleDoesNotExistError.DEPENDENT_COMMANDS
+        )
 
 
 class TestGuestRoleDoesNotExistError:
