@@ -12,6 +12,7 @@ from exceptions import (
     CommitteeElectRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
     DiscordMemberNotInMainGuildError,
+    EveryoneRoleCouldNotBeRetrievedError,
     GeneralChannelDoesNotExistError,
     GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
@@ -20,6 +21,7 @@ from exceptions import (
     MemberRoleDoesNotExistError,
     MessagesJSONFileMissingKeyError,
     MessagesJSONFileValueError,
+    RestartRequiredDueToConfigChange,
     RoleDoesNotExistError,
     RolesChannelDoesNotExistError,
 )
@@ -43,6 +45,24 @@ class TestImproperlyConfiguredError:
         """Test that the custom error message is shown when the exception is raised."""
         with pytest.raises(ImproperlyConfiguredError, match=test_exception_message):
             raise ImproperlyConfiguredError(test_exception_message)
+
+
+class TestRestartRequiredDueToConfigChange:
+    """Test case to unit-test the `RestartRequiredDueToConfigChange` exception."""
+
+    @pytest.mark.parametrize("test_exception_message", ("Error 1 occurred",))
+    def test_message(self, test_exception_message: str) -> None:
+        """Test that the custom error message is used in the `__str__` representation."""
+        assert (
+            str(RestartRequiredDueToConfigChange(test_exception_message))
+            == test_exception_message
+        )
+
+    @pytest.mark.parametrize("test_exception_message", ("Error 1 occurred",))
+    def test_message_when_raised(self, test_exception_message: str) -> None:
+        """Test that the custom error message is shown when the exception is raised."""
+        with pytest.raises(RestartRequiredDueToConfigChange, match=test_exception_message):
+            raise RestartRequiredDueToConfigChange(test_exception_message)
 
 
 class TestBaseTeXBotError:
@@ -562,13 +582,22 @@ class TestDiscordMemberNotInMainGuildError:
 
 
 class TestEveryoneRoleCouldNotBeRetrievedError:
-    """
-    Test case to unit-test the `EveryoneRoleCouldNotBeRetrievedError` exception.
+    """Test case to unit-test the `EveryoneRoleCouldNotBeRetrievedError` exception."""
 
-    If there are no unit-tests within this test case,
-    it is because all the functionality of `EveryoneRoleCouldNotBeRetrievedError` is inherited
-    from its parent class so is already unit-tested in the parent class's dedicated test case.
-    """
+    def test_everyone_role_default_message(self) -> None:
+        """Test that the default message is correct."""
+        assert (
+            EveryoneRoleCouldNotBeRetrievedError.DEFAULT_MESSAGE
+            == 'The reference to the "@everyone" role could not be correctly retrieved.'
+        )
+
+        assert EveryoneRoleCouldNotBeRetrievedError().message == (
+            'The reference to the "@everyone" role could not be correctly retrieved.'
+        )
+
+    def test_everyone_role_error_code(self) -> None:
+        """Test that the error code is set correctly."""
+        assert EveryoneRoleCouldNotBeRetrievedError.ERROR_CODE == "E1042"
 
 
 class TestInvalidMessagesJSONFileError:
