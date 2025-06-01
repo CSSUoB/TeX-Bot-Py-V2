@@ -667,6 +667,18 @@ class TestRoleDoesNotExistError:
 
         @classproperty
         @override
+        def DEPENDENT_TASKS(cls) -> frozenset[str]:
+            """The set of names of bot tasks that require this Discord entity."""
+            return frozenset(("test_task_1",))
+
+        @classproperty
+        @override
+        def DEPENDENT_EVENTS(cls) -> frozenset[str]:
+            """The set of names of bot events that require this Discord entity."""
+            return frozenset(("test_event_1",))
+
+        @classproperty
+        @override
         def ROLE_NAME(cls) -> str:
             """The name of the Discord role that does not exist."""
             return "role_name_1"
@@ -686,6 +698,38 @@ class TestRoleDoesNotExistError:
         """
         assert self._RoleDoesNotExistErrorSubclass.ROLE_NAME in str(
             self._RoleDoesNotExistErrorSubclass()
+        )
+
+    def test_error_code(self) -> None:
+        """Test that the error code is set correctly."""
+        assert self._RoleDoesNotExistErrorSubclass.ERROR_CODE == "E1"
+
+    def test_default_message(self) -> None:
+        """Test that the default message is correct."""
+        assert (
+            self._RoleDoesNotExistErrorSubclass.DEFAULT_MESSAGE == (
+                'Role with name "role_name_1" does not exist.'
+            )
+        )
+
+    def test_init_with_custom_message(self) -> None:
+        """Test that a custom message is used if provided."""
+        msg = "Custom error message"
+        exc = self._RoleDoesNotExistErrorSubclass(msg)
+        assert str(exc) == msg
+
+    def test_default_dependant_message(self) -> None:
+        """Test that the default message is correct."""
+        test_exception: RoleDoesNotExistError = self._RoleDoesNotExistErrorSubclass()
+        assert (
+            test_exception.get_formatted_message(
+                non_existent_object_identifier=test_exception.ROLE_NAME,
+            )
+            == (
+                f'"{test_exception.ROLE_NAME}" {test_exception.DOES_NOT_EXIST_TYPE} must exist'
+                " in order to use the \"/test_command_1\" command, the \"test_task_1\" task"
+                " and the \"test_event_1\" event."
+            )
         )
 
 
