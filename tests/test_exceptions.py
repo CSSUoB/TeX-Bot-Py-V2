@@ -6,8 +6,10 @@ import pytest
 from typed_classproperties import classproperty
 
 from exceptions import (
+    ApplicantRoleDoesNotExistError,
     ArchivistRoleDoesNotExistError,
     ChannelDoesNotExistError,
+    CommitteeElectRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
     DiscordMemberNotInMainGuildError,
     GuestRoleDoesNotExistError,
@@ -737,7 +739,7 @@ class TestCommitteeRoleDoesNotExistError:
 
     def test_committee_role_does_not_exist_error_code(self) -> None:
         """Test that the error code is set correctly."""
-        assert "E1021" in (CommitteeRoleDoesNotExistError().ERROR_CODE)
+        assert "E1021" in (CommitteeRoleDoesNotExistError.ERROR_CODE)
 
     def test_committee_role_does_not_exist_error_default_message(self) -> None:
         """Test that the default message is correct."""
@@ -766,12 +768,54 @@ class TestCommitteeRoleDoesNotExistError:
         )
 
 
+class TestCommitteeElectRoleDoesNotExistError:
+    """Test case to unit-test the `CommitteeElectRoleDoesNotExistError` exception."""
+
+    def test_committee_elector_role_does_not_exist_error_code(self) -> None:
+        """Test that the error code is set correctly."""
+        assert "E1026" in (CommitteeElectRoleDoesNotExistError.ERROR_CODE)
+
+    def test_committee_elector_role_does_not_exist_error_default_message(self) -> None:
+        """Test that the default message is correct."""
+        assert (
+            CommitteeElectRoleDoesNotExistError.DEFAULT_MESSAGE
+            == 'Role with name "Committee-Elect" does not exist.'
+        )
+
+    def test_committee_elector_role_does_not_exist_dependent_commands(self) -> None:
+        """Test that the dependent commands are set correctly."""
+        assert frozenset({"handover"}) == (
+            CommitteeElectRoleDoesNotExistError.DEPENDENT_COMMANDS
+        )
+
+
+class TestApplicantRoleDoesNotExistError:
+    """Test case to unit-test the `ApplicantRoleDoesNotExistError` exception."""
+
+    def test_applicant_role_does_not_exist_error_code(self) -> None:
+        """Test that the error code is set correctly."""
+        assert "E1025" in (ApplicantRoleDoesNotExistError.ERROR_CODE)
+
+    def test_applicant_role_does_not_exist_error_default_message(self) -> None:
+        """Test that the default message is correct."""
+        assert (
+            ApplicantRoleDoesNotExistError.DEFAULT_MESSAGE
+            == 'Role with name "Applicant" does not exist.'
+        )
+
+    def test_applicant_role_does_not_exist_dependent_commands(self) -> None:
+        """Test that the dependent commands are set correctly."""
+        assert frozenset({"make_applicant"}) == (
+            ApplicantRoleDoesNotExistError.DEPENDENT_COMMANDS
+        )
+
+
 class TestGuestRoleDoesNotExistError:
     """Test case to unit-test the `GuestRoleDoesNotExistError` exception."""
 
     def test_guest_role_does_not_exist_error_code(self) -> None:
         """Test that the error code is set correctly."""
-        assert "E1022" in (GuestRoleDoesNotExistError().ERROR_CODE)
+        assert "E1022" in (GuestRoleDoesNotExistError.ERROR_CODE)
 
     def test_guest_role_does_not_exist_error_default_message(self) -> None:
         """Test that the default message is correct."""
@@ -801,7 +845,7 @@ class TestMemberRoleDoesNotExistError:
 
     def test_member_role_does_not_exist_error_code(self) -> None:
         """Test that the error code is set correctly."""
-        assert "E1023" in (MemberRoleDoesNotExistError().ERROR_CODE)
+        assert "E1023" in (MemberRoleDoesNotExistError.ERROR_CODE)
 
     def test_member_role_does_not_exist_error_default_message(self) -> None:
         """Test that the default message is correct."""
@@ -822,7 +866,7 @@ class TestArchivistRoleDoesNotExistError:
 
     def test_archivist_role_does_not_exist_error_code(self) -> None:
         """Test that the error code is set correctly."""
-        assert "E1024" in (ArchivistRoleDoesNotExistError().ERROR_CODE)
+        assert "E1024" in (ArchivistRoleDoesNotExistError.ERROR_CODE)
 
     def test_archivist_role_does_not_exist_error_default_message(self) -> None:
         """Test that the default message is correct."""
