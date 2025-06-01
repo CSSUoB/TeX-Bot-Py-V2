@@ -637,6 +637,10 @@ class TestGuildDoesNotExistError:
         """
         assert "given ID" in str(GuildDoesNotExistError())
 
+    def test_error_code(self) -> None:
+        """Test that the error code is set correctly."""
+        assert "E1011" in (GuildDoesNotExistError().ERROR_CODE)
+
 
 class TestRoleDoesNotExistError:
     """Test case to unit-test the `RoleDoesNotExistError` exception."""
