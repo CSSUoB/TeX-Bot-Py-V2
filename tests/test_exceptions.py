@@ -20,6 +20,7 @@ from exceptions import (
     MessagesJSONFileMissingKeyError,
     MessagesJSONFileValueError,
     RoleDoesNotExistError,
+    RolesChannelDoesNotExistError,
 )
 from exceptions.base import BaseDoesNotExistError, BaseTeXBotError
 
@@ -712,8 +713,9 @@ class TestRoleDoesNotExistError:
 
     def test_default_message(self) -> None:
         """Test that the default message is correct."""
-        assert self._RoleDoesNotExistErrorSubclass.DEFAULT_MESSAGE == (
-            'Role with name "role_name_1" does not exist.'
+        assert self._RoleDoesNotExistErrorSubclass().message == (
+            '"role_name_1" role must exist in order to use the "/test_command_1" command,'
+            ' the "test_task_1" task and the "test_event_1" event.'
         )
 
     def test_init_with_custom_message(self) -> None:
@@ -766,6 +768,21 @@ class TestCommitteeRoleDoesNotExistError:
             CommitteeRoleDoesNotExistError.DEFAULT_MESSAGE
             == 'Role with name "Committee" does not exist.'
         )
+
+        assert CommitteeRoleDoesNotExistError().message.startswith(
+            '"Committee" role must exist in order to use the'
+        )
+
+        assert [
+            command in CommitteeRoleDoesNotExistError().message
+            for command in (
+                CommitteeRoleDoesNotExistError.DEPENDENT_COMMANDS.union(
+                    CommitteeRoleDoesNotExistError.DEPENDENT_TASKS.union(
+                        CommitteeRoleDoesNotExistError.DEPENDENT_EVENTS
+                    )
+                )
+            )
+        ]
 
     def test_committee_role_does_not_exist_dependent_commands(self) -> None:
         """Test that the dependent commands are set correctly."""
@@ -1001,13 +1018,22 @@ class TestChannelDoesNotExistError:
 
 
 class TestRolesChannelDoesNotExistError:
-    """
-    Test case to unit-test the `RolesChannelDoesNotExistError` exception.
+    """Test case to unit-test the `RolesChannelDoesNotExistError` exception."""
 
-    If there are no unit-tests within this test case,
-    it is because all the functionality of `RolesChannelDoesNotExistError` is inherited
-    from its parent class so is already unit-tested in the parent class's dedicated test case.
-    """
+    def test_roles_channel_does_not_exist_error_code(self) -> None:
+        """Test that the error code is set correctly."""
+        assert "E1031" in (RolesChannelDoesNotExistError.ERROR_CODE)
+
+    def test_roles_channel_does_not_exist_error_default_message(self) -> None:
+        """Test that the default message is correct."""
+        assert (
+            RolesChannelDoesNotExistError().message
+            == '"#roles" channel must exist in order to use the "/writeroles" command.'
+        )
+
+    def test_roles_channel_does_not_exist_dependent_commands(self) -> None:
+        """Test that the dependent commands are set correctly."""
+        assert frozenset({"writeroles"}) == (RolesChannelDoesNotExistError.DEPENDENT_COMMANDS)
 
 
 class TestGeneralChannelDoesNotExistError:
