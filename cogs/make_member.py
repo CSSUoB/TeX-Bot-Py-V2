@@ -197,7 +197,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 if guest_role not in interaction_member.roles:
                     await interaction_member.add_roles(
                         guest_role,
-                        reason='TeX Bot slash-command: "/makemember"',
+                        reason=f'{ctx.user} used TeX Bot slash-command: "/makemember"',
                     )
             applicant_role: discord.Role | None
             try:
@@ -208,7 +208,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             if applicant_role and applicant_role in interaction_member.roles:
                 await interaction_member.remove_roles(
                     applicant_role,
-                    reason='TeX Bot slash-command: "/makemember"',
+                    reason=f'{ctx.user} used TeX Bot slash-command: "/makemember"',
                 )
 
 
