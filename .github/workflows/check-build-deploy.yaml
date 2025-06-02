@@ -44,7 +44,7 @@ jobs:
                 enable-cache: true
 
             - name: Install mypy From Locked Dependencies
-              run: uv sync --no-group dev --group type-check
+              run: uv sync --no-group dev --group type-check --group test
 
             - name: Store Hashed Python Version
               id: store-hashed-python-version
@@ -165,7 +165,19 @@ jobs:
                 key: pytest|${{steps.store-hashed-python-version.outputs.hashed_python_version}}
 
             - name: Run pytest
-              run: uv run -- pytest  # TODO: Add GitHub workflows output format
+              run: uv run pytest --cov --cov-branch --cov-report=xml --junitxml=junit.xml
+
+            - name: Upload test results to Codecov
+              if: ${{ !cancelled() }}
+              uses: codecov/test-results-action@v1
+              with:
+                token: ${{ secrets.CODECOV_TOKEN }}
+
+            - name: Upload coverage report to Codecov
+              uses: codecov/codecov-action@v5
+              if: ${{ !cancelled() }}
+              with:
+                token: ${{ secrets.CODECOV_TOKEN }}
 
     ruff-lint:
         runs-on: ubuntu-latest
