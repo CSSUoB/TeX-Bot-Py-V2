@@ -211,10 +211,10 @@ Happy contributing!
 
 ### Creating a New Cog
 
-Cogs are modular components of the bot that group related commands and listeners into a single class. To create a new cog, follow these steps:
+Cogs are modular components of TeX-Bot that group related commands and listeners into a single class. To create a new cog, follow these steps:
 
 1. **Create the Cog File**
-   - Navigate to the `cogs` folder.
+   - Navigate to the `cogs/` directory.
    - Create a new Python file with a name that reflects the purpose of the cog (e.g., `example_cog.py`).
 
 2. **Define the Cog Class**
@@ -235,7 +235,7 @@ Cogs are modular components of the bot that group related commands and listeners
 
 3. **Add Commands and Listeners**
    - Define methods within the class for commands and event listeners.
-   - Use decorators like `@discord.slash_command` or `@TeXBotBaseCog.listener` to specify their purpose.
+   - Use decorators like `@discord.slash_command()` or `@TeXBotBaseCog.listener()` to register the callback method to their [interaction](TERMINOLOGY.md#Interactions) type.
    - Include any necessary checks using `CommandChecks` decorators.
 
    Example:
@@ -253,9 +253,8 @@ Cogs are modular components of the bot that group related commands and listeners
    ```
 
 4. **Register the Cog**
-   - Open `cogs/__init__.py`.
-   - Add your new cog class to the list of cogs in the `setup` function.
-   - Also, include the cog in the `__all__` sequence to ensure it is properly exported.
+   - Edit `cogs/__init__.py` to add your new cog class to the list of cogs in the `setup` function.
+   - Also, include the cog class in the `__all__` sequence to ensure it is properly exported.
 
    Example:
    ```python
@@ -278,7 +277,7 @@ Cogs are modular components of the bot that group related commands and listeners
    ```
 
 5. **Test the Cog**
-   - Run the bot and ensure the new cog is loaded without errors.
+   - Run the bot with your changes and ensure the new cog is loaded without errors.
    - Test the commands and listeners to verify they work as expected.
 
 6. **Document the Cog**
@@ -289,14 +288,14 @@ Cogs are modular components of the bot that group related commands and listeners
 
 To add a new environment variable to the project, follow these steps:
 
-1. **Define the Variable in `.env`**
-   - Open the `.env` file in the root directory (or create one if it doesn't exist).
+1. **Define the Variable in development `.env`**
+   - Open the `.env` file in the project root directory (or create one if it doesn't exist).
    - Add the new variable in the format `VARIABLE_NAME=value`.
    - Ensure the variable name is descriptive and uses uppercase letters with underscores.
 
 2. **Update `config.py`**
    - Open the `config.py` file.
-   - Add a new setup method in the `Settings` class to validate and load the variable. For example:
+   - Add a new private setup method in the `Settings` class to validate and load the variable. For example:
      ```python
      @classmethod
      def _setup_new_variable(cls) -> None:
@@ -330,17 +329,17 @@ To add a new environment variable to the project, follow these steps:
    - Update the `README.md` file under the "Setting Environment Variables" section to include the new variable, its purpose, and any valid values.
 
 5. **Test the Variable**
-   - Run the bot and ensure the new variable is loaded correctly.
-   - Test edge cases, such as missing or invalid values, to confirm proper error handling.
+   - Run the bot with your changes and ensure the new variable is loaded correctly.
+   - Test edge cases, such as missing, blank or invalid values in the `.env` file, to confirm that error handling functions correctly.
 
 ### Creating a Response Button
 
 Response buttons are interactive UI components that allow users to respond to bot messages with predefined actions. To create a response button, follow these steps:
 
 1. **Define the Button Class**
-   - Create a class that inherits from `discord.ui.View`.
-   - Add button methods using the `@discord.ui.button` decorator.
-   - Each button method should define the button's label, style, and custom ID.
+   - Create a new class in your cog file that inherits from `discord.ui.View`.
+   - Add button callback response methods using the `@discord.ui.button` decorator.
+   - Each button method should define the button's label, style, and a custom response ID.
 
    Example:
    ```python
@@ -365,11 +364,11 @@ Response buttons are interactive UI components that allow users to respond to bo
        )
        async def confirm_no(self, button: discord.Button, interaction: discord.Interaction) -> None:
            # Handle the 'No' button click
-           await interaction.response.send_message("Action canceled.", ephemeral=True)
+           await interaction.response.send_message("Action cancelled.", ephemeral=True)
    ```
 
 2. **Send the View with a Message**
-   - Use the `view` parameter of the `send` or `respond` method to attach the button view to a message.
+   - Use the `view` parameter of the `send` or `respond` method to attach the button view to a message. This could be sent in response to a command, event handler or scheduled task.
 
    Example:
    ```python
@@ -384,7 +383,7 @@ Response buttons are interactive UI components that allow users to respond to bo
    - Use `interaction.response` to send feedback or perform actions based on the button clicked.
 
 4. **Test the Button**
-   - Run the bot and ensure the buttons appear and function as expected.
+   - Run the bot with your changes and ensure the buttons appear and function as expected.
    - Test edge cases, such as multiple users interacting with the buttons simultaneously.
 
 5. **Document the Button**
@@ -396,31 +395,56 @@ Response buttons are interactive UI components that allow users to respond to bo
 #### Data Protection Consideration
 
 When making changes to the database model, it is essential to consider the data protection implications of these changes. If personal data is being collected, stored or processed, it is essential that this is in compliance with the law. In the UK, the relevant law is the [Data Protection Act 2018](https://www.legislation.gov.uk/ukpga/2018/12/contents). As a general rule, any changes that have data protection implications should be checked and approved by the organisation responsible for running the application.
-
-
 Django models are used to interact with the database in this project. They allow you to define the structure of your data and provide an API to query and manipulate it. To create and interact with Django models, follow these steps:
 
 1. **Define a Model**
    - Navigate to the `db/core/models/` directory.
    - Create a new Python file with a name that reflects the purpose of the model (e.g., `example_model.py`).
-   - Define a class that inherits from `django.db.models.Model`.
-   - Add fields to the class to represent the data structure.
+   - If your model is a new property related to each Discord member (E.g. the number of smiley faces of each Discord member, then define a class that inherits from `BaseDiscordMemberWrapper` (found within the `.utils` module within the `db/core/models/` directory).
+   - If your model is unrelated to Discord members, then define a class that inherits from `AsyncBaseModel` (also found within the `.utils` module within the `db/core/models/` directory).
+   - Add your Django fields to the class to represent the model's data structure.
+   - If your model inherits from `BaseDiscordMemberWrapper` then you *must* declare a field called `discord_member` which must be either a Django `ForeignKey` field or a `OneToOneField`, depending upon the relationship between your model and each Discord member.
+   - Define the static class string holding the display name for multiple instances of your class (E.g., `INSTANCES_NAME_PLURAL: str = "Members' Smiley Faces"`)
 
    Example:
    ```python
    from django.db import models
 
-   class ExampleModel(models.Model):
+   from .utils import AsyncBaseModel, BaseDiscordMemberWrapper
+
+   class ExampleModel(AsyncBaseModel):
        """A model for demonstrating functionality."""
+
+       INSTANCES_NAME_PLURAL: str = "Example Model objects"
+
        name = models.CharField(max_length=255)
        created_at = models.DateTimeField(auto_now_add=True)
-   ```
+   class MemberSmileyFaces(BaseDiscordMemberWrapper):
+       """Model to represent the number of smiley faces of each Discord member."""
+       
+       INSTANCES_NAME_PLURAL: str = "Discord Members' Smiley Faces"
+
+        discord_member = models.OneToOneField(
+            DiscordMember,
+            on_delete=models.CASCADE,
+            related_name="smiley_faces",
+            verbose_name="Discord Member",
+            blank=False,
+            null=False,
+            primary_key=True,
+        )
+        count = models.IntegerField(
+            "Number of smiley faces",
+            null=False,
+            blank=True,
+            default=0,
+        )
 
 2. **Apply Migrations**
    - Run the following commands to create and apply migrations for your new model:
      ```shell
-     uv run python manage.py makemigrations
-     uv run python manage.py migrate
+     uv run manage.py makemigrations
+     uv run manage.py migrate
      ```
 
 3. **Query the Model**
@@ -454,7 +478,7 @@ Django models are used to interact with the database in this project. They allow
      ```
 
 4. **Document the Model**
-   - Add comments and docstrings to explain the purpose and functionality of the model.
+   - Add comments and docstrings to explain the purpose and functionality of your new model.
 
 ### Member Retrieval DB Queries via Hashed Discord ID
 
@@ -472,26 +496,27 @@ To retrieve members from the database using their hashed Discord ID, follow thes
    ```
 
 2. **Query the Database**
-   - Use the hashed Discord ID to retrieve the corresponding member from the database.
+   - A custom filter field is implemented for models that inherit from `BaseDiscordMemberWrapper`, this allows you to filter using the unhashed Discord ID, despite only the hashed Discord ID being stored in the database.
 
    Example:
    ```python
-   from db.core.models.member import Member
+   from db.core.models.member_smiley_faces import MemberSmileyFaces
 
-   hashed_id = hash_discord_id("123456789012345678")
-   member = Member.objects.filter(hashed_discord_id=hashed_id).first()
+   class MyExampleCommandCog(TeXBotBaseCog):
+       @tasks.loop(minutes=5)
+       async def check_member_smiley_faces(self) -> None:
+           member_smiley_faces = await MemberSmileyFaces.objects.filter(discord_id=1234567).afirst()
 
-   if member:
-       print(f"Member found: {member.name}")
-   else:
-       print("Member not found.")
+           if member_smiley_faces:
+               print(f"Member's smiley faces found: {member_smiley_faces.discord_member.name}")
+           else:
+               print("Member's smiley facesnot found.")
    ```
 
+It is unlikely that you will need to query the `DiscordMember` model directly. Instead the attributes of the member can be accessed by the relationship between each new Django model to the `DiscordMember` model.
+
 3. **Test the Query**
-   - Ensure the query works as expected by testing it with valid and invalid hashed Discord IDs.
+   - Ensure the query works as expected by testing it with valid and invalid Discord IDs.
 
 4. **Document the Query**
    - Add comments and docstrings to explain the purpose and functionality of the query.
-
-
-
