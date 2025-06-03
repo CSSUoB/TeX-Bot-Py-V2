@@ -421,7 +421,7 @@ Django models are used to interact with the database in this project. They allow
        created_at = models.DateTimeField(auto_now_add=True)
    class MemberSmileyFaces(BaseDiscordMemberWrapper):
        """Model to represent the number of smiley faces of each Discord member."""
-       
+
        INSTANCES_NAME_PLURAL: str = "Discord Members' Smiley Faces"
 
         discord_member = models.OneToOneField(
