@@ -466,7 +466,7 @@ class Settings(abc.ABC):
             INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
                 "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
             )
-            raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE)
 
         cls._settings["MEMBERS_LIST_URL_SESSION_COOKIE"] = raw_members_list_url_session_cookie
 
