@@ -458,7 +458,9 @@ class Settings(abc.ABC):
             "MEMBERS_LIST_URL_SESSION_COOKIE",
         )
 
-        if not raw_members_list_url_session_cookie or not re.fullmatch(r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_url_session_cookie):
+        if not raw_members_list_url_session_cookie or not re.fullmatch(
+            r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_url_session_cookie
+        ):
             INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
                 "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
             )
