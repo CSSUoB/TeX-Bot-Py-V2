@@ -8,8 +8,4 @@ if TYPE_CHECKING:
 __all__: "Sequence[str]" = ()
 
 
-
 # TODO: random welcome message
-
-
-
