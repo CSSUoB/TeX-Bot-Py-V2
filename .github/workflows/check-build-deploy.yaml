@@ -134,7 +134,7 @@ jobs:
         needs: [uv-check]
         runs-on: ubuntu-latest
         permissions:
-          id-token: write
+            id-token: write
         env:
             UV_NO_SYNC: true
             UV_FROZEN: true
