@@ -1023,8 +1023,9 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         embed_content: str = ""
 
         if message.content:
-            embed_content += message.content[:200]
-            embed_content += "..."
+            embed_content += message.content[:300]
+            if len(message.content) > 300:
+                embed_content += " _... (truncated to 300 characters)_"
         else:
             embed_content += "_Reported message had no content_"
             if len(message.attachments) > 0 or len(message.embeds) > 0:
