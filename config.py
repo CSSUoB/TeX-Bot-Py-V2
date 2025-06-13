@@ -241,10 +241,10 @@ class Settings(abc.ABC):
             return
 
         if not re.fullmatch(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", raw_group_full_name):
-            INVALID_GROUP_FULL_NAME: Final[str] = (
+            INVALID_GROUP_NAME: Final[str] = (
                 "GROUP_NAME must not contain any invalid characters."
             )
-            raise ImproperlyConfiguredError(INVALID_GROUP_FULL_NAME)
+            raise ImproperlyConfiguredError(INVALID_GROUP_NAME)
 
         cls._settings["_GROUP_FULL_NAME"] = raw_group_full_name
 
@@ -454,23 +454,19 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_members_list_auth_session_cookie(cls) -> None:
-        raw_members_list_auth_session_cookie: str | None = os.getenv(
+        raw_members_list_url_session_cookie: str | None = os.getenv(
             "MEMBERS_LIST_URL_SESSION_COOKIE",
         )
 
-        MEMBERS_LIST_AUTH_SESSION_COOKIE_IS_VALID: Final[bool] = bool(
-            raw_members_list_auth_session_cookie
-            and re.fullmatch(r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_auth_session_cookie),
-        )
-        if not MEMBERS_LIST_AUTH_SESSION_COOKIE_IS_VALID:
-            INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE: Final[str] = (
+        if not raw_members_list_url_session_cookie or not re.fullmatch(
+            r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_url_session_cookie
+        ):
+            INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
                 "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
             )
-            raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE)
 
-        cls._settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"] = (
-            raw_members_list_auth_session_cookie
-        )
+        cls._settings["MEMBERS_LIST_URL_SESSION_COOKIE"] = raw_members_list_url_session_cookie
 
     @classmethod
     def _setup_send_introduction_reminders(cls) -> None:
