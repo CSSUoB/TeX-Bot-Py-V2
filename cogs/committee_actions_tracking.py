@@ -140,10 +140,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 name=f"{member.display_name} ({member.global_name})", value=str(member.id)
             )
             for member in (
-                set(committee_role.members)
-                | set(
-                    committee_elect_role.members if committee_elect_role is not None else set()
-                )
+                set(committee_role.members) | set(committee_elect_role.members)
+                if committee_elect_role is not None
+                else set()
             )
             if not member.bot
         }
@@ -292,8 +291,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         required=True,
         parameter_name="status",
     )
-    @CommandChecks.check_interaction_user_in_main_guild
-    async def update_status(
+    async def update_status(  # NOTE: Committee role check is not present because non-committee can have actions, and need to be able to list their own actions.
         self, ctx: "TeXBotApplicationContext", action_id: str, status: str
     ) -> None:
         """
@@ -301,7 +299,6 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         Takes in an action object and a Status string,
         sets the status of the provided action to be the provided status.
-        Committee role check is not present because non-committee can have actions
         and must be able to update their own action status.
         """
         try:
@@ -573,8 +570,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         default=None,
         parameter_name="status",
     )
-    @CommandChecks.check_interaction_user_in_main_guild
-    async def list_user_actions(
+    async def list_user_actions(  # NOTE: Committee role check is not present because non-committee can have actions, and need to be able to list their own actions.
         self,
         ctx: "TeXBotApplicationContext",
         *,
@@ -590,15 +586,17 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         If a user has the committee role, they can list actions for other users.
         If a user does not have the committee role, they can only list their own actions.
         """
-        committee_role: discord.Role = await self.bot.committee_role
+        action_member_id = action_member_id.strip()
 
         action_member: discord.Member | discord.User = (
             await self.bot.get_member_from_str_id(action_member_id)
-            if action_member_id.strip()
+            if action_member_id
             else ctx.user
         )
 
-        if action_member != ctx.user and committee_role not in ctx.user.roles:
+        if action_member != ctx.user and not await self.bot.check_user_has_committee_role(
+            ctx.user
+        ):
             await ctx.respond(
                 content="Committee role is required to list actions for other users.",
                 ephemeral=True,
