@@ -620,7 +620,7 @@ class Settings(abc.ABC):
 
         raw_send_get_roles_reminders_delay: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            str(os.getenv("SEND_GET_ROLES_REMINDERS_DELAY", "40h").strip()),
+            str(os.getenv("SEND_GET_ROLES_REMINDERS_DELAY", "40h").strip().lower()),
         )
 
         raw_timedelta_send_get_roles_reminders_delay: timedelta = timedelta()
@@ -667,7 +667,7 @@ class Settings(abc.ABC):
 
         raw_advanced_send_get_roles_reminders_interval: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            str(os.getenv("ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL", "24h")),
+            str(os.getenv("ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL", "24h").strip().lower()),
         )
 
         raw_timedelta_details_advanced_send_get_roles_reminders_interval: Mapping[
