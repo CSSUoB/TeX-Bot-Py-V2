@@ -301,6 +301,8 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         Takes in an action object and a Status string,
         sets the status of the provided action to be the provided status.
+        Committee role check is not present because non-committee can have actions
+        and must be able to update their own action status.
         """
         try:
             action_id_int: int = int(action_id)
@@ -584,6 +586,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         Definition and callback of the "/list" command.
 
         Takes in a user and lists out their current actions.
+        If no user is specified, the user issuing the command will be used.
+        If a user has the committee role, they can list actions for other users.
+        If a user does not have the committee role, they can only list their own actions.
         """
         committee_role: discord.Role = await self.bot.committee_role
 
