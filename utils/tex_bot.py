@@ -397,6 +397,8 @@ class TeXBot(discord.Bot):
         return bool(discord.utils.get(self.main_guild.text_channels, id=channel.id))
 
     async def _fetch_text_channel(self, name: str) -> discord.TextChannel | None:
+        name = name.strip()
+
         text_channel: AllChannelTypes | None = discord.utils.get(
             await self.main_guild.fetch_channels(),
             name=name,
@@ -485,7 +487,7 @@ class TeXBot(discord.Bot):
         Raises `ValueError` if the provided ID does not represent any member
         of your group's Discord guild.
         """
-        str_member_id = str_member_id.replace("<@", "").replace(">", "")
+        str_member_id = re.sub(r"\A\s*(<@)(.*)(?(1)>|)\s*\Z", r"\2", str_member_id)
 
         if not re.fullmatch(r"\A\d{17,20}\Z", str_member_id):
             INVALID_USER_ID_MESSAGE: Final[str] = f"'{str_member_id}' is not a valid user ID."
