@@ -667,7 +667,9 @@ class Settings(abc.ABC):
 
         raw_advanced_send_get_roles_reminders_interval: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            str(os.getenv("ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL", "24h").strip().lower()),
+            str(
+                os.getenv("ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL", "24h").strip().lower()
+            ),
         )
 
         raw_timedelta_details_advanced_send_get_roles_reminders_interval: Mapping[
