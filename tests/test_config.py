@@ -1591,7 +1591,11 @@ class TestSetupSendIntroductionRemindersInterval:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
         RuntimeSettings._setup_send_introduction_reminders()
 
-        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"):
+        with (
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"),
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"),
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"),
+        ):
             os.environ["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
                 test_send_introduction_reminders_interval
             )
@@ -1865,7 +1869,11 @@ class TestSetupSendIntroductionRemindersDelay:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
         RuntimeSettings._setup_send_introduction_reminders()
 
-        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"):
+        with (
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"),
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"),
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"),
+        ):
             try:
                 RuntimeSettings._setup_send_introduction_reminders_delay()
             except ImproperlyConfiguredError:
@@ -1891,7 +1899,11 @@ class TestSetupSendIntroductionRemindersDelay:
 
         RuntimeSettings._setup_send_introduction_reminders()
 
-        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"):
+        with (
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"),
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"),
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"),
+        ):
             os.environ["SEND_INTRODUCTION_REMINDERS_DELAY"] = (
                 too_short_introduction_reminders_delay
             )
@@ -1919,7 +1931,11 @@ class TestSetupSendIntroductionRemindersDelay:
 
         RuntimeSettings._setup_send_introduction_reminders()
 
-        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"):
+        with (
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"),
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"),
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"),
+        ):
             os.environ["SEND_INTRODUCTION_REMINDERS_DELAY"] = (
                 test_invalid_introduction_reminders_delay
             )
@@ -1940,7 +1956,11 @@ class TestSetupSendIntroductionRemindersDelay:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
         RuntimeSettings._setup_send_introduction_reminders()
 
-        with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"):
+        with (
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"),
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"),
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"),
+        ):
             os.environ["SEND_INTRODUCTION_REMINDERS_DELAY"] = (
                 test_send_introduction_reminders_delay
             )
