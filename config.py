@@ -501,7 +501,7 @@ class Settings(abc.ABC):
 
         raw_send_introduction_reminders_delay: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            str(os.getenv("SEND_INTRODUCTION_REMINDERS_DELAY", "40h")),
+            str(os.getenv("SEND_INTRODUCTION_REMINDERS_DELAY", "40h").strip().lower()),
         )
 
         raw_timedelta_send_introduction_reminders_delay: timedelta = timedelta()

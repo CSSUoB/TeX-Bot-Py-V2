@@ -1593,7 +1593,6 @@ class TestSetupSendIntroductionRemindersInterval:
 
         with (
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"),
-            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"),
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"),
         ):
             os.environ["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
@@ -1871,7 +1870,6 @@ class TestSetupSendIntroductionRemindersDelay:
 
         with (
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"),
-            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"),
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"),
         ):
             try:
