@@ -35,7 +35,7 @@ We recommend also reading the following if you're unsure or not confident:
 * [Contributing To An Open Source Project For The First Time](https://firsttimersonly.com)
 
 TeX-Bot is written in [Python](https://python.org) using [Pycord](https://pycord.dev) and uses Discord's [slash-commands](https://support.discord.com/hc/articles/1500000368501-Slash-Commands-FAQ) & [user-commands](https://guide.pycord.dev/interactions/application-commands/context-menus).
-We would recommend being somewhat familiar with the [Pycord library](https://docs.pycord.dev), [Python language](https://docs.python.org/3/reference/index) & [project terminology](README.md#terminology) before contributing.
+We would recommend being somewhat familiar with the [Pycord library](https://docs.pycord.dev), [Python language](https://docs.python.org/3/reference/index) & [project terminology](TERMINOLOGY.md) before contributing.
 
 ## Using the Issue Tracker
 
@@ -52,13 +52,13 @@ If you are submitting a feature request, please include the steps to implement t
 ### Top level files
 
 * [`main.py`](main.py): is the main entrypoint to instantiate the [`Bot` object](https://docs.pycord.dev/stable/api/clients.html#discord.Bot) & run it
-* [`exceptions.py`](exceptions.py): contains common [exception](https://docs.python.org/3/tutorial/errors) subclasses that may be raised when certain errors occur
-* [`config.py`](config.py): retrieves the [environment variables](README.md#setting-environment-variables) & populates the correct values into the `settings` object
+* [`exceptions/`](exceptions): contains common [exception](https://docs.python.org/3/tutorial/errors) subclasses that may be raised when certain errors occur
+* [`config.py`](config.py): retrieves the [environment variables](README.md#setting-environment-variables) and populates the correct values into the `settings` object
 
 ### Other significant directories
 
 * [`cogs/`](cogs): contains all the [cogs](https://guide.pycord.dev/popular-topics/cogs) within this project, see [below](#cogs) for more information
-* [`utils/`](utils): contains common utility classes & functions used by the top-level modules & cogs
+* [`utils/`](utils): contains common utility classes and functions used by the top-level modules and cogs
 * [`db/core/models/`](db/core/models): contains all the [database ORM models](https://docs.djangoproject.com/en/stable/topics/db/models) to interact with storing information longer-term (between individual command events)
 * [`tests/`](tests): contains the complete test suite for this project, based on the [Pytest framework](https://pytest.org)
 
@@ -107,11 +107,11 @@ There are separate cog files for each activity, and one [`__init__.py`](cogs/__i
 
 * [`cogs/startup.py`](cogs/startup.py): cogs for startup & bot initialisation
 
-* [`cogs/stats.py`](cogs/stats.py): cogs for displaying stats about your group's Discord guild, as well as its channels & Discord members
+* [`cogs/stats/`](cogs/stats): cogs for displaying stats about your group's Discord guild, as well as its channels & Discord members
 
 * [`cogs/strike.py`](cogs/strike.py): cogs for applying moderation actions to Discord members
 
-* [`cogs/write_roles.py`](cogs/write_roles.py): cogs relating to sending the message that contains all the opt-in roles, into the "#**roles**" channel
+* [`cogs/write_roles.py`](cogs/write_roles.py): cogs relating to sending the message, that contains all the opt-in roles, into the "#**roles**" channel
 
 ## Making Your First Contribution
 
@@ -155,7 +155,7 @@ It can be run with the following command:
 uv run mypy .
 ```
 
-Although there is [a PyCharm plugin](https://github.com/leinardi/mypy-pycharm#mypy-pycharm) to provide GUI control & inline warnings for [mypy](https://mypy-lang.org), it has been rather temperamental recently.
+Although there is [a PyCharm plugin](https://github.com/leinardi/mypy-pycharm#mypy-pycharm) to provide GUI control and inline warnings for [mypy](https://mypy-lang.org), it has been rather temperamental recently.
 So it is suggested to avoid using it, and run [mypy](https://mypy-lang.org) from the command-line instead.
 
 #### PyMarkdown
@@ -326,7 +326,7 @@ To add a new environment variable to the project, follow these steps:
      ```
 
 4. **Document the Variable**
-   - Update the `README.md` file under the "Setting Environment Variables" section to include the new variable, its purpose, and any valid values.
+   - Update the `README.md` file under the "Setting Environment Variables" section to include the new variable, its purpose and any valid values.
 
 5. **Test the Variable**
    - Run the bot with your changes and ensure the new variable is loaded correctly.
@@ -339,7 +339,7 @@ Response buttons are interactive UI components that allow users to respond to bo
 1. **Define the Button Class**
    - Create a new class in your cog file that inherits from `discord.ui.View`.
    - Add button callback response methods using the `@discord.ui.button` decorator.
-   - Each button method should define the button's label, style, and a custom response ID.
+   - Each button method should define the button's label, a custom response ID and style.
 
    Example:
    ```python
@@ -513,7 +513,7 @@ To retrieve members from the database using their hashed Discord ID, follow thes
                print("Member's smiley facesnot found.")
    ```
 
-It is unlikely that you will need to query the `DiscordMember` model directly. Instead the attributes of the member can be accessed by the relationship between each new Django model to the `DiscordMember` model.
+    It is unlikely that you will need to query the `DiscordMember` model directly. Instead, the attributes of the member can be accessed by the relationship between each new Django model to the `DiscordMember` model.
 
 3. **Test the Query**
    - Ensure the query works as expected by testing it with valid and invalid Discord IDs.

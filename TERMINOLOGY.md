@@ -44,9 +44,9 @@ For example usages, check the [Guides section](CONTRIBUTING.md#Guides) of the [C
 #### [Message Commands](https://discord.com/developers/docs/interactions/application-commands#message-commands)
 
 
-Message-context commands, are executed via right-clicking on a [Discord *Message*](https://discord.com/developers/docs/resources/message), clicking "Apps", then selecting the command from the menu. The interaction callback method is provided information about which message was clicked, along with which user clicked it.
+Message-context commands are executed via right-clicking on a [Discord *Message*](https://discord.com/developers/docs/resources/message), clicking "Apps", then selecting the command from the menu. The interaction callback method is provided information about which message was clicked, along with which user clicked it.
 
-The main difference between [Context Commands](#context-commands) and [Slash Commands](#slash-commands) is that [Context Commands](#context-commands) do not take user defined arguments and are limited to the [Message](https://discord.com/developers/docs/resources/message) that the command is issued on and the context which is passed along side it.
+The main difference between [Context Commands](#context-commands) and [Slash Commands](#slash-commands) is that [Context Commands](#context-commands) do not take user defined arguments and are limited to the [Message](https://discord.com/developers/docs/resources/message) that the command is issued on and the context which is passed alongside it.
 
 
 #### [User Commands](https://discord.com/developers/docs/interactions/application-commands#user-commands)
@@ -62,7 +62,7 @@ Therefore, it can be [messaged via DM](https://dictionary.com/browse/dm) or be r
 (See [the Discord developer docs](https://discord.com/developers/docs/resources/user) & [Pycord's docs](https://docs.pycord.dev/en/stable/api/models.html#users) for more information.)
 
 In contrast, a [Discord "member" object](https://discord.com/developers/docs/resources/guild#guild-member-object) is a [user](https://discord.com/developers/docs/resources/user) attached to a specific [guild](https://discord.com/developers/docs/resources/guild).
-Therefore, it can have [roles](https://discord.com/developers/docs/topics/permissions#role-object), be [banned](https://discord.com/developers/docs/resources/guild#ban-object) & have many other actions applied to it.
+Therefore, it can have [roles](https://discord.com/developers/docs/topics/permissions#role-object), be [banned](https://discord.com/developers/docs/resources/guild#ban-object) and have many other actions applied to it.
 (See [the Discord developer docs](https://discord.com/developers/docs/resources/guild#guild-member-object) & [Pycord's docs](https://docs.pycord.dev/en/stable/api/models.html#discord.Member) for more information.)
 
 ### Community Group Membership
@@ -75,4 +75,4 @@ Some commands may require you to create [roles](https://discord.com/developers/d
 ### Other Uses
 
 In some other contexts, the term "user" may be used to refer to any person/organisation making use of this project.
-(E.g. the description within [the "Error Codes" section](#error-codes).)
+(E.g. the description within [the "Error Codes" section](README.md#error-codes).)

@@ -18,7 +18,7 @@ Featured in the [CSS Discord guild](https://cssbham.com/discord).
 ## Error Codes
 
 Users of TeX-Bot may encounter an error code when executing a slash-command fails.
-If a user encounters any of these errors, please communicate the error to the committee member that has been assigned to upkeep & deployment of your instance of TeX-Bot.
+If a user encounters any of these errors, please communicate the error to the committee member that has been assigned to upkeep and deployment of your instance of TeX-Bot.
 The meaning of each error code is given here:
 
 * `E1011` - The value for the [environment variable](https://wikipedia.org/wiki/Environment_variable) `DISCORD_GUILD_ID` is an [ID](https://discord.com/developers/docs/reference#snowflakes) that references a [Discord guild](https://discord.com/developers/docs/resources/guild) that does not exist
@@ -136,7 +136,7 @@ You'll also need to set a number of [environment variables](https://wikipedia.or
 (This setting is optional.
 Error logs will **always** be sent to the [console](https://wikipedia.org/wiki/Terminal_emulator), this setting allows them to also be sent to a [Discord log channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel).)
 
-* `ORGANISATION_ID`: Your Guild society ID. This is used to dynamically create the members list among other needed URLs.
+* `ORGANISATION_ID`: Your Guild society ID. This is used to dynamically fetch your community group's list of members, among other necessary URLs.
 
 * `MEMBERS_LIST_URL_SESSION_COOKIE`: The members-list [URL](https://wikipedia.org/wiki/URL) [session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie).
 (If your group's members-list is stored at a [URL](https://wikipedia.org/wiki/URL) that requires [authentication](https://wikipedia.org/wiki/Authentication), this [session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie) should [authenticate](https://wikipedia.org/wiki/Authentication) TeX-Bot to view your group's members-list, as if it were [logged in to the website](https://wikipedia.org/wiki/Login_session) as a Committee member.
@@ -176,7 +176,7 @@ This will ensure your code meets the standard required for this project and give
 This project follows the [semantic versioning scheme](https://semver.org).
 We currently treat TeX-Bot as alpha software, and as such no numbered release has been made yet.
 
-When selecting a version tag to use for [deploying TeX-Bot as a container image](#deploying-in-production) there are multiple tag schemes available:
+When selecting a version tag to use for [deploying TeX-Bot as a container image](#deploying-in-production), there are multiple tag schemes available:
 
 * `latest` - The most recent numerically tagged version released
 * `br-<branch>` - The most recent commit from a given branch in this repository (E.g. `br-main`) (N.B. this does not include branches of forks of this repository)
