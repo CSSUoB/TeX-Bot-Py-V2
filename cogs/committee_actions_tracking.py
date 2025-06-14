@@ -299,7 +299,6 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         Takes in an action object and a Status string,
         sets the status of the provided action to be the provided status.
-        and must be able to update their own action status.
         """
         try:
             action_id_int: int = int(action_id)
