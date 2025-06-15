@@ -1,5 +1,6 @@
 """Contains cog classes for tracking committee-actions."""
 
+import contextlib
 import logging
 import random
 from enum import Enum
@@ -11,6 +12,7 @@ from django.db.models import Q
 
 from db.core.models import AssignedCommitteeAction, DiscordMember
 from exceptions import (
+    CommitteeElectRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
     InvalidActionDescriptionError,
     InvalidActionTargetError,
@@ -129,11 +131,22 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         except CommitteeRoleDoesNotExistError:
             return set()
 
+        committee_elect_role: discord.Role | None = None
+        with contextlib.suppress(CommitteeElectRoleDoesNotExistError):
+            committee_elect_role = await ctx.bot.committee_elect_role
+
         return {
             discord.OptionChoice(
                 name=f"{member.display_name} ({member.global_name})", value=str(member.id)
             )
-            for member in committee_role.members
+            for member in (
+                set(committee_role.members)
+                | (
+                    set(committee_elect_role.members)
+                    if committee_elect_role is not None
+                    else set()
+                )
+            )
             if not member.bot
         }
 
@@ -281,9 +294,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         required=True,
         parameter_name="status",
     )
-    @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_main_guild
-    async def update_status(
+    async def update_status(  # NOTE: Committee role check is not present because non-committee can have actions, and need to be able to list their own actions.
         self, ctx: "TeXBotApplicationContext", action_id: str, status: str
     ) -> None:
         """
@@ -561,9 +572,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         default=None,
         parameter_name="status",
     )
-    @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_main_guild
-    async def list_user_actions(
+    async def list_user_actions(  # NOTE: Committee role check is not present because non-committee can have actions, and need to be able to list their own actions.
         self,
         ctx: "TeXBotApplicationContext",
         *,
@@ -575,15 +584,32 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         Definition and callback of the "/list" command.
 
         Takes in a user and lists out their current actions.
+        If no user is specified, the user issuing the command will be used.
+        If a user has the committee role, they can list actions for other users.
+        If a user does not have the committee role, they can only list their own actions.
         """
-        action_member: discord.Member | discord.User
+        action_member_id = action_member_id.strip()
 
-        if action_member_id:
-            action_member = await self.bot.get_member_from_str_id(
-                action_member_id,
+        action_member: discord.Member | discord.User = (
+            await self.bot.get_member_from_str_id(action_member_id)
+            if action_member_id
+            else ctx.user
+        )
+
+        if action_member != ctx.user and not await self.bot.check_user_has_committee_role(
+            ctx.user
+        ):
+            await ctx.respond(
+                content="Committee role is required to list actions for other users.",
+                ephemeral=True,
             )
-        else:
-            action_member = ctx.user
+            logger.debug(
+                "User: %s, tried to list actions for user: %s, "
+                "but did not have the committee role.",
+                ctx.user,
+                action_member,
+            )
+            return
 
         user_actions: list[AssignedCommitteeAction]
 
