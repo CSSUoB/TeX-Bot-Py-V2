@@ -36,7 +36,7 @@ class _CourseTypes(Enum):
                 return 0.75
             case _CourseTypes.M_SCI, 3:
                 return 0.4
-            case __CourseTypes.M_SCI, 4:
+            case _CourseTypes.M_SCI, 4:
                 return 0.4
             case _:
                 INVALID_COURSE_YEAR_OR_TYPE_MESSAGE: Final[str] = (
