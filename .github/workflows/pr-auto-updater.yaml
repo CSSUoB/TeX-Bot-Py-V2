@@ -1,14 +1,14 @@
-name: pr-auto-update
+name: Automatic PR Updater
 on:
     push: {}
 
 jobs:
     pr-auto-update:
-        name: Automatic PR Updater
         runs-on: ubuntu-latest
         permissions:
             pull-requests: write
             contents: write
+
         steps:
             - uses: CSSUoB/pr-auto-updater@v2.2.1
               env:
