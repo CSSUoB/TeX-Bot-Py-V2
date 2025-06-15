@@ -29,7 +29,7 @@ from exceptions import (
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Sequence
     from logging import Logger
-    from typing import Final, NoReturn
+    from typing import Final, LiteralString, NoReturn
 
     from utils import AllChannelTypes
 
@@ -399,9 +399,7 @@ class TeXBot(discord.Bot):
     def _main_guild_has_channel(self, channel: discord.TextChannel) -> bool:
         return bool(discord.utils.get(self.main_guild.text_channels, id=channel.id))
 
-    async def _fetch_main_guild_text_channel(self, name: str) -> discord.TextChannel | None:
-        name = name.strip()
-
+    async def _fetch_main_guild_text_channel(self, name: "LiteralString") -> discord.TextChannel | None:
         text_channel: AllChannelTypes | None = discord.utils.get(
             await self.main_guild.fetch_channels(),
             name=name,
