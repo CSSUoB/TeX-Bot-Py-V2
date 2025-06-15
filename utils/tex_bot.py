@@ -108,7 +108,7 @@ class TeXBot(discord.Bot):
 
         Raises `CommitteeRoleDoesNotExist` if the role does not exist.
         """
-        if not self._committee_role or not self._guild_has_role(self._committee_role):
+        if not self._committee_role or not self._main_guild_has_role(self._committee_role):
             self._committee_role = discord.utils.get(
                 await self.main_guild.fetch_roles(),
                 name="Committee",
@@ -131,7 +131,7 @@ class TeXBot(discord.Bot):
         """
         COMMITTEE_ELECT_ROLE_NEEDS_FETCHING: Final[bool] = bool(
             not self._committee_elect_role
-            or not self._guild_has_role(self._committee_elect_role),
+            or not self._main_guild_has_role(self._committee_elect_role),
         )
         if COMMITTEE_ELECT_ROLE_NEEDS_FETCHING:
             self._committee_elect_role = discord.utils.get(
@@ -156,7 +156,7 @@ class TeXBot(discord.Bot):
 
         Raises `GuestRoleDoesNotExist` if the role does not exist.
         """
-        if not self._guest_role or not self._guild_has_role(self._guest_role):
+        if not self._guest_role or not self._main_guild_has_role(self._guest_role):
             self._guest_role = discord.utils.get(
                 await self.main_guild.fetch_roles(),
                 name="Guest",
@@ -179,7 +179,7 @@ class TeXBot(discord.Bot):
 
         Raises `MemberRoleDoesNotExist` if the role does not exist.
         """
-        if not self._member_role or not self._guild_has_role(self._member_role):
+        if not self._member_role or not self._main_guild_has_role(self._member_role):
             self._member_role = discord.utils.get(self.main_guild.roles, name="Member")
             self._member_role = discord.utils.get(
                 await self.main_guild.fetch_roles(),
@@ -201,7 +201,7 @@ class TeXBot(discord.Bot):
 
         Raises `ArchivistRoleDoesNotExist` if the role does not exist.
         """
-        if not self._archivist_role or not self._guild_has_role(self._archivist_role):
+        if not self._archivist_role or not self._main_guild_has_role(self._archivist_role):
             self._archivist_role = discord.utils.get(
                 await self.main_guild.fetch_roles(),
                 name="Archivist",
@@ -219,7 +219,7 @@ class TeXBot(discord.Bot):
 
         The applicant role allows users to see the specific applicant channels.
         """
-        if not self._applicant_role or not self._guild_has_role(self._applicant_role):
+        if not self._applicant_role or not self._main_guild_has_role(self._applicant_role):
             self._applicant_role = discord.utils.get(
                 await self.main_guild.fetch_roles(),
                 name="Applicant",
@@ -240,8 +240,8 @@ class TeXBot(discord.Bot):
 
         Raises `RolesChannelDoesNotExist` if the channel does not exist.
         """
-        if not self._roles_channel or not self._guild_has_channel(self._roles_channel):
-            self._roles_channel = await self._fetch_text_channel("roles")
+        if not self._roles_channel or not self._main_guild_has_channel(self._roles_channel):
+            self._roles_channel = await self._fetch_main_guild_text_channel("roles")
 
         if not self._roles_channel:
             raise RolesChannelDoesNotExistError
@@ -255,8 +255,8 @@ class TeXBot(discord.Bot):
 
         Raises `GeneralChannelDoesNotExist` if the channel does not exist.
         """
-        if not self._general_channel or not self._guild_has_channel(self._general_channel):
-            self._general_channel = await self._fetch_text_channel("general")
+        if not self._general_channel or not self._main_guild_has_channel(self._general_channel):
+            self._general_channel = await self._fetch_main_guild_text_channel("general")
 
         if not self._general_channel:
             raise GeneralChannelDoesNotExistError
@@ -272,9 +272,9 @@ class TeXBot(discord.Bot):
 
         Raises `RulesChannelDoesNotExist` if the channel does not exist.
         """
-        if not self._rules_channel or not self._guild_has_channel(self._rules_channel):
+        if not self._rules_channel or not self._main_guild_has_channel(self._rules_channel):
             self._rules_channel = (
-                self.main_guild.rules_channel or await self._fetch_text_channel("welcome")
+                self.main_guild.rules_channel or await self._fetch_main_guild_text_channel("welcome")
             )
 
         if not self._rules_channel:
@@ -390,13 +390,13 @@ class TeXBot(discord.Bot):
     def _check_guild_accessible(self, guild_id: int) -> bool:
         return bool(discord.utils.get(self.guilds, id=guild_id))
 
-    def _guild_has_role(self, role: discord.Role) -> bool:
+    def _main_guild_has_role(self, role: discord.Role) -> bool:
         return bool(discord.utils.get(self.main_guild.roles, id=role.id))
 
-    def _guild_has_channel(self, channel: discord.TextChannel) -> bool:
+    def _main_guild_has_channel(self, channel: discord.TextChannel) -> bool:
         return bool(discord.utils.get(self.main_guild.text_channels, id=channel.id))
 
-    async def _fetch_text_channel(self, name: str) -> discord.TextChannel | None:
+    async def _fetch_main_guild_text_channel(self, name: str) -> discord.TextChannel | None:
         name = name.strip()
 
         text_channel: AllChannelTypes | None = discord.utils.get(
