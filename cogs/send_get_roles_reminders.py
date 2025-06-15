@@ -93,6 +93,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 "Serious Talk",
                 "Housing",
                 "Gaming",
+                "Pets",
                 "Anime",
                 "Sport",
                 "Food",
