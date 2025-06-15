@@ -399,7 +399,9 @@ class TeXBot(discord.Bot):
     def _main_guild_has_channel(self, channel: discord.TextChannel) -> bool:
         return bool(discord.utils.get(self.main_guild.text_channels, id=channel.id))
 
-    async def _fetch_main_guild_text_channel(self, name: "LiteralString") -> discord.TextChannel | None:
+    async def _fetch_main_guild_text_channel(
+        self, name: "LiteralString"
+    ) -> discord.TextChannel | None:
         text_channel: AllChannelTypes | None = discord.utils.get(
             await self.main_guild.fetch_channels(),
             name=name,
