@@ -1,5 +1,6 @@
-"""Contains cog classes for any everest interactions."""
+"""Contains cog classes for any Everest interactions."""
 
+from enum import Enum
 from typing import TYPE_CHECKING
 
 import discord
@@ -9,131 +10,123 @@ from utils import TeXBotBaseCog
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from collections.abc import Set as AbstractSet
-    from typing import Final
+    from typing import Final, Literal
 
     from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 __all__: "Sequence[str]" = ("EverestCommandCog",)
 
 
-POSSIBLE_COURSE_TYPES: "Final[AbstractSet[str]]" = {"B.Sc.", "M.Sci."}
-POSSIBLE_YEARS: "Final[AbstractSet[int]]" = {1, 2, 3, 4}
+class CourseTypes(Enum):
+    B_SC = "B.Sc."
+    M_SCI = "M.Sci."
 
-BSC_WEIGHTINGS: "Final[list[float]]" = [0, 0.25, 0.75]
-MSCI_WEIGHTINGS: "Final[list[float]]" = [0, 0.2, 0.4, 0.4]
+    def get_course_year_weighting(self, course_year: "Literal[1, 2, 3, 4]") -> float:
+        match (self, course_year):
+            case CourseTypes.B_SC, 1:
+                return 0
+            case CourseTypes.M_SCI, 1:
+                return 0
+            case CourseTypes.B_SC, 2:
+                return 0.25
+            case CourseTypes.M_SCI, 2:
+                return 0.2
+            case CourseTypes.B_SC, 3:
+                return 0.75
+            case CourseTypes.M_SCI, 3:
+                return 0.4
+            case CourseTypes.M_SCI, 4:
+                return 0.4
+            case _:
+                INVALID_COURSE_YEAR_OR_TYPE_MESSAGE: Final[str] = (
+                    f"Cannot calculate weighting for given course year ('{course_year}') "
+                    f"and type ('{self}')."
+                )
+                raise ValueError(INVALID_COURSE_YEAR_OR_TYPE_MESSAGE)
 
 
 class EverestCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/everest" command and its call-back method."""
 
     @staticmethod
-    async def autocomplete_get_course_types(
-        ctx: "TeXBotAutocompleteContext",  # noqa: ARG004
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
-        """Autocomplete for the course type option."""
-        return POSSIBLE_COURSE_TYPES
-
-    @staticmethod
     async def autocomplete_get_course_years(
-        ctx: "TeXBotAutocompleteContext",  # noqa: ARG004
+        ctx: "TeXBotAutocompleteContext",
     ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[int]":
         """Autocomplete for the course year option."""
-        return POSSIBLE_YEARS
+        try:
+            selected_course_type: CourseTypes | str = ctx.options["course-type"]
+        except KeyError:
+            return {1, 2, 3, 4}
+
+        if not isinstance(selected_course_type, CourseTypes):
+            try:
+                selected_course_type = CourseTypes(selected_course_type.strip())
+            except ValueError:
+                return set()
+
+        match selected_course_type:
+            case CourseTypes.B_SC:
+                return {1, 2, 3}
+            case CourseTypes.M_SCI:
+                return {1, 2, 3, 4}
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="everest", description="How many steps of everest is your assignment worth?"
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="course-type",
-        description="Your type of university course: B.Sc. or M.Sci.",
-        input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_course_types),  # type: ignore[arg-type]
+        description="The type of your university course.",
+        input_type=CourseTypes,
         required=True,
         parameter_name="course_type",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
-        name="year",
-        description="Current year of the course (1 to 4).",
+        name="course-year",
+        description="The current year of your university course.",
         input_type=int,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_course_years),  # type: ignore[arg-type]
+        choices=(1, 2, 3, 4),
+        autocomplete=autocomplete_get_course_years,
         required=True,
-        parameter_name="current_course_year",
+        parameter_name="course_year",
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
-        name="module_percentage",
-        description="The percentage of a module that the assignment worth.",
+        name="percentage-of-module",
+        description="The percentage of the module that the assignment is worth.",
         input_type=float,
         required=True,
+        parameter_name="percentage_of_module",
     )
     async def everest(  # type: ignore[misc]
         self,
         ctx: "TeXBotApplicationContext",
-        course_type: str,
-        current_course_year: int,
-        module_percentage: float,
+        course_type: CourseTypes,
+        course_year: "Literal[1, 2, 3, 4]",
+        percentage_of_module: float,
     ) -> None:
         """Calculate how many steps of Mount Everest an assignment is worth."""
-        if course_type not in POSSIBLE_COURSE_TYPES:
-            await ctx.respond(
-                content=(
-                    f"{course_type} is not a valid course type. Please use the autocomplete."
-                )
+        if percentage_of_module < 0 or percentage_of_module > 100:
+            await self.command_send_error(
+                ctx=ctx,
+                message=(
+                    f"Percentage of module: '{percentage_of_module}' is not valid. "
+                    "Please enter a percentage between 0 - 100."
+                ),
             )
             return
 
-        INVALID_COURSE_YEAR_MESSAGE: Final[str] = (
-            f"Course year: {current_course_year} is not valid. Please use the autocomplete."
-        )
-
         try:
-            current_course_year = int(current_course_year)
-        except ValueError:
-            await ctx.respond(content=INVALID_COURSE_YEAR_MESSAGE)
+            course_year_weighting: float = course_type.get_course_year_weighting(course_year)
+        except ValueError as e:
+            await self.command_send_error(ctx, message=str(e))
             return
-
-        if current_course_year not in POSSIBLE_YEARS:
-            await ctx.respond(content=INVALID_COURSE_YEAR_MESSAGE)
-            return
-
-        INVALID_MODULE_WEIGHT_MESSAGE: Final[str] = (
-            f"Module weight: {module_percentage} is not valid."
-            "Please enter a positive number less than or equal to 100."
-        )
-        try:
-            module_weight = float(module_percentage)
-        except ValueError:
-            await ctx.respond(content=INVALID_MODULE_WEIGHT_MESSAGE)
-            return
-
-        if module_weight < 0 or module_weight > 100:
-            await ctx.respond(content=INVALID_MODULE_WEIGHT_MESSAGE)
-            return
-
-        if current_course_year == 4 and course_type == "B.Sc.":
-            await ctx.respond(
-                content=(
-                    "You have selected 4th year of a B.Sc. course, which is not valid."
-                    "If you are in final year, please select 3rd year."
-                )
-            )
-            return
-
-        year_value: float = 0
-
-        if course_type == "B.Sc.":
-            year_value = BSC_WEIGHTINGS[current_course_year - 1]
-        if course_type == "msci":
-            year_value = MSCI_WEIGHTINGS[current_course_year - 1]
-
-        steps = (
-            (module_weight / 100) * 1 / 6 * year_value * 44250
-        )  # NOTE: Assumes all modules are 20 credits
-
         await ctx.respond(
             content=(
-                f"Course: {course_type}, "
-                f"Year: {current_course_year}, "
-                f"Weight: {module_percentage}%\n"
-                f"This assignment is worth {int(steps)} steps of Mt. Everest!"
-            )
+                f"*Course*: {course_type}\n"
+                f"*Year*: {course_year}\n"
+                f"*Weighting*: {percentage_of_module}%\n"
+                f"This assignment is worth {  # NOTE: Assumes all modules are 20 credits
+                    int((percentage_of_module / 100) * (1 / 6) * course_year_weighting * 44250)
+                } steps of Mt. Everest!"
+            ),
+            ephemeral=True,
         )
