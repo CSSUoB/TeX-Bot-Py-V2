@@ -255,7 +255,9 @@ class TeXBot(discord.Bot):
 
         Raises `GeneralChannelDoesNotExist` if the channel does not exist.
         """
-        if not self._general_channel or not self._main_guild_has_channel(self._general_channel):
+        if not self._general_channel or not self._main_guild_has_channel(
+            self._general_channel
+        ):
             self._general_channel = await self._fetch_main_guild_text_channel("general")
 
         if not self._general_channel:
@@ -274,7 +276,8 @@ class TeXBot(discord.Bot):
         """
         if not self._rules_channel or not self._main_guild_has_channel(self._rules_channel):
             self._rules_channel = (
-                self.main_guild.rules_channel or await self._fetch_main_guild_text_channel("welcome")
+                self.main_guild.rules_channel
+                or await self._fetch_main_guild_text_channel("welcome")
             )
 
         if not self._rules_channel:
