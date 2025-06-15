@@ -17,25 +17,26 @@ if TYPE_CHECKING:
 __all__: "Sequence[str]" = ("EverestCommandCog",)
 
 
-class CourseTypes(Enum):
+class _CourseTypes(Enum):
     B_SC = "B.Sc."
     M_SCI = "M.Sci."
 
     def get_course_year_weighting(self, course_year: "Literal[1, 2, 3, 4]") -> float:
+        """Calculate the grade weighting the given year has for this course type."""
         match (self, course_year):
-            case CourseTypes.B_SC, 1:
+            case _CourseTypes.B_SC, 1:
                 return 0
-            case CourseTypes.M_SCI, 1:
+            case _CourseTypes.M_SCI, 1:
                 return 0
-            case CourseTypes.B_SC, 2:
+            case _CourseTypes.B_SC, 2:
                 return 0.25
-            case CourseTypes.M_SCI, 2:
+            case _CourseTypes.M_SCI, 2:
                 return 0.2
-            case CourseTypes.B_SC, 3:
+            case _CourseTypes.B_SC, 3:
                 return 0.75
-            case CourseTypes.M_SCI, 3:
+            case _CourseTypes.M_SCI, 3:
                 return 0.4
-            case CourseTypes.M_SCI, 4:
+            case __CourseTypes.M_SCI, 4:
                 return 0.4
             case _:
                 INVALID_COURSE_YEAR_OR_TYPE_MESSAGE: Final[str] = (
@@ -54,20 +55,20 @@ class EverestCommandCog(TeXBotBaseCog):
     ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[int]":
         """Autocomplete for the course year option."""
         try:
-            selected_course_type: CourseTypes | str = ctx.options["course-type"]
+            selected_course_type: _CourseTypes | str = ctx.options["course-type"]
         except KeyError:
             return {1, 2, 3, 4}
 
-        if not isinstance(selected_course_type, CourseTypes):
+        if not isinstance(selected_course_type, _CourseTypes):
             try:
-                selected_course_type = CourseTypes(selected_course_type.strip())
+                selected_course_type = _CourseTypes(selected_course_type.strip())
             except ValueError:
                 return set()
 
         match selected_course_type:
-            case CourseTypes.B_SC:
+            case _CourseTypes.B_SC:
                 return {1, 2, 3}
-            case CourseTypes.M_SCI:
+            case _CourseTypes.M_SCI:
                 return {1, 2, 3, 4}
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -76,7 +77,7 @@ class EverestCommandCog(TeXBotBaseCog):
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="course-type",
         description="The type of your university course.",
-        input_type=CourseTypes,
+        input_type=_CourseTypes,
         required=True,
         parameter_name="course_type",
     )
@@ -99,7 +100,7 @@ class EverestCommandCog(TeXBotBaseCog):
     async def everest(  # type: ignore[misc]
         self,
         ctx: "TeXBotApplicationContext",
-        course_type: CourseTypes,
+        course_type: _CourseTypes,
         course_year: "Literal[1, 2, 3, 4]",
         percentage_of_module: float,
     ) -> None:
