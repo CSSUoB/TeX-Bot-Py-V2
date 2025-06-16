@@ -69,14 +69,12 @@ DEFAULT_STATISTICS_ROLES: "Final[AbstractSet[str]]" = {
     "Postdoc",
     "Quiz Victor",
 }
-LOG_LEVEL_CHOICES: "Final[frozenset[str]]" = frozenset(
-    {
-        "DEBUG",
-        "INFO",
-        "WARNING",
-        "ERROR",
-        "CRITICAL",
-    }
+LOG_LEVEL_CHOICES: "Final[Sequence[str]]" = (
+    "DEBUG",
+    "INFO",
+    "WARNING",
+    "ERROR",
+    "CRITICAL",
 )
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
