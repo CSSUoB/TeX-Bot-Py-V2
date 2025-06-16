@@ -31,7 +31,6 @@ type-check = ["django-stubs[compatible-mypy]>=5.1", "mypy>=1.13", "types-beautif
 name = "TeX-Bot-Py-V2"
 requires-python = ">=3.12,<3.13" # TODO: Allow Python 3.13 once py-cord makes a new release with support for it
 version = "0.1.0"
-dependencies = []
 
 
 [tool.pytest.ini_options]
