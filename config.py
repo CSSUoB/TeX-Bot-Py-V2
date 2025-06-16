@@ -549,7 +549,7 @@ class Settings(abc.ABC):
                     "SEND_INTRODUCTION_REMINDERS_DELAY must be longer than or equal to 1 day."
                 )
                 raise ImproperlyConfiguredError(
-                    TOO_SMALL_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE,
+                    TOO_SMALL_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE
                 )
 
         cls._settings["SEND_INTRODUCTION_REMINDERS_DELAY"] = (
@@ -734,15 +734,15 @@ class Settings(abc.ABC):
     def _setup_statistics_roles(cls) -> None:
         raw_statistics_roles: str = str(os.getenv("STATISTICS_ROLES", default="")).strip()
 
-        if not raw_statistics_roles:
-            cls._settings["STATISTICS_ROLES"] = DEFAULT_STATISTICS_ROLES
-            return
-
-        cls._settings["STATISTICS_ROLES"] = {
-            raw_statistics_role.strip()
-            for raw_statistics_role in raw_statistics_roles.split(",")
-            if raw_statistics_role
-        }
+        cls._settings["STATISTICS_ROLES"] = (
+            {
+                raw_statistics_role.strip()
+                for raw_statistics_role in raw_statistics_roles.split(",")
+                if raw_statistics_role
+            }
+            if raw_statistics_roles
+            else DEFAULT_STATISTICS_ROLES
+        )
 
     @classmethod
     def _setup_moderation_document_url(cls) -> None:
