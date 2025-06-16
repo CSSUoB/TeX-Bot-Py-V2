@@ -15,7 +15,7 @@ import re
 from collections.abc import Iterable, Mapping
 from datetime import timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, final
+from typing import TYPE_CHECKING, final, cast
 
 import dotenv
 import validators
@@ -70,11 +70,13 @@ DEFAULT_STATISTICS_ROLES: "Final[AbstractSet[str]]" = {
     "Quiz Victor",
 }
 LOG_LEVEL_CHOICES: "Final[frozenset[str]]" = frozenset(
-    "DEBUG",
-    "INFO",
-    "WARNING",
-    "ERROR",
-    "CRITICAL",
+    {
+        "DEBUG",
+        "INFO",
+        "WARNING",
+        "ERROR",
+        "CRITICAL",
+    }
 )
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
@@ -164,7 +166,7 @@ class Settings(abc.ABC):
             "(see https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)."
         )
 
-        raw_discord_bot_token: str = str(os.getenv("DISCORD_BOT_TOKEN", default="")).strip()
+        raw_discord_bot_token: str = os.getenv("DISCORD_BOT_TOKEN", default="").strip()
 
         if not raw_discord_bot_token:
             raise ImproperlyConfiguredError(INVALID_DISCORD_BOT_TOKEN_MESSAGE)
@@ -292,9 +294,9 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_membership_perks_url(cls) -> None:
-        raw_membership_perks_url: str = str(
-            os.getenv("MEMBERSHIP_PERKS_URL", default="")
-        ).strip().lower()
+        raw_membership_perks_url: str = (
+            str(os.getenv("MEMBERSHIP_PERKS_URL", default="")).strip().lower()
+        )
 
         if not raw_membership_perks_url:
             cls._settings["MEMBERSHIP_PERKS_URL"] = None
@@ -317,9 +319,9 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_custom_discord_invite_url(cls) -> None:
-        raw_custom_discord_invite_url: str = str(
-            os.getenv("CUSTOM_DISCORD_INVITE_URL", default="")
-        ).strip().lower()
+        raw_custom_discord_invite_url: str = (
+            str(os.getenv("CUSTOM_DISCORD_INVITE_URL", default="")).strip().lower()
+        )
 
         if not raw_custom_discord_invite_url:
             cls._settings["CUSTOM_DISCORD_INVITE_URL"] = None
