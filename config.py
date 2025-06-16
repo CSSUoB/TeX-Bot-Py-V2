@@ -13,7 +13,6 @@ import logging
 import os
 import re
 from collections.abc import Iterable, Mapping
-from collections.abc import Set as AbstractSet
 from datetime import timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, final
@@ -30,6 +29,7 @@ from exceptions import (
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import IO, Any, ClassVar, Final
 
