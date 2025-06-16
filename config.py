@@ -15,7 +15,7 @@ import re
 from collections.abc import Iterable, Mapping
 from datetime import timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, final, cast
+from typing import TYPE_CHECKING, final
 
 import dotenv
 import validators
