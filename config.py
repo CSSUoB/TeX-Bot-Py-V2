@@ -273,8 +273,12 @@ class Settings(abc.ABC):
             cls._settings["PURCHASE_MEMBERSHIP_URL"] = None
             return
 
-        if "://" not in raw_purchase_membership_url:
+        if not raw_purchase_membership_url.startswith("https://"):
             raw_purchase_membership_url = "https://" + raw_purchase_membership_url
+            logger.warning(
+                "PURCHASE_MEMBERSHIP_URL does not start with 'https://'."
+                "Please ensure all URLs are valid https URLs.",
+            )
 
         if not validators.url(raw_purchase_membership_url):
             INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE: Final[str] = (
@@ -292,8 +296,12 @@ class Settings(abc.ABC):
             cls._settings["MEMBERSHIP_PERKS_URL"] = None
             return
 
-        if "://" not in raw_membership_perks_url:
+        if not raw_membership_perks_url.startswith("https://"):
             raw_membership_perks_url = "https://" + raw_membership_perks_url
+            logger.warning(
+                "MEMBERSHIP_PERKS_URL does not start with 'https://'."
+                "Please ensure all URLs are valid https URLs.",
+            )
 
         if not validators.url(raw_membership_perks_url):
             INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (
@@ -313,8 +321,12 @@ class Settings(abc.ABC):
             cls._settings["CUSTOM_DISCORD_INVITE_URL"] = None
             return
 
-        if "://" not in raw_custom_discord_invite_url:
+        if not raw_custom_discord_invite_url.startswith("https://"):
             raw_custom_discord_invite_url = "https://" + raw_custom_discord_invite_url
+            logger.warning(
+                "CUSTOM_DISCORD_INVITE_URL does not start with 'https://'."
+                "Please ensure all URLs are valid https URLs.",
+            )
 
         if not validators.url(raw_custom_discord_invite_url):
             INVALID_CUSTOM_DISCORD_INVITE_URL_MESSAGE: Final[str] = (
@@ -735,8 +747,12 @@ class Settings(abc.ABC):
             "MODERATION_DOCUMENT_URL", default=""
         ).strip()
 
-        if raw_moderation_document_url and "://" not in raw_moderation_document_url:
+        if not raw_moderation_document_url.startswith("https://"):
             raw_moderation_document_url = "https://" + raw_moderation_document_url
+            logger.warning(
+                "MODERATION_DOCUMENT_URL does not start with 'https://'."
+                "Please ensure all URLs are valid https URLs.",
+            )
 
         MODERATION_DOCUMENT_URL_IS_VALID: Final[bool] = bool(
             validators.url(raw_moderation_document_url),
