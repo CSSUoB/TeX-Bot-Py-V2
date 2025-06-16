@@ -45,33 +45,31 @@ __all__: "Sequence[str]" = (
 
 PROJECT_ROOT: "Final[Path]" = Path(__file__).parent.resolve()
 
-TRUE_VALUES: "Final[frozenset[str]]" = frozenset({"true", "1", "t", "y", "yes", "on"})
-FALSE_VALUES: "Final[frozenset[str]]" = frozenset({"false", "0", "f", "n", "no", "off"})
+TRUE_VALUES: "Final[AbstractSet[str]]" = {"true", "1", "t", "y", "yes", "on"}
+FALSE_VALUES: "Final[AbstractSet[str]]" = {"false", "0", "f", "n", "no", "off"}
 VALID_SEND_INTRODUCTION_REMINDERS_VALUES: "Final[AbstractSet[str]]" = (
     {"once", "interval"} | TRUE_VALUES | FALSE_VALUES
 )
-DEFAULT_STATISTICS_ROLES: "Final[frozenset[str]]" = frozenset(
-    {
-        "Committee",
-        "Committee-Elect",
-        "Student Rep",
-        "Member",
-        "Guest",
-        "Server Booster",
-        "Foundation Year",
-        "First Year",
-        "Second Year",
-        "Final Year",
-        "Year In Industry",
-        "Year Abroad",
-        "PGT",
-        "PGR",
-        "Alumnus/Alumna",
-        "Postdoc",
-        "Quiz Victor",
-    },
-)
-LOG_LEVEL_CHOICES: "Final[Sequence[str]]" = (
+DEFAULT_STATISTICS_ROLES: "Final[AbstractSet[str]]" = {
+    "Committee",
+    "Committee-Elect",
+    "Student Rep",
+    "Member",
+    "Guest",
+    "Server Booster",
+    "Foundation Year",
+    "First Year",
+    "Second Year",
+    "Final Year",
+    "Year In Industry",
+    "Year Abroad",
+    "PGT",
+    "PGR",
+    "Alumnus/Alumna",
+    "Postdoc",
+    "Quiz Victor",
+}
+LOG_LEVEL_CHOICES: "Final[frozenset[str]]" = frozenset(
     "DEBUG",
     "INFO",
     "WARNING",
@@ -161,39 +159,43 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_discord_bot_token(cls) -> None:
-        raw_discord_bot_token: str = str(os.getenv("DISCORD_BOT_TOKEN", default="")).strip()
-
-        DISCORD_BOT_TOKEN_IS_VALID: Final[bool] = bool(
-            re.fullmatch(
-                r"\A([A-Za-z0-9_-]{24,26})\.([A-Za-z0-9_-]{6})\.([A-Za-z0-9_-]{27,38})\Z",
-                raw_discord_bot_token,
-            ),
+        INVALID_DISCORD_BOT_TOKEN_MESSAGE: Final[str] = (
+            "DISCORD_BOT_TOKEN must be set to a valid Discord bot token "  # noqa: S105
+            "(see https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)."
         )
 
-        if not DISCORD_BOT_TOKEN_IS_VALID:
-            INVALID_DISCORD_BOT_TOKEN_MESSAGE: Final[str] = (
-                "DISCORD_BOT_TOKEN must be a valid Discord bot token "  # noqa: S105
-                "(see https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)."
-            )
+        raw_discord_bot_token: str = str(os.getenv("DISCORD_BOT_TOKEN", default="")).strip()
+
+        if not raw_discord_bot_token:
+            raise ImproperlyConfiguredError(INVALID_DISCORD_BOT_TOKEN_MESSAGE)
+
+        if not re.fullmatch(
+            r"\A([A-Za-z0-9_-]{24,26})\.([A-Za-z0-9_-]{6})\.([A-Za-z0-9_-]{27,38})\Z",
+            raw_discord_bot_token,
+        ):
             raise ImproperlyConfiguredError(INVALID_DISCORD_BOT_TOKEN_MESSAGE)
 
         cls._settings["DISCORD_BOT_TOKEN"] = raw_discord_bot_token
 
     @classmethod
     def _setup_discord_log_channel_webhook(cls) -> "Logger":
-        raw_discord_log_channel_webhook_url: str = str(
-            os.getenv("DISCORD_LOG_CHANNEL_WEBHOOK_URL", "")
-        ).strip()
+        INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE: Final[str] = (
+            "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL "
+            "that points to a discord channel where logs should be displayed."
+        )
+
+        raw_discord_log_channel_webhook_url: str = (
+            str(os.getenv("DISCORD_LOG_CHANNEL_WEBHOOK_URL", "")).strip().lower()
+        )
+
+        if not raw_discord_log_channel_webhook_url:
+            raise ImproperlyConfiguredError(INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE)
 
         if not validators.url(
             raw_discord_log_channel_webhook_url
         ) or not raw_discord_log_channel_webhook_url.startswith(
             "https://discord.com/api/webhooks/"
         ):
-            INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE: Final[str] = (
-                "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL "
-                "that points to a discord channel where logs should be displayed."
-            )
             raise ImproperlyConfiguredError(INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE)
 
         webhook_config_logger: Logger = logging.getLogger("_temp_webhook_config")
@@ -217,17 +219,16 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_discord_guild_id(cls) -> None:
-        raw_discord_guild_id: str = str(os.getenv("DISCORD_GUILD_ID", default="")).strip()
-
-        DISCORD_GUILD_ID_IS_VALID: Final[bool] = bool(
-            re.fullmatch(r"\A\d{17,20}\Z", raw_discord_guild_id),
+        INVALID_DISCORD_GUILD_ID_MESSAGE: Final[str] = (
+            "DISCORD_GUILD_ID must be a valid Discord guild ID "
+            "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)."
         )
 
-        if not DISCORD_GUILD_ID_IS_VALID:
-            INVALID_DISCORD_GUILD_ID_MESSAGE: Final[str] = (
-                "DISCORD_GUILD_ID must be a valid Discord guild ID "
-                "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)."
-            )
+        raw_discord_guild_id: str = str(os.getenv("DISCORD_GUILD_ID", default="")).strip()
+
+        if not raw_discord_guild_id or not re.fullmatch(
+            r"\A\d{17,20}\Z", raw_discord_guild_id
+        ):
             raise ImproperlyConfiguredError(INVALID_DISCORD_GUILD_ID_MESSAGE)
 
         cls._settings["_DISCORD_MAIN_GUILD_ID"] = int(raw_discord_guild_id)
@@ -293,7 +294,7 @@ class Settings(abc.ABC):
     def _setup_membership_perks_url(cls) -> None:
         raw_membership_perks_url: str = str(
             os.getenv("MEMBERSHIP_PERKS_URL", default="")
-        ).strip()
+        ).strip().lower()
 
         if not raw_membership_perks_url:
             cls._settings["MEMBERSHIP_PERKS_URL"] = None
@@ -318,7 +319,7 @@ class Settings(abc.ABC):
     def _setup_custom_discord_invite_url(cls) -> None:
         raw_custom_discord_invite_url: str = str(
             os.getenv("CUSTOM_DISCORD_INVITE_URL", default="")
-        ).strip()
+        ).strip().lower()
 
         if not raw_custom_discord_invite_url:
             cls._settings["CUSTOM_DISCORD_INVITE_URL"] = None
@@ -451,22 +452,26 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_organisation_id(cls) -> None:
-        raw_organisation_id: str = str(os.getenv("ORGANISATION_ID", default="")).strip()
-
-        ORGANISATION_ID_IS_VALID: Final[bool] = bool(
-            re.fullmatch(r"\A\d{4,5}\Z", raw_organisation_id),
+        INVALID_ORGANISATION_ID_MESSAGE: Final[str] = (
+            "ORGANISATION_ID must be an integer 4 to 5 digits long."
         )
 
-        if not ORGANISATION_ID_IS_VALID:
-            INVALID_ORGANISATION_ID_MESSAGE: Final[str] = (
-                "ORGANISATION_ID must be an integer 4 to 5 digits long."
-            )
+        raw_organisation_id: str = str(os.getenv("ORGANISATION_ID", default="")).strip()
+
+        if not raw_organisation_id:
+            raise ImproperlyConfiguredError(INVALID_ORGANISATION_ID_MESSAGE)
+
+        if not re.fullmatch(r"\A\d{4,5}\Z", raw_organisation_id):
             raise ImproperlyConfiguredError(message=INVALID_ORGANISATION_ID_MESSAGE)
 
         cls._settings["ORGANISATION_ID"] = raw_organisation_id
 
     @classmethod
     def _setup_members_list_auth_session_cookie(cls) -> None:
+        INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE: Final[str] = (
+            "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
+        )
+
         raw_members_list_auth_session_cookie: str = str(
             os.getenv(
                 "MEMBERS_LIST_URL_SESSION_COOKIE",
@@ -474,14 +479,10 @@ class Settings(abc.ABC):
             )
         ).strip()
 
-        MEMBERS_LIST_AUTH_SESSION_COOKIE_IS_VALID: Final[bool] = bool(
-            re.fullmatch(r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_auth_session_cookie),
-        )
+        if not raw_members_list_auth_session_cookie:
+            raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE)
 
-        if not MEMBERS_LIST_AUTH_SESSION_COOKIE_IS_VALID:
-            INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE: Final[str] = (
-                "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
-            )
+        if not re.fullmatch(r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_auth_session_cookie):
             raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE)
 
         cls._settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"] = (
