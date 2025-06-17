@@ -136,8 +136,8 @@ class Settings(abc.ABC):
     @staticmethod
     def _setup_logging() -> None:
         raw_console_log_level: str = (
-            str(os.getenv("CONSOLE_LOG_LEVEL", "INFO")).upper().strip()
-        )
+            os.getenv("CONSOLE_LOG_LEVEL", "INFO")
+        ).upper().strip()
 
         if raw_console_log_level not in LOG_LEVEL_CHOICES:
             INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"""LOG_LEVEL must be one of {
@@ -182,8 +182,8 @@ class Settings(abc.ABC):
         )
 
         raw_discord_log_channel_webhook_url: str = (
-            str(os.getenv("DISCORD_LOG_CHANNEL_WEBHOOK_URL", "")).strip().lower()
-        )
+            os.getenv("DISCORD_LOG_CHANNEL_WEBHOOK_URL", "")
+        ).strip().lower()
 
         if (
             not raw_discord_log_channel_webhook_url
@@ -219,7 +219,7 @@ class Settings(abc.ABC):
             "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)."
         )
 
-        raw_discord_guild_id: str = str(os.getenv("DISCORD_GUILD_ID", default="")).strip()
+        raw_discord_guild_id: str = os.getenv("DISCORD_GUILD_ID", default="").strip()
 
         if not raw_discord_guild_id or not re.fullmatch(
             r"\A\d{17,20}\Z", raw_discord_guild_id
@@ -230,7 +230,7 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_group_full_name(cls) -> None:
-        raw_group_full_name: str = str(os.getenv("GROUP_NAME", default="")).strip()
+        raw_group_full_name: str = os.getenv("GROUP_NAME", default="").strip()
 
         if not raw_group_full_name:
             cls._settings["_GROUP_FULL_NAME"] = None
@@ -246,7 +246,7 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_group_short_name(cls) -> None:
-        raw_group_short_name: str = str(os.getenv("GROUP_SHORT_NAME", default="")).strip()
+        raw_group_short_name: str = os.getenv("GROUP_SHORT_NAME", default="").strip()
 
         if not raw_group_short_name:
             cls._settings["_GROUP_SHORT_NAME"] = None
@@ -262,9 +262,7 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_purchase_membership_url(cls) -> None:
-        raw_purchase_membership_url: str = str(
-            os.getenv("PURCHASE_MEMBERSHIP_URL", default="")
-        ).strip()
+        raw_purchase_membership_url: str = os.getenv("PURCHASE_MEMBERSHIP_URL", default="").strip()
 
         if not raw_purchase_membership_url:
             cls._settings["PURCHASE_MEMBERSHIP_URL"] = None
@@ -287,9 +285,7 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_membership_perks_url(cls) -> None:
-        raw_membership_perks_url: str = (
-            str(os.getenv("MEMBERSHIP_PERKS_URL", default="")).strip().lower()
-        )
+        raw_membership_perks_url: str = os.getenv("MEMBERSHIP_PERKS_URL", default="").strip().lower()
 
         if not raw_membership_perks_url:
             cls._settings["MEMBERSHIP_PERKS_URL"] = None
@@ -313,7 +309,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_custom_discord_invite_url(cls) -> None:
         raw_custom_discord_invite_url: str = (
-            str(os.getenv("CUSTOM_DISCORD_INVITE_URL", default="")).strip().lower()
+            os.getenv("CUSTOM_DISCORD_INVITE_URL", default="").strip().lower()
         )
 
         if not raw_custom_discord_invite_url:
@@ -337,11 +333,9 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_ping_command_easter_egg_probability(cls) -> None:
-        raw_ping_command_easter_egg_probability_string: str = str(
-            os.getenv(
-                "PING_COMMAND_EASTER_EGG_PROBABILITY",
-                default="",
-            )
+        raw_ping_command_easter_egg_probability_string: str = os.getenv(
+            "PING_COMMAND_EASTER_EGG_PROBABILITY",
+            default="",
         ).strip()
 
         if not raw_ping_command_easter_egg_probability_string:
@@ -451,7 +445,7 @@ class Settings(abc.ABC):
             "ORGANISATION_ID must be an integer 4 to 5 digits long."
         )
 
-        raw_organisation_id: str = str(os.getenv("ORGANISATION_ID", default="")).strip()
+        raw_organisation_id: str = os.getenv("ORGANISATION_ID", default="").strip()
 
         if not raw_organisation_id or not re.fullmatch(r"\A\d{4,5}\Z", raw_organisation_id):
             raise ImproperlyConfiguredError(INVALID_ORGANISATION_ID_MESSAGE)
@@ -464,11 +458,9 @@ class Settings(abc.ABC):
             "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
         )
 
-        raw_members_list_auth_session_cookie: str = str(
-            os.getenv(
-                "MEMBERS_LIST_URL_SESSION_COOKIE",
-                default="",
-            )
+        raw_members_list_auth_session_cookie: str = os.getenv(
+            "MEMBERS_LIST_URL_SESSION_COOKIE",
+            default="",
         ).strip()
 
         if not raw_members_list_auth_session_cookie or not re.fullmatch(
@@ -482,9 +474,7 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_send_introduction_reminders(cls) -> None:
-        raw_send_introduction_reminders: str | bool = (
-            str(os.getenv("SEND_INTRODUCTION_REMINDERS", "Once")).lower().strip()
-        )
+        raw_send_introduction_reminders: str | bool = os.getenv("SEND_INTRODUCTION_REMINDERS", "Once").lower().strip()
 
         if raw_send_introduction_reminders not in VALID_SEND_INTRODUCTION_REMINDERS_VALUES:
             INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE: Final[str] = (
@@ -511,7 +501,7 @@ class Settings(abc.ABC):
 
         raw_send_introduction_reminders_delay: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            str(os.getenv("SEND_INTRODUCTION_REMINDERS_DELAY", "40h"))
+            os.getenv("SEND_INTRODUCTION_REMINDERS_DELAY", "40h")
             .strip()
             .replace(" ", ""),
         )
@@ -559,7 +549,7 @@ class Settings(abc.ABC):
 
         raw_send_introduction_reminders_interval: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            str(os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h"))
+            os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h")
             .strip()
             .replace(" ", ""),
         )
@@ -604,7 +594,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_send_get_roles_reminders(cls) -> None:
         raw_send_get_roles_reminders: str = (
-            str(os.getenv("SEND_GET_ROLES_REMINDERS", "True")).lower().strip()
+            os.getenv("SEND_GET_ROLES_REMINDERS", "True").lower().strip()
         )
 
         if raw_send_get_roles_reminders not in TRUE_VALUES | FALSE_VALUES:
@@ -626,7 +616,7 @@ class Settings(abc.ABC):
 
         raw_send_get_roles_reminders_delay: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            str(os.getenv("SEND_GET_ROLES_REMINDERS_DELAY", "40h")).strip().replace(" ", ""),
+            os.getenv("SEND_GET_ROLES_REMINDERS_DELAY", "40h").strip().replace(" ", ""),
         )
 
         raw_timedelta_send_get_roles_reminders_delay: timedelta = timedelta()
@@ -672,7 +662,7 @@ class Settings(abc.ABC):
 
         raw_advanced_send_get_roles_reminders_interval: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            str(os.getenv("ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL", "24h"))
+            os.getenv("ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL", "24h")
             .strip()
             .replace(" ", ""),
         )
@@ -724,7 +714,7 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_statistics_roles(cls) -> None:
-        raw_statistics_roles: str = str(os.getenv("STATISTICS_ROLES", default="")).strip()
+        raw_statistics_roles: str = os.getenv("STATISTICS_ROLES", default="").strip()
 
         cls._settings["STATISTICS_ROLES"] = (
             {
@@ -743,7 +733,7 @@ class Settings(abc.ABC):
         )
 
         raw_moderation_document_url: str = (
-            str(os.getenv("MODERATION_DOCUMENT_URL", default="")).strip().lower()
+            os.getenv("MODERATION_DOCUMENT_URL", default="").strip().lower()
         )
 
         if not raw_moderation_document_url:
@@ -763,12 +753,7 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_strike_performed_manually_warning_location(cls) -> None:
-        raw_strike_performed_manually_warning_location: str = str(
-            os.getenv(
-                "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION",
-                default="DM",
-            )
-        ).strip()
+        raw_strike_performed_manually_warning_location: str = os.getenv("MANUAL_MODERATION_WARNING_MESSAGE_LOCATION", default="DM").strip()
 
         if not raw_strike_performed_manually_warning_location:
             STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_MESSAGE: Final[str] = (
@@ -784,7 +769,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_auto_add_committee_to_threads(cls) -> None:
         raw_auto_add_committee_to_threads: str = (
-            str(os.getenv("AUTO_ADD_COMMITTEE_TO_THREADS", "True")).lower().strip()
+            os.getenv("AUTO_ADD_COMMITTEE_TO_THREADS", "True").lower().strip()
         )
 
         if raw_auto_add_committee_to_threads not in TRUE_VALUES | FALSE_VALUES:
