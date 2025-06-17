@@ -742,9 +742,9 @@ class Settings(abc.ABC):
             "MODERATION_DOCUMENT_URL must be a valid URL."
         )
 
-        raw_moderation_document_url: str = str(
-            os.getenv("MODERATION_DOCUMENT_URL", default="")
-        ).strip().lower()
+        raw_moderation_document_url: str = (
+            str(os.getenv("MODERATION_DOCUMENT_URL", default="")).strip().lower()
+        )
 
         if not raw_moderation_document_url:
             raise ImproperlyConfiguredError(MODERATION_DOCUMENT_URL_MESSAGE)
