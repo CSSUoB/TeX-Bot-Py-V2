@@ -135,7 +135,7 @@ class Settings(abc.ABC):
 
     @staticmethod
     def _setup_logging() -> None:
-        raw_console_log_level: str = (os.getenv("CONSOLE_LOG_LEVEL", "INFO")).upper().strip()
+        raw_console_log_level: str = os.getenv("CONSOLE_LOG_LEVEL", "INFO").upper().strip()
 
         if raw_console_log_level not in LOG_LEVEL_CHOICES:
             INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"""LOG_LEVEL must be one of {
@@ -173,16 +173,18 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_discord_log_channel_webhook(cls) -> "Logger":
-        raw_discord_log_channel_webhook_url: str = (
-            (os.getenv("DISCORD_LOG_CHANNEL_WEBHOOK_URL", "")).strip().lower()
-        )
+        raw_discord_log_channel_webhook_url: str = os.getenv(
+            "DISCORD_LOG_CHANNEL_WEBHOOK_URL", ""
+        ).strip()
 
-        if (
-            not raw_discord_log_channel_webhook_url
-            or not validators.url(raw_discord_log_channel_webhook_url)
-            or not raw_discord_log_channel_webhook_url.startswith(
-                "https://discord.com/api/webhooks/"
-            )
+        if not raw_discord_log_channel_webhook_url:
+            cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = None
+            return logging.getLogger("_temp_webhook_config")
+
+        if not validators.url(
+            raw_discord_log_channel_webhook_url
+        ) or not raw_discord_log_channel_webhook_url.startswith(
+            "https://discord.com/api/webhooks/"
         ):
             INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE: Final[str] = (
                 "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL "
@@ -268,8 +270,8 @@ class Settings(abc.ABC):
         if not raw_purchase_membership_url.startswith("https://"):
             raw_purchase_membership_url = "https://" + raw_purchase_membership_url
             logger.warning(
-                "PURCHASE_MEMBERSHIP_URL does not start with 'https://'."
-                "Please ensure all URLs are valid https URLs.",
+                "PURCHASE_MEMBERSHIP_URL was missing a URL protocol. "
+                "Please ensure all URLs are valid HTTPS URLs.",
             )
 
         if not validators.url(raw_purchase_membership_url):
@@ -282,9 +284,7 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_membership_perks_url(cls) -> None:
-        raw_membership_perks_url: str = (
-            os.getenv("MEMBERSHIP_PERKS_URL", default="").strip().lower()
-        )
+        raw_membership_perks_url: str = os.getenv("MEMBERSHIP_PERKS_URL", default="").strip()
 
         if not raw_membership_perks_url:
             cls._settings["MEMBERSHIP_PERKS_URL"] = None
@@ -293,8 +293,8 @@ class Settings(abc.ABC):
         if not raw_membership_perks_url.startswith("https://"):
             raw_membership_perks_url = "https://" + raw_membership_perks_url
             logger.warning(
-                "MEMBERSHIP_PERKS_URL does not start with 'https://'."
-                "Please ensure all URLs are valid https URLs.",
+                "MEMBERSHIP_PERKS_URL was missing a URL protocol. "
+                "Please ensure all URLs are valid HTTPS URLs.",
             )
 
         if not validators.url(raw_membership_perks_url):
@@ -307,9 +307,9 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_custom_discord_invite_url(cls) -> None:
-        raw_custom_discord_invite_url: str = (
-            os.getenv("CUSTOM_DISCORD_INVITE_URL", default="").strip().lower()
-        )
+        raw_custom_discord_invite_url: str = os.getenv(
+            "CUSTOM_DISCORD_INVITE_URL", default=""
+        ).strip()
 
         if not raw_custom_discord_invite_url:
             cls._settings["CUSTOM_DISCORD_INVITE_URL"] = None
@@ -318,8 +318,8 @@ class Settings(abc.ABC):
         if not raw_custom_discord_invite_url.startswith("https://"):
             raw_custom_discord_invite_url = "https://" + raw_custom_discord_invite_url
             logger.warning(
-                "CUSTOM_DISCORD_INVITE_URL does not start with 'https://'."
-                "Please ensure all URLs are valid https URLs.",
+                "CUSTOM_DISCORD_INVITE_URL was missing a URL protocol. "
+                "Please ensure all URLs are valid HTTPS URLs.",
             )
 
         if not validators.url(raw_custom_discord_invite_url):
@@ -500,7 +500,10 @@ class Settings(abc.ABC):
 
         raw_send_introduction_reminders_delay: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            os.getenv("SEND_INTRODUCTION_REMINDERS_DELAY", "40h").strip().replace(" ", ""),
+            os.getenv("SEND_INTRODUCTION_REMINDERS_DELAY", "40h")
+            .strip()
+            .lower()
+            .replace(" ", ""),
         )
 
         raw_timedelta_send_introduction_reminders_delay: timedelta = timedelta()
@@ -546,7 +549,10 @@ class Settings(abc.ABC):
 
         raw_send_introduction_reminders_interval: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h").strip().replace(" ", ""),
+            os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h")
+            .strip()
+            .lower()
+            .replace(" ", ""),
         )
 
         raw_timedelta_details_send_introduction_reminders_interval: Mapping[str, float] = {
@@ -611,7 +617,10 @@ class Settings(abc.ABC):
 
         raw_send_get_roles_reminders_delay: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            os.getenv("SEND_GET_ROLES_REMINDERS_DELAY", "40h").strip().replace(" ", ""),
+            os.getenv("SEND_GET_ROLES_REMINDERS_DELAY", "40h")
+            .strip()
+            .lower()
+            .replace(" ", ""),
         )
 
         raw_timedelta_send_get_roles_reminders_delay: timedelta = timedelta()
@@ -659,6 +668,7 @@ class Settings(abc.ABC):
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
             os.getenv("ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL", "24h")
             .strip()
+            .lower()
             .replace(" ", ""),
         )
 
@@ -711,7 +721,7 @@ class Settings(abc.ABC):
     def _setup_statistics_roles(cls) -> None:
         raw_statistics_roles: str = os.getenv("STATISTICS_ROLES", default="").strip()
 
-        cls._settings["STATISTICS_ROLES"] = (
+        statistics_roles: AbstractSet[str] = (
             {
                 raw_statistics_role.strip()
                 for raw_statistics_role in raw_statistics_roles.split(",")
@@ -719,6 +729,10 @@ class Settings(abc.ABC):
             }
             if raw_statistics_roles
             else DEFAULT_STATISTICS_ROLES
+        )
+
+        cls._settings["STATISTICS_ROLES"] = (
+            statistics_roles if statistics_roles else DEFAULT_STATISTICS_ROLES
         )
 
     @classmethod
