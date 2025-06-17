@@ -135,9 +135,7 @@ class Settings(abc.ABC):
 
     @staticmethod
     def _setup_logging() -> None:
-        raw_console_log_level: str = (
-            os.getenv("CONSOLE_LOG_LEVEL", "INFO")
-        ).upper().strip()
+        raw_console_log_level: str = (os.getenv("CONSOLE_LOG_LEVEL", "INFO")).upper().strip()
 
         if raw_console_log_level not in LOG_LEVEL_CHOICES:
             INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"""LOG_LEVEL must be one of {
@@ -182,8 +180,8 @@ class Settings(abc.ABC):
         )
 
         raw_discord_log_channel_webhook_url: str = (
-            os.getenv("DISCORD_LOG_CHANNEL_WEBHOOK_URL", "")
-        ).strip().lower()
+            (os.getenv("DISCORD_LOG_CHANNEL_WEBHOOK_URL", "")).strip().lower()
+        )
 
         if (
             not raw_discord_log_channel_webhook_url
@@ -262,7 +260,9 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_purchase_membership_url(cls) -> None:
-        raw_purchase_membership_url: str = os.getenv("PURCHASE_MEMBERSHIP_URL", default="").strip()
+        raw_purchase_membership_url: str = os.getenv(
+            "PURCHASE_MEMBERSHIP_URL", default=""
+        ).strip()
 
         if not raw_purchase_membership_url:
             cls._settings["PURCHASE_MEMBERSHIP_URL"] = None
@@ -285,7 +285,9 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_membership_perks_url(cls) -> None:
-        raw_membership_perks_url: str = os.getenv("MEMBERSHIP_PERKS_URL", default="").strip().lower()
+        raw_membership_perks_url: str = (
+            os.getenv("MEMBERSHIP_PERKS_URL", default="").strip().lower()
+        )
 
         if not raw_membership_perks_url:
             cls._settings["MEMBERSHIP_PERKS_URL"] = None
@@ -474,7 +476,9 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_send_introduction_reminders(cls) -> None:
-        raw_send_introduction_reminders: str | bool = os.getenv("SEND_INTRODUCTION_REMINDERS", "Once").lower().strip()
+        raw_send_introduction_reminders: str | bool = (
+            os.getenv("SEND_INTRODUCTION_REMINDERS", "Once").lower().strip()
+        )
 
         if raw_send_introduction_reminders not in VALID_SEND_INTRODUCTION_REMINDERS_VALUES:
             INVALID_SEND_INTRODUCTION_REMINDERS_MESSAGE: Final[str] = (
@@ -501,9 +505,7 @@ class Settings(abc.ABC):
 
         raw_send_introduction_reminders_delay: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            os.getenv("SEND_INTRODUCTION_REMINDERS_DELAY", "40h")
-            .strip()
-            .replace(" ", ""),
+            os.getenv("SEND_INTRODUCTION_REMINDERS_DELAY", "40h").strip().replace(" ", ""),
         )
 
         raw_timedelta_send_introduction_reminders_delay: timedelta = timedelta()
@@ -549,9 +551,7 @@ class Settings(abc.ABC):
 
         raw_send_introduction_reminders_interval: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h")
-            .strip()
-            .replace(" ", ""),
+            os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h").strip().replace(" ", ""),
         )
 
         raw_timedelta_details_send_introduction_reminders_interval: Mapping[str, float] = {
@@ -753,7 +753,9 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_strike_performed_manually_warning_location(cls) -> None:
-        raw_strike_performed_manually_warning_location: str = os.getenv("MANUAL_MODERATION_WARNING_MESSAGE_LOCATION", default="DM").strip()
+        raw_strike_performed_manually_warning_location: str = os.getenv(
+            "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION", default="DM"
+        ).strip()
 
         if not raw_strike_performed_manually_warning_location:
             STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_MESSAGE: Final[str] = (
