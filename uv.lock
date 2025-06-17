@@ -901,6 +901,7 @@ source = { virtual = "." }
 dev = [
     { name = "ccft-pymarkdown" },
     { name = "django-stubs", extra = ["compatible-mypy"] },
+    { name = "gitpython" },
     { name = "mypy" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -917,7 +918,6 @@ main = [
     { name = "beautifulsoup4" },
     { name = "django" },
     { name = "emoji" },
-    { name = "gitpython" },
     { name = "matplotlib" },
     { name = "mplcyberpunk" },
     { name = "parsedatetime" },
@@ -931,12 +931,19 @@ pre-commit = [
     { name = "pre-commit" },
 ]
 test = [
+    { name = "gitpython" },
     { name = "pytest" },
     { name = "pytest-cov" },
 ]
+test-core = [
+    { name = "gitpython" },
+    { name = "pytest" },
+]
 type-check = [
     { name = "django-stubs", extra = ["compatible-mypy"] },
+    { name = "gitpython" },
     { name = "mypy" },
+    { name = "pytest" },
     { name = "types-beautifulsoup4" },
 ]
 
@@ -946,6 +953,7 @@ type-check = [
 dev = [
     { name = "ccft-pymarkdown", specifier = ">=2.0" },
     { name = "django-stubs", extras = ["compatible-mypy"], specifier = ">=5.1" },
+    { name = "gitpython", specifier = ">=3.1.44" },
     { name = "mypy", specifier = ">=1.13" },
     { name = "pre-commit", specifier = ">=4.0" },
     { name = "pytest", specifier = ">=8.3" },
@@ -962,7 +970,6 @@ main = [
     { name = "beautifulsoup4", specifier = ">=4.12" },
     { name = "django", specifier = ">=5.1" },
     { name = "emoji", specifier = ">=2.14" },
-    { name = "gitpython", specifier = ">=3.1.44" },
     { name = "matplotlib", specifier = ">=3.10" },
     { name = "mplcyberpunk", specifier = ">=0.7" },
     { name = "parsedatetime", specifier = ">=2.6" },
@@ -974,12 +981,19 @@ main = [
 ]
 pre-commit = [{ name = "pre-commit", specifier = ">=4.0" }]
 test = [
+    { name = "gitpython", specifier = ">=3.1.44" },
     { name = "pytest", specifier = ">=8.3" },
     { name = "pytest-cov", specifier = ">=6.1.1" },
 ]
+test-core = [
+    { name = "gitpython", specifier = ">=3.1.44" },
+    { name = "pytest", specifier = ">=8.3" },
+]
 type-check = [
     { name = "django-stubs", extras = ["compatible-mypy"], specifier = ">=5.1" },
+    { name = "gitpython", specifier = ">=3.1.44" },
     { name = "mypy", specifier = ">=1.13" },
+    { name = "pytest", specifier = ">=8.3" },
     { name = "types-beautifulsoup4", specifier = ">=4.12" },
 ]
 
