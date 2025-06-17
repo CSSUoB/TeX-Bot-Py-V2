@@ -11,6 +11,7 @@ main = [
     "beautifulsoup4>=4.12",
     "django>=5.1",
     "emoji>=2.14",
+    "gitpython>=3.1.44",
     "matplotlib>=3.10",
     "mplcyberpunk>=0.7",
     "parsedatetime>=2.6",
@@ -31,9 +32,6 @@ type-check = ["django-stubs[compatible-mypy]>=5.1", "mypy>=1.13", "types-beautif
 name = "TeX-Bot-Py-V2"
 requires-python = ">=3.12,<3.13" # TODO: Allow Python 3.13 once py-cord makes a new release with support for it
 version = "0.1.0"
-dependencies = [
-    "gitpython>=3.1.44",
-]
 
 
 [tool.pytest.ini_options]
