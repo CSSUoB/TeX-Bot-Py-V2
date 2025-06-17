@@ -22,8 +22,9 @@ main = [
     "validators>=0.34",
 ]
 pre-commit = ["pre-commit>=4.0"]
-test = ["pytest-cov>=6.1.1", "pytest>=8.3"]
-type-check = ["django-stubs[compatible-mypy]>=5.1", "mypy>=1.13", "types-beautifulsoup4>=4.12"]
+test-core = ["pytest>=8.3"]
+test = ["pytest-cov>=6.1.1", { include-group = "test-core" }]
+type-check = ["django-stubs[compatible-mypy]>=5.1", "mypy>=1.13", "types-beautifulsoup4>=4.12", { include-group = "test-core" }]
 
 [project] # TODO: Remove [project] table once https://github.com/astral-sh/uv/issues/8582 is completed
 name = "TeX-Bot-Py-V2"
