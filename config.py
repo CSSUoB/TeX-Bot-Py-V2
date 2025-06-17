@@ -776,6 +776,75 @@ class Settings(abc.ABC):
         )
 
     @classmethod
+    def _setup_committee_actions_reminders_interval(cls) -> None:
+        if "COMMITTEE_ACTIONS_REMINDERS" not in cls._settings:
+            INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+                "Invalid setup order: COMMITTEE_ACTIONS_REMINDERS must be set up "
+                "before COMMITTEE_ACTIONS_REMINDERS_INTERVAL can be set up."
+            )
+            raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
+
+        raw_committee_actions_reminders_interval: re.Match[str] | None = re.fullmatch(
+            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
+            str(os.getenv("COMMITTEE_ACTIONS_REMINDERS_INTERVAL", "24h")),
+        )
+
+        raw_timedelta_committee_actions_reminders_interval: Mapping[str, float] = {
+            "hours": 24,
+        }
+
+        if cls._settings["COMMITTEE_ACTIONS_REMINDERS"]:
+            if not raw_committee_actions_reminders_interval:
+                INVALID_COMMITTEE_ACTIONS_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
+                    "COMMITTEE_ACTIONS_REMINDERS_INTERVAL must contain the interval "
+                    "in any combination of seconds, minutes or hours."
+                )
+                raise ImproperlyConfiguredError(
+                    INVALID_COMMITTEE_ACTIONS_REMINDERS_INTERVAL_MESSAGE,
+                )
+
+            raw_timedelta_committee_actions_reminders_interval = {
+                key: float(value)
+                for key, value in (
+                    raw_committee_actions_reminders_interval.groupdict().items()
+                )
+                if value
+            }
+
+        cls._settings["COMMITTEE_ACTIONS_REMINDERS_INTERVAL"] = (
+            raw_timedelta_committee_actions_reminders_interval
+        )
+
+    @classmethod
+    def _setup_committee_actions_reminders_channel(cls) -> None:
+        if "COMMITTEE_ACTIONS_REMINDERS" not in cls._settings:
+            INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+                "Invalid setup order: COMMITTEE_ACTIONS_REMINDERS must be set up "
+                "before COMMITTEE_ACTIONS_REMINDERS_CHANNEL can be set up."
+            )
+            raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
+
+        INVALID_COMMITTEE_ACTIONS_REMINDERS_CHANNEL_MESSAGE: Final[str] = (
+            "COMMITTEE_ACTIONS_REMINDERS_CHANNEL must be a valid name"
+            " of a channel in your group's Discord guild."
+        )
+
+        raw_committee_actions_reminders_channel: str = (
+            os.getenv("COMMITTEE_ACTIONS_REMINDERS_CHANNEL", "committee-general")
+            .strip()
+            .lower()
+        )
+
+        if not raw_committee_actions_reminders_channel:
+            raise ImproperlyConfiguredError(
+                INVALID_COMMITTEE_ACTIONS_REMINDERS_CHANNEL_MESSAGE
+            )
+
+        cls._settings["COMMITTEE_ACTIONS_REMINDERS_CHANNEL"] = (
+            raw_committee_actions_reminders_channel
+        )
+
+    @classmethod
     def _setup_committee_actions_board(cls) -> None:
         raw_committee_actions_board: str = (
             os.getenv("COMMITTEE_ACTIONS_BOARD", "True").strip().lower()
@@ -816,46 +885,6 @@ class Settings(abc.ABC):
             raise ImproperlyConfiguredError(INVALID_COMMITTEE_ACTIONS_BOARD_CHANNEL_MESSAGE)
 
         cls._settings["COMMITTEE_ACTIONS_BOARD_CHANNEL"] = raw_committee_actions_board_channel
-
-    @classmethod
-    def _setup_committee_actions_reminders_interval(cls) -> None:
-        if "COMMITTEE_ACTIONS_REMINDERS" not in cls._settings:
-            INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
-                "Invalid setup order: COMMITTEE_ACTIONS_REMINDERS must be set up "
-                "before COMMITTEE_ACTIONS_REMINDERS_INTERVAL can be set up."
-            )
-            raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
-
-        raw_committee_actions_reminders_interval: re.Match[str] | None = re.fullmatch(
-            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            str(os.getenv("COMMITTEE_ACTIONS_REMINDERS_INTERVAL", "24h")),
-        )
-
-        raw_timedelta_committee_actions_reminders_interval: Mapping[str, float] = {
-            "hours": 24,
-        }
-
-        if cls._settings["COMMITTEE_ACTIONS_REMINDERS"]:
-            if not raw_committee_actions_reminders_interval:
-                INVALID_COMMITTEE_ACTIONS_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
-                    "COMMITTEE_ACTIONS_REMINDERS_INTERVAL must contain the interval "
-                    "in any combination of seconds, minutes or hours."
-                )
-                raise ImproperlyConfiguredError(
-                    INVALID_COMMITTEE_ACTIONS_REMINDERS_INTERVAL_MESSAGE,
-                )
-
-            raw_timedelta_committee_actions_reminders_interval = {
-                key: float(value)
-                for key, value in (
-                    raw_committee_actions_reminders_interval.groupdict().items()
-                )
-                if value
-            }
-
-        cls._settings["COMMITTEE_ACTIONS_REMINDERS_INTERVAL"] = (
-            raw_timedelta_committee_actions_reminders_interval
-        )
 
     @classmethod
     def _setup_env_variables(cls) -> None:

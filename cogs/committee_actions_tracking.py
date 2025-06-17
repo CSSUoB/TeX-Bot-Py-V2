@@ -70,7 +70,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
         """
         action_board_channel: discord.TextChannel | None = discord.utils.get(
             self.bot.main_guild.text_channels,
-            name="actions",  # TODO: Make this user-configurable  # noqa: FIX002
+            name=settings["COMMITTEE_ACTIONS_BOARD_CHANNEL"],
         )
 
         if not action_board_channel:
@@ -275,7 +275,7 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
         """
         committee_general_channel: discord.TextChannel | None = discord.utils.get(
             self.bot.main_guild.text_channels,
-            name="committee-general",  # TODO: Make this user-configurable  # noqa: FIX002
+            name=settings["COMMITTEE_ACTIONS_REMINDERS_CHANNEL"],
         )
 
         if not committee_general_channel:
