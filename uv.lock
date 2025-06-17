@@ -896,9 +896,6 @@ wheels = [
 name = "tex-bot-py-v2"
 version = "0.1.0"
 source = { virtual = "." }
-dependencies = [
-    { name = "gitpython" },
-]
 
 [package.dev-dependencies]
 dev = [
@@ -920,6 +917,7 @@ main = [
     { name = "beautifulsoup4" },
     { name = "django" },
     { name = "emoji" },
+    { name = "gitpython" },
     { name = "matplotlib" },
     { name = "mplcyberpunk" },
     { name = "parsedatetime" },
@@ -943,7 +941,6 @@ type-check = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "gitpython", specifier = ">=3.1.44" }]
 
 [package.metadata.requires-dev]
 dev = [
@@ -965,6 +962,7 @@ main = [
     { name = "beautifulsoup4", specifier = ">=4.12" },
     { name = "django", specifier = ">=5.1" },
     { name = "emoji", specifier = ">=2.14" },
+    { name = "gitpython", specifier = ">=3.1.44" },
     { name = "matplotlib", specifier = ">=3.10" },
     { name = "mplcyberpunk", specifier = ">=0.7" },
     { name = "parsedatetime", specifier = ">=2.6" },
