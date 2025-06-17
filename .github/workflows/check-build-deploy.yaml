@@ -133,6 +133,8 @@ jobs:
     pytest:
         needs: [uv-check]
         runs-on: ubuntu-latest
+        permissions:
+            id-token: write
         env:
             UV_NO_SYNC: true
             UV_FROZEN: true
@@ -171,13 +173,13 @@ jobs:
               if: ${{ !cancelled() }}
               uses: codecov/test-results-action@v1
               with:
-                token: ${{ secrets.CODECOV_TOKEN }}
+                use_oidc: true
 
             - name: Upload coverage report to Codecov
               uses: codecov/codecov-action@v5
               if: ${{ !cancelled() }}
               with:
-                token: ${{ secrets.CODECOV_TOKEN }}
+                use_oidc: true
 
     ruff-lint:
         runs-on: ubuntu-latest
