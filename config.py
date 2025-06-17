@@ -166,10 +166,7 @@ class Settings(abc.ABC):
 
         raw_discord_bot_token: str = os.getenv("DISCORD_BOT_TOKEN", default="").strip()
 
-        if not raw_discord_bot_token:
-            raise ImproperlyConfiguredError(INVALID_DISCORD_BOT_TOKEN_MESSAGE)
-
-        if not re.fullmatch(
+        if not raw_discord_bot_token or not re.fullmatch(
             r"\A([A-Za-z0-9_-]{24,26})\.([A-Za-z0-9_-]{6})\.([A-Za-z0-9_-]{27,38})\Z",
             raw_discord_bot_token,
         ):
@@ -188,30 +185,28 @@ class Settings(abc.ABC):
             str(os.getenv("DISCORD_LOG_CHANNEL_WEBHOOK_URL", "")).strip().lower()
         )
 
-        if not raw_discord_log_channel_webhook_url:
-            raise ImproperlyConfiguredError(INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE)
-
-        if not validators.url(
-            raw_discord_log_channel_webhook_url
-        ) or not raw_discord_log_channel_webhook_url.startswith(
-            "https://discord.com/api/webhooks/"
+        if (
+            not raw_discord_log_channel_webhook_url
+            or not validators.url(raw_discord_log_channel_webhook_url)
+            or not raw_discord_log_channel_webhook_url.startswith(
+                "https://discord.com/api/webhooks/"
+            )
         ):
             raise ImproperlyConfiguredError(INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE)
 
         webhook_config_logger: Logger = logging.getLogger("_temp_webhook_config")
 
-        if raw_discord_log_channel_webhook_url:
-            discord_logging_handler: logging.Handler = DiscordHandler(
-                service_name="TeX-Bot", webhook_url=raw_discord_log_channel_webhook_url
-            )
+        discord_logging_handler: logging.Handler = DiscordHandler(
+            service_name="TeX-Bot", webhook_url=raw_discord_log_channel_webhook_url
+        )
 
-            discord_logging_handler.setLevel(logging.WARNING)
+        discord_logging_handler.setLevel(logging.WARNING)
 
-            discord_logging_handler.setFormatter(
-                logging.Formatter("{levelname} | {message}", style="{")
-            )
+        discord_logging_handler.setFormatter(
+            logging.Formatter("{levelname} | {message}", style="{")
+        )
 
-            webhook_config_logger.addHandler(discord_logging_handler)
+        webhook_config_logger.addHandler(discord_logging_handler)
 
         cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = raw_discord_log_channel_webhook_url
 
@@ -458,11 +453,8 @@ class Settings(abc.ABC):
 
         raw_organisation_id: str = str(os.getenv("ORGANISATION_ID", default="")).strip()
 
-        if not raw_organisation_id:
+        if not raw_organisation_id or not re.fullmatch(r"\A\d{4,5}\Z", raw_organisation_id):
             raise ImproperlyConfiguredError(INVALID_ORGANISATION_ID_MESSAGE)
-
-        if not re.fullmatch(r"\A\d{4,5}\Z", raw_organisation_id):
-            raise ImproperlyConfiguredError(message=INVALID_ORGANISATION_ID_MESSAGE)
 
         cls._settings["ORGANISATION_ID"] = raw_organisation_id
 
@@ -479,10 +471,9 @@ class Settings(abc.ABC):
             )
         ).strip()
 
-        if not raw_members_list_auth_session_cookie:
-            raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE)
-
-        if not re.fullmatch(r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_auth_session_cookie):
+        if not raw_members_list_auth_session_cookie or not re.fullmatch(
+            r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_auth_session_cookie
+        ):
             raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE)
 
         cls._settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"] = (
@@ -747,9 +738,16 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_moderation_document_url(cls) -> None:
+        MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
+            "MODERATION_DOCUMENT_URL must be a valid URL."
+        )
+
         raw_moderation_document_url: str = str(
             os.getenv("MODERATION_DOCUMENT_URL", default="")
-        ).strip()
+        ).strip().lower()
+
+        if not raw_moderation_document_url:
+            raise ImproperlyConfiguredError(MODERATION_DOCUMENT_URL_MESSAGE)
 
         if not raw_moderation_document_url.startswith("https://"):
             raw_moderation_document_url = "https://" + raw_moderation_document_url
@@ -758,14 +756,7 @@ class Settings(abc.ABC):
                 "Please ensure all URLs are valid https URLs.",
             )
 
-        MODERATION_DOCUMENT_URL_IS_VALID: Final[bool] = bool(
-            validators.url(raw_moderation_document_url),
-        )
-
-        if not MODERATION_DOCUMENT_URL_IS_VALID:
-            MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
-                "MODERATION_DOCUMENT_URL must be a valid URL."
-            )
+        if not validators.url(raw_moderation_document_url):
             raise ImproperlyConfiguredError(MODERATION_DOCUMENT_URL_MESSAGE)
 
         cls._settings["MODERATION_DOCUMENT_URL"] = raw_moderation_document_url
