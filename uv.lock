@@ -896,12 +896,14 @@ wheels = [
 name = "tex-bot-py-v2"
 version = "0.1.0"
 source = { virtual = "." }
+dependencies = [
+    { name = "gitpython" },
+]
 
 [package.dev-dependencies]
 dev = [
     { name = "ccft-pymarkdown" },
     { name = "django-stubs", extra = ["compatible-mypy"] },
-    { name = "gitpython" },
     { name = "mypy" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -931,7 +933,6 @@ pre-commit = [
     { name = "pre-commit" },
 ]
 test = [
-    { name = "gitpython" },
     { name = "pytest" },
     { name = "pytest-cov" },
 ]
@@ -942,12 +943,12 @@ type-check = [
 ]
 
 [package.metadata]
+requires-dist = [{ name = "gitpython", specifier = ">=3.1.44" }]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "ccft-pymarkdown", specifier = ">=2.0" },
     { name = "django-stubs", extras = ["compatible-mypy"], specifier = ">=5.1" },
-    { name = "gitpython", specifier = ">=3.1.44" },
     { name = "mypy", specifier = ">=1.13" },
     { name = "pre-commit", specifier = ">=4.0" },
     { name = "pytest", specifier = ">=8.3" },
@@ -975,7 +976,6 @@ main = [
 ]
 pre-commit = [{ name = "pre-commit", specifier = ">=4.0" }]
 test = [
-    { name = "gitpython", specifier = ">=3.1.44" },
     { name = "pytest", specifier = ">=8.3" },
     { name = "pytest-cov", specifier = ">=6.1.1" },
 ]
