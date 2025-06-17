@@ -11,7 +11,6 @@ main = [
     "beautifulsoup4>=4.12",
     "django>=5.1",
     "emoji>=2.14",
-    "gitpython>=3.1.44",
     "matplotlib>=3.10",
     "mplcyberpunk>=0.7",
     "parsedatetime>=2.6",
@@ -22,7 +21,7 @@ main = [
     "validators>=0.34",
 ]
 pre-commit = ["pre-commit>=4.0"]
-test-core = ["pytest>=8.3"]
+test-core = ["pytest>=8.3", "gitpython>=3.1.44"]
 test = ["pytest-cov>=6.1.1", { include-group = "test-core" }]
 type-check = ["django-stubs[compatible-mypy]>=5.1", "mypy>=1.13", "types-beautifulsoup4>=4.12", { include-group = "test-core" }]
 
