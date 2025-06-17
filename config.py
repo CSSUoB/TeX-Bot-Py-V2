@@ -757,9 +757,13 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_committee_actions_reminders(cls) -> None:
-        raw_committee_actions_reminders: str = str(
-            os.getenv("COMMITTEE_ACTIONS_REMINDERS", "True"),
-        ).strip().lower()
+        raw_committee_actions_reminders: str = (
+            str(
+                os.getenv("COMMITTEE_ACTIONS_REMINDERS", "True"),
+            )
+            .strip()
+            .lower()
+        )
 
         if raw_committee_actions_reminders not in TRUE_VALUES | FALSE_VALUES:
             INVALID_COMMITTEE_ACTIONS_REMINDERS_MESSAGE: Final[str] = (
@@ -773,7 +777,9 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_committee_actions_board(cls) -> None:
-        raw_committee_actions_board: str = os.getenv("COMMITTEE_ACTIONS_BOARD", "True").strip().lower()
+        raw_committee_actions_board: str = (
+            os.getenv("COMMITTEE_ACTIONS_BOARD", "True").strip().lower()
+        )
 
         if raw_committee_actions_board not in TRUE_VALUES | FALSE_VALUES:
             INVALID_COMMITTEE_ACTIONS_BOARD_MESSAGE: Final[str] = (
@@ -781,9 +787,7 @@ class Settings(abc.ABC):
             )
             raise ImproperlyConfiguredError(INVALID_COMMITTEE_ACTIONS_BOARD_MESSAGE)
 
-        cls._settings["COMMITTEE_ACTIONS_BOARD"] = (
-            raw_committee_actions_board in TRUE_VALUES
-        )
+        cls._settings["COMMITTEE_ACTIONS_BOARD"] = raw_committee_actions_board in TRUE_VALUES
 
     @classmethod
     def _setup_committee_actions_board_channel(cls) -> None:
@@ -799,17 +803,19 @@ class Settings(abc.ABC):
             " of a channel in your group's Discord guild."
         )
 
-        raw_committee_actions_board_channel: str = os.getenv(
-            "COMMITTEE_ACTIONS_BOARD_CHANNEL",
-            "actions-board",
-        ).strip().lower()
+        raw_committee_actions_board_channel: str = (
+            os.getenv(
+                "COMMITTEE_ACTIONS_BOARD_CHANNEL",
+                "actions-board",
+            )
+            .strip()
+            .lower()
+        )
 
         if not raw_committee_actions_board_channel:
             raise ImproperlyConfiguredError(INVALID_COMMITTEE_ACTIONS_BOARD_CHANNEL_MESSAGE)
 
-        cls._settings["COMMITTEE_ACTIONS_BOARD_CHANNEL"] = (
-            raw_committee_actions_board_channel
-        )
+        cls._settings["COMMITTEE_ACTIONS_BOARD_CHANNEL"] = raw_committee_actions_board_channel
 
     @classmethod
     def _setup_committee_actions_reminders_interval(cls) -> None:
