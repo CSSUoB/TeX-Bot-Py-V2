@@ -157,28 +157,22 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_discord_bot_token(cls) -> None:
-        INVALID_DISCORD_BOT_TOKEN_MESSAGE: Final[str] = (
-            "DISCORD_BOT_TOKEN must be set to a valid Discord bot token "  # noqa: S105
-            "(see https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)."
-        )
-
         raw_discord_bot_token: str = os.getenv("DISCORD_BOT_TOKEN", default="").strip()
 
         if not raw_discord_bot_token or not re.fullmatch(
             r"\A([A-Za-z0-9_-]{24,26})\.([A-Za-z0-9_-]{6})\.([A-Za-z0-9_-]{27,38})\Z",
             raw_discord_bot_token,
         ):
+            INVALID_DISCORD_BOT_TOKEN_MESSAGE: Final[str] = (
+                "DISCORD_BOT_TOKEN must be set to a valid Discord bot token "  # noqa: S105
+                "(see https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)."
+            )
             raise ImproperlyConfiguredError(INVALID_DISCORD_BOT_TOKEN_MESSAGE)
 
         cls._settings["DISCORD_BOT_TOKEN"] = raw_discord_bot_token
 
     @classmethod
     def _setup_discord_log_channel_webhook(cls) -> "Logger":
-        INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE: Final[str] = (
-            "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL "
-            "that points to a discord channel where logs should be displayed."
-        )
-
         raw_discord_log_channel_webhook_url: str = (
             (os.getenv("DISCORD_LOG_CHANNEL_WEBHOOK_URL", "")).strip().lower()
         )
@@ -190,6 +184,10 @@ class Settings(abc.ABC):
                 "https://discord.com/api/webhooks/"
             )
         ):
+            INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE: Final[str] = (
+                "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL "
+                "that points to a discord channel where logs should be displayed."
+            )
             raise ImproperlyConfiguredError(INVALID_DISCORD_LOG_CHANNEL_WEBHOOK_URL_MESSAGE)
 
         webhook_config_logger: Logger = logging.getLogger("_temp_webhook_config")
@@ -212,16 +210,15 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_discord_guild_id(cls) -> None:
-        INVALID_DISCORD_GUILD_ID_MESSAGE: Final[str] = (
-            "DISCORD_GUILD_ID must be a valid Discord guild ID "
-            "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)."
-        )
-
         raw_discord_guild_id: str = os.getenv("DISCORD_GUILD_ID", default="").strip()
 
         if not raw_discord_guild_id or not re.fullmatch(
             r"\A\d{17,20}\Z", raw_discord_guild_id
         ):
+            INVALID_DISCORD_GUILD_ID_MESSAGE: Final[str] = (
+                "DISCORD_GUILD_ID must be a valid Discord guild ID "
+                "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)."
+            )
             raise ImproperlyConfiguredError(INVALID_DISCORD_GUILD_ID_MESSAGE)
 
         cls._settings["_DISCORD_MAIN_GUILD_ID"] = int(raw_discord_guild_id)
@@ -443,23 +440,18 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_organisation_id(cls) -> None:
-        INVALID_ORGANISATION_ID_MESSAGE: Final[str] = (
-            "ORGANISATION_ID must be an integer 4 to 5 digits long."
-        )
-
         raw_organisation_id: str = os.getenv("ORGANISATION_ID", default="").strip()
 
         if not raw_organisation_id or not re.fullmatch(r"\A\d{4,5}\Z", raw_organisation_id):
+            INVALID_ORGANISATION_ID_MESSAGE: Final[str] = (
+                "ORGANISATION_ID must be an integer 4 to 5 digits long."
+            )
             raise ImproperlyConfiguredError(INVALID_ORGANISATION_ID_MESSAGE)
 
         cls._settings["ORGANISATION_ID"] = raw_organisation_id
 
     @classmethod
     def _setup_members_list_auth_session_cookie(cls) -> None:
-        INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE: Final[str] = (
-            "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
-        )
-
         raw_members_list_auth_session_cookie: str = os.getenv(
             "MEMBERS_LIST_URL_SESSION_COOKIE",
             default="",
@@ -468,6 +460,9 @@ class Settings(abc.ABC):
         if not raw_members_list_auth_session_cookie or not re.fullmatch(
             r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_auth_session_cookie
         ):
+            INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE: Final[str] = (
+                "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
+            )
             raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE)
 
         cls._settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"] = (
