@@ -759,7 +759,7 @@ class Settings(abc.ABC):
     def _setup_committee_actions_reminders(cls) -> None:
         raw_committee_actions_reminders: str = str(
             os.getenv("COMMITTEE_ACTIONS_REMINDERS", "True"),
-        ).lower()
+        ).strip().lower()
 
         if raw_committee_actions_reminders not in TRUE_VALUES | FALSE_VALUES:
             INVALID_COMMITTEE_ACTIONS_REMINDERS_MESSAGE: Final[str] = (
@@ -769,6 +769,46 @@ class Settings(abc.ABC):
 
         cls._settings["COMMITTEE_ACTIONS_REMINDERS"] = (
             raw_committee_actions_reminders in TRUE_VALUES
+        )
+
+    @classmethod
+    def _setup_committee_actions_board(cls) -> None:
+        raw_committee_actions_board: str = os.getenv("COMMITTEE_ACTIONS_BOARD", "True").strip().lower()
+
+        if raw_committee_actions_board not in TRUE_VALUES | FALSE_VALUES:
+            INVALID_COMMITTEE_ACTIONS_BOARD_MESSAGE: Final[str] = (
+                "COMMITTEE_ACTIONS_BOARD must be a boolean value."
+            )
+            raise ImproperlyConfiguredError(INVALID_COMMITTEE_ACTIONS_BOARD_MESSAGE)
+
+        cls._settings["COMMITTEE_ACTIONS_BOARD"] = (
+            raw_committee_actions_board in TRUE_VALUES
+        )
+
+    @classmethod
+    def _setup_committee_actions_board_channel(cls) -> None:
+        if "COMMITTEE_ACTIONS_BOARD" not in cls._settings:
+            INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+                "Invalid setup order: COMMITTEE_ACTIONS_BOARD must be set up "
+                "before COMMITTEE_ACTIONS_BOARD_CHANNEL can be set up."
+            )
+            raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
+
+        INVALID_COMMITTEE_ACTIONS_BOARD_CHANNEL_MESSAGE: Final[str] = (
+            "COMMITTEE_ACTIONS_BOARD_CHANNEL must be a valid name"
+            " of a channel in your group's Discord guild."
+        )
+
+        raw_committee_actions_board_channel: str = os.getenv(
+            "COMMITTEE_ACTIONS_BOARD_CHANNEL",
+            "actions-board",
+        ).strip().lower()
+
+        if not raw_committee_actions_board_channel:
+            raise ImproperlyConfiguredError(INVALID_COMMITTEE_ACTIONS_BOARD_CHANNEL_MESSAGE)
+
+        cls._settings["COMMITTEE_ACTIONS_BOARD_CHANNEL"] = (
+            raw_committee_actions_board_channel
         )
 
     @classmethod
@@ -853,6 +893,8 @@ class Settings(abc.ABC):
             cls._setup_strike_performed_manually_warning_location()
             cls._setup_auto_add_committee_to_threads()
             cls._setup_committee_actions_reminders()
+            cls._setup_committee_actions_board()
+            cls._setup_committee_actions_board_channel()
             cls._setup_committee_actions_reminders_interval()
         except ImproperlyConfiguredError as improper_config_error:
             webhook_config_logger.error(improper_config_error.message)  # noqa: TRY400
