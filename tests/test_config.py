@@ -495,7 +495,7 @@ class TestSetupDiscordBotToken:
             os.environ["DISCORD_BOT_TOKEN"] = invalid_discord_bot_token
 
             with pytest.raises(
-                ImproperlyConfiguredError, match=INVALID_DISCORD_BOT_TOKEN_MESSAGE
+                ImproperlyConfiguredError, match=re.escape(INVALID_DISCORD_BOT_TOKEN_MESSAGE)
             ):
                 RuntimeSettings._setup_discord_bot_token()
 
@@ -2348,7 +2348,7 @@ class TestSetupStatisticsDays:
     def test_too_small_statistics_days(self, too_small_statistics_days: str) -> None:
         """Test that an error is raised when a too small `STATISTICS_DAYS` is provided."""
         TOO_SMALL_STATISTICS_DAYS_MESSAGE: Final[str] = (
-            "STATISTICS_DAYS cannot be less than or equal to 1 day"
+            "STATISTICS_DAYS cannot be less than 1 day"
         )
 
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
