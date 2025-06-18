@@ -545,7 +545,7 @@ class TestSetupDiscordLogChannelWebhookURL:
         """Test that no error occurs when no `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
-        with EnvVariableDeleter("DISCORD_LOG_CHANNEL_WEBHOOK_URL"), EnvVariableDeleter("DISCORD_BOT_TOKEN"):
+        with EnvVariableDeleter("DISCORD_LOG_CHANNEL_WEBHOOK_URL"):
             try:
                 RuntimeSettings._setup_discord_log_channel_webhook()
             except ImproperlyConfiguredError:
@@ -554,7 +554,6 @@ class TestSetupDiscordLogChannelWebhookURL:
         RuntimeSettings._is_env_variables_setup = True
 
         assert not RuntimeSettings()["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]
-
 
     @pytest.mark.parametrize(
         "invalid_discord_log_channel_url",
