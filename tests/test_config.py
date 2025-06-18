@@ -545,24 +545,21 @@ class TestSetupDiscordLogChannelWebhookURL:
         """Test that no error occurs when no `DISCORD_LOG_CHANNEL_WEBHOOK_URL` is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
-        with (
-            EnvVariableDeleter("DISCORD_LOG_CHANNEL_WEBHOOK_URL"),
-            pytest.raises(
-                expected_exception=ImproperlyConfiguredError,
-                match=(
-                    "DISCORD_LOG_CHANNEL_WEBHOOK_URL must be a valid webhook URL "
-                    "that points to a discord channel where logs should be displayed."
-                ),
-            ),
-        ):
-            RuntimeSettings._setup_discord_log_channel_webhook()
+        with EnvVariableDeleter("DISCORD_LOG_CHANNEL_WEBHOOK_URL"), EnvVariableDeleter("DISCORD_BOT_TOKEN"):
+            try:
+                RuntimeSettings._setup_discord_log_channel_webhook()
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True
+
+        assert not RuntimeSettings()["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]
+
 
     @pytest.mark.parametrize(
         "invalid_discord_log_channel_url",
         (
             "invalid_discord_log_channel_url",
-            "",
-            "  ",
             re.sub(
                 r"/\d{17,20}/",
                 (
@@ -582,7 +579,7 @@ class TestSetupDiscordLogChannelWebhookURL:
                 count=1,
             ),
         ),
-        ids=[f"case_{i}" for i in range(5)],
+        ids=[f"case_{i}" for i in range(3)],
     )
     def test_invalid_discord_log_channel_webhook_url(
         self,
@@ -2202,7 +2199,7 @@ class TestSetupSendGetRolesRemindersDelay:
     ) -> None:
         """Test that an error is thrown if `SEND_GET_ROLES_REMINDERS_DELAY` is too short."""
         TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE: Final[str] = (
-            "SEND_SEND_GET_ROLES_REMINDERS_DELAY must be longer than or equal to 1 day."
+            "SEND_GET_ROLES_REMINDERS_DELAY must be longer than or equal to 1 day."
         )
 
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
