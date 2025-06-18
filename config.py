@@ -29,6 +29,7 @@ from exceptions import (
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import IO, Any, ClassVar, Final
 
@@ -44,32 +45,30 @@ __all__: "Sequence[str]" = (
 
 PROJECT_ROOT: "Final[Path]" = Path(__file__).parent.resolve()
 
-TRUE_VALUES: "Final[frozenset[str]]" = frozenset({"true", "1", "t", "y", "yes", "on"})
-FALSE_VALUES: "Final[frozenset[str]]" = frozenset({"false", "0", "f", "n", "no", "off"})
-VALID_SEND_INTRODUCTION_REMINDERS_VALUES: "Final[frozenset[str]]" = frozenset(
-    {"once"} | TRUE_VALUES | FALSE_VALUES | {"interval"},
+TRUE_VALUES: "Final[AbstractSet[str]]" = {"true", "1", "t", "y", "yes", "on"}
+FALSE_VALUES: "Final[AbstractSet[str]]" = {"false", "0", "f", "n", "no", "off"}
+VALID_SEND_INTRODUCTION_REMINDERS_VALUES: "Final[AbstractSet[str]]" = (
+    {"once", "interval"} | TRUE_VALUES | FALSE_VALUES
 )
-DEFAULT_STATISTICS_ROLES: "Final[frozenset[str]]" = frozenset(
-    {
-        "Committee",
-        "Committee-Elect",
-        "Student Rep",
-        "Member",
-        "Guest",
-        "Server Booster",
-        "Foundation Year",
-        "First Year",
-        "Second Year",
-        "Final Year",
-        "Year In Industry",
-        "Year Abroad",
-        "PGT",
-        "PGR",
-        "Alumnus/Alumna",
-        "Postdoc",
-        "Quiz Victor",
-    },
-)
+DEFAULT_STATISTICS_ROLES: "Final[AbstractSet[str]]" = {
+    "Committee",
+    "Committee-Elect",
+    "Student Rep",
+    "Member",
+    "Guest",
+    "Server Booster",
+    "Foundation Year",
+    "First Year",
+    "Second Year",
+    "Final Year",
+    "Year In Industry",
+    "Year Abroad",
+    "PGT",
+    "PGR",
+    "Alumnus/Alumna",
+    "Postdoc",
+    "Quiz Victor",
+}
 LOG_LEVEL_CHOICES: "Final[Sequence[str]]" = (
     "DEBUG",
     "INFO",
@@ -136,7 +135,7 @@ class Settings(abc.ABC):
 
     @staticmethod
     def _setup_logging() -> None:
-        raw_console_log_level: str = str(os.getenv("CONSOLE_LOG_LEVEL", "INFO")).upper()
+        raw_console_log_level: str = os.getenv("CONSOLE_LOG_LEVEL", "INFO").upper().strip()
 
         if raw_console_log_level not in LOG_LEVEL_CHOICES:
             INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"""LOG_LEVEL must be one of {
@@ -160,16 +159,12 @@ class Settings(abc.ABC):
     def _setup_discord_bot_token(cls) -> None:
         raw_discord_bot_token: str = os.getenv("DISCORD_BOT_TOKEN", default="").strip()
 
-        DISCORD_BOT_TOKEN_IS_VALID: Final[bool] = bool(
-            raw_discord_bot_token
-            and re.fullmatch(
-                r"\A([A-Za-z0-9_-]{24,26})\.([A-Za-z0-9_-]{6})\.([A-Za-z0-9_-]{27,38})\Z",
-                raw_discord_bot_token,
-            ),
-        )
-        if not DISCORD_BOT_TOKEN_IS_VALID:
+        if not raw_discord_bot_token or not re.fullmatch(
+            r"\A([A-Za-z0-9_-]{24,26})\.([A-Za-z0-9_-]{6})\.([A-Za-z0-9_-]{27,38})\Z",
+            raw_discord_bot_token,
+        ):
             INVALID_DISCORD_BOT_TOKEN_MESSAGE: Final[str] = (
-                "DISCORD_BOT_TOKEN must be a valid Discord bot token "  # noqa: S105
+                "DISCORD_BOT_TOKEN must be set to a valid Discord bot token "  # noqa: S105
                 "(see https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)."
             )
             raise ImproperlyConfiguredError(INVALID_DISCORD_BOT_TOKEN_MESSAGE)
@@ -181,6 +176,10 @@ class Settings(abc.ABC):
         raw_discord_log_channel_webhook_url: str = os.getenv(
             "DISCORD_LOG_CHANNEL_WEBHOOK_URL", ""
         ).strip()
+
+        if not raw_discord_log_channel_webhook_url:
+            cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = None
+            return logging.getLogger("_temp_webhook_config")
 
         if not validators.url(
             raw_discord_log_channel_webhook_url
@@ -195,18 +194,17 @@ class Settings(abc.ABC):
 
         webhook_config_logger: Logger = logging.getLogger("_temp_webhook_config")
 
-        if raw_discord_log_channel_webhook_url:
-            discord_logging_handler: logging.Handler = DiscordHandler(
-                service_name="TeX-Bot", webhook_url=raw_discord_log_channel_webhook_url
-            )
+        discord_logging_handler: logging.Handler = DiscordHandler(
+            service_name="TeX-Bot", webhook_url=raw_discord_log_channel_webhook_url
+        )
 
-            discord_logging_handler.setLevel(logging.WARNING)
+        discord_logging_handler.setLevel(logging.WARNING)
 
-            discord_logging_handler.setFormatter(
-                logging.Formatter("{levelname} | {message}", style="{")
-            )
+        discord_logging_handler.setFormatter(
+            logging.Formatter("{levelname} | {message}", style="{")
+        )
 
-            webhook_config_logger.addHandler(discord_logging_handler)
+        webhook_config_logger.addHandler(discord_logging_handler)
 
         cls._settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"] = raw_discord_log_channel_webhook_url
 
@@ -216,10 +214,9 @@ class Settings(abc.ABC):
     def _setup_discord_guild_id(cls) -> None:
         raw_discord_guild_id: str = os.getenv("DISCORD_GUILD_ID", default="").strip()
 
-        DISCORD_GUILD_ID_IS_VALID: Final[bool] = bool(
-            raw_discord_guild_id and re.fullmatch(r"\A\d{17,20}\Z", raw_discord_guild_id),
-        )
-        if not DISCORD_GUILD_ID_IS_VALID:
+        if not raw_discord_guild_id or not re.fullmatch(
+            r"\A\d{17,20}\Z", raw_discord_guild_id
+        ):
             INVALID_DISCORD_GUILD_ID_MESSAGE: Final[str] = (
                 "DISCORD_GUILD_ID must be a valid Discord guild ID "
                 "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)."
@@ -270,8 +267,12 @@ class Settings(abc.ABC):
             cls._settings["PURCHASE_MEMBERSHIP_URL"] = None
             return
 
-        if "://" not in raw_purchase_membership_url:
+        if not raw_purchase_membership_url.startswith("https://"):
             raw_purchase_membership_url = "https://" + raw_purchase_membership_url
+            logger.warning(
+                "PURCHASE_MEMBERSHIP_URL was missing a URL protocol. "
+                "Please ensure all URLs are valid HTTPS URLs.",
+            )
 
         if not validators.url(raw_purchase_membership_url):
             INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE: Final[str] = (
@@ -289,8 +290,12 @@ class Settings(abc.ABC):
             cls._settings["MEMBERSHIP_PERKS_URL"] = None
             return
 
-        if "://" not in raw_membership_perks_url:
+        if not raw_membership_perks_url.startswith("https://"):
             raw_membership_perks_url = "https://" + raw_membership_perks_url
+            logger.warning(
+                "MEMBERSHIP_PERKS_URL was missing a URL protocol. "
+                "Please ensure all URLs are valid HTTPS URLs.",
+            )
 
         if not validators.url(raw_membership_perks_url):
             INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (
@@ -310,8 +315,12 @@ class Settings(abc.ABC):
             cls._settings["CUSTOM_DISCORD_INVITE_URL"] = None
             return
 
-        if "://" not in raw_custom_discord_invite_url:
+        if not raw_custom_discord_invite_url.startswith("https://"):
             raw_custom_discord_invite_url = "https://" + raw_custom_discord_invite_url
+            logger.warning(
+                "CUSTOM_DISCORD_INVITE_URL was missing a URL protocol. "
+                "Please ensure all URLs are valid HTTPS URLs.",
+            )
 
         if not validators.url(raw_custom_discord_invite_url):
             INVALID_CUSTOM_DISCORD_INVITE_URL_MESSAGE: Final[str] = (
@@ -433,15 +442,11 @@ class Settings(abc.ABC):
     def _setup_organisation_id(cls) -> None:
         raw_organisation_id: str = os.getenv("ORGANISATION_ID", default="").strip()
 
-        ORGANISATION_ID_IS_VALID: Final[bool] = bool(
-            re.fullmatch(r"\A\d{4,5}\Z", raw_organisation_id),
-        )
-
-        if not ORGANISATION_ID_IS_VALID:
+        if not raw_organisation_id or not re.fullmatch(r"\A\d{4,5}\Z", raw_organisation_id):
             INVALID_ORGANISATION_ID_MESSAGE: Final[str] = (
                 "ORGANISATION_ID must be an integer 4 to 5 digits long."
             )
-            raise ImproperlyConfiguredError(message=INVALID_ORGANISATION_ID_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_ORGANISATION_ID_MESSAGE)
 
         cls._settings["ORGANISATION_ID"] = raw_organisation_id
 
@@ -452,11 +457,9 @@ class Settings(abc.ABC):
             default="",
         ).strip()
 
-        MEMBERS_LIST_AUTH_SESSION_COOKIE_IS_VALID: Final[bool] = bool(
-            raw_members_list_auth_session_cookie
-            and re.fullmatch(r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_auth_session_cookie),
-        )
-        if not MEMBERS_LIST_AUTH_SESSION_COOKIE_IS_VALID:
+        if not raw_members_list_auth_session_cookie or not re.fullmatch(
+            r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_auth_session_cookie
+        ):
             INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE: Final[str] = (
                 "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
             )
@@ -469,11 +472,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_send_introduction_reminders(cls) -> None:
         raw_send_introduction_reminders: str | bool = (
-            str(
-                os.getenv("SEND_INTRODUCTION_REMINDERS", "Once"),
-            )
-            .lower()
-            .strip()
+            os.getenv("SEND_INTRODUCTION_REMINDERS", "Once").lower().strip()
         )
 
         if raw_send_introduction_reminders not in VALID_SEND_INTRODUCTION_REMINDERS_VALUES:
@@ -501,7 +500,10 @@ class Settings(abc.ABC):
 
         raw_send_introduction_reminders_delay: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            str(os.getenv("SEND_INTRODUCTION_REMINDERS_DELAY", "40h").strip().lower()),
+            os.getenv("SEND_INTRODUCTION_REMINDERS_DELAY", "40h")
+            .strip()
+            .lower()
+            .replace(" ", ""),
         )
 
         raw_timedelta_send_introduction_reminders_delay: timedelta = timedelta()
@@ -529,7 +531,7 @@ class Settings(abc.ABC):
                     "SEND_INTRODUCTION_REMINDERS_DELAY must be longer than or equal to 1 day."
                 )
                 raise ImproperlyConfiguredError(
-                    TOO_SMALL_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE,
+                    TOO_SMALL_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE
                 )
 
         cls._settings["SEND_INTRODUCTION_REMINDERS_DELAY"] = (
@@ -547,11 +549,10 @@ class Settings(abc.ABC):
 
         raw_send_introduction_reminders_interval: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            str(
-                os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h")
-                .strip()
-                .replace(" ", "")
-            ),
+            os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h")
+            .strip()
+            .lower()
+            .replace(" ", ""),
         )
 
         raw_timedelta_details_send_introduction_reminders_interval: Mapping[str, float] = {
@@ -594,11 +595,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_send_get_roles_reminders(cls) -> None:
         raw_send_get_roles_reminders: str = (
-            str(
-                os.getenv("SEND_GET_ROLES_REMINDERS", "True"),
-            )
-            .lower()
-            .strip()
+            os.getenv("SEND_GET_ROLES_REMINDERS", "True").lower().strip()
         )
 
         if raw_send_get_roles_reminders not in TRUE_VALUES | FALSE_VALUES:
@@ -620,7 +617,10 @@ class Settings(abc.ABC):
 
         raw_send_get_roles_reminders_delay: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            str(os.getenv("SEND_GET_ROLES_REMINDERS_DELAY", "40h").strip().lower()),
+            os.getenv("SEND_GET_ROLES_REMINDERS_DELAY", "40h")
+            .strip()
+            .lower()
+            .replace(" ", ""),
         )
 
         raw_timedelta_send_get_roles_reminders_delay: timedelta = timedelta()
@@ -645,8 +645,7 @@ class Settings(abc.ABC):
 
             if raw_timedelta_send_get_roles_reminders_delay < timedelta(days=1):
                 TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE: Final[str] = (
-                    "SEND_SEND_GET_ROLES_REMINDERS_DELAY must be "
-                    "longer than or equal to 1 day."
+                    "SEND_GET_ROLES_REMINDERS_DELAY must be longer than or equal to 1 day."
                 )
                 raise ImproperlyConfiguredError(
                     TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE,
@@ -667,16 +666,15 @@ class Settings(abc.ABC):
 
         raw_advanced_send_get_roles_reminders_interval: re.Match[str] | None = re.fullmatch(
             r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            str(
-                os.getenv("ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL", "24h").strip().lower()
-            ),
+            os.getenv("ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL", "24h")
+            .strip()
+            .lower()
+            .replace(" ", ""),
         )
 
         raw_timedelta_details_advanced_send_get_roles_reminders_interval: Mapping[
             str, float
-        ] = {
-            "hours": 24,
-        }
+        ] = {"hours": 24}
 
         if cls._settings["SEND_GET_ROLES_REMINDERS"]:
             if not raw_advanced_send_get_roles_reminders_interval:
@@ -713,7 +711,7 @@ class Settings(abc.ABC):
 
         if raw_statistics_days < 1:
             TOO_SMALL_STATISTICS_DAYS_MESSAGE: Final[str] = (
-                "STATISTICS_DAYS cannot be less than or equal to 1 day"
+                "STATISTICS_DAYS cannot be less than 1 day"
             )
             raise ImproperlyConfiguredError(TOO_SMALL_STATISTICS_DAYS_MESSAGE)
 
@@ -723,32 +721,41 @@ class Settings(abc.ABC):
     def _setup_statistics_roles(cls) -> None:
         raw_statistics_roles: str = os.getenv("STATISTICS_ROLES", default="").strip()
 
-        if not raw_statistics_roles:
-            cls._settings["STATISTICS_ROLES"] = DEFAULT_STATISTICS_ROLES
-            return
+        statistics_roles: AbstractSet[str] = (
+            {
+                raw_statistics_role.strip()
+                for raw_statistics_role in raw_statistics_roles.split(",")
+                if raw_statistics_role
+            }
+            if raw_statistics_roles
+            else DEFAULT_STATISTICS_ROLES
+        )
 
-        cls._settings["STATISTICS_ROLES"] = {
-            raw_statistics_role.strip()
-            for raw_statistics_role in raw_statistics_roles.split(",")
-            if raw_statistics_role
-        }
+        cls._settings["STATISTICS_ROLES"] = (
+            statistics_roles if statistics_roles else DEFAULT_STATISTICS_ROLES
+        )
 
     @classmethod
     def _setup_moderation_document_url(cls) -> None:
-        raw_moderation_document_url: str = os.getenv(
-            "MODERATION_DOCUMENT_URL", default=""
-        ).strip()
-
-        if raw_moderation_document_url and "://" not in raw_moderation_document_url:
-            raw_moderation_document_url = "https://" + raw_moderation_document_url
-
-        MODERATION_DOCUMENT_URL_IS_VALID: Final[bool] = bool(
-            raw_moderation_document_url and validators.url(raw_moderation_document_url),
+        MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
+            "MODERATION_DOCUMENT_URL must be a valid URL."
         )
-        if not MODERATION_DOCUMENT_URL_IS_VALID:
-            MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
-                "MODERATION_DOCUMENT_URL must be a valid URL."
+
+        raw_moderation_document_url: str = (
+            os.getenv("MODERATION_DOCUMENT_URL", default="").strip().lower()
+        )
+
+        if not raw_moderation_document_url:
+            raise ImproperlyConfiguredError(MODERATION_DOCUMENT_URL_MESSAGE)
+
+        if not raw_moderation_document_url.startswith("https://"):
+            raw_moderation_document_url = "https://" + raw_moderation_document_url
+            logger.warning(
+                "MODERATION_DOCUMENT_URL does not start with 'https://'."
+                "Please ensure all URLs are valid https URLs.",
             )
+
+        if not validators.url(raw_moderation_document_url):
             raise ImproperlyConfiguredError(MODERATION_DOCUMENT_URL_MESSAGE)
 
         cls._settings["MODERATION_DOCUMENT_URL"] = raw_moderation_document_url
@@ -756,8 +763,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_strike_performed_manually_warning_location(cls) -> None:
         raw_strike_performed_manually_warning_location: str = os.getenv(
-            "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION",
-            "DM",
+            "MANUAL_MODERATION_WARNING_MESSAGE_LOCATION", default="DM"
         ).strip()
 
         if not raw_strike_performed_manually_warning_location:
@@ -774,7 +780,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_auto_add_committee_to_threads(cls) -> None:
         raw_auto_add_committee_to_threads: str = (
-            str(os.getenv("AUTO_ADD_COMMITTEE_TO_THREADS", "True")).lower().strip()
+            os.getenv("AUTO_ADD_COMMITTEE_TO_THREADS", "True").lower().strip()
         )
 
         if raw_auto_add_committee_to_threads not in TRUE_VALUES | FALSE_VALUES:
