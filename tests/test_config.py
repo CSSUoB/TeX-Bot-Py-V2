@@ -485,7 +485,8 @@ class TestSetupDiscordBotToken:
     def test_invalid_discord_bot_token(self, invalid_discord_bot_token: str) -> None:
         """Test that an error is raised when an invalid `DISCORD_BOT_TOKEN` is provided."""
         INVALID_DISCORD_BOT_TOKEN_MESSAGE: Final[str] = (
-            "DISCORD_BOT_TOKEN must be a valid Discord bot token"  # noqa: S105
+            "DISCORD_BOT_TOKEN must be set to a valid Discord bot token "  # noqa: S105
+            "(see https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)."
         )
 
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
