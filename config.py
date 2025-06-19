@@ -268,6 +268,14 @@ class Settings(abc.ABC):
             return
 
         if not raw_purchase_membership_url.startswith("https://"):
+            if "://" in raw_purchase_membership_url:
+                INVALID_PURCHASE_MEMBERSHIP_URL_PROTOCOL_MESSAGE: Final[str] = (
+                    "Only HTTPS is supported as a protocol for PURCHASE_MEMBERSHIP_URL."
+                )
+                raise ImproperlyConfiguredError(
+                    INVALID_PURCHASE_MEMBERSHIP_URL_PROTOCOL_MESSAGE
+                )
+
             raw_purchase_membership_url = "https://" + raw_purchase_membership_url
             logger.warning(
                 "PURCHASE_MEMBERSHIP_URL was missing a URL protocol. "
@@ -291,6 +299,14 @@ class Settings(abc.ABC):
             return
 
         if not raw_membership_perks_url.startswith("https://"):
+            if "://" in raw_membership_perks_url:
+                INVALID_MEMBERSHIP_PERKS_URL_PROTOCOL_MESSAGE: Final[str] = (
+                    "Only HTTPS is supported as a protocol for MEMBERSHIP_PERKS_URL."
+                )
+                raise ImproperlyConfiguredError(
+                    INVALID_MEMBERSHIP_PERKS_URL_PROTOCOL_MESSAGE
+                )
+
             raw_membership_perks_url = "https://" + raw_membership_perks_url
             logger.warning(
                 "MEMBERSHIP_PERKS_URL was missing a URL protocol. "
@@ -316,6 +332,14 @@ class Settings(abc.ABC):
             return
 
         if not raw_custom_discord_invite_url.startswith("https://"):
+            if "://" in raw_custom_discord_invite_url:
+                INVALID_CUSTOM_DISCORD_INVITE_URL_PROTOCOL_MESSAGE: Final[str] = (
+                    "Only HTTPS is supported as a protocol for CUSTOM_DISCORD_INVITE_URL."
+                )
+                raise ImproperlyConfiguredError(
+                    INVALID_CUSTOM_DISCORD_INVITE_URL_PROTOCOL_MESSAGE
+                )
+
             raw_custom_discord_invite_url = "https://" + raw_custom_discord_invite_url
             logger.warning(
                 "CUSTOM_DISCORD_INVITE_URL was missing a URL protocol. "
@@ -711,7 +735,7 @@ class Settings(abc.ABC):
 
         if raw_statistics_days < 1:
             TOO_SMALL_STATISTICS_DAYS_MESSAGE: Final[str] = (
-                "STATISTICS_DAYS cannot be less than 1 day"
+                "STATISTICS_DAYS cannot be less than 1 day."
             )
             raise ImproperlyConfiguredError(TOO_SMALL_STATISTICS_DAYS_MESSAGE)
 
@@ -737,7 +761,7 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_moderation_document_url(cls) -> None:
-        MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
+        INVALID_MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
             "MODERATION_DOCUMENT_URL must be a valid URL."
         )
 
@@ -746,17 +770,25 @@ class Settings(abc.ABC):
         )
 
         if not raw_moderation_document_url:
-            raise ImproperlyConfiguredError(MODERATION_DOCUMENT_URL_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_MODERATION_DOCUMENT_URL_MESSAGE)
 
         if not raw_moderation_document_url.startswith("https://"):
+            if "://" in raw_moderation_document_url:
+                INVALID_MODERATION_DOCUMENT_URL_PROTOCOL_MESSAGE: Final[str] = (
+                    "Only HTTPS is supported as a protocol for MODERATION_DOCUMENT_URL."
+                )
+                raise ImproperlyConfiguredError(
+                    INVALID_MODERATION_DOCUMENT_URL_PROTOCOL_MESSAGE
+                )
+
             raw_moderation_document_url = "https://" + raw_moderation_document_url
             logger.warning(
-                "MODERATION_DOCUMENT_URL does not start with 'https://'."
-                "Please ensure all URLs are valid https URLs.",
+                "MODERATION_DOCUMENT_URL was missing a URL protocol. "
+                "Please ensure all URLs are valid HTTPS URLs.",
             )
 
         if not validators.url(raw_moderation_document_url):
-            raise ImproperlyConfiguredError(MODERATION_DOCUMENT_URL_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_MODERATION_DOCUMENT_URL_MESSAGE)
 
         cls._settings["MODERATION_DOCUMENT_URL"] = raw_moderation_document_url
 
