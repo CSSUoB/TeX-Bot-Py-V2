@@ -303,9 +303,7 @@ class Settings(abc.ABC):
                 INVALID_MEMBERSHIP_PERKS_URL_PROTOCOL_MESSAGE: Final[str] = (
                     "Only HTTPS is supported as a protocol for MEMBERSHIP_PERKS_URL."
                 )
-                raise ImproperlyConfiguredError(
-                    INVALID_MEMBERSHIP_PERKS_URL_PROTOCOL_MESSAGE
-                )
+                raise ImproperlyConfiguredError(INVALID_MEMBERSHIP_PERKS_URL_PROTOCOL_MESSAGE)
 
             raw_membership_perks_url = "https://" + raw_membership_perks_url
             logger.warning(
