@@ -892,8 +892,6 @@ def run_setup() -> None:
     logger.debug("Begin database setup")
 
     importlib.import_module("db")
-    from django.core import management
-
-    management.call_command("migrate")
+    importlib.import_module("django.core.management").call_command("migrate")
 
     logger.debug("Database setup completed")
