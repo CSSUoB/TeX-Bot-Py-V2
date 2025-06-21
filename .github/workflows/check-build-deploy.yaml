@@ -44,7 +44,7 @@ jobs:
                 enable-cache: true
 
             - name: Install mypy From Locked Dependencies
-              run: uv sync --no-group dev --group type-check --group test
+              run: uv sync --no-group dev --group type-check
 
             - name: Store Hashed Python Version
               id: store-hashed-python-version
