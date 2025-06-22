@@ -2,7 +2,6 @@
 
 import logging
 from enum import Enum
-from collections import OrderedSet
 from typing import TYPE_CHECKING, override
 
 import discord
