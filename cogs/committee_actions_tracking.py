@@ -233,7 +233,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
             committee: [
                 action
                 for action in actions
-                if str(action.discord_member) == DiscordMember.hash_discord_id(committee.id)  # type: ignore[has-type]
+                if str(action.discord_member) == DiscordMember.hash_discord_id(committee.id)
                 and action.status in status
             ]
             for committee in action_user
