@@ -327,7 +327,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                 if not user:
                     logger.warning(
                         "User with hashed user ID: %s no longer exists.",
-                        reminder.discord_member.hashed_discord_id,  # type: ignore[has-type]
+                        reminder.discord_member.hashed_discord_id,
                     )
                     await reminder.adelete()
                     continue
