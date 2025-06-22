@@ -43,7 +43,7 @@ class AssignedCommitteeAction(BaseDiscordMemberWrapper):
 
     INSTANCES_NAME_PLURAL: str = "Assigned Committee Actions"
 
-    discord_member = models.ForeignKey(  # type: ignore[assignment]
+    discord_member = models.ForeignKey(
         DiscordMember,
         on_delete=models.CASCADE,
         related_name="assigned_committee_actions",
@@ -77,11 +77,11 @@ class AssignedCommitteeAction(BaseDiscordMemberWrapper):
 
     @override
     def __repr__(self) -> str:
-        return f"<{self._meta.verbose_name}: {self.discord_member}, {self.description}"  # type: ignore[has-type]
+        return f"<{self._meta.verbose_name}: {self.discord_member}, {self.description}"
 
     @override
     def __str__(self) -> str:
-        return f"{self.discord_member}: {self.description}"  # type: ignore[has-type]
+        return f"{self.discord_member}: {self.description}"
 
 
 class IntroductionReminderOptOutMember(BaseDiscordMemberWrapper):
@@ -94,7 +94,7 @@ class IntroductionReminderOptOutMember(BaseDiscordMemberWrapper):
 
     INSTANCES_NAME_PLURAL: str = "Introduction Reminder Opt-Out Member objects"
 
-    discord_member = models.OneToOneField(  # type: ignore[assignment]
+    discord_member = models.OneToOneField(
         DiscordMember,
         on_delete=models.CASCADE,
         related_name="opted_out_of_introduction_reminders",
@@ -120,7 +120,7 @@ class SentOneOffIntroductionReminderMember(BaseDiscordMemberWrapper):
 
     INSTANCES_NAME_PLURAL: str = "Sent One-Off Introduction Reminder Member objects"
 
-    discord_member = models.OneToOneField(  # type: ignore[assignment]
+    discord_member = models.OneToOneField(
         DiscordMember,
         on_delete=models.CASCADE,
         related_name="sent_one_off_introduction_reminder",
@@ -153,7 +153,7 @@ class SentGetRolesReminderMember(BaseDiscordMemberWrapper):
 
     INSTANCES_NAME_PLURAL: str = "Sent Get Roles Reminder Member objects"
 
-    discord_member = models.OneToOneField(  # type: ignore[assignment]
+    discord_member = models.OneToOneField(
         DiscordMember,
         on_delete=models.CASCADE,
         related_name="sent_get_roles_reminder",
@@ -255,7 +255,7 @@ class DiscordReminder(BaseDiscordMemberWrapper):
 
     INSTANCES_NAME_PLURAL: str = "Reminders"
 
-    discord_member = models.ForeignKey(  # type: ignore[assignment]
+    discord_member = models.ForeignKey(
         DiscordMember,
         on_delete=models.CASCADE,
         related_name="reminders",
@@ -338,7 +338,7 @@ class DiscordReminder(BaseDiscordMemberWrapper):
     @override
     def __str__(self) -> str:
         return (
-            f"{self.discord_member}"  # type: ignore[has-type]
+            f"{self.discord_member}"
             f"{
                 ''
                 if not self.message
@@ -349,7 +349,7 @@ class DiscordReminder(BaseDiscordMemberWrapper):
     @override
     def __repr__(self) -> str:
         return (
-            f"<{self._meta.verbose_name}: {self.discord_member}, "  # type: ignore[has-type]
+            f"<{self._meta.verbose_name}: {self.discord_member}, "
             f"{self.channel_id!r}, {self.send_datetime!r}>"
         )
 
@@ -449,7 +449,7 @@ class DiscordMemberStrikes(BaseDiscordMemberWrapper):
 
     INSTANCES_NAME_PLURAL: str = "Discord Member's Strikes"
 
-    discord_member = models.OneToOneField(  # type: ignore[assignment]
+    discord_member = models.OneToOneField(
         DiscordMember,
         on_delete=models.CASCADE,
         related_name="strikes",
@@ -478,8 +478,8 @@ class DiscordMemberStrikes(BaseDiscordMemberWrapper):
 
     @override
     def __str__(self) -> str:
-        return f"{self.discord_member}: {self.strikes}"  # type: ignore[has-type]
+        return f"{self.discord_member}: {self.strikes}"
 
     @override
     def __repr__(self) -> str:
-        return f"<{self._meta.verbose_name}: {self.discord_member}, {self.strikes!r}>"  # type: ignore[has-type]
+        return f"<{self._meta.verbose_name}: {self.discord_member}, {self.strikes!r}>"
