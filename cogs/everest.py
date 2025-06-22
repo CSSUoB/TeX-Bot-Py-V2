@@ -23,6 +23,7 @@ logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 MOUNT_EVEREST_TOTAL_STEPS: "Final[int]" = 44250
 
+
 class _CourseTypes(Enum):
     B_SC = "B.Sc."
     M_SCI = "M.Sci."
@@ -171,7 +172,12 @@ class EverestCommandCog(TeXBotBaseCog):
                 f"**Year**: {course_year}\n"
                 f"**Percentage of Module**: {percentage_of_module:.1f}%\n"
                 f"This assignment is worth {  # NOTE: Assumes all modules are 20 credits
-                    int((percentage_of_module / 100) * (1 / 6) * course_year_weighting * MOUNT_EVEREST_TOTAL_STEPS)
+                    int(
+                        (percentage_of_module / 100)
+                        * (1 / 6)
+                        * course_year_weighting
+                        * MOUNT_EVEREST_TOTAL_STEPS
+                    )
                 } steps of Mt. Everest!"
             ),
             ephemeral=True,
