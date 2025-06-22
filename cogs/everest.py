@@ -2,6 +2,7 @@
 
 import logging
 from enum import Enum
+from collections import OrderedSet
 from typing import TYPE_CHECKING, override
 
 import discord
@@ -20,6 +21,7 @@ __all__: "Sequence[str]" = ("EverestCommandCog",)
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
+MOUNT_EVEREST_TOTAL_STEPS: "Final[int]" = 44250
 
 class _CourseTypes(Enum):
     B_SC = "B.Sc."
@@ -110,10 +112,10 @@ class EverestCommandCog(TeXBotBaseCog):
         description="The percentage of the module that the assignment is worth.",
         input_type=float,
         autocomplete=discord.utils.basic_autocomplete(  # NOTE: Pycord documents that they accept any iterable, testing shows that they only accept lists (generators do not work correctly).
-            {
+            [
                 discord.OptionChoice(name=f"{percentage * 5:.1f}%", value=percentage * 5)
                 for percentage in range(1, 21)
-            }
+            ]
         ),
         required=True,
         parameter_name="percentage_of_module",
@@ -128,7 +130,7 @@ class EverestCommandCog(TeXBotBaseCog):
         """Calculate how many steps of Mount Everest an assignment is worth."""
         try:
             course_type: _CourseTypes = _CourseTypes[raw_course_type]
-        except ValueError:
+        except KeyError:
             await self.command_send_error(
                 ctx=ctx, message=f"Invalid course type: '{raw_course_type}'."
             )
@@ -152,7 +154,7 @@ class EverestCommandCog(TeXBotBaseCog):
 
         try:
             course_year_weighting: float = course_type.get_course_year_weighting(course_year)
-        except ValueError:
+        except KeyError:
             await self.command_send_error(
                 ctx,
                 message=(
@@ -169,7 +171,7 @@ class EverestCommandCog(TeXBotBaseCog):
                 f"**Year**: {course_year}\n"
                 f"**Percentage of Module**: {percentage_of_module:.1f}%\n"
                 f"This assignment is worth {  # NOTE: Assumes all modules are 20 credits
-                    int((percentage_of_module / 100) * (1 / 6) * course_year_weighting * 44250)
+                    int((percentage_of_module / 100) * (1 / 6) * course_year_weighting * MOUNT_EVEREST_TOTAL_STEPS)
                 } steps of Mt. Everest!"
             ),
             ephemeral=True,
