@@ -938,7 +938,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             return
 
-        if str(action_to_reassign.discord_member) == new_user_to_action_hash:  # type: ignore[has-type]
+        if str(action_to_reassign.discord_member) == new_user_to_action_hash:
             await ctx.respond(
                 content=(
                     f"HEY! Action `{action_to_reassign.description}` is already assigned "
