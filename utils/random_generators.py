@@ -4,7 +4,7 @@ import abc
 import random
 import string
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Generic, TypeVar, override
+from typing import TYPE_CHECKING, override
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
@@ -19,10 +19,7 @@ __all__: "Sequence[str]" = (
 )
 
 
-T = TypeVar("T")
-
-
-class BaseRandomEnvVariableValueGenerator(Generic[T], abc.ABC):
+class BaseRandomEnvVariableValueGenerator[T](abc.ABC):
     """Generates random values for a specific environment variable."""
 
     @classmethod
