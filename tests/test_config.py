@@ -951,7 +951,7 @@ class TestSetupMembershipPerksURL:
     def test_invalid_protocol_membership_perks_url(self) -> None:
         """Test that an error occurs when `MEMBERSHIP_PERKS_URL` is not https."""
         INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (
-                "Only HTTPS is supported as a protocol for MEMBERSHIP_PERKS_URL."
+            "Only HTTPS is supported as a protocol for MEMBERSHIP_PERKS_URL."
         )
 
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
