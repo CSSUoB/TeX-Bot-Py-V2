@@ -869,6 +869,22 @@ class TestSetupPurchaseMembershipURL:
 
         assert not RuntimeSettings()["PURCHASE_MEMBERSHIP_URL"]
 
+    def test_invalid_protocol_purchase_membership_url(self) -> None:
+        """Test that an error occurs when `PURCHASE_MEMBERSHIP_URL` is not https."""
+        INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE: Final[str] = (
+            "Only HTTPS is supported as a protocol for PURCHASE_MEMBERSHIP_URL."
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("PURCHASE_MEMBERSHIP_URL"):
+            os.environ["PURCHASE_MEMBERSHIP_URL"] = "ftp://google.com"
+
+            with pytest.raises(
+                ImproperlyConfiguredError, match=INVALID_PURCHASE_MEMBERSHIP_URL_MESSAGE
+            ):
+                RuntimeSettings._setup_purchase_membership_url()
+
     @pytest.mark.parametrize(
         "invalid_purchase_membership_url",
         ("invalid_purchase_membership_url", "www.google..com/"),
@@ -931,6 +947,22 @@ class TestSetupMembershipPerksURL:
         RuntimeSettings._is_env_variables_setup = True
 
         assert not RuntimeSettings()["MEMBERSHIP_PERKS_URL"]
+
+    def test_invalid_protocol_membership_perks_url(self) -> None:
+        """Test that an error occurs when `MEMBERSHIP_PERKS_URL` is not https."""
+        INVALID_MEMBERSHIP_PERKS_URL_MESSAGE: Final[str] = (
+                "Only HTTPS is supported as a protocol for MEMBERSHIP_PERKS_URL."
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("MEMBERSHIP_PERKS_URL"):
+            os.environ["MEMBERSHIP_PERKS_URL"] = "ftp://google.com"
+
+            with pytest.raises(
+                ImproperlyConfiguredError, match=INVALID_MEMBERSHIP_PERKS_URL_MESSAGE
+            ):
+                RuntimeSettings._setup_membership_perks_url()
 
     @pytest.mark.parametrize(
         "invalid_membership_perks_url",
@@ -2450,6 +2482,22 @@ class TestSetupModerationDocumentURL:
             ):
                 RuntimeSettings._setup_moderation_document_url()
 
+    def test_invalid_protocol_moderation_document_url(self) -> None:
+        """Test that an error occurs when `MODERATION_DOCUMENT_URL` is not https."""
+        INVALID_MODERATION_DOCUMENT_URL: Final[str] = (
+            "Only HTTPS is supported as a protocol for MODERATION_DOCUMENT_URL."
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("MODERATION_DOCUMENT_URL"):
+            os.environ["MODERATION_DOCUMENT_URL"] = "ftp://google.com"
+
+            with pytest.raises(
+                ImproperlyConfiguredError, match=INVALID_MODERATION_DOCUMENT_URL
+            ):
+                RuntimeSettings._setup_moderation_document_url()
+
     @pytest.mark.parametrize(
         "invalid_moderation_document_url",
         ("invalid_moderation_document_url", "www.google..com/", "", "  "),
@@ -2561,6 +2609,22 @@ class TestSetupCustomDiscordInviteUrl:
         RuntimeSettings._is_env_variables_setup = True
 
         assert not RuntimeSettings()["CUSTOM_DISCORD_INVITE_URL"]
+
+    def test_invalid_protocol_custom_discord_invite_url(self) -> None:
+        """Test that an error is raised when `CUSTOM_DISCORD_INVITE_URL` is not https."""
+        INVALID_CUSTOM_DISCORD_INVITE_URL: Final[str] = (
+            "Only HTTPS is supported as a protocol for CUSTOM_DISCORD_INVITE_URL."
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("CUSTOM_DISCORD_INVITE_URL"):
+            os.environ["CUSTOM_DISCORD_INVITE_URL"] = "ftp://discord.gg/abc123"
+
+            with pytest.raises(
+                ImproperlyConfiguredError, match=INVALID_CUSTOM_DISCORD_INVITE_URL
+            ):
+                RuntimeSettings._setup_custom_discord_invite_url()
 
     @pytest.mark.parametrize(
         "test_invalid_discord_invite_url",
