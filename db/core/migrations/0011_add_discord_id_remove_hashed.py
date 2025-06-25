@@ -28,17 +28,17 @@ class Migration(migrations.Migration):
                 verbose_name='Discord Member ID',
             ),
         ),
-        
+
         # Step 2: Since hashed Discord IDs cannot be reversed, we need to either:
         # - Clear existing data and start fresh, OR
         # - Manually populate discord_id values from logs/external sources
-        
+
         # For now, let's clear the existing data to start fresh
         migrations.RunSQL(
             "DELETE FROM core_discordmember;",
             reverse_sql="-- Cannot reverse data deletion"
         ),
-        
+
         # Step 3: Make discord_id non-nullable and unique
         migrations.AlterField(
             model_name='discordmember',
@@ -57,7 +57,7 @@ class Migration(migrations.Migration):
                 verbose_name='Discord Member ID',
             ),
         ),
-        
+
         # Step 4: Remove the old hashed_discord_id column
         migrations.RemoveField(
             model_name='discordmember',
