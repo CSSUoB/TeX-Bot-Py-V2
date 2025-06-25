@@ -811,9 +811,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         self,
         ctx: "TeXBotApplicationContext",
         *,
-        action_member_id: str,
+        action_member_id: None | str,
         ping: bool,
-        status: str,
+        status: None | str,
     ) -> None:
         """
         Definition and callback of the "/list" command.
@@ -823,7 +823,8 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         If a user has the committee role, they can list actions for other users.
         If a user does not have the committee role, they can only list their own actions.
         """
-        action_member_id = action_member_id.strip()
+        if action_member_id is not None:
+            action_member_id = action_member_id.strip()
 
         action_member: discord.Member | discord.User = (
             await self.bot.get_member_from_str_id(action_member_id)
