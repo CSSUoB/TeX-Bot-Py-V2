@@ -125,4 +125,3 @@ class TestDiscordReminder:
         reminders = list(discord_member.reminders.all())
         assert reminder1 in reminders
         assert reminder2 in reminders
-
