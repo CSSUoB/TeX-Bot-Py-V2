@@ -33,7 +33,6 @@ version = "0.1.0"
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "db._settings"
 addopts = "--reuse-db --nomigrations"
-filterwarnings = ["ignore:'audioop':DeprecationWarning"]
 
 
 [tool.mypy]
