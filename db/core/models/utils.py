@@ -8,7 +8,7 @@ from django.core.exceptions import FieldDoesNotExist
 from django.core.validators import RegexValidator
 from django.db import models
 
-from .managers import HashedDiscordMemberManager, RelatedDiscordMemberManager
+from .managers import DiscordMemberManager, RelatedDiscordMemberManager
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
@@ -183,7 +183,7 @@ class DiscordMember(AsyncBaseModel):
         ],
     )
 
-    objects = HashedDiscordMemberManager()
+    objects: DiscordMemberManager = DiscordMemberManager()
 
     @override
     def __str__(self) -> str:

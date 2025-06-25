@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
     from .utils import AsyncBaseModel, BaseDiscordMemberWrapper, DiscordMember  # noqa: F401
 
-__all__: "Sequence[str]" = ("HashedDiscordMemberManager", "RelatedDiscordMemberManager")
+__all__: "Sequence[str]" = ("DiscordMemberManager", "RelatedDiscordMemberManager")
 
 if TYPE_CHECKING:
     type Defaults = MutableMapping[str, object | Callable[[], object]] | None
@@ -28,17 +28,17 @@ if TYPE_CHECKING:
 logger: "Logger" = logging.getLogger("TeX-Bot")
 
 
-class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
-    """Base manager class to remove a given unhashed ID before executing a query."""
+class BaseDiscordIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
+    """Base manager class to handle Discord ID proxy fields before executing a query."""
 
     use_in_migrations: bool = True
 
     @abc.abstractmethod
-    def _remove_unhashed_id_from_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:
-        """Remove any unhashed ID values from the kwargs dict before executing a query."""
+    def _process_discord_id_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:
+        """Process Discord ID proxy fields from kwargs dict before executing a query."""
 
     @final
-    def _perform_remove_unhashed_id_from_kwargs(
+    def _perform_process_discord_id_kwargs(
         self, kwargs: dict[str, object]
     ) -> dict[str, object]:
         if utils.is_running_in_async():
@@ -48,58 +48,58 @@ class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
             )
             raise RuntimeError(SYNC_IN_ASYNC_MESSAGE)
 
-        return self._remove_unhashed_id_from_kwargs(kwargs=kwargs)
+        return self._process_discord_id_kwargs(kwargs=kwargs)
 
     @abc.abstractmethod
-    async def _aremove_unhashed_id_from_kwargs(
+    async def _aprocess_discord_id_kwargs(
         self, kwargs: dict[str, object]
     ) -> dict[str, object]:
-        """Remove any unhashed_id values from the kwargs dict before executing a query."""
+        """Process Discord ID proxy fields from kwargs dict before executing a query."""
 
     @override
     def get(self, *args: object, **kwargs: object) -> T_model:
-        return super().get(*args, **self._perform_remove_unhashed_id_from_kwargs(kwargs))
+        return super().get(*args, **self._perform_process_discord_id_kwargs(kwargs))
 
     @override
     async def aget(self, *args: object, **kwargs: object) -> T_model:
         return await super().aget(
             *args,
-            **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
+            **(await self._aprocess_discord_id_kwargs(kwargs)),
         )
 
     @override
     def filter(self, *args: object, **kwargs: object) -> "QuerySet[T_model]":
         return super().filter(
             *args,
-            **self._perform_remove_unhashed_id_from_kwargs(kwargs),
+            **self._perform_process_discord_id_kwargs(kwargs),
         )
 
     async def afilter(self, *args: object, **kwargs: object) -> "QuerySet[T_model]":
         return super().filter(
             *args,
-            **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
+            **(await self._aprocess_discord_id_kwargs(kwargs)),
         )
 
     @override
     def exclude(self, *args: object, **kwargs: object) -> "QuerySet[T_model]":
         return super().exclude(
             *args,
-            **self._perform_remove_unhashed_id_from_kwargs(kwargs),
+            **self._perform_process_discord_id_kwargs(kwargs),
         )
 
     async def aexclude(self, *args: object, **kwargs: object) -> "QuerySet[T_model]":
         return super().exclude(
             *args,
-            **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
+            **(await self._aprocess_discord_id_kwargs(kwargs)),
         )
 
     @override
     def create(self, **kwargs: object) -> T_model:
-        return super().create(**self._perform_remove_unhashed_id_from_kwargs(kwargs))
+        return super().create(**self._perform_process_discord_id_kwargs(kwargs))
 
     @override
     async def acreate(self, **kwargs: object) -> T_model:
-        return await super().acreate(**(await self._aremove_unhashed_id_from_kwargs(kwargs)))
+        return await super().acreate(**(await self._aprocess_discord_id_kwargs(kwargs)))
 
     @override
     def get_or_create(  # type: ignore[override]
@@ -109,7 +109,7 @@ class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
     ) -> tuple[T_model, bool]:
         return super().get_or_create(
             defaults=defaults,
-            **self._perform_remove_unhashed_id_from_kwargs(kwargs),
+            **self._perform_process_discord_id_kwargs(kwargs),
         )
 
     @override
@@ -120,7 +120,7 @@ class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
     ) -> tuple[T_model, bool]:
         return await super().aget_or_create(
             defaults=defaults,
-            **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
+            **(await self._aprocess_discord_id_kwargs(kwargs)),
         )
 
     @override
@@ -133,7 +133,7 @@ class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
         return super().get_or_create(
             defaults=defaults,
             create_defaults=create_defaults,
-            **self._perform_remove_unhashed_id_from_kwargs(kwargs),
+            **self._perform_process_discord_id_kwargs(kwargs),
         )
 
     @override
@@ -146,28 +146,28 @@ class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
         return await super().aupdate_or_create(
             defaults=defaults,
             create_defaults=create_defaults,
-            **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
+            **(await self._aprocess_discord_id_kwargs(kwargs)),
         )
 
     @override
     def update(self, **kwargs: object) -> int:
-        return super().update(**self._perform_remove_unhashed_id_from_kwargs(kwargs))
+        return super().update(**self._perform_process_discord_id_kwargs(kwargs))
 
     @override
     async def aupdate(self, **kwargs: object) -> int:
-        return await super().aupdate(**(await self._aremove_unhashed_id_from_kwargs(kwargs)))
+        return await super().aupdate(**(await self._aprocess_discord_id_kwargs(kwargs)))
 
 
-class HashedDiscordMemberManager(BaseHashedIDManager["DiscordMember"]):
+class DiscordMemberManager(BaseDiscordIDManager["DiscordMember"]):
     """
     Manager class to create and retrieve DiscordMember model instances.
 
     This manager implements extra functionality to filter/create instances
-    using a given discord_id that with be automatically hashed before saved to the database.
+    using a given discord_id or member_id that will be stored directly in the database.
     """
 
     @override
-    def _remove_unhashed_id_from_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:
+    def _process_discord_id_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:
         raw_discord_id: object | None = None
 
         field_name: str
@@ -196,7 +196,7 @@ class HashedDiscordMemberManager(BaseHashedIDManager["DiscordMember"]):
         return kwargs
 
     @override
-    async def _aremove_unhashed_id_from_kwargs(
+    async def _aprocess_discord_id_kwargs(
         self, kwargs: dict[str, object]
     ) -> dict[str, object]:
         raw_discord_id: object | None = None
@@ -228,17 +228,17 @@ class HashedDiscordMemberManager(BaseHashedIDManager["DiscordMember"]):
 
 
 class RelatedDiscordMemberManager[T_BaseDiscordMemberWrapper: "BaseDiscordMemberWrapper"](
-    BaseHashedIDManager[T_BaseDiscordMemberWrapper]
+    BaseDiscordIDManager[T_BaseDiscordMemberWrapper]
 ):
     """
     Manager class to create and retrieve instances of any concrete `BaseDiscordMemberWrapper`.
 
     This manager implements extra functionality to filter/create instances
-    using a given discord_id that with be automatically hashed before saved to the database.
+    using a given discord_id that will be automatically stored as raw Discord IDs.
     """
 
     @override
-    def _remove_unhashed_id_from_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:
+    def _process_discord_id_kwargs(self, kwargs: dict[str, object]) -> dict[str, object]:
         raw_discord_id: object | None = None
 
         field_name: str
@@ -269,7 +269,7 @@ class RelatedDiscordMemberManager[T_BaseDiscordMemberWrapper: "BaseDiscordMember
         return kwargs
 
     @override
-    async def _aremove_unhashed_id_from_kwargs(
+    async def _aprocess_discord_id_kwargs(
         self, kwargs: dict[str, object]
     ) -> dict[str, object]:
         raw_discord_id: object | None = None

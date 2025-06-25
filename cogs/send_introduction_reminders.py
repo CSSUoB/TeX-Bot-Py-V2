@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = ("SendIntroductionRemindersTaskCog",)
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: "Logger" = logging.getLogger("TeX-Bot")
 
 
 class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
@@ -292,13 +292,13 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     )
                 except ValidationError as create_introduction_reminder_opt_out_member_error:
                     error_is_already_exists: bool = (
-                        "hashed_member_id"
+                        "discord_id"
                         in create_introduction_reminder_opt_out_member_error.message_dict
                         and any(
                             "already exists" in error
                             for error in (
                                 create_introduction_reminder_opt_out_member_error.message_dict[
-                                    "hashed_member_id"
+                                    "discord_id"
                                 ]
                             )
                         )
