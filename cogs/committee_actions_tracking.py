@@ -577,7 +577,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         ctx: "TeXBotApplicationContext",
         *,
         action_member_id: None | str,
-        ping: None | bool,
+        ping: bool,
         status: None | str,
     ) -> None:
         """
