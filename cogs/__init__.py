@@ -36,6 +36,7 @@ from .ping import PingCommandCog
 from .remind_me import ClearRemindersBacklogTaskCog, RemindMeCommandCog
 from .send_get_roles_reminders import SendGetRolesRemindersTaskCog
 from .send_introduction_reminders import SendIntroductionRemindersTaskCog
+from .society_events import SocietyEventsSlashCommandsCog
 from .source import SourceCommandCog
 from .startup import StartupCog
 from .stats import StatsCommandsCog
@@ -75,6 +76,7 @@ __all__: "Sequence[str]" = (
     "RemindMeCommandCog",
     "SendGetRolesRemindersTaskCog",
     "SendIntroductionRemindersTaskCog",
+    "SocietyEventsSlashCommandsCog",
     "SourceCommandCog",
     "StartupCog",
     "StatsCommandsCog",
@@ -116,6 +118,7 @@ def setup(bot: "TeXBot") -> None:
         SendGetRolesRemindersTaskCog,
         SendIntroductionRemindersTaskCog,
         SourceCommandCog,
+        SocietyEventsSlashCommandsCog,
         StartupCog,
         StatsCommandsCog,
         StrikeCommandCog,
