@@ -19,7 +19,11 @@ if TYPE_CHECKING:
 
     from .utils import AsyncBaseModel, BaseDiscordMemberWrapper, DiscordMember  # noqa: F401
 
-__all__: "Sequence[str]" = ("DiscordMemberManager", "RelatedDiscordMemberManager")
+__all__: "Sequence[str]" = (
+    "DiscordMemberManager",
+    "HashedDiscordMemberManager",
+    "RelatedDiscordMemberManager",
+)
 
 if TYPE_CHECKING:
     type Defaults = MutableMapping[str, object | Callable[[], object]] | None
@@ -300,3 +304,7 @@ class RelatedDiscordMemberManager[T_BaseDiscordMemberWrapper: "BaseDiscordMember
                 raise self.model.DoesNotExist from does_not_exist_error
 
         return kwargs
+
+
+# Compatibility alias for old migrations
+HashedDiscordMemberManager = DiscordMemberManager
