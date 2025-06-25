@@ -306,5 +306,4 @@ class RelatedDiscordMemberManager[T_BaseDiscordMemberWrapper: "BaseDiscordMember
         return kwargs
 
 
-# Compatibility alias for old migrations
 HashedDiscordMemberManager = DiscordMemberManager
