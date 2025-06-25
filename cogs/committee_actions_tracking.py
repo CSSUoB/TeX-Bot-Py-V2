@@ -588,8 +588,11 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         If a user has the committee role, they can list actions for other users.
         If a user does not have the committee role, they can only list their own actions.
         """
+        if action_member_id is not None:
+            action_member_id = action_member_id.strip()
+
         action_member: discord.Member | discord.User = (
-            await self.bot.get_member_from_str_id(action_member_id.strip())
+            await self.bot.get_member_from_str_id(action_member_id)
             if action_member_id
             else ctx.user
         )
