@@ -2,6 +2,7 @@
 
 import abc
 import logging
+import re
 from typing import TYPE_CHECKING, final, override
 
 from django.db.models import Manager
@@ -24,7 +25,7 @@ if TYPE_CHECKING:
     type Defaults = MutableMapping[str, object | Callable[[], object]] | None
 
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: "Logger" = logging.getLogger("TeX-Bot")
 
 
 class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
@@ -182,7 +183,15 @@ class HashedDiscordMemberManager(BaseHashedIDManager["DiscordMember"]):
         discord_id: int | str | None = raw_discord_id
 
         if discord_id:
-            kwargs["hashed_discord_id"] = self.model.hash_discord_id(discord_id)
+            # Validate Discord ID format
+            if not re.fullmatch(r"\A\d{17,20}\Z", str(discord_id)):
+                INVALID_MEMBER_ID_MESSAGE: Final[str] = (
+                    f"{discord_id!r} is not a valid Discord member ID "
+                    "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
+                )
+                raise ValueError(INVALID_MEMBER_ID_MESSAGE)
+
+            kwargs["discord_id"] = str(discord_id)
 
         return kwargs
 
@@ -205,7 +214,15 @@ class HashedDiscordMemberManager(BaseHashedIDManager["DiscordMember"]):
         discord_id: int | str | None = raw_discord_id
 
         if discord_id:
-            kwargs["hashed_discord_id"] = self.model.hash_discord_id(discord_id)
+            # Validate Discord ID format
+            if not re.fullmatch(r"\A\d{17,20}\Z", str(discord_id)):
+                INVALID_MEMBER_ID_MESSAGE: Final[str] = (
+                    f"{discord_id!r} is not a valid Discord member ID "
+                    "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
+                )
+                raise ValueError(INVALID_MEMBER_ID_MESSAGE)
+
+            kwargs["discord_id"] = str(discord_id)
 
         return kwargs
 

@@ -1,6 +1,5 @@
 """Utility classes and functions."""
 
-import hashlib
 import re
 from typing import TYPE_CHECKING, override
 
@@ -13,7 +12,7 @@ from .managers import HashedDiscordMemberManager, RelatedDiscordMemberManager
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
-    from typing import Final, Never, NoReturn
+    from typing import Final
 
 __all__: "Sequence[str]" = ("AsyncBaseModel", "BaseDiscordMemberWrapper", "DiscordMember")
 
@@ -167,19 +166,19 @@ class DiscordMember(AsyncBaseModel):
     Instances of this model are related to other models to store information
     about reminders, opt-in/out states, tracked committee actions, etc.
 
-    The Discord guild member is identified by their hashed Discord member ID.
+    The Discord guild member is identified by their Discord member ID.
     """
 
-    hashed_discord_id = models.CharField(
-        "Hashed Discord Member ID",
+    discord_id = models.CharField(
+        "Discord Member ID",
         unique=True,
         null=False,
         blank=False,
-        max_length=64,
+        max_length=20,
         validators=[
             RegexValidator(
-                r"\A[A-Fa-f0-9]{64}\Z",
-                "hashed_discord_id must be a valid sha256 hex-digest.",
+                r"\A\d{17,20}\Z",
+                "discord_id must be a valid Discord member ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)",
             ),
         ],
     )
@@ -188,83 +187,56 @@ class DiscordMember(AsyncBaseModel):
 
     @override
     def __str__(self) -> str:
-        return f"{self.hashed_discord_id}"
+        return f"{self.discord_id}"
 
     @override
     def __repr__(self) -> str:
-        return f"<{self._meta.verbose_name}: {self.hashed_discord_id!r}>"
+        return f"<{self._meta.verbose_name}: {self.discord_id!r}>"
 
     @override
     def __setattr__(self, name: str, value: object) -> None:
-        if name in ("discord_id", "member_id"):
+        if name in ("member_id",):
             if not isinstance(value, str | int):
                 MEMBER_ID_INVALID_TYPE_MESSAGE: Final[str] = (
                     f"{name} must be an instance of str or int."
                 )
                 raise TypeError(MEMBER_ID_INVALID_TYPE_MESSAGE)
 
-            self.hashed_discord_id = self.hash_discord_id(value)
+            # Validate Discord ID format
+            if not re.fullmatch(r"\A\d{17,20}\Z", str(value)):
+                INVALID_MEMBER_ID_MESSAGE: Final[str] = (
+                    f"{value!r} is not a valid Discord member ID "
+                    "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
+                )
+                raise ValueError(INVALID_MEMBER_ID_MESSAGE)
+
+            self.discord_id = str(value)
             return
 
         super().__setattr__(name, value)
 
     @property
-    def discord_id(self) -> "NoReturn":
+    def member_id(self) -> str:
         """Return the Discord ID of this member."""
-        HASHED_ID_CANNOT_BE_REVERSED_ERROR_MESSAGE: Final[str] = (
-            "The Discord IDs of members are hashed before being sent into the database. "
-            "The raw IDs cannot be retrieved after this hashing process."
-        )
-        raise ValueError(HASHED_ID_CANNOT_BE_REVERSED_ERROR_MESSAGE)
+        return self.discord_id
 
-    @property
-    def member_id(self) -> "NoReturn":
-        """Return the Discord ID of this member."""
-        return self.discord_id  # type: ignore[misc]
-
-    @property
-    def hashed_member_id(self) -> "NoReturn":
-        """Return the hashed Discord ID of this member."""
-        raise DeprecationWarning
-
-    @hashed_member_id.setter
-    def hashed_member_id(self, value: "Never") -> None:  # noqa: ARG002
-        """Assign the hashed Discord ID of this member."""
-        raise DeprecationWarning
-
-    @classmethod
-    def hash_member_id(cls, member_id: "Never") -> "NoReturn":  # noqa: ARG003
-        """
-        Hash the provided discord_id.
-
-        The member_id value is hashed
-        into the format that hashed_discord_ids are stored in the database
-        when new objects of this class are created.
-        """
-        raise DeprecationWarning
-
-    @classmethod
-    def hash_discord_id(cls, discord_id: str | int) -> str:
-        """
-        Hash the provided discord_id.
-
-        The discord_id value is hashed
-        into the format that hashed_discord_ids are stored in the database
-        when new objects of this class are created.
-        """
-        if not re.fullmatch(r"\A\d{17,20}\Z", str(discord_id)):
+    @member_id.setter
+    def member_id(self, value: str | int) -> None:
+        """Set the Discord ID of this member."""
+        # Validate Discord ID format
+        if not re.fullmatch(r"\A\d{17,20}\Z", str(value)):
             INVALID_MEMBER_ID_MESSAGE: Final[str] = (
-                f"{discord_id!r} is not a valid Discord member ID "
+                f"{value!r} is not a valid Discord member ID "
                 "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
             )
             raise ValueError(INVALID_MEMBER_ID_MESSAGE)
 
-        return hashlib.sha256(str(discord_id).encode()).hexdigest()
+        self.discord_id = str(value)
 
     @classmethod
     @override
     def get_proxy_field_names(cls) -> set[str]:
-        return super().get_proxy_field_names() | {"discord_id", "member_id"}
+        return super().get_proxy_field_names() | {"member_id"}
 
 
 class BaseDiscordMemberWrapper(AsyncBaseModel):
