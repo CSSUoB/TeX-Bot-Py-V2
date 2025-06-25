@@ -10,7 +10,7 @@ import discord
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 from django.db.models import Q
 
-from db.core.models import AssignedCommitteeAction, DiscordMember
+from db.core.models import AssignedCommitteeAction
 from exceptions import (
     CommitteeElectRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
@@ -698,7 +698,6 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         new_user_to_action: discord.Member = await self.bot.get_member_from_str_id(
             member_id,
         )
-        new_user_to_action_hash: str = DiscordMember.hash_discord_id(new_user_to_action.id)
 
         try:
             action_to_reassign: AssignedCommitteeAction = (
@@ -711,7 +710,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             return
 
-        if str(action_to_reassign.discord_member) == new_user_to_action_hash:
+        if str(action_to_reassign.discord_member) == str(new_user_to_action.id):
             await ctx.respond(
                 content=(
                     f"HEY! Action `{action_to_reassign.description}` is already assigned "
@@ -789,7 +788,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             committee: [
                 action
                 for action in actions
-                if str(action.discord_member) == DiscordMember.hash_discord_id(committee.id)
+                if str(action.discord_member) == str(committee.id)
                 and action.status in desired_status
             ]
             for committee in committee_members
