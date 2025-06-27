@@ -235,12 +235,7 @@ def test_standalone_database_function() -> None:
 
 @pytest.mark.django_db(transaction=True)
 def test_with_transaction_support() -> None:
-    """
-    Example test that requires transaction support.
-
-    Use transaction=True when you need to test database transactions,
-    atomic blocks, or other transaction-related functionality.
-    """
+    """Example test that requires transaction support."""
     member = DiscordMember.objects.create(discord_id="777888999000111222")
 
     class TestRollbackError(Exception):
