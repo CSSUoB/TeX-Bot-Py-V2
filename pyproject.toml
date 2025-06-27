@@ -32,7 +32,8 @@ version = "0.1.0"
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "db._settings"
-addopts = "--reuse-db --nomigrations"
+addopts = "--ds=db._settings --reuse-db --nomigrations --tb=short"
+testpaths = ["tests"]
 
 
 [tool.mypy]
