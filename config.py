@@ -935,7 +935,7 @@ settings: "Final[Settings]" = _settings_class_factory()()
 def run_setup() -> None:
     """Execute the required setup functions."""
     settings._setup_env_variables()  # noqa: SLF001
-ImproperlyConfiguredError
+
     logger.debug("Begin database setup")
 
     importlib.import_module("db")
