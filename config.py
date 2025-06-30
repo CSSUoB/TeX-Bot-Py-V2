@@ -844,7 +844,7 @@ class Settings(abc.ABC):
                 "Invalid setup order: AUTO_ROLE must be set up "
                 "before AUTO_ROLES_TO_ADD can be set up."
             )
-            raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_SETUP_ORDER_MESSAGE)
 
         raw_auto_roles_to_add: str = os.getenv("AUTO_ROLES_TO_ADD", default="").strip()
 
@@ -935,7 +935,7 @@ settings: "Final[Settings]" = _settings_class_factory()()
 def run_setup() -> None:
     """Execute the required setup functions."""
     settings._setup_env_variables()  # noqa: SLF001
-
+ImproperlyConfiguredError
     logger.debug("Begin database setup")
 
     importlib.import_module("db")
