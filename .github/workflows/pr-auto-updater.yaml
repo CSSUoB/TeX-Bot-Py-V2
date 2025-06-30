@@ -1,26 +1,26 @@
 name: pr-auto-update
 on:
-  push: {}
+    push: {}
 
 jobs:
-  pr-auto-update:
-    name: Automatic PR Updater
-    runs-on: ubuntu-latest
-    permissions: 
-      pull-requests: write
-      contents: write
-    steps:
-      - name: Generate Access Token
-        uses: actions/create-github-app-token@v2
-        id: generate-token
-        with:
-          app-id: ${{ secrets.PR_AUTO_UPDATE_CLIENT_ID }}
-          private-key: ${{ secrets.PR_AUTO_UPDATE_PRIVATE_KEY }}
+    pr-auto-update:
+        name: Automatic PR Updater
+        runs-on: ubuntu-latest
+        permissions:
+            pull-requests: write
+            contents: write
+        steps:
+            - name: Generate Access Token
+              uses: actions/create-github-app-token@v2
+              id: generate-token
+              with:
+                app-id: ${{ secrets.PR_AUTO_UPDATE_CLIENT_ID }}
+                private-key: ${{ secrets.PR_AUTO_UPDATE_PRIVATE_KEY }}
 
-      - uses: CSSUoB/pr-auto-updater@v2.1.2
-        env:
-          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
-          PR_FILTER: 'labelled'
-          PR_LABELS: 'sync'
-          MERGE_CONFLICT_ACTION: 'label'
-          MERGE_CONFLICT_LABEL: 'conflict'
+            - uses: CSSUoB/pr-auto-updater@v2.1.2
+              env:
+                GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+                PR_FILTER: 'labelled'
+                PR_LABELS: 'sync'
+                MERGE_CONFLICT_ACTION: 'label'
+                MERGE_CONFLICT_LABEL: 'conflict'
