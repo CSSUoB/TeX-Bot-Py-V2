@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import discord
 
 from config import settings
-from utils import TeXBotBaseCog, TeXBotApplicationContext
+from utils import TeXBotBaseCog
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 if TYPE_CHECKING:
