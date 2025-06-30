@@ -76,6 +76,13 @@ class AutoRoleListenerCog(AutoRoleBaseCog):
 
         logger.debug("on_member_join called for %s", member)
 
+        for slot in member.__slots__:
+            logger.debug(f"{slot}: {getattr(member, slot)}")
+
+        logger.debug(str(member))
+        logger.debug(member.__slots__)
+        logger.debug(member.flags)
+
         if member.bot:
             return
 
@@ -87,23 +94,21 @@ class AutoRoleListenerCog(AutoRoleBaseCog):
 
 
 # TODO: REMOVE THIS COMMAND
-    @discord.slash_command(
+    @discord.slash_command(  # type: ignore[misc, no-untyped-call]
         name="pending-check"
     )
-    async def pending_check(self, ctx):
-        member: discord.Member
-        for member in ctx.guild.members:
-            if member.pending:
-                await ctx.send(f"{member.name} is pending.")
-            else:
-                await ctx.send(f"{member.name} is not pending.")
+    async def pending_check(self, ctx):  # type: ignore[misc, no-untyped-def]
+        main_guild: discord.Guild = self.bot.main_guild
 
-            if member.flags.bypasses_verification:
-                await ctx.send(f"{member.name} bypasses verification.")
-            else:
-                await ctx.send(f"{member.name} does not bypass verification.")
+        members_ids: set[int] = {member.id for member in ctx.guild.members}
 
-            if member.flags.did_rejoin:
-                await ctx.send(f"{member.name} did rejoin.")
-            else:
-                await ctx.send(f"{member.name} did not rejoin.")
+        logger.debug(members_ids)
+
+        for member_id in members_ids:
+            member: discord.Member | None = await main_guild.fetch_member(member_id)
+            if member is None:
+                continue
+
+            await ctx.send(
+                f"{member.name} - pending: {member.pending}, rejoined: {member.flags.did_rejoin}, bypass-verification: {member.flags.bypasses_verification}, communication-disabled: {member.communication_disabled_until}"
+            )
