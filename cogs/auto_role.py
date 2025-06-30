@@ -18,10 +18,36 @@ if TYPE_CHECKING:
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-__all__: "Sequence[str]" = ("AutoRoleCog",)
+__all__: "Sequence[str]" = ("AutoRoleBaseCog", "AutoRoleListenerCog")
 
 
-class AutoRoleCog(TeXBotBaseCog):
+class AutoRoleBaseCog(TeXBotBaseCog):
+    """Base class for auto role cogs."""
+
+    async def _auto_add_roles(self, member: discord.Member) -> None:
+        """Add roles to a member when they join."""
+        logger.debug("auto_add_roles called for %s", member)
+
+        roles_to_add: set[str] = settings["AUTO_ROLES_TO_ADD"]
+
+        if not roles_to_add:
+            return
+
+        for role_name in roles_to_add:
+            role: discord.Role | None = discord.utils.get(
+                self.bot.main_guild.roles, name=role_name
+            )
+
+            logger.debug("Found role '%s': %s", role_name, role)
+
+            if role is None:
+                continue
+
+            await member.add_roles(role, reason="Auto role assignment on joining.")
+
+
+
+class AutoRoleListenerCog(AutoRoleBaseCog):
     """Cog for automatically assigning roles to new members."""
 
     @TeXBotBaseCog.listener()
@@ -37,21 +63,47 @@ class AutoRoleCog(TeXBotBaseCog):
             return
 
         if before.pending and not after.pending:
-            roles_to_add: set[str] = settings["AUTO_ROLES_TO_ADD"]
+            logger.debug("Member %s has completed pending status.", after)
 
-            if not roles_to_add:
-                return
+            await self._auto_add_roles(after)
 
-            for role_name in roles_to_add:
-                role: discord.Role | None = discord.utils.get(
-                    self.bot.main_guild.roles, name=role_name
-                )
+    @TeXBotBaseCog.listener()
+    @capture_guild_does_not_exist_error
+    async def on_member_join(self, member: discord.Member) -> None:
+        """Assign roles to new members when they join."""
+        if not settings["AUTO_ROLE"]:
+            return
 
-                logger.debug("Found role '%s': %s", role_name, role)
+        logger.debug("on_member_join called for %s", member)
 
-                if role is None:
-                    continue
+        if member.bot:
+            return
 
-                await after.add_roles(
-                    role, reason="Auto role assignment on passing verification."
-                )
+        if member.pending:
+            logger.debug("Member %s is pending, waiting for update.", member)
+            return
+
+        await self._auto_add_roles(member)
+
+
+# TODO: REMOVE THIS COMMAND
+    @discord.slash_command(
+        name="pending-check"
+    )
+    async def pending_check(self, ctx):
+        member: discord.Member
+        for member in ctx.guild.members:
+            if member.pending:
+                await ctx.send(f"{member.name} is pending.")
+            else:
+                await ctx.send(f"{member.name} is not pending.")
+
+            if member.flags.bypasses_verification:
+                await ctx.send(f"{member.name} bypasses verification.")
+            else:
+                await ctx.send(f"{member.name} does not bypass verification.")
+
+            if member.flags.did_rejoin:
+                await ctx.send(f"{member.name} did rejoin.")
+            else:
+                await ctx.send(f"{member.name} did not rejoin.")
