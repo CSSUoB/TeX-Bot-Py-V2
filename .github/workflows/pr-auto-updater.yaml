@@ -8,6 +8,7 @@ jobs:
         permissions:
             pull-requests: write
             contents: write
+
         steps:
             - name: Generate Access Token
               uses: actions/create-github-app-token@v2
