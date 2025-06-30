@@ -73,15 +73,6 @@ class AutoRoleListenerCog(AutoRoleBaseCog):
         if not settings["AUTO_ROLE"]:
             return
 
-        logger.debug("on_member_join called for %s", member)
-
-        for slot in member.__slots__:
-            logger.debug(f"{slot}: {getattr(member, slot)}")
-
-        logger.debug(str(member))
-        logger.debug(member.__slots__)
-        logger.debug(member.flags)
-
         if member.bot:
             return
 
