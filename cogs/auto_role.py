@@ -90,23 +90,3 @@ class AutoRoleListenerCog(AutoRoleBaseCog):
             return
 
         await self._auto_add_roles(member)
-
-    # TODO: REMOVE THIS COMMAND
-    @discord.slash_command(  # type: ignore[misc, no-untyped-call]
-        name="pending-check"
-    )
-    async def pending_check(self, ctx):  # type: ignore[misc, no-untyped-def]
-        main_guild: discord.Guild = self.bot.main_guild
-
-        members_ids: set[int] = {member.id for member in ctx.guild.members}
-
-        logger.debug(members_ids)
-
-        for member_id in members_ids:
-            member: discord.Member | None = await main_guild.fetch_member(member_id)
-            if member is None:
-                continue
-
-            await ctx.send(
-                f"{member.name} - pending: {member.pending}, rejoined: {member.flags.did_rejoin}, bypass-verification: {member.flags.bypasses_verification}, communication-disabled: {member.communication_disabled_until}"
-            )
