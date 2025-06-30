@@ -46,7 +46,6 @@ class AutoRoleBaseCog(TeXBotBaseCog):
             await member.add_roles(role, reason="Auto role assignment on joining.")
 
 
-
 class AutoRoleListenerCog(AutoRoleBaseCog):
     """Cog for automatically assigning roles to new members."""
 
@@ -92,8 +91,7 @@ class AutoRoleListenerCog(AutoRoleBaseCog):
 
         await self._auto_add_roles(member)
 
-
-# TODO: REMOVE THIS COMMAND
+    # TODO: REMOVE THIS COMMAND
     @discord.slash_command(  # type: ignore[misc, no-untyped-call]
         name="pending-check"
     )
