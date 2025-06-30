@@ -824,6 +824,47 @@ class Settings(abc.ABC):
         )
 
     @classmethod
+    def _setup_auto_role(cls) -> None:
+        raw_auto_role: str = os.getenv("AUTO_ROLE", "False").lower().strip()
+
+        if not raw_auto_role:
+            cls._settings["AUTO_ROLE"] = False
+            return
+
+        if raw_auto_role not in TRUE_VALUES | FALSE_VALUES:
+            INVALID_AUTO_ROLE_MESSAGE: Final[str] = "AUTO_ROLE must be a boolean value."
+            raise ImproperlyConfiguredError(INVALID_AUTO_ROLE_MESSAGE)
+
+        cls._settings["AUTO_ROLE"] = raw_auto_role in TRUE_VALUES
+
+    @classmethod
+    def _setup_auto_roles_to_add(cls) -> None:
+        if "AUTO_ROLE" not in cls._settings:
+            INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+                "Invalid setup order: AUTO_ROLE must be set up "
+                "before AUTO_ROLES_TO_ADD can be set up."
+            )
+            raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
+
+        raw_auto_roles_to_add: str = os.getenv("AUTO_ROLES_TO_ADD", default="").strip()
+
+        if not raw_auto_roles_to_add:
+            cls._settings["AUTO_ROLES_TO_ADD"] = set()
+            return
+
+        auto_roles_to_add: AbstractSet[str] = {
+            role.strip() for role in raw_auto_roles_to_add.split(",") if role.strip()
+        }
+
+        if not auto_roles_to_add:
+            INVALID_AUTO_ROLES_TO_ADD_MESSAGE: Final[str] = (
+                "AUTO_ROLES_TO_ADD must contain at least one role name."
+            )
+            raise ImproperlyConfiguredError(INVALID_AUTO_ROLES_TO_ADD_MESSAGE)
+
+        cls._settings["AUTO_ROLES_TO_ADD"] = auto_roles_to_add
+
+    @classmethod
     def _setup_env_variables(cls) -> None:
         """
         Load environment values into the settings dictionary.
@@ -864,6 +905,8 @@ class Settings(abc.ABC):
             cls._setup_moderation_document_url()
             cls._setup_strike_performed_manually_warning_location()
             cls._setup_auto_add_committee_to_threads()
+            cls._setup_auto_role()
+            cls._setup_auto_roles_to_add()
         except ImproperlyConfiguredError as improper_config_error:
             webhook_config_logger.error(improper_config_error.message)  # noqa: TRY400
             raise improper_config_error from improper_config_error
