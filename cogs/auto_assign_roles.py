@@ -18,16 +18,14 @@ if TYPE_CHECKING:
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-__all__: "Sequence[str]" = ("AutoRoleBaseCog", "AutoRoleListenerCog")
+__all__: "Sequence[str]" = ("AutoAssignRolesCog",)
 
 
-class AutoRoleBaseCog(TeXBotBaseCog):
-    """Base class for auto role cogs."""
+class AutoAssignRolesCog(TeXBotBaseCog):
+    """Cog for automatically assigning roles to new members."""
 
-    async def _auto_add_roles(self, member: discord.Member) -> None:
+    async def _assign_automatic_roles(self, member: discord.Member) -> None:
         """Add roles to a member when they join."""
-        logger.debug("auto_add_roles called for %s", member)
-
         roles_to_add: set[str] = settings["AUTO_ROLES_TO_ADD"]
 
         if not roles_to_add:
@@ -38,46 +36,26 @@ class AutoRoleBaseCog(TeXBotBaseCog):
                 self.bot.main_guild.roles, name=role_name
             )
 
-            logger.debug("Found role '%s': %s", role_name, role)
-
             if role is None:
                 continue
 
             await member.add_roles(role, reason="Auto role assignment on joining.")
 
-
-class AutoRoleListenerCog(AutoRoleBaseCog):
-    """Cog for automatically assigning roles to new members."""
-
     @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
     async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
         """Assign roles to new members when they join."""
-        if not settings["AUTO_ROLE"]:
+        if not settings["AUTO_ROLE"] or before.bot or after.bot or after.pending:
             return
 
-        logger.debug("on_member_update called for %s", after)
-
-        if before.bot or after.bot:
-            return
-
-        if before.pending and not after.pending:
-            logger.debug("Member %s has completed pending status.", after)
-
-            await self._auto_add_roles(after)
+        if not after.pending:
+            await self._assign_automatic_roles(after)
 
     @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
     async def on_member_join(self, member: discord.Member) -> None:
         """Assign roles to new members when they join."""
-        if not settings["AUTO_ROLE"]:
+        if not settings["AUTO_ROLE"] or member.bot or member.pending:
             return
 
-        if member.bot:
-            return
-
-        if member.pending:
-            logger.debug("Member %s is pending, waiting for update.", member)
-            return
-
-        await self._auto_add_roles(member)
+        await self._assign_automatic_roles(member)
