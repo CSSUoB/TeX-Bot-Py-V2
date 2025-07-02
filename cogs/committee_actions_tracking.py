@@ -183,7 +183,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         return {
             discord.OptionChoice(name=action.description, value=str(action.id))
-            async for action in await AssignedCommitteeAction.objects.afilter(
+            async for action in AssignedCommitteeAction.objects.filter(
                 (
                     Q(status=Status.IN_PROGRESS.value)
                     | Q(status=Status.BLOCKED.value)
@@ -617,7 +617,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         if not status:
             user_actions = [
                 action
-                async for action in await AssignedCommitteeAction.objects.afilter(
+                async for action in AssignedCommitteeAction.objects.filter(
                     (
                         Q(status=Status.IN_PROGRESS.value)
                         | Q(status=Status.BLOCKED.value)
@@ -629,7 +629,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         else:
             user_actions = [
                 action
-                async for action in await AssignedCommitteeAction.objects.afilter(
+                async for action in AssignedCommitteeAction.objects.filter(
                     status=status,
                     discord_id=int(action_member.id),
                 )

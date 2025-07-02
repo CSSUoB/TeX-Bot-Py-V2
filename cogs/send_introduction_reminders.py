@@ -106,7 +106,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             member_needs_one_off_reminder: bool = (
                 settings["SEND_INTRODUCTION_REMINDERS"] == "once"
                 and not await (
-                    await SentOneOffIntroductionReminderMember.objects.afilter(
+                    SentOneOffIntroductionReminderMember.objects.filter(
                         discord_id=member.id,
                     )
                 ).aexists()
@@ -118,7 +118,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 discord.utils.utcnow() - member.joined_at
             ) <= settings["SEND_INTRODUCTION_REMINDERS_DELAY"]
             member_opted_out_from_reminders: bool = await (
-                await IntroductionReminderOptOutMember.objects.afilter(
+                IntroductionReminderOptOutMember.objects.filter(
                     discord_id=member.id,
                 )
             ).aexists()
