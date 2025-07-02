@@ -22,7 +22,7 @@ class InviteLinkCommandCog(TeXBotBaseCog):
         name="invite-link", description="Display the invite link to this server."
     )
     async def invite_link(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
-        """Definition & callback response of the "invite-link" command."""
+        """Definition & callback response of the "invite_link" command."""
         discord_invite_url: str | None = settings["CUSTOM_DISCORD_INVITE_URL"]
 
         if not discord_invite_url:
