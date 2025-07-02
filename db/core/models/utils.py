@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
     from typing import Final
 
-__all__: "Sequence[str]" = ("AsyncBaseModel", "BaseDiscordMemberWrapper", "DiscordMember")
+__all__: "Sequence[str]" = ("AsyncBaseModel", "DiscordMember")
 
 
 class AsyncBaseModel(models.Model):
