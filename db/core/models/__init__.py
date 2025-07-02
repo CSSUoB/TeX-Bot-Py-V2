@@ -10,7 +10,7 @@ from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from .utils import AsyncBaseModel, BaseDiscordMemberWrapper, DiscordMember
+from .utils import AsyncBaseModel, DiscordMember
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -29,7 +29,7 @@ __all__: "Sequence[str]" = (
 )
 
 
-class AssignedCommitteeAction(BaseDiscordMemberWrapper):
+class AssignedCommitteeAction(DiscordMember):
     """Model to represent an action that has been assigned to a Discord committee-member."""
 
     class Status(models.TextChoices):
@@ -84,7 +84,7 @@ class AssignedCommitteeAction(BaseDiscordMemberWrapper):
         return f"{self.discord_member}: {self.description}"
 
 
-class IntroductionReminderOptOutMember(BaseDiscordMemberWrapper):
+class IntroductionReminderOptOutMember(DiscordMember):
     """
     Model to represent a Discord member that has opted out of introduction reminders.
 
@@ -109,7 +109,7 @@ class IntroductionReminderOptOutMember(BaseDiscordMemberWrapper):
         verbose_name_plural = "Discord Members that have Opted-Out of Introduction Reminders"
 
 
-class SentOneOffIntroductionReminderMember(BaseDiscordMemberWrapper):
+class SentOneOffIntroductionReminderMember(DiscordMember):
     """
     Represents a Discord member that has been sent a one-off introduction reminder.
 
@@ -139,7 +139,7 @@ class SentOneOffIntroductionReminderMember(BaseDiscordMemberWrapper):
         )
 
 
-class SentGetRolesReminderMember(BaseDiscordMemberWrapper):
+class SentGetRolesReminderMember(DiscordMember):
     """
     Represents a Discord member that has already been sent an opt-in roles reminder.
 
@@ -250,7 +250,7 @@ class GroupMadeMember(AsyncBaseModel):
         return super().get_proxy_field_names() | {"group_member_id"}
 
 
-class DiscordReminder(BaseDiscordMemberWrapper):
+class DiscordReminder(DiscordMember):
     """Represents a reminder that a Discord member has requested to be sent to them."""
 
     INSTANCES_NAME_PLURAL: str = "Reminders"
@@ -434,7 +434,7 @@ class LeftDiscordMember(AsyncBaseModel):
         return super().get_proxy_field_names() | {"roles"}
 
 
-class DiscordMemberStrikes(BaseDiscordMemberWrapper):
+class DiscordMemberStrikes(DiscordMember):
     """
     Represents a Discord member that has been given one or more strikes.
 
@@ -458,6 +458,7 @@ class DiscordMemberStrikes(BaseDiscordMemberWrapper):
         null=False,
         primary_key=True,
     )
+
     strikes = models.PositiveIntegerField(
         "Number of strikes",
         null=False,

@@ -8,8 +8,6 @@ from django.core.exceptions import FieldDoesNotExist
 from django.core.validators import RegexValidator
 from django.db import models
 
-from .managers import DiscordMemberManager, RelatedDiscordMemberManager
-
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
     from typing import Final
@@ -183,8 +181,6 @@ class DiscordMember(AsyncBaseModel):
         ],
     )
 
-    objects: DiscordMemberManager = DiscordMemberManager()
-
     @override
     def __str__(self) -> str:
         return self.discord_id
@@ -201,14 +197,6 @@ class DiscordMember(AsyncBaseModel):
                     f"{name} must be an instance of str or int."
                 )
                 raise TypeError(MEMBER_ID_INVALID_TYPE_MESSAGE)
-
-            # Validate Discord ID format
-            if not re.fullmatch(r"\A\d{17,20}\Z", str(value)):
-                INVALID_MEMBER_ID_MESSAGE: Final[str] = (
-                    f"{value!r} is not a valid Discord member ID "
-                    "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
-                )
-                raise ValueError(INVALID_MEMBER_ID_MESSAGE)
 
             self.discord_id = str(value)
             return
@@ -237,27 +225,3 @@ class DiscordMember(AsyncBaseModel):
     @override
     def get_proxy_field_names(cls) -> set[str]:
         return super().get_proxy_field_names() | {"member_id"}
-
-
-class BaseDiscordMemberWrapper(AsyncBaseModel):
-    """
-    Abstract base class to wrap more information around a DiscordMember instance.
-
-    This class is abstract so should not be instantiated or have a table made for it in the
-    database (see https://docs.djangoproject.com/en/stable/topics/db/models/#abstract-base-classes).
-    """
-
-    discord_member: DiscordMember
-
-    objects = RelatedDiscordMemberManager()
-
-    class Meta:  # noqa: D106
-        abstract = True
-
-    @override
-    def __str__(self) -> str:
-        return str(self.discord_member)
-
-    @override
-    def __repr__(self) -> str:
-        return f"<{self._meta.verbose_name}: {self.discord_member}>"
