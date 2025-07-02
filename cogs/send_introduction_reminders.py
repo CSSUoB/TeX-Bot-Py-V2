@@ -176,7 +176,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     member,
                 )
 
-            await SentOneOffIntroductionReminderMember.objects.acreate(  # type: ignore[misc]
+            await SentOneOffIntroductionReminderMember.objects.acreate(
                 discord_id=member.id,
             )
 
@@ -287,7 +287,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
             if BUTTON_WILL_MAKE_OPT_OUT:
                 try:
-                    await IntroductionReminderOptOutMember.objects.acreate(  # type: ignore[misc]
+                    await IntroductionReminderOptOutMember.objects.acreate(
                         discord_id=interaction_member.id,
                     )
                 except ValidationError as create_introduction_reminder_opt_out_member_error:

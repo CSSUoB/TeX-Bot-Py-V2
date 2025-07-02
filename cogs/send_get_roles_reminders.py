@@ -176,7 +176,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                     member,
                 )
 
-            await SentGetRolesReminderMember.objects.acreate(discord_id=member.id)  # type: ignore[misc]
+            await SentGetRolesReminderMember.objects.acreate(discord_id=member.id)
 
     @send_get_roles_reminders.before_loop
     async def before_tasks(self) -> None:
