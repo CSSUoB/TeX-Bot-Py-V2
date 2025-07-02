@@ -187,7 +187,7 @@ class DiscordMember(AsyncBaseModel):
 
     @override
     def __str__(self) -> str:
-        return f"{self.discord_id}"
+        return self.discord_id
 
     @override
     def __repr__(self) -> str:

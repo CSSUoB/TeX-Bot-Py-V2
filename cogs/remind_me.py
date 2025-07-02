@@ -324,7 +324,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
 
                 if not user:
                     logger.warning(
-                        "User with user ID: %s no longer exists.",
+                        "User with ID: %s no longer exists.",
                         reminder.discord_member.discord_id,
                     )
                     await reminder.adelete()
