@@ -123,7 +123,7 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
             await ctx.respond(content=NO_ADMIN_TABLE_MESSAGE)
             return
 
-        organisations: Iterable[str] = [
+        organisations: Collection[str] = [
             list_item.get_text(strip=True) for list_item in parsed_html.find_all("li")
         ]
 
