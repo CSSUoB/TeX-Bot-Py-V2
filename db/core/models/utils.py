@@ -1,6 +1,5 @@
 """Utility classes and functions."""
 
-import re
 from typing import TYPE_CHECKING, override
 
 from asgiref.sync import sync_to_async
@@ -189,20 +188,6 @@ class DiscordMember(AsyncBaseModel):
     def __repr__(self) -> str:
         return f"<{self._meta.verbose_name}: {self.discord_id!r}>"
 
-    @override
-    def __setattr__(self, name: str, value: object) -> None:
-        if name in ("member_id",):
-            if not isinstance(value, str | int):
-                MEMBER_ID_INVALID_TYPE_MESSAGE: Final[str] = (
-                    f"{name} must be an instance of str or int."
-                )
-                raise TypeError(MEMBER_ID_INVALID_TYPE_MESSAGE)
-
-            self.discord_id = str(value)
-            return
-
-        super().__setattr__(name, value)
-
     @property
     def member_id(self) -> str:
         """Return the Discord ID of this member."""
@@ -211,14 +196,6 @@ class DiscordMember(AsyncBaseModel):
     @member_id.setter
     def member_id(self, value: str | int) -> None:
         """Set the Discord ID of this member."""
-        # Validate Discord ID format
-        if not re.fullmatch(r"\A\d{17,20}\Z", str(value)):
-            INVALID_MEMBER_ID_MESSAGE: Final[str] = (
-                f"{value!r} is not a valid Discord member ID "
-                "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
-            )
-            raise ValueError(INVALID_MEMBER_ID_MESSAGE)
-
         self.discord_id = str(value)
 
     @classmethod

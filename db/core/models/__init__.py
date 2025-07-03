@@ -29,7 +29,7 @@ __all__: "Sequence[str]" = (
 )
 
 
-class AssignedCommitteeAction(DiscordMember):
+class AssignedCommitteeAction(AsyncBaseModel):
     """Model to represent an action that has been assigned to a Discord committee-member."""
 
     class Status(models.TextChoices):
@@ -84,7 +84,7 @@ class AssignedCommitteeAction(DiscordMember):
         return f"{self.discord_member}: {self.description}"
 
 
-class IntroductionReminderOptOutMember(DiscordMember):
+class IntroductionReminderOptOutMember(AsyncBaseModel):
     """
     Model to represent a Discord member that has opted out of introduction reminders.
 
@@ -109,7 +109,7 @@ class IntroductionReminderOptOutMember(DiscordMember):
         verbose_name_plural = "Discord Members that have Opted-Out of Introduction Reminders"
 
 
-class SentOneOffIntroductionReminderMember(DiscordMember):
+class SentOneOffIntroductionReminderMember(AsyncBaseModel):
     """
     Represents a Discord member that has been sent a one-off introduction reminder.
 
@@ -139,7 +139,7 @@ class SentOneOffIntroductionReminderMember(DiscordMember):
         )
 
 
-class SentGetRolesReminderMember(DiscordMember):
+class SentGetRolesReminderMember(AsyncBaseModel):
     """
     Represents a Discord member that has already been sent an opt-in roles reminder.
 
@@ -250,7 +250,7 @@ class GroupMadeMember(AsyncBaseModel):
         return super().get_proxy_field_names() | {"group_member_id"}
 
 
-class DiscordReminder(DiscordMember):
+class DiscordReminder(AsyncBaseModel):
     """Represents a reminder that a Discord member has requested to be sent to them."""
 
     INSTANCES_NAME_PLURAL: str = "Reminders"
@@ -434,7 +434,7 @@ class LeftDiscordMember(AsyncBaseModel):
         return super().get_proxy_field_names() | {"roles"}
 
 
-class DiscordMemberStrikes(DiscordMember):
+class DiscordMemberStrikes(AsyncBaseModel):
     """
     Represents a Discord member that has been given one or more strikes.
 
