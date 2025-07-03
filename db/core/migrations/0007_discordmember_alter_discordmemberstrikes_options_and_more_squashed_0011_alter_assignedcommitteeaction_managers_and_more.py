@@ -88,7 +88,7 @@ def _reverse_discord_id_hash(
         hashed_discord_id: discord_id_info[0]
         for hashed_discord_id, discord_id_info in json.loads(
             Path("discord_ids.json").read_text()
-        )
+        ).items()
     }
 
     db_alias: str = schema_editor.connection.alias

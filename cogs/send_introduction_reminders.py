@@ -14,6 +14,7 @@ from django.core.exceptions import ValidationError
 import utils
 from config import settings
 from db.core.models import (
+    DiscordMember,
     IntroductionReminderOptOutMember,
     SentOneOffIntroductionReminderMember,
 )
@@ -107,7 +108,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 settings["SEND_INTRODUCTION_REMINDERS"] == "once"
                 and not await (
                     SentOneOffIntroductionReminderMember.objects.filter(
-                        discord_id=member.id,
+                        discord_member__discord_id=member.id,
                     )
                 ).aexists()
             )
@@ -119,7 +120,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             ) <= settings["SEND_INTRODUCTION_REMINDERS_DELAY"]
             member_opted_out_from_reminders: bool = await (
                 IntroductionReminderOptOutMember.objects.filter(
-                    discord_id=member.id,
+                    discord_member__discord_id=member.id,
                 )
             ).aexists()
             member_needs_reminder: bool = (
@@ -177,7 +178,9 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 )
 
             await SentOneOffIntroductionReminderMember.objects.acreate(
-                discord_id=member.id,
+                discord_member=(
+                    await DiscordMember.objects.aget_or_create(discord_id=member.id)
+                )[0],
             )
 
     class OptOutIntroductionRemindersView(View):
@@ -288,7 +291,11 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             if BUTTON_WILL_MAKE_OPT_OUT:
                 try:
                     await IntroductionReminderOptOutMember.objects.acreate(
-                        discord_id=interaction_member.id,
+                        discord_member=(
+                            await DiscordMember.objects.aget_or_create(
+                                discord_id=interaction_member.id
+                            )
+                        )[0],
                     )
                 except ValidationError as create_introduction_reminder_opt_out_member_error:
                     error_is_already_exists: bool = (

@@ -7,12 +7,16 @@ from django.db.models import Manager
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from django.db.models import Model
+
+    from . import DiscordMember  # noqa: F401
+
 __all__: "Sequence[str]" = ()
 
 
-class RelatedDiscordMemberManager(Manager):
+class HashedDiscordMemberManager(Manager["DiscordMember"]):
     pass
 
 
-class HashedDiscordMemberManager(Manager):
+class RelatedDiscordMemberManager[T_Model: "Model"](Manager[T_Model]):
     pass

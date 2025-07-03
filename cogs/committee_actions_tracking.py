@@ -10,7 +10,7 @@ import discord
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 from django.db.models import Q
 
-from db.core.models import AssignedCommitteeAction
+from db.core.models import AssignedCommitteeAction, DiscordMember
 from exceptions import (
     CommitteeElectRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
@@ -79,7 +79,9 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
 
         try:
             action: AssignedCommitteeAction = await AssignedCommitteeAction.objects.acreate(
-                discord_id=int(action_user.id),
+                discord_member=(
+                    await DiscordMember.objects.aget_or_create(discord_id=action_user.id)
+                )[0],
                 description=description,
             )
         except ValidationError as create_action_error:
@@ -189,7 +191,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                     | Q(status=Status.BLOCKED.value)
                     | Q(status=Status.NOT_STARTED.value)
                 ),
-                discord_id=int(interaction_user.id),
+                discord_member__discord_id=interaction_user.id,
             )
         }
 
@@ -623,7 +625,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                         | Q(status=Status.BLOCKED.value)
                         | Q(status=Status.NOT_STARTED.value)
                     ),
-                    discord_id=int(action_member.id),
+                    discord_member__discord_id=action_member.id,
                 )
             ]
         else:
@@ -631,7 +633,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 action
                 async for action in AssignedCommitteeAction.objects.filter(
                     status=status,
-                    discord_id=int(action_member.id),
+                    discord_member__discord_id=action_member.id,
                 )
             ]
 
