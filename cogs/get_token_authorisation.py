@@ -129,7 +129,10 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
 
         if not organisations:
             logger.warning(
-                "Organisations list was unexpectedly empty for the admin access token associated with %s.",
+                (
+                    "Organisations list was unexpectedly empty "
+                    "for the admin access token associated with %s."
+                ),
                 user_name.text,
             )
             await ctx.respond(content="Unexpectedly empty organisations error.")
