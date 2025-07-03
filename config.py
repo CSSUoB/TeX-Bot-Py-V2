@@ -482,10 +482,10 @@ class Settings(abc.ABC):
         if not raw_su_platform_access_cookie or not re.fullmatch(
             r"\A[A-Fa-f\d]{128,256}\Z", raw_su_platform_access_cookie
         ):
-            INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE: Final[str] = (
+            INVALID_SU_PLATFORM_ACCESS_COOKIE_MESSAGE: Final[str] = (
                 "SU_PLATFORM_ACCESS_COOKIE must be a valid .ASPXAUTH cookie."
             )
-            raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_SU_PLATFORM_ACCESS_COOKIE_MESSAGE)
 
         cls._settings["SU_PLATFORM_ACCESS_COOKIE"] = (
             raw_su_platform_access_cookie
