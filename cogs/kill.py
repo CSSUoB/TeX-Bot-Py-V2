@@ -25,9 +25,7 @@ class ConfirmKillView(View):
     """A discord.View containing two buttons to confirm shutting down TeX-Bot."""
 
     @discord.ui.button(
-        label="SHUTDOWN",
-        style=discord.ButtonStyle.red,
-        custom_id="shutdown_confirm",
+        label="SHUTDOWN", style=discord.ButtonStyle.red, custom_id="shutdown_confirm"
     )
     async def confirm_shutdown_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
@@ -36,9 +34,7 @@ class ConfirmKillView(View):
         logger.debug('"Confirm" button pressed. %s', interaction)
 
     @discord.ui.button(
-        label="CANCEL",
-        style=discord.ButtonStyle.grey,
-        custom_id="shutdown_cancel",
+        label="CANCEL", style=discord.ButtonStyle.grey, custom_id="shutdown_cancel"
     )
     async def cancel_shutdown_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
@@ -51,8 +47,7 @@ class KillCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/kill" command and its call-back method."""
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="kill",
-        description="Shutdown TeX-Bot.",
+        name="kill", description="Shutdown TeX-Bot."
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -105,10 +100,7 @@ class KillCommandCog(TeXBotBaseCog):
             await self.bot.perform_kill_and_close(initiated_by_user=ctx.interaction.user)
 
         if button_interaction.data["custom_id"] == "shutdown_cancel":  # type: ignore[index, typeddict-item]
-            await confirmation_message.edit(
-                content="Shutdown has been cancelled.",
-                view=None,
-            )
+            await confirmation_message.edit(content="Shutdown has been cancelled.", view=None)
             logger.info("Manual shutdown cancelled by %s.", ctx.interaction.user)
             return
 

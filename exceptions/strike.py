@@ -9,10 +9,7 @@ from .base import BaseTeXBotError
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-__all__: "Sequence[str]" = (
-    "NoAuditLogsStrikeTrackingError",
-    "StrikeTrackingError",
-)
+__all__: "Sequence[str]" = ("NoAuditLogsStrikeTrackingError", "StrikeTrackingError")
 
 
 class StrikeTrackingError(BaseTeXBotError, RuntimeError):
