@@ -487,9 +487,7 @@ class Settings(abc.ABC):
             )
             raise ImproperlyConfiguredError(INVALID_SU_PLATFORM_ACCESS_COOKIE_MESSAGE)
 
-        cls._settings["SU_PLATFORM_ACCESS_COOKIE"] = (
-            raw_su_platform_access_cookie
-        )
+        cls._settings["SU_PLATFORM_ACCESS_COOKIE"] = raw_su_platform_access_cookie
 
     @classmethod
     def _setup_send_introduction_reminders(cls) -> None:
