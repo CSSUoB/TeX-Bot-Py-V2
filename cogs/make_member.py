@@ -4,10 +4,7 @@ import logging
 import re
 from typing import TYPE_CHECKING
 
-import aiohttp
-import bs4
 import discord
-from bs4 import BeautifulSoup
 from django.core.exceptions import ValidationError
 
 from config import settings
@@ -21,6 +18,8 @@ if TYPE_CHECKING:
     from typing import Final
 
     from utils import TeXBotApplicationContext
+
+from utils.msl import get_membership_count, is_student_id_member
 
 __all__: "Sequence[str]" = ("MakeMemberCommandCog", "MemberCountCommandCog")
 
@@ -157,92 +156,32 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 )
                 return
 
-            guild_member_ids: set[str] = set()
-
-            http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-                headers=REQUEST_HEADERS,
-                cookies=REQUEST_COOKIES,
-            )
-            async with http_session, http_session.get(GROUPED_MEMBERS_URL) as http_response:
-                response_html: str = await http_response.text()
-
-            MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
-                {
-                    "ctl00_Main_rptGroups_ctl05_gvMemberships",
-                    "ctl00_Main_rptGroups_ctl03_gvMemberships",
-                    "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl03_gvMemberships",
-                    "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl05_gvMemberships",
-                },
-            )
-            table_id: str
-            for table_id in MEMBER_HTML_TABLE_IDS:
-                parsed_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-                    response_html,
-                    "html.parser",
-                ).find(
-                    "table",
-                    {"id": table_id},
-                )
-
-                if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
-                    continue
-
-                guild_member_ids.update(
-                    row.contents[2].text
-                    for row in parsed_html.find_all(
-                        "tr",
-                        {"class": ["msl_row", "msl_altrow"]},
-                    )
-                )
-
-            guild_member_ids.discard("")
-            guild_member_ids.discard("\n")
-            guild_member_ids.discard(" ")
-
-            if not guild_member_ids:
-                await self.command_send_error(
-                    ctx,
-                    error_code="E1041",
-                    logging_message=OSError(
-                        "The guild member IDs could not be retrieved from "
-                        "the MEMBERS_LIST_URL.",
-                    ),
-                )
-                return
-
-            if group_member_id not in guild_member_ids:
-                await self.command_send_error(
-                    ctx,
-                    message=(
-                        f"You must be a member of {self.bot.group_full_name} "
-                        "to use this command.\n"
-                        f"The provided {_GROUP_MEMBER_ID_ARGUMENT_NAME} must match "
-                        f"the {self.bot.group_member_id_type} ID "
-                        f"that you purchased your {self.bot.group_short_name} membership with."
-                    ),
-                )
-                return
-
-            # NOTE: The "Member" role must be added to the user **before** the "Guest" role to ensure that the welcome message does not include the suggestion to purchase membership
-            await interaction_member.add_roles(
-                member_role,
-                reason=f'{ctx.user} used TeX Bot slash-command: "/makemember"',
+        if not await is_student_id_member(student_id=group_member_id):
+            await self.command_send_error(
+                ctx=ctx,
+                message=(
+                    f"You must be a member of {self.bot.group_full_name} "
+                    "to use this command.\n"
+                    f"The provided {_GROUP_MEMBER_ID_ARGUMENT_NAME} must match "
+                    f"the {self.bot.group_member_id_type} ID "
+                    f"that you purchased your {self.bot.group_short_name} membership with."
+                ),
             )
 
-            try:
-                await GroupMadeMember.objects.acreate(group_member_id=group_member_id)  # type: ignore[misc]
-            except ValidationError as create_group_made_member_error:
-                error_is_already_exists: bool = (
-                    "hashed_group_member_id" in create_group_made_member_error.message_dict
-                    and any(
-                        "already exists" in error
-                        for error in create_group_made_member_error.message_dict[
-                            "hashed_group_member_id"
-                        ]
-                    )
+        try:
+            await GroupMadeMember.objects.acreate(group_member_id=group_member_id)  # type: ignore[misc]
+        except ValidationError as create_group_made_member_error:
+            error_is_already_exists: bool = (
+                "hashed_group_member_id" in create_group_made_member_error.message_dict
+                and any(
+                    "already exists" in error
+                    for error in create_group_made_member_error.message_dict[
+                        "hashed_group_member_id"
+                    ]
                 )
-                if not error_is_already_exists:
-                    raise
+            )
+            if not error_is_already_exists:
+                raise create_group_made_member_error from create_group_made_member_error
 
             await ctx.followup.send(content="Successfully made you a member!", ephemeral=True)
 
@@ -285,58 +224,7 @@ class MemberCountCommandCog(TeXBotBaseCog):
         await ctx.defer(ephemeral=False)
 
         async with ctx.typing():
-            http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-                headers=REQUEST_HEADERS,
-                cookies=REQUEST_COOKIES,
-            )
-            async with http_session, http_session.get(BASE_MEMBERS_URL) as http_response:
-                response_html: str = await http_response.text()
-
-            member_list_div: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-                response_html,
-                "html.parser",
-            ).find(
-                "div",
-                {"class": "memberlistcol"},
-            )
-
-            if member_list_div is None or isinstance(member_list_div, bs4.NavigableString):
-                await self.command_send_error(
-                    ctx=ctx,
-                    error_code="E1041",
-                    logging_message=OSError(
-                        "The member count could not be retrieved from the MEMBERS_LIST_URL.",
-                    ),
-                )
-                return
-
-            if "showing 100 of" in member_list_div.text.lower():
-                member_count: str = member_list_div.text.split(" ")[3]
-                await ctx.followup.send(
-                    content=f"{self.bot.group_full_name} has {member_count} members! :tada:",
-                )
-                return
-
-            member_table: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-                response_html,
-                "html.parser",
-            ).find(
-                "table",
-                {"id": "ctl00_ctl00_Main_AdminPageContent_gvMembers"},
-            )
-
-            if member_table is None or isinstance(member_table, bs4.NavigableString):
-                await self.command_send_error(
-                    ctx=ctx,
-                    error_code="E1041",
-                    logging_message=OSError(
-                        "The member count could not be retrieved from the MEMBERS_LIST_URL."
-                    ),
-                )
-                return
-
             await ctx.followup.send(
-                content=f"{self.bot.group_full_name} has {
-                    len(member_table.find_all('tr', {'class': ['msl_row', 'msl_altrow']}))
-                } members! :tada:"
+                content=f"{settings['GROUP_NAME']} has {await get_membership_count()} "
+                "members! :tada:",
             )
