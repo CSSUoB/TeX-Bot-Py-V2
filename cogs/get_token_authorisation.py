@@ -12,7 +12,7 @@ from config import settings
 from utils import CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Mapping, Sequence
+    from collections.abc import Collection, Mapping, Sequence
     from logging import Logger
     from typing import Final
 
@@ -89,7 +89,7 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
 
         if profile_section_html is None:
             logger.warning(
-                "Couldn't find the profile section of the user"
+                "Couldn't find the profile section of the user "
                 "when scraping the website's HTML!",
             )
             logger.debug("Retrieved HTML: %s", response_html)
@@ -116,16 +116,27 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
 
         if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
             NO_ADMIN_TABLE_MESSAGE: Final[str] = (
-                f"Failed to retrieve the admin table for user: {user_name.string}."
+                f"Failed to retrieve the admin table for user: {user_name.string}. "
                 "Please check you have used the correct token!"
             )
             logger.warning(NO_ADMIN_TABLE_MESSAGE)
             await ctx.respond(content=NO_ADMIN_TABLE_MESSAGE)
             return
 
-        organisations: Iterable[str] = [
+        organisations: Collection[str] = [
             list_item.get_text(strip=True) for list_item in parsed_html.find_all("li")
         ]
+
+        if not organisations:
+            logger.warning(
+                (
+                    "Organisations list was unexpectedly empty "
+                    "for the admin access token associated with %s."
+                ),
+                user_name.text,
+            )
+            await ctx.respond(content="Unexpectedly empty organisations error.")
+            return
 
         logger.debug(
             "Admin Token has admin access to: %s as user %s",
@@ -135,8 +146,8 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
 
         await ctx.respond(
             f"Admin token has access to the following MSL Organisations as "
-            f"{user_name.text}:\n{
-                ', \n'.join(organisation for organisation in organisations)
+            f"{user_name.text}:\n {
+                ', \n '.join(organisation for organisation in organisations)
             }",
             ephemeral=True,
         )
