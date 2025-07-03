@@ -12,7 +12,7 @@ from config import settings
 from utils import CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
-    from collections.abc import Collection, Iterable, Mapping, Sequence
+    from collections.abc import Collection, Mapping, Sequence
     from logging import Logger
     from typing import Final
 
