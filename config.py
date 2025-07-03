@@ -473,22 +473,22 @@ class Settings(abc.ABC):
         cls._settings["ORGANISATION_ID"] = raw_organisation_id
 
     @classmethod
-    def _setup_members_list_auth_session_cookie(cls) -> None:
-        raw_members_list_auth_session_cookie: str = os.getenv(
-            "MEMBERS_LIST_URL_SESSION_COOKIE",
+    def _setup_su_platform_access_cookie(cls) -> None:
+        raw_su_platform_access_cookie: str = os.getenv(
+            "SU_PLATFORM_ACCESS_COOKIE",
             default="",
         ).strip()
 
-        if not raw_members_list_auth_session_cookie or not re.fullmatch(
-            r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_auth_session_cookie
+        if not raw_su_platform_access_cookie or not re.fullmatch(
+            r"\A[A-Fa-f\d]{128,256}\Z", raw_su_platform_access_cookie
         ):
             INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE: Final[str] = (
-                "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
+                "SU_PLATFORM_ACCESS_COOKIE must be a valid .ASPXAUTH cookie."
             )
             raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE)
 
-        cls._settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"] = (
-            raw_members_list_auth_session_cookie
+        cls._settings["SU_PLATFORM_ACCESS_COOKIE"] = (
+            raw_su_platform_access_cookie
         )
 
     @classmethod
@@ -849,7 +849,7 @@ class Settings(abc.ABC):
             cls._setup_welcome_messages()
             cls._setup_roles_messages()
             cls._setup_organisation_id()
-            cls._setup_members_list_auth_session_cookie()
+            cls._setup_su_platform_access_cookie()
             cls._setup_membership_perks_url()
             cls._setup_purchase_membership_url()
             cls._setup_custom_discord_invite_url()

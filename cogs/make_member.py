@@ -59,7 +59,7 @@ REQUEST_HEADERS: "Final[Mapping[str, str]]" = {
 }
 
 REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
-    ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
+    ".ASPXAUTH": settings["SU_PLATFORM_ACCESS_COOKIE"],
 }
 
 BASE_MEMBERS_URL: "Final[str]" = (
