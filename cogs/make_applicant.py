@@ -101,7 +101,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
                         "If you are already a student and your induction as an applicant was"
                         " a mistake, please contact a committee member.\n\n"
                         "If you have already purchased a membership, you can run the "
-                        "`/makemember` command, and you will be given full access by "
+                        "`/make-member` command, and you will be given full access by "
                         f"{self.bot.user.display_name if self.bot.user else 'TeX-Bot'}.\n\n"
                         "Some things to do to get started:\n"
                         "1. Check out our rules in "

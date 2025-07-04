@@ -189,7 +189,7 @@ class MemberRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     @override
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]:
-        return frozenset({"makemember", "ensure-members-inducted", "annual-roles-reset"})
+        return frozenset({"make-member", "ensure-members-inducted", "annual-roles-reset"})
 
     @classproperty
     @override
