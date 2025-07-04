@@ -178,9 +178,8 @@ class DiscordMember(AsyncBaseModel):
         max_length=64,
         validators=[
             RegexValidator(
-                r"\A[A-Fa-f0-9]{64}\Z",
-                "hashed_discord_id must be a valid sha256 hex-digest.",
-            ),
+                r"\A[A-Fa-f0-9]{64}\Z", "hashed_discord_id must be a valid sha256 hex-digest."
+            )
         ],
     )
 

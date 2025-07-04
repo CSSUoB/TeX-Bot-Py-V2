@@ -7,10 +7,7 @@ from typing import TYPE_CHECKING
 import discord
 
 from exceptions.base import BaseDoesNotExistError
-from utils import (
-    CommandChecks,
-    TeXBotBaseCog,
-)
+from utils import CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -18,11 +15,7 @@ if TYPE_CHECKING:
     from logging import Logger
     from typing import Final
 
-    from utils import (
-        AllChannelTypes,
-        TeXBotApplicationContext,
-        TeXBotAutocompleteContext,
-    )
+    from utils import AllChannelTypes, TeXBotApplicationContext, TeXBotAutocompleteContext
 
 __all__: "Sequence[str]" = ("ArchiveCommandCog",)
 
@@ -105,8 +98,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         }
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="archive-category",
-        description="Archives the selected category.",
+        name="archive-category", description="Archives the selected category."
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="category",
@@ -146,21 +138,18 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
         if not re.fullmatch(r"\A\d{17,20}\Z", str_category_id):
             await self.command_send_error(
-                ctx=ctx,
-                message=f"{str_category_id!r} is not a valid category ID.",
+                ctx=ctx, message=f"{str_category_id!r} is not a valid category ID."
             )
             return
 
         category_id: int = int(str_category_id)
 
         category: discord.CategoryChannel | None = discord.utils.get(
-            main_guild.categories,
-            id=category_id,
+            main_guild.categories, id=category_id
         )
         if not category:
             await self.command_send_error(
-                ctx=ctx,
-                message=f"Category with ID {str(category_id)!r} does not exist.",
+                ctx=ctx, message=f"Category with ID {str(category_id)!r} does not exist."
             )
             return
 
@@ -192,9 +181,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
         if allow_archivist:
             await category.set_permissions(
-                target=archivist_role,
-                read_messages=True,
-                read_message_history=True,
+                target=archivist_role, read_messages=True, read_message_history=True
             )
 
         await category.edit(name=f"archive-{category.name}")
@@ -204,8 +191,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         )
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="archive-channel",
-        description="Archives the selected channel.",
+        name="archive-channel", description="Archives the selected channel."
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="channel",
@@ -249,8 +235,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
         if not channel:
             await self.command_send_error(
-                ctx=ctx,
-                message=f"Channel with ID {str(channel_id)!r} does not exist.",
+                ctx=ctx, message=f"Channel with ID {str(channel_id)!r} does not exist."
             )
             return
 
@@ -266,8 +251,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
         if not re.fullmatch(r"\A\d{17,20}\Z", str_category_id):
             await self.command_send_error(
-                ctx=ctx,
-                message=f"{str_category_id!r} is not a valid category ID.",
+                ctx=ctx, message=f"{str_category_id!r} is not a valid category ID."
             )
 
         category_id: int = int(str_category_id)
@@ -278,16 +262,17 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
         if not category:
             await self.command_send_error(
-                ctx=ctx,
-                message=f"Category with ID {str(category_id)!r} does not exist.",
+                ctx=ctx, message=f"Category with ID {str(category_id)!r} does not exist."
             )
             return
 
         if len(category.channels) >= 50:
             await self.command_send_error(
                 ctx=ctx,
-                message=f"Category with ID {str(category_id)!r} is full. "
-                "Please select a different category.",
+                message=(
+                    f"Category with ID {str(category_id)!r} is full. "
+                    "Please select a different category."
+                ),
             )
             return
 

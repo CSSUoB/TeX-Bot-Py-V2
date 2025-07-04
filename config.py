@@ -69,13 +69,7 @@ DEFAULT_STATISTICS_ROLES: "Final[AbstractSet[str]]" = {
     "Postdoc",
     "Quiz Victor",
 }
-LOG_LEVEL_CHOICES: "Final[Sequence[str]]" = (
-    "DEBUG",
-    "INFO",
-    "WARNING",
-    "ERROR",
-    "CRITICAL",
-)
+LOG_LEVEL_CHOICES: "Final[Sequence[str]]" = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
@@ -114,7 +108,7 @@ class Settings(abc.ABC):
 
         if re.fullmatch(r"\A[A-Z](?:[A-Z_]*[A-Z])?\Z", item):
             INVALID_SETTINGS_KEY_MESSAGE: Final[str] = self.get_invalid_settings_key_message(
-                item,
+                item
             )
             raise AttributeError(INVALID_SETTINGS_KEY_MESSAGE)
 
@@ -149,7 +143,7 @@ class Settings(abc.ABC):
 
         console_logging_handler: logging.Handler = logging.StreamHandler()
         console_logging_handler.setFormatter(
-            logging.Formatter("{asctime} | {name} | {levelname:^8} - {message}", style="{"),
+            logging.Formatter("{asctime} | {name} | {levelname:^8} - {message}", style="{")
         )
 
         logger.addHandler(console_logging_handler)
@@ -279,7 +273,7 @@ class Settings(abc.ABC):
             raw_purchase_membership_url = "https://" + raw_purchase_membership_url
             logger.warning(
                 "PURCHASE_MEMBERSHIP_URL was missing a URL protocol. "
-                "Please ensure all URLs are valid HTTPS URLs.",
+                "Please ensure all URLs are valid HTTPS URLs."
             )
 
         if not validators.url(raw_purchase_membership_url):
@@ -308,7 +302,7 @@ class Settings(abc.ABC):
             raw_membership_perks_url = "https://" + raw_membership_perks_url
             logger.warning(
                 "MEMBERSHIP_PERKS_URL was missing a URL protocol. "
-                "Please ensure all URLs are valid HTTPS URLs.",
+                "Please ensure all URLs are valid HTTPS URLs."
             )
 
         if not validators.url(raw_membership_perks_url):
@@ -341,7 +335,7 @@ class Settings(abc.ABC):
             raw_custom_discord_invite_url = "https://" + raw_custom_discord_invite_url
             logger.warning(
                 "CUSTOM_DISCORD_INVITE_URL was missing a URL protocol. "
-                "Please ensure all URLs are valid HTTPS URLs.",
+                "Please ensure all URLs are valid HTTPS URLs."
             )
 
         if not validators.url(raw_custom_discord_invite_url):
@@ -355,8 +349,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_ping_command_easter_egg_probability(cls) -> None:
         raw_ping_command_easter_egg_probability_string: str = os.getenv(
-            "PING_COMMAND_EASTER_EGG_PROBABILITY",
-            default="",
+            "PING_COMMAND_EASTER_EGG_PROBABILITY", default=""
         ).strip()
 
         if not raw_ping_command_easter_egg_probability_string:
@@ -422,7 +415,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_welcome_messages(cls) -> None:
         messages_dict: Mapping[str, object] = cls._get_messages_dict(
-            os.getenv("MESSAGES_FILE_PATH"),
+            os.getenv("MESSAGES_FILE_PATH")
         )
 
         if "welcome_messages" not in messages_dict:
@@ -430,12 +423,11 @@ class Settings(abc.ABC):
 
         WELCOME_MESSAGES_KEY_IS_VALID: Final[bool] = bool(
             isinstance(messages_dict["welcome_messages"], Iterable)
-            and messages_dict["welcome_messages"],
+            and messages_dict["welcome_messages"]
         )
         if not WELCOME_MESSAGES_KEY_IS_VALID:
             raise MessagesJSONFileValueError(
-                dict_key="welcome_messages",
-                invalid_value=messages_dict["welcome_messages"],
+                dict_key="welcome_messages", invalid_value=messages_dict["welcome_messages"]
             )
 
         cls._settings["WELCOME_MESSAGES"] = set(messages_dict["welcome_messages"])  # type: ignore[call-overload]
@@ -443,7 +435,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_roles_messages(cls) -> None:
         messages_dict: Mapping[str, object] = cls._get_messages_dict(
-            os.getenv("MESSAGES_FILE_PATH"),
+            os.getenv("MESSAGES_FILE_PATH")
         )
 
         if "roles_messages" not in messages_dict:
@@ -454,8 +446,7 @@ class Settings(abc.ABC):
         ) and bool(messages_dict["roles_messages"])
         if not ROLES_MESSAGES_KEY_IS_VALID:
             raise MessagesJSONFileValueError(
-                dict_key="roles_messages",
-                invalid_value=messages_dict["roles_messages"],
+                dict_key="roles_messages", invalid_value=messages_dict["roles_messages"]
             )
 
         cls._settings["ROLES_MESSAGES"] = set(messages_dict["roles_messages"])  # type: ignore[call-overload]
@@ -475,8 +466,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_members_list_auth_session_cookie(cls) -> None:
         raw_members_list_auth_session_cookie: str = os.getenv(
-            "MEMBERS_LIST_URL_SESSION_COOKIE",
-            default="",
+            "MEMBERS_LIST_URL_SESSION_COOKIE", default=""
         ).strip()
 
         if not raw_members_list_auth_session_cookie or not re.fullmatch(
@@ -599,7 +589,7 @@ class Settings(abc.ABC):
                     "in any combination of seconds, minutes, hours, days or weeks."
                 )
                 raise ImproperlyConfiguredError(
-                    INVALID_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE,
+                    INVALID_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE
                 )
 
             raw_timedelta_send_introduction_reminders_delay = timedelta(
@@ -607,7 +597,7 @@ class Settings(abc.ABC):
                     key: float(value)
                     for key, value in raw_send_introduction_reminders_delay.groupdict().items()
                     if value
-                },
+                }
             )
 
             if raw_timedelta_send_introduction_reminders_delay < timedelta(days=1):
@@ -640,7 +630,7 @@ class Settings(abc.ABC):
         )
 
         raw_timedelta_details_send_introduction_reminders_interval: Mapping[str, float] = {
-            "hours": 6,
+            "hours": 6
         }
 
         if cls._settings["SEND_INTRODUCTION_REMINDERS"]:
@@ -650,7 +640,7 @@ class Settings(abc.ABC):
                     "in any combination of seconds, minutes or hours."
                 )
                 raise ImproperlyConfiguredError(
-                    INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE,
+                    INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE
                 )
 
             raw_timedelta_details_send_introduction_reminders_interval = {
@@ -669,7 +659,7 @@ class Settings(abc.ABC):
                     "SEND_INTRODUCTION_REMINDERS_INTERVAL must be longer than 3 seconds."
                 )
                 raise ImproperlyConfiguredError(
-                    TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE,
+                    TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE
                 )
 
         cls._settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
@@ -715,16 +705,14 @@ class Settings(abc.ABC):
                     "SEND_GET_ROLES_REMINDERS_DELAY must contain the delay "
                     "in any combination of seconds, minutes, hours, days or weeks."
                 )
-                raise ImproperlyConfiguredError(
-                    INVALID_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE,
-                )
+                raise ImproperlyConfiguredError(INVALID_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE)
 
             raw_timedelta_send_get_roles_reminders_delay = timedelta(
                 **{
                     key: float(value)
                     for key, value in raw_send_get_roles_reminders_delay.groupdict().items()
                     if value
-                },
+                }
             )
 
             if raw_timedelta_send_get_roles_reminders_delay < timedelta(days=1):
@@ -732,7 +720,7 @@ class Settings(abc.ABC):
                     "SEND_GET_ROLES_REMINDERS_DELAY must be longer than or equal to 1 day."
                 )
                 raise ImproperlyConfiguredError(
-                    TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE,
+                    TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE
                 )
 
         cls._settings["SEND_GET_ROLES_REMINDERS_DELAY"] = (
@@ -767,7 +755,7 @@ class Settings(abc.ABC):
                     "in any combination of seconds, minutes or hours."
                 )
                 raise ImproperlyConfiguredError(
-                    INVALID_ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE,
+                    INVALID_ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE
                 )
 
             raw_timedelta_details_advanced_send_get_roles_reminders_interval = {
@@ -844,7 +832,7 @@ class Settings(abc.ABC):
             raw_moderation_document_url = "https://" + raw_moderation_document_url
             logger.warning(
                 "MODERATION_DOCUMENT_URL was missing a URL protocol. "
-                "Please ensure all URLs are valid HTTPS URLs.",
+                "Please ensure all URLs are valid HTTPS URLs."
             )
 
         if not validators.url(raw_moderation_document_url):

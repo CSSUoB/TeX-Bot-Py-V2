@@ -74,12 +74,11 @@ class StartupCog(TeXBotBaseCog):
                 logger.info(
                     "Invite URL: %s",
                     utils.generate_invite_url(
-                        self.bot.application_id,
-                        settings["_DISCORD_MAIN_GUILD_ID"],
+                        self.bot.application_id, settings["_DISCORD_MAIN_GUILD_ID"]
                     ),
                 )
             logger.critical(
-                GuildDoesNotExistError(guild_id=settings["_DISCORD_MAIN_GUILD_ID"]),
+                GuildDoesNotExistError(guild_id=settings["_DISCORD_MAIN_GUILD_ID"])
             )
             await self.bot.close()
 
@@ -87,8 +86,7 @@ class StartupCog(TeXBotBaseCog):
             logger.debug(
                 "Invite URL: %s",
                 utils.generate_invite_url(
-                    self.bot.application_id,
-                    settings["_DISCORD_MAIN_GUILD_ID"],
+                    self.bot.application_id, settings["_DISCORD_MAIN_GUILD_ID"]
                 ),
             )
 
@@ -115,7 +113,7 @@ class StartupCog(TeXBotBaseCog):
                 discord.utils.get(
                     main_guild.text_channels,
                     name=settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"],
-                ),
+                )
             )
             if not manual_moderation_warning_message_location_exists:
                 logger.critical(
