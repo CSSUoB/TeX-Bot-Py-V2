@@ -16,7 +16,7 @@ from utils.error_capture_decorators import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Mapping, Sequence
+    from collections.abc import Collection, Mapping, Sequence
     from logging import Logger
     from typing import Final
 
