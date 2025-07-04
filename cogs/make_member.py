@@ -66,10 +66,10 @@ GROUPED_MEMBERS_URL: "Final[str]" = f"{BASE_MEMBERS_URL}/?sort=groups"
 
 
 class MakeMemberCommandCog(TeXBotBaseCog):
-    """Cog class that defines the "/makemember" command and its call-back method."""
+    """Cog class that defines the "/make-member" command and its call-back method."""
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="makemember",
+        name="make-member",
         description=(
             "Gives you the Member role "
             f"when supplied with an appropriate {_GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME}."
@@ -214,7 +214,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 
             # NOTE: The "Member" role must be added to the user **before** the "Guest" role to ensure that the welcome message does not include the suggestion to purchase membership
             await interaction_member.add_roles(
-                member_role, reason=f'{ctx.user} used TeX Bot slash-command: "/makemember"'
+                member_role, reason=f'{ctx.user} used TeX Bot slash-command: "/make-member"'
             )
 
             try:
@@ -238,7 +238,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 guest_role: discord.Role = await self.bot.guest_role
             except GuestRoleDoesNotExistError:
                 logger.warning(
-                    '"/makemember" command used but the "Guest" role does not exist. '
+                    '"/make-member" command used but the "Guest" role does not exist. '
                     'Some user\'s may now have the "Member" role without the "Guest" role. '
                     'Use the "/ensure-members-inducted" command to fix this issue.'
                 )
@@ -246,7 +246,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 if guest_role not in interaction_member.roles:
                     await interaction_member.add_roles(
                         guest_role,
-                        reason=f'{ctx.user} used TeX Bot slash-command: "/makemember"',
+                        reason=f'{ctx.user} used TeX Bot slash-command: "/make-member"',
                     )
             applicant_role: discord.Role | None
             try:
@@ -257,15 +257,15 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             if applicant_role and applicant_role in interaction_member.roles:
                 await interaction_member.remove_roles(
                     applicant_role,
-                    reason=f'{ctx.user} used TeX Bot slash-command: "/makemember"',
+                    reason=f'{ctx.user} used TeX Bot slash-command: "/make-member"',
                 )
 
 
 class MemberCountCommandCog(TeXBotBaseCog):
-    """Cog class that defines the "/membercount" command and its call-back method."""
+    """Cog class that defines the "/member-count" command and its call-back method."""
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="membercount", description="Displays the number of members in the group."
+        name="member-count", description="Displays the number of members in the group."
     )
     async def member_count(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
         """Definition & callback response of the "member_count" command."""
