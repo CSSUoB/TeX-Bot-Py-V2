@@ -517,13 +517,13 @@ class Settings(abc.ABC):
         )
 
         if not raw_auto_su_platform_access_cookie_checking_interval:
-            INVALID_AUTO_AUTH_CHECKING_DELAY_MESSAGE: Final[str] = (
+            INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_DELAY_MESSAGE: Final[str] = (
                 "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL must contain the delay "
                 "in any combination of seconds, minutes, hours, days or weeks."
             )
             logger.debug(raw_auto_su_platform_access_cookie_checking_interval)
             raise ImproperlyConfiguredError(
-                INVALID_AUTO_AUTH_CHECKING_DELAY_MESSAGE,
+                INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_DELAY_MESSAGE,
             )
 
         raw_timedelta_auto_su_platform_access_cookie_checking_interval: Mapping[str, float] = {
@@ -898,9 +898,9 @@ class Settings(abc.ABC):
             cls._setup_welcome_messages()
             cls._setup_roles_messages()
             cls._setup_organisation_id()
-            cls._setup_members_list_auth_session_cookie()
+            cls._setup_su_platform_access_cookie()
             cls._setup_auto_su_platform_access_cookie_checking()
-            cls._setup_auto_auth_session_cookie_checking_interval()
+            cls._setup_auto_su_platform_access_cookie_checking_interval()
             cls._setup_membership_perks_url()
             cls._setup_purchase_membership_url()
             cls._setup_custom_discord_invite_url()
