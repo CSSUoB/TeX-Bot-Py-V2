@@ -119,6 +119,10 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
                     "Failed to send applicant induction DM to user %s", applicant_member
                 )
 
+            news_role: discord.Role | None = discord.utils.get(main_guild.roles, name="News")
+            if news_role and news_role not in applicant_member.roles:
+                await applicant_member.add_roles(news_role, reason=AUDIT_MESSAGE)
+
             await ctx.followup.send(
                 content=":white_check_mark: User is now an applicant.", ephemeral=True
             )
