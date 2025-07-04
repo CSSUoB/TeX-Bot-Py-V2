@@ -543,12 +543,12 @@ class TeXBot(discord.Bot):
     @classmethod
     async def get_mention_string(
         cls,
-        channel_coroutine: "Awaitable[discord.TextChannel | discord.Role]",
+        channel_or_role_fetcher: "Awaitable[discord.TextChannel | discord.Role]",
         default: str | None = None,
     ) -> str:
         """Return the mention string for a given role/channel, even if it does not exist."""
         try:
-            return (await channel_coroutine).mention
+            return (await channel_or_role_fetcher).mention
         except RoleDoesNotExistError as e:
             return f"@{e.ROLE_NAME}" if default is None else default
         except ChannelDoesNotExistError as e:
