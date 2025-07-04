@@ -223,6 +223,10 @@ class BaseInductCog(TeXBotBaseCog):
 
             await induction_member.add_roles(guest_role, reason=INDUCT_AUDIT_MESSAGE)
 
+            news_role: discord.Role | None = discord.utils.get(main_guild.roles, name="News")
+            if news_role and news_role not in induction_member.roles:
+                await induction_member.add_roles(news_role, reason=INDUCT_AUDIT_MESSAGE)
+
             try:
                 applicant_role: discord.Role = await ctx.bot.applicant_role
             except ApplicantRoleDoesNotExistError:
