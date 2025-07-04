@@ -136,7 +136,8 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
         """
         Definition & callback response of the "delete_all_sent_one_off_introduction_reminders" command.
 
-        The "delete_all_sent_one_off_introduction_reminders" command uses the _delete_all() function
-        to delete all `SentOneOffIntroductionReminderMember` instance objects in the database.
-        """
+        The "delete_all_sent_one_off_introduction_reminders" command uses the _delete_all()
+        function to delete all `SentOneOffIntroductionReminderMember`
+        instance objects in the database.
+        """  # noqa: E501, W505
         await self._delete_all(ctx, delete_model=SentOneOffIntroductionReminderMember)
