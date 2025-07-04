@@ -63,9 +63,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
     @TeXBotBaseCog.listener()
     async def on_ready(self) -> None:
         """Add OptOutIntroductionRemindersView to the bot's list of permanent views."""
-        self.bot.add_view(
-            self.OptOutIntroductionRemindersView(self.bot),
-        )
+        self.bot.add_view(self.OptOutIntroductionRemindersView(self.bot))
 
     @tasks.loop(**settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"])
     @functools.partial(
@@ -172,8 +170,10 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 )
             except discord.Forbidden:
                 logger.info(
-                    "Failed to open DM channel with user, %s, "
-                    "so no induction reminder was sent.",
+                    (
+                        "Failed to open DM channel with user, %s, "
+                        "so no induction reminder was sent."
+                    ),
                     member,
                 )
 
@@ -229,9 +229,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             label="Opt-out of introduction reminders",
             custom_id="opt_out_introduction_reminders_button",
             style=discord.ButtonStyle.red,
-            emoji=discord.PartialEmoji.from_str(
-                emoji.emojize(":no_good:", language="alias"),
-            ),
+            emoji=discord.PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias")),
         )
         async def opt_out_introduction_reminders_button_callback(  # type: ignore[misc]
             self, button: discord.Button, interaction: discord.Interaction
@@ -250,11 +248,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
             BUTTON_WILL_MAKE_OPT_IN: Final[bool] = bool(
                 button.style == discord.ButtonStyle.green
-                or str(button.emoji)
-                == emoji.emojize(
-                    ":raised_hand:",
-                    language="alias",
-                )
+                or str(button.emoji) == emoji.emojize(":raised_hand:", language="alias")
                 or (button.label and "Opt back in" in button.label)
             )
             INCOMPATIBLE_BUTTONS: Final[bool] = bool(
@@ -273,7 +267,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
             try:
                 interaction_member: discord.Member = await self.bot.get_main_guild_member(
-                    interaction.user,
+                    interaction.user
                 )
             except DiscordMemberNotInMainGuildError:
                 await self.send_error(
@@ -316,7 +310,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 button.style = discord.ButtonStyle.green
                 button.label = "Opt back in to introduction reminders"
                 button.emoji = discord.PartialEmoji.from_str(
-                    emoji.emojize(":raised_hand:", language="alias"),
+                    emoji.emojize(":raised_hand:", language="alias")
                 )
 
                 await interaction.response.edit_message(view=self)
@@ -325,7 +319,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 try:
                     introduction_reminder_opt_out_member: IntroductionReminderOptOutMember = (
                         await IntroductionReminderOptOutMember.objects.aget(
-                            discord_id=interaction_member.id,
+                            discord_id=interaction_member.id
                         )
                     )
                 except IntroductionReminderOptOutMember.DoesNotExist:
@@ -336,7 +330,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 button.style = discord.ButtonStyle.red
                 button.label = "Opt-out of introduction reminders"
                 button.emoji = discord.PartialEmoji.from_str(
-                    emoji.emojize(":no_good:", language="alias"),
+                    emoji.emojize(":no_good:", language="alias")
                 )
 
                 await interaction.response.edit_message(view=self)

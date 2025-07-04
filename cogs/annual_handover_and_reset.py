@@ -54,7 +54,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
 
         async with ctx.typing():
             initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-                content=":hourglass: Running handover procedures... :hourglass:",
+                content=":hourglass: Running handover procedures... :hourglass:"
             )
             logger.debug("Running the handover command...")
 
@@ -65,14 +65,14 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
             if main_guild.me.top_role.position < committee_role.position:
                 logger.debug(
                     "Handover command aborted because the bot did not "
-                    "hold a role above the committee role.",
+                    "hold a role above the committee role."
                 )
                 await initial_response.edit(
                     content=(
                         ":warning: This command requires TeX-Bot to hold a role higher than "
                         'that of the "Committee" role to perform this action.'
                         " Operation aborted. :warning:"
-                    ),
+                    )
                 )
                 return
 
@@ -88,7 +88,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
                     content=(
                         f":hourglass: Updating channels in category: {category.name} "
                         ":hourglass:"
-                    ),
+                    )
                 )
 
                 channel: AllChannelTypes
@@ -100,17 +100,15 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
                 content=(
                     ":hourglass: Giving committee users access to the #handover channel and "
                     'removing the "Committee" role... :hourglass:'
-                ),
+                )
             )
 
             handover_channel: discord.TextChannel | None = discord.utils.get(
-                main_guild.text_channels,
-                name="Handover",
+                main_guild.text_channels, name="Handover"
             )
 
             automod_role: discord.Role | None = discord.utils.get(
-                main_guild.roles,
-                name="Automod",
+                main_guild.roles, name="Automod"
             )
 
             committee_member: discord.Member
@@ -121,28 +119,24 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
                 if handover_channel:
                     logger.debug("Giving user: %s, access to #handover", committee_member)
                     await handover_channel.set_permissions(
-                        committee_member,
-                        read_messages=True,
-                        send_messages=True,
+                        committee_member, read_messages=True, send_messages=True
                     )
 
                 logger.debug("Removing Committee role from user: %s", committee_member)
                 await committee_member.remove_roles(
-                    committee_role,
-                    reason=HANDOVER_AUDIT_MESSAGE,
+                    committee_role, reason=HANDOVER_AUDIT_MESSAGE
                 )
 
                 if automod_role and automod_role in committee_member.roles:
                     await committee_member.remove_roles(
-                        automod_role,
-                        reason=HANDOVER_AUDIT_MESSAGE,
+                        automod_role, reason=HANDOVER_AUDIT_MESSAGE
                     )
 
             await initial_response.edit(
                 content=(
                     ':hourglass: Giving committee-elect users the "Committee" role '
                     'and removing their "Committee-Elect" role... :hourglass:'
-                ),
+                )
             )
 
             committee_elect_member: discord.Member
@@ -151,17 +145,14 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
                     continue
                 logger.debug("Giving user: %s, the committee role.", committee_elect_member)
                 await committee_elect_member.add_roles(
-                    committee_role,
-                    reason=HANDOVER_AUDIT_MESSAGE,
+                    committee_role, reason=HANDOVER_AUDIT_MESSAGE
                 )
 
                 logger.debug(
-                    "Removing Committee-Elect role from user: %s",
-                    committee_elect_member,
+                    "Removing Committee-Elect role from user: %s", committee_elect_member
                 )
                 await committee_elect_member.remove_roles(
-                    committee_elect_role,
-                    reason=HANDOVER_AUDIT_MESSAGE,
+                    committee_elect_role, reason=HANDOVER_AUDIT_MESSAGE
                 )
 
             await initial_response.edit(
@@ -182,7 +173,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
             "Year Abroad",
             "PGT",
             "Student Rep",
-        },
+        }
     )
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -205,7 +196,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
 
         async with ctx.typing():
             initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-                content=":hourglass: Resetting membership and year roles... :hourglass:",
+                content=":hourglass: Resetting membership and year roles... :hourglass:"
             )
 
             ROLE_RESET_AUDIT_MESSAGE: Final[str] = (
@@ -214,20 +205,17 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
 
             member: discord.Member
             for member in member_role.members:
-                await member.remove_roles(
-                    member_role,
-                    reason=ROLE_RESET_AUDIT_MESSAGE,
-                )
+                await member.remove_roles(member_role, reason=ROLE_RESET_AUDIT_MESSAGE)
 
             logger.debug("Removed Member role from all users.")
             await initial_response.edit(
-                content=":hourglass: Removed Member role from all users...",
+                content=":hourglass: Removed Member role from all users..."
             )
 
             await GroupMadeMember._default_manager.all().adelete()
 
             await initial_response.edit(
-                content=":hourglass: Deleted all members from the database...",
+                content=":hourglass: Deleted all members from the database..."
             )
             logger.debug("Deleted all members from the database.")
 
@@ -243,8 +231,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
                 year_role_member: discord.Member
                 for year_role_member in year_role.members:
                     await year_role_member.remove_roles(
-                        year_role,
-                        reason=ROLE_RESET_AUDIT_MESSAGE,
+                        year_role, reason=ROLE_RESET_AUDIT_MESSAGE
                     )
 
             logger.debug("Execution of reset roles command complete.")
@@ -276,17 +263,16 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
 
         async with ctx.typing():
             initial_message: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-                content=":hourglass: Incrementing year channels... :hourglass:",
+                content=":hourglass: Incrementing year channels... :hourglass:"
             )
 
             final_year_channel: discord.TextChannel | None = discord.utils.get(
-                main_guild.text_channels,
-                name="final-years",
+                main_guild.text_channels, name="final-years"
             )
 
             if final_year_channel:
                 await initial_message.edit(
-                    content=':hourglass: Archiving "final-years" channel... :hourglass:',
+                    content=':hourglass: Archiving "final-years" channel... :hourglass:'
                 )
                 archivist_role: discord.Role = await self.bot.archivist_role
 
@@ -294,46 +280,41 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                 await final_year_channel.set_permissions(archivist_role, read_messages=True)
 
                 await final_year_channel.edit(
-                    name=f"final-years-{datetime.datetime.now(tz=datetime.UTC).year}",
+                    name=f"final-years-{datetime.datetime.now(tz=datetime.UTC).year}"
                 )
 
                 archived_category: discord.CategoryChannel | None = discord.utils.get(
-                    main_guild.categories,
-                    name="Archived",
+                    main_guild.categories, name="Archived"
                 )
 
                 if archived_category:
                     await final_year_channel.edit(
-                        category=archived_category,
-                        sync_permissions=True,
+                        category=archived_category, sync_permissions=True
                     )
 
             second_years_channel: discord.TextChannel | None = discord.utils.get(
-                main_guild.text_channels,
-                name="second-years",
+                main_guild.text_channels, name="second-years"
             )
 
             if second_years_channel:
                 await second_years_channel.edit(name="final-years")
 
             first_year_channel: discord.TextChannel | None = discord.utils.get(
-                main_guild.text_channels,
-                name="first-years",
+                main_guild.text_channels, name="first-years"
             )
 
             if first_year_channel:
                 await first_year_channel.edit(name="second-years")
 
             year_channels_category: discord.CategoryChannel | None = discord.utils.get(
-                main_guild.categories,
-                name="Year Chats",
+                main_guild.categories, name="Year Chats"
             )
 
             await initial_message.edit(
                 content=(
                     ':hourglass: Creating new "first-years" channel and setting permissions...'
                     ":hourglass:"
-                ),
+                )
             )
 
             new_first_years_channel: discord.TextChannel = (
@@ -342,15 +323,11 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
 
             if year_channels_category:
                 await new_first_years_channel.edit(
-                    category=year_channels_category,
-                    sync_permissions=True,
-                    position=0,
+                    category=year_channels_category, sync_permissions=True, position=0
                 )
             else:
                 await new_first_years_channel.set_permissions(
-                    guest_role,
-                    read_messages=True,
-                    send_messages=True,
+                    guest_role, read_messages=True, send_messages=True
                 )
 
             await initial_message.edit(
@@ -361,5 +338,5 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                         if not year_channels_category
                         else ''
                     }. :white_check_mark:"
-                ),
+                )
             )

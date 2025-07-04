@@ -17,10 +17,7 @@ from exceptions import (
     InvalidActionDescriptionError,
     InvalidActionTargetError,
 )
-from utils import (
-    CommandChecks,
-    TeXBotBaseCog,
-)
+from utils import CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -28,10 +25,7 @@ if TYPE_CHECKING:
     from logging import Logger
     from typing import Final
 
-    from utils import (
-        TeXBotApplicationContext,
-        TeXBotAutocompleteContext,
-    )
+    from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 __all__: "Sequence[str]" = (
     "CommitteeActionsTrackingBaseCog",
@@ -94,23 +88,22 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
             )
             if not error_is_already_exits:
                 await self.command_send_error(ctx, message="An unrecoverable error occured.")
-                logger.critical(
-                    "Error upon creating Action object: %s",
-                    create_action_error,
-                )
+                logger.critical("Error upon creating Action object: %s", create_action_error)
                 await self.bot.close()
 
             DUPLICATE_ACTION_MESSAGE: Final[str] = (
                 f"User: {action_user} already has an action with description: {description}!"
             )
             logger.debug(
-                "Action creation for user: %s, failed because an action "
-                "with description: %s, already exists.",
+                (
+                    "Action creation for user: %s, failed because an action "
+                    "with description: %s, already exists."
+                ),
                 action_user,
                 description,
             )
             raise InvalidActionDescriptionError(
-                message=DUPLICATE_ACTION_MESSAGE,
+                message=DUPLICATE_ACTION_MESSAGE
             ) from create_action_error
         return action
 
@@ -163,22 +156,20 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         try:
             interaction_user: discord.Member = await ctx.bot.get_member_from_str_id(
-                str(ctx.interaction.user.id),
+                str(ctx.interaction.user.id)
             )
         except ValueError:
             logger.debug("User action ID autocomplete could not acquire an interaction user!")
             return set()
 
         admin_role: discord.Role | None = discord.utils.get(
-            ctx.bot.main_guild.roles,
-            name="Admin",
+            ctx.bot.main_guild.roles, name="Admin"
         )
 
         if admin_role and admin_role in interaction_user.roles:
             return {
                 discord.OptionChoice(
-                    name=f"{action.description} ({action.status})",
-                    value=str(action.id),
+                    name=f"{action.description} ({action.status})", value=str(action.id)
                 )
                 async for action in AssignedCommitteeAction.objects.select_related().all()
             }
@@ -211,8 +202,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         return {discord.OptionChoice(name=value, value=code) for code, value in status_options}
 
     @committee_actions.command(
-        name="create",
-        description="Adds a new action with the specified description.",
+        name="create", description="Adds a new action with the specified description."
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="description",
@@ -236,7 +226,6 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         self,
         ctx: "TeXBotApplicationContext",
         action_description: str,
-        *,
         action_member_id: str | None,
     ) -> None:
         """
@@ -250,9 +239,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         member_id: str = action_member_id if action_member_id else str(ctx.user.id)
 
         try:
-            action_user: discord.Member = await self.bot.get_member_from_str_id(
-                member_id,
-            )
+            action_user: discord.Member = await self.bot.get_member_from_str_id(member_id)
         except ValueError:
             await ctx.respond(
                 content=f":warning: The user ID provided: {member_id}, was not valid.",
@@ -268,7 +255,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         try:
             await self._create_action(ctx, action_user, action_description)
             await ctx.respond(
-                content=f"Action `{action_description}` created for: {action_user.mention}",
+                content=f"Action `{action_description}` created for: {action_user.mention}"
             )
         except (
             InvalidActionDescriptionError,
@@ -277,8 +264,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             await ctx.respond(content=creation_failed_error.message)
 
     @committee_actions.command(
-        name="update-status",
-        description="Update the status of the provided action.",
+        name="update-status", description="Update the status of the provided action."
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="action",
@@ -321,8 +307,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
             await self.command_send_error(
-                ctx,
-                message="Action provided was either not unique or could not be found.",
+                ctx, message="Action provided was either not unique or could not be found."
             )
             return
 
@@ -330,8 +315,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             new_status: AssignedCommitteeAction.Status = AssignedCommitteeAction.Status(status)
         except (ValueError, KeyError) as invalid_status:
             await self.command_send_error(
-                ctx,
-                message=f"Status ({status}) provided was not valid or could not be found.",
+                ctx, message=f"Status ({status}) provided was not valid or could not be found."
             )
             logger.debug(invalid_status)
             return
@@ -352,8 +336,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         )
 
     @committee_actions.command(
-        name="update-description",
-        description="Update the description of the provided action.",
+        name="update-description", description="Update the description of the provided action."
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="action",
@@ -381,7 +364,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         """
         if len(new_description) >= 200:
             await ctx.respond(
-                content=":warning: The provided description was too long! No action taken.",
+                content=":warning: The provided description was too long! No action taken."
             )
             return
 
@@ -401,8 +384,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
             await self.command_send_error(
-                ctx=ctx,
-                message="Action provided was either not unique or could not be found.",
+                ctx=ctx, message="Action provided was either not unique or could not be found."
             )
             return
 
@@ -411,7 +393,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         await action.aupdate(description=new_description)
 
         await ctx.respond(
-            content=f"Action `{old_description}` updated to `{action.description}`!",
+            content=f"Action `{old_description}` updated to `{action.description}`!"
         )
 
     @committee_actions.command(
@@ -443,7 +425,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             await ctx.respond(
                 content=(
                     "No committee members were found to randomly select from! Command aborted."
-                ),
+                )
             )
             return
 
@@ -456,19 +438,19 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             logger.debug(committee_members)
             await self.command_send_error(
                 ctx=ctx,
-                message=f"Index {index} out of range for {len(committee_members)} "
-                "committee members... check the logs!",
+                message=(
+                    f"Index {index} out of range for {len(committee_members)} "
+                    "committee members... check the logs!"
+                ),
             )
             return
 
         try:
             await self._create_action(
-                ctx=ctx,
-                action_user=action_user,
-                description=action_description,
+                ctx=ctx, action_user=action_user, description=action_description
             )
             await ctx.respond(
-                content=f"Action `{action_description}` created for: {action_user.mention}",
+                content=f"Action `{action_description}` created for: {action_user.mention}"
             )
         except (
             InvalidActionTargetError,
@@ -512,9 +494,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         for committee_member in committee_members:
             try:
                 _: AssignedCommitteeAction | None = await self._create_action(
-                    ctx=ctx,
-                    action_user=committee_member,
-                    description=action_description,
+                    ctx=ctx, action_user=committee_member, description=action_description
                 )
                 success_members.append(committee_member)
             except (
@@ -546,8 +526,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         await ctx.respond(content=response_message)
 
     @committee_actions.command(
-        name="list",
-        description="Lists all actions for a specified user",
+        name="list", description="Lists all actions for a specified user"
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="user",
@@ -577,9 +556,8 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     async def list_user_actions(  # NOTE: Committee role check is not present because non-committee can have actions, and need to be able to list their own actions.
         self,
         ctx: "TeXBotApplicationContext",
-        *,
         action_member_id: None | str,
-        ping: bool,
+        ping: bool,  # noqa: FBT001
         status: None | str,
     ) -> None:
         """
@@ -607,8 +585,10 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 ephemeral=True,
             )
             logger.debug(
-                "User: %s, tried to list actions for user: %s, "
-                "but did not have the committee role.",
+                (
+                    "User: %s, tried to list actions for user: %s, "
+                    "but did not have the committee role."
+                ),
                 ctx.user,
                 action_member,
             )
@@ -640,11 +620,13 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         if not user_actions:
             await ctx.respond(
                 content=(
-                    f"User: {action_member.mention if ping else action_member} has no "
-                    "in progress actions."
+                    (
+                        f"User: {action_member.mention if ping else action_member} has no "
+                        "in progress actions."
+                    )
                     if not status
                     else "actions matching given filter."
-                ),
+                )
             )
             return
 
@@ -663,8 +645,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         await ctx.respond(content=actions_message)
 
     @committee_actions.command(
-        name="reassign",
-        description="Reassign the specified action to another user.",
+        name="reassign", description="Reassign the specified action to another user."
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="action",
@@ -708,8 +689,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
             await self.command_send_error(
-                ctx,
-                message="Action provided was either not unique or could not be found.",
+                ctx, message="Action provided was either not unique or could not be found."
             )
             return
 
@@ -718,7 +698,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 content=(
                     f"HEY! Action `{action_to_reassign.description}` is already assigned "
                     f"to user: {new_user_to_action.mention}\nNo action has been taken."
-                ),
+                )
             )
             return
 
@@ -734,7 +714,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                     content=(
                         f"Action `{new_action.description}` successfully "
                         f"reassigned to {new_user_to_action.mention}!"
-                    ),
+                    )
                 )
         except (
             InvalidActionDescriptionError,
@@ -743,10 +723,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             await ctx.respond(content=invalid_description_error.message)
             return
 
-    @committee_actions.command(
-        name="list-all",
-        description="List all current actions.",
-    )
+    @committee_actions.command(name="list-all", description="List all current actions.")
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="ping",
         description="Triggers whether the message pings users or not.",
@@ -766,7 +743,10 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def list_all_actions(
-        self, ctx: "TeXBotApplicationContext", *, ping: bool, status: str
+        self,
+        ctx: "TeXBotApplicationContext",
+        ping: bool,  # noqa: FBT001
+        status: str | None,
     ) -> None:
         """List all actions."""  # NOTE: this doesn't actually list *all* actions as it is possible for non-committee to be actioned.
         committee_role: discord.Role = await self.bot.committee_role
@@ -778,11 +758,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         desired_status: list[str] = (
             [status]
             if status
-            else [
-                Status.NOT_STARTED.value,
-                Status.IN_PROGRESS.value,
-                Status.BLOCKED.value,
-            ]
+            else [Status.NOT_STARTED.value, Status.IN_PROGRESS.value, Status.BLOCKED.value]
         )
 
         committee_members: list[discord.Member] = committee_role.members
@@ -817,8 +793,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         await ctx.respond(content=all_actions_message)
 
     @committee_actions.command(
-        name="delete",
-        description="Deletes the specified action from the database completely.",
+        name="delete", description="Deletes the specified action from the database completely."
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="action",
@@ -852,8 +827,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
         except (ObjectDoesNotExist, MultipleObjectsReturned):
             await self.command_send_error(
-                ctx=ctx,
-                message="Action provided was either not unique or could not be found.",
+                ctx=ctx, message="Action provided was either not unique or could not be found."
             )
             return
 
@@ -896,13 +870,13 @@ class CommitteeActionsTrackingContextCommandsCog(CommitteeActionsTrackingBaseCog
 
         try:
             await self._create_action(
-                ctx=ctx,
-                action_user=actioned_message_user,
-                description=actioned_message_text,
+                ctx=ctx, action_user=actioned_message_user, description=actioned_message_text
             )
             await ctx.respond(
-                content=f"Action `{actioned_message_text}` created "
-                f"for: {actioned_message_user.mention}",
+                content=(
+                    f"Action `{actioned_message_text}` created "
+                    f"for: {actioned_message_user.mention}"
+                )
             )
         except (
             InvalidActionTargetError,

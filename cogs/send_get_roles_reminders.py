@@ -104,7 +104,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 "Rate My Meal",
                 "Website",
                 "Student Rep",
-            },
+            }
         )
 
         member: discord.Member
@@ -131,7 +131,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 guest_role_received_time = await anext(
                     log.created_at
                     async for log in main_guild.audit_logs(
-                        action=AuditLogAction.member_role_update,
+                        action=AuditLogAction.member_role_update
                     )
                     if (
                         log.target == member
@@ -168,7 +168,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                     " but have not yet nabbed yourself any opt-in roles.\n"
                     f"You can head to {roles_channel_mention} "
                     "and click on the icons to get optional roles like pronouns "
-                    "and year group identifiers.",
+                    "and year group identifiers."
                 )
             except discord.Forbidden:
                 logger.info(

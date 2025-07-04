@@ -45,13 +45,11 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
         )
 
         await ctx.respond(
-            f"All {delete_model_instances_name_plural} deleted successfully.",
-            ephemeral=True,
+            f"All {delete_model_instances_name_plural} deleted successfully.", ephemeral=True
         )
 
     @delete_all.command(
-        name="reminders",
-        description="Deletes all Reminders from the backend database.",
+        name="reminders", description="Deletes all Reminders from the backend database."
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -80,8 +78,7 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
         await self._delete_all(ctx, delete_model=GroupMadeMember)
 
     @delete_all.command(
-        name="actions",
-        description="Deletes all the Actions from the backend database.",
+        name="actions", description="Deletes all the Actions from the backend database."
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -95,8 +92,7 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
         await self._delete_all(ctx, delete_model=AssignedCommitteeAction)
 
     @delete_all.command(
-        name="strikes",
-        description="Deletes all the Strikes from the backend database.",
+        name="strikes", description="Deletes all the Strikes from the backend database."
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
