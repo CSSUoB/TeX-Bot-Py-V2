@@ -14,6 +14,7 @@ from .annual_handover_and_reset import (
     CommitteeHandoverCommandCog,
 )
 from .archive import ArchiveCommandCog
+from .auto_assign_roles import AutoAssignRolesCog
 from .command_error import CommandErrorCog
 from .committee_actions_tracking import (
     CommitteeActionsTrackingContextCommandsCog,
@@ -53,6 +54,7 @@ __all__: "Sequence[str]" = (
     "AnnualRolesResetCommandCog",
     "AnnualYearChannelsIncrementCommandCog",
     "ArchiveCommandCog",
+    "AutoAssignRolesCog",
     "ClearRemindersBacklogTaskCog",
     "CommandErrorCog",
     "CommitteeActionsTrackingContextCommandsCog",
@@ -94,6 +96,7 @@ def setup(bot: "TeXBot") -> None:
         AnnualRolesResetCommandCog,
         AnnualYearChannelsIncrementCommandCog,
         ArchiveCommandCog,
+        AutoAssignRolesCog,
         ClearRemindersBacklogTaskCog,
         CommandErrorCog,
         CommitteeActionsTrackingSlashCommandsCog,
