@@ -1389,9 +1389,7 @@ class TestSetupSUPlatformAccessCookie:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("SU_PLATFORM_ACCESS_COOKIE"):
-            os.environ["SU_PLATFORM_ACCESS_COOKIE"] = (
-                test_su_platform_access_cookie
-            )
+            os.environ["SU_PLATFORM_ACCESS_COOKIE"] = test_su_platform_access_cookie
 
             RuntimeSettings._setup_su_platform_access_cookie()
 
@@ -1405,9 +1403,12 @@ class TestSetupSUPlatformAccessCookie:
         """Test that an error is raised when no `SU_PLATFORM_ACCESS_COOKIE` is given."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
-        with EnvVariableDeleter("SU_PLATFORM_ACCESS_COOKIE"), pytest.raises(
-            ImproperlyConfiguredError,
-            match=r"SU_PLATFORM_ACCESS_COOKIE.*valid.*\.ASPXAUTH cookie",
+        with (
+            EnvVariableDeleter("SU_PLATFORM_ACCESS_COOKIE"),
+            pytest.raises(
+                ImproperlyConfiguredError,
+                match=r"SU_PLATFORM_ACCESS_COOKIE.*valid.*\.ASPXAUTH cookie",
+            ),
         ):
             RuntimeSettings._setup_su_platform_access_cookie()
 
@@ -1438,9 +1439,7 @@ class TestSetupSUPlatformAccessCookie:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("SU_PLATFORM_ACCESS_COOKIE"):
-            os.environ["SU_PLATFORM_ACCESS_COOKIE"] = (
-                invalid_su_platform_access_cookie
-            )
+            os.environ["SU_PLATFORM_ACCESS_COOKIE"] = invalid_su_platform_access_cookie
 
             with pytest.raises(
                 ImproperlyConfiguredError,
