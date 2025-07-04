@@ -13,6 +13,7 @@ from .annual_handover_and_reset import (
     AnnualYearChannelsIncrementCommandCog,
     CommitteeHandoverCommandCog,
 )
+from .anti_spam import AntiSpamCog
 from .archive import ArchiveCommandCog
 from .command_error import CommandErrorCog
 from .committee_actions_tracking import (
@@ -52,6 +53,7 @@ __all__: "Sequence[str]" = (
     "AddUsersToThreadsAndChannelsCommandCog",
     "AnnualRolesResetCommandCog",
     "AnnualYearChannelsIncrementCommandCog",
+    "AntiSpamCog",
     "ArchiveCommandCog",
     "ClearRemindersBacklogTaskCog",
     "CommandErrorCog",
@@ -93,6 +95,7 @@ def setup(bot: "TeXBot") -> None:
         AddUsersToThreadsAndChannelsCommandCog,
         AnnualRolesResetCommandCog,
         AnnualYearChannelsIncrementCommandCog,
+        AntiSpamCog,
         ArchiveCommandCog,
         ClearRemindersBacklogTaskCog,
         CommandErrorCog,
