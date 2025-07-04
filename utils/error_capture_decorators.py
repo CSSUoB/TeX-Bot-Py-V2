@@ -26,10 +26,7 @@ __all__: "Sequence[str]" = (
 if TYPE_CHECKING:
     type WrapperInputFunc[**P, T_ret] = (
         Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T_ret]]
-        | Callable[
-            P,
-            Coroutine[object, object, T_ret],
-        ]
+        | Callable[P, Coroutine[object, object, T_ret]]
     )
     type WrapperOutputFunc[**P, T_ret] = Callable[P, Coroutine[object, object, T_ret | None]]
     type DecoratorInputFunc[**P, T_cog: TeXBotBaseCog, T_ret] = Callable[
