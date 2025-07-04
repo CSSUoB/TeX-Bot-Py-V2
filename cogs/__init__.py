@@ -22,8 +22,8 @@ from .committee_actions_tracking import (
 from .delete_all import DeleteAllCommandsCog
 from .edit_message import EditMessageCommandCog
 from .everest import EverestCommandCog
-from .get_token_authorisation import (
-    GetTokenAuthorisationCommandCog,
+from .check_su_platform_authorisation import (
+    CheckSUPlatformAuthorisationCommandCog,
     TokenAuthorisationCheckTaskCog,
 )
 from .induct import (
@@ -65,7 +65,7 @@ __all__: "Sequence[str]" = (
     "EditMessageCommandCog",
     "EnsureMembersInductedCommandCog",
     "EverestCommandCog",
-    "GetTokenAuthorisationCommandCog",
+    "CheckSUPlatformAuthorisationCommandCog",
     "InductContextCommandsCog",
     "InductSendMessageCog",
     "InductSlashCommandCog",
@@ -107,7 +107,7 @@ def setup(bot: "TeXBot") -> None:
         EditMessageCommandCog,
         EnsureMembersInductedCommandCog,
         EverestCommandCog,
-        GetTokenAuthorisationCommandCog,
+        CheckSUPlatformAuthorisationCommandCog,
         InductContextCommandsCog,
         InductSendMessageCog,
         InductSlashCommandCog,
