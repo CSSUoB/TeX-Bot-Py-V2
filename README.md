@@ -30,7 +30,7 @@ The meaning of each error code is given here:
 (This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/induct`, `/stats`, `/archive` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
 
 * `E1023` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-object) with the name "@**Member**".
-(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/makemember` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
+(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/make-member` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
 
 * `E1024` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-object) with the name "@**Archivist**".
 (This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/archive` [command](https://discord.com/developers/docs/interactions/application-commands))
