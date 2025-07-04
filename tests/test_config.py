@@ -1366,11 +1366,11 @@ class TestSetupMessagesFile:
         assert exc_info.value.invalid_value == invalid_roles_messages_dict["roles_messages"]
 
 
-class TestSetupMembersListURLSessionCookie:
-    """Test case to unit-test the `_setup_members_list_auth_session_cookie()` function."""
+class TestSetupSUPlatformAccessCookie:
+    """Test case to unit-test the `_setup_su_platform_access_cookie()` function."""
 
     @pytest.mark.parametrize(
-        "test_members_list_url_session_cookie",
+        "test_su_platform_access_cookie",
         (
             "".join(random.choices(string.hexdigits, k=random.randint(128, 256))),
             f"  {''.join(random.choices(string.hexdigits, k=random.randint(128, 256)))}   ",
@@ -1378,44 +1378,43 @@ class TestSetupMembersListURLSessionCookie:
         ids=[f"case_{i}" for i in range(2)],
     )
     def test_setup_members_list_auth_session_cookie_successful(
-        self, test_members_list_url_session_cookie: str
+        self, test_su_platform_access_cookie: str
     ) -> None:
         """
-        Test that the given `test_members_list_url_session_cookie` is used when provided.
+        Test that the given `test_su_platform_access_cookie` is used when provided.
 
-        In this test, the provided `test_members_list_url_session_cookie` is valid
+        In this test, the provided `test_su_platform_access_cookie` is valid
         and so must be saved successfully.
         """
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
-        with EnvVariableDeleter("MEMBERS_LIST_URL_SESSION_COOKIE"):
-            os.environ["MEMBERS_LIST_URL_SESSION_COOKIE"] = (
-                test_members_list_url_session_cookie
+        with EnvVariableDeleter("SU_PLATFORM_ACCESS_COOKIE"):
+            os.environ["SU_PLATFORM_ACCESS_COOKIE"] = (
+                test_su_platform_access_cookie
             )
 
-            RuntimeSettings._setup_members_list_auth_session_cookie()
+            RuntimeSettings._setup_su_platform_access_cookie()
 
         RuntimeSettings._is_env_variables_setup = True
 
-        assert RuntimeSettings()["MEMBERS_LIST_AUTH_SESSION_COOKIE"] == (
-            test_members_list_url_session_cookie.strip()
+        assert RuntimeSettings()["SU_PLATFORM_ACCESS_COOKIE"] == (
+            test_su_platform_access_cookie.strip()
         )
 
-    def test_missing_members_list_url_session_cookie(self) -> None:
-        """Test that an error is raised when no `MEMBERS_LIST_URL_SESSION_COOKIE` is given."""
+    def test_missing_su_platform_access_cookie(self) -> None:
+        """Test that an error is raised when no `SU_PLATFORM_ACCESS_COOKIE` is given."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
-        with EnvVariableDeleter("MEMBERS_LIST_URL_SESSION_COOKIE"):  # noqa: SIM117
-            with pytest.raises(
-                ImproperlyConfiguredError,
-                match=r"MEMBERS_LIST_URL_SESSION_COOKIE.*valid.*\.ASPXAUTH cookie",
-            ):
-                RuntimeSettings._setup_members_list_auth_session_cookie()
+        with EnvVariableDeleter("SU_PLATFORM_ACCESS_COOKIE"), pytest.raises(
+            ImproperlyConfiguredError,
+            match=r"SU_PLATFORM_ACCESS_COOKIE.*valid.*\.ASPXAUTH cookie",
+        ):
+            RuntimeSettings._setup_su_platform_access_cookie()
 
     @pytest.mark.parametrize(
-        "invalid_members_list_url_session_cookie",
+        "invalid_su_platform_access_cookie",
         (
-            "invalid_members_list_url_session_cookie",
+            "invalid_su_platform_access_cookie",
             "",
             "  ",
             "".join(random.choices(string.hexdigits, k=5)),
@@ -1428,26 +1427,26 @@ class TestSetupMembersListURLSessionCookie:
         ),
         ids=[f"case_{i}" for i in range(6)],
     )
-    def test_invalid_members_list_url_session_cookie(
-        self, invalid_members_list_url_session_cookie: str
+    def test_invalid_su_platform_access_cookie(
+        self, invalid_su_platform_access_cookie: str
     ) -> None:
-        """Test that an error occurs when `MEMBERS_LIST_URL_SESSION_COOKIE` is invalid."""
+        """Test that an error occurs when `SU_PLATFORM_ACCESS_COOKIE` is invalid."""
         INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
-            "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie"
+            "SU_PLATFORM_ACCESS_COOKIE must be a valid .ASPXAUTH cookie"
         )
 
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
-        with EnvVariableDeleter("MEMBERS_LIST_URL_SESSION_COOKIE"):
-            os.environ["MEMBERS_LIST_URL_SESSION_COOKIE"] = (
-                invalid_members_list_url_session_cookie
+        with EnvVariableDeleter("SU_PLATFORM_ACCESS_COOKIE"):
+            os.environ["SU_PLATFORM_ACCESS_COOKIE"] = (
+                invalid_su_platform_access_cookie
             )
 
             with pytest.raises(
                 ImproperlyConfiguredError,
                 match=INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE,
             ):
-                RuntimeSettings._setup_members_list_auth_session_cookie()
+                RuntimeSettings._setup_su_platform_access_cookie()
 
 
 class TestSetupSendIntroductionReminders:
