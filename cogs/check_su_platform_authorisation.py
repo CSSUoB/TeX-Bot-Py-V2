@@ -55,9 +55,21 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
         AUTHORISED: The token is a valid user and has access to an organisation.
         """
 
-        INVALID = "invalid"
-        VALID = "valid"
-        AUTHORISED = "authorised"
+        INVALID = (
+            logging.WARNING,
+            "The auth session cookie is not associated with any MSL user, "
+            "meaning it is invalid or expired.",
+        )
+        VALID = (
+            logging.WARNING,
+            "The auth session cookie is associated with a valid MSL user, "
+            "but is not an admin to any MSL organisations.",
+        )
+        AUTHORISED = (
+            logging.INFO,
+            "The auth session cookie is associated with a valid MSL user and "
+            "has access to at least one MSL organisation.",
+        )
 
     async def fetch_with_session(self, url: str) -> str:
         """Fetch a URL using a shared aiohttp session."""
@@ -178,8 +190,8 @@ class CheckSUPlatformAuthorisationCommandCog(CheckSUPlatformAuthorisationBaseCog
     """Cog class that defines the "/check-su-platform-authorisation-cookie" command."""
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="get-token-authorisation",
-        description="Checks the authorisations held by the token.",
+        name="check-su-platform-authorisation",
+        description="Checks the authorisations held by the SU access token.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -195,9 +207,9 @@ class CheckSUPlatformAuthorisationCommandCog(CheckSUPlatformAuthorisationBaseCog
         async with ctx.typing():
             await ctx.followup.send(
                 content=(
-                    f"Admin token has access to the following MSL Organisations: "
+                    f"SU Platform Access Cookie has access to the following MSL Organisations:"
                     f"\n{
-                        ', \n'.join(
+                        ',\n'.join(
                             organisation for organisation in await self.get_token_groups()
                         )
                     }"
@@ -237,7 +249,9 @@ class TokenAuthorisationCheckTaskCog(CheckSUPlatformAuthorisationBaseCog):
         """
         logger.debug("Running token authorisation check task...")
 
-        token_status: CheckSUPlatformAuthorisationBaseCog.TokenStatus = await self.get_token_status()
+        token_status: CheckSUPlatformAuthorisationBaseCog.TokenStatus = (
+            await self.get_token_status()
+        )
 
         match token_status:
             case self.TokenStatus.AUTHORISED:
