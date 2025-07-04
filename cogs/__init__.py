@@ -23,6 +23,7 @@ from .delete_all import DeleteAllCommandsCog
 from .edit_message import EditMessageCommandCog
 from .everest import EverestCommandCog
 from .get_token_authorisation import GetTokenAuthorisationCommandCog
+from .helpop import HelpopCommandCog
 from .induct import (
     EnsureMembersInductedCommandCog,
     InductContextCommandsCog,
@@ -63,6 +64,7 @@ __all__: "Sequence[str]" = (
     "EnsureMembersInductedCommandCog",
     "EverestCommandCog",
     "GetTokenAuthorisationCommandCog",
+    "HelpopCommandCog",
     "InductContextCommandsCog",
     "InductSendMessageCog",
     "InductSlashCommandCog",
@@ -104,6 +106,7 @@ def setup(bot: "TeXBot") -> None:
         EnsureMembersInductedCommandCog,
         EverestCommandCog,
         GetTokenAuthorisationCommandCog,
+        HelpopCommandCog,
         InductContextCommandsCog,
         InductSendMessageCog,
         InductSlashCommandCog,
