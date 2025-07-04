@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
     from utils import TeXBotApplicationContext
 
-__all__: "Sequence[str]" = ("CheckSuPlatformAuthorisationCommandCog",)
+__all__: "Sequence[str]" = ("CheckSUPlatformAuthorisationCommandCog",)
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
@@ -72,7 +72,8 @@ class CheckSUPlatformAuthorisationCommandCog(TeXBotBaseCog):
 
         if "Login" in str(page_title):
             INVALID_COOKIE_MESSAGE: Final[str] = (
-                "Unable to fetch profile page because the SU platform access cookie was not valid."
+                "Unable to fetch profile page because "
+                "the SU platform access cookie was not valid."
             )
             logger.warning(INVALID_COOKIE_MESSAGE)
             await ctx.respond(content=INVALID_COOKIE_MESSAGE)
@@ -139,7 +140,8 @@ class CheckSUPlatformAuthorisationCommandCog(TeXBotBaseCog):
         )
 
         await ctx.respond(
-            f"The SU platform access cookie has administrator access to the following MSL Organisations as "
+            "The SU platform access cookie has administrator access to "
+            "the following MSL Organisations as "
             f"{user_name.text}:\n{',\n'.join(organisation for organisation in organisations)}",
             ephemeral=True,
         )
