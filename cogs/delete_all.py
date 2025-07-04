@@ -9,6 +9,8 @@ from db.core.models import (
     DiscordMemberStrikes,
     DiscordReminder,
     GroupMadeMember,
+    SentGetRolesReminderMember,
+    SentOneOffIntroductionReminderMember,
 )
 from utils import CommandChecks, TeXBotBaseCog
 
@@ -104,3 +106,33 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
         to delete all `Strike` instance objects stored in the database.
         """
         await self._delete_all(ctx, delete_model=DiscordMemberStrikes)
+
+    @delete_all.command(
+        name="roles-reminders",
+        description="Deletes all SentGetRolesReminderMember objects from the backend database.",  # noqa: E501
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def delete_all_role_reminders(self, ctx: "TeXBotApplicationContext") -> None:
+        """
+        Definition & callback response of the "delete-all-roles-reminders" command.
+
+        The "delete-all-roles-reminders" command uses the _delete_all() function
+        to delete all `SentGetRolesReminderMember` instance objects in the database.
+        """
+        await self._delete_all(ctx, delete_model=SentGetRolesReminderMember)
+
+    @delete_all.command(
+        name="introduction-reminders",
+        description="Deletes all SentOneOffIntroductionReminderMember objects from the backend database.",  # noqa: E501
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def delete_all_introduction_reminders(self, ctx: "TeXBotApplicationContext") -> None:
+        """
+        Definition & callback response of the "delete-all-introduction-reminders" command.
+
+        The "delete-all-introduction-reminders" command uses the _delete_all() function
+        to delete all `SentOneOffIntroductionReminderMember` instance objects in the database.
+        """
+        await self._delete_all(ctx, delete_model=SentOneOffIntroductionReminderMember)
