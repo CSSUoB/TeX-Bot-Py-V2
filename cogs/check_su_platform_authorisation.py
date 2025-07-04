@@ -1,4 +1,4 @@
-"""Contains cog classes for token authorisation check interactions."""
+"""Contains cog classes for SU platform access cookie authorisation check interactions."""
 
 import logging
 from typing import TYPE_CHECKING
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
     from utils import TeXBotApplicationContext
 
-__all__: "Sequence[str]" = ("GetTokenAuthorisationCommandCog",)
+__all__: "Sequence[str]" = ("CheckSUPlatformAuthorisationCommandCog",)
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
@@ -29,26 +29,26 @@ REQUEST_HEADERS: "Final[Mapping[str, str]]" = {
 }
 
 REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
-    ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"]
+    ".ASPXAUTH": settings["SU_PLATFORM_ACCESS_COOKIE"],
 }
 
 REQUEST_URL: "Final[str]" = "https://guildofstudents.com/profile"
 
 
-class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
-    """Cog class that defines the "/get_token_authorisation" command."""
+class CheckSUPlatformAuthorisationCommandCog(TeXBotBaseCog):
+    """Cog class that defines the "/check-su-platform-authorisation-cookie" command."""
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="get-token-authorisation",
-        description="Checks the authorisations held by the token.",
+        name="check-su-platform-authorisation",
+        description="Checks the authorisations held by the SU access token.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def get_token_authorisation(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def check_su_platform_authorisation(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
         """
-        Definition of the "get_token_authorisation" command.
+        Definition of the "check_su_platform_authorisation" command.
 
-        The "get_token_authorisation" command will retrieve the profile for the token user.
+        The "check_su_platform_authorisation" command will retrieve the profile for the user.
         The profile page will contain the user's name and a list of the MSL organisations
         the user has administrative access to.
         """
@@ -71,11 +71,12 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
             return
 
         if "Login" in str(page_title):
-            BAD_TOKEN_MESSAGE: Final[str] = (
-                "Unable to fetch profile page because the token was not valid."  # noqa: S105
+            INVALID_COOKIE_MESSAGE: Final[str] = (
+                "Unable to fetch profile page because "
+                "the SU platform access cookie was not valid."
             )
-            logger.warning(BAD_TOKEN_MESSAGE)
-            await ctx.respond(content=BAD_TOKEN_MESSAGE)
+            logger.warning(INVALID_COOKIE_MESSAGE)
+            await ctx.respond(content=INVALID_COOKIE_MESSAGE)
             return
 
         profile_section_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
@@ -111,7 +112,7 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
         if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
             NO_ADMIN_TABLE_MESSAGE: Final[str] = (
                 f"Failed to retrieve the admin table for user: {user_name.string}. "
-                "Please check you have used the correct token!"
+                "Please check you have used the correct SU platform access cookie!"
             )
             logger.warning(NO_ADMIN_TABLE_MESSAGE)
             await ctx.respond(content=NO_ADMIN_TABLE_MESSAGE)
@@ -125,7 +126,7 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
             logger.warning(
                 (
                     "Organisations list was unexpectedly empty "
-                    "for the admin access token associated with %s."
+                    "for the SU platform access cookie associated with %s."
                 ),
                 user_name.text,
             )
@@ -133,15 +134,14 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
             return
 
         logger.debug(
-            "Admin Token has admin access to: %s as user %s", organisations, user_name.text
+            "The SU platform access cookie has administrator access to: %s as user %s",
+            organisations,
+            user_name.text,
         )
 
         await ctx.respond(
-            content=(
-                f"Admin token has access to the following MSL Organisations as "
-                f"{user_name.text}:\n {
-                    ', \n '.join(organisation for organisation in organisations)
-                }"
-            ),
+            "The SU platform access cookie has administrator access to "
+            "the following MSL Organisations as "
+            f"{user_name.text}:\n{',\n'.join(organisation for organisation in organisations)}",
             ephemeral=True,
         )
