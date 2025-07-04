@@ -113,7 +113,9 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def delete_all_sent_get_role_reminders(self, ctx: "TeXBotApplicationContext") -> None:
+    async def delete_all_sent_get_role_reminders(
+        self, ctx: "TeXBotApplicationContext"
+    ) -> None:
         """
         Definition & callback response of the "delete_all_sent_get_role_reminders" command.
 
@@ -128,7 +130,9 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def delete_all_sent_one_off_introduction_reminders(self, ctx: "TeXBotApplicationContext") -> None:
+    async def delete_all_sent_one_off_introduction_reminders(
+        self, ctx: "TeXBotApplicationContext"
+    ) -> None:
         """
         Definition & callback response of the "delete_all_sent_one_off_introduction_reminders" command.
 
