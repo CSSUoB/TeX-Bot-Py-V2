@@ -53,17 +53,13 @@ class CheckSuPlatformAuthorisationCommandCog(TeXBotBaseCog):
         the user has administrative access to.
         """
         http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-            headers=REQUEST_HEADERS,
-            cookies=REQUEST_COOKIES,
+            headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
         )
 
         async with http_session, http_session.get(REQUEST_URL) as http_response:
             response_html: str = await http_response.text()
 
-        response_object: bs4.BeautifulSoup = BeautifulSoup(
-            response_html,
-            "html.parser",
-        )
+        response_object: bs4.BeautifulSoup = BeautifulSoup(response_html, "html.parser")
 
         page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
 
@@ -83,19 +79,18 @@ class CheckSuPlatformAuthorisationCommandCog(TeXBotBaseCog):
             return
 
         profile_section_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
-            "div",
-            {"id": "profile_main"},
+            "div", {"id": "profile_main"}
         )
 
         if profile_section_html is None:
             logger.warning(
                 "Couldn't find the profile section of the user "
-                "when scraping the website's HTML!",
+                "when scraping the website's HTML!"
             )
             logger.debug("Retrieved HTML: %s", response_html)
             await ctx.respond(
                 "Couldn't find the profile of the user! "
-                "This should never happen, please check the logs!",
+                "This should never happen, please check the logs!"
             )
             return
 
@@ -110,8 +105,7 @@ class CheckSuPlatformAuthorisationCommandCog(TeXBotBaseCog):
             return
 
         parsed_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
-            "ul",
-            {"id": "ulOrgs"},
+            "ul", {"id": "ulOrgs"}
         )
 
         if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):

@@ -9,9 +9,7 @@ import discord
 from discord import Cog
 
 from exceptions import DiscordMemberNotInMainGuildError
-from exceptions.base import (
-    BaseDoesNotExistError,
-)
+from exceptions.base import BaseDoesNotExistError
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -140,9 +138,7 @@ class TeXBotBaseCog(Cog):
 
         if message:
             message = re.sub(
-                r"<([@&#]?|(@[&#])?)\d+>",
-                lambda match: f"`{match.group(0)}`",
-                message.strip(),
+                r"<([@&#]?|(@[&#])?)\d+>", lambda match: f"`{match.group(0)}`", message.strip()
             )
             construct_error_message += f"\n`{message}`"
 
@@ -158,7 +154,7 @@ class TeXBotBaseCog(Cog):
                         str(logging_message),
                     )
                     if message_part
-                ).rstrip(": ;"),
+                ).rstrip(": ;")
             )
 
     @staticmethod
@@ -182,7 +178,7 @@ class TeXBotBaseCog(Cog):
 
         with contextlib.suppress(DiscordMemberNotInMainGuildError):
             channel_permissions_limiter = await ctx.bot.get_main_guild_member(
-                ctx.interaction.user,
+                ctx.interaction.user
             )
 
         if not ctx.value or re.fullmatch(r"\A#.*\Z", ctx.value):
@@ -190,7 +186,7 @@ class TeXBotBaseCog(Cog):
                 discord.OptionChoice(name=f"#{channel.name}", value=str(channel.id))
                 for channel in main_guild.text_channels
                 if channel.permissions_for(channel_permissions_limiter).is_superset(
-                    discord.Permissions(send_messages=True, view_channel=True),
+                    discord.Permissions(send_messages=True, view_channel=True)
                 )
             }
 
