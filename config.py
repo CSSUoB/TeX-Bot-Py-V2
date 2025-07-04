@@ -984,6 +984,7 @@ class Settings(abc.ABC):
             cls._setup_strike_performed_manually_warning_location()
             cls._setup_auto_add_committee_to_threads()
             cls._setup_committee_actions_reminders()
+            cls._setup_committee_actions_reminders_channel()
             cls._setup_committee_actions_board()
             cls._setup_committee_actions_board_channel()
             cls._setup_committee_actions_reminders_interval()

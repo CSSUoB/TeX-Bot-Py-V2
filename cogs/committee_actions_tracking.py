@@ -264,12 +264,12 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
         The task will run every interval specified in the settings and will send reminders
         to all committee members who have actions that are either in progress or not started.
         """
-        committee_general_channel: discord.TextChannel | None = discord.utils.get(
+        action_reminders_channel: discord.TextChannel | None = discord.utils.get(
             self.bot.main_guild.text_channels,
             name=settings["COMMITTEE_ACTIONS_REMINDERS_CHANNEL"],
         )
 
-        if not committee_general_channel:
+        if not action_reminders_channel:
             logger.warning(
                 "Committee-general channel could not be found! "
                 "Actions reminders task will not run until next restart."
@@ -325,7 +325,7 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
             logger.info("No actions found for any committee members. No reminders sent.")
             return
 
-        await committee_general_channel.send(
+        await action_reminders_channel.send(
             content=f"{actions_reminder_info_message}\n{all_actions_message}",
         )
 
