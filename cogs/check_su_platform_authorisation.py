@@ -183,11 +183,11 @@ class CheckSUPlatformAuthorisationCommandCog(CheckSUPlatformAuthorisationBaseCog
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def get_token_authorisation(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def check_su_platform_authorisation(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
         """
-        Definition of the "get_token_authorisation" command.
+        Definition of the "check_su_platform_authorisation" command.
 
-        The "get_token_authorisation" command will retrieve the profile for the token user.
+        The "check_su_platform_authorisation" command will retrieve the profile for the user.
         The profile page will contain the user's name and a list of the MSL organisations
         the user has administrative access to.
         """
