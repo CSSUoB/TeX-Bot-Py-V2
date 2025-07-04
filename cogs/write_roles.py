@@ -19,8 +19,7 @@ class WriteRolesCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/write-roles" command and its call-back method."""
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="write-roles",
-        description="Populates #roles with the correct messages.",
+        name="write-roles", description="Populates #roles with the correct messages."
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -37,7 +36,7 @@ class WriteRolesCommandCog(TeXBotBaseCog):
         roles_message: str
         for roles_message in settings["ROLES_MESSAGES"]:
             await roles_channel.send(
-                roles_message.replace("<Group_Name>", self.bot.group_short_name),
+                roles_message.replace("<Group_Name>", self.bot.group_short_name)
             )
 
         await ctx.respond("All messages sent successfully.", ephemeral=True)

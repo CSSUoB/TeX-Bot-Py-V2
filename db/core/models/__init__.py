@@ -52,27 +52,17 @@ class AssignedCommitteeAction(BaseDiscordMemberWrapper):
         null=False,
         unique=False,
     )
-    description = models.TextField(
-        "Description",
-        max_length=200,
-        null=False,
-        blank=False,
-    )
+    description = models.TextField("Description", max_length=200, null=False, blank=False)
     status = models.CharField(
-        max_length=3,
-        choices=Status,
-        default=Status.NOT_STARTED,
-        null=False,
-        blank=False,
+        max_length=3, choices=Status, default=Status.NOT_STARTED, null=False, blank=False
     )
 
     class Meta:  # noqa: D106
         verbose_name = "Assigned Committee Action"
         constraints = [  # noqa: RUF012
             models.UniqueConstraint(
-                fields=["discord_member", "description"],
-                name="unique_user_action",
-            ),
+                fields=["discord_member", "description"], name="unique_user_action"
+            )
         ]
 
     @override
@@ -194,7 +184,7 @@ class GroupMadeMember(AsyncBaseModel):
             RegexValidator(
                 r"\A[A-Fa-f\d]{64}\Z",
                 "hashed_group_member_id must be a valid sha256 hex-digest.",
-            ),
+            )
         ],
     )
 
@@ -265,10 +255,7 @@ class DiscordReminder(BaseDiscordMemberWrapper):
         unique=False,
     )
     message = models.TextField(
-        "Message to remind User",
-        max_length=1500,
-        null=False,
-        blank=True,
+        "Message to remind User", max_length=1500, null=False, blank=True
     )
     _channel_id = models.CharField(
         "Discord Channel ID of the channel that the reminder needs to be sent in",
@@ -280,7 +267,7 @@ class DiscordReminder(BaseDiscordMemberWrapper):
             RegexValidator(
                 r"\A\d{17,20}\Z",
                 "channel_id must be a valid Discord channel ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)",
-            ),
+            )
         ],
     )
     _channel_type = models.IntegerField(
@@ -292,10 +279,7 @@ class DiscordReminder(BaseDiscordMemberWrapper):
         blank=True,
     )
     send_datetime = models.DateTimeField(
-        "Date & time to send reminder",
-        unique=False,
-        null=False,
-        blank=False,
+        "Date & time to send reminder", unique=False, null=False, blank=False
     )
 
     @property
@@ -332,7 +316,7 @@ class DiscordReminder(BaseDiscordMemberWrapper):
             models.UniqueConstraint(
                 fields=["discord_member", "message", "_channel_id"],
                 name="unique_user_channel_message",
-            ),
+            )
         ]
 
     @override
@@ -422,9 +406,7 @@ class LeftDiscordMember(AsyncBaseModel):
     def clean(self) -> None:
         if any(not isinstance(role, str) for role in self.roles):
             raise ValidationError(
-                {
-                    "_roles": "Roles must be a set of strings representing the role names.",
-                },
+                {"_roles": "Roles must be a set of strings representing the role names."},
                 code="invalid",
             )
 

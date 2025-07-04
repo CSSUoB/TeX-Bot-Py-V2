@@ -29,7 +29,7 @@ REQUEST_HEADERS: "Final[Mapping[str, str]]" = {
 }
 
 REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
-    ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
+    ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"]
 }
 
 REQUEST_URL: "Final[str]" = "https://guildofstudents.com/profile"
@@ -53,17 +53,13 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
         the user has administrative access to.
         """
         http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-            headers=REQUEST_HEADERS,
-            cookies=REQUEST_COOKIES,
+            headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
         )
 
         async with http_session, http_session.get(REQUEST_URL) as http_response:
             response_html: str = await http_response.text()
 
-        response_object: bs4.BeautifulSoup = BeautifulSoup(
-            response_html,
-            "html.parser",
-        )
+        response_object: bs4.BeautifulSoup = BeautifulSoup(response_html, "html.parser")
 
         page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
 
@@ -83,19 +79,18 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
             return
 
         profile_section_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
-            "div",
-            {"id": "profile_main"},
+            "div", {"id": "profile_main"}
         )
 
         if profile_section_html is None:
             logger.warning(
                 "Couldn't find the profile section of the user "
-                "when scraping the website's HTML!",
+                "when scraping the website's HTML!"
             )
             logger.debug("Retrieved HTML: %s", response_html)
             await ctx.respond(
                 "Couldn't find the profile of the user! "
-                "This should never happen, please check the logs!",
+                "This should never happen, please check the logs!"
             )
             return
 
@@ -110,8 +105,7 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
             return
 
         parsed_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
-            "ul",
-            {"id": "ulOrgs"},
+            "ul", {"id": "ulOrgs"}
         )
 
         if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
@@ -139,15 +133,15 @@ class GetTokenAuthorisationCommandCog(TeXBotBaseCog):
             return
 
         logger.debug(
-            "Admin Token has admin access to: %s as user %s",
-            organisations,
-            user_name.text,
+            "Admin Token has admin access to: %s as user %s", organisations, user_name.text
         )
 
         await ctx.respond(
-            f"Admin token has access to the following MSL Organisations as "
-            f"{user_name.text}:\n {
-                ', \n '.join(organisation for organisation in organisations)
-            }",
+            content=(
+                f"Admin token has access to the following MSL Organisations as "
+                f"{user_name.text}:\n {
+                    ', \n '.join(organisation for organisation in organisations)
+                }"
+            ),
             ephemeral=True,
         )
