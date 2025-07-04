@@ -62,10 +62,7 @@ class CommandErrorCog(TeXBotBaseCog):
                 )
 
         await self.command_send_error(
-            ctx,
-            error_code=error_code,
-            message=message,
-            logging_message=logging_message,
+            ctx, error_code=error_code, message=message, logging_message=logging_message
         )
 
         if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(
@@ -88,6 +85,6 @@ class CommandErrorCog(TeXBotBaseCog):
                         str(error.original).rstrip(".:"),
                     )
                     if message_part
-                ),
+                )
             )
             await self.bot.close()

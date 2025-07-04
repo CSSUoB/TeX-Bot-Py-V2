@@ -46,10 +46,7 @@ _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: "Final[str]" = f"""{
 } ID"""
 
 _GROUP_MEMBER_ID_ARGUMENT_NAME: "Final[str]" = (
-    _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME.lower().replace(
-        " ",
-        "",
-    )
+    _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME.lower().replace(" ", "")
 )
 
 REQUEST_HEADERS: "Final[Mapping[str, str]]" = {
@@ -59,7 +56,7 @@ REQUEST_HEADERS: "Final[Mapping[str, str]]" = {
 }
 
 REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
-    ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"],
+    ".ASPXAUTH": settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"]
 }
 
 BASE_MEMBERS_URL: "Final[str]" = (
@@ -69,10 +66,10 @@ GROUPED_MEMBERS_URL: "Final[str]" = f"{BASE_MEMBERS_URL}/?sort=groups"
 
 
 class MakeMemberCommandCog(TeXBotBaseCog):
-    """Cog class that defines the "/makemember" command and its call-back method."""
+    """Cog class that defines the "/make-member" command and its call-back method."""
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="makemember",
+        name="make-member",
         description=(
             "Gives you the Member role "
             f"when supplied with an appropriate {_GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME}."
@@ -160,8 +157,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             guild_member_ids: set[str] = set()
 
             http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-                headers=REQUEST_HEADERS,
-                cookies=REQUEST_COOKIES,
+                headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
             )
             async with http_session, http_session.get(GROUPED_MEMBERS_URL) as http_response:
                 response_html: str = await http_response.text()
@@ -172,27 +168,20 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                     "ctl00_Main_rptGroups_ctl03_gvMemberships",
                     "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl03_gvMemberships",
                     "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl05_gvMemberships",
-                },
+                }
             )
             table_id: str
             for table_id in MEMBER_HTML_TABLE_IDS:
                 parsed_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-                    response_html,
-                    "html.parser",
-                ).find(
-                    "table",
-                    {"id": table_id},
-                )
+                    response_html, "html.parser"
+                ).find("table", {"id": table_id})
 
                 if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
                     continue
 
                 guild_member_ids.update(
                     row.contents[2].text
-                    for row in parsed_html.find_all(
-                        "tr",
-                        {"class": ["msl_row", "msl_altrow"]},
-                    )
+                    for row in parsed_html.find_all("tr", {"class": ["msl_row", "msl_altrow"]})
                 )
 
             guild_member_ids.discard("")
@@ -205,7 +194,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                     error_code="E1041",
                     logging_message=OSError(
                         "The guild member IDs could not be retrieved from "
-                        "the MEMBERS_LIST_URL.",
+                        "the MEMBERS_LIST_URL."
                     ),
                 )
                 return
@@ -225,8 +214,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 
             # NOTE: The "Member" role must be added to the user **before** the "Guest" role to ensure that the welcome message does not include the suggestion to purchase membership
             await interaction_member.add_roles(
-                member_role,
-                reason=f'{ctx.user} used TeX Bot slash-command: "/makemember"',
+                member_role, reason=f'{ctx.user} used TeX Bot slash-command: "/make-member"'
             )
 
             try:
@@ -250,15 +238,15 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 guest_role: discord.Role = await self.bot.guest_role
             except GuestRoleDoesNotExistError:
                 logger.warning(
-                    '"/makemember" command used but the "Guest" role does not exist. '
+                    '"/make-member" command used but the "Guest" role does not exist. '
                     'Some user\'s may now have the "Member" role without the "Guest" role. '
-                    'Use the "/ensure-members-inducted" command to fix this issue.',
+                    'Use the "/ensure-members-inducted" command to fix this issue.'
                 )
             else:
                 if guest_role not in interaction_member.roles:
                     await interaction_member.add_roles(
                         guest_role,
-                        reason=f'{ctx.user} used TeX Bot slash-command: "/makemember"',
+                        reason=f'{ctx.user} used TeX Bot slash-command: "/make-member"',
                     )
             applicant_role: discord.Role | None
             try:
@@ -269,16 +257,15 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             if applicant_role and applicant_role in interaction_member.roles:
                 await interaction_member.remove_roles(
                     applicant_role,
-                    reason=f'{ctx.user} used TeX Bot slash-command: "/makemember"',
+                    reason=f'{ctx.user} used TeX Bot slash-command: "/make-member"',
                 )
 
 
 class MemberCountCommandCog(TeXBotBaseCog):
-    """Cog class that defines the "/membercount" command and its call-back method."""
+    """Cog class that defines the "/member-count" command and its call-back method."""
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="membercount",
-        description="Displays the number of members in the group.",
+        name="member-count", description="Displays the number of members in the group."
     )
     async def member_count(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
         """Definition & callback response of the "member_count" command."""
@@ -286,26 +273,21 @@ class MemberCountCommandCog(TeXBotBaseCog):
 
         async with ctx.typing():
             http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-                headers=REQUEST_HEADERS,
-                cookies=REQUEST_COOKIES,
+                headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
             )
             async with http_session, http_session.get(BASE_MEMBERS_URL) as http_response:
                 response_html: str = await http_response.text()
 
             member_list_div: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-                response_html,
-                "html.parser",
-            ).find(
-                "div",
-                {"class": "memberlistcol"},
-            )
+                response_html, "html.parser"
+            ).find("div", {"class": "memberlistcol"})
 
             if member_list_div is None or isinstance(member_list_div, bs4.NavigableString):
                 await self.command_send_error(
                     ctx=ctx,
                     error_code="E1041",
                     logging_message=OSError(
-                        "The member count could not be retrieved from the MEMBERS_LIST_URL.",
+                        "The member count could not be retrieved from the MEMBERS_LIST_URL."
                     ),
                 )
                 return
@@ -313,17 +295,13 @@ class MemberCountCommandCog(TeXBotBaseCog):
             if "showing 100 of" in member_list_div.text.lower():
                 member_count: str = member_list_div.text.split(" ")[3]
                 await ctx.followup.send(
-                    content=f"{self.bot.group_full_name} has {member_count} members! :tada:",
+                    content=f"{self.bot.group_full_name} has {member_count} members! :tada:"
                 )
                 return
 
             member_table: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-                response_html,
-                "html.parser",
-            ).find(
-                "table",
-                {"id": "ctl00_ctl00_Main_AdminPageContent_gvMembers"},
-            )
+                response_html, "html.parser"
+            ).find("table", {"id": "ctl00_ctl00_Main_AdminPageContent_gvMembers"})
 
             if member_table is None or isinstance(member_table, bs4.NavigableString):
                 await self.command_send_error(

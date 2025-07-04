@@ -67,8 +67,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
                 tex_emoji = discord.utils.get(main_guild.emojis, name="TeX")
 
             intro_channel: discord.TextChannel | None = discord.utils.get(
-                main_guild.text_channels,
-                name="introductions",
+                main_guild.text_channels, name="introductions"
             )
 
             if intro_channel:
@@ -84,8 +83,10 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
                                 raise e from e
 
                             logger.info(
-                                "Failed to add reactions because the user, %s, "
-                                "has blocked TeX-Bot.",
+                                (
+                                    "Failed to add reactions because the user, %s, "
+                                    "has blocked TeX-Bot."
+                                ),
                                 recent_message.author,
                             )
                         break
@@ -100,7 +101,7 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
                         "If you are already a student and your induction as an applicant was"
                         " a mistake, please contact a committee member.\n\n"
                         "If you have already purchased a membership, you can run the "
-                        "`/makemember` command, and you will be given full access by "
+                        "`/make-member` command, and you will be given full access by "
                         f"{self.bot.user.display_name if self.bot.user else 'TeX-Bot'}.\n\n"
                         "Some things to do to get started:\n"
                         "1. Check out our rules in "
@@ -111,16 +112,19 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
                         "pronouns and year group\n"
                         "3. Change your nickname to whatever "
                         "you wish others to refer to you as"
-                    ),
+                    )
                 )
             except discord.Forbidden:
                 logger.warning(
                     "Failed to send applicant induction DM to user %s", applicant_member
                 )
 
+            news_role: discord.Role | None = discord.utils.get(main_guild.roles, name="News")
+            if news_role and news_role not in applicant_member.roles:
+                await applicant_member.add_roles(news_role, reason=AUDIT_MESSAGE)
+
             await ctx.followup.send(
-                content=":white_check_mark: User is now an applicant.",
-                ephemeral=True,
+                content=":white_check_mark: User is now an applicant.", ephemeral=True
             )
 
 
@@ -185,7 +189,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
         member_id_not_integer_error: ValueError
         try:
             applicant_member: discord.Member = await self.bot.get_member_from_str_id(
-                str_applicant_member_id,
+                str_applicant_member_id
             )
         except ValueError as member_id_not_integer_error:
             await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
@@ -227,7 +231,7 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
         """
         try:
             member: discord.Member = await self.bot.get_member_from_str_id(
-                str(message.author.id),
+                str(message.author.id)
             )
         except ValueError:
             await ctx.respond(
