@@ -96,8 +96,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
 
         if isinstance(channel_or_thread, discord.Thread):
             message: discord.Message = await channel_or_thread.send(
-                content=f"Adding {users_or_roles!r} to thread...",
-                silent=True,
+                content=f"Adding {users_or_roles!r} to thread...", silent=True
             )
             await message.edit(content=f"{users_or_roles.mention}")
             await message.delete(delay=1)
@@ -161,7 +160,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
         )
 
         await channel_or_thread.send(
-            content=f"{users_or_roles.mention} has been added to the channel.",
+            content=f"{users_or_roles.mention} has been added to the channel."
         )
 
     @TeXBotBaseCog.listener()
@@ -185,8 +184,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
         )
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="add-users-to-channel",
-        description="Adds selected users to a channel or thread.",
+        name="add-users-to-channel", description="Adds selected users to a channel or thread."
     )
     @discord.option(  # type: ignore[no-untyped-call, misc]
         name="user",
@@ -288,8 +286,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
 
         if role_to_add is None:
             await self.command_send_error(
-                ctx=ctx,
-                message=f"The role: <@{role_id}> is not valid or couldn't be found.",
+                ctx=ctx, message=f"The role: <@{role_id}> is not valid or couldn't be found."
             )
             return
 

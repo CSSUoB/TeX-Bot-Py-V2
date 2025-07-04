@@ -7,19 +7,13 @@ import discord
 
 from exceptions import DiscordMemberNotInMainGuildError
 from exceptions.base import BaseDoesNotExistError
-from utils import (
-    CommandChecks,
-    TeXBotBaseCog,
-)
+from utils import CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from collections.abc import Set as AbstractSet
 
-    from utils import (
-        TeXBotApplicationContext,
-        TeXBotAutocompleteContext,
-    )
+    from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 __all__: "Sequence[str]" = ("EditMessageCommandCog",)
 
@@ -98,8 +92,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
 
         if not re.fullmatch(r"\A\d{17,20}\Z", str_channel_id):
             await self.command_send_error(
-                ctx,
-                message=f"{str_channel_id!r} is not a valid channel ID.",
+                ctx, message=f"{str_channel_id!r} is not a valid channel ID."
             )
             return
 
@@ -107,21 +100,18 @@ class EditMessageCommandCog(TeXBotBaseCog):
 
         if not re.fullmatch(r"\A\d{17,20}\Z", str_message_id):
             await self.command_send_error(
-                ctx,
-                message=f"{str_message_id!r} is not a valid message ID.",
+                ctx, message=f"{str_message_id!r} is not a valid message ID."
             )
             return
 
         message_id: int = int(str_message_id)
 
         channel: discord.TextChannel | None = discord.utils.get(
-            main_guild.text_channels,
-            id=channel_id,
+            main_guild.text_channels, id=channel_id
         )
         if not channel:
             await self.command_send_error(
-                ctx,
-                message=f"Text channel with ID '{channel_id}' does not exist.",
+                ctx, message=f"Text channel with ID '{channel_id}' does not exist."
             )
             return
 
@@ -129,8 +119,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
             message: discord.Message = await channel.fetch_message(message_id)
         except discord.NotFound:
             await self.command_send_error(
-                ctx,
-                message=f"Message with ID '{message_id}' does not exist.",
+                ctx, message=f"Message with ID '{message_id}' does not exist."
             )
             return
 

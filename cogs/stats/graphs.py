@@ -13,10 +13,7 @@ if TYPE_CHECKING:
 
     from matplotlib.text import Text as Plot_Text
 
-__all__: "Sequence[str]" = (
-    "amount_of_time_formatter",
-    "plot_bar_chart",
-)
+__all__: "Sequence[str]" = ("amount_of_time_formatter", "plot_bar_chart")
 
 
 def amount_of_time_formatter(value: float, time_scale: str) -> str:
@@ -88,18 +85,12 @@ def plot_bar_chart(
     matplotlib.pyplot.yticks(range(0, max_data_value, math.ceil(max_data_value / 15)))
 
     x_label_obj: Plot_Text = matplotlib.pyplot.xlabel(
-        x_label,
-        fontweight="bold",
-        fontsize="large",
-        wrap=True,
+        x_label, fontweight="bold", fontsize="large", wrap=True
     )
     x_label_obj._get_wrap_line_width = lambda: 475  # type: ignore[attr-defined]
 
     y_label_obj: Plot_Text = matplotlib.pyplot.ylabel(
-        y_label,
-        fontweight="bold",
-        fontsize="large",
-        wrap=True,
+        y_label, fontweight="bold", fontsize="large", wrap=True
     )
     y_label_obj._get_wrap_line_width = lambda: 375  # type: ignore[attr-defined]
 
@@ -126,9 +117,7 @@ def plot_bar_chart(
     plot_file.seek(0)
 
     discord_plot_file: discord.File = discord.File(
-        plot_file,
-        filename,
-        description=description,
+        plot_file, filename, description=description
     )
 
     plot_file.close()
