@@ -14,6 +14,10 @@ from .annual_handover_and_reset import (
     CommitteeHandoverCommandCog,
 )
 from .archive import ArchiveCommandCog
+from .check_su_platform_authorisation import (
+    CheckSUPlatformAuthorisationCommandCog,
+    CheckSUPlatformAuthorisationTaskCog,
+)
 from .command_error import CommandErrorCog
 from .committee_actions_tracking import (
     CommitteeActionsTrackingContextCommandsCog,
@@ -22,10 +26,6 @@ from .committee_actions_tracking import (
 from .delete_all import DeleteAllCommandsCog
 from .edit_message import EditMessageCommandCog
 from .everest import EverestCommandCog
-from .check_su_platform_authorisation import (
-    CheckSUPlatformAuthorisationCommandCog,
-    TokenAuthorisationCheckTaskCog,
-)
 from .induct import (
     EnsureMembersInductedCommandCog,
     InductContextCommandsCog,
@@ -56,6 +56,8 @@ __all__: "Sequence[str]" = (
     "AnnualRolesResetCommandCog",
     "AnnualYearChannelsIncrementCommandCog",
     "ArchiveCommandCog",
+    "CheckSUPlatformAuthorisationCommandCog",
+    "CheckSUPlatformAuthorisationTaskCog",
     "ClearRemindersBacklogTaskCog",
     "CommandErrorCog",
     "CommitteeActionsTrackingContextCommandsCog",
@@ -65,7 +67,6 @@ __all__: "Sequence[str]" = (
     "EditMessageCommandCog",
     "EnsureMembersInductedCommandCog",
     "EverestCommandCog",
-    "CheckSUPlatformAuthorisationCommandCog",
     "InductContextCommandsCog",
     "InductSendMessageCog",
     "InductSlashCommandCog",
@@ -85,7 +86,6 @@ __all__: "Sequence[str]" = (
     "StatsCommandsCog",
     "StrikeCommandCog",
     "StrikeContextCommandsCog",
-    "TokenAuthorisationCheckTaskCog",
     "WriteRolesCommandCog",
     "setup",
 )
@@ -127,7 +127,7 @@ def setup(bot: "TeXBot") -> None:
         StatsCommandsCog,
         StrikeCommandCog,
         StrikeContextCommandsCog,
-        TokenAuthorisationCheckTaskCog,
+        CheckSUPlatformAuthorisationTaskCog,
         WriteRolesCommandCog,
     )
     Cog: type[TeXBotBaseCog]

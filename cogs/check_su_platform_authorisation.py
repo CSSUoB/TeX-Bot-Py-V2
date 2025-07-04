@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = (
     "CheckSUPlatformAuthorisationCommandCog",
-    "TokenAuthorisationCheckTaskCog",
+    "CheckSUPlatformAuthorisationTaskCog",
 )
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
@@ -214,7 +214,7 @@ class CheckSUPlatformAuthorisationCommandCog(CheckSUPlatformAuthorisationBaseCog
             )
 
 
-class TokenAuthorisationCheckTaskCog(CheckSUPlatformAuthorisationBaseCog):
+class CheckSUPlatformAuthorisationTaskCog(CheckSUPlatformAuthorisationBaseCog):
     """Cog class that defines a repeated background task for checking SU Platform Access Cookie."""  # noqa: E501, W505
 
     @override
