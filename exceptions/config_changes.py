@@ -10,10 +10,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from collections.abc import Set as AbstractSet
 
-__all__: "Sequence[str]" = (
-    "ImproperlyConfiguredError",
-    "RestartRequiredDueToConfigChange",
-)
+__all__: "Sequence[str]" = ("ImproperlyConfiguredError", "RestartRequiredDueToConfigChange")
 
 
 class ImproperlyConfiguredError(BaseTeXBotError, Exception):
