@@ -19,6 +19,17 @@ if TYPE_CHECKING:
 def _reverse_discord_id_hash(
     apps: "registry.Apps", schema_editor: "BaseDatabaseSchemaEditor"
 ) -> None:
+    db_alias: str = schema_editor.connection.alias
+
+    DiscordMember: type = apps.get_model("core", "DiscordMember")
+    if not issubclass(DiscordMember, models.Model):
+        raise TypeError
+
+    all_instances: models.QuerySet[models.Model] = DiscordMember.objects.using(db_alias).all()
+
+    if not all_instances.exists():
+        return
+
     precomputed_hashed_discord_ids: Mapping[str, str] = {
         hashed_discord_id: discord_id_info[0]
         for hashed_discord_id, discord_id_info in json.loads(
@@ -26,14 +37,8 @@ def _reverse_discord_id_hash(
         ).items()
     }
 
-    db_alias: str = schema_editor.connection.alias
-
-    DiscordMember: type = apps.get_model("core", "DiscordMember")
-    if not issubclass(DiscordMember, models.Model):
-        raise TypeError
-
     instance: models.Model
-    for instance in DiscordMember._default_manager.using(db_alias).all().iterator():
+    for instance in all_instances.iterator():
         hashed_discord_id: object = getattr(instance, "hashed_discord_id")  # noqa: B009
         if not isinstance(hashed_discord_id, str):
             raise TypeError
@@ -69,63 +74,76 @@ def _revert_reverse_discord_id_hash(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0010_assignedcommitteeaction'),
+        ("core", "0010_assignedcommitteeaction"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='assignedcommitteeaction',
-            managers=[
-            ],
+            name="assignedcommitteeaction",
+            managers=[],
         ),
         migrations.AlterModelManagers(
-            name='discordmember',
-            managers=[
-            ],
+            name="discordmember",
+            managers=[],
         ),
         migrations.AlterModelManagers(
-            name='discordmemberstrikes',
-            managers=[
-            ],
+            name="discordmemberstrikes",
+            managers=[],
         ),
         migrations.AlterModelManagers(
-            name='discordreminder',
-            managers=[
-            ],
+            name="discordreminder",
+            managers=[],
         ),
         migrations.AlterModelManagers(
-            name='introductionreminderoptoutmember',
-            managers=[
-            ],
+            name="introductionreminderoptoutmember",
+            managers=[],
         ),
         migrations.AlterModelManagers(
-            name='sentgetrolesremindermember',
-            managers=[
-            ],
+            name="sentgetrolesremindermember",
+            managers=[],
         ),
         migrations.AlterModelManagers(
-            name='sentoneoffintroductionremindermember',
-            managers=[
-            ],
+            name="sentoneoffintroductionremindermember",
+            managers=[],
         ),
         migrations.AddField(
-            model_name='discordmember',
-            name='discord_id',
-            field=models.CharField(max_length=20, null=True, unique=True, validators=[django.core.validators.RegexValidator('\\A\\d{17,20}\\Z', 'discord_id must be a valid Discord member ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)')], verbose_name='Discord Member ID'),
+            model_name="discordmember",
+            name="discord_id",
+            field=models.CharField(
+                max_length=20,
+                null=True,
+                unique=True,
+                validators=[
+                    django.core.validators.RegexValidator(
+                        "\\A\\d{17,20}\\Z",
+                        "discord_id must be a valid Discord member ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)",
+                    )
+                ],
+                verbose_name="Discord Member ID",
+            ),
         ),
         migrations.RunPython(
             code=_reverse_discord_id_hash,
             reverse_code=_revert_reverse_discord_id_hash,
         ),
         migrations.RemoveField(
-            model_name='discordmember',
-            name='hashed_discord_id',
+            model_name="discordmember",
+            name="hashed_discord_id",
         ),
         migrations.AlterField(
-            model_name='discordmember',
-            name='discord_id',
-            field=models.CharField(max_length=20, unique=True, validators=[django.core.validators.RegexValidator('\\A\\d{17,20}\\Z', 'discord_id must be a valid Discord member ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)')], verbose_name='Discord Member ID'),
+            model_name="discordmember",
+            name="discord_id",
+            field=models.CharField(
+                max_length=20,
+                unique=True,
+                validators=[
+                    django.core.validators.RegexValidator(
+                        "\\A\\d{17,20}\\Z",
+                        "discord_id must be a valid Discord member ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)",
+                    )
+                ],
+                verbose_name="Discord Member ID",
+            ),
         ),
     ]
