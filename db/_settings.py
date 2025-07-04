@@ -42,12 +42,7 @@ MIDDLEWARE = ["django.middleware.common.CommonMiddleware"]
 # Database
 # https://docs.djangoproject.com/en/stable/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "core.db",
-    },
-}
+DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "core.db"}}
 
 
 # Internationalization
