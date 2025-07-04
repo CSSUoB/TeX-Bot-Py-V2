@@ -62,22 +62,15 @@ class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
     @override
     async def aget(self, *args: object, **kwargs: object) -> T_model:
         return await super().aget(
-            *args,
-            **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
+            *args, **(await self._aremove_unhashed_id_from_kwargs(kwargs))
         )
 
     @override
     def filter(self, *args: object, **kwargs: object) -> "QuerySet[T_model]":
-        return super().filter(
-            *args,
-            **self._perform_remove_unhashed_id_from_kwargs(kwargs),
-        )
+        return super().filter(*args, **self._perform_remove_unhashed_id_from_kwargs(kwargs))
 
     async def afilter(self, *args: object, **kwargs: object) -> "QuerySet[T_model]":
-        return super().filter(
-            *args,
-            **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
-        )
+        return super().filter(*args, **(await self._aremove_unhashed_id_from_kwargs(kwargs)))
 
     @override
     def exclude(self, *args: object, **kwargs: object) -> "QuerySet[T_model]":
@@ -87,10 +80,7 @@ class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
         )
 
     async def aexclude(self, *args: object, **kwargs: object) -> "QuerySet[T_model]":
-        return super().exclude(
-            *args,
-            **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
-        )
+        return super().exclude(*args, **(await self._aremove_unhashed_id_from_kwargs(kwargs)))
 
     @override
     def create(self, **kwargs: object) -> T_model:
@@ -102,32 +92,23 @@ class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
 
     @override
     def get_or_create(  # type: ignore[override]
-        self,
-        defaults: "Defaults" = None,
-        **kwargs: object,
+        self, defaults: "Defaults" = None, **kwargs: object
     ) -> tuple[T_model, bool]:
         return super().get_or_create(
-            defaults=defaults,
-            **self._perform_remove_unhashed_id_from_kwargs(kwargs),
+            defaults=defaults, **self._perform_remove_unhashed_id_from_kwargs(kwargs)
         )
 
     @override
     async def aget_or_create(  # type: ignore[override]
-        self,
-        defaults: "Defaults" = None,
-        **kwargs: object,
+        self, defaults: "Defaults" = None, **kwargs: object
     ) -> tuple[T_model, bool]:
         return await super().aget_or_create(
-            defaults=defaults,
-            **(await self._aremove_unhashed_id_from_kwargs(kwargs)),
+            defaults=defaults, **(await self._aremove_unhashed_id_from_kwargs(kwargs))
         )
 
     @override
     def update_or_create(  # type: ignore[override]
-        self,
-        defaults: "Defaults" = None,
-        create_defaults: "Defaults" = None,
-        **kwargs: object,
+        self, defaults: "Defaults" = None, create_defaults: "Defaults" = None, **kwargs: object
     ) -> tuple[T_model, bool]:
         return super().get_or_create(
             defaults=defaults,
@@ -137,10 +118,7 @@ class BaseHashedIDManager[T_model: AsyncBaseModel](Manager[T_model], abc.ABC):
 
     @override
     async def aupdate_or_create(  # type: ignore[override]
-        self,
-        defaults: "Defaults" = None,
-        create_defaults: "Defaults" = None,
-        **kwargs: object,
+        self, defaults: "Defaults" = None, create_defaults: "Defaults" = None, **kwargs: object
     ) -> tuple[T_model, bool]:
         return await super().aupdate_or_create(
             defaults=defaults,
@@ -241,7 +219,7 @@ class RelatedDiscordMemberManager[T_BaseDiscordMemberWrapper: "BaseDiscordMember
             try:
                 kwargs["discord_member"] = (
                     self.model.discord_member.field.remote_field.model.objects.get_or_create(  # type: ignore[attr-defined]
-                        discord_id=discord_id,
+                        discord_id=discord_id
                     )[0]
                 )
             except (
@@ -274,7 +252,7 @@ class RelatedDiscordMemberManager[T_BaseDiscordMemberWrapper: "BaseDiscordMember
             try:
                 kwargs["discord_member"] = (
                     await self.model.discord_member.field.remote_field.model.objects.aget_or_create(  # type: ignore[attr-defined] # noqa: E501
-                        discord_id=discord_id,
+                        discord_id=discord_id
                     )
                 )[0]
             except (
