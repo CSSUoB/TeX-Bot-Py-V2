@@ -71,8 +71,8 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
             "has access to at least one MSL organisation.",
         )
 
-    async def fetch_with_session(self, url: str) -> str:
-        """Fetch a URL using a shared aiohttp session."""
+    async def _fetch_url_content_with_session(self, url: str) -> str:
+        """Fetch the HTTP content at the given URL, using a shared aiohttp session."""
         async with (
             aiohttp.ClientSession(
                 headers=REQUEST_HEADERS,
@@ -90,7 +90,7 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
         checking if the token has access to the organisation.
         """
         response_object: bs4.BeautifulSoup = bs4.BeautifulSoup(
-            await self.fetch_with_session(PROFILE_URL), "html.parser"
+            await self._fetch_url_content_with_session(PROFILE_URL), "html.parser"
         )
         page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
         if not page_title or "Login" in str(page_title):
@@ -98,7 +98,7 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
             return self.TokenStatus.INVALID
 
         organisation_admin_url: str = f"{ORGANISATION_URL}/{settings['ORGANISATION_ID']}"
-        response_html: str = await self.fetch_with_session(organisation_admin_url)
+        response_html: str = await self._fetch_url_content_with_session(organisation_admin_url)
 
         if "admin tools" in response_html.lower():
             return self.TokenStatus.AUTHORISED
@@ -117,7 +117,7 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
         scraping the HTML for the list of groups.
         """
         response_object: bs4.BeautifulSoup = bs4.BeautifulSoup(
-            await self.fetch_with_session(PROFILE_URL), "html.parser"
+            await self._fetch_url_content_with_session(PROFILE_URL), "html.parser"
         )
 
         page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
@@ -127,14 +127,14 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
                 "Profile page returned no content when checking token authorisation."
             )
             logger.warning(PROFILE_PAGE_INVALID)
-            return []
+            return ()
 
         if "Login" in str(page_title):
             EXPIRED_AUTH_MESSAGE: Final[str] = (
                 "Authentication redirected to login page. Token is invalid or expired."
             )
             logger.warning(EXPIRED_AUTH_MESSAGE)
-            return []
+            return ()
 
         profile_section_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
             "div",
@@ -142,23 +142,19 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
         )
 
         if profile_section_html is None:
-            NO_PROFILE_WARNING_MESSAGE: Final[str] = (
-                "Couldn't find the profile section of the user"
-                "when scraping the website's HTML!"
+            logger.warning(
+                "Couldn't find the profile section of the user "
+                "when scraping the website's HTML."
             )
-            logger.warning(NO_PROFILE_WARNING_MESSAGE)
             logger.debug("Retrieved HTML: %s", response_object.text)
-            return []
+            return ()
 
         user_name: bs4.Tag | bs4.NavigableString | int | None = profile_section_html.find("h1")
 
         if not isinstance(user_name, bs4.Tag):
-            NO_PROFILE_DEBUG_MESSAGE: Final[str] = (
-                "Found user profile but couldn't find their name."
-            )
-            logger.warning(NO_PROFILE_DEBUG_MESSAGE)
+            logger.warning("Found user profile but couldn't find their name.")
             logger.debug("Retrieved HTML: %s", response_object.text)
-            return []
+            return ()
 
         parsed_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
             "ul",
@@ -171,7 +167,7 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
                 "Please check you have used the correct token!"
             )
             logger.warning(NO_ADMIN_TABLE_MESSAGE)
-            return []
+            return ()
 
         organisations: Iterable[str] = [
             list_item.get_text(strip=True) for list_item in parsed_html.find_all("li")
@@ -219,7 +215,7 @@ class CheckSUPlatformAuthorisationCommandCog(CheckSUPlatformAuthorisationBaseCog
 
 
 class TokenAuthorisationCheckTaskCog(CheckSUPlatformAuthorisationBaseCog):
-    """Cog class that defines the background task for token authorisation checks."""
+    """Cog class that defines a repeated background task for checking SU Platform Access Cookie."""  # noqa: E501, W505
 
     @override
     def __init__(self, bot: "TeXBot") -> None:
