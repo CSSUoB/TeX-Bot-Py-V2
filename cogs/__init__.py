@@ -14,6 +14,7 @@ from .annual_handover_and_reset import (
     CommitteeHandoverCommandCog,
 )
 from .archive import ArchiveCommandCog
+from .check_su_platform_authorisation import CheckSuPlatformAuthorisationCommandCog
 from .command_error import CommandErrorCog
 from .committee_actions_tracking import (
     CommitteeActionsTrackingContextCommandsCog,
@@ -22,7 +23,6 @@ from .committee_actions_tracking import (
 from .delete_all import DeleteAllCommandsCog
 from .edit_message import EditMessageCommandCog
 from .everest import EverestCommandCog
-from .get_token_authorisation import GetTokenAuthorisationCommandCog
 from .induct import (
     EnsureMembersInductedCommandCog,
     InductContextCommandsCog,
@@ -53,6 +53,7 @@ __all__: "Sequence[str]" = (
     "AnnualRolesResetCommandCog",
     "AnnualYearChannelsIncrementCommandCog",
     "ArchiveCommandCog",
+    "CheckSuPlatformAuthorisationCommandCog",
     "ClearRemindersBacklogTaskCog",
     "CommandErrorCog",
     "CommitteeActionsTrackingContextCommandsCog",
@@ -62,7 +63,6 @@ __all__: "Sequence[str]" = (
     "EditMessageCommandCog",
     "EnsureMembersInductedCommandCog",
     "EverestCommandCog",
-    "GetTokenAuthorisationCommandCog",
     "InductContextCommandsCog",
     "InductSendMessageCog",
     "InductSlashCommandCog",
@@ -103,7 +103,7 @@ def setup(bot: "TeXBot") -> None:
         EditMessageCommandCog,
         EnsureMembersInductedCommandCog,
         EverestCommandCog,
-        GetTokenAuthorisationCommandCog,
+        CheckSuPlatformAuthorisationCommandCog,
         InductContextCommandsCog,
         InductSendMessageCog,
         InductSlashCommandCog,
