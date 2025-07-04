@@ -1,4 +1,4 @@
-"""Contains cog classes for cookie authorisation check interactions."""
+"""Contains cog classes for SU platform access cookie authorisation check interactions."""
 
 import logging
 from typing import TYPE_CHECKING
@@ -35,7 +35,7 @@ REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
 REQUEST_URL: "Final[str]" = "https://guildofstudents.com/profile"
 
 
-class CheckSuPlatformAuthorisationCommandCog(TeXBotBaseCog):
+class CheckSUPlatformAuthorisationCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/check-su-platform-authorisation-cookie" command."""
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
@@ -44,7 +44,7 @@ class CheckSuPlatformAuthorisationCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def get_token_authorisation(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def check_su_platform_authorisation(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
         """
         Definition of the "check_su_platform_authorisation" command.
 
@@ -72,7 +72,7 @@ class CheckSuPlatformAuthorisationCommandCog(TeXBotBaseCog):
 
         if "Login" in str(page_title):
             INVALID_COOKIE_MESSAGE: Final[str] = (
-                "Unable to fetch profile page because the cookie was not valid."
+                "Unable to fetch profile page because the SU platform access cookie was not valid."
             )
             logger.warning(INVALID_COOKIE_MESSAGE)
             await ctx.respond(content=INVALID_COOKIE_MESSAGE)
@@ -111,7 +111,7 @@ class CheckSuPlatformAuthorisationCommandCog(TeXBotBaseCog):
         if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
             NO_ADMIN_TABLE_MESSAGE: Final[str] = (
                 f"Failed to retrieve the admin table for user: {user_name.string}. "
-                "Please check you have used the correct cookie!"
+                "Please check you have used the correct SU platform access cookie!"
             )
             logger.warning(NO_ADMIN_TABLE_MESSAGE)
             await ctx.respond(content=NO_ADMIN_TABLE_MESSAGE)
@@ -125,7 +125,7 @@ class CheckSuPlatformAuthorisationCommandCog(TeXBotBaseCog):
             logger.warning(
                 (
                     "Organisations list was unexpectedly empty "
-                    "for the admin access cookie associated with %s."
+                    "for the SU platform access cookie associated with %s."
                 ),
                 user_name.text,
             )
@@ -133,13 +133,13 @@ class CheckSuPlatformAuthorisationCommandCog(TeXBotBaseCog):
             return
 
         logger.debug(
-            "Admin cookie has admin access to: %s as user %s",
+            "The SU platform access cookie has administrator access to: %s as user %s",
             organisations,
             user_name.text,
         )
 
         await ctx.respond(
-            f"Admin cookie has access to the following MSL Organisations as "
+            f"The SU platform access cookie has administrator access to the following MSL Organisations as "
             f"{user_name.text}:\n{',\n'.join(organisation for organisation in organisations)}",
             ephemeral=True,
         )
