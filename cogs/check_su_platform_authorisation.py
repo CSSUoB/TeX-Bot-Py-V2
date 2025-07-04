@@ -146,8 +146,6 @@ class CheckSuPlatformAuthorisationCommandCog(TeXBotBaseCog):
 
         await ctx.respond(
             f"Admin cookie has access to the following MSL Organisations as "
-            f"{user_name.text}:\n{
-                ',\n'.join(organisation for organisation in organisations)
-            }",
+            f"{user_name.text}:\n{',\n'.join(organisation for organisation in organisations)}",
             ephemeral=True,
         )
