@@ -2,15 +2,20 @@
 
 import hashlib
 import json
+import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import dotenv
 import django.core.validators
 import django.db.models.deletion
 from django.db import migrations, models
 
+from exceptions import ImproperlyConfiguredError
+
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
+    from collections.abc import Set as AbstractSet
     from typing import Final
 
     from django.apps import registry
@@ -81,6 +86,10 @@ def _revert_fix_discord_member_relations(
             instance.save()
 
 
+TRUE_VALUES: "Final[AbstractSet[str]]" = {"true", "1", "t", "y", "yes", "on"}
+FALSE_VALUES: "Final[AbstractSet[str]]" = {"false", "0", "f", "n", "no", "off"}
+
+
 def _reverse_discord_id_hash(
     apps: "registry.Apps", schema_editor: "BaseDatabaseSchemaEditor"
 ) -> None:
@@ -90,7 +99,9 @@ def _reverse_discord_id_hash(
     if not issubclass(DiscordMember, models.Model):
         raise TypeError
 
-    all_instances: models.QuerySet[models.Model] = DiscordMember.objects.using(db_alias).all()
+    all_instances: models.QuerySet[models.Model] = DiscordMember._default_manager.using(
+        db_alias
+    ).all()
 
     if not all_instances.exists():
         return
@@ -102,6 +113,21 @@ def _reverse_discord_id_hash(
         ).items()
     }
 
+    dotenv.load_dotenv()
+    raw_delete_missing_discord_ids_during_migrations: str = (
+        os.getenv("DELETE_MISSING_DISCORD_IDS_DURING_MIGRATIONS", "").lower().strip()
+    )
+    if raw_delete_missing_discord_ids_during_migrations not in TRUE_VALUES | FALSE_VALUES:
+        INVALID_DELETE_MISSING_DISCORD_IDS_DURING_MIGRATIONS_MESSAGE: Final[str] = (
+            "DELETE_MISSING_DISCORD_IDS_DURING_MIGRATIONS must be a boolean value."
+        )
+        raise ImproperlyConfiguredError(
+            INVALID_DELETE_MISSING_DISCORD_IDS_DURING_MIGRATIONS_MESSAGE
+        )
+    DELETE_MISSING_DISCORD_IDS_DURING_MIGRATIONS: Final[bool] = (
+        raw_delete_missing_discord_ids_during_migrations in TRUE_VALUES
+    )
+
     instance: models.Model
     for instance in all_instances.iterator():
         hashed_discord_id: object = getattr(instance, "hashed_discord_id")  # noqa: B009
@@ -110,6 +136,10 @@ def _reverse_discord_id_hash(
 
         discord_id: str | None = precomputed_hashed_discord_ids.get(hashed_discord_id, None)
         if discord_id is None:
+            if DELETE_MISSING_DISCORD_IDS_DURING_MIGRATIONS:
+                instance.delete()
+                continue
+
             raise KeyError(
                 f"Cannot reverse Discord ID hash: '{hashed_discord_id}'. "
                 "Please delete this entry then try the migration again."
