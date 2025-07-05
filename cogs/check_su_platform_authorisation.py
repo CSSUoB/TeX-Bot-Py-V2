@@ -87,14 +87,16 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
     async def get_su_platform_access_cookie_status(self) -> SUPlatformAccessCookieStatus:
         """Retrieve the current validity status of the members list auth session cookie."""
         response_object: bs4.BeautifulSoup = bs4.BeautifulSoup(
-            await self._fetch_url_content_with_session(PROFILE_URL), "html.parser"
+            await self._fetch_url_content_with_session(SU_PLATFORM_PROFILE_URL), "html.parser"
         )
         page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
         if not page_title or "Login" in str(page_title):
             logger.debug("Token is invalid or expired.")
             return SUPlatformAccessCookieStatus.INVALID
 
-        organisation_admin_url: str = f"{ORGANISATION_URL}/{settings['ORGANISATION_ID']}"
+        organisation_admin_url: str = (
+            f"{SU_PLATFORM_ORGANISATION_URL}/{settings['ORGANISATION_ID']}"
+        )
         response_html: str = await self._fetch_url_content_with_session(organisation_admin_url)
 
         if "admin tools" in response_html.lower():
@@ -111,20 +113,22 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
     async def get_su_platform_organisations(self) -> "Iterable[str]":
         """Retrieve the set of MSL organisations the current SU platform session cookie has access to."""  # noqa: E501, W505
         response_object: bs4.BeautifulSoup = bs4.BeautifulSoup(
-            await self._fetch_url_content_with_session(PROFILE_URL), "html.parser"
+            await self._fetch_url_content_with_session(SU_PLATFORM_PROFILE_URL), "html.parser"
         )
 
         page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
 
         if not page_title:
             logger.warning(
-                "Profile page returned no content when checking SU platform access cookie's authorisation."
+                "Profile page returned no content when checking "
+                "SU platform access cookie's authorisation."
             )
             return ()
 
         if "Login" in str(page_title):
             logger.warning(
-                "Authentication redirected to login page. SU platform access cookie is invalid or expired."
+                "Authentication redirected to login page. "
+                "SU platform access cookie is invalid or expired."
             )
             return ()
 

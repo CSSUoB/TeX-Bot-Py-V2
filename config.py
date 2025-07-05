@@ -482,9 +482,9 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_auto_su_platform_access_cookie_checking(cls) -> None:
-        raw_auto_auth_session_cookie_checking: str = os.getenv(
-            "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING", "False"
-        ).lower().strip()
+        raw_auto_auth_session_cookie_checking: str = (
+            os.getenv("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING", "False").lower().strip()
+        )
 
         if raw_auto_auth_session_cookie_checking not in TRUE_VALUES | FALSE_VALUES:
             INVALID_AUTO_AUTH_CHECKING_MESSAGE: Final[str] = (
@@ -506,9 +506,7 @@ class Settings(abc.ABC):
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
         if not cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"]:
-            cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"] = {
-                "hours": 24
-            }
+            cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"] = {"hours": 24}
             return
 
         raw_auto_su_platform_access_cookie_checking_interval: re.Match[str] | None = (
@@ -532,25 +530,26 @@ class Settings(abc.ABC):
             )
 
         raw_timedelta_auto_su_platform_access_cookie_checking_interval: Mapping[str, float] = {
-            key: float(stripped_value)
+            key: float(value)
             for key, value in (
                 raw_auto_su_platform_access_cookie_checking_interval.groupdict().items()
             )
-            if stripped_value := value.strip()
+            if value == value.strip()
         }
 
-            if (
-                timedelta(
-                    **raw_timedelta_auto_su_platform_access_cookie_checking_interval
-                ).total_seconds()
-                <= 3
-            ):
-                TOO_SMALL_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE: Final[str] = (
-                    "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL must be longer than 3 seconds."
-                )
-                raise ImproperlyConfiguredError(
-                    TOO_SMALL_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE,
-                )
+        if (
+            timedelta(
+                **raw_timedelta_auto_su_platform_access_cookie_checking_interval
+            ).total_seconds()
+            <= 3
+        ):
+            TOO_SMALL_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE: Final[str] = (
+                "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL "
+                "must be greater than 3 seconds."
+            )
+            raise ImproperlyConfiguredError(
+                TOO_SMALL_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE,
+            )
 
         cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"] = (
             raw_timedelta_auto_su_platform_access_cookie_checking_interval
