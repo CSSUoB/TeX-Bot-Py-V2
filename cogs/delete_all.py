@@ -125,7 +125,7 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
         await self._delete_all(ctx, delete_model=SentGetRolesReminderMember)
 
     @delete_all.command(
-        name="sent-one-off-introduction-reminders",
+        name="sent-introduction-reminders",
         description="Deletes all SentOneOffIntroductionReminderMember objects from the backend database.",  # noqa: E501
     )
     @CommandChecks.check_interaction_user_has_committee_role
