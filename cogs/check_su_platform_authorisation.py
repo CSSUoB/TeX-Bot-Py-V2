@@ -43,33 +43,28 @@ PROFILE_URL: "Final[str]" = "https://guildofstudents.com/profile"
 ORGANISATION_URL: "Final[str]" = "https://www.guildofstudents.com/organisation/admin"
 
 
+class SUPlatformAccessCookieStatus(Enum):
+    """Enum class defining the status of the SU Platform Access Cookie."""
+
+    INVALID = (
+        logging.WARNING,
+        "The auth session cookie is not associated with any MSL user, "
+        "meaning it is invalid or expired.",
+    )
+    VALID = (
+        logging.WARNING,
+        "The auth session cookie is associated with a valid MSL user, "
+        "but is not an admin to any MSL organisations.",
+    )
+    AUTHORISED = (
+        logging.INFO,
+        "The auth session cookie is associated with a valid MSL user and "
+        "has access to at least one MSL organisation.",
+    )
+
+
 class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
     """Cog class that defines the base for token authorisation functions."""
-
-    class TokenStatus(Enum):
-        """
-        Enum class that defines the status of the token.
-
-        INVALID: The token does not have access to a user, meaning it is invalid or expired.
-        VALID: The token is a valid user, but not neccessarily admin to an organisation.
-        AUTHORISED: The token is a valid user and has access to an organisation.
-        """
-
-        INVALID = (
-            logging.WARNING,
-            "The auth session cookie is not associated with any MSL user, "
-            "meaning it is invalid or expired.",
-        )
-        VALID = (
-            logging.WARNING,
-            "The auth session cookie is associated with a valid MSL user, "
-            "but is not an admin to any MSL organisations.",
-        )
-        AUTHORISED = (
-            logging.INFO,
-            "The auth session cookie is associated with a valid MSL user and "
-            "has access to at least one MSL organisation.",
-        )
 
     async def _fetch_url_content_with_session(self, url: str) -> str:
         """Fetch the HTTP content at the given URL, using a shared aiohttp session."""
@@ -82,40 +77,30 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
         ):
             return await http_response.text()
 
-    async def get_token_status(self) -> TokenStatus:
-        """
-        Definition of method to get the status of the token.
-
-        This is done by checking if the token is valid and if it is,
-        checking if the token has access to the organisation.
-        """
+    async def get_su_platform_access_cookie_status(self) -> SUPlatformAccessCookieStatus:
+        """Retrieve the current validity status of the members list auth session cookie."""
         response_object: bs4.BeautifulSoup = bs4.BeautifulSoup(
             await self._fetch_url_content_with_session(PROFILE_URL), "html.parser"
         )
         page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
         if not page_title or "Login" in str(page_title):
             logger.debug("Token is invalid or expired.")
-            return self.TokenStatus.INVALID
+            return SUPlatformAccessCookieStatus.INVALID
 
         organisation_admin_url: str = f"{ORGANISATION_URL}/{settings['ORGANISATION_ID']}"
         response_html: str = await self._fetch_url_content_with_session(organisation_admin_url)
 
         if "admin tools" in response_html.lower():
-            return self.TokenStatus.AUTHORISED
+            return SUPlatformAccessCookieStatus.AUTHORISED
 
         if "You do not have any permissions for this organisation" in response_html.lower():
-            return self.TokenStatus.VALID
+            return SUPlatformAccessCookieStatus.VALID
 
         logger.warning("Unexpected response when checking token authorisation.")
-        return self.TokenStatus.INVALID
+        return SUPlatformAccessCookieStatus.INVALID
 
-    async def get_token_groups(self) -> "Iterable[str]":
-        """
-        Definition of method to get the groups the token has access to.
-
-        This is done by requesting the user profile page and
-        scraping the HTML for the list of groups.
-        """
+    async def get_su_platform_organisations(self) -> "Iterable[str]":
+        """Retrieve the set of MSL organisations the current members list auth session cookie has access to."""  # noqa: E501, W505
         response_object: bs4.BeautifulSoup = bs4.BeautifulSoup(
             await self._fetch_url_content_with_session(PROFILE_URL), "html.parser"
         )
@@ -123,17 +108,15 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
         page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
 
         if not page_title:
-            PROFILE_PAGE_INVALID: Final[str] = (
+            logger.warning(
                 "Profile page returned no content when checking token authorisation."
             )
-            logger.warning(PROFILE_PAGE_INVALID)
             return ()
 
         if "Login" in str(page_title):
-            EXPIRED_AUTH_MESSAGE: Final[str] = (
+            logger.warning(
                 "Authentication redirected to login page. Token is invalid or expired."
             )
-            logger.warning(EXPIRED_AUTH_MESSAGE)
             return ()
 
         profile_section_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
@@ -200,13 +183,15 @@ class CheckSUPlatformAuthorisationCommandCog(CheckSUPlatformAuthorisationBaseCog
         the user has administrative access to.
         """
         await ctx.defer(ephemeral=True)
+
         async with ctx.typing():
             await ctx.followup.send(
                 content=(
                     f"SU Platform Access Cookie has access to the following MSL Organisations:"
                     f"\n{
                         ',\n'.join(
-                            organisation for organisation in await self.get_token_groups()
+                            organisation
+                            for organisation in (await self.get_su_platform_organisations())
                         )
                     }"
                 ),
@@ -221,7 +206,7 @@ class CheckSUPlatformAuthorisationTaskCog(CheckSUPlatformAuthorisationBaseCog):
     def __init__(self, bot: "TeXBot") -> None:
         """Start all task managers when this cog is initialised."""
         if settings["AUTO_AUTH_SESSION_COOKIE_CHECKING"]:
-            _ = self.token_authorisation_check_task.start()
+            _ = self.su_platform_access_cookie_check_task.start()
 
         super().__init__(bot)
 
@@ -232,37 +217,29 @@ class CheckSUPlatformAuthorisationTaskCog(CheckSUPlatformAuthorisationBaseCog):
 
         This may be run dynamically or when the bot closes.
         """
-        self.token_authorisation_check_task.cancel()
+        self.su_platform_access_cookie_check_task.cancel()
 
-    @tasks.loop(**settings["AUTO_AUTH_SESSION_COOKIE_CHECKING_INTERVAL"])
+    @tasks.loop(**settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"])
     @capture_guild_does_not_exist_error
-    async def token_authorisation_check_task(self) -> None:
+    async def su_platform_access_cookie_check_task(self) -> None:
         """
-        Definition of the background task that checks the token authorisation.
+        Definition of the repeated background task that checks the SU Platform Access Cookie.
 
-        The task will check if the token is valid and if it is, it will retrieve the
-        groups the token has access to.
+        The task will check if the cookie is valid and if it is, it will retrieve the
+        MSL organisations the token has access to.
         """
-        logger.debug("Running token authorisation check task...")
+        logger.debug("Running SU Platform Access Cookie check task...")
 
-        token_status: CheckSUPlatformAuthorisationBaseCog.TokenStatus = (
-            await self.get_token_status()
+        su_platform_access_cookie_status: tuple[int, str] = (
+            await self.get_su_platform_access_cookie_status()
+        ).value
+
+        logger.log(
+            level=su_platform_access_cookie_status[0],
+            msg=su_platform_access_cookie_status[1],
         )
 
-        match token_status:
-            case self.TokenStatus.AUTHORISED:
-                logger.info("Token is valid and has access to the organisation.")
-                return
-
-            case self.TokenStatus.VALID:
-                logger.warning("Token is valid but does not have access to the organisation.")
-                return
-
-            case self.TokenStatus.INVALID:
-                logger.warning("Token is invalid or expired.")
-                return
-
-    @token_authorisation_check_task.before_loop
+    @su_platform_access_cookie_check_task.before_loop
     async def before_tasks(self) -> None:
         """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
         await self.bot.wait_until_ready()
