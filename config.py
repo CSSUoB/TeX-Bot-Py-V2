@@ -482,18 +482,18 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_auto_su_platform_access_cookie_checking(cls) -> None:
-        raw_auto_auth_session_cookie_checking: str = str(
-            os.getenv("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING", "false"),
-        )
+        raw_auto_auth_session_cookie_checking: str = os.getenv(
+            "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING", "False"
+        ).lower().strip()
 
-        if raw_auto_auth_session_cookie_checking.lower() not in TRUE_VALUES | FALSE_VALUES:
+        if raw_auto_auth_session_cookie_checking not in TRUE_VALUES | FALSE_VALUES:
             INVALID_AUTO_AUTH_CHECKING_MESSAGE: Final[str] = (
                 "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING must be a boolean value."
             )
             raise ImproperlyConfiguredError(INVALID_AUTO_AUTH_CHECKING_MESSAGE)
 
-        cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"] = bool(
-            raw_auto_auth_session_cookie_checking.lower() in TRUE_VALUES
+        cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"] = (
+            raw_auto_auth_session_cookie_checking in TRUE_VALUES
         )
 
     @classmethod
@@ -507,38 +507,50 @@ class Settings(abc.ABC):
 
         if not cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"]:
             cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"] = {
-                "hours": 24,
+                "hours": 24
             }
             return
 
         raw_auto_su_platform_access_cookie_checking_interval: re.Match[str] | None = (
             re.fullmatch(
                 r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-                str(os.getenv("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL", "24h")),
+                os.getenv("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL", "24h")
+                .strip()
+                .lower()
+                .replace(" ", ""),
             )
         )
 
         if not raw_auto_su_platform_access_cookie_checking_interval:
-            INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_DELAY_MESSAGE: Final[str] = (
+            INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE: Final[str] = (
                 "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL must contain the delay "
                 "in any combination of seconds, minutes, hours, days or weeks."
             )
             logger.debug(raw_auto_su_platform_access_cookie_checking_interval)
             raise ImproperlyConfiguredError(
-                INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_DELAY_MESSAGE,
+                INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE
             )
 
         raw_timedelta_auto_su_platform_access_cookie_checking_interval: Mapping[str, float] = {
-            "hours": 24,
-        }
-
-        raw_timedelta_auto_su_platform_access_cookie_checking_interval = {
-            key: float(value)
+            key: float(stripped_value)
             for key, value in (
                 raw_auto_su_platform_access_cookie_checking_interval.groupdict().items()
             )
-            if value
+            if stripped_value := value.strip()
         }
+
+            if (
+                timedelta(
+                    **raw_timedelta_auto_su_platform_access_cookie_checking_interval
+                ).total_seconds()
+                <= 3
+            ):
+                TOO_SMALL_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE: Final[str] = (
+                    "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL must be longer than 3 seconds."
+                )
+                raise ImproperlyConfiguredError(
+                    TOO_SMALL_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE,
+                )
 
         cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"] = (
             raw_timedelta_auto_su_platform_access_cookie_checking_interval
