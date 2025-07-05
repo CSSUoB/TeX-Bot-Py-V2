@@ -530,11 +530,11 @@ class Settings(abc.ABC):
             )
 
         raw_timedelta_auto_su_platform_access_cookie_checking_interval: Mapping[str, float] = {
-            key: float(value)
+            key: float(stripped_value)
             for key, value in (
                 raw_auto_su_platform_access_cookie_checking_interval.groupdict().items()
             )
-            if value == value.strip()
+            if (stripped_value := value.strip())
         }
 
         if (

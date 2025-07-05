@@ -159,7 +159,7 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
 
         if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
             NO_ADMIN_TABLE_MESSAGE: Final[str] = (
-                f"Failed to retrieve the admin table for user: {user_name.string}."
+                f"Failed to retrieve the admin table for user: {user_name.string}. "
                 "Please check you have used the correct SU platform access token!"
             )
             logger.warning(NO_ADMIN_TABLE_MESSAGE)
