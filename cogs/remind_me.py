@@ -13,7 +13,7 @@ from discord.ext import tasks
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from db.core.models import DiscordReminder
+from db.core.models import DiscordMember, DiscordReminder
 from utils import TeXBotBaseCog
 
 if TYPE_CHECKING:
@@ -227,7 +227,9 @@ class RemindMeCommandCog(TeXBotBaseCog):
 
         try:
             reminder: DiscordReminder = await DiscordReminder.objects.acreate(  # type: ignore[misc]
-                discord_id=ctx.user.id,
+                discord_member=(
+                    await DiscordMember.objects.aget_or_create(discord_id=ctx.user.id)
+                )[0],
                 message=message or "",
                 channel_id=ctx.channel_id,
                 send_datetime=parsed_time[0],

@@ -319,7 +319,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 try:
                     introduction_reminder_opt_out_member: IntroductionReminderOptOutMember = (
                         await IntroductionReminderOptOutMember.objects.aget(
-                            discord_id=interaction_member.id
+                            discord_member__discord_id=interaction_member.id
                         )
                     )
                 except IntroductionReminderOptOutMember.DoesNotExist:
