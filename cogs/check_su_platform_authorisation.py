@@ -17,6 +17,7 @@ from utils.error_capture_decorators import (
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping, Sequence
+    from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
 
@@ -198,15 +199,25 @@ class CheckSUPlatformAuthorisationCommandCog(CheckSUPlatformAuthorisationBaseCog
         await ctx.defer(ephemeral=True)
 
         async with ctx.typing():
+            members_list_auth_session_cookie_organisations: AbstractSet[str] = set(
+                await self.get_su_platform_organisations()
+            )
+
             await ctx.followup.send(
                 content=(
-                    f"SU Platform Access Cookie has access to the following MSL Organisations:"
-                    f"\n{
-                        ',\n'.join(
-                            organisation
-                            for organisation in (await self.get_su_platform_organisations())
-                        )
-                    }"
+                    "No MSL organisations are available to the SU platform access cookie. "
+                    "Please check the logs for errors."
+                    if not members_list_auth_session_cookie_organisations
+                    else (
+                        f"SU Platform Access Cookie has access to the following "
+                        "MSL Organisations:"
+                        f"\n{
+                            ',\n'.join(
+                                organisation
+                                for organisation in members_list_auth_session_cookie_organisations
+                            )
+                        }"
+                    )
                 ),
                 ephemeral=True,
             )
