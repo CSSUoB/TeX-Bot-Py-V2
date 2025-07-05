@@ -52,21 +52,21 @@ class SUPlatformAccessCookieStatus(Enum):
     INVALID = (
         logging.WARNING,
         (
-            "The auth session cookie is not associated with any MSL user, "
+            "The SU platform access cookie is not associated with any MSL user, "
             "meaning it is invalid or expired."
         ),
     )
     VALID = (
         logging.WARNING,
         (
-            "The auth session cookie is associated with a valid MSL user, "
+            "The SU platform access cookie is associated with a valid MSL user, "
             "but is not an admin to any MSL organisations."
         ),
     )
     AUTHORISED = (
         logging.INFO,
         (
-            "The auth session cookie is associated with a valid MSL user and "
+            "The SU platform access cookie is associated with a valid MSL user and "
             "has access to at least one MSL organisation."
         ),
     )
@@ -86,7 +86,7 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
             return await http_response.text()
 
     async def get_su_platform_access_cookie_status(self) -> SUPlatformAccessCookieStatus:
-        """Retrieve the current validity status of the members list auth session cookie."""
+        """Retrieve the current validity status of the SU platform access cookie."""
         response_object: bs4.BeautifulSoup = bs4.BeautifulSoup(
             await self._fetch_url_content_with_session(SU_PLATFORM_PROFILE_URL), "html.parser"
         )
@@ -112,7 +112,7 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
         return SUPlatformAccessCookieStatus.INVALID
 
     async def get_su_platform_organisations(self) -> "Iterable[str]":
-        """Retrieve the set of MSL organisations the current SU platform session cookie has access to."""  # noqa: E501, W505
+        """Retrieve the MSL organisations the current SU platform cookie has access to."""
         response_object: bs4.BeautifulSoup = bs4.BeautifulSoup(
             await self._fetch_url_content_with_session(SU_PLATFORM_PROFILE_URL), "html.parser"
         )
