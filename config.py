@@ -501,7 +501,7 @@ class Settings(abc.ABC):
         if "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING" not in cls._settings:
             INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
                 "Invalid setup order: AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING must be set up "
-                "before AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING can be set up."
+                "before AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL can be set up."
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 

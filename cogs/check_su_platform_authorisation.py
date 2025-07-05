@@ -205,7 +205,7 @@ class CheckSUPlatformAuthorisationTaskCog(CheckSUPlatformAuthorisationBaseCog):
     @override
     def __init__(self, bot: "TeXBot") -> None:
         """Start all task managers when this cog is initialised."""
-        if settings["AUTO_AUTH_SESSION_COOKIE_CHECKING"]:
+        if settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"]:
             _ = self.su_platform_access_cookie_check_task.start()
 
         super().__init__(bot)
