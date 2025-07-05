@@ -40,7 +40,9 @@ REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
 }
 
 SU_PLATFORM_PROFILE_URL: "Final[str]" = "https://guildofstudents.com/profile"
-SU_PLATFORM_ORGANISATION_URL: "Final[str]" = "https://www.guildofstudents.com/organisation/admin"
+SU_PLATFORM_ORGANISATION_URL: "Final[str]" = (
+    "https://www.guildofstudents.com/organisation/admin"
+)
 
 
 class SUPlatformAccessCookieStatus(Enum):
@@ -101,7 +103,9 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
         if "You do not have any permissions for this organisation" in response_html.lower():
             return SUPlatformAccessCookieStatus.VALID
 
-        logger.warning("Unexpected response when checking SU platform access cookie authorisation.")
+        logger.warning(
+            "Unexpected response when checking SU platform access cookie authorisation."
+        )
         return SUPlatformAccessCookieStatus.INVALID
 
     async def get_su_platform_organisations(self) -> "Iterable[str]":
@@ -139,7 +143,9 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
         user_name: bs4.Tag | bs4.NavigableString | int | None = profile_section_html.find("h1")
 
         if not isinstance(user_name, bs4.Tag):
-            logger.warning("Found user profile on the SU platform but couldn't find their name.")
+            logger.warning(
+                "Found user profile on the SU platform but couldn't find their name."
+            )
             logger.debug("Retrieved HTML: %s", response_object.text)
             return ()
 
