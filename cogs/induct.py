@@ -66,7 +66,9 @@ class InductSendMessageCog(TeXBotBaseCog):
 
         with contextlib.suppress(IntroductionReminderOptOutMember.DoesNotExist):
             await (
-                await IntroductionReminderOptOutMember.objects.aget(discord_id=before.id)
+                await IntroductionReminderOptOutMember.objects.aget(
+                    discord_member__discord_id=before.id
+                )
             ).adelete()
 
         reminder_message: discord.Message

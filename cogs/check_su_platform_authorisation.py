@@ -1,24 +1,32 @@
 """Contains cog classes for SU platform access cookie authorisation check interactions."""
 
 import logging
-from typing import TYPE_CHECKING
+from enum import Enum
+from typing import TYPE_CHECKING, override
 
 import aiohttp
 import bs4
 import discord
-from bs4 import BeautifulSoup
+from discord.ext import tasks
 
 from config import settings
 from utils import CommandChecks, TeXBotBaseCog
+from utils.error_capture_decorators import (
+    capture_guild_does_not_exist_error,
+)
 
 if TYPE_CHECKING:
-    from collections.abc import Collection, Mapping, Sequence
+    from collections.abc import Iterable, Mapping, Sequence
+    from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
 
-    from utils import TeXBotApplicationContext
+    from utils import TeXBot, TeXBotApplicationContext
 
-__all__: "Sequence[str]" = ("CheckSUPlatformAuthorisationCommandCog",)
+__all__: "Sequence[str]" = (
+    "CheckSUPlatformAuthorisationCommandCog",
+    "CheckSUPlatformAuthorisationTaskCog",
+)
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
@@ -29,18 +37,154 @@ REQUEST_HEADERS: "Final[Mapping[str, str]]" = {
 }
 
 REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
-    ".ASPXAUTH": settings["SU_PLATFORM_ACCESS_COOKIE"],
+    ".ASPXAUTH": settings["SU_PLATFORM_ACCESS_COOKIE"]
 }
 
-REQUEST_URL: "Final[str]" = "https://guildofstudents.com/profile"
+SU_PLATFORM_PROFILE_URL: "Final[str]" = "https://guildofstudents.com/profile"
+SU_PLATFORM_ORGANISATION_URL: "Final[str]" = (
+    "https://www.guildofstudents.com/organisation/admin"
+)
 
 
-class CheckSUPlatformAuthorisationCommandCog(TeXBotBaseCog):
-    """Cog class that defines the "/check-su-platform-authorisation-cookie" command."""
+class SUPlatformAccessCookieStatus(Enum):
+    """Enum class defining the status of the SU Platform Access Cookie."""
+
+    INVALID = (
+        logging.WARNING,
+        (
+            "The SU platform access cookie is not associated with any MSL user, "
+            "meaning it is invalid or expired."
+        ),
+    )
+    VALID = (
+        logging.WARNING,
+        (
+            "The SU platform access cookie is associated with a valid MSL user, "
+            "but is not an admin to any MSL organisations."
+        ),
+    )
+    AUTHORISED = (
+        logging.INFO,
+        (
+            "The SU platform access cookie is associated with a valid MSL user and "
+            "has access to at least one MSL organisation."
+        ),
+    )
+
+
+class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
+    """Cog class that defines the base functionality for cookie authorisation checks."""
+
+    async def _fetch_url_content_with_session(self, url: str) -> str:
+        """Fetch the HTTP content at the given URL, using a shared aiohttp session."""
+        async with (
+            aiohttp.ClientSession(
+                headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
+            ) as http_session,
+            http_session.get(url) as http_response,
+        ):
+            return await http_response.text()
+
+    async def get_su_platform_access_cookie_status(self) -> SUPlatformAccessCookieStatus:
+        """Retrieve the current validity status of the SU platform access cookie."""
+        response_object: bs4.BeautifulSoup = bs4.BeautifulSoup(
+            await self._fetch_url_content_with_session(SU_PLATFORM_PROFILE_URL), "html.parser"
+        )
+        page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
+        if not page_title or "Login" in str(page_title):
+            logger.debug("Token is invalid or expired.")
+            return SUPlatformAccessCookieStatus.INVALID
+
+        organisation_admin_url: str = (
+            f"{SU_PLATFORM_ORGANISATION_URL}/{settings['ORGANISATION_ID']}"
+        )
+        response_html: str = await self._fetch_url_content_with_session(organisation_admin_url)
+
+        if "admin tools" in response_html.lower():
+            return SUPlatformAccessCookieStatus.AUTHORISED
+
+        if "You do not have any permissions for this organisation" in response_html.lower():
+            return SUPlatformAccessCookieStatus.VALID
+
+        logger.warning(
+            "Unexpected response when checking SU platform access cookie authorisation."
+        )
+        return SUPlatformAccessCookieStatus.INVALID
+
+    async def get_su_platform_organisations(self) -> "Iterable[str]":
+        """Retrieve the MSL organisations the current SU platform cookie has access to."""
+        response_object: bs4.BeautifulSoup = bs4.BeautifulSoup(
+            await self._fetch_url_content_with_session(SU_PLATFORM_PROFILE_URL), "html.parser"
+        )
+
+        page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
+
+        if not page_title:
+            logger.warning(
+                "Profile page returned no content when checking "
+                "SU platform access cookie's authorisation."
+            )
+            return ()
+
+        if "Login" in str(page_title):
+            logger.warning(
+                "Authentication redirected to login page. "
+                "SU platform access cookie is invalid or expired."
+            )
+            return ()
+
+        profile_section_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
+            "div", {"id": "profile_main"}
+        )
+
+        if profile_section_html is None:
+            logger.warning(
+                "Couldn't find the profile section of the user "
+                "when scraping the SU platform's website HTML."
+            )
+            logger.debug("Retrieved HTML: %s", response_object.text)
+            return ()
+
+        user_name: bs4.Tag | bs4.NavigableString | int | None = profile_section_html.find("h1")
+
+        if not isinstance(user_name, bs4.Tag):
+            logger.warning(
+                "Found user profile on the SU platform but couldn't find their name."
+            )
+            logger.debug("Retrieved HTML: %s", response_object.text)
+            return ()
+
+        parsed_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
+            "ul", {"id": "ulOrgs"}
+        )
+
+        if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
+            NO_ADMIN_TABLE_MESSAGE: Final[str] = (
+                f"Failed to retrieve the admin table for user: {user_name.string}. "
+                "Please check you have used the correct SU platform access token!"
+            )
+            logger.warning(NO_ADMIN_TABLE_MESSAGE)
+            return ()
+
+        organisations: Iterable[str] = [
+            list_item.get_text(strip=True) for list_item in parsed_html.find_all("li")
+        ]
+
+        logger.debug(
+            "SU platform access cookie has admin authorisation to: %s as user %s",
+            organisations,
+            user_name.text,
+        )
+
+        return organisations
+
+
+class CheckSUPlatformAuthorisationCommandCog(CheckSUPlatformAuthorisationBaseCog):
+    """Cog class that defines the "/check-su-platform-authorisation" command."""
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="check-su-platform-authorisation",
-        description="Checks the authorisations held by the SU access token.",
+        description="Checks the authorisation held by the SU platform access cookie.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
@@ -52,96 +196,74 @@ class CheckSUPlatformAuthorisationCommandCog(TeXBotBaseCog):
         The profile page will contain the user's name and a list of the MSL organisations
         the user has administrative access to.
         """
-        http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-            headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
-        )
+        await ctx.defer(ephemeral=True)
 
-        async with http_session, http_session.get(REQUEST_URL) as http_response:
-            response_html: str = await http_response.text()
-
-        response_object: bs4.BeautifulSoup = BeautifulSoup(response_html, "html.parser")
-
-        page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
-
-        if not page_title:
-            await self.command_send_error(
-                ctx=ctx,
-                message="Profile page returned no content when checking token authorisation!",
+        async with ctx.typing():
+            su_platform_access_cookie_organisations: AbstractSet[str] = set(
+                await self.get_su_platform_organisations()
             )
-            return
 
-        if "Login" in str(page_title):
-            INVALID_COOKIE_MESSAGE: Final[str] = (
-                "Unable to fetch profile page because "
-                "the SU platform access cookie was not valid."
-            )
-            logger.warning(INVALID_COOKIE_MESSAGE)
-            await ctx.respond(content=INVALID_COOKIE_MESSAGE)
-            return
-
-        profile_section_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
-            "div", {"id": "profile_main"}
-        )
-
-        if profile_section_html is None:
-            logger.warning(
-                "Couldn't find the profile section of the user "
-                "when scraping the website's HTML!"
-            )
-            logger.debug("Retrieved HTML: %s", response_html)
-            await ctx.respond(
-                "Couldn't find the profile of the user! "
-                "This should never happen, please check the logs!"
-            )
-            return
-
-        user_name: bs4.Tag | bs4.NavigableString | int | None = profile_section_html.find("h1")
-
-        if not isinstance(user_name, bs4.Tag):
-            NO_PROFILE_DEBUG_MESSAGE: Final[str] = (
-                "Found user profile but couldn't find their name!"
-            )
-            logger.debug(NO_PROFILE_DEBUG_MESSAGE)
-            await ctx.respond(NO_PROFILE_DEBUG_MESSAGE)
-            return
-
-        parsed_html: bs4.Tag | bs4.NavigableString | None = response_object.find(
-            "ul", {"id": "ulOrgs"}
-        )
-
-        if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
-            NO_ADMIN_TABLE_MESSAGE: Final[str] = (
-                f"Failed to retrieve the admin table for user: {user_name.string}. "
-                "Please check you have used the correct SU platform access cookie!"
-            )
-            logger.warning(NO_ADMIN_TABLE_MESSAGE)
-            await ctx.respond(content=NO_ADMIN_TABLE_MESSAGE)
-            return
-
-        organisations: Collection[str] = [
-            list_item.get_text(strip=True) for list_item in parsed_html.find_all("li")
-        ]
-
-        if not organisations:
-            logger.warning(
-                (
-                    "Organisations list was unexpectedly empty "
-                    "for the SU platform access cookie associated with %s."
+            await ctx.followup.send(
+                content=(
+                    "No MSL organisations are available to the SU platform access cookie. "
+                    "Please check the logs for errors."
+                    if not su_platform_access_cookie_organisations
+                    else (
+                        f"SU Platform Access Cookie has access to the following "
+                        "MSL Organisations:"
+                        f"\n{
+                            ',\n'.join(
+                                organisation
+                                for organisation in su_platform_access_cookie_organisations
+                            )
+                        }"
+                    )
                 ),
-                user_name.text,
+                ephemeral=True,
             )
-            await ctx.respond(content="Unexpectedly empty organisations error.")
-            return
 
-        logger.debug(
-            "The SU platform access cookie has administrator access to: %s as user %s",
-            organisations,
-            user_name.text,
+
+class CheckSUPlatformAuthorisationTaskCog(CheckSUPlatformAuthorisationBaseCog):
+    """Cog class defining a repeated task for checking SU platform access cookie."""
+
+    @override
+    def __init__(self, bot: "TeXBot") -> None:
+        """Start all task managers when this cog is initialised."""
+        if settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"]:
+            _ = self.su_platform_access_cookie_check_task.start()
+
+        super().__init__(bot)
+
+    @override
+    def cog_unload(self) -> None:
+        """
+        Unload-hook that ends all running tasks whenever the tasks cog is unloaded.
+
+        This may be run dynamically or when the bot closes.
+        """
+        self.su_platform_access_cookie_check_task.cancel()
+
+    @tasks.loop(**settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"])
+    @capture_guild_does_not_exist_error
+    async def su_platform_access_cookie_check_task(self) -> None:
+        """
+        Definition of the repeated background task that checks the SU platform access cookie.
+
+        The task will check if the cookie is valid and if it is, it will retrieve the
+        MSL organisations the cookie has access to.
+        """
+        logger.debug("Running SU platform access cookie check task...")
+
+        su_platform_access_cookie_status: tuple[int, str] = (
+            await self.get_su_platform_access_cookie_status()
+        ).value
+
+        logger.log(
+            level=su_platform_access_cookie_status[0],
+            msg=su_platform_access_cookie_status[1],
         )
 
-        await ctx.respond(
-            "The SU platform access cookie has administrator access to "
-            "the following MSL Organisations as "
-            f"{user_name.text}:\n{',\n'.join(organisation for organisation in organisations)}",
-            ephemeral=True,
-        )
+    @su_platform_access_cookie_check_task.before_loop
+    async def before_tasks(self) -> None:
+        """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
+        await self.bot.wait_until_ready()

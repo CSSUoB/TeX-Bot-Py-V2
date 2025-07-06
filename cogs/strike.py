@@ -12,7 +12,7 @@ from asyncstdlib.builtins import any as asyncany
 from discord.ui import View
 
 from config import settings
-from db.core.models import DiscordMemberStrikes
+from db.core.models import DiscordMember, DiscordMemberStrikes
 from exceptions import (
     GuildDoesNotExistError,
     NoAuditLogsStrikeTrackingError,
@@ -408,7 +408,11 @@ class BaseStrikeCog(TeXBotBaseCog):
             return
 
         member_strikes: DiscordMemberStrikes = (
-            await DiscordMemberStrikes.objects.aget_or_create(discord_id=strike_member.id)
+            await DiscordMemberStrikes.objects.aget_or_create(
+                discord_member=(
+                    await DiscordMember.objects.aget_or_create(discord_id=strike_member.id)
+                )[0]
+            )
         )[0]
 
         await self._confirm_increase_strike(
@@ -524,7 +528,11 @@ class ManualModerationCog(BaseStrikeCog):
             ) from fetch_log_channel_error
 
         member_strikes: DiscordMemberStrikes = (
-            await DiscordMemberStrikes.objects.aget_or_create(discord_id=strike_user.id)
+            await DiscordMemberStrikes.objects.aget_or_create(
+                discord_member=(
+                    await DiscordMember.objects.aget_or_create(discord_id=strike_user.id)
+                )[0]
+            )
         )[0]
 
         STRIKES_OUT_OF_SYNC_WITH_BAN: Final[bool] = bool(
@@ -861,7 +869,9 @@ class StrikeCommandCog(BaseStrikeCog):
         strikes_count: int = 0
         try:
             strikes_count = (
-                await DiscordMemberStrikes.objects.aget(discord_id=strike_member.id)
+                await DiscordMemberStrikes.objects.aget(
+                    discord_member__discord_id=strike_member.id
+                )
             ).strikes
         except DiscordMemberStrikes.DoesNotExist:
             logger.debug("No strikes found for user %s", strike_member)
@@ -904,7 +914,11 @@ class StrikeCommandCog(BaseStrikeCog):
 
         try:
             discord_member_strikes: DiscordMemberStrikes = (
-                await DiscordMemberStrikes.objects.aget(discord_id=strike_member.id)
+                await DiscordMemberStrikes.objects.aget(
+                    discord_member=(
+                        await DiscordMember.objects.aget_or_create(discord_id=strike_member.id)
+                    )[0]
+                )
             )
         except DiscordMemberStrikes.DoesNotExist:
             await ctx.respond(

@@ -481,6 +481,81 @@ class Settings(abc.ABC):
         cls._settings["SU_PLATFORM_ACCESS_COOKIE"] = raw_su_platform_access_cookie
 
     @classmethod
+    def _setup_auto_su_platform_access_cookie_checking(cls) -> None:
+        raw_auto_auth_session_cookie_checking: str = (
+            os.getenv("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING", "False").lower().strip()
+        )
+
+        if raw_auto_auth_session_cookie_checking not in TRUE_VALUES | FALSE_VALUES:
+            INVALID_AUTO_AUTH_CHECKING_MESSAGE: Final[str] = (
+                "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING must be a boolean value."
+            )
+            raise ImproperlyConfiguredError(INVALID_AUTO_AUTH_CHECKING_MESSAGE)
+
+        cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"] = (
+            raw_auto_auth_session_cookie_checking in TRUE_VALUES
+        )
+
+    @classmethod
+    def _setup_auto_su_platform_access_cookie_checking_interval(cls) -> None:
+        if "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING" not in cls._settings:
+            INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+                "Invalid setup order: AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING must be set up "
+                "before AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL can be set up."
+            )
+            raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
+
+        if not cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"]:
+            cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"] = {"hours": 24}
+            return
+
+        raw_auto_su_platform_access_cookie_checking_interval: re.Match[str] | None = (
+            re.fullmatch(
+                r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
+                os.getenv("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL", "24h")
+                .strip()
+                .lower()
+                .replace(" ", ""),
+            )
+        )
+
+        if not raw_auto_su_platform_access_cookie_checking_interval:
+            INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE: Final[str] = (
+                "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL must contain the delay "
+                "in any combination of seconds, minutes, hours, days or weeks."
+            )
+            logger.debug(raw_auto_su_platform_access_cookie_checking_interval)
+            raise ImproperlyConfiguredError(
+                INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE
+            )
+
+        raw_timedelta_auto_su_platform_access_cookie_checking_interval: Mapping[str, float] = {
+            key: float(stripped_value)
+            for key, value in (
+                raw_auto_su_platform_access_cookie_checking_interval.groupdict().items()
+            )
+            if (stripped_value := value.strip())
+        }
+
+        if (
+            timedelta(
+                **raw_timedelta_auto_su_platform_access_cookie_checking_interval
+            ).total_seconds()
+            <= 3
+        ):
+            TOO_SMALL_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE: Final[str] = (
+                "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL "
+                "must be greater than 3 seconds."
+            )
+            raise ImproperlyConfiguredError(
+                TOO_SMALL_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE,
+            )
+
+        cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"] = (
+            raw_timedelta_auto_su_platform_access_cookie_checking_interval
+        )
+
+    @classmethod
     def _setup_send_introduction_reminders(cls) -> None:
         raw_send_introduction_reminders: str | bool = (
             os.getenv("SEND_INTRODUCTION_REMINDERS", "Once").lower().strip()
@@ -968,6 +1043,8 @@ class Settings(abc.ABC):
             cls._setup_roles_messages()
             cls._setup_organisation_id()
             cls._setup_su_platform_access_cookie()
+            cls._setup_auto_su_platform_access_cookie_checking()
+            cls._setup_auto_su_platform_access_cookie_checking_interval()
             cls._setup_membership_perks_url()
             cls._setup_purchase_membership_url()
             cls._setup_custom_discord_invite_url()

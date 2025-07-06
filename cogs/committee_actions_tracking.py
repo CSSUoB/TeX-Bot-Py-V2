@@ -149,8 +149,11 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
             raise InvalidActionTargetError(message=INVALID_ACTION_TARGET_MESSAGE)
 
         try:
-            action: AssignedCommitteeAction = await AssignedCommitteeAction.objects.acreate(  # type: ignore[misc]
-                discord_id=int(action_user.id), description=description
+            action: AssignedCommitteeAction = await AssignedCommitteeAction.objects.acreate(
+                discord_member=(
+                    await DiscordMember.objects.aget_or_create(discord_id=action_user.id)
+                )[0],
+                description=description,
             )
         except ValidationError as create_action_error:
             error_is_already_exits: bool = (
@@ -403,13 +406,13 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         return {
             discord.OptionChoice(name=action.description, value=str(action.id))
-            async for action in await AssignedCommitteeAction.objects.afilter(
+            async for action in AssignedCommitteeAction.objects.filter(
                 (
                     Q(status=Status.IN_PROGRESS.value)
                     | Q(status=Status.BLOCKED.value)
                     | Q(status=Status.NOT_STARTED.value)
                 ),
-                discord_id=int(interaction_user.id),
+                discord_member__discord_id=interaction_user.id,
             )
         }
 
@@ -835,10 +838,26 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             ]
         )
 
-        user_actions: list[AssignedCommitteeAction] = await self.get_user_actions(
-            action_user=action_member,
-            status=desired_status,
-        )
+        if not status:
+            user_actions = [
+                action
+                async for action in AssignedCommitteeAction.objects.filter(
+                    (
+                        Q(status=Status.IN_PROGRESS.value)
+                        | Q(status=Status.BLOCKED.value)
+                        | Q(status=Status.NOT_STARTED.value)
+                    ),
+                    discord_member__discord_id=action_member.id,
+                )
+            ]
+        else:
+            user_actions = [
+                action
+                async for action in AssignedCommitteeAction.objects.filter(
+                    status=status,
+                    discord_member__discord_id=action_member.id,
+                )
+            ]
 
         if not user_actions:
             await ctx.respond(
@@ -902,8 +921,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             return
 
-        new_user_to_action: discord.Member = await self.bot.get_member_from_str_id(member_id)
-        new_user_to_action_hash: str = DiscordMember.hash_discord_id(new_user_to_action.id)
+        new_user_to_action: discord.Member = await self.bot.get_member_from_str_id(
+            member_id,
+        )
 
         try:
             action_to_reassign: AssignedCommitteeAction = (
@@ -915,7 +935,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             return
 
-        if str(action_to_reassign.discord_member) == new_user_to_action_hash:
+        if str(action_to_reassign.discord_member) == str(new_user_to_action.id):
             await ctx.respond(
                 content=(
                     f"HEY! Action `{action_to_reassign.description}` is already assigned "
@@ -979,11 +999,21 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             else [Status.NOT_STARTED.value, Status.IN_PROGRESS.value, Status.BLOCKED.value]
         )
 
+        actions: list[AssignedCommitteeAction] = [
+            action async for action in AssignedCommitteeAction.objects.select_related().all()
+        ]
+
         committee_members: list[discord.Member] = committee_role.members
 
-        committee_actions: dict[
-            discord.Member, list[AssignedCommitteeAction]
-        ] = await self.get_user_actions(action_user=committee_members, status=desired_status)
+        committee_actions: dict[discord.Member, list[AssignedCommitteeAction]] = {
+            committee: [
+                action
+                for action in actions
+                if str(action.discord_member) == str(committee.id)
+                and action.status in desired_status
+            ]
+            for committee in committee_members
+        }
 
         if not committee_actions:
             await ctx.respond(content="No one has any actions that match the request!")

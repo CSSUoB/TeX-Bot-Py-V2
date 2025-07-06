@@ -10,7 +10,7 @@ from discord.ext import tasks
 
 import utils
 from config import settings
-from db.core.models import SentGetRolesReminderMember
+from db.core.models import DiscordMember, SentGetRolesReminderMember
 from exceptions import GuestRoleDoesNotExistError
 from utils import TeXBotBaseCog
 from utils.error_capture_decorators import (
@@ -121,7 +121,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 continue
 
             sent_get_roles_reminder_member_exists: bool = await (
-                await SentGetRolesReminderMember.objects.afilter(discord_id=member.id)
+                SentGetRolesReminderMember.objects.filter(discord_member__discord_id=member.id)
             ).aexists()
             if sent_get_roles_reminder_member_exists:
                 continue
@@ -176,7 +176,11 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                     member,
                 )
 
-            await SentGetRolesReminderMember.objects.acreate(discord_id=member.id)  # type: ignore[misc]
+            await SentGetRolesReminderMember.objects.acreate(
+                discord_member=(
+                    await DiscordMember.objects.aget_or_create(discord_id=member.id)
+                )[0]
+            )
 
     @send_get_roles_reminders.before_loop
     async def before_tasks(self) -> None:

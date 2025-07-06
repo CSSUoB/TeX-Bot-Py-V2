@@ -14,7 +14,10 @@ from .annual_handover_and_reset import (
     CommitteeHandoverCommandCog,
 )
 from .archive import ArchiveCommandCog
-from .check_su_platform_authorisation import CheckSUPlatformAuthorisationCommandCog
+from .check_su_platform_authorisation import (
+    CheckSUPlatformAuthorisationCommandCog,
+    CheckSUPlatformAuthorisationTaskCog,
+)
 from .command_error import CommandErrorCog
 from .committee_actions_tracking import (
     CommitteeActionsTrackingContextCommandsCog,
@@ -55,6 +58,7 @@ __all__: "Sequence[str]" = (
     "AnnualYearChannelsIncrementCommandCog",
     "ArchiveCommandCog",
     "CheckSUPlatformAuthorisationCommandCog",
+    "CheckSUPlatformAuthorisationTaskCog",
     "ClearRemindersBacklogTaskCog",
     "CommandErrorCog",
     "CommitteeActionsTrackingContextCommandsCog",
@@ -126,6 +130,7 @@ def setup(bot: "TeXBot") -> None:
         StatsCommandsCog,
         StrikeCommandCog,
         StrikeContextCommandsCog,
+        CheckSUPlatformAuthorisationTaskCog,
         WriteRolesCommandCog,
     )
     Cog: type[TeXBotBaseCog]
