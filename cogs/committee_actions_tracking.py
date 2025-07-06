@@ -834,16 +834,6 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             return
 
-        desired_status: list[str] = (
-            [status]
-            if status
-            else [
-                Status.NOT_STARTED.value,
-                Status.IN_PROGRESS.value,
-                Status.BLOCKED.value,
-            ]
-        )
-
         if not status:
             user_actions = [
                 action
@@ -973,13 +963,6 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
     @committee_actions.command(name="list-all", description="List all current actions.")
     @discord.option(  # type: ignore[no-untyped-call, misc]
-        name="ping",
-        description="Triggers whether the message pings users or not.",
-        input_type=bool,
-        default=False,
-        required=False,
-    )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
         name="status-filter",
         description="The filter to apply to the status of actions.",
         input_type=str,
@@ -993,7 +976,6 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     async def list_all_actions(
         self,
         ctx: "TeXBotApplicationContext",
-        ping: bool,  # noqa: FBT001
         status: str | None,
     ) -> None:
         """List all actions."""
@@ -1021,17 +1003,19 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         all_actions_message: str = "\n".join(
             [
-            f"\n<@{action.discord_member.discord_id}>, Actions:\n"
-            f"{(
-                '🔴'
-                if action.status == Status.NOT_STARTED.value
-                else '\ud83d\udfe1'
-                if action.status == Status.IN_PROGRESS.value
-                else '❌'
-                if action.status == Status.BLOCKED.value
-                else ''
-            )} {action.description} ({AssignedCommitteeAction.Status(action.status).label})"
-            for action in filtered_actions
+                f"\n<@{action.discord_member.discord_id}>, Actions:\n"
+                f"{
+                    (
+                        '🔴'
+                        if action.status == Status.NOT_STARTED.value
+                        else '\ud83d\udfe1'
+                        if action.status == Status.IN_PROGRESS.value
+                        else '❌'
+                        if action.status == Status.BLOCKED.value
+                        else ''
+                    )
+                } {action.description} ({AssignedCommitteeAction.Status(action.status).label})"
+                for action in filtered_actions
             ]
         )
 
