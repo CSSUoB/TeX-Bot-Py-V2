@@ -114,7 +114,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 content="**Committee Actions Tracking Board**\n"
             )
 
-        all_actions: dict[str, list[AssignedCommitteeAction]] = await self._get_all_actions()
+        all_actions: dict[str, list[AssignedCommitteeAction]] = await self._get_all_actions()  # TODO: filter this based on status
 
         if not all_actions:
             return
