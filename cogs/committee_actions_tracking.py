@@ -66,7 +66,9 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
 
         return {
             action.discord_member.discord_id: [
-                action for action in all_actions if action.discord_member.discord_id == action.discord_member.discord_id
+                action
+                for action in all_actions
+                if action.discord_member.discord_id == action.discord_member.discord_id
             ]
             for action in all_actions
         }
@@ -989,9 +991,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         status: str | None,
     ) -> None:
         """List all actions."""
-        all_actions: dict[str, list[AssignedCommitteeAction]] = (
-            await self._get_all_actions()
-        )
+        all_actions: dict[str, list[AssignedCommitteeAction]] = await self._get_all_actions()
 
         if not all_actions:
             await ctx.respond(content="No one has any actions that match the request!")
@@ -1000,14 +1000,25 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         all_actions_message: str = "\n".join(
             f"\n<@{discord_id}>, Actions:"
-            f"\n{', \n'.join((
-                ':red_circle: ' if action.status == Status.NOT_STARTED.value else
-                ':yellow_circle: ' if action.status == Status.IN_PROGRESS.value else
-                ':no_entry: ' if action.status == Status.BLOCKED.value else
-                ':white_check_mark' if action.status == Status.COMPLETED.value else ''
-            ) + str(action.description) +
-            f' ({AssignedCommitteeAction.Status(action.status).label})'
-            for action in actions if action.discord_member.discord_id == discord_id)}"
+            f"\n{
+                ', \n'.join(
+                    (
+                        ':red_circle: '
+                        if action.status == Status.NOT_STARTED.value
+                        else ':yellow_circle: '
+                        if action.status == Status.IN_PROGRESS.value
+                        else ':no_entry: '
+                        if action.status == Status.BLOCKED.value
+                        else ':white_check_mark'
+                        if action.status == Status.COMPLETED.value
+                        else ''
+                    )
+                    + str(action.description)
+                    + f' ({AssignedCommitteeAction.Status(action.status).label})'
+                    for action in actions
+                    if action.discord_member.discord_id == discord_id
+                )
+            }"
             for discord_id, actions in all_actions.items()
         )
 
