@@ -91,12 +91,20 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
             )
             return
 
-        if not action_board_channel.last_message_id and not action_board_channel.last_message:
-            await action_board_channel.send(content="**Committee Actions Tracking Board**\n")
+        action_board_channel_messages: list[discord.Message] = (
+            await action_board_channel.history(limit=1).flatten()
+        )
 
-        action_board_message: discord.Message | None = action_board_channel.last_message
+        action_board_message: discord.Message | None = None
 
-        if not action_board_message or action_board_message.author != self.bot.user:
+        if len(action_board_channel_messages) == 0:
+            action_board_message = await action_board_channel.send(
+                content="**Committee Actions Tracking Board**\n"
+            )
+        else:
+            action_board_message = action_board_channel_messages[0]
+
+        if action_board_message.author != self.bot.user:
             logger.warning(
                 "Action board message could not be found! "
                 "Creating a new action board message.",
@@ -106,19 +114,14 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 content="**Committee Actions Tracking Board**\n"
             )
 
-        committee_actions: dict[
-            discord.Member, list[AssignedCommitteeAction]
-        ] = await self.get_user_actions(
-            action_user=(await self.bot.committee_role).members,
-            status=[Status.NOT_STARTED.value, Status.IN_PROGRESS.value, Status.BLOCKED.value],
-        )
+        all_actions: dict[str, list[AssignedCommitteeAction]] = await self._get_all_actions()
 
-        if not committee_actions:
+        if not all_actions:
             return
 
         all_actions_message: str = "\n".join(
             [
-                f"\n{committee.mention}, Actions:"
+                f"\n<@{discord_id}>, Actions:"
                 f"\n{
                     ', \n'.join(
                         (
@@ -128,6 +131,8 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                             if action.status == Status.IN_PROGRESS.value
                             else ':no_entry:'
                             if action.status == Status.BLOCKED.value
+                            else ':white_check_mark:'
+                            if action.status == Status.COMPLETED.value
                             else ''
                         )
                         + ' '
@@ -136,7 +141,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                         for action in actions
                     )
                 }"
-                for committee, actions in committee_actions.items()
+                for discord_id, actions in all_actions.items()
             ],
         )
 
