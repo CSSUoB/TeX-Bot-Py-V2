@@ -91,9 +91,9 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
             )
             return
 
-        action_board_channel_messages: list[discord.Message] = (
-            await action_board_channel.history(limit=1).flatten()
-        )
+        action_board_channel_messages: list[
+            discord.Message
+        ] = await action_board_channel.history(limit=1).flatten()
 
         action_board_message: discord.Message | None = None
 
@@ -114,7 +114,9 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 content="**Committee Actions Tracking Board**\n"
             )
 
-        all_actions: dict[str, list[AssignedCommitteeAction]] = await self._get_all_actions()  # TODO: filter this based on status
+        all_actions: dict[
+            str, list[AssignedCommitteeAction]
+        ] = await self._get_all_actions()  # TODO: filter this based on status
 
         if not all_actions:
             return
