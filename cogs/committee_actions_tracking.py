@@ -55,11 +55,21 @@ class Status(Enum):
 class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
     """Base cog class that defines methods for committee actions tracking."""
 
-    async def _get_all_actions(self) -> list[AssignedCommitteeAction]:
+    async def _get_all_actions(self) -> dict[str, list[AssignedCommitteeAction]]:
         """Get a list of all actions in the database."""
-        return [
+        all_actions: list[AssignedCommitteeAction] = [
             action async for action in AssignedCommitteeAction.objects.select_related().all()
         ]
+
+        if not all_actions:
+            return {}
+
+        return {
+            action.discord_member.discord_id: [
+                action for action in all_actions if action.discord_member.discord_id == action.discord_member.discord_id
+            ]
+            for action in all_actions
+        }
 
     async def _update_action_board(self) -> None:
         """
@@ -979,44 +989,26 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         status: str | None,
     ) -> None:
         """List all actions."""
-        if not status:
-            filtered_actions: list[AssignedCommitteeAction] = [
-                action
-                async for action in AssignedCommitteeAction.objects.select_related().filter(
-                    Q(status=Status.IN_PROGRESS.value)
-                    | Q(status=Status.BLOCKED.value)
-                    | Q(status=Status.NOT_STARTED.value)
-                )
-            ]
-        else:
-            filtered_actions = [
-                action
-                async for action in AssignedCommitteeAction.objects.select_related().filter(
-                    status=status
-                )
-            ]
+        all_actions: dict[str, list[AssignedCommitteeAction]] = (
+            await self._get_all_actions()
+        )
 
-        if not filtered_actions:
+        if not all_actions:
             await ctx.respond(content="No one has any actions that match the request!")
             logger.debug("No actions found with the status filter: %s", status)
             return
 
         all_actions_message: str = "\n".join(
-            [
-                f"\n<@{action.discord_member.discord_id}>, Actions:\n"
-                f"{
-                    (
-                        '🔴'
-                        if action.status == Status.NOT_STARTED.value
-                        else '\ud83d\udfe1'
-                        if action.status == Status.IN_PROGRESS.value
-                        else '❌'
-                        if action.status == Status.BLOCKED.value
-                        else ''
-                    )
-                } {action.description} ({AssignedCommitteeAction.Status(action.status).label})"
-                for action in filtered_actions
-            ]
+            f"\n<@{discord_id}>, Actions:"
+            f"\n{', \n'.join((
+                ':red_circle: ' if action.status == Status.NOT_STARTED.value else
+                ':yellow_circle: ' if action.status == Status.IN_PROGRESS.value else
+                ':no_entry: ' if action.status == Status.BLOCKED.value else
+                ':white_check_mark' if action.status == Status.COMPLETED.value else ''
+            ) + str(action.description) +
+            f' ({AssignedCommitteeAction.Status(action.status).label})'
+            for action in actions if action.discord_member.discord_id == discord_id)}"
+            for discord_id, actions in all_actions.items()
         )
 
         await ctx.respond(content=all_actions_message)
