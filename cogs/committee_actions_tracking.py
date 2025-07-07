@@ -1009,7 +1009,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                         if action.status == Status.IN_PROGRESS.value
                         else ':no_entry: '
                         if action.status == Status.BLOCKED.value
-                        else ':white_check_mark'
+                        else ':white_check_mark: '
                         if action.status == Status.COMPLETED.value
                         else ''
                     )
