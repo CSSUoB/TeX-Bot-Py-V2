@@ -460,9 +460,7 @@ class ManualModerationCog(BaseStrikeCog):
             try:
                 dm_confirmation_message_channel: discord.DMChannel = await raw_user.create_dm()
             except discord.Forbidden:
-                logger.warning(
-                    "Failed to create DM channel with %s", raw_user
-                )
+                logger.warning("Failed to create DM channel with %s", raw_user)
                 try:
                     return await self.bot.fetch_log_channel()
                 except RuntimeError as fetch_log_channel_error:
@@ -491,7 +489,7 @@ class ManualModerationCog(BaseStrikeCog):
         return guild_confirmation_message_channel
 
     @capture_strike_tracking_error
-    async def _confirm_manual_add_strike(
+    async def _confirm_manual_add_strike(  # noqa: PLR0915
         self, strike_user: discord.User | discord.Member, action: discord.AuditLogAction
     ) -> None:
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
@@ -557,19 +555,21 @@ class ManualModerationCog(BaseStrikeCog):
                     content=(
                         f"""Hi {
                             applied_action_user.display_name
-                            if not applied_action_user.bot and applied_action_user != strike_user
+                            if not applied_action_user.bot
+                            and applied_action_user != strike_user
                             else committee_role.mention
                         }, """
                         f"""I just noticed that {
                             "you"
                             if not applied_action_user.bot
-                            else f"one of your other bots (namely {applied_action_user.mention})"
+                            else "one of your other bots "
+                            f"(namely {applied_action_user.mention})"
                         } {FORMATTED_MODERATION_ACTIONS[action]} {strike_user.mention}. """
                         "Because this moderation action was done manually "
                         "(rather than using my `/strike` command), I could not automatically "
                         f"keep track of the moderation action to apply. "
-                        f"My records show that {strike_user.mention} previously had 3 strikes. "
-                        f"This suggests that {strike_user.mention} should be banned. "
+                        f"My records show that {strike_user.mention} previously had 3 strikes."
+                        f" This suggests that {strike_user.mention} should be banned. "
                         "Would you like me to send them the moderation alert message "
                         "and perform this action for you?"
                     ),
