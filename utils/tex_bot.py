@@ -431,6 +431,7 @@ class TeXBot(discord.Bot):
         )
         if not everyone_role:
             raise EveryoneRoleCouldNotBeRetrievedError
+
         return everyone_role
 
     async def check_user_has_committee_role(self, user: discord.Member | discord.User) -> bool:
@@ -463,6 +464,7 @@ class TeXBot(discord.Bot):
         main_guild_member: discord.Member | None = self.main_guild.get_member(user.id)
         if not main_guild_member:
             raise DiscordMemberNotInMainGuildError(user_id=user.id)
+
         return main_guild_member
 
     async def get_member_from_str_id(self, str_member_id: str) -> discord.Member:
@@ -505,6 +507,7 @@ class TeXBot(discord.Bot):
                 "when no DISCORD_LOG_CHANNEL_WEBHOOK_URL has been set."
             )
             raise ValueError(NO_LOG_CHANNEL_MESSAGE)
+
         session: aiohttp.ClientSession
         async with aiohttp.ClientSession() as session:
             partial_webhook: Webhook = Webhook.from_url(
