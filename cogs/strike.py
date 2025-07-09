@@ -461,6 +461,7 @@ class ManualModerationCog(BaseStrikeCog):
                 dm_confirmation_message_channel: discord.DMChannel = await raw_user.create_dm()
             except discord.Forbidden:
                 logger.warning("Failed to create DM channel with %s", raw_user)
+
                 try:
                     return await self.bot.fetch_log_channel()
                 except RuntimeError as fetch_log_channel_error:
