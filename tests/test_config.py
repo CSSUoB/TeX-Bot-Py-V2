@@ -1448,6 +1448,80 @@ class TestSetupSUPlatformAccessCookie:
                 RuntimeSettings._setup_su_platform_access_cookie()
 
 
+class TestSetupAutoSUPlatformAccessCookieChecking:
+    """Test cases for `_setup_auto_su_platform_access_cookie_checking()` function."""
+
+    @pytest.mark.parametrize("true_value", config.TRUE_VALUES)
+    def test_setup_auto_su_platform_access_cookie_checking_checking_true(
+        self, true_value: str
+    ) -> None:
+        """Test `AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING` is True with positive value."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"):
+            os.environ["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"] = true_value
+
+            try:
+                RuntimeSettings._setup_auto_su_platform_access_cookie_checking()
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True
+
+        assert RuntimeSettings()["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"]
+
+    @pytest.mark.parametrize("false_value", config.FALSE_VALUES)
+    def test_setup_auto_su_platform_access_cookie_checking_false(
+        self, false_value: str
+    ) -> None:
+        """Test `AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING` is False with negative value."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"):
+            os.environ["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"] = false_value
+
+            try:
+                RuntimeSettings._setup_auto_su_platform_access_cookie_checking()
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True
+
+        assert not RuntimeSettings()["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"]
+
+    def test_missing_auto_setup_su_platform_access_cookie_checking(self) -> None:
+        """Test that default is used with no `AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING`."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"):
+            try:
+                RuntimeSettings._setup_auto_su_platform_access_cookie_checking()
+            except ImproperlyConfiguredError:
+                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+
+        RuntimeSettings._is_env_variables_setup = True
+
+        assert not RuntimeSettings()["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"]
+
+    @pytest.mark.parametrize(
+        "invalid_value", ("invalid_value", "", "  ", "5543154", "beeop bopp")
+    )
+    def test_invalid_auto_setup_su_platform_access_cookie_checking(
+        self, invalid_value: str
+    ) -> None:
+        """Test that an exception is raised when an invalid value is given."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"):
+            os.environ["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"] = invalid_value
+
+            with pytest.raises(
+                ImproperlyConfiguredError,
+                match=r"AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING must be a boolean value",
+            ):
+                RuntimeSettings._setup_auto_su_platform_access_cookie_checking()
+
+
 class TestSetupSendIntroductionReminders:
     """Test case to unit-test the configuration for sending introduction reminders."""
 
