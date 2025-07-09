@@ -540,28 +540,35 @@ class ManualModerationCog(BaseStrikeCog):
             or (action == discord.AuditLogAction.ban and member_strikes.strikes > 3)
         )
         if STRIKES_OUT_OF_SYNC_WITH_BAN:
-            out_of_sync_ban_confirmation_message: discord.Message = await confirmation_message_channel.send(  # noqa: E501
-                content=(
-                    f"""Hi {
-                        applied_action_user.display_name
-                        if not applied_action_user.bot and applied_action_user != strike_user
-                        else committee_role.mention
-                    }, """
-                    f"""I just noticed that {
-                        "you"
-                        if not applied_action_user.bot
-                        else f"one of your other bots (namely {applied_action_user.mention})"
-                    } {FORMATTED_MODERATION_ACTIONS[action]} {strike_user.mention}. """
-                    "Because this moderation action was done manually "
-                    "(rather than using my `/strike` command), I could not automatically "
-                    f"keep track of the moderation action to apply. "
-                    f"My records show that {strike_user.mention} previously had 3 strikes. "
-                    f"This suggests that {strike_user.mention} should be banned. "
-                    "Would you like me to send them the moderation alert message "
-                    "and perform this action for you?"
-                ),
-                view=ConfirmStrikesOutOfSyncWithBanView(),
-            )
+            try:
+                out_of_sync_ban_confirmation_message: discord.Message = await confirmation_message_channel.send(  # noqa: E501
+                    content=(
+                        f"""Hi {
+                            applied_action_user.display_name
+                            if not applied_action_user.bot and applied_action_user != strike_user
+                            else committee_role.mention
+                        }, """
+                        f"""I just noticed that {
+                            "you"
+                            if not applied_action_user.bot
+                            else f"one of your other bots (namely {applied_action_user.mention})"
+                        } {FORMATTED_MODERATION_ACTIONS[action]} {strike_user.mention}. """
+                        "Because this moderation action was done manually "
+                        "(rather than using my `/strike` command), I could not automatically "
+                        f"keep track of the moderation action to apply. "
+                        f"My records show that {strike_user.mention} previously had 3 strikes. "
+                        f"This suggests that {strike_user.mention} should be banned. "
+                        "Would you like me to send them the moderation alert message "
+                        "and perform this action for you?"
+                    ),
+                    view=ConfirmStrikesOutOfSyncWithBanView(),
+                )
+            except discord.Forbidden:
+                logger.warning(
+                    "Failed to send out-of-sync ban confirmation message to %s",
+                    applied_action_user,
+                )
+                return
 
             out_of_sync_ban_button_interaction: discord.Interaction = await self.bot.wait_for(
                 "interaction",
@@ -631,27 +638,34 @@ class ManualModerationCog(BaseStrikeCog):
 
             raise ValueError
 
-        confirmation_message: discord.Message = await confirmation_message_channel.send(
-            content=(
-                f"""Hi {
-                    applied_action_user.display_name
-                    if not applied_action_user.bot and applied_action_user != strike_user
-                    else committee_role.mention
-                }, """
-                f"""I just noticed that {
-                    "you"
-                    if not applied_action_user.bot
-                    else f"one of your other bots (namely {applied_action_user.mention})"
-                } {FORMATTED_MODERATION_ACTIONS[action]} {strike_user.mention}. """
-                "Because this moderation action was done manually "
-                "(rather than using my `/strike` command), I could not automatically "
-                f"keep track of the correct moderation action to apply. "
-                f"Would you like me to increase {strike_user.mention}'s strikes "
-                f"from {member_strikes.strikes} to {member_strikes.strikes + 1} "
-                "and send them the moderation alert message?"
-            ),
-            view=ConfirmManualModerationView(),
-        )
+        try:
+            confirmation_message: discord.Message = await confirmation_message_channel.send(
+                content=(
+                    f"""Hi {
+                        applied_action_user.display_name
+                        if not applied_action_user.bot and applied_action_user != strike_user
+                        else committee_role.mention
+                    }, """
+                    f"""I just noticed that {
+                        "you"
+                        if not applied_action_user.bot
+                        else f"one of your other bots (namely {applied_action_user.mention})"
+                    } {FORMATTED_MODERATION_ACTIONS[action]} {strike_user.mention}. """
+                    "Because this moderation action was done manually "
+                    "(rather than using my `/strike` command), I could not automatically "
+                    f"keep track of the correct moderation action to apply. "
+                    f"Would you like me to increase {strike_user.mention}'s strikes "
+                    f"from {member_strikes.strikes} to {member_strikes.strikes + 1} "
+                    "and send them the moderation alert message?"
+                ),
+                view=ConfirmManualModerationView(),
+            )
+        except discord.Forbidden:
+            logger.warning(
+                "Failed to send manual moderation confirmation message to %s",
+                applied_action_user,
+            )
+            return
 
         button_interaction: discord.Interaction = await self.bot.wait_for(
             "interaction",
