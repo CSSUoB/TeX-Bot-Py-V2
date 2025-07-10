@@ -1978,6 +1978,8 @@ class TestSetupSendIntroductionRemindersDelay:
 
         RuntimeSettings._is_env_variables_setup = True
 
+        assert RuntimeSettings()["SEND_INTRODUCTION_REMINDERS"] == "once"
+
         assert RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_DELAY"] == timedelta(hours=40)
 
     @pytest.mark.parametrize(
