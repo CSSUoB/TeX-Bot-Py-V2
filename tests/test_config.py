@@ -790,7 +790,6 @@ class TestSetupGroupShortName:
 
             RuntimeSettings._setup_group_short_name()
 
-
         RuntimeSettings._is_env_variables_setup = True
 
         assert not RuntimeSettings()["_GROUP_SHORT_NAME"]
