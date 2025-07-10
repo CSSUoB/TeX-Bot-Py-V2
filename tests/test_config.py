@@ -547,10 +547,7 @@ class TestSetupDiscordLogChannelWebhookURL:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("DISCORD_LOG_CHANNEL_WEBHOOK_URL"):
-            try:
-                RuntimeSettings._setup_discord_log_channel_webhook()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_discord_log_channel_webhook()
 
         RuntimeSettings._is_env_variables_setup = True
 
@@ -717,10 +714,7 @@ class TestSetupGroupFullName:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("GROUP_NAME"):
-            try:
-                RuntimeSettings._setup_group_full_name()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_group_full_name()
 
         RuntimeSettings._is_env_variables_setup = True
 
@@ -794,10 +788,8 @@ class TestSetupGroupShortName:
             RuntimeSettings._setup_group_full_name()
             assert RuntimeSettings._settings["_GROUP_FULL_NAME"] is None
 
-            try:
-                RuntimeSettings._setup_group_short_name()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_group_short_name()
+
 
         RuntimeSettings._is_env_variables_setup = True
 
@@ -860,10 +852,7 @@ class TestSetupPurchaseMembershipURL:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("PURCHASE_MEMBERSHIP_URL"):
-            try:
-                RuntimeSettings._setup_purchase_membership_url()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_purchase_membership_url()
 
         RuntimeSettings._is_env_variables_setup = True
 
@@ -939,10 +928,7 @@ class TestSetupMembershipPerksURL:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("MEMBERSHIP_PERKS_URL"):
-            try:
-                RuntimeSettings._setup_membership_perks_url()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_membership_perks_url()
 
         RuntimeSettings._is_env_variables_setup = True
 
@@ -1021,10 +1007,7 @@ class TestSetupPingCommandEasterEggProbability:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("PING_COMMAND_EASTER_EGG_PROBABILITY"):
-            try:
-                RuntimeSettings._setup_ping_command_easter_egg_probability()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_ping_command_easter_egg_probability()
 
         RuntimeSettings._is_env_variables_setup = True
 
@@ -1461,10 +1444,7 @@ class TestSetupAutoSUPlatformAccessCookieChecking:
         with EnvVariableDeleter("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"):
             os.environ["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"] = true_value
 
-            try:
-                RuntimeSettings._setup_auto_su_platform_access_cookie_checking()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_auto_su_platform_access_cookie_checking()
 
         RuntimeSettings._is_env_variables_setup = True
 
@@ -1479,11 +1459,7 @@ class TestSetupAutoSUPlatformAccessCookieChecking:
 
         with EnvVariableDeleter("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"):
             os.environ["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"] = false_value
-
-            try:
-                RuntimeSettings._setup_auto_su_platform_access_cookie_checking()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_auto_su_platform_access_cookie_checking()
 
         RuntimeSettings._is_env_variables_setup = True
 
@@ -1494,10 +1470,7 @@ class TestSetupAutoSUPlatformAccessCookieChecking:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"):
-            try:
-                RuntimeSettings._setup_auto_su_platform_access_cookie_checking()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_auto_su_platform_access_cookie_checking()
 
         RuntimeSettings._is_env_variables_setup = True
 
@@ -1520,6 +1493,37 @@ class TestSetupAutoSUPlatformAccessCookieChecking:
                 match=r"AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING must be a boolean value",
             ):
                 RuntimeSettings._setup_auto_su_platform_access_cookie_checking()
+
+    def test_invalid_setup_order_auto_su_platform_access_cookie_checking_interval(
+        self,
+    ) -> None:
+        """Test that an error is raised when the interval is configured before the toggle."""
+        INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+            "Invalid setup order: "
+            "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING must be set up "
+            "before AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL can be set up."
+        )
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with (
+            EnvVariableDeleter("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"),
+            pytest.raises(RuntimeError, match=INVALID_SETUP_ORDER_MESSAGE),
+        ):
+            RuntimeSettings._setup_auto_su_platform_access_cookie_checking_interval()
+
+    def test_default_setup_auto_su_platform_access_cookie_checking_interval(self) -> None:
+        """Test that the default value is used when no interval is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+        RuntimeSettings._setup_auto_su_platform_access_cookie_checking()
+
+        with EnvVariableDeleter("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"):
+            RuntimeSettings._setup_auto_su_platform_access_cookie_checking_interval()
+
+        RuntimeSettings._is_env_variables_setup = True
+
+        assert RuntimeSettings()["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"] == {
+            "hours": 24
+        }
 
 
 class TestSetupSendIntroductionReminders:
@@ -1603,10 +1607,7 @@ class TestSetupSendIntroductionReminders:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
-            try:
-                RuntimeSettings._setup_send_introduction_reminders()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_send_introduction_reminders()
 
         RuntimeSettings._is_env_variables_setup = True
 
@@ -1752,10 +1753,7 @@ class TestSetupSendIntroductionRemindersInterval:
         RuntimeSettings._setup_send_introduction_reminders()
 
         with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"):
-            try:
-                RuntimeSettings._setup_send_introduction_reminders_interval()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_send_introduction_reminders_interval()
 
         RuntimeSettings._is_env_variables_setup = True
 
@@ -1829,11 +1827,7 @@ class TestSetupSendIntroductionRemindersInterval:
             with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"):
                 os.environ["SEND_INTRODUCTION_REMINDERS"] = "false"
                 RuntimeSettings._setup_send_introduction_reminders()
-
-                try:
-                    RuntimeSettings._setup_send_introduction_reminders_interval()
-                except ImproperlyConfiguredError:
-                    pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+                RuntimeSettings._setup_send_introduction_reminders_interval()
 
     @pytest.mark.parametrize(
         "invalid_send_introduction_reminders_interval",
@@ -1901,10 +1895,7 @@ class TestSetupSendIntroductionRemindersInterval:
                 os.environ["SEND_INTRODUCTION_REMINDERS"] = "false"
                 RuntimeSettings._setup_send_introduction_reminders()
 
-                try:
-                    RuntimeSettings._setup_send_introduction_reminders_interval()
-                except ImproperlyConfiguredError:
-                    pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+                RuntimeSettings._setup_send_introduction_reminders_interval()
 
     @pytest.mark.parametrize(
         "too_small_send_introduction_reminders",
@@ -2154,10 +2145,7 @@ class TestSetupSendGetRolesReminders:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS"):
-            try:
-                RuntimeSettings._setup_send_get_roles_reminders()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_send_get_roles_reminders()
 
         RuntimeSettings._is_env_variables_setup = True
 
@@ -2219,10 +2207,7 @@ class TestSetupSendGetRolesRemindersInterval:
         RuntimeSettings._setup_send_get_roles_reminders()
 
         with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_INTERVAL"):
-            try:
-                RuntimeSettings._setup_advanced_send_get_roles_reminders_interval()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_advanced_send_get_roles_reminders_interval()
 
         RuntimeSettings._is_env_variables_setup = True
 
@@ -2284,10 +2269,7 @@ class TestSetupSendGetRolesRemindersDelay:
         RuntimeSettings._setup_send_get_roles_reminders()
 
         with EnvVariableDeleter("SEND_GET_ROLES_REMINDERS_DELAY"):
-            try:
-                RuntimeSettings._setup_send_get_roles_reminders_delay()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_send_get_roles_reminders_delay()
 
         RuntimeSettings._is_env_variables_setup = True
 
@@ -2402,10 +2384,7 @@ class TestSetupStatisticsDays:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("STATISTICS_DAYS"):
-            try:
-                RuntimeSettings._setup_statistics_days()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_statistics_days()
 
         RuntimeSettings._is_env_variables_setup = True
 
@@ -2500,10 +2479,7 @@ class TestSetupStatisticsRoles:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("STATISTICS_ROLES"):
-            try:
-                RuntimeSettings._setup_statistics_roles()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_statistics_roles()
 
         RuntimeSettings._is_env_variables_setup = True
 
@@ -2623,10 +2599,7 @@ class TestSetupManualModerationWarningMessageLocation:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("MANUAL_MODERATION_WARNING_MESSAGE_LOCATION"):
-            try:
-                RuntimeSettings._setup_strike_performed_manually_warning_location()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_strike_performed_manually_warning_location()
 
         RuntimeSettings._is_env_variables_setup = True
 
@@ -2672,10 +2645,7 @@ class TestSetupCustomDiscordInviteUrl:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("CUSTOM_DISCORD_INVITE_URL"):
-            try:
-                RuntimeSettings._setup_custom_discord_invite_url()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_custom_discord_invite_url()
 
         RuntimeSettings._is_env_variables_setup = True
 
@@ -2835,10 +2805,7 @@ class TestSetupAutoAddCommitteeToThreads:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("AUTO_ADD_COMMITTEE_TO_THREADS"):
-            try:
-                RuntimeSettings._setup_auto_add_committee_to_threads()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            RuntimeSettings._setup_auto_add_committee_to_threads()
 
         RuntimeSettings._is_env_variables_setup = True
 
