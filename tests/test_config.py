@@ -1973,11 +1973,8 @@ class TestSetupSendIntroductionRemindersDelay:
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"),
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"),
         ):
-            try:
-                assert os.environ.get("SEND_INTRODUCTION_REMINDERS_DELAY") is None
-                RuntimeSettings._setup_send_introduction_reminders_delay()
-            except ImproperlyConfiguredError:
-                pytest.fail(reason="ImproperlyConfiguredError was raised", pytrace=False)
+            assert os.environ.get("SEND_INTRODUCTION_REMINDERS_DELAY") is None
+            RuntimeSettings._setup_send_introduction_reminders_delay()
 
         RuntimeSettings._is_env_variables_setup = True
 
