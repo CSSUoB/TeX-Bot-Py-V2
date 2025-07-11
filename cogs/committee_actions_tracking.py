@@ -103,16 +103,18 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
             )
             return
 
-        action_board_message: discord.Message | None = await action_board_channel.history(limit=1).next()
+        action_board_message: discord.Message | None = await action_board_channel.history(
+            limit=1
+        ).next()
 
         if not action_board_message or action_board_message.author != self.bot.user:
             action_board_message = await action_board_channel.send(
                 content="**Committee Actions Tracking Board**\n"
             )
 
-        all_actions: dict[str, list[AssignedCommitteeAction]] = (
-            await self._get_incomplete_actions()
-        )
+        all_actions: dict[
+            str, list[AssignedCommitteeAction]
+        ] = await self._get_incomplete_actions()
 
         if not all_actions:
             return
