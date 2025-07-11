@@ -88,6 +88,9 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
 
         This method should be called after any action is created, updated or deleted.
         """
+        if not settings["COMMITTEE_ACTIONS_BOARD"]:
+            return
+
         action_board_channel: discord.TextChannel | None = discord.utils.get(
             self.bot.main_guild.text_channels,
             name=settings["COMMITTEE_ACTIONS_BOARD_CHANNEL"],
