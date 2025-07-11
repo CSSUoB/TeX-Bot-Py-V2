@@ -1544,8 +1544,7 @@ class TestSetupAutoSUPlatformAccessCookieChecking:
     def test_too_short_auto_su_platform_access_cookie_checking_interval(self) -> None:
         """Test that an error is raised when the interval is too short."""
         TOO_SMALL_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE: Final[str] = (
-            "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL "
-            "must be greater than 3 seconds."
+            "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL must be greater than 3 seconds."
         )
 
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
