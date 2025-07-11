@@ -1561,6 +1561,42 @@ class TestSetupAutoSUPlatformAccessCookieChecking:
             ):
                 RuntimeSettings._setup_auto_su_platform_access_cookie_checking_interval()
 
+    @pytest.mark.parametrize(
+        "invalid_interval",
+        (
+            "not a interval",
+            "50 years",
+            "10 seconds",
+            "what is love?",
+            "baby don't hurt me",
+            "don't hurt me",
+            "no more",
+            ":joy:",
+        ),
+    )
+    def test_invalid_auto_su_platform_access_cookie_checking_interval(
+        self, invalid_interval: str
+    ) -> None:
+        """Test that an error is raised when the interval is invalid."""
+        INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE: Final[str] = (
+            "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL must contain the delay "
+            "in any combination of seconds, minutes, hours, days or weeks."
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        os.environ["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"] = "True"
+        RuntimeSettings._setup_auto_su_platform_access_cookie_checking()
+
+        with EnvVariableDeleter("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"):
+            os.environ["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"] = invalid_interval
+
+            with pytest.raises(
+                ImproperlyConfiguredError,
+                match=INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE,
+            ):
+                RuntimeSettings._setup_auto_su_platform_access_cookie_checking_interval()
+
 
 class TestSetupSendIntroductionReminders:
     """Test case to unit-test the configuration for sending introduction reminders."""
