@@ -534,7 +534,7 @@ class Settings(abc.ABC):
             for key, value in (
                 raw_auto_su_platform_access_cookie_checking_interval.groupdict().items()
             )
-            if (stripped_value := value.strip())
+            if value and (stripped_value := value.strip())
         }
 
         if (
