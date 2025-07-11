@@ -1510,9 +1510,26 @@ class TestSetupAutoSUPlatformAccessCookieChecking:
         ):
             RuntimeSettings._setup_auto_su_platform_access_cookie_checking_interval()
 
+    def test_disabled_su_platform_access_cookie_checking_interval(self) -> None:
+        """Test that a default value is used when checking is disabled."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"):
+            RuntimeSettings._setup_auto_su_platform_access_cookie_checking()
+
+        with EnvVariableDeleter("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"):
+            RuntimeSettings._setup_auto_su_platform_access_cookie_checking_interval()
+
+        RuntimeSettings._is_env_variables_setup = True
+
+        assert RuntimeSettings()["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"] == {
+            "hours": 24
+        }
+
     def test_default_setup_auto_su_platform_access_cookie_checking_interval(self) -> None:
         """Test that the default value is used when no interval is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+        os.environ["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"] = "True"
         RuntimeSettings._setup_auto_su_platform_access_cookie_checking()
 
         with EnvVariableDeleter("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"):
@@ -1523,6 +1540,27 @@ class TestSetupAutoSUPlatformAccessCookieChecking:
         assert RuntimeSettings()["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"] == {
             "hours": 24
         }
+
+    def test_too_short_auto_su_platform_access_cookie_checking_interval(self) -> None:
+        """Test that an error is raised when the interval is too short."""
+        TOO_SMALL_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE: Final[str] = (
+            "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL "
+            "must be greater than 3 seconds."
+        )
+
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        os.environ["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"] = "True"
+        RuntimeSettings._setup_auto_su_platform_access_cookie_checking()
+
+        with EnvVariableDeleter("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"):
+            os.environ["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"] = "2s"
+
+            with pytest.raises(
+                ImproperlyConfiguredError,
+                match=TOO_SMALL_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE,
+            ):
+                RuntimeSettings._setup_auto_su_platform_access_cookie_checking_interval()
 
 
 class TestSetupSendIntroductionReminders:
