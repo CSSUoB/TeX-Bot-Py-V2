@@ -7,6 +7,7 @@ import time
 from datetime import timedelta
 from enum import Enum
 from typing import TYPE_CHECKING, overload, override
+from collections import defaultdict
 
 import discord
 from discord.ext import tasks
@@ -57,21 +58,29 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
 
     async def _get_all_actions(self) -> dict[str, list[AssignedCommitteeAction]]:
         """Get a list of all actions in the database."""
-        all_actions: list[AssignedCommitteeAction] = [
-            action async for action in AssignedCommitteeAction.objects.select_related().all()
-        ]
+        grouped_action: dict[str, list[AssignedCommitteeAction]] = defaultdict(list)
 
-        if not all_actions:
-            return {}
+        async for action in AssignedCommitteeAction.objects.select_related(
+            "discord_member"
+        ).all():
+            grouped_action[action.discord_member.discord_id].append(action)
 
-        return {
-            action.discord_member.discord_id: [
-                action
-                for action in all_actions
-                if action.discord_member.discord_id == action.discord_member.discord_id
-            ]
-            for action in all_actions
-        }
+        return grouped_action
+
+    async def _get_incomplete_actions(self) -> dict[str, list[AssignedCommitteeAction]]:
+        """Get a list of all actions that are in progress."""
+        grouped_filtered_actions: dict[str, list[AssignedCommitteeAction]] = defaultdict(list)
+
+        async for action in AssignedCommitteeAction.objects.select_related(
+            "discord_member"
+        ).filter(
+            Q(status=Status.IN_PROGRESS.value)
+            | Q(status=Status.BLOCKED.value)
+            | Q(status=Status.NOT_STARTED.value)
+        ):
+            grouped_filtered_actions[action.discord_member.discord_id].append(action)
+
+        return grouped_filtered_actions
 
     async def _update_action_board(self) -> None:
         """
@@ -116,10 +125,12 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
 
         all_actions: dict[
             str, list[AssignedCommitteeAction]
-        ] = await self._get_all_actions()  # TODO: filter this based on status
+        ] = await self._get_incomplete_actions()
 
         if not all_actions:
             return
+
+        logger.debug(all_actions)
 
         all_actions_message: str = "\n".join(
             [
