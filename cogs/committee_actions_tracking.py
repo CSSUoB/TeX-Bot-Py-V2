@@ -4,10 +4,10 @@ import contextlib
 import logging
 import random
 import time
+from collections import defaultdict
 from datetime import timedelta
 from enum import Enum
 from typing import TYPE_CHECKING, overload, override
-from collections import defaultdict
 
 import discord
 from discord.ext import tasks
