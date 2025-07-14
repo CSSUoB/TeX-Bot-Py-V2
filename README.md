@@ -15,44 +15,10 @@ This is a [Discord bot](https://discord.com/developers/docs/topics/oauth2#bot-vs
 
 Featured in the [CSS Discord guild](https://cssbham.com/discord).
 
-## Terminology
-
-### ["Guild"](https://discord.com/developers/docs/resources/guild) Vs ["Server"](https://wikipedia.org/wiki/Discord#Servers)
-
-Confusingly, [Discord](https://discord.com) uses the term ["guild"](https://discord.com/developers/docs/resources/guild) to refer to a [Discord "server"](https://wikipedia.org/wiki/Discord#Servers), when communicating with developers.
-Therefore, the same terminology (["guild"](https://discord.com/developers/docs/resources/guild)) will be used across all documentation in this project.
-(See [the Discord developer docs](https://discord.com/developers/docs/resources/guild) & [Pycord's docs](https://docs.pycord.dev/en/stable/api/models.html#discord.Guild) for more information.)
-
-The term "main guild" is used throughout the code in this repository to refer specifically to your community group's main [Discord guild](https://discord.com/developers/docs/resources/guild).
-
-### "User" Vs "Member" Vs "Guest"
-
-#### [Discord Objects](https://discord.com/developers/docs)
-
-In the context of [Discord](https://discord.com) itself, a ["user"](https://discord.com/developers/docs/resources/user) object represents a [Discord](https://discord.com) account not connected to any specific [guild](https://discord.com/developers/docs/resources/guild).
-Therefore, it can be [messaged via DM](https://dictionary.com/browse/dm) or be retrieved via its [snowflake ID](https://discord.com/developers/docs/reference#snowflakes), but little else can be done with it.
-(See [the Discord developer docs](https://discord.com/developers/docs/resources/user) & [Pycord's docs](https://docs.pycord.dev/en/stable/api/models.html#users) for more information.)
-
-In contrast, a [Discord "member" object](https://discord.com/developers/docs/resources/guild#guild-member-object) is a [user](https://discord.com/developers/docs/resources/user) attached to a specific [guild](https://discord.com/developers/docs/resources/guild).
-Therefore, it can have [roles](https://discord.com/developers/docs/topics/permissions#role-object), be [banned](https://discord.com/developers/docs/resources/guild#ban-object) & have many other actions applied to it.
-(See [the Discord developer docs](https://discord.com/developers/docs/resources/guild#guild-member-object) & [Pycord's docs](https://docs.pycord.dev/en/stable/api/models.html#discord.Member) for more information.)
-
-#### Community Group Membership
-
-In the context of your community group's membership structure, a "member" is a person that has purchased a membership to join your community group.
-This is in contrast to a "guest", which is a person that has not purchased a membership.
-Guests often can only attend events that are open to anyone (i.e. **not** members only), and have limited communication/perks within your [Discord guild](https://discord.com/developers/docs/resources/guild).
-Some commands may require you to create [roles](https://discord.com/developers/docs/topics/permissions#role-object) within your [Discord guild](https://discord.com/developers/docs/resources/guild), to differentiate between these different types of users.
-
-#### Other Uses
-
-In some other contexts, the term "user" may be used to refer to any person/organisation making use of this project.
-(E.g. the description within [the "Error Codes" section](#error-codes).)
-
 ## Error Codes
 
 Users of TeX-Bot may encounter an error code when executing a slash-command fails.
-If a user encounters any of these errors, please communicate the error to the committee member that has been assigned to upkeep & deployment of your instance of TeX-Bot.
+If a user encounters any of these errors, please communicate the error to the committee member that has been assigned to upkeep and deployment of your instance of TeX-Bot.
 The meaning of each error code is given here:
 
 * `E1011` - The value for the [environment variable](https://wikipedia.org/wiki/Environment_variable) `DISCORD_GUILD_ID` is an [ID](https://discord.com/developers/docs/reference#snowflakes) that references a [Discord guild](https://discord.com/developers/docs/resources/guild) that does not exist
@@ -124,7 +90,7 @@ The conditions for each [task](https://docs.pycord.dev/en/stable/ext/tasks) are 
 ## Deploying in Production
 
 The only supported way to deploy TeX-Bot in production is by using our pre-built [docker container](https://docs.docker.com/resources/what-container).
-It is can be pulled from the [GitHub Container Registry](https://docs.github.com/packages/working-with-a-github-packages-registry/working-with-the-container-registry) with this identifier: [`ghcr.io/CSSUoB/tex-bot-py-v2:latest`](https://github.com/CSSUoB/TeX-Bot-Py-V2/pkgs/container/tex-bot-py-v2).
+It can be pulled from the [GitHub Container Registry](https://docs.github.com/packages/working-with-a-github-packages-registry/working-with-the-container-registry) with this identifier: [`ghcr.io/CSSUoB/tex-bot-py-v2:latest`](https://github.com/CSSUoB/TeX-Bot-Py-V2/pkgs/container/tex-bot-py-v2).
 (An introduction on how to use a [docker-compose deployment](https://docs.docker.com/compose) can be found [here](https://docs.docker.com/get-started/08_using_compose).)
 See [**Versioning**](#versioning) for the full list of available version tags for each release.
 
@@ -170,7 +136,7 @@ You'll also need to set a number of [environment variables](https://wikipedia.or
 (This setting is optional.
 Error logs will **always** be sent to the [console](https://wikipedia.org/wiki/Terminal_emulator), this setting allows them to also be sent to a [Discord log channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel).)
 
-* `ORGANISATION_ID`: Your Guild society ID. This is used to dynamically create the members list among other needed URLs.
+* `ORGANISATION_ID`: Your Guild society ID. This is used to dynamically fetch your community group's list of members, among other necessary URLs.
 
 * `MEMBERS_LIST_URL_SESSION_COOKIE`: The members-list [URL](https://wikipedia.org/wiki/URL) [session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie).
 (If your group's members-list is stored at a [URL](https://wikipedia.org/wiki/URL) that requires [authentication](https://wikipedia.org/wiki/Authentication), this [session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie) should [authenticate](https://wikipedia.org/wiki/Authentication) TeX-Bot to view your group's members-list, as if it were [logged in to the website](https://wikipedia.org/wiki/Login_session) as a Committee member.
@@ -210,7 +176,7 @@ This will ensure your code meets the standard required for this project and give
 This project follows the [semantic versioning scheme](https://semver.org).
 We currently treat TeX-Bot as alpha software, and as such no numbered release has been made yet.
 
-When selecting a version tag to use for [deploying TeX-Bot as a container image](#deploying-in-production) there are multiple tag schemes available:
+When selecting a version tag to use for [deploying TeX-Bot as a container image](#deploying-in-production), there are multiple tag schemes available:
 
 * `latest` - The most recent numerically tagged version released
 * `br-<branch>` - The most recent commit from a given branch in this repository (E.g. `br-main`) (N.B. this does not include branches of forks of this repository)
