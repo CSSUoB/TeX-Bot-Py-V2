@@ -997,8 +997,13 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     ) -> None:
         """List all actions."""
         all_actions: dict[str, list[AssignedCommitteeAction]] = await self._get_all_actions()
+        filtered_actions: dict[str, list[AssignedCommitteeAction]] = {
+            discord_id: actions
+            for discord_id, actions in all_actions.items()
+            if not status or any(action.status == status for action in actions)
+        }
 
-        if not all_actions:
+        if not filtered_actions:
             await ctx.respond(content="No one has any actions that match the request!")
             logger.debug("No actions found with the status filter: %s", status)
             return
@@ -1024,7 +1029,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                     if action.discord_member.discord_id == discord_id
                 )
             }"
-            for discord_id, actions in all_actions.items()
+            for discord_id, actions in filtered_actions.items()
         )
 
         await ctx.respond(content=all_actions_message)
