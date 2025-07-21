@@ -10,7 +10,7 @@
 [![PyMarkdown Status](https://img.shields.io/badge/validated-brightgreen?logo=markdown&label=PyMarkdown)](https://github.com/jackdewinter/pymarkdown)
 [![CSS Discord Server](https://img.shields.io/badge/Discord-5865F2?logo=discord&logoColor=white)](https://cssbham.com/discord)
 
-[TeX-Bot](https://github.com/CSSUoB/TeX-Bot-JS), but back in [Python](https://python.org)!
+TeX-Bot, but back in [Python](https://python.org)!
 This is a [Discord bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts) used for managing a community group's [Discord](https://discord.com) [guild](https://discord.com/developers/docs/resources/guild).
 
 Featured in the [CSS Discord guild](https://cssbham.com/discord).
@@ -44,21 +44,16 @@ This is in contrast to a "guest", which is a person that has not purchased a mem
 Guests often can only attend events that are open to anyone (i.e. **not** members only), and have limited communication/perks within your [Discord guild](https://discord.com/developers/docs/resources/guild).
 Some commands may require you to create [roles](https://discord.com/developers/docs/topics/permissions#role-object) within your [Discord guild](https://discord.com/developers/docs/resources/guild), to differentiate between these different types of users.
 
-#### Other Uses
-
-In some other contexts, the term "user" may be used to refer to any person/organisation making use of this project.
-(E.g. the description within [the "Error Codes" section](#error-codes).)
-
 ## Error Codes
 
-Users of TeX-Bot may encounter an error code when executing a slash-command fails.
+Members of your [Discord guild](https://discord.com/developers/docs/resources/guild) using TeX-Bot may encounter an error code when executing a slash-command fails.
 If a user encounters any of these errors, please communicate the error to the committee member that has been assigned to upkeep & deployment of your instance of TeX-Bot.
 The meaning of each error code is given here:
 
 * `E1011` - The value for the [environment variable](https://wikipedia.org/wiki/Environment_variable) `DISCORD_GUILD_ID` is an [ID](https://discord.com/developers/docs/reference#snowflakes) that references a [Discord guild](https://discord.com/developers/docs/resources/guild) that does not exist
 
 * `E1021` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-object) with the name "@**Committee**".
-(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/writeroles`, `/editmessage`, `/induct`, `/strike`, `/archive`, `/kill`, `/delete-all` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
+(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/write-roles`, `/edit-message`, `/induct`, `/strike`, `/archive`, `/kill`, `/delete-all` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
 
 * `E1022` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-object) with the name "@**Guest**".
 (This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/induct`, `/stats`, `/archive` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
@@ -80,8 +75,8 @@ The meaning of each error code is given here:
 * `E1032` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [text channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel) with the name "#**general**".
 (This [text channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel) is required for the `/induct` [command](https://discord.com/developers/docs/interactions/application-commands))
 
-* `E1041` - The community group member IDs could not be retrieved from the `MEMBERS_LIST_URL`.
-(It is likely that your `MEMBERS_LIST_URL_SESSION_COOKIE` is invalid.
+* `E1041` - The community group member IDs could not be retrieved from the SU platform.
+(It is likely that your `SU_PLATFORM_ACCESS_COOKIE` is invalid.
 If your community group is a [Guild of Students](https://guildofstudents.com) [society](https://wikipedia.org/wiki/Student_society), the community group member IDs will be a list of [UoB IDs](https://intranet.birmingham.ac.uk/campus-services/id-cards.aspx))
 
 * `E1042` - The reference to the `@everyone` [role](https://discord.com/developers/docs/topics/permissions#role-object) could not be correctly retrieved.
@@ -153,7 +148,7 @@ uv sync
 A full guide on how to create your bot's account can be found [here; on Pycord's wiki](https://docs.pycord.dev/en/stable/discord.html).
 
 You'll need to create a [Discord bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts) of your own in the [Discord Developer Portal](https://discord.com/developers/applications).
-It's also handy if you have an empty [guild](https://discord.com/developers/docs/resources/guild) for you to test in.
+It's also handy if you have an empty [Discord guild](https://discord.com/developers/docs/resources/guild) for you to test in.
 
 The correct [invite URL](https://docs.pycord.dev/en/stable/discord.html#inviting-your-bot) will be displayed to you in the console the first time you run the bot (or if you set a high verbosity log level)
 
@@ -161,21 +156,23 @@ The correct [invite URL](https://docs.pycord.dev/en/stable/discord.html#inviting
 
 You'll also need to set a number of [environment variables](https://wikipedia.org/wiki/Environment_variable) before running TeX-Bot:
 
-* `DISCORD_BOT_TOKEN`: The [secret token](https://itexus.com/glossary/discord-bot-token) for the [instance of TeX-Bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts) you created.
-(The [token](https://itexus.com/glossary/discord-bot-token) is available on [your bot page in the Developer Portal](https://discord.com/developers/applications).)
+* `DISCORD_BOT_TOKEN`: The [Discord bot secret token](https://itexus.com/glossary/discord-bot-token) for the [instance of TeX-Bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts) you created.
+  * The [Discord bot token](https://itexus.com/glossary/discord-bot-token) is available on [your bot's page in the Discord Developer Portal](https://discord.com/developers/applications).
 
 * `DISCORD_GUILD_ID`: The [ID](https://discord.com/developers/docs/reference#snowflakes) of your community group's [Discord guild](https://discord.com/developers/docs/resources/guild).
 
 * `DISCORD_LOG_CHANNEL_WEBHOOK_URL`: The [webhook URL](https://support.discord.com/hc/articles/228383668-Intro-to-Webhooks) of the [Discord text channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel) where error log messages should be sent.
-(This setting is optional.
-Error logs will **always** be sent to the [console](https://wikipedia.org/wiki/Terminal_emulator), this setting allows them to also be sent to a [Discord log channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel).)
+  * This setting is optional.
+    Error logs will **always** be sent to the [console](https://wikipedia.org/wiki/Terminal_emulator), this setting just allows them to also be sent to a [Discord log channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel).
 
-* `ORGANISATION_ID`: Your Guild society ID. This is used to dynamically create the members list among other needed URLs.
+* `ORGANISATION_ID`: Your SU platform organisation ID. This is used to dynamically create the members list and other needed URLs.
 
-* `MEMBERS_LIST_URL_SESSION_COOKIE`: The members-list [URL](https://wikipedia.org/wiki/URL) [session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie).
-(If your group's members-list is stored at a [URL](https://wikipedia.org/wiki/URL) that requires [authentication](https://wikipedia.org/wiki/Authentication), this [session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie) should [authenticate](https://wikipedia.org/wiki/Authentication) TeX-Bot to view your group's members-list, as if it were [logged in to the website](https://wikipedia.org/wiki/Login_session) as a Committee member.
-This can be [extracted from your web-browser](https://wikihow.com/View-Cookies), after logging in to view your members-list yourself.
-It will probably be listed as a [cookie](https://wikipedia.org/wiki/HTTP_cookie) named [`.ASPXAUTH`](https://stackoverflow.com/a/424061/14403974).)
+* `SU_PLATFORM_ACCESS_COOKIE`: The SU platform [access session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie).
+  * This [session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie) will [authenticate](https://wikipedia.org/wiki/Authentication) TeX-Bot to view your group's members list on the SU platform, as if it were [logged in to the website](https://wikipedia.org/wiki/Login_session) as a Committee member.
+  * This can be [extracted from your web-browser](https://wikihow.com/View-Cookies), after logging in to view your members list yourself.
+    It will most likely be listed as a [cookie](https://wikipedia.org/wiki/HTTP_cookie) named [`.ASPXAUTH`](https://stackoverflow.com/a/424061/14403974).
+  * If you wish to test TeX-Bot with the SU platform-access disabled, a dummy value of 128 `0` characters can be used.
+    Note that this will cause many commands and scheduled tasks to fail when they are used at runtime.
 
 You can put these [variables](https://wikipedia.org/wiki/Environment_variable) in a [`.env` file](https://blog.bitsrc.io/a-gentle-introduction-to-env-files-9ad424cc5ff4) in the root folder, as [python-dotenv](https://saurabh-kumar.com/python-dotenv) is used to collect all [environment variables](https://wikipedia.org/wiki/Environment_variable).
 There is an [`.env.example` file](.env.example) in the repo that you can rename and populate.
