@@ -341,12 +341,10 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                 )
             )
 
-            new_first_years_channel: discord.TextChannel = (
-                await main_guild.create_text_channel(
-                    name="first-years",
-                    topic="Channel for first-years to chat and ask questions.",
-                    reason=f'{ctx.user} used TeX-Bot slash-command: "/increment_year_channels"',
-                )
+            new_first_years_channel: discord.TextChannel = await main_guild.create_text_channel(
+                name="first-years",
+                topic="Channel for first-years to chat and ask questions.",
+                reason=f'{ctx.user} used TeX-Bot slash-command: "/increment_year_channels"',
             )
 
             if year_channels_category:
