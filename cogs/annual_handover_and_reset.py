@@ -219,10 +219,9 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
             for member in member_role.members:
                 await member.remove_roles(member_role, reason=ROLE_RESET_AUDIT_MESSAGE)
 
-                if membership_tied_roles:
-                    await member.remove_roles(
-                        *membership_tied_roles, reason=ROLE_RESET_AUDIT_MESSAGE
-                    )
+                await member.remove_roles(
+                    *membership_tied_roles, reason=ROLE_RESET_AUDIT_MESSAGE
+                )
 
             logger.debug("Removed Member role from all users.")
             await initial_response.edit(
