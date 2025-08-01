@@ -203,9 +203,22 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
                 f'{ctx.user} used TeX-Bot slash-command: "/annual_roles_reset"'
             )
 
+            member_colour_roles: set[discord.Role] = {
+                role
+                for role in main_guild.roles
+                if role.name
+                in ("oG-green", "New-green", "piNk", "ORANGE", "Purple", "yellow", "rEd")
+            }
+
             member: discord.Member
             for member in member_role.members:
                 await member.remove_roles(member_role, reason=ROLE_RESET_AUDIT_MESSAGE)
+
+                if member_colour_roles:
+                    logger.debug("Removing colour roles from user: %s", member.display_name)
+                    await member.remove_roles(
+                        *member_colour_roles, reason=ROLE_RESET_AUDIT_MESSAGE
+                    )
 
             logger.debug("Removed Member role from all users.")
             await initial_response.edit(
@@ -322,8 +335,10 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                 )
             )
 
-            new_first_years_channel: discord.TextChannel = (
-                await main_guild.create_text_channel(name="first-years")
+            new_first_years_channel: discord.TextChannel = await main_guild.create_text_channel(
+                name="first-years",
+                topic="Channel for first-years to chat and ask questions.",
+                reason=f'{ctx.user} used TeX-Bot slash-command: "/increment_year_channels"',
             )
 
             if year_channels_category:
