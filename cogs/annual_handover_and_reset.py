@@ -315,14 +315,20 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
             )
 
             if second_years_channel:
-                await second_years_channel.edit(name="final-years")
+                await second_years_channel.edit(
+                    name="final-years",
+                    topic="Channel for final-years to chat and ask questions."
+                )
 
             first_year_channel: discord.TextChannel | None = discord.utils.get(
                 main_guild.text_channels, name="first-years"
             )
 
             if first_year_channel:
-                await first_year_channel.edit(name="second-years")
+                await first_year_channel.edit(
+                    name="second-years",
+                    topic="Channel for second-years to chat and ask questions."
+                )
 
             year_channels_category: discord.CategoryChannel | None = discord.utils.get(
                 main_guild.categories, name="Year Chats"
