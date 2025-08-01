@@ -210,9 +210,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
             )
 
             membership_tied_roles: set[discord.Role] = {
-                role
-                for role in main_guild.roles
-                if role.name in MEMBERSHIP_TIED_ROLE_NAMES
+                role for role in main_guild.roles if role.name in MEMBERSHIP_TIED_ROLE_NAMES
             }
 
             member: discord.Member

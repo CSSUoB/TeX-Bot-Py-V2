@@ -833,9 +833,7 @@ class Settings(abc.ABC):
             if raw_membership_tied_role.strip()
         }
 
-        cls._settings["MEMBERSHIP_TIED_ROLES"] = (
-            membership_tied_roles or frozenset()
-        )
+        cls._settings["MEMBERSHIP_TIED_ROLES"] = membership_tied_roles or frozenset()
 
     @classmethod
     def _setup_moderation_document_url(cls) -> None:
