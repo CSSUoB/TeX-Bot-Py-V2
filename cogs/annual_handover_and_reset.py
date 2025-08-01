@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
+from config import settings
 from db.core.models import GroupMadeMember
 from utils import CommandChecks, TeXBotBaseCog
 
@@ -23,6 +24,11 @@ __all__: "Sequence[str]" = (
 )
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+
+
+MEMBERSHIP_TIED_ROLE_NAMES: "Final[frozenset[str]]" = frozenset(
+    settings["MEMBERSHIP_TIED_ROLES"]
+)
 
 
 class CommitteeHandoverCommandCog(TeXBotBaseCog):
@@ -203,21 +209,19 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
                 f'{ctx.user} used TeX-Bot slash-command: "/annual_roles_reset"'
             )
 
-            member_colour_roles: set[discord.Role] = {
+            membership_tied_roles: set[discord.Role] = {
                 role
                 for role in main_guild.roles
-                if role.name
-                in ("oG-green", "New-green", "piNk", "ORANGE", "Purple", "yellow", "rEd")
+                if role.name in MEMBERSHIP_TIED_ROLE_NAMES
             }
 
             member: discord.Member
             for member in member_role.members:
                 await member.remove_roles(member_role, reason=ROLE_RESET_AUDIT_MESSAGE)
 
-                if member_colour_roles:
-                    logger.debug("Removing colour roles from user: %s", member.display_name)
+                if membership_tied_roles:
                     await member.remove_roles(
-                        *member_colour_roles, reason=ROLE_RESET_AUDIT_MESSAGE
+                        *membership_tied_roles, reason=ROLE_RESET_AUDIT_MESSAGE
                     )
 
             logger.debug("Removed Member role from all users.")
