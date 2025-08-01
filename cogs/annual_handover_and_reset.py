@@ -225,6 +225,11 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
                 if (role := discord.utils.get(main_guild.roles, name=role_name))
             }
 
+            await initial_response.edit(
+                content=":hourglass: Removing all members from year roles... :hourglass:"
+            )
+            logger.debug("Found %d year roles to reset.", len(year_roles))
+
             year_role: discord.Role
             for year_role in year_roles:
                 logger.debug("Removing all members from role: %s", year_role)
