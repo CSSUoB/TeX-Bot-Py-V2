@@ -3,13 +3,18 @@
 import contextlib
 import logging
 import random
+import time
+from collections import defaultdict
+from datetime import timedelta
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, overload, override
 
 import discord
+from discord.ext import tasks
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 from django.db.models import Q
 
+from config import settings
 from db.core.models import AssignedCommitteeAction, DiscordMember
 from exceptions import (
     CommitteeElectRoleDoesNotExistError,
@@ -18,18 +23,20 @@ from exceptions import (
     InvalidActionTargetError,
 )
 from utils import CommandChecks, TeXBotBaseCog
+from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Iterable, Sequence
     from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
 
-    from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
+    from utils import TeXBot, TeXBotApplicationContext, TeXBotAutocompleteContext
 
 __all__: "Sequence[str]" = (
     "CommitteeActionsTrackingBaseCog",
     "CommitteeActionsTrackingContextCommandsCog",
+    "CommitteeActionsTrackingRemindersTaskCog",
     "CommitteeActionsTrackingSlashCommandsCog",
 )
 
@@ -48,6 +55,99 @@ class Status(Enum):
 
 class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
     """Base cog class that defines methods for committee actions tracking."""
+
+    async def _get_all_actions(self) -> dict[str, list[AssignedCommitteeAction]]:
+        """Get a list of all actions in the database."""
+        grouped_action: dict[str, list[AssignedCommitteeAction]] = defaultdict(list)
+
+        async for action in AssignedCommitteeAction.objects.select_related(
+            "discord_member"
+        ).all():
+            grouped_action[action.discord_member.discord_id].append(action)
+
+        return grouped_action
+
+    async def _get_incomplete_actions(self) -> dict[str, list[AssignedCommitteeAction]]:
+        """Get a list of all actions that are in progress."""
+        grouped_filtered_actions: dict[str, list[AssignedCommitteeAction]] = defaultdict(list)
+
+        async for action in AssignedCommitteeAction.objects.select_related(
+            "discord_member"
+        ).filter(
+            Q(status=Status.IN_PROGRESS.value)
+            | Q(status=Status.BLOCKED.value)
+            | Q(status=Status.NOT_STARTED.value)
+        ):
+            grouped_filtered_actions[action.discord_member.discord_id].append(action)
+
+        return grouped_filtered_actions
+
+    async def _update_action_board(self) -> None:
+        """
+        Update the action board message with the current actions.
+
+        This method should be called after any action is created, updated or deleted.
+        """
+        if not settings["COMMITTEE_ACTIONS_BOARD"]:
+            return
+
+        action_board_channel: discord.TextChannel | None = discord.utils.get(
+            self.bot.main_guild.text_channels,
+            name=settings["COMMITTEE_ACTIONS_BOARD_CHANNEL"],
+        )
+
+        if not action_board_channel:
+            logger.warning(
+                "Action board channel could not be found so "
+                "the action board will not be updated."
+            )
+            return
+
+        action_board_message: discord.Message | None = await action_board_channel.history(
+            limit=1
+        ).next()
+
+        if not action_board_message or action_board_message.author != self.bot.user:
+            action_board_message = await action_board_channel.send(
+                content="**Committee Actions Tracking Board**\n"
+            )
+
+        all_actions: dict[
+            str, list[AssignedCommitteeAction]
+        ] = await self._get_incomplete_actions()
+
+        if not all_actions:
+            return
+
+        all_actions_message: str = "\n".join(
+            [
+                f"\n<@{discord_id}>, Actions:"
+                f"\n{
+                    ', \n'.join(
+                        (
+                            ':red_circle:'
+                            if action.status == Status.NOT_STARTED.value
+                            else ':yellow_circle:'
+                            if action.status == Status.IN_PROGRESS.value
+                            else ':no_entry:'
+                            if action.status == Status.BLOCKED.value
+                            else ':white_check_mark:'
+                            if action.status == Status.COMPLETED.value
+                            else ''
+                        )
+                        + ' '
+                        + f'{action.description} '
+                        + f'({AssignedCommitteeAction.Status(action.status).label})'
+                        for action in actions
+                    )
+                }"
+                for discord_id, actions in all_actions.items()
+            ],
+        )
+
+        await action_board_message.edit(
+            content=(f"**Committee Actions Tracking Board**\n{all_actions_message}"),
+        )
 
     async def _create_action(
         self, ctx: "TeXBotApplicationContext", action_user: discord.Member, description: str
@@ -105,7 +205,160 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
             raise InvalidActionDescriptionError(
                 message=DUPLICATE_ACTION_MESSAGE
             ) from create_action_error
+        await self._update_action_board()
         return action
+
+    @overload
+    @staticmethod
+    async def get_user_actions(
+        action_user: discord.Member | discord.User, status: list[str]
+    ) -> list[AssignedCommitteeAction]: ...
+
+    @overload
+    @staticmethod
+    async def get_user_actions(
+        action_user: "Iterable[discord.Member]",
+        status: list[str],
+    ) -> dict[discord.Member, list[AssignedCommitteeAction]]: ...
+
+    @staticmethod
+    async def get_user_actions(
+        action_user: "discord.Member | discord.User | Iterable[discord.Member]",
+        status: str | list[str],
+    ) -> list[AssignedCommitteeAction] | dict[discord.Member, list[AssignedCommitteeAction]]:
+        """
+        Get the actions for a given user.
+
+        Takes in the user and returns a list of their actions.
+        """
+        if isinstance(action_user, (discord.User, discord.Member)):
+            user_actions: list[AssignedCommitteeAction] = [
+                action
+                async for action in AssignedCommitteeAction.objects.filter(
+                    status=status,
+                    discord_member__discord_id=int(action_user.id),
+                )
+            ]
+
+            return user_actions
+
+        actions: list[AssignedCommitteeAction] = [
+            action async for action in AssignedCommitteeAction.objects.select_related().all()
+        ]
+
+        committee_actions: dict[discord.Member, list[AssignedCommitteeAction]] = {
+            committee: [
+                action
+                for action in actions
+                if str(action.discord_member.discord_id) == str(committee.id)
+                and action.status in status
+            ]
+            for committee in action_user
+        }
+
+        return {
+            committee: actions for committee, actions in committee_actions.items() if actions
+        }
+
+
+class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
+    """Cog class that defines the committee-actions tracking reminders task functionality."""
+
+    @override
+    def __init__(self, bot: "TeXBot") -> None:
+        """Start all task managers when this cog is initialised."""
+        if settings["COMMITTEE_ACTIONS_REMINDERS"]:
+            _ = self.committee_actions_reminders_task.start()
+
+        super().__init__(bot)
+
+    @override
+    def cog_unload(self) -> None:
+        """
+        Unload-hook that ends all running tasks whenever the tasks cog is unloaded.
+
+        This may be run dynamically or when the bot closes.
+        """
+        self.committee_actions_reminders_task.cancel()
+
+    @tasks.loop(**settings["COMMITTEE_ACTIONS_REMINDERS_INTERVAL"])
+    @capture_guild_does_not_exist_error
+    async def committee_actions_reminders_task(self) -> None:
+        """
+        Definition of the background task that sends reminders of committee actions.
+
+        The task will run every interval specified in the settings and will send reminders
+        to all committee members who have actions that are either in progress or not started.
+        """
+        action_reminders_channel: discord.TextChannel | None = discord.utils.get(
+            self.bot.main_guild.text_channels,
+            name=settings["COMMITTEE_ACTIONS_REMINDERS_CHANNEL"],
+        )
+
+        if not action_reminders_channel:
+            logger.warning(
+                "Committee-general channel could not be found! "
+                "Actions reminders task will not run until next restart."
+            )
+            self.committee_actions_reminders_task.cancel()
+            return
+
+        committee_role: discord.Role = await self.bot.committee_role
+        committee_members: list[discord.Member] = committee_role.members
+        all_actions: dict[
+            discord.Member, list[AssignedCommitteeAction]
+        ] = await self.get_user_actions(
+            action_user=committee_members,
+            status=[Status.NOT_STARTED.value, Status.IN_PROGRESS.value, Status.BLOCKED.value],
+        )
+
+        interval_seconds: float = timedelta(
+            **settings["COMMITTEE_ACTIONS_REMINDERS_INTERVAL"]
+        ).total_seconds()
+        next_reminder_unix = int(time.time() + interval_seconds)
+
+        actions_reminder_info_message: str = (
+            f"Wakey wakey committee!\n"
+            "Here are your actions that are either in progress or not started yet.\n"
+            f"I'll remind you again <t:{next_reminder_unix}:R>"
+        )
+
+        all_actions_message: str = "\n".join(
+            [
+                f"\n{committee}, Actions:"
+                f"\n{
+                    ', \n'.join(
+                        (
+                            ':red_circle:'
+                            if action.status == Status.NOT_STARTED.value
+                            else ':yellow_circle:'
+                            if action.status == Status.IN_PROGRESS.value
+                            else ':no_entry:'
+                            if action.status == Status.BLOCKED.value
+                            else ''
+                        )
+                        + ' '
+                        + f'{action.description} '
+                        + f'({AssignedCommitteeAction.Status(action.status).label})'
+                        for action in actions
+                    )
+                }"
+                for committee, actions in all_actions.items()
+            ],
+        )
+
+        if not all_actions_message:
+            logger.info("No actions found for any committee members. No reminders sent.")
+            return
+
+        await action_reminders_channel.send(
+            content=f"{actions_reminder_info_message}\n{all_actions_message}",
+        )
+
+    @committee_actions_reminders_task.before_loop
+    async def before_tasks(self) -> None:
+        """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
+        await self.bot.wait_until_ready()
 
 
 class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
@@ -330,6 +583,8 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         await action.aupdate(status=new_status)
 
+        await self._update_action_board()
+
         await ctx.respond(
             content=f"Status for action`{action.description}` updated to `{action.status}`",
             ephemeral=True,
@@ -391,6 +646,8 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         old_description: str = action.description
 
         await action.aupdate(description=new_description)
+
+        await self._update_action_board()
 
         await ctx.respond(
             content=f"Action `{old_description}` updated to `{action.description}`!"
@@ -594,8 +851,6 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             return
 
-        user_actions: list[AssignedCommitteeAction]
-
         if not status:
             user_actions = [
                 action
@@ -725,13 +980,6 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
     @committee_actions.command(name="list-all", description="List all current actions.")
     @discord.option(  # type: ignore[no-untyped-call, misc]
-        name="ping",
-        description="Triggers whether the message pings users or not.",
-        input_type=bool,
-        default=False,
-        required=False,
-    )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
         name="status-filter",
         description="The filter to apply to the status of actions.",
         input_type=str,
@@ -745,49 +993,43 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     async def list_all_actions(
         self,
         ctx: "TeXBotApplicationContext",
-        ping: bool,  # noqa: FBT001
         status: str | None,
     ) -> None:
-        """List all actions."""  # NOTE: this doesn't actually list *all* actions as it is possible for non-committee to be actioned.
-        committee_role: discord.Role = await self.bot.committee_role
-
-        actions: list[AssignedCommitteeAction] = [
-            action async for action in AssignedCommitteeAction.objects.select_related().all()
-        ]
-
-        desired_status: list[str] = (
-            [status]
-            if status
-            else [Status.NOT_STARTED.value, Status.IN_PROGRESS.value, Status.BLOCKED.value]
-        )
-
-        committee_members: list[discord.Member] = committee_role.members
-
-        committee_actions: dict[discord.Member, list[AssignedCommitteeAction]] = {
-            committee: [
-                action
-                for action in actions
-                if str(action.discord_member) == str(committee.id)
-                and action.status in desired_status
-            ]
-            for committee in committee_members
+        """List all actions."""
+        all_actions: dict[str, list[AssignedCommitteeAction]] = await self._get_all_actions()
+        filtered_actions: dict[str, list[AssignedCommitteeAction]] = {
+            discord_id: actions
+            for discord_id, actions in all_actions.items()
+            if not status or any(action.status == status for action in actions)
         }
 
-        filtered_committee_actions = {
-            committee: actions for committee, actions in committee_actions.items() if actions
-        }
-
-        if not filtered_committee_actions:
+        if not filtered_actions:
             await ctx.respond(content="No one has any actions that match the request!")
             logger.debug("No actions found with the status filter: %s", status)
             return
 
         all_actions_message: str = "\n".join(
-            [
-                f"\n{committee.mention if ping else committee}, Actions:"
-                f"\n{', \n'.join(str(action.description) + f' ({AssignedCommitteeAction.Status(action.status).label})' for action in actions)}"  # noqa: E501
-                for committee, actions in filtered_committee_actions.items()
-            ],
+            f"\n<@{discord_id}>, Actions:"
+            f"\n{
+                ', \n'.join(
+                    (
+                        ':red_circle: '
+                        if action.status == Status.NOT_STARTED.value
+                        else ':yellow_circle: '
+                        if action.status == Status.IN_PROGRESS.value
+                        else ':no_entry: '
+                        if action.status == Status.BLOCKED.value
+                        else ':white_check_mark: '
+                        if action.status == Status.COMPLETED.value
+                        else ''
+                    )
+                    + str(action.description)
+                    + f' ({AssignedCommitteeAction.Status(action.status).label})'
+                    for action in actions
+                    if action.discord_member.discord_id == discord_id
+                )
+            }"
+            for discord_id, actions in filtered_actions.items()
         )
 
         await ctx.respond(content=all_actions_message)
@@ -834,6 +1076,8 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         action_description: str = action.description
 
         await action.adelete()
+
+        await self._update_action_board()
 
         await ctx.respond(content=f"Action `{action_description}` successfully deleted.")
 
