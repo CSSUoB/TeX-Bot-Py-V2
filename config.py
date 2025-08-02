@@ -821,7 +821,9 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_membership_dependent_roles(cls) -> None:
-        raw_membership_dependent_roles: str = os.getenv("MEMBERSHIP_DEPENDENT_ROLES", default="").strip()
+        raw_membership_dependent_roles: str = os.getenv(
+            "MEMBERSHIP_DEPENDENT_ROLES", default=""
+        ).strip()
 
         if not raw_membership_dependent_roles:
             cls._settings["MEMBERSHIP_DEPENDENT_ROLES"] = frozenset()

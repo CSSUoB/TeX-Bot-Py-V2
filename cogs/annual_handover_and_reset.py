@@ -217,7 +217,6 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
                         role_name,
                     )
 
-
             member: discord.Member
             for member in member_role.members:
                 await member.remove_roles(member_role, reason=ROLE_RESET_AUDIT_MESSAGE)
