@@ -213,7 +213,8 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
             for role_name in settings["MEMBERSHIP_DEPENDENT_ROLES"]:
                 if role_name not in {role.name for role in membership_dependent_roles}:
                     logger.warning(
-                        "Membership dependent role '%s' was configured but could not be found.",
+                        "Membership dependent role '%s' was "
+                        "configured but could not be found.",
                         role_name,
                     )
 
