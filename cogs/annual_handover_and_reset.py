@@ -204,18 +204,26 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
                 f'{ctx.user} used TeX-Bot slash-command: "/annual_roles_reset"'
             )
 
-            membership_tied_roles: set[discord.Role] = {
+            membership_dependent_roles: set[discord.Role] = {
                 role
                 for role in main_guild.roles
-                if role.name in settings["MEMBERSHIP_TIED_ROLES"]
+                if role.name in settings["MEMBERSHIP_DEPENDENT_ROLES"]
             }
+
+            for role_name in settings["MEMBERSHIP_DEPENDENT_ROLES"]:
+                if role_name not in {role.name for role in membership_dependent_roles}:
+                    logger.warning(
+                        "Membership dependent role '%s' was configured but could not be found.",
+                        role_name,
+                    )
+
 
             member: discord.Member
             for member in member_role.members:
                 await member.remove_roles(member_role, reason=ROLE_RESET_AUDIT_MESSAGE)
 
                 await member.remove_roles(
-                    *membership_tied_roles, reason=ROLE_RESET_AUDIT_MESSAGE
+                    *membership_dependent_roles, reason=ROLE_RESET_AUDIT_MESSAGE
                 )
 
             logger.debug("Removed Member role from all users.")

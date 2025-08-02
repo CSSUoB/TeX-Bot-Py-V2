@@ -820,20 +820,20 @@ class Settings(abc.ABC):
         )
 
     @classmethod
-    def _setup_membership_tied_roles(cls) -> None:
-        raw_membership_tied_roles: str = os.getenv("MEMBERSHIP_TIED_ROLES", default="").strip()
+    def _setup_membership_dependent_roles(cls) -> None:
+        raw_membership_dependent_roles: str = os.getenv("MEMBERSHIP_DEPENDENT_ROLES", default="").strip()
 
-        if not raw_membership_tied_roles:
-            cls._settings["MEMBERSHIP_TIED_ROLES"] = frozenset()
+        if not raw_membership_dependent_roles:
+            cls._settings["MEMBERSHIP_DEPENDENT_ROLES"] = frozenset()
             return
 
-        membership_tied_roles: AbstractSet[str] = {
-            raw_membership_tied_role.strip()
-            for raw_membership_tied_role in raw_membership_tied_roles.split(",")
-            if raw_membership_tied_role.strip()
-        }
+        membership_dependent_roles: frozenset[str] = frozenset(
+            raw_membership_dependent_role.strip()
+            for raw_membership_dependent_role in raw_membership_dependent_roles.split(",")
+            if raw_membership_dependent_role.strip()
+        )
 
-        cls._settings["MEMBERSHIP_TIED_ROLES"] = membership_tied_roles or frozenset()
+        cls._settings["MEMBERSHIP_DEPENDENT_ROLES"] = membership_dependent_roles
 
     @classmethod
     def _setup_moderation_document_url(cls) -> None:
@@ -941,7 +941,7 @@ class Settings(abc.ABC):
             cls._setup_advanced_send_get_roles_reminders_interval()
             cls._setup_statistics_days()
             cls._setup_statistics_roles()
-            cls._setup_membership_tied_roles()
+            cls._setup_membership_dependent_roles()
             cls._setup_moderation_document_url()
             cls._setup_strike_performed_manually_warning_location()
             cls._setup_auto_add_committee_to_threads()
