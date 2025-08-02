@@ -26,11 +26,6 @@ __all__: "Sequence[str]" = (
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-MEMBERSHIP_TIED_ROLE_NAMES: "Final[frozenset[str]]" = frozenset(
-    settings["MEMBERSHIP_TIED_ROLES"]
-)
-
-
 class CommitteeHandoverCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/committee-handover" command."""
 
@@ -210,7 +205,9 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
             )
 
             membership_tied_roles: set[discord.Role] = {
-                role for role in main_guild.roles if role.name in MEMBERSHIP_TIED_ROLE_NAMES
+                role
+                for role in main_guild.roles
+                if role.name in settings["MEMBERSHIP_TIED_ROLES"]
             }
 
             member: discord.Member
@@ -240,7 +237,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
             }
 
             await initial_response.edit(
-                content=":hourglass: Removing all members from year roles... :hourglass:"
+                content=":hourglass: Removing all members from each year role... :hourglass:"
             )
             logger.debug("Found %d year roles to reset.", len(year_roles))
 
@@ -279,6 +276,9 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
         # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
+        INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE: Final[str] = (
+            f'{ctx.user} used TeX-Bot slash-command: "/increment_year_channels"'
+        )
 
         async with ctx.typing():
             initial_message: discord.Interaction | discord.WebhookMessage = await ctx.respond(
@@ -295,11 +295,18 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                 )
                 archivist_role: discord.Role = await self.bot.archivist_role
 
-                await final_year_channel.set_permissions(guest_role, overwrite=None)
-                await final_year_channel.set_permissions(archivist_role, read_messages=True)
+                await final_year_channel.set_permissions(
+                    guest_role, overwrite=None, reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE
+                )
+                await final_year_channel.set_permissions(
+                    archivist_role,
+                    read_messages=True,
+                    reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
+                )
 
                 await final_year_channel.edit(
-                    name=f"final-years-{datetime.datetime.now(tz=datetime.UTC).year}"
+                    name=f"final-years-{datetime.datetime.now(tz=datetime.UTC).year}",
+                    reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
                 )
 
                 archived_category: discord.CategoryChannel | None = discord.utils.get(
@@ -308,7 +315,9 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
 
                 if archived_category:
                     await final_year_channel.edit(
-                        category=archived_category, sync_permissions=True
+                        category=archived_category,
+                        sync_permissions=True,
+                        reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
                     )
 
             second_years_channel: discord.TextChannel | None = discord.utils.get(
@@ -319,6 +328,7 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                 await second_years_channel.edit(
                     name="final-years",
                     topic="Channel for final-years to chat and ask questions.",
+                    reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
                 )
 
             first_year_channel: discord.TextChannel | None = discord.utils.get(
@@ -329,6 +339,7 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                 await first_year_channel.edit(
                     name="second-years",
                     topic="Channel for second-years to chat and ask questions.",
+                    reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
                 )
 
             year_channels_category: discord.CategoryChannel | None = discord.utils.get(
@@ -342,19 +353,27 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                 )
             )
 
-            new_first_years_channel: discord.TextChannel = await main_guild.create_text_channel(  # noqa: E501
-                name="first-years",
-                topic="Channel for first-years to chat and ask questions.",
-                reason=f'{ctx.user} used TeX-Bot slash-command: "/increment_year_channels"',
+            new_first_years_channel: discord.TextChannel = (
+                await main_guild.create_text_channel(
+                    name="first-years",
+                    topic="Channel for first-years to chat and ask questions.",
+                    reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
+                )
             )
 
             if year_channels_category:
                 await new_first_years_channel.edit(
-                    category=year_channels_category, sync_permissions=True, position=0
+                    category=year_channels_category,
+                    sync_permissions=True,
+                    position=0,
+                    reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
                 )
             else:
                 await new_first_years_channel.set_permissions(
-                    guest_role, read_messages=True, send_messages=True
+                    guest_role,
+                    read_messages=True,
+                    send_messages=True,
+                    reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
                 )
 
             await initial_message.edit(
