@@ -134,8 +134,8 @@ class Settings(abc.ABC):
 
         if raw_console_log_level not in LOG_LEVEL_CHOICES:
             INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"CONSOLE_LOG_LEVEL must be one of {
-                ",".join(
-                    f"{log_level_choice!r}" for log_level_choice in LOG_LEVEL_CHOICES[:-1]
+                ','.join(
+                    f'{log_level_choice!r}' for log_level_choice in LOG_LEVEL_CHOICES[:-1]
                 )
             } or {LOG_LEVEL_CHOICES[-1]!r}."
             raise ImproperlyConfiguredError(INVALID_LOG_LEVEL_MESSAGE)
