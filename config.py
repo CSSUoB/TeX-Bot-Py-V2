@@ -829,13 +829,11 @@ class Settings(abc.ABC):
             cls._settings["MEMBERSHIP_DEPENDENT_ROLES"] = frozenset()
             return
 
-        membership_dependent_roles: frozenset[str] = frozenset(
+        cls._settings["MEMBERSHIP_DEPENDENT_ROLES"] = frozenset(
             raw_membership_dependent_role.strip()
             for raw_membership_dependent_role in raw_membership_dependent_roles.split(",")
             if raw_membership_dependent_role.strip()
         )
-
-        cls._settings["MEMBERSHIP_DEPENDENT_ROLES"] = membership_dependent_roles
 
     @classmethod
     def _setup_moderation_document_url(cls) -> None:

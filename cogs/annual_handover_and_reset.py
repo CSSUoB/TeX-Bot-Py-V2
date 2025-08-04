@@ -213,10 +213,9 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
             not_found_role_names: Collection[str] = settings[
                 "MEMBERSHIP_DEPENDENT_ROLES"
             ] - set(membership_dependent_roles.keys())
-
             if not_found_role_names:
                 logger.warning(
-                    ("Membership dependent roles %s were configured but could not be found."),
+                    "Membership dependent roles %s were configured but could not be found.",
                     ", ".join(not_found_role_names),
                 )
 
