@@ -133,11 +133,11 @@ class Settings(abc.ABC):
         raw_console_log_level: str = os.getenv("CONSOLE_LOG_LEVEL", "INFO").upper().strip()
 
         if raw_console_log_level not in LOG_LEVEL_CHOICES:
-            INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"""CONSOLE_LOG_LEVEL must be one of {
+            INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"CONSOLE_LOG_LEVEL must be one of {
                 ",".join(
                     f"{log_level_choice!r}" for log_level_choice in LOG_LEVEL_CHOICES[:-1]
                 )
-            } or {LOG_LEVEL_CHOICES[-1]!r}."""
+            } or {LOG_LEVEL_CHOICES[-1]!r}."
             raise ImproperlyConfiguredError(INVALID_LOG_LEVEL_MESSAGE)
 
         logger.setLevel(getattr(logging, raw_console_log_level))
@@ -165,13 +165,13 @@ class Settings(abc.ABC):
                     ','.join(
                         f'{log_level_choice!r}' for log_level_choice in LOG_LEVEL_CHOICES[:-1]
                     )
-                }"
+                } or {LOG_LEVEL_CHOICES[-1]!r}"
             )
             raise ImproperlyConfiguredError(INVALID_LOG_LEVEL_MESSAGE)
 
         discord_logger.setLevel(getattr(logging, raw_discord_log_level))
 
-        discord_log_handler = logging.FileHandler(
+        discord_log_handler: logging.Handler = logging.FileHandler(
             filename="discord.log", encoding="utf-8", mode="w"
         )
         discord_log_handler.setFormatter(
