@@ -72,6 +72,7 @@ DEFAULT_STATISTICS_ROLES: "Final[AbstractSet[str]]" = {
 LOG_LEVEL_CHOICES: "Final[Sequence[str]]" = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+discord_logger: "Final[Logger]" = logging.getLogger("discord")
 
 
 class Settings(abc.ABC):
@@ -128,11 +129,11 @@ class Settings(abc.ABC):
             raise KeyError(key_error_message) from None
 
     @staticmethod
-    def _setup_logging() -> None:
+    def _setup_console_logging() -> None:
         raw_console_log_level: str = os.getenv("CONSOLE_LOG_LEVEL", "INFO").upper().strip()
 
         if raw_console_log_level not in LOG_LEVEL_CHOICES:
-            INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"""LOG_LEVEL must be one of {
+            INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"""CONSOLE_LOG_LEVEL must be one of {
                 ",".join(
                     f"{log_level_choice!r}" for log_level_choice in LOG_LEVEL_CHOICES[:-1]
                 )
@@ -148,6 +149,36 @@ class Settings(abc.ABC):
 
         logger.addHandler(console_logging_handler)
         logger.propagate = False
+
+    @staticmethod
+    def _setup_discord_log_level() -> None:
+        raw_discord_log_level: str = os.getenv("DISCORD_LOG_LEVEL", "").upper().strip()
+
+        if not raw_discord_log_level:
+            return
+
+        if raw_discord_log_level not in LOG_LEVEL_CHOICES:
+            INVALID_LOG_LEVEL_MESSAGE: Final[str] = (
+                "DISCORD_LOG_LEVEL must be one of "
+                f"{
+                    ','.join(
+                        f'{log_level_choice!r}' for log_level_choice in LOG_LEVEL_CHOICES[:-1]
+                    )
+                }"
+            )
+            raise ImproperlyConfiguredError(INVALID_LOG_LEVEL_MESSAGE)
+
+        discord_logger.setLevel(getattr(logging, raw_discord_log_level))
+
+        discord_log_handler = logging.FileHandler(
+            filename="discord.log", encoding="utf-8", mode="w"
+        )
+        discord_log_handler.setFormatter(
+            logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
+        )
+
+        discord_logger.addHandler(discord_log_handler)
+        discord_logger.propagate = False
 
     @classmethod
     def _setup_discord_bot_token(cls) -> None:
@@ -902,7 +933,7 @@ class Settings(abc.ABC):
         webhook_config_logger: Logger = cls._setup_discord_log_channel_webhook()
 
         try:
-            cls._setup_logging()
+            cls._setup_console_logging()
             cls._setup_discord_bot_token()
             cls._setup_discord_guild_id()
             cls._setup_group_full_name()
