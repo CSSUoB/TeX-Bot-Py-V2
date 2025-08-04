@@ -934,6 +934,7 @@ class Settings(abc.ABC):
 
         try:
             cls._setup_console_logging()
+            cls._setup_discord_log_level()
             cls._setup_discord_bot_token()
             cls._setup_discord_guild_id()
             cls._setup_group_full_name()
