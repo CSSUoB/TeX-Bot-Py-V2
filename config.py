@@ -155,6 +155,7 @@ class Settings(abc.ABC):
         raw_discord_log_level: str = os.getenv("DISCORD_LOG_LEVEL", "").upper().strip()
 
         if not raw_discord_log_level:
+            logger.debug("DISCORD_LOG_LEVEL is not set, skipping Discord logging setup.")
             return
 
         if raw_discord_log_level not in LOG_LEVEL_CHOICES:
