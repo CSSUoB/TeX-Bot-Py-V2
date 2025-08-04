@@ -201,7 +201,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
             )
 
             ROLE_RESET_AUDIT_MESSAGE: Final[str] = (
-                f'{ctx.user} used TeX-Bot slash-command: "/annual_roles_reset"'
+                f'{ctx.user} used TeX-Bot slash-command: "/annual-roles-reset"'
             )
 
             membership_dependent_roles: set[discord.Role] = {
@@ -285,7 +285,7 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
         INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE: Final[str] = (
-            f'{ctx.user} used TeX-Bot slash-command: "/increment_year_channels"'
+            f'{ctx.user} used TeX-Bot slash-command: "/increment-year-channels"'
         )
 
         async with ctx.typing():
