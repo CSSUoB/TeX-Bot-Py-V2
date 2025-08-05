@@ -820,6 +820,22 @@ class Settings(abc.ABC):
         )
 
     @classmethod
+    def _setup_membership_dependent_roles(cls) -> None:
+        raw_membership_dependent_roles: str = os.getenv(
+            "MEMBERSHIP_DEPENDENT_ROLES", default=""
+        ).strip()
+
+        if not raw_membership_dependent_roles:
+            cls._settings["MEMBERSHIP_DEPENDENT_ROLES"] = frozenset()
+            return
+
+        cls._settings["MEMBERSHIP_DEPENDENT_ROLES"] = frozenset(
+            raw_membership_dependent_role.strip()
+            for raw_membership_dependent_role in raw_membership_dependent_roles.split(",")
+            if raw_membership_dependent_role.strip()
+        )
+
+    @classmethod
     def _setup_moderation_document_url(cls) -> None:
         INVALID_MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
             "MODERATION_DOCUMENT_URL must be a valid URL."
@@ -925,6 +941,7 @@ class Settings(abc.ABC):
             cls._setup_advanced_send_get_roles_reminders_interval()
             cls._setup_statistics_days()
             cls._setup_statistics_roles()
+            cls._setup_membership_dependent_roles()
             cls._setup_moderation_document_url()
             cls._setup_strike_performed_manually_warning_location()
             cls._setup_auto_add_committee_to_threads()
