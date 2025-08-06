@@ -172,7 +172,7 @@ class Settings(abc.ABC):
         discord_logger.setLevel(getattr(logging, raw_discord_log_level))
 
         discord_log_handler: logging.Handler = logging.FileHandler(
-            filename="discord.log", encoding="utf-8", mode="w"
+            filename="discord.log", encoding="utf-8", mode="a"
         )
         discord_log_handler.setFormatter(
             logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
