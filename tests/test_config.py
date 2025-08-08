@@ -2616,6 +2616,52 @@ class TestSetupStatisticsRoles:
         )
 
 
+class TestSetupMembershipDependentRoles:
+    """Test case to unit-test the `_setup_membership_dependent_roles()` function."""
+
+    @pytest.mark.parametrize(
+        "test_membership_dependent_roles",
+        (
+            "Guest",
+            "Guest,Member",
+            "Guest,Member,Admin",
+            "    Guest,Member,Admin   ",
+            "    Guest ,   Member  ,Admin   ",
+        ),
+    )
+    def test_setup_membership_dependent_roles_successful(
+        self, test_membership_dependent_roles: str
+    ) -> None:
+        """Test that the given valid `MEMBERSHIP_DEPENDENT_ROLES` are used when provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("MEMBERSHIP_DEPENDENT_ROLES"):
+            os.environ["MEMBERSHIP_DEPENDENT_ROLES"] = test_membership_dependent_roles
+
+            RuntimeSettings._setup_membership_dependent_roles()
+
+        RuntimeSettings._is_env_variables_setup = True
+
+        assert RuntimeSettings()["MEMBERSHIP_DEPENDENT_ROLES"] == {
+            membership_dependent_role.strip()
+            for membership_dependent_role in test_membership_dependent_roles.strip().split(",")
+            if membership_dependent_role.strip()
+        }
+
+    def test_default_membership_dependent_roles(self) -> None:
+        """Test an empty frozenset is used when no `MEMBERSHIP_DEPENDENT_ROLES` are provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("MEMBERSHIP_DEPENDENT_ROLES"):
+            RuntimeSettings._setup_membership_dependent_roles()
+
+        RuntimeSettings._is_env_variables_setup = True
+
+        assert isinstance(RuntimeSettings()["MEMBERSHIP_DEPENDENT_ROLES"], Iterable)
+
+        assert not bool(RuntimeSettings()["MEMBERSHIP_DEPENDENT_ROLES"])
+
+
 class TestSetupModerationDocumentURL:
     """Test case to unit-test the `_setup_moderation_document_url()` function."""
 
