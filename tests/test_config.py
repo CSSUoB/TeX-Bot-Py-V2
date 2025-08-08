@@ -2649,7 +2649,7 @@ class TestSetupMembershipDependentRoles:
         }
 
     def test_default_membership_dependent_roles(self) -> None:
-        """Test an empty frozenset is used when no `MEMBERSHIP_DEPENDENT_ROLES` are provided."""
+        """Test an empty set is used when no `MEMBERSHIP_DEPENDENT_ROLES` are provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("MEMBERSHIP_DEPENDENT_ROLES"):
