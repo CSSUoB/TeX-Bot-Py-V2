@@ -375,7 +375,7 @@ class TestSetupDiscordApiLogging:
             RuntimeSettings._setup_discord_log_level()
 
         assert "discord" in set(logging.root.manager.loggerDict)
-        assert logging.getLogger("discord").getEffectiveLevel() == logging.WARNING
+        assert logging.getLogger("discord").getEffectiveLevel() == logging.CRITICAL
 
     @pytest.mark.parametrize(
         "invalid_log_level",
