@@ -286,11 +286,11 @@ class TestSettings:
         assert config._settings_class_factory() != config._settings_class_factory()
 
 
-class TestSetupLogging:
-    """Test case to unit-test the `_setup_logging()` function."""
+class TestSetupConsoleLogging:
+    """Test case to unit-test the `_setup_console_logging()` function."""
 
     @pytest.mark.parametrize("test_log_level", config.LOG_LEVEL_CHOICES)
-    def test_setup_logging_successful(self, test_log_level: str) -> None:
+    def test_setup_console_logging_successful(self, test_log_level: str) -> None:
         """Test that the given `CONSOLE_LOG_LEVEL` is used when a valid one is provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
@@ -338,7 +338,7 @@ class TestSetupLogging:
             with pytest.raises(ImproperlyConfiguredError, match="LOG_LEVEL must be one of"):
                 RuntimeSettings._setup_console_logging()
 
-    @pytest.mark.parametrize("lower_case_log_level", ("info",))
+    @pytest.mark.parametrize("lower_case_log_level", ("info", "debug", "warning"))
     def test_valid_lowercase_console_log_level(self, lower_case_log_level: str) -> None:
         """Test that the provided `CONSOLE_LOG_LEVEL` is fixed & used if it is in lowercase."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
@@ -347,6 +347,57 @@ class TestSetupLogging:
             os.environ["CONSOLE_LOG_LEVEL"] = lower_case_log_level
 
             RuntimeSettings._setup_console_logging()
+
+
+class TestSetupDiscordApiLogging:
+    """Test case to unit-test the `_setup_discord_log_level()` function."""
+
+    @pytest.mark.parametrize("test_log_level", config.LOG_LEVEL_CHOICES)
+    def test_setup_discord_api_logging_successful(self, test_log_level: str) -> None:
+        """Test that the given `DISCORD_LOG_LEVEL` is used when a valid one is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("DISCORD_LOG_LEVEL"):
+            os.environ["DISCORD_LOG_LEVEL"] = test_log_level
+
+            RuntimeSettings._setup_discord_log_level()
+
+        assert "discord" in set(logging.root.manager.loggerDict)
+        assert logging.getLogger("discord").getEffectiveLevel() == getattr(
+            logging, test_log_level
+        )
+
+    def test_default_discord_log_level(self) -> None:
+        """Test that a default value is used when no `DISCORD_LOG_LEVEL` is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("DISCORD_LOG_LEVEL"):
+            RuntimeSettings._setup_discord_log_level()
+
+        assert "discord" in set(logging.root.manager.loggerDict)
+        assert logging.getLogger("discord").getEffectiveLevel() == logging.WARNING
+
+    @pytest.mark.parametrize(
+        "invalid_log_level",
+        (
+            "invalid_log_level",
+            "lol what is this",
+            "clearly not a log level",
+            "5",
+            "34",
+            "-1",
+            "`./|=_+*^%$#@!~",
+        ),
+    )
+    def test_invalid_discord_log_level(self, invalid_log_level: str) -> None:
+        """Test that an error is raised when an invalid `DISCORD_LOG_LEVEL` is provided."""
+        RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
+
+        with EnvVariableDeleter("DISCORD_LOG_LEVEL"):
+            os.environ["DISCORD_LOG_LEVEL"] = invalid_log_level
+
+            with pytest.raises(ImproperlyConfiguredError, match="LOG_LEVEL must be one of"):
+                RuntimeSettings._setup_discord_log_level()
 
 
 class TestSetupDiscordBotToken:
