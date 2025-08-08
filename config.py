@@ -72,6 +72,7 @@ DEFAULT_STATISTICS_ROLES: "Final[AbstractSet[str]]" = {
 LOG_LEVEL_CHOICES: "Final[Sequence[str]]" = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+discord_logger: "Final[Logger]" = logging.getLogger("discord")
 
 
 class Settings(abc.ABC):
@@ -128,15 +129,15 @@ class Settings(abc.ABC):
             raise KeyError(key_error_message) from None
 
     @staticmethod
-    def _setup_logging() -> None:
+    def _setup_console_logging() -> None:
         raw_console_log_level: str = os.getenv("CONSOLE_LOG_LEVEL", "INFO").upper().strip()
 
         if raw_console_log_level not in LOG_LEVEL_CHOICES:
-            INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"""LOG_LEVEL must be one of {
-                ",".join(
-                    f"{log_level_choice!r}" for log_level_choice in LOG_LEVEL_CHOICES[:-1]
+            INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"CONSOLE_LOG_LEVEL must be one of {
+                ','.join(
+                    f'{log_level_choice!r}' for log_level_choice in LOG_LEVEL_CHOICES[:-1]
                 )
-            } or {LOG_LEVEL_CHOICES[-1]!r}."""
+            } or {LOG_LEVEL_CHOICES[-1]!r}."
             raise ImproperlyConfiguredError(INVALID_LOG_LEVEL_MESSAGE)
 
         logger.setLevel(getattr(logging, raw_console_log_level))
@@ -148,6 +149,37 @@ class Settings(abc.ABC):
 
         logger.addHandler(console_logging_handler)
         logger.propagate = False
+
+    @staticmethod
+    def _setup_discord_log_level() -> None:
+        raw_discord_log_level: str = os.getenv("DISCORD_LOG_LEVEL", "").upper().strip()
+
+        if not raw_discord_log_level:
+            logger.debug("DISCORD_LOG_LEVEL is not set, skipping Discord logging setup.")
+            return
+
+        if raw_discord_log_level not in LOG_LEVEL_CHOICES:
+            INVALID_LOG_LEVEL_MESSAGE: Final[str] = (
+                "DISCORD_LOG_LEVEL must be one of "
+                f"{
+                    ','.join(
+                        f'{log_level_choice!r}' for log_level_choice in LOG_LEVEL_CHOICES[:-1]
+                    )
+                } or {LOG_LEVEL_CHOICES[-1]!r}"
+            )
+            raise ImproperlyConfiguredError(INVALID_LOG_LEVEL_MESSAGE)
+
+        discord_logger.setLevel(getattr(logging, raw_discord_log_level))
+
+        discord_log_handler: logging.Handler = logging.FileHandler(
+            filename="discord.log", encoding="utf-8", mode="a"
+        )
+        discord_log_handler.setFormatter(
+            logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
+        )
+
+        discord_logger.addHandler(discord_log_handler)
+        discord_logger.propagate = False
 
     @classmethod
     def _setup_discord_bot_token(cls) -> None:
@@ -464,21 +496,95 @@ class Settings(abc.ABC):
         cls._settings["ORGANISATION_ID"] = raw_organisation_id
 
     @classmethod
-    def _setup_members_list_auth_session_cookie(cls) -> None:
-        raw_members_list_auth_session_cookie: str = os.getenv(
-            "MEMBERS_LIST_URL_SESSION_COOKIE", default=""
+    def _setup_su_platform_access_cookie(cls) -> None:
+        raw_su_platform_access_cookie: str = os.getenv(
+            "SU_PLATFORM_ACCESS_COOKIE",
+            default="",
         ).strip()
 
-        if not raw_members_list_auth_session_cookie or not re.fullmatch(
-            r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_auth_session_cookie
+        if not raw_su_platform_access_cookie or not re.fullmatch(
+            r"\A[A-Fa-f\d]{128,256}\Z", raw_su_platform_access_cookie
         ):
-            INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE: Final[str] = (
-                "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
+            INVALID_SU_PLATFORM_ACCESS_COOKIE_MESSAGE: Final[str] = (
+                "SU_PLATFORM_ACCESS_COOKIE must be a valid .ASPXAUTH cookie."
             )
-            raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_SU_PLATFORM_ACCESS_COOKIE_MESSAGE)
 
-        cls._settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"] = (
-            raw_members_list_auth_session_cookie
+        cls._settings["SU_PLATFORM_ACCESS_COOKIE"] = raw_su_platform_access_cookie
+
+    @classmethod
+    def _setup_auto_su_platform_access_cookie_checking(cls) -> None:
+        raw_auto_auth_session_cookie_checking: str = (
+            os.getenv("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING", "False").lower().strip()
+        )
+
+        if raw_auto_auth_session_cookie_checking not in TRUE_VALUES | FALSE_VALUES:
+            INVALID_AUTO_AUTH_CHECKING_MESSAGE: Final[str] = (
+                "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING must be a boolean value."
+            )
+            raise ImproperlyConfiguredError(INVALID_AUTO_AUTH_CHECKING_MESSAGE)
+
+        cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"] = (
+            raw_auto_auth_session_cookie_checking in TRUE_VALUES
+        )
+
+    @classmethod
+    def _setup_auto_su_platform_access_cookie_checking_interval(cls) -> None:
+        if "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING" not in cls._settings:
+            INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+                "Invalid setup order: AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING must be set up "
+                "before AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL can be set up."
+            )
+            raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
+
+        if not cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"]:
+            cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"] = {"hours": 24}
+            return
+
+        raw_auto_su_platform_access_cookie_checking_interval: re.Match[str] | None = (
+            re.fullmatch(
+                r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
+                os.getenv("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL", "24h")
+                .strip()
+                .lower()
+                .replace(" ", ""),
+            )
+        )
+
+        if not raw_auto_su_platform_access_cookie_checking_interval:
+            INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE: Final[str] = (
+                "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL must contain the delay "
+                "in any combination of seconds, minutes, hours, days or weeks."
+            )
+            logger.debug(raw_auto_su_platform_access_cookie_checking_interval)
+            raise ImproperlyConfiguredError(
+                INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE
+            )
+
+        raw_timedelta_auto_su_platform_access_cookie_checking_interval: Mapping[str, float] = {
+            key: float(stripped_value)
+            for key, value in (
+                raw_auto_su_platform_access_cookie_checking_interval.groupdict().items()
+            )
+            if value and (stripped_value := value.strip())
+        }
+
+        if (
+            timedelta(
+                **raw_timedelta_auto_su_platform_access_cookie_checking_interval
+            ).total_seconds()
+            <= 3
+        ):
+            TOO_SMALL_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE: Final[str] = (
+                "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL "
+                "must be greater than 3 seconds."
+            )
+            raise ImproperlyConfiguredError(
+                TOO_SMALL_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE,
+            )
+
+        cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"] = (
+            raw_timedelta_auto_su_platform_access_cookie_checking_interval
         )
 
     @classmethod
@@ -746,6 +852,22 @@ class Settings(abc.ABC):
         )
 
     @classmethod
+    def _setup_membership_dependent_roles(cls) -> None:
+        raw_membership_dependent_roles: str = os.getenv(
+            "MEMBERSHIP_DEPENDENT_ROLES", default=""
+        ).strip()
+
+        if not raw_membership_dependent_roles:
+            cls._settings["MEMBERSHIP_DEPENDENT_ROLES"] = frozenset()
+            return
+
+        cls._settings["MEMBERSHIP_DEPENDENT_ROLES"] = frozenset(
+            raw_membership_dependent_role.strip()
+            for raw_membership_dependent_role in raw_membership_dependent_roles.split(",")
+            if raw_membership_dependent_role.strip()
+        )
+
+    @classmethod
     def _setup_moderation_document_url(cls) -> None:
         INVALID_MODERATION_DOCUMENT_URL_MESSAGE: Final[str] = (
             "MODERATION_DOCUMENT_URL must be a valid URL."
@@ -842,7 +964,8 @@ class Settings(abc.ABC):
         webhook_config_logger: Logger = cls._setup_discord_log_channel_webhook()
 
         try:
-            cls._setup_logging()
+            cls._setup_console_logging()
+            cls._setup_discord_log_level()
             cls._setup_discord_bot_token()
             cls._setup_discord_guild_id()
             cls._setup_group_full_name()
@@ -851,7 +974,9 @@ class Settings(abc.ABC):
             cls._setup_welcome_messages()
             cls._setup_roles_messages()
             cls._setup_organisation_id()
-            cls._setup_members_list_auth_session_cookie()
+            cls._setup_su_platform_access_cookie()
+            cls._setup_auto_su_platform_access_cookie_checking()
+            cls._setup_auto_su_platform_access_cookie_checking_interval()
             cls._setup_membership_perks_url()
             cls._setup_purchase_membership_url()
             cls._setup_custom_discord_invite_url()
@@ -863,6 +988,7 @@ class Settings(abc.ABC):
             cls._setup_advanced_send_get_roles_reminders_interval()
             cls._setup_statistics_days()
             cls._setup_statistics_roles()
+            cls._setup_membership_dependent_roles()
             cls._setup_moderation_document_url()
             cls._setup_strike_performed_manually_warning_location()
             cls._setup_auto_add_committee_to_threads()

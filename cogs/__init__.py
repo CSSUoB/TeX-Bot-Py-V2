@@ -15,6 +15,10 @@ from .annual_handover_and_reset import (
 )
 from .archive import ArchiveCommandCog
 from .auto_slow_mode import AutomaticSlowModeCommandCog, AutomaticSlowModeTaskCog
+from .check_su_platform_authorisation import (
+    CheckSUPlatformAuthorisationCommandCog,
+    CheckSUPlatformAuthorisationTaskCog,
+)
 from .command_error import CommandErrorCog
 from .committee_actions_tracking import (
     CommitteeActionsTrackingContextCommandsCog,
@@ -23,7 +27,6 @@ from .committee_actions_tracking import (
 from .delete_all import DeleteAllCommandsCog
 from .edit_message import EditMessageCommandCog
 from .everest import EverestCommandCog
-from .get_token_authorisation import GetTokenAuthorisationCommandCog
 from .induct import (
     EnsureMembersInductedCommandCog,
     InductContextCommandsCog,
@@ -56,6 +59,8 @@ __all__: "Sequence[str]" = (
     "ArchiveCommandCog",
     "AutomaticSlowModeCommandCog",
     "AutomaticSlowModeTaskCog",
+    "CheckSUPlatformAuthorisationCommandCog",
+    "CheckSUPlatformAuthorisationTaskCog",
     "ClearRemindersBacklogTaskCog",
     "CommandErrorCog",
     "CommitteeActionsTrackingContextCommandsCog",
@@ -65,7 +70,6 @@ __all__: "Sequence[str]" = (
     "EditMessageCommandCog",
     "EnsureMembersInductedCommandCog",
     "EverestCommandCog",
-    "GetTokenAuthorisationCommandCog",
     "InductContextCommandsCog",
     "InductSendMessageCog",
     "InductSlashCommandCog",
@@ -108,7 +112,7 @@ def setup(bot: "TeXBot") -> None:
         EditMessageCommandCog,
         EnsureMembersInductedCommandCog,
         EverestCommandCog,
-        GetTokenAuthorisationCommandCog,
+        CheckSUPlatformAuthorisationCommandCog,
         InductContextCommandsCog,
         InductSendMessageCog,
         InductSlashCommandCog,
@@ -128,6 +132,7 @@ def setup(bot: "TeXBot") -> None:
         StatsCommandsCog,
         StrikeCommandCog,
         StrikeContextCommandsCog,
+        CheckSUPlatformAuthorisationTaskCog,
         WriteRolesCommandCog,
     )
     Cog: type[TeXBotBaseCog]

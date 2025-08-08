@@ -227,7 +227,9 @@ class RemindMeCommandCog(TeXBotBaseCog):
 
         try:
             reminder: DiscordReminder = await DiscordReminder.objects.acreate(  # type: ignore[misc]
-                discord_id=ctx.user.id,
+                discord_member=(
+                    await DiscordMember.objects.aget_or_create(discord_id=ctx.user.id)
+                )[0],
                 message=message or "",
                 channel_id=ctx.channel_id,
                 send_datetime=parsed_time[0],
@@ -307,9 +309,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                 user: discord.User | None = discord.utils.find(
                     functools.partial(
                         lambda _user, _reminder: (
-                            not _user.bot
-                            and DiscordMember.hash_discord_id(_user.id)
-                            == _reminder.discord_member.hashed_discord_id
+                            not _user.bot and _user.id == _reminder.discord_member.discord_id
                         ),
                         _reminder=reminder,
                     ),
@@ -318,8 +318,8 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
 
                 if not user:
                     logger.warning(
-                        "User with hashed user ID: %s no longer exists.",
-                        reminder.discord_member.hashed_discord_id,
+                        "User with ID: %s no longer exists.",
+                        reminder.discord_member.discord_id,
                     )
                     await reminder.adelete()
                     continue
