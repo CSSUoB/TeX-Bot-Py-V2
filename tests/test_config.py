@@ -297,7 +297,7 @@ class TestSetupLogging:
         with EnvVariableDeleter("CONSOLE_LOG_LEVEL"):
             os.environ["CONSOLE_LOG_LEVEL"] = test_log_level
 
-            RuntimeSettings._setup_logging()
+            RuntimeSettings._setup_console_logging()
 
         assert "TeX-Bot" in set(logging.root.manager.loggerDict)
         assert logging.getLogger("TeX-Bot").getEffectiveLevel() == getattr(
@@ -309,7 +309,7 @@ class TestSetupLogging:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with EnvVariableDeleter("CONSOLE_LOG_LEVEL"):
-            RuntimeSettings._setup_logging()
+            RuntimeSettings._setup_console_logging()
 
         assert "TeX-Bot" in set(logging.root.manager.loggerDict)
 
@@ -336,7 +336,7 @@ class TestSetupLogging:
             os.environ["CONSOLE_LOG_LEVEL"] = invalid_log_level
 
             with pytest.raises(ImproperlyConfiguredError, match="LOG_LEVEL must be one of"):
-                RuntimeSettings._setup_logging()
+                RuntimeSettings._setup_console_logging()
 
     @pytest.mark.parametrize("lower_case_log_level", ("info",))
     def test_valid_lowercase_console_log_level(self, lower_case_log_level: str) -> None:
@@ -346,7 +346,7 @@ class TestSetupLogging:
         with EnvVariableDeleter("CONSOLE_LOG_LEVEL"):
             os.environ["CONSOLE_LOG_LEVEL"] = lower_case_log_level
 
-            RuntimeSettings._setup_logging()
+            RuntimeSettings._setup_console_logging()
 
 
 class TestSetupDiscordBotToken:
