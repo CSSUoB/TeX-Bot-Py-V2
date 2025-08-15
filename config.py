@@ -1047,21 +1047,20 @@ class Settings(abc.ABC):
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        INVALID_COMMITTEE_ACTIONS_BOARD_CHANNEL_MESSAGE: Final[str] = (
-            "COMMITTEE_ACTIONS_BOARD_CHANNEL must be a valid name"
-            " of a channel in your group's Discord guild."
-        )
-
         raw_committee_actions_board_channel: str = (
             os.getenv(
                 "COMMITTEE_ACTIONS_BOARD_CHANNEL",
-                "actions-board",
+                "committee-actions-board",
             )
             .strip()
             .lower()
         )
 
         if not raw_committee_actions_board_channel:
+            INVALID_COMMITTEE_ACTIONS_BOARD_CHANNEL_MESSAGE: Final[str] = (
+                "COMMITTEE_ACTIONS_BOARD_CHANNEL must be a valid name"
+                " of a channel in your group's Discord guild."
+            )
             raise ImproperlyConfiguredError(INVALID_COMMITTEE_ACTIONS_BOARD_CHANNEL_MESSAGE)
 
         cls._settings["COMMITTEE_ACTIONS_BOARD_CHANNEL"] = raw_committee_actions_board_channel
