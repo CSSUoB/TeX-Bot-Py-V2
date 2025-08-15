@@ -1023,18 +1023,20 @@ class Settings(abc.ABC):
         )
 
     @classmethod
-    def _setup_committee_actions_board(cls) -> None:
-        raw_committee_actions_board: str = (
-            os.getenv("COMMITTEE_ACTIONS_BOARD", "True").strip().lower()
+    def _setup_display_committee_actions_board(cls) -> None:
+        raw_display_committee_actions_board: str = (
+            os.getenv("DISPLAY_COMMITTEE_ACTIONS_BOARD", "True").strip().lower()
         )
 
-        if raw_committee_actions_board not in TRUE_VALUES | FALSE_VALUES:
-            INVALID_COMMITTEE_ACTIONS_BOARD_MESSAGE: Final[str] = (
-                "COMMITTEE_ACTIONS_BOARD must be a boolean value."
+        if raw_display_committee_actions_board not in TRUE_VALUES | FALSE_VALUES:
+            INVALID_DISPLAY_COMMITTEE_ACTIONS_BOARD_MESSAGE: Final[str] = (
+                "DISPLAY_COMMITTEE_ACTIONS_BOARD must be a boolean value."
             )
-            raise ImproperlyConfiguredError(INVALID_COMMITTEE_ACTIONS_BOARD_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_DISPLAY_COMMITTEE_ACTIONS_BOARD_MESSAGE)
 
-        cls._settings["COMMITTEE_ACTIONS_BOARD"] = raw_committee_actions_board in TRUE_VALUES
+        cls._settings["DISPLAY_COMMITTEE_ACTIONS_BOARD"] = (
+            raw_display_committee_actions_board in TRUE_VALUES
+        )
 
     @classmethod
     def _setup_committee_actions_board_channel(cls) -> None:
@@ -1111,7 +1113,7 @@ class Settings(abc.ABC):
             cls._setup_auto_add_committee_to_threads()
             cls._setup_committee_actions_reminders()
             cls._setup_committee_actions_reminders_channel()
-            cls._setup_committee_actions_board()
+            cls._setup_display_committee_actions_board()
             cls._setup_committee_actions_board_channel()
             cls._setup_committee_actions_reminders_interval()
         except ImproperlyConfiguredError as improper_config_error:
