@@ -4,8 +4,8 @@ import contextlib
 import logging
 import random
 import time
+import datetime
 from collections import defaultdict
-from datetime import timedelta
 from enum import Enum
 from typing import TYPE_CHECKING, overload, override
 
@@ -57,15 +57,15 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
     """Base cog class that defines methods for committee actions tracking."""
 
     async def _get_all_actions(self) -> dict[str, list[AssignedCommitteeAction]]:
-        """Get a list of all actions in the database."""
-        grouped_action: dict[str, list[AssignedCommitteeAction]] = defaultdict(list)
+        grouped_actions: dict[str, list[AssignedCommitteeAction]] = defaultdict(list)
 
+        action: AssignedCommitteeAction
         async for action in AssignedCommitteeAction.objects.select_related(
             "discord_member"
         ).all():
-            grouped_action[action.discord_member.discord_id].append(action)
+            grouped_actions[action.discord_member.discord_id].append(action)
 
-        return grouped_action
+        return grouped_actions
 
     async def _get_incomplete_actions(self) -> dict[str, list[AssignedCommitteeAction]]:
         """Get a list of all actions that are in progress."""
@@ -312,7 +312,7 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
             status=[Status.NOT_STARTED.value, Status.IN_PROGRESS.value, Status.BLOCKED.value],
         )
 
-        interval_seconds: float = timedelta(
+        interval_seconds: float = datetime.timedelta(
             **settings["COMMITTEE_ACTIONS_REMINDERS_INTERVAL"]
         ).total_seconds()
         next_reminder_unix = int(time.time() + interval_seconds)
