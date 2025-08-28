@@ -10,7 +10,7 @@ import discord
 from discord.ext import tasks
 
 from config import settings
-from utils import CommandChecks, TeXBotBaseCog, global_ssl_context
+from utils import CommandChecks, TeXBotBaseCog, GLOBAL_SSL_CONTEXT
 from utils.error_capture_decorators import (
     capture_guild_does_not_exist_error,
 )
@@ -81,7 +81,7 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
             aiohttp.ClientSession(
                 headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
             ) as http_session,
-            http_session.get(url=url, ssl=global_ssl_context) as http_response,
+            http_session.get(url=url, ssl=GLOBAL_SSL_CONTEXT) as http_response,
         ):
             return await http_response.text()
 
