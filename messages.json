@@ -39,7 +39,7 @@
         "Their palms are sweaty, knees weak, arms are heavy. <User>'s spaghetti.",
         "What\u2019s new <User>-doo, we\u2019re coming after you, you\u2019re gonna solve that mystery.",
         "What's that coming over the hill, is that a <User>?",
-        "I heard <User> got some cookies ontop of their fridge.",
+        "I heard <User> got some cookies on top of their fridge.",
         "It's-a you, <User>!",
         "Some people in this world hold unimaginable power and superhuman abilities...\nOh btw unrelated but <User> just joined, say hi.",
         "`$ ./introduce.ts -user '`<User>`'`\n`\\> Welcome to <Group_Name>, `<User>`!`",
