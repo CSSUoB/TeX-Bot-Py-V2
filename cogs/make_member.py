@@ -160,7 +160,9 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 aiohttp.ClientSession(
                     headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
                 ) as http_session,
-                http_session.get(url=GROUPED_MEMBERS_URL, ssl=global_ssl_context) as http_response,
+                http_session.get(
+                    url=GROUPED_MEMBERS_URL, ssl=global_ssl_context
+                ) as http_response,
             ):
                 response_html: str = await http_response.text()
 
@@ -278,7 +280,9 @@ class MemberCountCommandCog(TeXBotBaseCog):
                 aiohttp.ClientSession(
                     headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
                 ) as http_session,
-                http_session.get(url=BASE_MEMBERS_URL, ssl=global_ssl_context) as http_response,
+                http_session.get(
+                    url=BASE_MEMBERS_URL, ssl=global_ssl_context
+                ) as http_response,
             ):
                 response_html: str = await http_response.text()
 

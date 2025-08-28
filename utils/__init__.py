@@ -2,9 +2,9 @@
 
 import asyncio
 import ssl
-import certifi
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
+import certifi
 import discord
 
 from .command_checks import CommandChecks
@@ -16,6 +16,7 @@ from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContex
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from typing import Final
 
 __all__: "Sequence[str]" = (
     "AllChannelTypes",
@@ -27,9 +28,9 @@ __all__: "Sequence[str]" = (
     "TeXBotAutocompleteContext",
     "TeXBotBaseCog",
     "generate_invite_url",
+    "global_ssl_context",
     "is_member_inducted",
     "is_running_in_async",
-    "global_ssl_context",
 )
 
 if TYPE_CHECKING:
@@ -42,7 +43,10 @@ if TYPE_CHECKING:
         | None
     )
 
-global_ssl_context: Final[ssl.SSLContext] = ssl.create_default_context(cafile=certifi.where())
+global_ssl_context: "Final[ssl.SSLContext]" = ssl.create_default_context(
+    cafile=certifi.where()
+)
+
 
 def generate_invite_url(discord_bot_application_id: int, discord_guild_id: int) -> str:
     """Execute the logic that this util function provides."""
