@@ -1,18 +1,16 @@
 """Contains cog classes for SU platform access cookie authorisation check interactions."""
 
 import logging
-import ssl
 from enum import Enum
 from typing import TYPE_CHECKING, override
 
 import aiohttp
 import bs4
-import certifi
 import discord
 from discord.ext import tasks
 
 from config import settings
-from utils import CommandChecks, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog, global_ssl_context
 from utils.error_capture_decorators import (
     capture_guild_does_not_exist_error,
 )
@@ -79,12 +77,11 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
 
     async def _fetch_url_content_with_session(self, url: str) -> str:
         """Fetch the HTTP content at the given URL, using a shared aiohttp session."""
-        ssl_context: ssl.SSLContext = ssl.create_default_context(cafile=certifi.where())
         async with (
             aiohttp.ClientSession(
                 headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
             ) as http_session,
-            http_session.get(url=url, ssl=ssl_context) as http_response,
+            http_session.get(url=url, ssl=global_ssl_context) as http_response,
         ):
             return await http_response.text()
 

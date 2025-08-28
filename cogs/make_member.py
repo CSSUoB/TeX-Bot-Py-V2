@@ -2,12 +2,10 @@
 
 import logging
 import re
-import ssl
 from typing import TYPE_CHECKING
 
 import aiohttp
 import bs4
-import certifi
 import discord
 from bs4 import BeautifulSoup
 from django.core.exceptions import ValidationError
@@ -15,7 +13,7 @@ from django.core.exceptions import ValidationError
 from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
-from utils import CommandChecks, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog, global_ssl_context
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -158,12 +156,11 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 
             guild_member_ids: set[str] = set()
 
-            ssl_context: ssl.SSLContext = ssl.create_default_context(cafile=certifi.where())
             async with (
                 aiohttp.ClientSession(
                     headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
                 ) as http_session,
-                http_session.get(url=GROUPED_MEMBERS_URL, ssl=ssl_context) as http_response,
+                http_session.get(url=GROUPED_MEMBERS_URL, ssl=global_ssl_context) as http_response,
             ):
                 response_html: str = await http_response.text()
 
@@ -277,12 +274,11 @@ class MemberCountCommandCog(TeXBotBaseCog):
         await ctx.defer(ephemeral=False)
 
         async with ctx.typing():
-            ssl_context: ssl.SSLContext = ssl.create_default_context(cafile=certifi.where())
             async with (
                 aiohttp.ClientSession(
                     headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
                 ) as http_session,
-                http_session.get(url=BASE_MEMBERS_URL, ssl=ssl_context) as http_response,
+                http_session.get(url=BASE_MEMBERS_URL, ssl=global_ssl_context) as http_response,
             ):
                 response_html: str = await http_response.text()
 

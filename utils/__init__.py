@@ -1,7 +1,9 @@
 """Utility classes & functions provided for use across the whole of the project."""
 
 import asyncio
-from typing import TYPE_CHECKING
+import ssl
+import certifi
+from typing import TYPE_CHECKING, Final
 
 import discord
 
@@ -27,6 +29,7 @@ __all__: "Sequence[str]" = (
     "generate_invite_url",
     "is_member_inducted",
     "is_running_in_async",
+    "global_ssl_context",
 )
 
 if TYPE_CHECKING:
@@ -39,6 +42,7 @@ if TYPE_CHECKING:
         | None
     )
 
+global_ssl_context: Final[ssl.SSLContext] = ssl.create_default_context(cafile=certifi.where())
 
 def generate_invite_url(discord_bot_application_id: int, discord_guild_id: int) -> str:
     """Execute the logic that this util function provides."""
