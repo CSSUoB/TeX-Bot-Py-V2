@@ -1,13 +1,13 @@
 """Contains cog classes for SU platform access cookie authorisation check interactions."""
 
 import logging
+import ssl
 from enum import Enum
 from typing import TYPE_CHECKING, override
 
 import aiohttp
-import certifi
-import ssl
 import bs4
+import certifi
 import discord
 from discord.ext import tasks
 
