@@ -43,7 +43,7 @@ if TYPE_CHECKING:
         | None
     )
 
-global_ssl_context: "Final[ssl.SSLContext]" = ssl.create_default_context(
+GLOBAL_SSL_CONTEXT: "Final[ssl.SSLContext]" = ssl.create_default_context(
     cafile=certifi.where()
 )
 
