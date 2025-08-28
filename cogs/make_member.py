@@ -5,6 +5,8 @@ import re
 from typing import TYPE_CHECKING
 
 import aiohttp
+import certifi
+import ssl
 import bs4
 import discord
 from bs4 import BeautifulSoup
@@ -156,10 +158,11 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 
             guild_member_ids: set[str] = set()
 
+            ssl_context: ssl.SSLContext = ssl.create_default_context(cafile=certifi.where())
             http_session: aiohttp.ClientSession = aiohttp.ClientSession(
                 headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
             )
-            async with http_session, http_session.get(GROUPED_MEMBERS_URL) as http_response:
+            async with http_session, http_session.get(url=GROUPED_MEMBERS_URL, ssl=ssl_context) as http_response:
                 response_html: str = await http_response.text()
 
             MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
@@ -272,10 +275,11 @@ class MemberCountCommandCog(TeXBotBaseCog):
         await ctx.defer(ephemeral=False)
 
         async with ctx.typing():
+            ssl_context: ssl.SSLContext = ssl.create_default_context(cafile=certifi.where())
             http_session: aiohttp.ClientSession = aiohttp.ClientSession(
                 headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
             )
-            async with http_session, http_session.get(BASE_MEMBERS_URL) as http_response:
+            async with http_session, http_session.get(url=BASE_MEMBERS_URL, ssl=ssl_context) as http_response:
                 response_html: str = await http_response.text()
 
             member_list_div: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
