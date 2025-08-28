@@ -13,7 +13,7 @@ from django.core.exceptions import ValidationError
 from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
-from utils import CommandChecks, TeXBotBaseCog, global_ssl_context
+from utils import CommandChecks, TeXBotBaseCog, GLOBAL_SSL_CONTEXT
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -161,7 +161,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                     headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
                 ) as http_session,
                 http_session.get(
-                    url=GROUPED_MEMBERS_URL, ssl=global_ssl_context
+                    url=GROUPED_MEMBERS_URL, ssl=GLOBAL_SSL_CONTEXT
                 ) as http_response,
             ):
                 response_html: str = await http_response.text()
@@ -281,7 +281,7 @@ class MemberCountCommandCog(TeXBotBaseCog):
                     headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
                 ) as http_session,
                 http_session.get(
-                    url=BASE_MEMBERS_URL, ssl=global_ssl_context
+                    url=BASE_MEMBERS_URL, ssl=GLOBAL_SSL_CONTEXT
                 ) as http_response,
             ):
                 response_html: str = await http_response.text()
