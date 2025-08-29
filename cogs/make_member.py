@@ -13,7 +13,7 @@ from django.core.exceptions import ValidationError
 from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
-from utils import CommandChecks, TeXBotBaseCog, GLOBAL_SSL_CONTEXT
+from utils import GLOBAL_SSL_CONTEXT, CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence

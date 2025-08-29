@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from typing import Final
 
 __all__: "Sequence[str]" = (
+    "GLOBAL_SSL_CONTEXT",
     "AllChannelTypes",
     "CommandChecks",
     "MessageSavingSenderComponent",
@@ -28,7 +29,6 @@ __all__: "Sequence[str]" = (
     "TeXBotAutocompleteContext",
     "TeXBotBaseCog",
     "generate_invite_url",
-    "global_ssl_context",
     "is_member_inducted",
     "is_running_in_async",
 )
