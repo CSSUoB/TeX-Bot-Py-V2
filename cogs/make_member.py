@@ -13,7 +13,7 @@ from django.core.exceptions import ValidationError
 from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
-from utils import CommandChecks, TeXBotBaseCog
+from utils import GLOBAL_SSL_CONTEXT, CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -156,10 +156,14 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 
             guild_member_ids: set[str] = set()
 
-            http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-                headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
-            )
-            async with http_session, http_session.get(GROUPED_MEMBERS_URL) as http_response:
+            async with (
+                aiohttp.ClientSession(
+                    headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
+                ) as http_session,
+                http_session.get(
+                    url=GROUPED_MEMBERS_URL, ssl=GLOBAL_SSL_CONTEXT
+                ) as http_response,
+            ):
                 response_html: str = await http_response.text()
 
             MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
@@ -272,10 +276,14 @@ class MemberCountCommandCog(TeXBotBaseCog):
         await ctx.defer(ephemeral=False)
 
         async with ctx.typing():
-            http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-                headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
-            )
-            async with http_session, http_session.get(BASE_MEMBERS_URL) as http_response:
+            async with (
+                aiohttp.ClientSession(
+                    headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
+                ) as http_session,
+                http_session.get(
+                    url=BASE_MEMBERS_URL, ssl=GLOBAL_SSL_CONTEXT
+                ) as http_response,
+            ):
                 response_html: str = await http_response.text()
 
             member_list_div: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
