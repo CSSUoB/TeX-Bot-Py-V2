@@ -2,18 +2,21 @@
 
 import logging
 import re
+import ssl
 from typing import TYPE_CHECKING
 
 import aiohttp
 import bs4
+import certifi
 import discord
 from bs4 import BeautifulSoup
+from discord.ui import Modal, View
 from django.core.exceptions import ValidationError
 
 from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
-from utils import GLOBAL_SSL_CONTEXT, CommandChecks, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -22,7 +25,11 @@ if TYPE_CHECKING:
 
     from utils import TeXBotApplicationContext
 
-__all__: "Sequence[str]" = ("MakeMemberCommandCog", "MemberCountCommandCog")
+__all__: "Sequence[str]" = (
+    "MakeMemberCommandCog",
+    "MakeMemberModalCommandCog",
+    "MemberCountCommandCog",
+)
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
@@ -156,13 +163,12 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 
             guild_member_ids: set[str] = set()
 
+            ssl_context: ssl.SSLContext = ssl.create_default_context(cafile=certifi.where())
             async with (
                 aiohttp.ClientSession(
                     headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
                 ) as http_session,
-                http_session.get(
-                    url=GROUPED_MEMBERS_URL, ssl=GLOBAL_SSL_CONTEXT
-                ) as http_response,
+                http_session.get(url=GROUPED_MEMBERS_URL, ssl=ssl_context) as http_response,
             ):
                 response_html: str = await http_response.text()
 
@@ -276,13 +282,12 @@ class MemberCountCommandCog(TeXBotBaseCog):
         await ctx.defer(ephemeral=False)
 
         async with ctx.typing():
+            ssl_context: ssl.SSLContext = ssl.create_default_context(cafile=certifi.where())
             async with (
                 aiohttp.ClientSession(
                     headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
                 ) as http_session,
-                http_session.get(
-                    url=BASE_MEMBERS_URL, ssl=GLOBAL_SSL_CONTEXT
-                ) as http_response,
+                http_session.get(url=BASE_MEMBERS_URL, ssl=ssl_context) as http_response,
             ):
                 response_html: str = await http_response.text()
 
@@ -326,3 +331,73 @@ class MemberCountCommandCog(TeXBotBaseCog):
                     len(member_table.find_all('tr', {'class': ['msl_row', 'msl_altrow']}))
                 } members! :tada:"
             )
+
+
+class MakeMemberModalActual(Modal):
+    """A discord.Modal containing a the input box for make member user interaction."""
+
+    def __init__(self) -> None:
+        super().__init__(title="Make Member Modal")
+
+        self.add_item(discord.ui.InputText(label="Student ID"))
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        studentId = self.children[0].value
+        await is_command.command(MakeMemberCommandCog.make_member(group_member_id=studentId))
+
+        #embed = discord.Embed(title="Modal Results")
+        #embed.add_field(name="Short Input", value=self.children[0].value)
+        #await interaction.response.send_message(embeds=[embed])
+
+
+class OpenMemberVerifyModalView(View):
+    """A discord.View containing a button to open a new member verification modal."""
+
+    @discord.ui.button(
+        label="Verify", style=discord.ButtonStyle.primary, custom_id="verify_new_member"
+    )
+    async def verify_new_member_button_callback(  # type: ignore[misc]
+        self, _: discord.Button, interaction: discord.Interaction
+    ) -> None:
+        logger.debug('"Verify" button pressed. %s', interaction)
+        await interaction.response.send_modal(MakeMemberModalActual())
+
+
+class MakeMemberModalCommandCog(TeXBotBaseCog):
+    """Cog class that defines the "/make-member-modal" command and its call-back method."""
+
+    async def _open_make_new_member_modal(
+        self,
+        button_callback_channel: discord.TextChannel | discord.DMChannel,
+    ) -> None:
+        await button_callback_channel.send(
+            content="would you like to open the make member modal",
+            view=OpenMemberVerifyModalView(),
+        )
+
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        name="make-member-modal",
+        description=(
+            "prints a message with a button that allows users to open the make member modal, "
+        ),
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def make_member_modal(
+        self,
+        ctx: "TeXBotApplicationContext",
+    ) -> None:  # type: ignore[misc]
+        """
+        Definition & callback response of the "make-member-modal" command.
+
+        The "make-member-modal" command prints a message with a button that allows users
+        to open the make member modal
+        """
+        await self._open_make_new_member_modal(
+            button_callback_channel=ctx.channel,
+        )
+
+        await ctx.respond(
+            content="The make member modal has been opened in this channel.",
+            ephemeral=True,
+        )
