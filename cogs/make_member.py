@@ -332,8 +332,9 @@ class MemberCountCommandCog(TeXBotBaseCog):
 
 class MakeMemberModalActual(Modal):
     """A discord.Modal containing a the input box for make member user interaction."""
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+
+    def __init__(self) -> None:
+        super().__init__(title="Make Member Modal")
 
         self.add_item(discord.ui.InputText(label="Student ID"))
 
@@ -367,7 +368,9 @@ class MakeMemberModalCommandCog(TeXBotBaseCog):
         button_callback_channel: discord.TextChannel | discord.DMChannel,
     ) -> None:
         await message_sender_component.send(
-            content="would you like to open the make member modal", view=OpenMemberVerifyModalView()
+            content="would you like to open the make member modal", 
+            view=OpenMemberVerifyModalView(),
+            ephemeral=False
         )
 
         button_interaction: discord.Interaction = await self.bot.wait_for(
@@ -383,16 +386,9 @@ class MakeMemberModalCommandCog(TeXBotBaseCog):
 
         if button_interaction.data["custom_id"] == "verify_new_member":  # type: ignore[index, typeddict-item]
             
-            await button_interaction.edit_original_response(
-                content=(
-                    f"Successfully opend make member modal "
-                ),
-                view=None,
+            await button_interaction.message.reply(
+                content="you have opened this modal once before",
             )
-
-            #modal activation
-
-
             return
 
         raise ValueError
