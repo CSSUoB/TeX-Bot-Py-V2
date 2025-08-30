@@ -216,5 +216,9 @@ When selecting a version tag to use for [deploying TeX-Bot as a container image]
 * `<major>.<minor>.<patch>` - A specific tagged version (E.g. `4.1.6` maps to the git tag `v4.1.6` only)
 * `pr-<pr-number>` - The most recent commit from a branch in a specific pull request (E.g. `pr-420`) (N.B this **will** work for pull requests that come from forks of this repository)
 
+The only supported version of TeX-Bot is the most recent numbered release (if it exists).
+When submitting a bug report/feature request, we may ask you to upgrade the most recent version before we consider validating your report.
+We have no backporting policy at present.
+
 To create a new tagged release, create a single git tag matching the full version number, prefixed by a `v` character, on the most recent commit on the main branch (E.g. `v4.1.6`).
 This will initiate the GitHub workflow to generate all the matching container image tags.
