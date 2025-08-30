@@ -342,14 +342,15 @@ class MakeMemberModalActual(Modal):
         self.add_item(discord.ui.InputText(label="Student ID"))
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        #studentId = self.children[0].value
-        #await is_command.command(MakeMemberCommandCog.make_member(group_member_id=studentId))
+        # studentId = self.children[0].value
+        # await is_command.command(MakeMemberCommandCog.make_member(group_member_id=studentId))
 
         embed = discord.Embed(title="Modal Results")
         embed.add_field(name="Short Input", value=self.children[0].value)
         await interaction.response.send_message(embeds=[embed])
 
-#class WhyDoThisTwiceModalActual(Modal):
+
+# class WhyDoThisTwiceModalActual(Modal):
 #    """A discord.Modal containing a the why are you back here message."""
 #
 #    def __init__(self) -> None:
@@ -365,6 +366,7 @@ class MakeMemberModalActual(Modal):
 #        embed.add_field(name="Short Input", value=self.children[0].value)
 #        await interaction.response.send_message(embeds=[embed])
 
+
 class OpenMemberVerifyModalView(View):
     """A discord.View containing a button to open a new member verification modal."""
 
@@ -376,36 +378,37 @@ class OpenMemberVerifyModalView(View):
     ) -> None:
         logger.debug('"Verify" button pressed. %s', interaction)
 
+
 class MakeMemberModalCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/make-member-modal" command and its call-back method."""
 
     async def _open_make_new_member_modal(
         self,
         button_callback_channel: discord.TextChannel | discord.DMChannel,
-        #interaction_user: discord.User,
+        # interaction_user: discord.User,
     ) -> None:
         await button_callback_channel.send(
             content="would you like to open the make member modal",
             view=OpenMemberVerifyModalView(),
         )
-#
-#        button_interaction: discord.Interaction = await self.bot.wait_for(
-#            "interaction",
-#            check=lambda interaction: (
-#                interaction.type == discord.InteractionType.component
-#                and interaction.user == interaction_user
-#                and interaction.channel == button_callback_channel
-#                and "custom_id" in interaction.data
-#                and interaction.data["custom_id"] in {"verify_new_member"}
-#            ),
-#        )
-#        if button_interaction.data["custom_id"] == "verify_new_member":  # type: ignore[index, typeddict-item]
-#            if button_interaction.client.mem in interaction_user.roles:
-#               await button_interaction.response.send_modal(WhyDoThisTwiceModalActual())
-#               return
-#            await button_interaction.response.send_modal(MakeMemberModalActual())
-#            return
 
+    #
+    #        button_interaction: discord.Interaction = await self.bot.wait_for(
+    #            "interaction",
+    #            check=lambda interaction: (
+    #                interaction.type == discord.InteractionType.component
+    #                and interaction.user == interaction_user
+    #                and interaction.channel == button_callback_channel
+    #                and "custom_id" in interaction.data
+    #                and interaction.data["custom_id"] in {"verify_new_member"}
+    #            ),
+    #        )
+    #        if button_interaction.data["custom_id"] == "verify_new_member":  # type: ignore[index, typeddict-item]
+    #            if button_interaction.client.mem in interaction_user.roles:
+    #               await button_interaction.response.send_modal(WhyDoThisTwiceModalActual())
+    #               return
+    #            await button_interaction.response.send_modal(MakeMemberModalActual())
+    #            return
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="make-member-modal",
