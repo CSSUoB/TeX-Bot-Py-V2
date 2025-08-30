@@ -2,18 +2,22 @@
 
 import logging
 import re
+import ssl
 from typing import TYPE_CHECKING
 
 import aiohttp
 import bs4
+import certifi
 import discord
 from bs4 import BeautifulSoup
 from django.core.exceptions import ValidationError
+from discord.ui import View, Modal
 
 from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
-from utils import GLOBAL_SSL_CONTEXT, CommandChecks, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog
+from utils.message_sender_components import ResponseMessageSender
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -21,8 +25,9 @@ if TYPE_CHECKING:
     from typing import Final
 
     from utils import TeXBotApplicationContext
+    from utils.message_sender_components import MessageSavingSenderComponent
 
-__all__: "Sequence[str]" = ("MakeMemberCommandCog", "MemberCountCommandCog")
+__all__: "Sequence[str]" = ("MakeMemberCommandCog", "MemberCountCommandCog", "MakeMemberModalCommandCog")
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
@@ -156,13 +161,12 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 
             guild_member_ids: set[str] = set()
 
+            ssl_context: ssl.SSLContext = ssl.create_default_context(cafile=certifi.where())
             async with (
                 aiohttp.ClientSession(
                     headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
                 ) as http_session,
-                http_session.get(
-                    url=GROUPED_MEMBERS_URL, ssl=GLOBAL_SSL_CONTEXT
-                ) as http_response,
+                http_session.get(url=GROUPED_MEMBERS_URL, ssl=ssl_context) as http_response,
             ):
                 response_html: str = await http_response.text()
 
@@ -276,13 +280,12 @@ class MemberCountCommandCog(TeXBotBaseCog):
         await ctx.defer(ephemeral=False)
 
         async with ctx.typing():
+            ssl_context: ssl.SSLContext = ssl.create_default_context(cafile=certifi.where())
             async with (
                 aiohttp.ClientSession(
                     headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
                 ) as http_session,
-                http_session.get(
-                    url=BASE_MEMBERS_URL, ssl=GLOBAL_SSL_CONTEXT
-                ) as http_response,
+                http_session.get(url=BASE_MEMBERS_URL, ssl=ssl_context) as http_response,
             ):
                 response_html: str = await http_response.text()
 
@@ -326,3 +329,97 @@ class MemberCountCommandCog(TeXBotBaseCog):
                     len(member_table.find_all('tr', {'class': ['msl_row', 'msl_altrow']}))
                 } members! :tada:"
             )
+
+class MakeMemberModalActual(Modal):
+    """A discord.Modal containing a the input box for make member user interaction."""
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.add_item(discord.ui.InputText(label="Student ID"))
+
+    async def callback(self, interaction: discord.Interaction):
+        embed = discord.Embed(title="Modal Results")
+        embed.add_field(name="Short Input", value=self.children[0].value)
+        await interaction.response.send_message(embeds=[embed])
+
+
+class OpenMemberVerifyModalView(View):
+    """A discord.View containing a button to open a new member verification modal."""
+
+    @discord.ui.button(
+        label="Verify", style=discord.ButtonStyle.primary, custom_id="verify_new_member"
+    )
+    async def verify_new_member_button_callback(  # type: ignore[misc]
+        self, _: discord.Button, interaction: discord.Interaction
+    ) -> None:
+        
+        logger.debug('"Verify" button pressed. %s', interaction)
+        await interaction.response.send_modal(MakeMemberModalActual())
+
+
+class MakeMemberModalCommandCog(TeXBotBaseCog):
+    """Cog class that defines the "/make-member-modal" command and its call-back method."""
+
+    async def _open_make_new_member_modal(
+        self,
+        message_sender_component: "MessageSavingSenderComponent",
+        interaction_user: discord.User,
+        button_callback_channel: discord.TextChannel | discord.DMChannel,
+    ) -> None:
+        await message_sender_component.send(
+            content="would you like to open the make member modal", view=OpenMemberVerifyModalView()
+        )
+
+        button_interaction: discord.Interaction = await self.bot.wait_for(
+            "interaction",
+            check=lambda interaction: (
+                interaction.type == discord.InteractionType.component
+                and interaction.user == interaction_user
+                and interaction.channel == button_callback_channel
+                and "custom_id" in interaction.data
+                and interaction.data["custom_id"] in {"verify_new_member"}
+            ),
+        )
+
+        if button_interaction.data["custom_id"] == "verify_new_member":  # type: ignore[index, typeddict-item]
+            
+            await button_interaction.edit_original_response(
+                content=(
+                    f"Successfully opend make member modal "
+                ),
+                view=None,
+            )
+
+            #modal activation
+
+
+            return
+
+        raise ValueError
+
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        name="make-member-modal",
+        description=(
+            "prints a message with a button that allows users to open the make member modal, "
+        ),
+    )
+    
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def make_member_modal(
+        self, 
+        ctx: "TeXBotApplicationContext", 
+    ) -> None:  # type: ignore[misc]
+        
+        """
+        Definition & callback response of the "make-member-modal" command.
+
+        The "make-member-modal" command prints a message with a button that allows users
+        to open the make member modal
+        """
+        
+        await self._open_make_new_member_modal(
+            message_sender_component=ResponseMessageSender(ctx),
+            interaction_user=ctx.user,
+            button_callback_channel=ctx.channel,
+        )
