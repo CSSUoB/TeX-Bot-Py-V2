@@ -27,7 +27,11 @@ if TYPE_CHECKING:
     from utils import TeXBotApplicationContext
     from utils.message_sender_components import MessageSavingSenderComponent
 
-__all__: "Sequence[str]" = ("MakeMemberCommandCog", "MemberCountCommandCog", "MakeMemberModalCommandCog")
+__all__: "Sequence[str]" = (
+    "MakeMemberCommandCog",
+    "MemberCountCommandCog",
+    "MakeMemberModalCommandCog",
+)
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
@@ -330,6 +334,7 @@ class MemberCountCommandCog(TeXBotBaseCog):
                 } members! :tada:"
             )
 
+
 class MakeMemberModalActual(Modal):
     """A discord.Modal containing a the input box for make member user interaction."""
 
@@ -353,7 +358,6 @@ class OpenMemberVerifyModalView(View):
     async def verify_new_member_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
-        
         logger.debug('"Verify" button pressed. %s', interaction)
         await interaction.response.send_modal(MakeMemberModalActual())
 
@@ -368,9 +372,9 @@ class MakeMemberModalCommandCog(TeXBotBaseCog):
         button_callback_channel: discord.TextChannel | discord.DMChannel,
     ) -> None:
         await message_sender_component.send(
-            content="would you like to open the make member modal", 
+            content="would you like to open the make member modal",
             view=OpenMemberVerifyModalView(),
-            ephemeral=False
+            ephemeral=False,
         )
 
         button_interaction: discord.Interaction = await self.bot.wait_for(
@@ -385,7 +389,6 @@ class MakeMemberModalCommandCog(TeXBotBaseCog):
         )
 
         if button_interaction.data["custom_id"] == "verify_new_member":  # type: ignore[index, typeddict-item]
-            
             await button_interaction.message.reply(
                 content="you have opened this modal once before",
             )
@@ -399,21 +402,19 @@ class MakeMemberModalCommandCog(TeXBotBaseCog):
             "prints a message with a button that allows users to open the make member modal, "
         ),
     )
-    
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def make_member_modal(
-        self, 
-        ctx: "TeXBotApplicationContext", 
+        self,
+        ctx: "TeXBotApplicationContext",
     ) -> None:  # type: ignore[misc]
-        
         """
         Definition & callback response of the "make-member-modal" command.
 
         The "make-member-modal" command prints a message with a button that allows users
         to open the make member modal
         """
-        
+
         await self._open_make_new_member_modal(
             message_sender_component=ResponseMessageSender(ctx),
             interaction_user=ctx.user,
