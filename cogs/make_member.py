@@ -342,9 +342,12 @@ class MakeMemberModalActual(Modal):
         self.add_item(discord.ui.InputText(label="Student ID"))
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        embed = discord.Embed(title="Modal Results")
-        embed.add_field(name="Short Input", value=self.children[0].value)
-        await interaction.response.send_message(embeds=[embed])
+        studentId = self.children[0].value
+        await is_command.command(MakeMemberCommandCog.make_member(group_member_id=studentId))
+
+        #embed = discord.Embed(title="Modal Results")
+        #embed.add_field(name="Short Input", value=self.children[0].value)
+        #await interaction.response.send_message(embeds=[embed])
 
 
 class OpenMemberVerifyModalView(View):
