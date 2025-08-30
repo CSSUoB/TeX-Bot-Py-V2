@@ -934,23 +934,23 @@ class Settings(abc.ABC):
         )
 
     @classmethod
-    def _setup_committee_actions_reminders(cls) -> None:
-        raw_committee_actions_reminders: str = (
+    def _setup_send_committee_actions_reminders(cls) -> None:
+        raw_send_committee_actions_reminders: str = (
             str(
-                os.getenv("COMMITTEE_ACTIONS_REMINDERS", "True"),
+                os.getenv("SEND_COMMITTEE_ACTIONS_REMINDERS", "True"),
             )
             .strip()
             .lower()
         )
 
-        if raw_committee_actions_reminders not in TRUE_VALUES | FALSE_VALUES:
-            INVALID_COMMITTEE_ACTIONS_REMINDERS_MESSAGE: Final[str] = (
-                "COMMITTEE_ACTIONS_REMINDERS must be a boolean value."
+        if raw_send_committee_actions_reminders not in TRUE_VALUES | FALSE_VALUES:
+            INVALID_SEND_COMMITTEE_ACTIONS_REMINDERS_MESSAGE: Final[str] = (
+                "SEND_COMMITTEE_ACTIONS_REMINDERS  must be a boolean value."
             )
-            raise ImproperlyConfiguredError(INVALID_COMMITTEE_ACTIONS_REMINDERS_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_SEND_COMMITTEE_ACTIONS_REMINDERS_MESSAGE)
 
-        cls._settings["COMMITTEE_ACTIONS_REMINDERS"] = (
-            raw_committee_actions_reminders in TRUE_VALUES
+        cls._settings["SEND_COMMITTEE_ACTIONS_REMINDERS"] = (
+            raw_send_committee_actions_reminders in TRUE_VALUES
         )
 
     @classmethod
@@ -1002,11 +1002,6 @@ class Settings(abc.ABC):
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
-        INVALID_COMMITTEE_ACTIONS_REMINDERS_CHANNEL_MESSAGE: Final[str] = (
-            "COMMITTEE_ACTIONS_REMINDERS_CHANNEL must be a valid name"
-            " of a channel in your group's Discord guild."
-        )
-
         raw_committee_actions_reminders_channel: str = (
             os.getenv("COMMITTEE_ACTIONS_REMINDERS_CHANNEL", "committee-general")
             .strip()
@@ -1014,6 +1009,10 @@ class Settings(abc.ABC):
         )
 
         if not raw_committee_actions_reminders_channel:
+            INVALID_COMMITTEE_ACTIONS_REMINDERS_CHANNEL_MESSAGE: Final[str] = (
+                "COMMITTEE_ACTIONS_REMINDERS_CHANNEL must be a valid name"
+                " of a channel in your group's Discord guild."
+            )
             raise ImproperlyConfiguredError(
                 INVALID_COMMITTEE_ACTIONS_REMINDERS_CHANNEL_MESSAGE
             )
@@ -1040,9 +1039,9 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_committee_actions_board_channel(cls) -> None:
-        if "COMMITTEE_ACTIONS_BOARD" not in cls._settings:
+        if "DISPLAY_COMMITTEE_ACTIONS_BOARD" not in cls._settings:
             INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
-                "Invalid setup order: COMMITTEE_ACTIONS_BOARD must be set up "
+                "Invalid setup order: DISPLAY_COMMITTEE_ACTIONS_BOARD must be set up "
                 "before COMMITTEE_ACTIONS_BOARD_CHANNEL can be set up."
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
@@ -1058,8 +1057,8 @@ class Settings(abc.ABC):
 
         if not raw_committee_actions_board_channel:
             INVALID_COMMITTEE_ACTIONS_BOARD_CHANNEL_MESSAGE: Final[str] = (
-                "COMMITTEE_ACTIONS_BOARD_CHANNEL must be a valid name"
-                " of a channel in your group's Discord guild."
+                "COMMITTEE_ACTIONS_BOARD_CHANNEL must be a valid name "
+                "of a channel in your group's Discord guild."
             )
             raise ImproperlyConfiguredError(INVALID_COMMITTEE_ACTIONS_BOARD_CHANNEL_MESSAGE)
 
@@ -1110,7 +1109,7 @@ class Settings(abc.ABC):
             cls._setup_moderation_document_url()
             cls._setup_strike_performed_manually_warning_location()
             cls._setup_auto_add_committee_to_threads()
-            cls._setup_committee_actions_reminders()
+            cls._setup_send_committee_actions_reminders()
             cls._setup_committee_actions_reminders_channel()
             cls._setup_display_committee_actions_board()
             cls._setup_committee_actions_board_channel()

@@ -7,7 +7,7 @@ import random
 import time
 from collections import defaultdict
 from enum import Enum
-from typing import TYPE_CHECKING, overload, override
+from typing import TYPE_CHECKING, overload, override, cast
 
 import discord
 from discord.ext import tasks
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
     from collections.abc import Set as AbstractSet
     from logging import Logger
-    from typing import Final
+    from typing import Final, LiteralString
 
     from utils import TeXBot, TeXBotApplicationContext, TeXBotAutocompleteContext
 
@@ -46,11 +46,19 @@ logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 class Status(Enum):
     """Enum class to define the possible statuses of an action."""
 
-    BLOCKED = "BLK"
-    CANCELLED = "CND"
-    COMPLETED = "CMP"
-    IN_PROGRESS = "INP"
-    NOT_STARTED = "NST"
+    BLOCKED = "BLK", "no_entry", _("Blocked")
+    CANCELLED = "CND", "wastebasket", _("Cancelled")
+    COMPLETE = "CMP", "white_check_mark", _("Complete")
+    IN_PROGRESS = "INP", "yellow_circle", _("In Progress")
+    NOT_STARTED = "NST", "red_circle", _("Not Started")
+
+    def __new__(cls, value: "LiteralString", emoji: "LiteralString") -> "Status":
+        obj: Status = cast("Status", str.__new__(cls, value))
+
+        setattr(obj, "_value_", value)
+        setattr(obj, "emoji", f":{emoji.strip('\r\n\t :')}:")
+
+        return obj
 
 
 class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
@@ -146,7 +154,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
         )
 
         await action_board_message.edit(
-            content=(f"**Committee Actions Tracking Board**\n{all_actions_message}"),
+            content=(f"## Committee Actions Tracking Board\n{all_actions_message}"),
         )
 
     async def _create_action(
