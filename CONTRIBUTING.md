@@ -112,6 +112,16 @@ There are separate cog files for each activity, and one [`__init__.py`](cogs/__i
 After you have found an issue which needs solving, it's time to start working on a fix!
 However, there are a few guidelines we would like you to follow first.
 
+### Installing pre-commit
+
+[pre-commit](https://pre-commit.com) is a selection of checks and reformatting scripts that run before your changes are committed to git.
+This ensures common formatting mistakes (see [the section on Code Style](#code-style)) and errors can be reported to you early, rather than having to wait for them to show in the CI/CD pipeline.
+The hooks can be installed with the following command:
+
+```shell
+uv run pre-commit install --install-hooks
+```
+
 ### Running tests
 
 To ensure your changes adhere to the required functionality of this project, a test suite has been provided in [the `tests` directory](tests).
