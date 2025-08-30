@@ -10,8 +10,8 @@ import bs4
 import certifi
 import discord
 from bs4 import BeautifulSoup
+from discord.ui import Modal, View
 from django.core.exceptions import ValidationError
-from discord.ui import View, Modal
 
 from config import settings
 from db.core.models import GroupMadeMember
@@ -29,8 +29,8 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = (
     "MakeMemberCommandCog",
-    "MemberCountCommandCog",
     "MakeMemberModalCommandCog",
+    "MemberCountCommandCog",
 )
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
@@ -343,7 +343,7 @@ class MakeMemberModalActual(Modal):
 
         self.add_item(discord.ui.InputText(label="Student ID"))
 
-    async def callback(self, interaction: discord.Interaction):
+    async def callback(self, interaction: discord.Interaction) -> None:
         embed = discord.Embed(title="Modal Results")
         embed.add_field(name="Short Input", value=self.children[0].value)
         await interaction.response.send_message(embeds=[embed])
@@ -414,7 +414,6 @@ class MakeMemberModalCommandCog(TeXBotBaseCog):
         The "make-member-modal" command prints a message with a button that allows users
         to open the make member modal
         """
-
         await self._open_make_new_member_modal(
             message_sender_component=ResponseMessageSender(ctx),
             interaction_user=ctx.user,

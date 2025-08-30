@@ -35,7 +35,7 @@ from .induct import (
 from .invite_link import InviteLinkCommandCog
 from .kill import KillCommandCog
 from .make_applicant import MakeApplicantContextCommandsCog, MakeApplicantSlashCommandCog
-from .make_member import MakeMemberCommandCog, MemberCountCommandCog, MakeMemberModalCommandCog
+from .make_member import MakeMemberCommandCog, MakeMemberModalCommandCog, MemberCountCommandCog
 from .ping import PingCommandCog
 from .remind_me import ClearRemindersBacklogTaskCog, RemindMeCommandCog
 from .send_get_roles_reminders import SendGetRolesRemindersTaskCog
