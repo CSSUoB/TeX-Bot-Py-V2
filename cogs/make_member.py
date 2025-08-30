@@ -17,7 +17,6 @@ from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotBaseCog
-from utils.message_sender_components import ResponseMessageSender
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -25,7 +24,6 @@ if TYPE_CHECKING:
     from typing import Final
 
     from utils import TeXBotApplicationContext
-    from utils.message_sender_components import MessageSavingSenderComponent
 
 __all__: "Sequence[str]" = (
     "MakeMemberCommandCog",
@@ -367,34 +365,12 @@ class MakeMemberModalCommandCog(TeXBotBaseCog):
 
     async def _open_make_new_member_modal(
         self,
-        message_sender_component: "MessageSavingSenderComponent",
-        interaction_user: discord.User,
         button_callback_channel: discord.TextChannel | discord.DMChannel,
     ) -> None:
-        await message_sender_component.send(
+        await button_callback_channel.send(
             content="would you like to open the make member modal",
             view=OpenMemberVerifyModalView(),
-            ephemeral=False,
         )
-
-        button_interaction: discord.Interaction = await self.bot.wait_for(
-            "interaction",
-            check=lambda interaction: (
-                interaction.type == discord.InteractionType.component
-                and interaction.user == interaction_user
-                and interaction.channel == button_callback_channel
-                and "custom_id" in interaction.data
-                and interaction.data["custom_id"] in {"verify_new_member"}
-            ),
-        )
-
-        if button_interaction.data["custom_id"] == "verify_new_member":  # type: ignore[index, typeddict-item]
-            await button_interaction.message.reply(
-                content="you have opened this modal once before",
-            )
-            return
-
-        raise ValueError
 
     @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="make-member-modal",
@@ -415,7 +391,10 @@ class MakeMemberModalCommandCog(TeXBotBaseCog):
         to open the make member modal
         """
         await self._open_make_new_member_modal(
-            message_sender_component=ResponseMessageSender(ctx),
-            interaction_user=ctx.user,
             button_callback_channel=ctx.channel,
+        )
+
+        await ctx.respond(
+            content="The make member modal has been opened in this channel.",
+            ephemeral=True,
         )
