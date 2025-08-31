@@ -6,8 +6,7 @@ import logging
 import random
 import time
 from collections import defaultdict
-from enum import Enum
-from typing import TYPE_CHECKING, overload, override, cast
+from typing import TYPE_CHECKING, overload, override
 
 import discord
 from discord.ext import tasks
@@ -114,7 +113,10 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 f"\n<@{discord_id}>, Actions:"
                 f"\n{
                     ', \n'.join(
-                        action.status.emoji + ' ' + f'{action.description} ' + f'({action.status})'
+                        action.status.emoji
+                        + ' '
+                        + f'{action.description} '
+                        + f'({action.status})'
                         for action in actions
                     )
                 }"
@@ -304,7 +306,10 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
                 f"\n{committee}, Actions:"
                 f"\n{
                     ', \n'.join(
-                        action.status.emoji + ' ' + f'{action.description} ' + f'({action.status})'
+                        action.status.emoji
+                        + ' '
+                        + f'{action.description} '
+                        + f'({action.status})'
                         for action in actions
                     )
                 }"
@@ -855,9 +860,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             f"{action_member.mention if ping else action_member}:"
             f"\n{
                 '\n'.join(
-                    str(action.description)
-                    + f' ({action.status})'
-                    for action in user_actions
+                    str(action.description) + f' ({action.status})' for action in user_actions
                 )
             }"
         )
@@ -977,9 +980,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             f"\n<@{discord_id}>, Actions:\n"
             f"{
                 ', \n'.join(
-                    action.status.emoji
-                    + str(action.description)
-                    + f' ({action.status})'
+                    action.status.emoji + str(action.description) + f' ({action.status})'
                     for action in actions
                     if action.discord_member.discord_id == discord_id
                 )

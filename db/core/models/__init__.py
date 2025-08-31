@@ -2,7 +2,7 @@
 
 import hashlib
 import re
-from typing import TYPE_CHECKING, override, cast
+from typing import TYPE_CHECKING, override
 
 import discord
 from django.core.exceptions import ValidationError
@@ -41,11 +41,13 @@ class AssignedCommitteeAction(AsyncBaseModel):
         IN_PROGRESS = "INP", "yellow_circle", _("In Progress")
         NOT_STARTED = "NST", "red_circle", _("Not Started")
 
-        def __new__(cls, value: "LiteralString", emoji: "LiteralString") -> "AssignedCommitteeAction.Status":
+        def __new__(
+            cls, value: "LiteralString", emoji: "LiteralString"
+        ) -> "AssignedCommitteeAction.Status":
             obj: AssignedCommitteeAction.Status = str.__new__(cls, value)
 
-            setattr(obj, "_value_", value)
-            setattr(obj, "emoji", f":{emoji.strip('\r\n\t :')}:")
+            obj._value_ = value
+            obj.emoji = f":{emoji.strip('\r\n\t :')}:"
 
             return obj
 
