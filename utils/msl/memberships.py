@@ -48,7 +48,7 @@ async def get_full_membership_list() -> set[tuple[str, int]]:
         features="html.parser",
     ).find(
         name="table",
-        attrs={"id": "ctl00_Main_rptGroups_ctl03_gvMemberships"},
+        attrs={"id": "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl03_gvMemberships"},
     )
 
     all_members_table: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
@@ -56,7 +56,7 @@ async def get_full_membership_list() -> set[tuple[str, int]]:
         features="html.parser",
     ).find(
         name="table",
-        attrs={"id": "ctl00_Main_rptGroups_ctl05_gvMemberships"},
+        attrs={"id": "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl05_gvMemberships"},
     )
 
     if standard_members_table is None or all_members_table is None:
@@ -102,6 +102,8 @@ async def is_student_id_member(student_id: str | int) -> bool:
 
     if str(student_id) in all_ids:
         return True
+
+    logger.debug("Student ID %s not found in cache, fetching updated list.", student_id)
 
     new_ids: set[str] = {str(member[1]) for member in await get_full_membership_list()}
 
