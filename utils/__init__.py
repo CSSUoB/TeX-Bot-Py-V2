@@ -16,6 +16,7 @@ from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContex
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from typing import Final
 
 __all__: "Sequence[str]" = (
     "GLOBAL_SSL_CONTEXT",
@@ -42,8 +43,9 @@ if TYPE_CHECKING:
         | None
     )
 
-
-GLOBAL_SSL_CONTEXT: ssl.SSLContext = ssl.create_default_context(cafile=certifi.where())
+GLOBAL_SSL_CONTEXT: "Final[ssl.SSLContext]" = ssl.create_default_context(
+    cafile=certifi.where()
+)
 
 
 def generate_invite_url(discord_bot_application_id: int, discord_guild_id: int) -> str:
