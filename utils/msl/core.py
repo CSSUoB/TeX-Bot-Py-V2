@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 
 from config import settings
 
-from . import GLOBAL_SSL_CONTEXT
+from utils import GLOBAL_SSL_CONTEXT
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence

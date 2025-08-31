@@ -2,12 +2,12 @@
 
 import asyncio
 from typing import TYPE_CHECKING
-
+import certifi
+import ssl
 import discord
 
 from .command_checks import CommandChecks
 from .message_sender_components import MessageSavingSenderComponent
-from .msl import GLOBAL_SSL_CONTEXT, get_membership_count, is_student_id_member
 from .suppress_traceback import SuppressTraceback
 from .tex_bot import TeXBot
 from .tex_bot_base_cog import TeXBotBaseCog
@@ -27,10 +27,8 @@ __all__: "Sequence[str]" = (
     "TeXBotAutocompleteContext",
     "TeXBotBaseCog",
     "generate_invite_url",
-    "get_membership_count",
     "is_member_inducted",
     "is_running_in_async",
-    "is_student_id_member",
 )
 
 if TYPE_CHECKING:
@@ -42,6 +40,9 @@ if TYPE_CHECKING:
         | discord.CategoryChannel
         | None
     )
+
+
+GLOBAL_SSL_CONTEXT: ssl.SSLContext = ssl.create_default_context(cafile=certifi.where())
 
 
 def generate_invite_url(discord_bot_application_id: int, discord_guild_id: int) -> str:

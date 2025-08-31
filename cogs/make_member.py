@@ -10,7 +10,8 @@ from django.core.exceptions import ValidationError
 from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
-from utils import CommandChecks, TeXBotBaseCog, get_membership_count, is_student_id_member
+from utils import CommandChecks, TeXBotBaseCog
+from utils.msl import is_student_id_member, get_membership_count
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
