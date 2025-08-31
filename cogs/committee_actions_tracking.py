@@ -98,7 +98,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
 
         if not action_board_message or action_board_message.author != self.bot.user:
             action_board_message = await action_board_channel.send(
-                content="**Committee Actions Tracking Board**\n"
+                content="## Committee Actions Tracking Board\n"
             )
 
         all_actions: dict[
@@ -125,7 +125,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
         )
 
         await action_board_message.edit(
-            content=(f"## Committee Actions Tracking Board\n{all_actions_message}"),
+            content=f"## Committee Actions Tracking Board\n{all_actions_message}"
         )
 
     async def _create_action(
@@ -287,7 +287,11 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
             discord.Member, list[AssignedCommitteeAction]
         ] = await self.get_user_actions(
             action_user=committee_role.members,
-            status=[Status.NOT_STARTED.value, Status.IN_PROGRESS.value, Status.BLOCKED.value],
+            status=[
+                AssignedCommitteeAction.Status.NOT_STARTED.value,
+                AssignedCommitteeAction.Status.IN_PROGRESS.value,
+                AssignedCommitteeAction.Status.BLOCKED.value,
+            ],
         )
 
         interval_seconds: float = datetime.timedelta(
