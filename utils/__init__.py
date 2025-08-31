@@ -7,7 +7,7 @@ import discord
 
 from .command_checks import CommandChecks
 from .message_sender_components import MessageSavingSenderComponent
-from .msl import get_membership_count, is_student_id_member, GLOBAL_SSL_CONTEXT
+from .msl import GLOBAL_SSL_CONTEXT, get_membership_count, is_student_id_member
 from .suppress_traceback import SuppressTraceback
 from .tex_bot import TeXBot
 from .tex_bot_base_cog import TeXBotBaseCog

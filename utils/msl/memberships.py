@@ -7,9 +7,8 @@ import aiohttp
 import bs4
 from bs4 import BeautifulSoup
 
-from .core import BASE_COOKIES, BASE_HEADERS, ORGANISATION_ID
-
 from . import GLOBAL_SSL_CONTEXT
+from .core import BASE_COOKIES, BASE_HEADERS, ORGANISATION_ID
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
