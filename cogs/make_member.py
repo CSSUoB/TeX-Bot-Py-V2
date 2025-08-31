@@ -11,7 +11,7 @@ from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotBaseCog
-from utils.msl import is_student_id_member, get_membership_count
+from utils.msl import get_membership_count, is_student_id_member
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence

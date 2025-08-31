@@ -1,9 +1,10 @@
 """Utility classes & functions provided for use across the whole of the project."""
 
 import asyncio
-from typing import TYPE_CHECKING
-import certifi
 import ssl
+from typing import TYPE_CHECKING
+
+import certifi
 import discord
 
 from .command_checks import CommandChecks

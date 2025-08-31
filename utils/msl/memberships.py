@@ -8,6 +8,7 @@ import bs4
 from bs4 import BeautifulSoup
 
 from utils import GLOBAL_SSL_CONTEXT
+
 from .core import BASE_COOKIES, BASE_HEADERS, ORGANISATION_ID
 
 if TYPE_CHECKING:

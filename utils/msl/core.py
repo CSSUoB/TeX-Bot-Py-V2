@@ -9,7 +9,6 @@ import aiohttp
 from bs4 import BeautifulSoup
 
 from config import settings
-
 from utils import GLOBAL_SSL_CONTEXT
 
 if TYPE_CHECKING:
