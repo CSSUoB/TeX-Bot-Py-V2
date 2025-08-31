@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
     from collections.abc import Set as AbstractSet
     from logging import Logger
-    from typing import Final, LiteralString
+    from typing import Final
 
     from utils import TeXBot, TeXBotApplicationContext, TeXBotAutocompleteContext
 
@@ -41,24 +41,6 @@ __all__: "Sequence[str]" = (
 )
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
-
-
-class Status(Enum):
-    """Enum class to define the possible statuses of an action."""
-
-    BLOCKED = "BLK", "no_entry", _("Blocked")
-    CANCELLED = "CND", "wastebasket", _("Cancelled")
-    COMPLETE = "CMP", "white_check_mark", _("Complete")
-    IN_PROGRESS = "INP", "yellow_circle", _("In Progress")
-    NOT_STARTED = "NST", "red_circle", _("Not Started")
-
-    def __new__(cls, value: "LiteralString", emoji: "LiteralString") -> "Status":
-        obj: Status = cast("Status", str.__new__(cls, value))
-
-        setattr(obj, "_value_", value)
-        setattr(obj, "emoji", f":{emoji.strip('\r\n\t :')}:")
-
-        return obj
 
 
 class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
@@ -82,9 +64,9 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
         async for action in AssignedCommitteeAction.objects.select_related(
             "discord_member"
         ).filter(
-            Q(status=Status.IN_PROGRESS.value)
-            | Q(status=Status.BLOCKED.value)
-            | Q(status=Status.NOT_STARTED.value)
+            Q(status=AssignedCommitteeAction.Status.IN_PROGRESS.value)
+            | Q(status=AssignedCommitteeAction.Status.BLOCKED.value)
+            | Q(status=AssignedCommitteeAction.Status.NOT_STARTED.value)
         ):
             grouped_filtered_actions[action.discord_member.discord_id].append(action)
 
@@ -132,20 +114,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 f"\n<@{discord_id}>, Actions:"
                 f"\n{
                     ', \n'.join(
-                        (
-                            ':red_circle:'
-                            if action.status == Status.NOT_STARTED.value
-                            else ':yellow_circle:'
-                            if action.status == Status.IN_PROGRESS.value
-                            else ':no_entry:'
-                            if action.status == Status.BLOCKED.value
-                            else ':white_check_mark:'
-                            if action.status == Status.COMPLETED.value
-                            else ''
-                        )
-                        + ' '
-                        + f'{action.description} '
-                        + f'({AssignedCommitteeAction.Status(action.status).label})'
+                        action.status.emoji + ' ' + f'{action.description} ' + f'({action.status})'
                         for action in actions
                     )
                 }"
@@ -275,8 +244,8 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
     @override
     def __init__(self, bot: "TeXBot") -> None:
         """Start all task managers when this cog is initialised."""
-        if settings["COMMITTEE_ACTIONS_REMINDERS"]:
-            _ = self.committee_actions_reminders_task.start()
+        if settings["SEND_COMMITTEE_ACTIONS_REMINDERS"]:
+            _ = self.send_committee_actions_reminders_task.start()
 
         super().__init__(bot)
 
@@ -287,36 +256,35 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
 
         This may be run dynamically or when the bot closes.
         """
-        self.committee_actions_reminders_task.cancel()
+        self.send_committee_actions_reminders_task.cancel()
 
     @tasks.loop(**settings["COMMITTEE_ACTIONS_REMINDERS_INTERVAL"])
     @capture_guild_does_not_exist_error
-    async def committee_actions_reminders_task(self) -> None:
+    async def send_committee_actions_reminders_task(self) -> None:
         """
         Definition of the background task that sends reminders of committee actions.
 
         The task will run every interval specified in the settings and will send reminders
         to all committee members who have actions that are either in progress or not started.
         """
-        action_reminders_channel: discord.TextChannel | None = discord.utils.get(
+        committee_role: discord.Role = await self.bot.committee_role
+        committee_action_reminders_channel: discord.TextChannel | None = discord.utils.get(
             self.bot.main_guild.text_channels,
             name=settings["COMMITTEE_ACTIONS_REMINDERS_CHANNEL"],
         )
 
-        if not action_reminders_channel:
+        if not committee_action_reminders_channel:
             logger.warning(
-                "Committee-general channel could not be found! "
+                "Committee actions reminders channel could not be found! "
                 "Actions reminders task will not run until next restart."
             )
-            self.committee_actions_reminders_task.cancel()
+            self.send_committee_actions_reminders_task.cancel()
             return
 
-        committee_role: discord.Role = await self.bot.committee_role
-        committee_members: list[discord.Member] = committee_role.members
         all_actions: dict[
             discord.Member, list[AssignedCommitteeAction]
         ] = await self.get_user_actions(
-            action_user=committee_members,
+            action_user=committee_role.members,
             status=[Status.NOT_STARTED.value, Status.IN_PROGRESS.value, Status.BLOCKED.value],
         )
 
@@ -336,18 +304,7 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
                 f"\n{committee}, Actions:"
                 f"\n{
                     ', \n'.join(
-                        (
-                            ':red_circle:'
-                            if action.status == Status.NOT_STARTED.value
-                            else ':yellow_circle:'
-                            if action.status == Status.IN_PROGRESS.value
-                            else ':no_entry:'
-                            if action.status == Status.BLOCKED.value
-                            else ''
-                        )
-                        + ' '
-                        + f'{action.description} '
-                        + f'({AssignedCommitteeAction.Status(action.status).label})'
+                        action.status.emoji + ' ' + f'{action.description} ' + f'({action.status})'
                         for action in actions
                     )
                 }"
@@ -359,11 +316,11 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
             logger.info("No actions found for any committee members. No reminders sent.")
             return
 
-        await action_reminders_channel.send(
+        await committee_action_reminders_channel.send(
             content=f"{actions_reminder_info_message}\n{all_actions_message}",
         )
 
-    @committee_actions_reminders_task.before_loop
+    @send_committee_actions_reminders_task.before_loop
     async def before_tasks(self) -> None:
         """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
         await self.bot.wait_until_ready()
@@ -439,9 +396,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             discord.OptionChoice(name=action.description, value=str(action.id))
             async for action in AssignedCommitteeAction.objects.filter(
                 (
-                    Q(status=Status.IN_PROGRESS.value)
-                    | Q(status=Status.BLOCKED.value)
-                    | Q(status=Status.NOT_STARTED.value)
+                    Q(status=AssignedCommitteeAction.Status.IN_PROGRESS.value)
+                    | Q(status=AssignedCommitteeAction.Status.BLOCKED.value)
+                    | Q(status=AssignedCommitteeAction.Status.NOT_STARTED.value)
                 ),
                 discord_member__discord_id=interaction_user.id,
             )
@@ -864,9 +821,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 action
                 async for action in AssignedCommitteeAction.objects.filter(
                     (
-                        Q(status=Status.IN_PROGRESS.value)
-                        | Q(status=Status.BLOCKED.value)
-                        | Q(status=Status.NOT_STARTED.value)
+                        Q(status=AssignedCommitteeAction.Status.IN_PROGRESS.value)
+                        | Q(status=AssignedCommitteeAction.Status.BLOCKED.value)
+                        | Q(status=AssignedCommitteeAction.Status.NOT_STARTED.value)
                     ),
                     discord_member__discord_id=action_member.id,
                 )
@@ -899,7 +856,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             f"\n{
                 '\n'.join(
                     str(action.description)
-                    + f' ({AssignedCommitteeAction.Status(action.status).label})'
+                    + f' ({action.status})'
                     for action in user_actions
                 )
             }"
@@ -1017,22 +974,12 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             return
 
         all_actions_message: str = "\n".join(
-            f"\n<@{discord_id}>, Actions:"
-            f"\n{
+            f"\n<@{discord_id}>, Actions:\n"
+            f"{
                 ', \n'.join(
-                    (
-                        ':red_circle: '
-                        if action.status == Status.NOT_STARTED.value
-                        else ':yellow_circle: '
-                        if action.status == Status.IN_PROGRESS.value
-                        else ':no_entry: '
-                        if action.status == Status.BLOCKED.value
-                        else ':white_check_mark: '
-                        if action.status == Status.COMPLETED.value
-                        else ''
-                    )
+                    action.status.emoji
                     + str(action.description)
-                    + f' ({AssignedCommitteeAction.Status(action.status).label})'
+                    + f' ({action.status})'
                     for action in actions
                     if action.discord_member.discord_id == discord_id
                 )
