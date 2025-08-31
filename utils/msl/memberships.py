@@ -7,6 +7,8 @@ import aiohttp
 import bs4
 from bs4 import BeautifulSoup
 
+from utils import GLOBAL_SSL_CONTEXT
+
 from .core import BASE_COOKIES, BASE_HEADERS, ORGANISATION_ID
 
 if TYPE_CHECKING:
@@ -35,7 +37,10 @@ async def get_full_membership_list() -> set[tuple[str, int]]:
         headers=BASE_HEADERS,
         cookies=BASE_COOKIES,
     )
-    async with http_session, http_session.get(url=MEMBERS_LIST_URL) as http_response:
+    async with (
+        http_session,
+        http_session.get(url=MEMBERS_LIST_URL, ssl=GLOBAL_SSL_CONTEXT) as http_response,
+    ):
         response_html: str = await http_response.text()
 
     standard_members_table: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(

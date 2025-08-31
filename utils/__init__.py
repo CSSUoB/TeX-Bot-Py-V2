@@ -9,6 +9,7 @@ import discord
 
 from .command_checks import CommandChecks
 from .message_sender_components import MessageSavingSenderComponent
+from .msl import get_membership_count, is_student_id_member
 from .suppress_traceback import SuppressTraceback
 from .tex_bot import TeXBot
 from .tex_bot_base_cog import TeXBotBaseCog
@@ -29,8 +30,10 @@ __all__: "Sequence[str]" = (
     "TeXBotAutocompleteContext",
     "TeXBotBaseCog",
     "generate_invite_url",
+    "get_membership_count",
     "is_member_inducted",
     "is_running_in_async",
+    "is_student_id_member",
 )
 
 if TYPE_CHECKING:

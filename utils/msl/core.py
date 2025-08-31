@@ -9,6 +9,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 
 from config import settings
+from utils import GLOBAL_SSL_CONTEXT
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -64,7 +65,7 @@ async def get_msl_context(url: str) -> tuple[dict[str, str], dict[str, str]]:
     )
     data_fields: dict[str, str] = {}
     cookies: dict[str, str] = {}
-    async with http_session, http_session.get(url=url) as field_data:
+    async with http_session, http_session.get(url=url, ssl=GLOBAL_SSL_CONTEXT) as field_data:
         data_response = BeautifulSoup(
             markup=await field_data.text(),
             features="html.parser",
