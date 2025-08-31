@@ -236,7 +236,6 @@ class MemberCountCommandCog(TeXBotBaseCog):
             )
 
 
-
 class MakeMemberModalActual(Modal):
     """A discord.Modal containing a the input box for make member user interaction."""
 
