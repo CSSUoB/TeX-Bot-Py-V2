@@ -15,7 +15,7 @@ from utils.error_capture_decorators import (
 from utils.msl import get_su_platform_access_cookie_status, get_su_platform_organisations
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
+    from collections.abc import Sequence
     from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
@@ -28,21 +28,6 @@ __all__: "Sequence[str]" = (
 )
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
-
-REQUEST_HEADERS: "Final[Mapping[str, str]]" = {
-    "Cache-Control": "no-cache",
-    "Pragma": "no-cache",
-    "Expires": "0",
-}
-
-REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
-    ".ASPXAUTH": settings["SU_PLATFORM_ACCESS_COOKIE"]
-}
-
-SU_PLATFORM_PROFILE_URL: "Final[str]" = "https://guildofstudents.com/profile"
-SU_PLATFORM_ORGANISATION_URL: "Final[str]" = (
-    "https://www.guildofstudents.com/organisation/admin"
-)
 
 
 class SUPlatformAccessCookieStatus(Enum):
