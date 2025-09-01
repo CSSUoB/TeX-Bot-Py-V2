@@ -33,28 +33,20 @@ logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 async def get_full_membership_list() -> set[tuple[str, int]]:
     """Get a list of tuples of student ID to names."""
-    http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-        headers=BASE_HEADERS,
-        cookies=BASE_COOKIES,
-    )
     async with (
-        http_session,
+        aiohttp.ClientSession(headers=BASE_HEADERS, cookies=BASE_COOKIES) as http_session,
         http_session.get(url=MEMBERS_LIST_URL, ssl=GLOBAL_SSL_CONTEXT) as http_response,
     ):
         response_html: str = await http_response.text()
 
-    standard_members_table: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-        markup=response_html,
-        features="html.parser",
-    ).find(
+    parsed_html: BeautifulSoup = BeautifulSoup(markup=response_html, features="html.parser")
+
+    standard_members_table: bs4.Tag | bs4.NavigableString | None = parsed_html.find(
         name="table",
         attrs={"id": "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl03_gvMemberships"},
     )
 
-    all_members_table: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-        markup=response_html,
-        features="html.parser",
-    ).find(
+    all_members_table: bs4.Tag | bs4.NavigableString | None = parsed_html.find(
         name="table",
         attrs={"id": "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl05_gvMemberships"},
     )
