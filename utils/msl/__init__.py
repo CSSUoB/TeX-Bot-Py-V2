@@ -8,7 +8,6 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
 __all__: "Sequence[str]" = (
-    "GLOBAL_SSL_CONTEXT",
     "get_full_membership_list",
     "get_membership_count",
     "is_student_id_member",

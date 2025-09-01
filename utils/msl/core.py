@@ -26,15 +26,15 @@ logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 DEFAULT_TIMEZONE: "Final[timezone]" = dt.UTC
 TODAYS_DATE: "Final[datetime]" = datetime.now(tz=DEFAULT_TIMEZONE)
 
-CURRENT_YEAR_START_DATE: "Final[datetime]" = datetime(
+CURRENT_ACADEMIC_YEAR_START_DATE: "Final[datetime]" = datetime(
     year=TODAYS_DATE.year if TODAYS_DATE.month >= 7 else TODAYS_DATE.year - 1,
     month=7,
     day=1,
     tzinfo=DEFAULT_TIMEZONE,
 )
 
-CURRENT_YEAR_END_DATE: "Final[datetime]" = datetime(
-    year=TODAYS_DATE.year if TODAYS_DATE.month >= 7 else TODAYS_DATE.year - 1,
+CURRENT_ACADEMIC_YEAR_END_DATE: "Final[datetime]" = datetime(
+    year=TODAYS_DATE.year + 1 if TODAYS_DATE.month >= 7 else TODAYS_DATE.year,
     month=6,
     day=30,
     tzinfo=DEFAULT_TIMEZONE,
