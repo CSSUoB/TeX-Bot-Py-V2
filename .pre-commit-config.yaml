@@ -5,13 +5,13 @@ default_language_version:
     python: python3.12
 
 repos:
-    - repo: https://github.com/AleksaC/hadolint-py
-      rev: v2.12.0.3
+    - repo: https://github.com/hadolint/hadolint
+      rev: v2.12.0
       hooks:
-        - id: hadolint
+        - id: hadolint-docker
 
     - repo: https://github.com/renovatebot/pre-commit-hooks
-      rev: 41.85.0
+      rev: 41.92.1
       hooks:
         - id: renovate-config-validator
           args: [--strict]
@@ -74,7 +74,7 @@ repos:
           stages: [manual]
 
     - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.12.10
+      rev: v0.12.11
       hooks:
         - id: ruff
           args: [--fix]
@@ -82,7 +82,7 @@ repos:
         - id: ruff-format
 
     - repo: https://github.com/astral-sh/uv-pre-commit
-      rev: 0.8.13
+      rev: 0.8.14
       hooks:
         - id: uv-lock
           always_run: true
