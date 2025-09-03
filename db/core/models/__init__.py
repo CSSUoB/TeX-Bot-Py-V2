@@ -41,6 +41,8 @@ class AssignedCommitteeAction(AsyncBaseModel):
         IN_PROGRESS = "INP", "yellow_circle", _("In Progress")
         NOT_STARTED = "NST", "red_circle", _("Not Started")
 
+        emoji: str
+
         def __new__(
             cls, value: "LiteralString", emoji: "LiteralString"
         ) -> "AssignedCommitteeAction.Status":
