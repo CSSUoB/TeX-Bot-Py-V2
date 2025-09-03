@@ -11,7 +11,6 @@ from utils import GLOBAL_SSL_CONTEXT
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
-    from datetime import timezone
     from http.cookies import Morsel
     from logging import Logger
     from typing import Final
