@@ -43,7 +43,7 @@ class AssignedCommitteeAction(AsyncBaseModel):
 
         emoji: str
 
-        def __new__(
+        def __new__(  # noqa: D102
             cls, value: "LiteralString", emoji: "LiteralString"
         ) -> "AssignedCommitteeAction.Status":
             obj: AssignedCommitteeAction.Status = str.__new__(cls, value)
@@ -65,7 +65,7 @@ class AssignedCommitteeAction(AsyncBaseModel):
         unique=False,
     )
     description = models.TextField("Description", max_length=200, null=False, blank=False)
-    status = models.CharField(
+    status: Status = models.CharField(
         max_length=3, choices=Status, default=Status.NOT_STARTED, null=False, blank=False
     )
 
