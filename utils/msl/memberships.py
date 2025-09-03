@@ -132,7 +132,7 @@ async def fetch_community_group_members_list() -> set[tuple[str, int]]:
 
 
 async def is_id_a_community_group_member(_id: int) -> bool:
-    """Check if the student ID is a member of the society."""
+    """Check if the given ID is a member of your community group."""
     if _id in _membership_list_cache:
         return True
 
