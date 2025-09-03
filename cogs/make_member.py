@@ -1,7 +1,6 @@
 """Contains cog classes for any make_member interactions."""
 
 import logging
-import re
 from typing import TYPE_CHECKING
 
 import discord
@@ -11,7 +10,7 @@ from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotBaseCog
-from utils.msl import get_membership_count, is_student_id_member
+from utils.msl import fetch_community_group_members_count, is_id_a_community_group_member
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -114,6 +113,20 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         member_role: discord.Role = await self.bot.member_role
         interaction_member: discord.Member = await ctx.bot.get_main_guild_member(ctx.user)
 
+        INVALID_GUILD_MEMBER_ID: Final[str] = (
+            f"{group_member_id!r} is not a valid {self.bot.group_member_id_type} ID."
+        )
+
+        try:
+            group_member_id_int: int = int(group_member_id)
+        except ValueError:
+            await self.command_send_error(ctx=ctx, message=INVALID_GUILD_MEMBER_ID)
+            return
+
+        if group_member_id_int < 1000000 or group_member_id_int > 99999999:
+            await self.command_send_error(ctx=ctx, message=INVALID_GUILD_MEMBER_ID)
+            return
+
         await ctx.defer(ephemeral=True)
         async with ctx.typing():
             if member_role in interaction_member.roles:
@@ -126,19 +139,9 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 )
                 return
 
-            if not re.fullmatch(r"\A\d{7}\Z", group_member_id):
-                await self.command_send_error(
-                    ctx,
-                    message=(
-                        f"{group_member_id!r} is not a valid "
-                        f"{self.bot.group_member_id_type} ID."
-                    ),
-                )
-                return
-
             if await GroupMadeMember.objects.filter(
                 hashed_group_member_id=GroupMadeMember.hash_group_member_id(
-                    group_member_id, self.bot.group_member_id_type
+                    group_member_id_int, self.bot.group_member_id_type
                 )
             ).aexists():
                 await ctx.followup.send(
@@ -152,7 +155,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 )
                 return
 
-            if not await is_student_id_member(student_id=group_member_id):
+            if not await is_id_a_community_group_member(group_member_id_int):
                 await self.command_send_error(
                     ctx,
                     message=(
@@ -228,6 +231,6 @@ class MemberCountCommandCog(TeXBotBaseCog):
             await ctx.followup.send(
                 content=(
                     f"{self.bot.group_full_name} has "
-                    f"{await get_membership_count()} members! :tada:"
+                    f"{await fetch_community_group_members_count()} members! :tada:"
                 )
             )

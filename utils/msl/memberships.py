@@ -7,34 +7,80 @@ import aiohttp
 import bs4
 from bs4 import BeautifulSoup
 
+from config import settings
 from utils import GLOBAL_SSL_CONTEXT
 
-from .core import BASE_COOKIES, BASE_HEADERS, ORGANISATION_ID
-
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Mapping, Sequence
+    from http.cookies import Morsel
     from logging import Logger
     from typing import Final
 
+
 __all__: "Sequence[str]" = (
-    "get_full_membership_list",
-    "get_membership_count",
-    "is_student_id_member",
+    "fetch_community_group_members_count",
+    "fetch_community_group_members_list",
+    "is_id_a_community_group_member",
 )
 
-MEMBERS_LIST_URL: "Final[str]" = (
-    f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
-)
 
-membership_list_cache: set[tuple[str, int]] = set()
+BASE_SU_PLATFORM_WEB_HEADERS: "Final[Mapping[str, str]]" = {
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
+    "Expires": "0",
+}
+
+
+BASE_SU_PLATFORM_WEB_COOKIES: "Final[Mapping[str, str]]" = {
+    ".ASPXAUTH": settings["SU_PLATFORM_ACCESS_COOKIE"],
+}
+
+
+MEMBERS_LIST_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{settings['ORGANISATION_ID']}/?sort=groups"
+
+_membership_list_cache: "Final[dict[int, str]]" = {}  # NOTE: Mapping of IDs to names
+
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-async def get_full_membership_list() -> set[tuple[str, int]]:
-    """Get a list of tuples of student ID to names."""
+async def fetch_msl_context(url: str) -> tuple[dict[str, str], dict[str, str]]:
+    """Get the required context headers, data and cookies to make a request to MSL."""
+    http_session: aiohttp.ClientSession = aiohttp.ClientSession(
+        headers=BASE_SU_PLATFORM_WEB_HEADERS,
+        cookies=BASE_SU_PLATFORM_WEB_COOKIES,
+    )
+    data_fields: dict[str, str] = {}
+    cookies: dict[str, str] = {}
+    async with http_session, http_session.get(url=url, ssl=GLOBAL_SSL_CONTEXT) as field_data:
+        data_response = BeautifulSoup(
+            markup=await field_data.text(),
+            features="html.parser",
+        )
+
+        for field in data_response.find_all(name="input"):
+            if field.get("name") and field.get("value"):
+                data_fields[field.get("name")] = field.get("value")
+
+        for cookie in field_data.cookies:
+            cookie_morsel: Morsel[str] | None = field_data.cookies.get(cookie)
+            if cookie_morsel is not None:
+                cookies[cookie] = cookie_morsel.value
+        cookies[".ASPXAUTH"] = settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"]
+
+    return data_fields, cookies
+
+
+async def fetch_community_group_members_list() -> set[tuple[str, int]]:
+    """
+    Make a web request to fetch your community group's full membership list.
+
+    Returns a mapping of IDs to names.
+    """
     async with (
-        aiohttp.ClientSession(headers=BASE_HEADERS, cookies=BASE_COOKIES) as http_session,
+        aiohttp.ClientSession(
+            headers=BASE_SU_PLATFORM_WEB_HEADERS, cookies=BASE_SU_PLATFORM_WEB_COOKIES
+        ) as http_session,
         http_session.get(url=MEMBERS_LIST_URL, ssl=GLOBAL_SSL_CONTEXT) as http_response,
     ):
         response_html: str = await http_response.text()
@@ -66,11 +112,8 @@ async def get_full_membership_list() -> set[tuple[str, int]]:
         logger.debug(all_members_table)
         return set()
 
-    standard_members: list[bs4.Tag] = standard_members_table.find_all(name="tr")
-    all_members: list[bs4.Tag] = all_members_table.find_all(name="tr")
-
-    standard_members.pop(0)
-    all_members.pop(0)
+    standard_members: list[bs4.Tag] = standard_members_table.find_all(name="tr")[1:]
+    all_members: list[bs4.Tag] = all_members_table.find_all(name="tr")[1:]
 
     member_list: set[tuple[str, int]] = {
         (
@@ -82,26 +125,24 @@ async def get_full_membership_list() -> set[tuple[str, int]]:
         for member in standard_members + all_members
     }
 
-    membership_list_cache.clear()
-    membership_list_cache.update(member_list)
+    _membership_list_cache.clear()
+    _membership_list_cache.update({member[1]: member[0] for member in member_list})
 
     return member_list
 
 
-async def is_student_id_member(student_id: str | int) -> bool:
+async def is_id_a_community_group_member(_id: int) -> bool:
     """Check if the student ID is a member of the society."""
-    all_ids: set[str] = {str(member[1]) for member in membership_list_cache}
-
-    if str(student_id) in all_ids:
+    if _id in _membership_list_cache:
         return True
 
-    logger.debug("Student ID %s not found in cache, fetching updated list.", student_id)
+    logger.debug(
+        "ID %s not found in community group membership list cache; Fetching updated list.", _id
+    )
 
-    new_ids: set[str] = {str(member[1]) for member in await get_full_membership_list()}
-
-    return str(student_id) in new_ids
+    return _id in await fetch_community_group_members_list()  # type: ignore[comparison-overlap]
 
 
-async def get_membership_count() -> int:
-    """Return the total number of members."""
-    return len(await get_full_membership_list())
+async def fetch_community_group_members_count() -> int:
+    """Return the total number of members in your community group."""
+    return len(await fetch_community_group_members_list())
