@@ -55,7 +55,7 @@
         "Freeze, <User>! This is TeX-Bot! You're sentenced to 3 years in the <Group_Name> Discord server for illegally searching us up on the Guild website!",
         "Looks like <User> stumbled into the not-so-secret hideout of <Group_Name>.",
         "The truth is <User>.... the game was rigged from the start.",
-        "Did you ever hear the tragedy of Darth <User> the Wise? I thought not, it's not a story the lecturers would tell you.",
+        "Did you ever hear the tragedy of Darth <User> the Wise? I thought not. It's not a story the lecturers would tell you.",
         "`<coroutine object BaseInductCog.get_random_welcome_message at 0x0000011EFD355120; user_object:`<User>`>`"
     ]
 }
