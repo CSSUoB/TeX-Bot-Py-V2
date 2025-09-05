@@ -967,7 +967,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         raw_status: str | None,
     ) -> None:
         """List all actions."""
-        all_actions: Mapping[str, Collection[AssignedCommitteeAction]] = await self._get_actions_grouped_by_member_id()
+        all_actions: Mapping[
+            str, Collection[AssignedCommitteeAction]
+        ] = await self._get_actions_grouped_by_member_id()
         filtered_actions: Mapping[str, Collection[AssignedCommitteeAction]] = {
             discord_id: actions
             for discord_id, actions in all_actions.items()
