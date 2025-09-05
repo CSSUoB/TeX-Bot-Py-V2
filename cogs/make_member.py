@@ -1,19 +1,16 @@
 """Contains cog classes for any make_member interactions."""
 
 import logging
-import re
 from typing import TYPE_CHECKING
 
-import aiohttp
-import bs4
 import discord
-from bs4 import BeautifulSoup
 from django.core.exceptions import ValidationError
 
 from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
-from utils import GLOBAL_SSL_CONTEXT, CommandChecks, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog
+from utils.msl import fetch_community_group_members_count, is_id_a_community_group_member
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -116,6 +113,20 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         member_role: discord.Role = await self.bot.member_role
         interaction_member: discord.Member = await ctx.bot.get_main_guild_member(ctx.user)
 
+        INVALID_GUILD_MEMBER_ID: Final[str] = (
+            f"{group_member_id!r} is not a valid {self.bot.group_member_id_type} ID."
+        )
+
+        try:
+            group_member_id_int: int = int(group_member_id)
+        except ValueError:
+            await self.command_send_error(ctx=ctx, message=INVALID_GUILD_MEMBER_ID)
+            return
+
+        if group_member_id_int < 1000000 or group_member_id_int > 99999999:
+            await self.command_send_error(ctx=ctx, message=INVALID_GUILD_MEMBER_ID)
+            return
+
         await ctx.defer(ephemeral=True)
         async with ctx.typing():
             if member_role in interaction_member.roles:
@@ -128,19 +139,9 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 )
                 return
 
-            if not re.fullmatch(r"\A\d{7}\Z", group_member_id):
-                await self.command_send_error(
-                    ctx,
-                    message=(
-                        f"{group_member_id!r} is not a valid "
-                        f"{self.bot.group_member_id_type} ID."
-                    ),
-                )
-                return
-
             if await GroupMadeMember.objects.filter(
                 hashed_group_member_id=GroupMadeMember.hash_group_member_id(
-                    group_member_id, self.bot.group_member_id_type
+                    group_member_id_int, self.bot.group_member_id_type
                 )
             ).aexists():
                 await ctx.followup.send(
@@ -154,56 +155,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 )
                 return
 
-            guild_member_ids: set[str] = set()
-
-            async with (
-                aiohttp.ClientSession(
-                    headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
-                ) as http_session,
-                http_session.get(
-                    url=GROUPED_MEMBERS_URL, ssl=GLOBAL_SSL_CONTEXT
-                ) as http_response,
-            ):
-                response_html: str = await http_response.text()
-
-            MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
-                {
-                    "ctl00_Main_rptGroups_ctl05_gvMemberships",
-                    "ctl00_Main_rptGroups_ctl03_gvMemberships",
-                    "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl03_gvMemberships",
-                    "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl05_gvMemberships",
-                }
-            )
-            table_id: str
-            for table_id in MEMBER_HTML_TABLE_IDS:
-                parsed_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-                    response_html, "html.parser"
-                ).find("table", {"id": table_id})
-
-                if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
-                    continue
-
-                guild_member_ids.update(
-                    row.contents[2].text
-                    for row in parsed_html.find_all("tr", {"class": ["msl_row", "msl_altrow"]})
-                )
-
-            guild_member_ids.discard("")
-            guild_member_ids.discard("\n")
-            guild_member_ids.discard(" ")
-
-            if not guild_member_ids:
-                await self.command_send_error(
-                    ctx,
-                    error_code="E1041",
-                    logging_message=OSError(
-                        "The guild member IDs could not be retrieved from "
-                        "the MEMBERS_LIST_URL."
-                    ),
-                )
-                return
-
-            if group_member_id not in guild_member_ids:
+            if not await is_id_a_community_group_member(group_member_id_int):
                 await self.command_send_error(
                     ctx,
                     message=(
@@ -276,53 +228,9 @@ class MemberCountCommandCog(TeXBotBaseCog):
         await ctx.defer(ephemeral=False)
 
         async with ctx.typing():
-            async with (
-                aiohttp.ClientSession(
-                    headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
-                ) as http_session,
-                http_session.get(
-                    url=BASE_MEMBERS_URL, ssl=GLOBAL_SSL_CONTEXT
-                ) as http_response,
-            ):
-                response_html: str = await http_response.text()
-
-            member_list_div: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-                response_html, "html.parser"
-            ).find("div", {"class": "memberlistcol"})
-
-            if member_list_div is None or isinstance(member_list_div, bs4.NavigableString):
-                await self.command_send_error(
-                    ctx=ctx,
-                    error_code="E1041",
-                    logging_message=OSError(
-                        "The member count could not be retrieved from the MEMBERS_LIST_URL."
-                    ),
-                )
-                return
-
-            if "showing 100 of" in member_list_div.text.lower():
-                member_count: str = member_list_div.text.split(" ")[3]
-                await ctx.followup.send(
-                    content=f"{self.bot.group_full_name} has {member_count} members! :tada:"
-                )
-                return
-
-            member_table: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-                response_html, "html.parser"
-            ).find("table", {"id": "ctl00_ctl00_Main_AdminPageContent_gvMembers"})
-
-            if member_table is None or isinstance(member_table, bs4.NavigableString):
-                await self.command_send_error(
-                    ctx=ctx,
-                    error_code="E1041",
-                    logging_message=OSError(
-                        "The member count could not be retrieved from the MEMBERS_LIST_URL."
-                    ),
-                )
-                return
-
             await ctx.followup.send(
-                content=f"{self.bot.group_full_name} has {
-                    len(member_table.find_all('tr', {'class': ['msl_row', 'msl_altrow']}))
-                } members! :tada:"
+                content=(
+                    f"{self.bot.group_full_name} has "
+                    f"{await fetch_community_group_members_count()} members! :tada:"
+                )
             )
