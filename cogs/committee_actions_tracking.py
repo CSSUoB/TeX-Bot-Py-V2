@@ -25,7 +25,7 @@ from utils import CommandChecks, TeXBotBaseCog
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 if TYPE_CHECKING:
-    from collections.abc import Collection, Iterable, Sequence
+    from collections.abc import Collection, Iterable, Sequence, Mapping
     from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
@@ -46,32 +46,18 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
     """Base cog class that defines methods for committee actions tracking."""
 
     @classmethod
-    async def _get_all_actions(cls) -> dict[str, list[AssignedCommitteeAction]]:
+    async def _get_actions_grouped_by_member_id(
+        cls, filter_query: Q
+    ) -> "Mapping[str, Collection[AssignedCommitteeAction]]":
         grouped_actions: dict[str, list[AssignedCommitteeAction]] = defaultdict(list)
 
         action: AssignedCommitteeAction
         async for action in AssignedCommitteeAction.objects.select_related(
             "discord_member"
-        ).all():
+        ).filter(filter_query):
             grouped_actions[action.discord_member.discord_id].append(action)
 
         return grouped_actions
-
-    @classmethod
-    async def _get_incomplete_actions(cls) -> dict[str, list[AssignedCommitteeAction]]:
-        """Get a list of all actions that are in progress."""
-        grouped_filtered_actions: dict[str, list[AssignedCommitteeAction]] = defaultdict(list)
-
-        async for action in AssignedCommitteeAction.objects.select_related(
-            "discord_member"
-        ).filter(
-            Q(raw_status=AssignedCommitteeAction.Status.IN_PROGRESS.value)
-            | Q(raw_status=AssignedCommitteeAction.Status.BLOCKED.value)
-            | Q(raw_status=AssignedCommitteeAction.Status.NOT_STARTED.value)
-        ):
-            grouped_filtered_actions[action.discord_member.discord_id].append(action)
-
-        return grouped_filtered_actions
 
     async def _update_action_board(self) -> None:
         """
@@ -105,7 +91,15 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
 
         all_actions: dict[
             str, list[AssignedCommitteeAction]
-        ] = await self._get_incomplete_actions()
+        ] = await self._get_actions_grouped_by_member_id(
+            query=Q(
+                status__in=(
+                    AssignedCommitteeAction.Status.IN_PROGRESS.value,
+                    AssignedCommitteeAction.Status.BLOCKED.value,
+                    AssignedCommitteeAction.Status.NOT_STARTED.value,
+                )
+            )
+        )
 
         if not all_actions:
             return
@@ -423,7 +417,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         """Autocomplete callable that provides the set of possible Status' of actions."""
         status_options: Sequence[tuple[str, str]] = AssignedCommitteeAction._meta.get_field(
             "raw_status"
-        ).choices  # type: ignore[assignment]
+        ).choices
 
         if not status_options:
             logger.error("The autocomplete could not find any action Status'!")
@@ -971,7 +965,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         raw_status: str | None,
     ) -> None:
         """List all actions."""
-        all_actions: dict[str, list[AssignedCommitteeAction]] = await self._get_all_actions()
+        all_actions: dict[
+            str, list[AssignedCommitteeAction]
+        ] = await self._get_actions_grouped_by_member_id()
         filtered_actions: dict[str, list[AssignedCommitteeAction]] = {
             discord_id: actions
             for discord_id, actions in all_actions.items()
