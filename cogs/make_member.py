@@ -2,27 +2,28 @@
 
 import logging
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
-import aiohttp
-import bs4
 import discord
-from bs4 import BeautifulSoup
+from discord.ui import Modal, View
 from django.core.exceptions import ValidationError
 
 from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
-from utils import GLOBAL_SSL_CONTEXT, CommandChecks, TeXBotBaseCog
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils.msl import get_membership_count, is_student_id_member
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
     from logging import Logger
     from typing import Final
 
-    from utils import TeXBotApplicationContext
-
-__all__: "Sequence[str]" = ("MakeMemberCommandCog", "MemberCountCommandCog")
+__all__: "Sequence[str]" = (
+    "MakeMemberCommandCog",
+    "MakeMemberModalCommandCog",
+    "MemberCountCommandCog",
+)
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
@@ -154,56 +155,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 )
                 return
 
-            guild_member_ids: set[str] = set()
-
-            async with (
-                aiohttp.ClientSession(
-                    headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
-                ) as http_session,
-                http_session.get(
-                    url=GROUPED_MEMBERS_URL, ssl=GLOBAL_SSL_CONTEXT
-                ) as http_response,
-            ):
-                response_html: str = await http_response.text()
-
-            MEMBER_HTML_TABLE_IDS: Final[frozenset[str]] = frozenset(
-                {
-                    "ctl00_Main_rptGroups_ctl05_gvMemberships",
-                    "ctl00_Main_rptGroups_ctl03_gvMemberships",
-                    "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl03_gvMemberships",
-                    "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl05_gvMemberships",
-                }
-            )
-            table_id: str
-            for table_id in MEMBER_HTML_TABLE_IDS:
-                parsed_html: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-                    response_html, "html.parser"
-                ).find("table", {"id": table_id})
-
-                if parsed_html is None or isinstance(parsed_html, bs4.NavigableString):
-                    continue
-
-                guild_member_ids.update(
-                    row.contents[2].text
-                    for row in parsed_html.find_all("tr", {"class": ["msl_row", "msl_altrow"]})
-                )
-
-            guild_member_ids.discard("")
-            guild_member_ids.discard("\n")
-            guild_member_ids.discard(" ")
-
-            if not guild_member_ids:
-                await self.command_send_error(
-                    ctx,
-                    error_code="E1041",
-                    logging_message=OSError(
-                        "The guild member IDs could not be retrieved from "
-                        "the MEMBERS_LIST_URL."
-                    ),
-                )
-                return
-
-            if group_member_id not in guild_member_ids:
+            if not await is_student_id_member(student_id=group_member_id):
                 await self.command_send_error(
                     ctx,
                     message=(
@@ -276,53 +228,114 @@ class MemberCountCommandCog(TeXBotBaseCog):
         await ctx.defer(ephemeral=False)
 
         async with ctx.typing():
-            async with (
-                aiohttp.ClientSession(
-                    headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
-                ) as http_session,
-                http_session.get(
-                    url=BASE_MEMBERS_URL, ssl=GLOBAL_SSL_CONTEXT
-                ) as http_response,
-            ):
-                response_html: str = await http_response.text()
-
-            member_list_div: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-                response_html, "html.parser"
-            ).find("div", {"class": "memberlistcol"})
-
-            if member_list_div is None or isinstance(member_list_div, bs4.NavigableString):
-                await self.command_send_error(
-                    ctx=ctx,
-                    error_code="E1041",
-                    logging_message=OSError(
-                        "The member count could not be retrieved from the MEMBERS_LIST_URL."
-                    ),
-                )
-                return
-
-            if "showing 100 of" in member_list_div.text.lower():
-                member_count: str = member_list_div.text.split(" ")[3]
-                await ctx.followup.send(
-                    content=f"{self.bot.group_full_name} has {member_count} members! :tada:"
-                )
-                return
-
-            member_table: bs4.Tag | bs4.NavigableString | None = BeautifulSoup(
-                response_html, "html.parser"
-            ).find("table", {"id": "ctl00_ctl00_Main_AdminPageContent_gvMembers"})
-
-            if member_table is None or isinstance(member_table, bs4.NavigableString):
-                await self.command_send_error(
-                    ctx=ctx,
-                    error_code="E1041",
-                    logging_message=OSError(
-                        "The member count could not be retrieved from the MEMBERS_LIST_URL."
-                    ),
-                )
-                return
-
             await ctx.followup.send(
-                content=f"{self.bot.group_full_name} has {
-                    len(member_table.find_all('tr', {'class': ['msl_row', 'msl_altrow']}))
-                } members! :tada:"
+                content=(
+                    f"{self.bot.group_full_name} has "
+                    f"{await get_membership_count()} members! :tada:"
+                )
             )
+
+
+class MakeMemberModalActual(Modal):
+    """A discord.Modal containing a the input box for make member user interaction."""
+
+    def __init__(self) -> None:
+        super().__init__(title="Make Member Modal")
+
+        self.add_item(discord.ui.InputText(label="Student ID"))
+
+    @override
+    async def callback(self, interaction: discord.Interaction) -> None:
+        student_id: str | None = self.children[0].value
+        if not student_id:
+            await interaction.response.send_message(
+                content="Invalid Student ID.", ephemeral=True
+            )
+            return
+
+        if not await is_student_id_member(student_id=student_id):
+            await interaction.response.send_message(
+                content="Student ID not found.", ephemeral=True
+            )
+            return
+
+        if await is_student_id_member(student_id=student_id):
+            await MakeMemberModalCommandCog.give_member_role(
+                self=MakeMemberModalCommandCog(bot=interaction.client), interaction=interaction
+            )
+            await interaction.response.send_message(content="Action complete.")
+            return
+
+
+class OpenMemberVerifyModalView(View):
+    """A discord.View containing a button to open a new member verification modal."""
+
+    def __init__(self) -> None:
+        super().__init__(timeout=None)
+
+    @discord.ui.button(
+        label="Verify", style=discord.ButtonStyle.primary, custom_id="verify_new_member"
+    )
+    async def verify_new_member_button_callback(  # type: ignore[misc]
+        self, _: discord.Button, interaction: discord.Interaction
+    ) -> None:
+        await interaction.response.send_modal(MakeMemberModalActual())
+
+
+class MakeMemberModalCommandCog(TeXBotBaseCog):
+    """Cog class that defines the "/make-member-modal" command and its call-back method."""
+
+    @TeXBotBaseCog.listener()
+    async def on_ready(self) -> None:
+        """Add OpenMemberVerifyModalView to the bot's list of permanent views."""
+        self.bot.add_view(OpenMemberVerifyModalView())
+
+    async def give_member_role(self, interaction: discord.Interaction) -> None:
+        """Gives the member role to the user who interacted with the modal."""
+        if not isinstance(interaction.user, discord.Member):
+            await self.command_send_error(
+                ctx=TeXBotApplicationContext(bot=interaction.client, interaction=interaction),
+                message="User is not a member.",
+            )
+            return
+
+        await interaction.user.add_roles(
+            await self.bot.member_role,
+            reason=f'{interaction.user} used TeX Bot modal: "Make Member"',
+        )
+
+    async def _open_make_new_member_modal(
+        self,
+        button_callback_channel: discord.TextChannel | discord.DMChannel,
+    ) -> None:
+        await button_callback_channel.send(
+            content="would you like to open the make member modal",
+            view=OpenMemberVerifyModalView(),
+        )
+
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        name="make-member-modal",
+        description=(
+            "prints a message with a button that allows users to open the make member modal, "
+        ),
+    )
+    @CommandChecks.check_interaction_user_has_committee_role
+    @CommandChecks.check_interaction_user_in_main_guild
+    async def make_member_modal(  # type: ignore[misc]
+        self,
+        ctx: "TeXBotApplicationContext",
+    ) -> None:
+        """
+        Definition & callback response of the "make-member-modal" command.
+
+        The "make-member-modal" command prints a message with a button that allows users
+        to open the make member modal
+        """
+        await self._open_make_new_member_modal(
+            button_callback_channel=ctx.channel,
+        )
+
+        await ctx.respond(
+            content="The make member modal has been opened in this channel.",
+            ephemeral=True,
+        )
