@@ -25,7 +25,7 @@ from utils import CommandChecks, TeXBotBaseCog
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 if TYPE_CHECKING:
-    from collections.abc import Collection, Iterable, Sequence, Mapping
+    from collections.abc import Collection, Iterable, Mapping, Sequence
     from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
@@ -47,9 +47,11 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
 
     @classmethod
     async def _get_actions_grouped_by_member_id(
-        cls, filter_query: Q
+        cls, filter_query: Q | None = None
     ) -> "Mapping[str, Collection[AssignedCommitteeAction]]":
         grouped_actions: dict[str, list[AssignedCommitteeAction]] = defaultdict(list)
+        if filter_query is None:
+            filter_query = Q()
 
         action: AssignedCommitteeAction
         async for action in AssignedCommitteeAction.objects.select_related(
@@ -89,10 +91,10 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 content="## Committee Actions Tracking Board\n"
             )
 
-        all_actions: dict[
-            str, list[AssignedCommitteeAction]
+        all_actions: Mapping[
+            str, Collection[AssignedCommitteeAction]
         ] = await self._get_actions_grouped_by_member_id(
-            query=Q(
+            filter_query=Q(
                 status__in=(
                     AssignedCommitteeAction.Status.IN_PROGRESS.value,
                     AssignedCommitteeAction.Status.BLOCKED.value,
@@ -835,7 +837,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 )
             ]
         else:
-            user_actions = [
+            user_actions: list[AssignedCommitteeAction] = [
                 action
                 async for action in AssignedCommitteeAction.objects.filter(
                     raw_status=raw_status,
@@ -965,10 +967,8 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         raw_status: str | None,
     ) -> None:
         """List all actions."""
-        all_actions: dict[
-            str, list[AssignedCommitteeAction]
-        ] = await self._get_actions_grouped_by_member_id()
-        filtered_actions: dict[str, list[AssignedCommitteeAction]] = {
+        all_actions: Mapping[str, Collection[AssignedCommitteeAction]] = await self._get_actions_grouped_by_member_id()
+        filtered_actions: Mapping[str, Collection[AssignedCommitteeAction]] = {
             discord_id: actions
             for discord_id, actions in all_actions.items()
             if not raw_status
