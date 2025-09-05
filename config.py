@@ -955,9 +955,9 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_committee_actions_reminders_interval(cls) -> None:
-        if "COMMITTEE_ACTIONS_REMINDERS" not in cls._settings:
+        if "SEND_COMMITTEE_ACTIONS_REMINDERS" not in cls._settings:
             INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
-                "Invalid setup order: COMMITTEE_ACTIONS_REMINDERS must be set up "
+                "Invalid setup order: SEND_COMMITTEE_ACTIONS_REMINDERS must be set up "
                 "before COMMITTEE_ACTIONS_REMINDERS_INTERVAL can be set up."
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
@@ -971,7 +971,7 @@ class Settings(abc.ABC):
             "hours": 24,
         }
 
-        if cls._settings["COMMITTEE_ACTIONS_REMINDERS"]:
+        if cls._settings["SEND_COMMITTEE_ACTIONS_REMINDERS"]:
             if not raw_committee_actions_reminders_interval:
                 INVALID_COMMITTEE_ACTIONS_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
                     "COMMITTEE_ACTIONS_REMINDERS_INTERVAL must contain the interval "
@@ -995,9 +995,9 @@ class Settings(abc.ABC):
 
     @classmethod
     def _setup_committee_actions_reminders_channel(cls) -> None:
-        if "COMMITTEE_ACTIONS_REMINDERS" not in cls._settings:
+        if "SEND_COMMITTEE_ACTIONS_REMINDERS" not in cls._settings:
             INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
-                "Invalid setup order: COMMITTEE_ACTIONS_REMINDERS must be set up "
+                "Invalid setup order: SEND_COMMITTEE_ACTIONS_REMINDERS must be set up "
                 "before COMMITTEE_ACTIONS_REMINDERS_CHANNEL can be set up."
             )
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)

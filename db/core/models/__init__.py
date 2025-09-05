@@ -2,7 +2,7 @@
 
 import hashlib
 import re
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING, overload, override
 
 import discord
 from django.core.exceptions import ValidationError
@@ -43,7 +43,15 @@ class AssignedCommitteeAction(AsyncBaseModel):
 
         emoji: str
 
-        def __new__(  # noqa: D102
+        @overload
+        def __new__(cls, value: "LiteralString") -> "AssignedCommitteeAction.Status": ...
+
+        @overload
+        def __new__(
+            cls, value: "LiteralString", emoji: "LiteralString"
+        ) -> "AssignedCommitteeAction.Status": ...
+
+        def __new__(  # type: ignore[misc]  # noqa: D102
             cls, value: "LiteralString", emoji: "LiteralString"
         ) -> "AssignedCommitteeAction.Status":
             obj: AssignedCommitteeAction.Status = str.__new__(cls, value)
@@ -65,9 +73,17 @@ class AssignedCommitteeAction(AsyncBaseModel):
         unique=False,
     )
     description = models.TextField("Description", max_length=200, null=False, blank=False)
-    status: Status = models.CharField(
+    raw_status = models.CharField(
         max_length=3, choices=Status, default=Status.NOT_STARTED, null=False, blank=False
     )
+
+    @property
+    def status(self) -> Status:  # noqa: D102
+        return self.Status(self.raw_status)
+
+    @status.setter
+    def status(self, value: Status, /) -> None:
+        self.raw_status = value.value
 
     class Meta:  # noqa: D106
         verbose_name = "Assigned Committee Action"
