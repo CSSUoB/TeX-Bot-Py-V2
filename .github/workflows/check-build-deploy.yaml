@@ -96,7 +96,12 @@ jobs:
               run: uv run -- pre-commit install-hooks
 
             - name: Save pre-commit Checks Which Require Skipping
-              run: echo "SKIP=check-github-workflows,ruff,uv-lock" >> $GITHUB_ENV
+              run: |
+                if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_name }}" == "${{ github.event.repository.default_branch }}" ]]; then
+                    echo "SKIP=check-github-workflows,ruff,uv-lock,gitlint-ci" >> $GITHUB_ENV
+                else
+                    echo "SKIP=check-github-workflows,ruff,uv-lock" >> $GITHUB_ENV
+                fi
 
             - name: Run pre-commit
               run: uv run -- pre-commit run --all-files --hook-stage manual  # TODO: Add GitHub workflows output format
