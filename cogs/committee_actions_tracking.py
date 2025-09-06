@@ -82,9 +82,9 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
             )
             return
 
-        action_board_message: discord.Message | None = await action_board_channel.history(
-            limit=1
-        ).next()
+        action_board_message: discord.Message | None = None
+        with contextlib.suppress(discord.errors.NoMoreItems):
+            action_board_message = await action_board_channel.history(limit=1).next()
 
         if not action_board_message or action_board_message.author != self.bot.user:
             action_board_message = await action_board_channel.send(
@@ -95,13 +95,15 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
             str, Collection[AssignedCommitteeAction]
         ] = await self._get_actions_grouped_by_member_id(
             filter_query=Q(
-                status__in=(
+                raw_status__in=(
                     AssignedCommitteeAction.Status.IN_PROGRESS.value,
                     AssignedCommitteeAction.Status.BLOCKED.value,
                     AssignedCommitteeAction.Status.NOT_STARTED.value,
                 )
             )
         )
+
+        logger.debug(all_actions)
 
         if not all_actions:
             return
@@ -111,10 +113,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 f"\n<@{discord_id}>, Actions:"
                 f"\n{
                     ', \n'.join(
-                        action.status.emoji
-                        + ' '
-                        + f'{action.description} '
-                        + f'({action.status})'
+                        action.status.emoji + f' {action.description} ({action.status.label})'
                         for action in actions
                     )
                 }"
@@ -309,10 +308,7 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
                 f"\n{committee}, Actions:"
                 f"\n{
                     ', \n'.join(
-                        action.status.emoji
-                        + ' '
-                        + f'{action.description} '
-                        + f'({action.status})'
+                        action.status.emoji + f' {action.description} ({action.status.label})'
                         for action in actions
                     )
                 }"
@@ -554,7 +550,10 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             logger.debug("An invalid status was provided but did not raise an exception.")
             return
 
-        await action.aupdate(status=new_status)
+        action.status = new_status
+        await action.asave()
+
+        logger.debug("Action: %s, status updated to: %s", action, action.status)
 
         await self._update_action_board()
 
@@ -967,18 +966,19 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         raw_status: str | None,
     ) -> None:
         """List all actions."""
-        all_actions: Mapping[
+        filtered_actions: Mapping[
             str, Collection[AssignedCommitteeAction]
-        ] = await self._get_actions_grouped_by_member_id()
-        filtered_actions: Mapping[str, Collection[AssignedCommitteeAction]] = {
-            discord_id: actions
-            for discord_id, actions in all_actions.items()
-            if not raw_status
-            or any(
-                action.status == AssignedCommitteeAction.Status(raw_status)
-                for action in actions
+        ] = await self._get_actions_grouped_by_member_id(
+            filter_query=Q(raw_status=AssignedCommitteeAction.Status(value=raw_status).value)
+            if raw_status is not None
+            else Q(
+                raw_status__in=(
+                    AssignedCommitteeAction.Status.IN_PROGRESS.value,
+                    AssignedCommitteeAction.Status.BLOCKED.value,
+                    AssignedCommitteeAction.Status.NOT_STARTED.value,
+                )
             )
-        }
+        )
 
         if not filtered_actions:
             await ctx.respond(content="No one has any actions that match the request!")
@@ -989,7 +989,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             f"\n<@{discord_id}>, Actions:\n"
             f"{
                 ', \n'.join(
-                    action.status.emoji + str(action.description) + f' ({action.status.label})'
+                    action.status.emoji + f' {action.description} ({action.status.label})'
                     for action in actions
                     if action.discord_member.discord_id == discord_id
                 )
