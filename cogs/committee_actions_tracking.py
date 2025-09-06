@@ -108,21 +108,22 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
         if not all_actions:
             return
 
-        all_actions_message: str = "\n".join(
-            [
-                f"\n<@{discord_id}>, Actions:"
-                f"\n{
-                    ', \n'.join(
-                        action.status.emoji + f' {action.description} ({action.status.label})'
-                        for action in actions
-                    )
-                }"
-                for discord_id, actions in all_actions.items()
-            ],
-        )
-
         await action_board_message.edit(
-            content=f"## Committee Actions Tracking Board\n{all_actions_message}"
+            content=f"## Committee Actions Tracking Board\n{
+                '\n'.join(
+                    [
+                        f'\n<@{discord_id}>, Actions:'
+                        f'\n{
+                            ", \n".join(
+                                action.status.emoji
+                                + f" {action.description} ({action.status.label})"
+                                for action in actions
+                            )
+                        }'
+                        for discord_id, actions in all_actions.items()
+                    ],
+                )
+            }"
         )
 
     async def _create_action(
@@ -192,11 +193,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
         action_user: "discord.Member | discord.User | Iterable[discord.Member | discord.User]",
         status: "Collection[AssignedCommitteeAction.Status]",
     ) -> "Mapping[discord.Member | discord.User, Collection[AssignedCommitteeAction]]":
-        """
-        Get the actions for a given user.
-
-        Takes in the user and returns a list of their actions.
-        """
+        """Get the actions for one or more given users, filtered by one or more statuses."""
         if isinstance(action_user, (discord.User, discord.Member)):
             user_actions: Collection[AssignedCommitteeAction] = [
                 action
@@ -208,18 +205,14 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
 
             return {action_user: user_actions} if user_actions else {}
 
-        actions: list[AssignedCommitteeAction] = [
-            action async for action in AssignedCommitteeAction.objects.select_related().all()
-        ]
-
         users_actions: dict[
             discord.Member | discord.User, Collection[AssignedCommitteeAction]
         ] = {
             user: [
                 action
-                for action in actions
-                if str(action.discord_member.discord_id) == str(user.id)
-                and action.status in status
+                async for action in AssignedCommitteeAction.objects.filter(
+                    discord_member__discord_id=user.id, raw_status__in=status
+                )
             ]
             for user in action_user
         }
