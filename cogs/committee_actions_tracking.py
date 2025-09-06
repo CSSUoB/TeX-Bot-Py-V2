@@ -6,7 +6,7 @@ import logging
 import random
 import time
 from collections import defaultdict
-from typing import TYPE_CHECKING, overload, override
+from typing import TYPE_CHECKING, override
 
 import discord
 from discord.ext import tasks
@@ -181,35 +181,24 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
             raise InvalidActionDescriptionError(
                 message=DUPLICATE_ACTION_MESSAGE
             ) from create_action_error
+
         await self._update_action_board()
+
         return action
 
-    @overload
-    @staticmethod
+    @classmethod
     async def get_user_actions(
-        action_user: discord.Member | discord.User,
+        cls,
+        action_user: "discord.Member | discord.User | Iterable[discord.Member | discord.User]",
         status: "Collection[AssignedCommitteeAction.Status]",
-    ) -> list[AssignedCommitteeAction]: ...
-
-    @overload
-    @staticmethod
-    async def get_user_actions(
-        action_user: "Iterable[discord.Member]",
-        status: "Collection[AssignedCommitteeAction.Status]",
-    ) -> dict[discord.Member, list[AssignedCommitteeAction]]: ...
-
-    @staticmethod
-    async def get_user_actions(
-        action_user: "discord.Member | discord.User | Iterable[discord.Member]",
-        status: "Collection[AssignedCommitteeAction.Status]",
-    ) -> list[AssignedCommitteeAction] | dict[discord.Member, list[AssignedCommitteeAction]]:
+    ) -> "Mapping[discord.Member | discord.User, Collection[AssignedCommitteeAction]]":
         """
         Get the actions for a given user.
 
         Takes in the user and returns a list of their actions.
         """
         if isinstance(action_user, (discord.User, discord.Member)):
-            user_actions: list[AssignedCommitteeAction] = [
+            user_actions: Collection[AssignedCommitteeAction] = [
                 action
                 async for action in AssignedCommitteeAction.objects.filter(
                     raw_status=status,
@@ -217,29 +206,29 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 )
             ]
 
-            return user_actions
+            return {action_user: user_actions} if user_actions else {}
 
         actions: list[AssignedCommitteeAction] = [
             action async for action in AssignedCommitteeAction.objects.select_related().all()
         ]
 
-        committee_actions: dict[discord.Member, list[AssignedCommitteeAction]] = {
-            committee: [
+        users_actions: dict[
+            discord.Member | discord.User, Collection[AssignedCommitteeAction]
+        ] = {
+            user: [
                 action
                 for action in actions
-                if str(action.discord_member.discord_id) == str(committee.id)
+                if str(action.discord_member.discord_id) == str(user.id)
                 and action.status in status
             ]
-            for committee in action_user
+            for user in action_user
         }
 
-        return {
-            committee: actions for committee, actions in committee_actions.items() if actions
-        }
+        return {user: actions for user, actions in users_actions.items() if actions}
 
 
 class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
-    """Cog class that defines the committee-actions tracking reminders task functionality."""
+    """Cog class that defines sending committee-actions tracking reminders."""
 
     @override
     def __init__(self, bot: "TeXBot") -> None:
@@ -281,8 +270,8 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
             self.send_committee_actions_reminders_task.cancel()
             return
 
-        all_actions: dict[
-            discord.Member, list[AssignedCommitteeAction]
+        all_actions: Mapping[
+            discord.Member | discord.User, Collection[AssignedCommitteeAction]
         ] = await self.get_user_actions(
             action_user=committee_role.members,
             status=(
@@ -985,19 +974,22 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             logger.debug("No actions found with the status filter: %s", raw_status)
             return
 
-        all_actions_message: str = "\n".join(
-            f"\n<@{discord_id}>, Actions:\n"
-            f"{
-                ', \n'.join(
-                    action.status.emoji + f' {action.description} ({action.status.label})'
-                    for action in actions
-                    if action.discord_member.discord_id == discord_id
+        await ctx.respond(
+            content=(
+                "\n".join(
+                    f"\n<@{discord_id}>, Actions:\n"
+                    f"{
+                        ', \n'.join(
+                            action.status.emoji
+                            + f' {action.description} ({action.status.label})'
+                            for action in actions
+                            if action.discord_member.discord_id == discord_id
+                        )
+                    }"
+                    for discord_id, actions in filtered_actions.items()
                 )
-            }"
-            for discord_id, actions in filtered_actions.items()
+            )
         )
-
-        await ctx.respond(content=all_actions_message)
 
     @committee_actions.command(
         name="delete", description="Deletes the specified action from the database completely."
