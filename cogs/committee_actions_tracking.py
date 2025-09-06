@@ -837,7 +837,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 )
             ]
         else:
-            user_actions: list[AssignedCommitteeAction] = [
+            user_actions = [
                 action
                 async for action in AssignedCommitteeAction.objects.filter(
                     raw_status=raw_status,
