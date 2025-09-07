@@ -92,7 +92,7 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
         )
         page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
         if not page_title or "Login" in str(page_title):
-            logger.debug("Token is invalid or expired.")
+            logger.warning("Token is invalid or expired.")
             return SUPlatformAccessCookieStatus.INVALID
 
         organisation_admin_url: str = (
