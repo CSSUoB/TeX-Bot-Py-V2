@@ -1,5 +1,6 @@
 """Module for checking membership status."""
 
+import contextlib
 import logging
 from typing import TYPE_CHECKING
 
@@ -38,7 +39,8 @@ BASE_SU_PLATFORM_WEB_COOKIES: "Final[Mapping[str, str]]" = {
 
 MEMBERS_LIST_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{settings['ORGANISATION_ID']}/?sort=groups"
 
-_membership_list_cache: "Final[dict[int, str]]" = {}  # NOTE: Mapping of IDs to names
+
+_membership_list_cache: set[int] = set()
 
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
@@ -71,11 +73,11 @@ async def fetch_msl_context(url: str) -> tuple[dict[str, str], dict[str, str]]:
     return data_fields, cookies
 
 
-async def fetch_community_group_members_list() -> set[tuple[str, int]]:
+async def fetch_community_group_members_list() -> set[int]:
     """
     Make a web request to fetch your community group's full membership list.
 
-    Returns a mapping of IDs to names.
+    Returns a set of IDs.
     """
     async with (
         aiohttp.ClientSession(
@@ -112,36 +114,30 @@ async def fetch_community_group_members_list() -> set[tuple[str, int]]:
         logger.debug(all_members_table)
         return set()
 
-    standard_members: list[bs4.Tag] = standard_members_table.find_all(name="tr")[1:]
-    all_members: list[bs4.Tag] = all_members_table.find_all(name="tr")[1:]
-
-    member_list: set[tuple[str, int]] = {
-        (
-            member.find_all(name="td")[0].text.strip(),
-            member.find_all(name="td")[
-                1
-            ].text.strip(),  # NOTE: This will not properly handle external members who do not have an ID... There does not appear to be a solution to this other than simply checking manually.
+    with contextlib.suppress(IndexError):
+        all_rows: list[bs4.Tag] = (
+            standard_members_table.find_all(name="tr")[1:]
+            + all_members_table.find_all(name="tr")[1:]
         )
-        for member in standard_members + all_members
-    }
 
-    _membership_list_cache.clear()
-    _membership_list_cache.update({member[1]: member[0] for member in member_list})
+    for member in all_rows:
+        with contextlib.suppress(ValueError):
+            _membership_list_cache.add(int(member.find_all(name="td")[1].text.strip()))
 
-    return member_list
+    return _membership_list_cache
 
 
-async def is_id_a_community_group_member(_id: int) -> bool:
+async def is_id_a_community_group_member(student_id: int) -> bool:
     """Check if the given ID is a member of your community group."""
-    if _id in _membership_list_cache:
+    if student_id in _membership_list_cache:
         return True
 
     logger.debug(
-        "ID %s not found in community group membership list cache; Fetching updated list.", _id
+        "ID %s not found in community group membership list cache; Fetching updated list.",
+        student_id,
     )
 
-    return _id in await fetch_community_group_members_list()  # type: ignore[comparison-overlap]
-
+    return student_id in await fetch_community_group_members_list()
 
 async def fetch_community_group_members_count() -> int:
     """Return the total number of members in your community group."""

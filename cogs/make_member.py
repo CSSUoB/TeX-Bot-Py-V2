@@ -155,9 +155,9 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 )
                 return
 
-            if not await is_id_a_community_group_member(group_member_id_int):
+            if not await is_id_a_community_group_member(student_id=group_member_id_int):
                 await self.command_send_error(
-                    ctx,
+                    ctx=ctx,
                     message=(
                         f"You must be a member of {self.bot.group_full_name} "
                         "to use this command.\n"
