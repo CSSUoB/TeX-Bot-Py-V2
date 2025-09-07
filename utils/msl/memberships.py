@@ -139,6 +139,7 @@ async def is_id_a_community_group_member(student_id: int) -> bool:
 
     return student_id in await fetch_community_group_members_list()
 
+
 async def fetch_community_group_members_count() -> int:
     """Return the total number of members in your community group."""
     return len(await fetch_community_group_members_list())
