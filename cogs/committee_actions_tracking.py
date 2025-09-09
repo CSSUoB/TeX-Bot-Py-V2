@@ -397,7 +397,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         """Autocomplete callable that provides the set of possible Status' of actions."""
         status_options: Sequence[tuple[str, str]] = AssignedCommitteeAction._meta.get_field(
             "raw_status"
-        ).choices
+        ).choices  # type: ignore[assignment]
 
         if not status_options:
             logger.error("The autocomplete could not find any action Status'!")
