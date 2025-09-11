@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 
 from config import settings
 from utils import GLOBAL_SSL_CONTEXT
+from exceptions import MSLMembershipError
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -100,19 +101,21 @@ async def fetch_community_group_members_list() -> set[int]:
     )
 
     if standard_members_table is None or all_members_table is None:
-        logger.warning("One or both of the membership tables could not be found!")
+        MEMBER_TABLE_ERROR: Final[str] = "One or both membership tables could not be found."
+        logger.warning(MEMBER_TABLE_ERROR)
         logger.debug(response_html)
-        return set()
+        raise MSLMembershipError(message=MEMBER_TABLE_ERROR)
 
     if isinstance(standard_members_table, bs4.NavigableString) or isinstance(
         all_members_table, bs4.NavigableString
     ):
-        logger.warning(
-            "Both membership tables were found but one or both are the wrong format!",
+        MEMBER_TABLE_FORMAT_ERROR: Final[str] = (
+            "Both membership tables were found but one or both were in the wrong format."
         )
+        logger.warning(MEMBER_TABLE_FORMAT_ERROR)
         logger.debug(standard_members_table)
         logger.debug(all_members_table)
-        return set()
+        raise MSLMembershipError(message=MEMBER_TABLE_FORMAT_ERROR)
 
     with contextlib.suppress(IndexError):
         all_rows: list[bs4.Tag] = (
