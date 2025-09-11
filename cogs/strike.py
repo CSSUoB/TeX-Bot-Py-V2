@@ -402,7 +402,7 @@ class BaseStrikeCog(TeXBotBaseCog):
         """
         if strike_member.bot:
             await self.command_send_error(
-                ctx,
+                ctx=ctx,
                 message="Member cannot be given an additional strike because they are a bot.",
             )
             return
@@ -416,7 +416,7 @@ class BaseStrikeCog(TeXBotBaseCog):
         )[0]
 
         await self._confirm_increase_strike(
-            message_sender_component=ResponseMessageSender(ctx),
+            message_sender_component=ResponseMessageSender(ctx=ctx),
             interaction_user=ctx.user,
             strike_user=strike_member,
             member_strikes=member_strikes,
@@ -859,10 +859,10 @@ class StrikeCommandCog(BaseStrikeCog):
                 str_strike_member_id
             )
         except ValueError as member_id_not_integer_error:
-            await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
+            await self.command_send_error(ctx=ctx, message=member_id_not_integer_error.args[0])
             return
 
-        await self._command_perform_strike(ctx, strike_member)
+        await self._command_perform_strike(ctx=ctx, strike_member=strike_member)
 
     @discord.slash_command(  # type: ignore[misc, no-untyped-call]
         name="get-strikes", description="Get the number of strikes a user has."
@@ -890,7 +890,7 @@ class StrikeCommandCog(BaseStrikeCog):
                 str_member_id=str_strike_member_id
             )
         except ValueError as member_id_not_integer_error:
-            await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
+            await self.command_send_error(ctx=ctx, message=member_id_not_integer_error.args[0])
             return
 
         strikes_count: int = 0
@@ -936,7 +936,7 @@ class StrikeCommandCog(BaseStrikeCog):
                 str_member_id=str_strike_member_id
             )
         except ValueError as member_id_not_integer_error:
-            await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
+            await self.command_send_error(ctx=ctx, message=member_id_not_integer_error.args[0])
             return
 
         try:
@@ -1008,16 +1008,16 @@ class StrikeContextCommandsCog(BaseStrikeCog):
 
         if not message.guild:
             await self.command_send_error(
-                ctx, message="Message supplied did not have a guild ID!"
+                ctx=ctx, message="Message supplied did not have a guild ID!"
             )
             return
 
         embed_content: str = ""
 
         if message.content:
-            embed_content += message.content[:300]
-            if len(message.content) > 300:
-                embed_content += " _... (truncated to 300 characters)_"
+            embed_content += message.content[:600]
+            if len(message.content) > 600:
+                embed_content += " _... (truncated to 600 characters)_"
         else:
             embed_content += "_Reported message had no content_"
             if len(message.attachments) > 0 or len(message.embeds) > 0:
@@ -1041,7 +1041,10 @@ class StrikeContextCommandsCog(BaseStrikeCog):
                 embed_image = message.attachments[0].url
 
         await discord_channel.send(
-            content=f"{ctx.user.mention} reported the following message:",
+            content=(
+                f"{ctx.user.mention} reported a message from {message.author.mention} "
+                f"in {message.channel}:"
+            ),
             embed=discord.Embed(
                 author=embed_author,
                 description=embed_content,
@@ -1062,7 +1065,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         self, ctx: "TeXBotApplicationContext", member: discord.Member
     ) -> None:
         """Call the _strike command, providing the required command arguments."""
-        await self._command_perform_strike(ctx, member)
+        await self._command_perform_strike(ctx=ctx, strike_member=member)
 
     @discord.message_command(name="Strike Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role
@@ -1074,8 +1077,8 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         strike_user: discord.Member = await self.bot.get_member_from_str_id(
             str(message.author.id)
         )
-        await self._send_message_to_committee(ctx, message=message)
-        await self._command_perform_strike(ctx, strike_member=strike_user)
+        await self._send_message_to_committee(ctx=ctx, message=message)
+        await self._command_perform_strike(ctx=ctx, strike_member=strike_user)
 
     @discord.message_command(  # type: ignore[no-untyped-call, misc]
         name="Send Message to Committee",
@@ -1087,4 +1090,4 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         self, ctx: "TeXBotApplicationContext", message: discord.Message
     ) -> None:
         """Send a copy of the selected message to committee channels for review."""
-        await self._send_message_to_committee(ctx, message=message)
+        await self._send_message_to_committee(ctx=ctx, message=message)
