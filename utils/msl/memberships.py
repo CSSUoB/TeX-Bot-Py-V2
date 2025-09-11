@@ -9,8 +9,8 @@ import bs4
 from bs4 import BeautifulSoup
 
 from config import settings
-from utils import GLOBAL_SSL_CONTEXT
 from exceptions import MSLMembershipError
+from utils import GLOBAL_SSL_CONTEXT
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -90,42 +90,47 @@ async def fetch_community_group_members_list() -> set[int]:
 
     parsed_html: BeautifulSoup = BeautifulSoup(markup=response_html, features="html.parser")
 
-    standard_members_table: bs4.Tag | bs4.NavigableString | None = parsed_html.find(
-        name="table",
-        attrs={"id": "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl03_gvMemberships"},
-    )
+    member_ids: set[int] = set()
 
-    all_members_table: bs4.Tag | bs4.NavigableString | None = parsed_html.find(
-        name="table",
-        attrs={"id": "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl05_gvMemberships"},
-    )
-
-    if standard_members_table is None or all_members_table is None:
-        MEMBER_TABLE_ERROR: Final[str] = "One or both membership tables could not be found."
-        logger.warning(MEMBER_TABLE_ERROR)
-        logger.debug(response_html)
-        raise MSLMembershipError(message=MEMBER_TABLE_ERROR)
-
-    if isinstance(standard_members_table, bs4.NavigableString) or isinstance(
-        all_members_table, bs4.NavigableString
+    table_id: str
+    for table_id in (
+        "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl03_gvMemberships",
+        "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl05_gvMemberships",
     ):
-        MEMBER_TABLE_FORMAT_ERROR: Final[str] = (
-            "Both membership tables were found but one or both were in the wrong format."
-        )
-        logger.warning(MEMBER_TABLE_FORMAT_ERROR)
-        logger.debug(standard_members_table)
-        logger.debug(all_members_table)
-        raise MSLMembershipError(message=MEMBER_TABLE_FORMAT_ERROR)
-
-    with contextlib.suppress(IndexError):
-        all_rows: list[bs4.Tag] = (
-            standard_members_table.find_all(name="tr")[1:]
-            + all_members_table.find_all(name="tr")[1:]
+        filtered_table: bs4.Tag | bs4.NavigableString | None = parsed_html.find(
+            name="table", attrs={"id": table_id}
         )
 
-    for member in all_rows:
-        with contextlib.suppress(ValueError):
-            _membership_list_cache.add(int(member.find_all(name="td")[1].text.strip()))
+        if filtered_table is None:
+            MEMBER_TABLE_ERROR: str = (
+                f"Membership table with ID {table_id} could not be found."
+            )
+            logger.warning(MEMBER_TABLE_ERROR)
+            logger.debug(response_html)
+            continue
+
+        if isinstance(filtered_table, bs4.NavigableString):
+            MEMBER_TABLE_FORMAT_ERROR: str = (
+                f"Membership table with ID {table_id} was found but is in the wrong format."
+            )
+            logger.warning(MEMBER_TABLE_FORMAT_ERROR)
+            logger.debug(filtered_table)
+            raise MSLMembershipError(message=MEMBER_TABLE_FORMAT_ERROR)
+
+        with contextlib.suppress(IndexError):
+            rows: list[bs4.Tag] = filtered_table.find_all(name="tr")[1:]
+            for member in rows:
+                with contextlib.suppress(ValueError):
+                    member_ids.add(int(member.find_all(name="td")[1].text.strip()))
+
+    if not member_ids:  # NOTE: this should never be possible, because to fetch the page you need to have admin access, which requires being a member.
+        NO_MEMBERS_ERROR: str = "No members were found in either membership table."
+        logger.warning(NO_MEMBERS_ERROR)
+        logger.debug(response_html)
+        raise MSLMembershipError(message=NO_MEMBERS_ERROR)
+
+    _membership_list_cache.clear()
+    _membership_list_cache.update(member_ids)
 
     return _membership_list_cache
 
