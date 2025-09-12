@@ -319,6 +319,15 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                     await reminder.adelete()
                     continue
 
+                if user.bot:
+                    logger.warning(
+                        "Failed to send reminder to user with ID: %s "
+                        "because the user is a bot.",
+                        reminder.discord_member.discord_id,
+                    )
+                    await reminder.adelete()
+                    continue
+
                 channel: discord.PartialMessageable = self.bot.get_partial_messageable(
                     reminder.channel_id, type=reminder.channel_type
                 )
