@@ -862,7 +862,7 @@ class StrikeCommandCog(BaseStrikeCog):
             await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
             return
 
-        await self._command_perform_strike(ctx, strike_member=strike_member)
+        await self._command_perform_strike(ctx, strike_member)
 
     @discord.slash_command(  # type: ignore[misc, no-untyped-call]
         name="get-strikes", description="Get the number of strikes a user has."
