@@ -1002,7 +1002,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
 
         if not discord_channel:
             await self.command_send_error(
-                ctx=ctx, message="Could not find the `#discord` channel in the main guild!"
+                ctx, message="Could not find the `#discord` channel in the main guild!"
             )
             return
 
