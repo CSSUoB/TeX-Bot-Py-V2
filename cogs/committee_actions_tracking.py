@@ -322,7 +322,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         if not new_status:
             await self.command_send_error(
-                ctx=ctx,
+                ctx,
                 message=f"Status ({status}) provided was not valid or could not be found.",
             )
             logger.debug("An invalid status was provided but did not raise an exception.")
@@ -372,7 +372,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             action_id_int: int = int(action_id)
         except ValueError:
             await self.command_send_error(
-                ctx=ctx,
+                ctx,
                 message="Action ID entered was not valid! Please use the autocomplete.",
                 logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
             )
@@ -384,7 +384,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
             await self.command_send_error(
-                ctx=ctx, message="Action provided was either not unique or could not be found."
+                ctx, message="Action provided was either not unique or could not be found."
             )
             return
 
@@ -437,7 +437,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             logger.debug("Index: %s was out of range! Printing list...", index)
             logger.debug(committee_members)
             await self.command_send_error(
-                ctx=ctx,
+                ctx,
                 message=(
                     f"Index {index} out of range for {len(committee_members)} "
                     "committee members... check the logs!"
@@ -447,7 +447,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         try:
             await self._create_action(
-                ctx=ctx, action_user=action_user, description=action_description
+                ctx, action_user=action_user, description=action_description
             )
             await ctx.respond(
                 content=f"Action `{action_description}` created for: {action_user.mention}"
@@ -494,7 +494,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         for committee_member in committee_members:
             try:
                 _: AssignedCommitteeAction | None = await self._create_action(
-                    ctx=ctx, action_user=committee_member, description=action_description
+                    ctx, action_user=committee_member, description=action_description
                 )
                 success_members.append(committee_member)
             except (
@@ -673,7 +673,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             action_id_int: int = int(action_id)
         except ValueError:
             await self.command_send_error(
-                ctx=ctx,
+                ctx,
                 message="Action ID entered was not valid! Please use the autocomplete.",
                 logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
             )
@@ -704,7 +704,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         try:
             new_action: AssignedCommitteeAction | None = await self._create_action(
-                ctx=ctx,
+                ctx,
                 action_user=new_user_to_action,
                 description=action_to_reassign.description,
             )
@@ -815,7 +815,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             action_id_int: int = int(action_id)
         except ValueError:
             await self.command_send_error(
-                ctx=ctx,
+                ctx,
                 message="Action ID entered was not valid! Please use the autocomplete.",
                 logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
             )
@@ -827,7 +827,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
         except (ObjectDoesNotExist, MultipleObjectsReturned):
             await self.command_send_error(
-                ctx=ctx, message="Action provided was either not unique or could not be found."
+                ctx, message="Action provided was either not unique or could not be found."
             )
             return
 
@@ -870,7 +870,7 @@ class CommitteeActionsTrackingContextCommandsCog(CommitteeActionsTrackingBaseCog
 
         try:
             await self._create_action(
-                ctx=ctx, action_user=actioned_message_user, description=actioned_message_text
+                ctx, action_user=actioned_message_user, description=actioned_message_text
             )
             await ctx.respond(
                 content=(
