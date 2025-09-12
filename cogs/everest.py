@@ -132,19 +132,19 @@ class EverestCommandCog(TeXBotBaseCog):
             course_type: _CourseTypes = _CourseTypes[raw_course_type]
         except KeyError:
             await self.command_send_error(
-                ctx=ctx, message=f"Invalid course type: '{raw_course_type}'."
+                ctx, message=f"Invalid course type: '{raw_course_type}'."
             )
             return
 
         if course_year < 1 or course_year > 10:
             await self.command_send_error(
-                ctx=ctx, message=f"Invalid course year: '{course_year}'."
+                ctx, message=f"Invalid course year: '{course_year}'."
             )
             return
 
         if percentage_of_module < 0 or percentage_of_module > 100:
             await self.command_send_error(
-                ctx=ctx,
+                ctx,
                 message=(
                     f"Percentage of module: '{percentage_of_module}' is not valid. "
                     "Please enter a percentage between 0 - 100."
