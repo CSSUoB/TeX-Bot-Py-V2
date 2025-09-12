@@ -292,7 +292,7 @@ class MemberCountCommandCog(TeXBotBaseCog):
 
             if member_list_div is None or isinstance(member_list_div, bs4.NavigableString):
                 await self.command_send_error(
-                    ctx=ctx,
+                    ctx,
                     error_code="E1041",
                     logging_message=OSError(
                         "The member count could not be retrieved from the MEMBERS_LIST_URL."
@@ -313,7 +313,7 @@ class MemberCountCommandCog(TeXBotBaseCog):
 
             if member_table is None or isinstance(member_table, bs4.NavigableString):
                 await self.command_send_error(
-                    ctx=ctx,
+                    ctx,
                     error_code="E1041",
                     logging_message=OSError(
                         "The member count could not be retrieved from the MEMBERS_LIST_URL."
