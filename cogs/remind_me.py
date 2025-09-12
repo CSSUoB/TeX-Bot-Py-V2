@@ -1,7 +1,6 @@
 """Contains cog classes for any remind_me interactions."""
 
 import datetime
-import functools
 import itertools
 import logging
 import re
