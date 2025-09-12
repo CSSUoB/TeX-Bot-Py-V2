@@ -112,7 +112,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
         if math.ceil(max(message_counts.values()) / 15) < 1:
             await self.command_send_error(
-                ctx=ctx, message="There are not enough messages sent in this channel."
+                ctx, message="There are not enough messages sent in this channel."
             )
             return
 
