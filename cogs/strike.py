@@ -1000,7 +1000,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
             name="discord",  # TODO: Make this user-configurable  # noqa: FIX002
         )
 
-        if discord_channel is None:
+        if not discord_channel:
             await self.command_send_error(
                 ctx, message="Could not find the `#discord` channel in the main guild!"
             )
