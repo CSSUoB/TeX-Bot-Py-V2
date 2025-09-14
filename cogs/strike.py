@@ -1044,7 +1044,18 @@ class StrikeContextCommandsCog(BaseStrikeCog):
             content=(
                 f"{ctx.user.mention} reported a message from {message.author.mention} "
                 f"in {
-                    message.channel.mention if isinstance(message.channel, (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Thread)) else discord.channel}:"
+                    message.channel.mention
+                    if isinstance(
+                        message.channel,
+                        (
+                            discord.TextChannel,
+                            discord.VoiceChannel,
+                            discord.StageChannel,
+                            discord.Thread,
+                        ),
+                    )
+                    else discord.channel
+                }:"
             ),
             embed=discord.Embed(
                 author=embed_author,
