@@ -1043,7 +1043,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         await discord_channel.send(
             content=(
                 f"{ctx.user.mention} reported a message from {message.author.mention} "
-                f"in {message.channel}:"
+                f"in {message.channel.mention}:"
             ),
             embed=discord.Embed(
                 author=embed_author,
