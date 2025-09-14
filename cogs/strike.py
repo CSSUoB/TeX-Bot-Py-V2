@@ -1054,7 +1054,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
                             discord.Thread,
                         ),
                     )
-                    else discord.channel
+                    else message.channel
                 }:"
             ),
             embed=discord.Embed(
