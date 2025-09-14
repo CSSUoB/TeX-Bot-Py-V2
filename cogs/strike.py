@@ -1000,7 +1000,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
             name="discord",  # TODO: Make this user-configurable  # noqa: FIX002
         )
 
-        if not discord_channel:
+        if discord_channel is None:
             await self.command_send_error(
                 ctx, message="Could not find the `#discord` channel in the main guild!"
             )
@@ -1043,7 +1043,8 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         await discord_channel.send(
             content=(
                 f"{ctx.user.mention} reported a message from {message.author.mention} "
-                f"in {message.channel.mention}:"
+                f"in {
+                    message.channel.mention if isinstance(message.channel, (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Thread)) else discord.channel}:"
             ),
             embed=discord.Embed(
                 author=embed_author,
