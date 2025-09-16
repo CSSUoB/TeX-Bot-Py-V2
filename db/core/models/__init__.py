@@ -353,8 +353,8 @@ class DiscordReminder(AsyncBaseModel):
         self._channel_type = channel_type
 
     class Meta(TypedModelMeta):  # noqa: D106
-        verbose_name: "ClassVar[StrOrPromise]" = "A Reminder for a Discord Member"
-        verbose_name_plural: "ClassVar[StrOrPromise]" = "Reminders for Discord Members"
+        verbose_name: "ClassVar[StrOrPromise]" = _("A Reminder for a Discord Member")
+        verbose_name_plural: "ClassVar[StrOrPromise]" = _("Reminders for Discord Members")
         constraints: "ClassVar[list[BaseConstraint] | tuple[BaseConstraint, ...]]" = (
             models.UniqueConstraint(
                 fields=["discord_member", "message", "_channel_id"],
