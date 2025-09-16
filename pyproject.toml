@@ -9,8 +9,8 @@ lint-format = ["ccft-pymarkdown>=2.0", "ruff>=0.12"]
 main = [
     "asyncstdlib>=3.13",
     "beautifulsoup4>=4.12",
-    "django>=5.1",
     "django-stubs-ext>=5.2",
+    "django>=5.1",
     "emoji>=2.14",
     "matplotlib>=3.10",
     "mplcyberpunk>=0.7",
