@@ -158,10 +158,10 @@ class SentOneOffIntroductionReminderMember(AsyncBaseModel):
     )
 
     class Meta(TypedModelMeta):  # noqa: D106
-        verbose_name: "ClassVar[StrOrPromise]" = (
+        verbose_name: "ClassVar[StrOrPromise]" = _(
             "Discord Member that has had a one-off Introduction reminder sent to their DMs"
         )
-        verbose_name_plural: "ClassVar[StrOrPromise]" = (
+        verbose_name_plural: "ClassVar[StrOrPromise]" = _(
             "Discord Members that have had a one-off Introduction reminder sent to their DMs"
         )
 
@@ -191,10 +191,10 @@ class SentGetRolesReminderMember(AsyncBaseModel):
     )
 
     class Meta(TypedModelMeta):  # noqa: D106
-        verbose_name: "ClassVar[StrOrPromise]" = (
+        verbose_name: "ClassVar[StrOrPromise]" = _(
             'Discord Member that has had a "Get Roles" reminder sent to their DMs'
         )
-        verbose_name_plural: "ClassVar[StrOrPromise]" = (
+        verbose_name_plural: "ClassVar[StrOrPromise]" = _(
             'Discord Members that have had a "Get Roles" reminder sent to their DMs'
         )
 
@@ -228,10 +228,10 @@ class GroupMadeMember(AsyncBaseModel):
     )
 
     class Meta(TypedModelMeta):  # noqa: D106
-        verbose_name: "ClassVar[StrOrPromise]" = (
+        verbose_name: "ClassVar[StrOrPromise]" = _(
             "Hashed Group ID of User that has been made Member"
         )
-        verbose_name_plural: "ClassVar[StrOrPromise]" = (
+        verbose_name_plural: "ClassVar[StrOrPromise]" = _(
             "Hashed Group IDs of Users that have been made Member"
         )
 
@@ -426,11 +426,11 @@ class LeftDiscordMember(AsyncBaseModel):
         self._roles = list(roles)
 
     class Meta(TypedModelMeta):  # noqa: D106
-        verbose_name: "ClassVar[StrOrPromise]" = (
+        verbose_name: "ClassVar[StrOrPromise]" = _(
             "A List of Roles that a Discord Member had "
             "when they left your group's Discord guild"
         )
-        verbose_name_plural: "ClassVar[StrOrPromise]" = (
+        verbose_name_plural: "ClassVar[StrOrPromise]" = _(
             "Lists of Roles that Discord Members had when they left your group's Discord guild"
         )
 
@@ -492,11 +492,11 @@ class DiscordMemberStrikes(AsyncBaseModel):
     )
 
     class Meta(TypedModelMeta):  # noqa: D106
-        verbose_name: "ClassVar[StrOrPromise]" = (
+        verbose_name: "ClassVar[StrOrPromise]" = _(
             "Discord Member that has been previously given one or more strikes "
             "because they broke one or more of your group's Discord guild rules"
         )
-        verbose_name_plural: "ClassVar[StrOrPromise]" = (
+        verbose_name_plural: "ClassVar[StrOrPromise]" = _(
             "Discord Members that have been previously given one or more strikes "
             "because they broke one or more of your group's Discord guild rules"
         )
