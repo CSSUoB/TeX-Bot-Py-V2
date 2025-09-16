@@ -9,12 +9,17 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django_stubs_ext.db.models import TypedModelMeta
 
 from .utils import AsyncBaseModel, DiscordMember
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from typing import Final, LiteralString
+    from typing import ClassVar, Final, LiteralString
+    from collections.abc import Set as AbstractSet
+
+    from django.db.models.constraints import BaseConstraint
+    from django_stubs_ext import StrOrPromise
 
 __all__: "Sequence[str]" = (
     "AssignedCommitteeAction",
@@ -85,13 +90,13 @@ class AssignedCommitteeAction(AsyncBaseModel):
     def status(self, value: Status, /) -> None:
         self.raw_status = value.value
 
-    class Meta:  # noqa: D106
-        verbose_name = "Assigned Committee Action"
-        constraints = [  # noqa: RUF012
+    class Meta(TypedModelMeta):  # noqa: D106
+        verbose_name: "ClassVar[StrOrPromise]" = _("Assigned Committee Action")
+        constraints: "ClassVar[list[BaseConstraint] | tuple[BaseConstraint, ...]]" = (
             models.UniqueConstraint(
                 fields=["discord_member", "description"], name="unique_user_action"
-            )
-        ]
+            ),
+        )
 
     @override
     def __repr__(self) -> str:
@@ -122,9 +127,13 @@ class IntroductionReminderOptOutMember(AsyncBaseModel):
         primary_key=True,
     )
 
-    class Meta:  # noqa: D106
-        verbose_name = "Discord Member that has Opted-Out of Introduction Reminders"
-        verbose_name_plural = "Discord Members that have Opted-Out of Introduction Reminders"
+    class Meta(TypedModelMeta):  # noqa: D106
+        verbose_name: "ClassVar[StrOrPromise]" = _(
+            "Discord Member that has Opted-Out of Introduction Reminders"
+        )
+        verbose_name_plural: "ClassVar[StrOrPromise]" = _(
+            "Discord Members that have Opted-Out of Introduction Reminders"
+        )
 
 
 class SentOneOffIntroductionReminderMember(AsyncBaseModel):
@@ -148,11 +157,11 @@ class SentOneOffIntroductionReminderMember(AsyncBaseModel):
         primary_key=True,
     )
 
-    class Meta:  # noqa: D106
-        verbose_name = (
+    class Meta(TypedModelMeta):  # noqa: D106
+        verbose_name: "ClassVar[StrOrPromise]" = (
             "Discord Member that has had a one-off Introduction reminder sent to their DMs"
         )
-        verbose_name_plural = (
+        verbose_name_plural: "ClassVar[StrOrPromise]" = (
             "Discord Members that have had a one-off Introduction reminder sent to their DMs"
         )
 
@@ -181,9 +190,11 @@ class SentGetRolesReminderMember(AsyncBaseModel):
         primary_key=True,
     )
 
-    class Meta:  # noqa: D106
-        verbose_name = 'Discord Member that has had a "Get Roles" reminder sent to their DMs'
-        verbose_name_plural = (
+    class Meta(TypedModelMeta):  # noqa: D106
+        verbose_name: "ClassVar[StrOrPromise]" = (
+            'Discord Member that has had a "Get Roles" reminder sent to their DMs'
+        )
+        verbose_name_plural: "ClassVar[StrOrPromise]" = (
             'Discord Members that have had a "Get Roles" reminder sent to their DMs'
         )
 
@@ -216,9 +227,13 @@ class GroupMadeMember(AsyncBaseModel):
         ],
     )
 
-    class Meta:  # noqa: D106
-        verbose_name = "Hashed Group ID of User that has been made Member"
-        verbose_name_plural = "Hashed Group IDs of Users that have been made Member"
+    class Meta(TypedModelMeta):  # noqa: D106
+        verbose_name: "ClassVar[StrOrPromise]" = (
+            "Hashed Group ID of User that has been made Member"
+        )
+        verbose_name_plural: "ClassVar[StrOrPromise]" = (
+            "Hashed Group IDs of Users that have been made Member"
+        )
 
     @override
     def __setattr__(self, name: str, value: object) -> None:
@@ -264,8 +279,8 @@ class GroupMadeMember(AsyncBaseModel):
 
     @classmethod
     @override
-    def get_proxy_field_names(cls) -> set[str]:
-        return super().get_proxy_field_names() | {"group_member_id"}
+    def _get_proxy_field_names(cls) -> "AbstractSet[str]":
+        return {*super()._get_proxy_field_names(), "group_member_id"}
 
 
 class DiscordReminder(AsyncBaseModel):
@@ -337,15 +352,15 @@ class DiscordReminder(AsyncBaseModel):
 
         self._channel_type = channel_type
 
-    class Meta:  # noqa: D106
-        verbose_name = "A Reminder for a Discord Member"
-        verbose_name_plural = "Reminders for Discord Members"
-        constraints = [  # noqa: RUF012
+    class Meta(TypedModelMeta):  # noqa: D106
+        verbose_name: "ClassVar[StrOrPromise]" = "A Reminder for a Discord Member"
+        verbose_name_plural: "ClassVar[StrOrPromise]" = "Reminders for Discord Members"
+        constraints: "ClassVar[list[BaseConstraint] | tuple[BaseConstraint, ...]]" = (
             models.UniqueConstraint(
                 fields=["discord_member", "message", "_channel_id"],
                 name="unique_user_channel_message",
-            )
-        ]
+            ),
+        )
 
     @override
     def __str__(self) -> str:
@@ -386,8 +401,8 @@ class DiscordReminder(AsyncBaseModel):
 
     @classmethod
     @override
-    def get_proxy_field_names(cls) -> set[str]:
-        return super().get_proxy_field_names() | {"channel_id", "channel_type"}
+    def _get_proxy_field_names(cls) -> "AbstractSet[str]":
+        return {*super()._get_proxy_field_names(), "channel_id", "channel_type"}
 
 
 class LeftDiscordMember(AsyncBaseModel):
@@ -403,20 +418,19 @@ class LeftDiscordMember(AsyncBaseModel):
     _roles = models.JSONField("List of roles a Discord Member had")
 
     @property
-    def roles(self) -> set[str]:
-        """Retrieve the set of roles the member had when they left your Discord guild."""
+    def roles(self) -> set[str]:  # noqa: D102
         return set(self._roles)
 
     @roles.setter
     def roles(self, roles: set[str]) -> None:
         self._roles = list(roles)
 
-    class Meta:  # noqa: D106
-        verbose_name = (
+    class Meta(TypedModelMeta):  # noqa: D106
+        verbose_name: "ClassVar[StrOrPromise]" = (
             "A List of Roles that a Discord Member had "
             "when they left your group's Discord guild"
         )
-        verbose_name_plural = (
+        verbose_name_plural: "ClassVar[StrOrPromise]" = (
             "Lists of Roles that Discord Members had when they left your group's Discord guild"
         )
 
@@ -440,8 +454,8 @@ class LeftDiscordMember(AsyncBaseModel):
 
     @classmethod
     @override
-    def get_proxy_field_names(cls) -> set[str]:
-        return super().get_proxy_field_names() | {"roles"}
+    def _get_proxy_field_names(cls) -> "AbstractSet[str]":
+        return {*super()._get_proxy_field_names(), "roles"}
 
 
 class DiscordMemberStrikes(AsyncBaseModel):
@@ -477,12 +491,12 @@ class DiscordMemberStrikes(AsyncBaseModel):
         default=0,
     )
 
-    class Meta:  # noqa: D106
-        verbose_name = (
+    class Meta(TypedModelMeta):  # noqa: D106
+        verbose_name: "ClassVar[StrOrPromise]" = (
             "Discord Member that has been previously given one or more strikes "
             "because they broke one or more of your group's Discord guild rules"
         )
-        verbose_name_plural = (
+        verbose_name_plural: "ClassVar[StrOrPromise]" = (
             "Discord Members that have been previously given one or more strikes "
             "because they broke one or more of your group's Discord guild rules"
         )
