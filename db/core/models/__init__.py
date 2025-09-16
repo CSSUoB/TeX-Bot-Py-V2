@@ -73,7 +73,7 @@ class AssignedCommitteeAction(AsyncBaseModel):
         DiscordMember,
         on_delete=models.CASCADE,
         related_name="assigned_committee_actions",
-        verbose_name="Discord Member",
+        verbose_name=_("Discord Member"),
         blank=False,
         null=False,
         unique=False,
@@ -122,7 +122,7 @@ class IntroductionReminderOptOutMember(AsyncBaseModel):
         DiscordMember,
         on_delete=models.CASCADE,
         related_name="opted_out_of_introduction_reminders",
-        verbose_name="Discord Member",
+        verbose_name=_("Discord Member"),
         blank=False,
         null=False,
         primary_key=True,
@@ -152,7 +152,7 @@ class SentOneOffIntroductionReminderMember(AsyncBaseModel):
         DiscordMember,
         on_delete=models.CASCADE,
         related_name="sent_one_off_introduction_reminder",
-        verbose_name="Discord Member",
+        verbose_name=_("Discord Member"),
         blank=False,
         null=False,
         primary_key=True,
@@ -185,7 +185,7 @@ class SentGetRolesReminderMember(AsyncBaseModel):
         DiscordMember,
         on_delete=models.CASCADE,
         related_name="sent_get_roles_reminder",
-        verbose_name="Discord Member",
+        verbose_name=_("Discord Member"),
         blank=False,
         null=False,
         primary_key=True,
@@ -215,7 +215,7 @@ class GroupMadeMember(AsyncBaseModel):
     INSTANCES_NAME_PLURAL: str = "Group Made Members"
 
     hashed_group_member_id = models.CharField(
-        "Hashed Group Member ID",
+        _("Hashed Group Member ID"),
         unique=True,
         null=False,
         blank=False,
@@ -223,7 +223,7 @@ class GroupMadeMember(AsyncBaseModel):
         validators=[
             RegexValidator(
                 r"\A[A-Fa-f\d]{64}\Z",
-                "hashed_group_member_id must be a valid sha256 hex-digest.",
+                _("hashed_group_member_id must be a valid sha256 hex-digest."),
             )
         ],
     )
@@ -293,16 +293,16 @@ class DiscordReminder(AsyncBaseModel):
         DiscordMember,
         on_delete=models.CASCADE,
         related_name="reminders",
-        verbose_name="Discord Member",
+        verbose_name=_("Discord Member"),
         blank=False,
         null=False,
         unique=False,
     )
     message = models.TextField(
-        "Message to remind User", max_length=1500, null=False, blank=True
+        _("Message to remind User"), max_length=1500, null=False, blank=True
     )
     _channel_id = models.CharField(
-        "Discord Channel ID of the channel that the reminder needs to be sent in",
+        _("Discord Channel ID of the channel that the reminder needs to be sent in"),
         unique=False,
         null=False,
         blank=False,
@@ -310,12 +310,14 @@ class DiscordReminder(AsyncBaseModel):
         validators=[
             RegexValidator(
                 r"\A\d{17,20}\Z",
-                "channel_id must be a valid Discord channel ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)",
+                _(
+                    "channel_id must be a valid Discord channel ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
+                ),
             )
         ],
     )
     _channel_type = models.IntegerField(
-        "Discord Channel Type of the channel that the reminder needs to be sent in",
+        _("Discord Channel Type of the channel that the reminder needs to be sent in"),
         choices=[
             (channel_type.value, channel_type.name) for channel_type in discord.ChannelType
         ],
@@ -323,12 +325,11 @@ class DiscordReminder(AsyncBaseModel):
         blank=True,
     )
     send_datetime = models.DateTimeField(
-        "Date & time to send reminder", unique=False, null=False, blank=False
+        _("Date & time to send reminder"), unique=False, null=False, blank=False
     )
 
     @property
-    def channel_id(self) -> int:
-        """The ID of the channel that the reminder needs to be sent in."""
+    def channel_id(self) -> int:  # noqa: D102
         return int(self._channel_id)
 
     @channel_id.setter
@@ -336,8 +337,8 @@ class DiscordReminder(AsyncBaseModel):
         self._channel_id = str(channel_id)
 
     @property
-    def channel_type(self) -> discord.ChannelType:
-        """The type of channel that the reminder needs to be sent in."""
+    def channel_type(self) -> discord.ChannelType:  # noqa: D102
+        # NOTE: This finds the  type of channel that the reminder needs to be sent in."""
         return discord.ChannelType(self._channel_type)
 
     @channel_type.setter
