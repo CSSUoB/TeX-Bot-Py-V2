@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from django.db.models.constraints import BaseConstraint
     from django_stubs_ext import StrOrPromise
 
+
 __all__: "Sequence[str]" = (
     "AssignedCommitteeAction",
     "DiscordMember",
@@ -77,7 +78,7 @@ class AssignedCommitteeAction(AsyncBaseModel):
         null=False,
         unique=False,
     )
-    description = models.TextField("Description", max_length=200, null=False, blank=False)
+    description = models.TextField(_("Description"), max_length=200, null=False, blank=False)
     raw_status = models.CharField(
         max_length=3, choices=Status, default=Status.NOT_STARTED, null=False, blank=False
     )
