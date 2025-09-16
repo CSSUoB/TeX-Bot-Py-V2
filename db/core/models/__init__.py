@@ -15,8 +15,8 @@ from .utils import AsyncBaseModel, DiscordMember
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from typing import ClassVar, Final, LiteralString
     from collections.abc import Set as AbstractSet
+    from typing import ClassVar, Final, LiteralString
 
     from django.db.models.constraints import BaseConstraint
     from django_stubs_ext import StrOrPromise
