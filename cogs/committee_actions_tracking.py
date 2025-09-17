@@ -191,14 +191,14 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
     async def get_user_actions(
         cls,
         action_user: "discord.Member | discord.User | Iterable[discord.Member | discord.User]",
-        status: "Collection[AssignedCommitteeAction.Status]",
+        status: "Iterable[AssignedCommitteeAction.Status]",
     ) -> "Mapping[discord.Member | discord.User, Collection[AssignedCommitteeAction]]":
         """Get the actions for one or more given users, filtered by one or more statuses."""
         if isinstance(action_user, (discord.User, discord.Member)):
             user_actions: Collection[AssignedCommitteeAction] = [
                 action
                 async for action in AssignedCommitteeAction.objects.filter(
-                    raw_status=status,
+                    raw_status__in=(status_item.value for status_item in status),
                     discord_member__discord_id=int(action_user.id),
                 )
             ]
@@ -532,8 +532,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             logger.debug("An invalid status was provided but did not raise an exception.")
             return
 
-        action.status = new_status
-        await action.asave()
+        await action.aupdate(status=new_status)
 
         logger.debug("Action: %s, status updated to: %s", action, action.status)
 
