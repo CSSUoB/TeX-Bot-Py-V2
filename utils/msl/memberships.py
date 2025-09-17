@@ -25,6 +25,9 @@ __all__: "Sequence[str]" = (
 )
 
 
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+
+
 BASE_SU_PLATFORM_WEB_HEADERS: "Final[Mapping[str, str]]" = {
     "Cache-Control": "no-cache",
     "Pragma": "no-cache",
@@ -38,9 +41,6 @@ BASE_SU_PLATFORM_WEB_COOKIES: "Final[Mapping[str, str]]" = {
 MEMBERS_LIST_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{settings['ORGANISATION_ID']}/?sort=groups"
 
 _membership_list_cache: set[int] = set()
-
-
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 async def fetch_community_group_members_list() -> set[int]:
