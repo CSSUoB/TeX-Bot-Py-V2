@@ -13,15 +13,18 @@ from utils import CommandChecks, TeXBotBaseCog
 from utils.msl import fetch_community_group_members_count, is_id_a_community_group_member
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
+    from collections.abc import Sequence
     from logging import Logger
     from typing import Final
 
     from utils import TeXBotApplicationContext
 
+
 __all__: "Sequence[str]" = ("MakeMemberCommandCog", "MemberCountCommandCog")
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+
 
 _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: "Final[str]" = f"""{
     "Student"
@@ -45,21 +48,6 @@ _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: "Final[str]" = f"""{
 _GROUP_MEMBER_ID_ARGUMENT_NAME: "Final[str]" = (
     _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME.lower().replace(" ", "")
 )
-
-REQUEST_HEADERS: "Final[Mapping[str, str]]" = {
-    "Cache-Control": "no-cache",
-    "Pragma": "no-cache",
-    "Expires": "0",
-}
-
-REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
-    ".ASPXAUTH": settings["SU_PLATFORM_ACCESS_COOKIE"]
-}
-
-BASE_MEMBERS_URL: "Final[str]" = (
-    f"https://guildofstudents.com/organisation/memberlist/{settings['ORGANISATION_ID']}"
-)
-GROUPED_MEMBERS_URL: "Final[str]" = f"{BASE_MEMBERS_URL}/?sort=groups"
 
 
 class MakeMemberCommandCog(TeXBotBaseCog):
@@ -101,7 +89,9 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         parameter_name="group_member_id",
     )
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_member(self, ctx: "TeXBotApplicationContext", group_member_id: str) -> None:  # type: ignore[misc]
+    async def make_member(  # type: ignore[misc]
+        self, ctx: "TeXBotApplicationContext", raw_group_member_id: str
+    ) -> None:
         """
         Definition & callback response of the "make_member" command.
 
@@ -113,18 +103,18 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         member_role: discord.Role = await self.bot.member_role
         interaction_member: discord.Member = await ctx.bot.get_main_guild_member(ctx.user)
 
-        INVALID_GUILD_MEMBER_ID: Final[str] = (
-            f"{group_member_id!r} is not a valid {self.bot.group_member_id_type} ID."
+        INVALID_GUILD_MEMBER_ID_MESSAGE: Final[str] = (
+            f"{raw_group_member_id!r} is not a valid {self.bot.group_member_id_type} ID."
         )
 
         try:
-            group_member_id_int: int = int(group_member_id)
+            group_member_id: int = int(raw_group_member_id)
         except ValueError:
-            await self.command_send_error(ctx=ctx, message=INVALID_GUILD_MEMBER_ID)
+            await self.command_send_error(ctx=ctx, message=INVALID_GUILD_MEMBER_ID_MESSAGE)
             return
 
-        if group_member_id_int < 1000000 or group_member_id_int > 99999999:
-            await self.command_send_error(ctx=ctx, message=INVALID_GUILD_MEMBER_ID)
+        if group_member_id < 1000000 or group_member_id > 99999999:
+            await self.command_send_error(ctx=ctx, message=INVALID_GUILD_MEMBER_ID_MESSAGE)
             return
 
         await ctx.defer(ephemeral=True)
@@ -141,7 +131,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 
             if await GroupMadeMember.objects.filter(
                 hashed_group_member_id=GroupMadeMember.hash_group_member_id(
-                    group_member_id_int, self.bot.group_member_id_type
+                    group_member_id, self.bot.group_member_id_type
                 )
             ).aexists():
                 await ctx.followup.send(
@@ -155,7 +145,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 )
                 return
 
-            if not await is_id_a_community_group_member(student_id=group_member_id_int):
+            if not await is_id_a_community_group_member(member_id=group_member_id):
                 await self.command_send_error(
                     ctx=ctx,
                     message=(
@@ -174,7 +164,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             )
 
             try:
-                await GroupMadeMember.objects.acreate(group_member_id=group_member_id)  # type: ignore[misc]
+                await GroupMadeMember.objects.acreate(group_member_id=raw_group_member_id)  # type: ignore[misc]
             except ValidationError as create_group_made_member_error:
                 error_is_already_exists: bool = (
                     "hashed_group_member_id" in create_group_made_member_error.message_dict
