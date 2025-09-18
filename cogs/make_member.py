@@ -1,9 +1,7 @@
 """Contains cog classes for any make_member interactions."""
 
 import logging
-import re
 from typing import TYPE_CHECKING, override
-from typing import TYPE_CHECKING
 
 import discord
 from discord.ui import Modal, View
@@ -12,10 +10,11 @@ from django.core.exceptions import ValidationError
 from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
-from utils import CommandChecks, TeXBotBaseCog
-from utils.msl import fetch_community_group_members_count, is_id_a_community_group_member
 from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
-from utils.msl import get_membership_count, is_student_id_member
+from utils.msl import (
+    fetch_community_group_members_count,
+    is_id_a_community_group_member,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -28,7 +27,6 @@ __all__: "Sequence[str]" = (
     "MemberCountCommandCog",
 )
 
-__all__: "Sequence[str]" = ("MakeMemberCommandCog", "MemberCountCommandCog")
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
@@ -230,30 +228,41 @@ class MemberCountCommandCog(TeXBotBaseCog):
                     f"{self.bot.group_full_name} has "
                     f"{await fetch_community_group_members_count()} members! :tada:"
                 )
-class MakeMemberModalActual(Modal):
-    """A discord.Modal containing a the input box for make member user interaction."""
-    @override
-
-        super().__init__(title="Make Member Modal")
-    def __init__(self) -> None:
-
-
-        self.add_item(discord.ui.InputText(label="Student ID"))
-    async def callback(self, interaction: discord.Interaction) -> None:
-        student_id: str | None = self.children[0].value
-        if not student_id:
-                content="Invalid Student ID.", ephemeral=True
-            await interaction.response.send_message(
             )
 
+
+class MakeMemberModalActual(Modal):
+    """A discord.Modal containing a the input box for make member user interaction."""
+
+    @override
+    def __init__(self) -> None:
+        super().__init__(title="Make Member Modal")
+        self.add_item(discord.ui.InputText(label="Student ID"))
+
+    @override
+    async def callback(self, interaction: discord.Interaction) -> None:
+        raw_student_id: str | None = self.children[0].value
+        if not raw_student_id:
+            await interaction.response.send_message(
+                content="Invalid Student ID.", ephemeral=True
+            )
             return
-        if not await is_student_id_member(student_id=student_id):
+
+        try:
+            student_id: int = int(raw_student_id)
+        except ValueError:
+            await interaction.response.send_message(
+                content="Student ID must be a number.", ephemeral=True
+            )
+            return
+
+        if not await is_id_a_community_group_member(member_id=student_id):
             await interaction.response.send_message(
                 content="Student ID not found.", ephemeral=True
             )
             return
 
-        if await is_student_id_member(student_id=student_id):
+        if await is_id_a_community_group_member(member_id=student_id):
             await MakeMemberModalCommandCog.give_member_role(
                 self=MakeMemberModalCommandCog(bot=interaction.client), interaction=interaction
             )
@@ -285,7 +294,7 @@ class MakeMemberModalCommandCog(TeXBotBaseCog):
         self.bot.add_view(OpenMemberVerifyModalView())
 
     async def give_member_role(self, interaction: discord.Interaction) -> None:
-        """Gives the member role to the user who interacted with the modal."""
+        """Give the member role to the user who interacted with the modal."""
         if not isinstance(interaction.user, discord.Member):
             await self.command_send_error(
                 ctx=TeXBotApplicationContext(bot=interaction.client, interaction=interaction),
