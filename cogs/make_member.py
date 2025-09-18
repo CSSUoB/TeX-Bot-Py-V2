@@ -237,7 +237,15 @@ class MakeMemberModalActual(Modal):
     @override
     def __init__(self) -> None:
         super().__init__(title="Make Member Modal")
-        self.add_item(discord.ui.InputText(label="Student ID"))
+        self.add_item(
+            discord.ui.InputText(
+                label="Student ID",
+                min_length=7,
+                max_length=7,
+                required=True,
+                placeholder="1234567",
+            )
+        )
 
     @override
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -256,18 +264,16 @@ class MakeMemberModalActual(Modal):
             )
             return
 
-        if not await is_id_a_community_group_member(member_id=student_id):
-            await interaction.response.send_message(
-                content="Student ID not found.", ephemeral=True
-            )
-            return
-
         if await is_id_a_community_group_member(member_id=student_id):
             await MakeMemberModalCommandCog.give_member_role(
                 self=MakeMemberModalCommandCog(bot=interaction.client), interaction=interaction
             )
             await interaction.response.send_message(content="Action complete.")
             return
+
+        await interaction.response.send_message(
+            content="Student ID not found.", ephemeral=True
+        )
 
 
 class OpenMemberVerifyModalView(View):
