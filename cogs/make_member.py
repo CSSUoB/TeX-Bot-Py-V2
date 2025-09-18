@@ -266,7 +266,8 @@ class MakeMemberModalActual(Modal):
 
         if await is_id_a_community_group_member(member_id=student_id):
             await MakeMemberModalCommandCog.give_member_role(
-                self=MakeMemberModalCommandCog(bot=interaction.client), interaction=interaction  # type: ignore[arg-type]
+                self=MakeMemberModalCommandCog(bot=interaction.client),  # type: ignore[arg-type]
+                interaction=interaction,
             )
             await interaction.response.send_message(content="Action complete.")
             return
