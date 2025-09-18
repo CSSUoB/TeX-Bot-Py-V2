@@ -1002,7 +1002,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
 
         if not discord_channel:
             await self.command_send_error(
-                ctx=ctx, message="Could not find the `#discord` channel in the main guild!"
+                ctx, message="Could not find the `#discord` channel in the main guild!"
             )
             return
 
@@ -1015,9 +1015,9 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         embed_content: str = ""
 
         if message.content:
-            embed_content += message.content[:300]
-            if len(message.content) > 300:
-                embed_content += " _... (truncated to 300 characters)_"
+            embed_content += message.content[:600]
+            if len(message.content) > 600:
+                embed_content += " _... (truncated to 600 characters)_"
         else:
             embed_content += "_Reported message had no content_"
             if len(message.attachments) > 0 or len(message.embeds) > 0:
@@ -1041,7 +1041,22 @@ class StrikeContextCommandsCog(BaseStrikeCog):
                 embed_image = message.attachments[0].url
 
         await discord_channel.send(
-            content=f"{ctx.user.mention} reported the following message:",
+            content=(
+                f"{ctx.user.mention} reported a message from {message.author.mention} "
+                f"in {
+                    message.channel.mention
+                    if isinstance(
+                        message.channel,
+                        (
+                            discord.TextChannel,
+                            discord.VoiceChannel,
+                            discord.StageChannel,
+                            discord.Thread,
+                        ),
+                    )
+                    else message.channel
+                }:"
+            ),
             embed=discord.Embed(
                 author=embed_author,
                 description=embed_content,
@@ -1062,7 +1077,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         self, ctx: "TeXBotApplicationContext", member: discord.Member
     ) -> None:
         """Call the _strike command, providing the required command arguments."""
-        await self._command_perform_strike(ctx, member)
+        await self._command_perform_strike(ctx, strike_member=member)
 
     @discord.message_command(name="Strike Message Author")  # type: ignore[no-untyped-call, misc]
     @CommandChecks.check_interaction_user_has_committee_role

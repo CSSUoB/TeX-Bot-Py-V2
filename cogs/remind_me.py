@@ -1,7 +1,6 @@
 """Contains cog classes for any remind_me interactions."""
 
 import datetime
-import functools
 import itertools
 import logging
 import re
@@ -306,19 +305,23 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                 discord.utils.utcnow() - reminder.send_datetime
             )
             if time_since_reminder_needed_to_be_sent > datetime.timedelta(minutes=15):
-                user: discord.User | None = discord.utils.find(
-                    functools.partial(
-                        lambda _user, _reminder: (
-                            not _user.bot and _user.id == _reminder.discord_member.discord_id
-                        ),
-                        _reminder=reminder,
-                    ),
-                    self.bot.users,
+                user: discord.User | None = await self.bot.get_or_fetch_user(
+                    int(reminder.discord_member.discord_id)
                 )
 
                 if not user:
                     logger.warning(
-                        "User with ID: %s no longer exists.",
+                        "Failed to send reminder to user with ID: %s "
+                        "because the user no longer exists.",
+                        reminder.discord_member.discord_id,
+                    )
+                    await reminder.adelete()
+                    continue
+
+                if user.bot:
+                    logger.warning(
+                        "Failed to send reminder to user with ID: %s "
+                        "because the user is a bot.",
                         reminder.discord_member.discord_id,
                     )
                     await reminder.adelete()
