@@ -109,11 +109,8 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         )
 
         if not re.fullmatch(r"\A\d{7}\Z", raw_group_member_id):
-                await self.command_send_error(
-                    ctx,
-                    message=(INVALID_GUILD_MEMBER_ID_MESSAGE)
-                )
-                return
+            await self.command_send_error(ctx, message=(INVALID_GUILD_MEMBER_ID_MESSAGE))
+            return
 
         try:
             group_member_id: int = int(raw_group_member_id)
