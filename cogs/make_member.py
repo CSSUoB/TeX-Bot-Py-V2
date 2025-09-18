@@ -110,11 +110,11 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         try:
             group_member_id: int = int(raw_group_member_id)
         except ValueError:
-            await self.command_send_error(ctx=ctx, message=INVALID_GUILD_MEMBER_ID_MESSAGE)
+            await self.command_send_error(ctx, message=INVALID_GUILD_MEMBER_ID_MESSAGE)
             return
 
         if group_member_id < 1000000 or group_member_id > 99999999:
-            await self.command_send_error(ctx=ctx, message=INVALID_GUILD_MEMBER_ID_MESSAGE)
+            await self.command_send_error(ctx, message=INVALID_GUILD_MEMBER_ID_MESSAGE)
             return
 
         await ctx.defer(ephemeral=True)
@@ -147,7 +147,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 
             if not await is_id_a_community_group_member(member_id=group_member_id):
                 await self.command_send_error(
-                    ctx=ctx,
+                    ctx,
                     message=(
                         f"You must be a member of {self.bot.group_full_name} "
                         "to use this command.\n"
