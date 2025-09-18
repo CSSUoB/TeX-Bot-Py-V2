@@ -1,6 +1,7 @@
 """Contains cog classes for any make_member interactions."""
 
 import logging
+import re
 from typing import TYPE_CHECKING
 
 import discord
@@ -107,13 +108,16 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             f"{raw_group_member_id!r} is not a valid {self.bot.group_member_id_type} ID."
         )
 
+        if not re.fullmatch(r"\A\d{7}\Z", raw_group_member_id):
+                await self.command_send_error(
+                    ctx,
+                    message=(INVALID_GUILD_MEMBER_ID_MESSAGE)
+                )
+                return
+
         try:
             group_member_id: int = int(raw_group_member_id)
         except ValueError:
-            await self.command_send_error(ctx, message=INVALID_GUILD_MEMBER_ID_MESSAGE)
-            return
-
-        if group_member_id < 1000000 or group_member_id > 99999999:
             await self.command_send_error(ctx, message=INVALID_GUILD_MEMBER_ID_MESSAGE)
             return
 
