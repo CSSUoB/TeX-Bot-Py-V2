@@ -267,7 +267,7 @@ class MakeMemberModalActual(Modal):
 
         if await is_id_a_community_group_member(member_id=student_id):
             await MakeMemberModalCommandCog.give_member_role(
-                self=MakeMemberModalCommandCog(bot=interaction.client), interaction=interaction
+                self=MakeMemberModalCommandCog(bot=interaction.client), interaction=interaction  # type: ignore[arg-type]
             )
             await interaction.response.send_message(content="Action complete.")
             return
@@ -304,7 +304,7 @@ class MakeMemberModalCommandCog(TeXBotBaseCog):
         """Give the member role to the user who interacted with the modal."""
         if not isinstance(interaction.user, discord.Member):
             await self.command_send_error(
-                ctx=TeXBotApplicationContext(bot=interaction.client, interaction=interaction),
+                ctx=TeXBotApplicationContext(bot=interaction.client, interaction=interaction),  # type: ignore[arg-type]
                 message="User is not a member.",
             )
             return
