@@ -84,8 +84,8 @@ async def fetch_community_group_members_list() -> set[int]:
             raise MSLMembershipError(message=INVALID_MEMBER_TABLE_FORMAT_MESSAGE)
 
         with contextlib.suppress(IndexError):
-            rows: list[bs4.Tag] = filtered_table.find_all(name="tr")[1:]
-            for member in rows:
+            member: bs4.Tag
+            for member in filtered_table.find_all(name="tr")[1:]:
                 raw_id: str = member.find_all(name="td")[1].text.strip()
                 try:
                     member_ids.add(int(raw_id))
@@ -107,7 +107,7 @@ async def fetch_community_group_members_list() -> set[int]:
 
 
 async def is_id_a_community_group_member(member_id: int) -> bool:
-    """Check if the given ID is a member of your community group."""
+    """Check whether the given ID is a member of your community group."""
     if member_id in _membership_list_cache:
         return True
 

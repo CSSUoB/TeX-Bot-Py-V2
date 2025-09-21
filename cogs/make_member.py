@@ -28,6 +28,7 @@ __all__: "Sequence[str]" = (
 )
 
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
@@ -91,7 +92,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         required=True,
         max_length=7,
         min_length=7,
-        parameter_name="group_member_id",
+        parameter_name="raw_group_member_id",
     )
     @CommandChecks.check_interaction_user_in_main_guild
     async def make_member(  # type: ignore[misc]
@@ -108,18 +109,18 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         member_role: discord.Role = await self.bot.member_role
         interaction_member: discord.Member = await ctx.bot.get_main_guild_member(ctx.user)
 
-        INVALID_GUILD_MEMBER_ID_MESSAGE: Final[str] = (
+        INVALID_GROUP_MEMBER_ID_MESSAGE: Final[str] = (
             f"{raw_group_member_id!r} is not a valid {self.bot.group_member_id_type} ID."
         )
+
+        if not re.fullmatch(r"\A\d{7}\Z", raw_group_member_id):
+            await self.command_send_error(ctx, message=(INVALID_GROUP_MEMBER_ID_MESSAGE))
+            return
 
         try:
             group_member_id: int = int(raw_group_member_id)
         except ValueError:
-            await self.command_send_error(ctx=ctx, message=INVALID_GUILD_MEMBER_ID_MESSAGE)
-            return
-
-        if group_member_id < 1000000 or group_member_id > 99999999:
-            await self.command_send_error(ctx=ctx, message=INVALID_GUILD_MEMBER_ID_MESSAGE)
+            await self.command_send_error(ctx, message=INVALID_GROUP_MEMBER_ID_MESSAGE)
             return
 
         await ctx.defer(ephemeral=True)
