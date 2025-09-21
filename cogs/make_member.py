@@ -313,6 +313,20 @@ class MakeMemberModalCommandCog(TeXBotBaseCog):
             await self.bot.member_role,
             reason=f'{interaction.user} used TeX Bot modal: "Make Member"',
         )
+        try:
+            guest_role: discord.Role = await self.bot.guest_role
+        except GuestRoleDoesNotExistError:
+            logger.warning(
+                '"/make-member" command used but the "Guest" role does not exist. '
+                'Some user\'s may now have the "Member" role without the "Guest" role. '
+                'Use the "/ensure-members-inducted" command to fix this issue.'
+            )
+        else:
+            if guest_role not in interaction.user.roles:
+                await interaction.user.add_roles(
+                    guest_role,
+                    reason=f'{interaction.user} used TeX Bot slash-command: "/make-member"',
+                )
 
     async def _open_make_new_member_modal(
         self,
