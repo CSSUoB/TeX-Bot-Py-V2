@@ -1,6 +1,7 @@
 """Contains cog classes for any make_member interactions."""
 
 import logging
+import re
 from typing import TYPE_CHECKING, override
 
 import discord
@@ -26,7 +27,6 @@ __all__: "Sequence[str]" = (
     "MakeMemberModalCommandCog",
     "MemberCountCommandCog",
 )
-
 
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
