@@ -261,11 +261,7 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
             discord.Member | discord.User, Collection[AssignedCommitteeAction]
         ] = await self.get_user_actions(
             action_user=committee_role.members,
-            status=(
-                AssignedCommitteeAction.Status.NOT_STARTED,
-                AssignedCommitteeAction.Status.IN_PROGRESS,
-                AssignedCommitteeAction.Status.BLOCKED,
-            ),
+            status=AssignedCommitteeAction.Status.TODO_FILTER,
         )
 
         interval_seconds: float = datetime.timedelta(
@@ -798,11 +794,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             user_actions = [
                 action
                 async for action in AssignedCommitteeAction.objects.filter(
-                    (
-                        Q(raw_status=AssignedCommitteeAction.Status.IN_PROGRESS)
-                        | Q(raw_status=AssignedCommitteeAction.Status.BLOCKED)
-                        | Q(raw_status=AssignedCommitteeAction.Status.NOT_STARTED)
-                    ),
+                    raw_status__in=AssignedCommitteeAction.Status.TODO_FILTER,
                     discord_member__discord_id=action_member.id,
                 )
             ]
@@ -832,8 +824,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             f"{action_member.mention if ping else action_member}:"
             f"\n{
                 '\n'.join(
-                    str(action.description) + f' ({action.status.label})'
-                    for action in user_actions
+                    f'{action.description} ({action.status.label})' for action in user_actions
                 )
             }"
         )
