@@ -199,19 +199,19 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
 
             return {action_user: user_actions} if user_actions else {}
 
-        users_actions: dict[
-            discord.Member | discord.User, Collection[AssignedCommitteeAction]
-        ] = {
-            user: [
-                action
-                async for action in AssignedCommitteeAction.objects.filter(
-                    discord_member__discord_id=user.id, raw_status__in=status
-                )
-            ]
+        return {
+            user: actions
             for user in action_user
+            if (
+                actions := [
+                    action
+                    async for action in AssignedCommitteeAction.objects.filter(
+                        discord_member__discord_id=user.id,
+                        raw_status__in=(status_item.value for status_item in status),
+                    )
+                ]
+            )
         }
-
-        return {user: actions for user, actions in users_actions.items() if actions}
 
 
 class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
