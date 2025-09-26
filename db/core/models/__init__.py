@@ -17,7 +17,7 @@ from .utils import AsyncBaseModel, DiscordMember
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
     from collections.abc import Set as AbstractSet
-    from typing import ClassVar, Final, LiteralString
+    from typing import ClassVar, Final, LiteralString, Self
 
     from django.db.models.constraints import BaseConstraint
     from django_stubs_ext import StrOrPromise
@@ -72,7 +72,7 @@ class AssignedCommitteeAction(AsyncBaseModel):
             return obj
 
         @classproperty
-        def TODO_FILTER(cls) -> "AssignedCommitteeAction._StatusCollection":
+        def TODO_FILTER(cls) -> "AssignedCommitteeAction._StatusCollection":  # noqa: D102, N802
             return AssignedCommitteeAction._StatusCollection(
                 [cls.IN_PROGRESS, cls.BLOCKED, cls.NOT_STARTED]
             )
@@ -80,12 +80,14 @@ class AssignedCommitteeAction(AsyncBaseModel):
     class _StatusCollection(tuple[Status]):
         """A collection of Status enum items."""
 
+        __slots__ = ()
+
         @override
         def __new__(cls, iterable: "Iterable[AssignedCommitteeAction.Status]", /) -> "Self":
             iterable = list(iterable)
             if not iterable:
                 NO_STATUSES_GIVEN_MESSAGE: Final[str] = (
-                    f"Cannot instantiate {type(self).__name__} with no 'statuses'."
+                    f"Cannot instantiate {type(Self).__name__} with no 'statuses'."
                 )
                 raise ValueError(NO_STATUSES_GIVEN_MESSAGE)
             return super().__new__(cls, iterable)
