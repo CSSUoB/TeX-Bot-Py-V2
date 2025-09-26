@@ -94,9 +94,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
         all_actions: Mapping[
             str, Collection[AssignedCommitteeAction]
         ] = await self._get_actions_grouped_by_member_id(
-            filter_query=Q(
-                raw_status__in=AssignedCommitteeAction.Status.TODO_FILTER
-            )
+            filter_query=Q(raw_status__in=AssignedCommitteeAction.Status.TODO_FILTER)
         )
 
         logger.debug(all_actions)
