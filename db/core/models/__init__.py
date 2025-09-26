@@ -2,7 +2,7 @@
 
 import hashlib
 import re
-from typing import TYPE_CHECKING, overload, override
+from typing import TYPE_CHECKING, Self, overload, override
 
 import discord
 from django.core.exceptions import ValidationError
@@ -17,7 +17,7 @@ from .utils import AsyncBaseModel, DiscordMember
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
     from collections.abc import Set as AbstractSet
-    from typing import ClassVar, Final, LiteralString, Self
+    from typing import ClassVar, Final, LiteralString
 
     from django.db.models.constraints import BaseConstraint
     from django_stubs_ext import StrOrPromise
