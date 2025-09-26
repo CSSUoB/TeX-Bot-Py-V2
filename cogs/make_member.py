@@ -269,7 +269,7 @@ class MakeMemberModalActual(Modal):
             await MakeMemberModalCommandCog.give_member_role(
                 self=MakeMemberModalCommandCog(bot=interaction.client), interaction=interaction
             )
-            await interaction.response.send_message(content="Action complete.")
+            await interaction.response.send_message(content="Action complete.", ephemeral=True)
             return
 
         await interaction.response.send_message(
