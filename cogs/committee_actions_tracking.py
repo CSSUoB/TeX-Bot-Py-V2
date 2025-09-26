@@ -95,11 +95,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
             str, Collection[AssignedCommitteeAction]
         ] = await self._get_actions_grouped_by_member_id(
             filter_query=Q(
-                raw_status__in=(
-                    AssignedCommitteeAction.Status.IN_PROGRESS.value,
-                    AssignedCommitteeAction.Status.BLOCKED.value,
-                    AssignedCommitteeAction.Status.NOT_STARTED.value,
-                )
+                raw_status__in=AssignedCommitteeAction.Status.TODO_FILTER
             )
         )
 
@@ -381,11 +377,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         return {
             discord.OptionChoice(name=action.description, value=str(action.id))
             async for action in AssignedCommitteeAction.objects.filter(
-                (
-                    Q(raw_status=AssignedCommitteeAction.Status.IN_PROGRESS.value)
-                    | Q(raw_status=AssignedCommitteeAction.Status.BLOCKED.value)
-                    | Q(raw_status=AssignedCommitteeAction.Status.NOT_STARTED.value)
-                ),
+                Q(AssignedCommitteeAction.Status.TODO_FILTER),
                 discord_member__discord_id=interaction_user.id,
             )
         }
@@ -952,13 +944,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         ] = await self._get_actions_grouped_by_member_id(
             filter_query=Q(raw_status=AssignedCommitteeAction.Status(value=raw_status).value)
             if raw_status is not None
-            else Q(
-                raw_status__in=(
-                    AssignedCommitteeAction.Status.IN_PROGRESS.value,
-                    AssignedCommitteeAction.Status.BLOCKED.value,
-                    AssignedCommitteeAction.Status.NOT_STARTED.value,
-                )
-            )
+            else Q(raw_status__in=AssignedCommitteeAction.Status.TODO_FILTER)
         )
 
         if not filtered_actions:
