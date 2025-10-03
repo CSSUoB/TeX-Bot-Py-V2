@@ -68,8 +68,8 @@ If you are submitting a feature request, please include the steps to implement t
 They combine related [listeners](https://guide.pycord.dev/getting-started/more-features#event-handlers) and [commands](https://guide.pycord.dev/category/application-commands) (each as individual methods) into one class.
 There are separate cog files for each activity, and one [`__init__.py`](cogs/__init__.py) file which instantiates them all:
 
-<!--- pyml disable-next-line no-emphasis-as-heading -->
-*For more information about the purpose of each cog, please look at the documentation within the files themselves*
+> [!IMPORTANT]
+> For more information about the purpose of each cog, please look at the documentation within the files themselves
 
 * [`cogs/__init__.py`](cogs/__init__.py): instantiates all the cog classes within this directory
 
@@ -168,10 +168,8 @@ So it is suggested to avoid using it, and run [mypy](https://mypy-lang.org) from
 It can be run with the following command:
 
 ```shell
-uv run ccft-pymarkdown scan-all --with-git
+uv run pymarkdown scan .
 ```
-
-This command includes the removal of custom-formatted tables. See the [CCFT-PyMarkdown tool](https://github.com/CarrotManMatt/CCFT-PyMarkdown) for more information on linting Markdown files that contain custom-formatted tables.
 
 ### Git Commit Messages
 
