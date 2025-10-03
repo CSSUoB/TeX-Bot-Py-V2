@@ -24,7 +24,7 @@ Additionally, linked below are some helpful resources:
 If you are new to contributing to open-source projects on GitHub, the general workflow is as follows:
 
 1. [Fork](https://w3schools.com/git/git_remote_fork.asp) this [repository](https://phoenixnap.com/kb/what-is-a-git-repository#ftoc-heading-1) and [clone](https://w3schools.com/git/git_clone.asp) it
-2. Create a [branch](https://w3schools.com/git/git_remote_branch.asp) off main
+2. Create a [branch](https://w3schools.com/git/git_remote_branch.asp) from `main`
 3. Make your changes and [commit](https://w3schools.com/git/git_commit.asp) them
 4. [Push](https://w3schools.com/git/git_push_to_remote.asp) your local [branch](https://w3schools.com/git/git_remote_branch.asp) to your remote fork
 5. Open a new [pull request on GitHub](https://w3schools.com/git/git_remote_send_pull_request.asp)
@@ -44,7 +44,7 @@ If you find an issue with TeX-Bot, the best place to report it is through the is
 If you are looking for issues to contribute code to, it's a good idea to look at the [issues labelled "good-first-issue"](https://github.com/CSSUoB/TeX-Bot-Py-V2/issues?q=label%3A%22good+first+issue%22)!
 
 When submitting an issue, please be as descriptive as possible.
-If you are submitting a bug report, please include the steps to reproduce the bug, and the environment it is in.
+If you are submitting a bug report, please include the steps to reproduce the bug and the environment it is in.
 If you are submitting a feature request, please include the steps to implement the feature.
 
 ## Repository Structure
@@ -52,12 +52,12 @@ If you are submitting a feature request, please include the steps to implement t
 ### Top level files
 
 * [`main.py`](main.py): is the main entrypoint to instantiate the [`Bot` object](https://docs.pycord.dev/stable/api/clients.html#discord.Bot) & run it
-* [`exceptions.py`](exceptions.py): contains common [exception](https://docs.python.org/3/tutorial/errors) subclasses that may be raised when certain errors occur
 * [`config.py`](config.py): retrieves the [environment variables](README.md#setting-environment-variables) & populates the correct values into the `settings` object
 
 ### Other significant directories
 
 * [`cogs/`](cogs): contains all the [cogs](https://guide.pycord.dev/popular-topics/cogs) within this project, see [below](#cogs) for more information
+* [`exceptions/`](exceptions): contains common [exception](https://docs.python.org/3/tutorial/errors) subclasses that may be raised when certain errors occur
 * [`utils/`](utils): contains common utility classes & functions used by the top-level modules & cogs
 * [`db/core/models/`](db/core/models): contains all the [database ORM models](https://docs.djangoproject.com/en/stable/topics/db/models) to interact with storing information longer-term (between individual command events)
 * [`tests/`](tests): contains the complete test suite for this project, based on the [Pytest framework](https://pytest.org)
@@ -92,16 +92,16 @@ There are separate cog files for each activity, and one [`__init__.py`](cogs/__i
 * [`cogs/remind_me.py`](cogs/remind_me.py): cogs to ask TeX-Bot to send a reminder message at a later date
 
 * [`cogs/send_get_roles_reminders.py`](cogs/send_get_roles_reminders.py): cogs relating to sending reminders, to Discord members, about opt-in roles.
-(See [Repeated Tasks Conditions](README.md#repeated-tasks-conditions) for which conditions are required to be met, to execute this task)
+(See [Repeated Tasks Conditions](README.md#repeated-tasks-conditions) for which conditions are required to be met to execute this task)
 
 * [`cogs/send_introduction_reminders.py`](cogs/send_introduction_reminders.py): cogs relating to sending reminders, to Discord members, about introducing themselves.
-(See [Repeated Tasks Conditions](README.md#repeated-tasks-conditions) for which conditions are required to be met, to execute this task)
+(See [Repeated Tasks Conditions](README.md#repeated-tasks-conditions) for which conditions are required to be met to execute this task)
 
 * [`cogs/source.py`](cogs/source.py): cogs for displaying information about the source-code of this project
 
 * [`cogs/startup.py`](cogs/startup.py): cogs for startup & bot initialisation
 
-* [`cogs/stats.py`](cogs/stats.py): cogs for displaying stats about your group's Discord guild, as well as its channels & Discord members
+* [`cogs/stats/`](cogs/stats): cogs for displaying stats about your group's Discord guild, as well as its channels & Discord members
 
 * [`cogs/strike.py`](cogs/strike.py): cogs for applying moderation actions to Discord members
 
@@ -159,9 +159,6 @@ It can be run with the following command:
 uv run mypy .
 ```
 
-Although there is [a PyCharm plugin](https://github.com/leinardi/mypy-pycharm#mypy-pycharm) to provide GUI control & inline warnings for [mypy](https://mypy-lang.org), it has been rather temperamental recently.
-So it is suggested to avoid using it, and run [mypy](https://mypy-lang.org) from the command-line instead.
-
 #### PyMarkdown
 
 [PyMarkdown](https://github.com/jackdewinter/pymarkdown) is a static analysis [Markdown](https://markdownguide.org/getting-started#what-is-markdown) [linter](https://wikipedia.org/wiki/Lint_(software)), which will alert you to possible formatting mistakes in your [MarkDown](https://markdownguide.org/getting-started#what-is-markdown) files.
@@ -205,7 +202,7 @@ Please note that any contributions you make will be made under the terms of the 
 
 ## Guidance
 
-We aim to get more people involved with our projects, and help build members' confidence in using git and contributing to open-source.
+We aim to get more people involved with our projects and help build members' confidence in using git and contributing to open-source.
 If you see an error, we encourage you to **be bold** and fix it yourself, rather than just raising an issue.
 If you are stuck, need help, or have a question, the best place to ask is on our Discord.
 
