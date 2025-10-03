@@ -5,7 +5,7 @@ dev = [
     { include-group = "test" },
     { include-group = "type-check" },
 ]
-lint-format = ["ccft-pymarkdown>=2.0", "ruff>=0.12"]
+lint-format = ["pymarkdownlnt>=0.9.28", "ruff>=0.12"]
 main = [
     "asyncstdlib>=3.13",
     "beautifulsoup4>=4.12",
