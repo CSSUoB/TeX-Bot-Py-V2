@@ -167,7 +167,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
     @capture_guild_does_not_exist_error
     async def on_thread_create(self, thread: discord.Thread) -> None:
         """Add users to a thread when it is created."""
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         committee_role: discord.Role = await self.bot.committee_role
         committee_elect_role: discord.Role = await self.bot.committee_elect_role
 
@@ -183,10 +183,10 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
             users_or_roles=(committee_role, committee_elect_role), channel_or_thread=thread
         )
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="add-users-to-channel", description="Adds selected users to a channel or thread."
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="user",
         description="The user to add to the channel.",
         input_type=str,
@@ -194,7 +194,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
         required=True,
         parameter_name="user_id_str",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="silent",
         description="Whether the users being added should be pinged or not.",
         input_type=bool,
@@ -203,7 +203,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def add_user_to_channel(  # type: ignore[misc]
+    async def add_user_to_channel(
         self,
         ctx: "TeXBotApplicationContext",
         user_id_str: str,
@@ -237,11 +237,11 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
             ephemeral=True,
         )
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="add-role-to-channel",
         description="Adds the selected role and it's users to a channel or thread.",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="role",
         description="The role to add to the channel.",
         input_type=str,
@@ -249,7 +249,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
         required=True,
         parameter_name="role_id_str",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="silent",
         description="Whether the users being added should be pinged or not.",
         input_type=bool,
@@ -258,7 +258,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def add_role_to_channel(  # type: ignore[misc]
+    async def add_role_to_channel(
         self,
         ctx: "TeXBotApplicationContext",
         role_id_str: str,
