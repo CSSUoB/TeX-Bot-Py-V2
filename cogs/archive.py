@@ -105,7 +105,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         description="The category to archive.",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(
-            autocomplete_get_non_archival_categories  # type: ignore[arg-type]
+            autocomplete_get_non_archival_categories
         ),
         required=True,
         parameter_name="str_category_id",
@@ -197,7 +197,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         name="channel",
         description="The channel to archive.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_non_archived_channels),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_non_archived_channels),
         required=True,
         parameter_name="str_channel_id",
     )
@@ -205,7 +205,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         name="category",
         description="The category to move the channel to.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_archival_categories),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_archival_categories),
         required=True,
         parameter_name="str_category_id",
     )

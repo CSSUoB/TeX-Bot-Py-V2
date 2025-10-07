@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from logging import Logger
     from typing import Final
 
-    from utils import TeXBotApplicationContext
+    from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 __all__: "Sequence[str]" = (
     "BaseMakeApplicantCog",
@@ -133,7 +133,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
 
     @staticmethod
     async def autocomplete_get_members(
-        ctx: "TeXBotApplicationContext",
+        ctx: "TeXBotAutocompleteContext",
     ) -> set[discord.OptionChoice]:
         """
         Autocomplete callable that generates the set of available selectable members.
@@ -171,7 +171,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
         name="user",
         description="The user to make an Applicant.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),
         required=True,
         parameter_name="str_applicant_member_id",
     )

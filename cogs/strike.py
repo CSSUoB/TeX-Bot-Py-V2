@@ -840,7 +840,7 @@ class StrikeCommandCog(BaseStrikeCog):
         name="user",
         description="The user to give a strike to.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),
         required=True,
         parameter_name="str_strike_member_id",
     )
@@ -871,7 +871,7 @@ class StrikeCommandCog(BaseStrikeCog):
         name="user",
         description="The user to check the number of strikes for.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),
         required=True,
         parameter_name="str_strike_member_id",
     )
@@ -915,7 +915,7 @@ class StrikeCommandCog(BaseStrikeCog):
         name="user",
         description="The user to remove a strike from.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),
         required=True,
         parameter_name="str_strike_member_id",
     )
