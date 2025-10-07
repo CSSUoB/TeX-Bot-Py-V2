@@ -215,7 +215,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         name="user",
         description="The user to assign the action to.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members),
         required=False,
         default=None,
         parameter_name="action_member_id",
@@ -270,7 +270,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         name="action",
         description="The action to mark as completed.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids),
         required=True,
         parameter_name="action_id",
     )
@@ -278,7 +278,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         name="status",
         description="The desired status of the action.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_action_status),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_action_status),
         required=True,
         parameter_name="status",
     )
@@ -342,7 +342,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         name="action",
         description="The action to mark as completed.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids),
         required=True,
         parameter_name="action_id",
     )
@@ -532,7 +532,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         name="user",
         description="The user to list actions for.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members),
         required=False,
         default=None,
         parameter_name="action_member_id",
@@ -548,7 +548,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         name="status",
         description="The desired status of the action.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_action_status),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_action_status),
         required=False,
         default=None,
         parameter_name="status",
@@ -651,7 +651,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         name="action",
         description="The action to reassign.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids),
         required=True,
         parameter_name="action_id",
     )
@@ -659,7 +659,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         name="user",
         description="The user to list actions for.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members),
         required=True,
         parameter_name="member_id",
     )
@@ -735,7 +735,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         name="status-filter",
         description="The filter to apply to the status of actions.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_action_status),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_action_status),
         required=False,
         default=None,
         parameter_name="status",
@@ -799,7 +799,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         name="action",
         description="The action to delete.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids),
         required=True,
         parameter_name="action_id",
     )
