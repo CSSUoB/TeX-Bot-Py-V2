@@ -46,12 +46,10 @@ class ConfirmKillView(View):
 class KillCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/kill" command and its call-back method."""
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="kill", description="Shutdown TeX-Bot."
-    )
+    @discord.slash_command(name="kill", description="Shutdown TeX-Bot.")
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def kill(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def kill(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "kill" command.
 

@@ -29,13 +29,13 @@ logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 class CommitteeHandoverCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/committee-handover" command."""
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="committee-handover",
         description="Initiates the annual Discord handover procedure for new committee.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def committee_handover(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def committee_handover(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "committee_handover" command.
 
@@ -48,7 +48,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
 
         To do this, TeX-Bot will need to hold a role above that of the "Committee" role.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         committee_role: discord.Role = await self.bot.committee_role
         committee_elect_role: discord.Role = await self.bot.committee_elect_role
@@ -177,13 +177,13 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
         }
     )
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="annual-roles-reset",
         description="Removes the @Member role and academic year roles from all users.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def annual_roles_reset(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def annual_roles_reset(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "annual_roles_reset" command.
 
@@ -191,7 +191,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
         from any user that has them and subsequently deletes all instances of
         the GroupMadeMember database model.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         member_role: discord.Role = await self.bot.member_role
 
@@ -266,13 +266,13 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
 class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/increment-year-channels" command."""
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="increment-year-channels",
         description="Increments the year channels, archiving and creating channels as needed.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def increment_year_channels(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def increment_year_channels(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition and callback response of the "increment_year_channels" command.
 
@@ -282,7 +282,7 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
         - Renames the current "first-years" channel to "second-years"
         - Creates a new "first-years" channel
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
         INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE: Final[str] = (

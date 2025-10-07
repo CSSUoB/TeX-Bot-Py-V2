@@ -185,24 +185,24 @@ class RemindMeCommandCog(TeXBotBaseCog):
 
         return {f"{ctx.value}{delay_choice}".casefold() for delay_choice in delay_choices}
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="remind-me",
         description="Responds with the given message after the specified time.",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="delay",
         input_type=str,
         description="The amount of time to wait before reminding you.",
         required=True,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_delays),  # type: ignore[arg-type]
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="message",
         input_type=str,
         description="The message you want to be reminded with.",
         required=False,
     )
-    async def remind_me(  # type: ignore[misc]
+    async def remind_me(
         self, ctx: "TeXBotApplicationContext", delay: str, message: str
     ) -> None:
         """
