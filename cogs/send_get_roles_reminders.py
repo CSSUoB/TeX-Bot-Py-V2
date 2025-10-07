@@ -68,7 +68,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         See README.md for the full list of conditions for when these
         reminders are sent.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
         roles_channel_mention: str = await self.bot.get_mention_string(self.bot.roles_channel)
