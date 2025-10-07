@@ -64,12 +64,12 @@ class StatsCommandsCog(TeXBotBaseCog):
     @stats.command(
         name="channel", description="Displays the stats for the current/a given channel."
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="channel",
         description="The channel to display the stats for.",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(
-            TeXBotBaseCog.autocomplete_get_text_channels,  # type: ignore[arg-type]
+            TeXBotBaseCog.autocomplete_get_text_channels
         ),
         required=False,
         parameter_name="str_channel_id",
@@ -83,7 +83,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         The "channel_stats" command sends a graph of the stats about messages sent in the given
         channel.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
         channel_id: int = ctx.channel_id
@@ -153,7 +153,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         The "server_stats" command sends a graph of the stats about messages sent in the whole
         of your group's Discord guild.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
@@ -232,7 +232,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         The "user_stats" command sends a graph of the stats about messages sent by the given
         member.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         interaction_member: discord.Member = await self.bot.get_main_guild_member(ctx.user)
         guest_role: discord.Role = await self.bot.guest_role
@@ -311,7 +311,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         The "left_member_stats" command sends a graph of the stats about the roles that members
         had when they left your group's Discord guild.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
         await ctx.defer(ephemeral=True)
