@@ -69,7 +69,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         description="The channel to display the stats for.",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(
-            TeXBotBaseCog.autocomplete_get_text_channels,  # type: ignore[arg-type]
+            TeXBotBaseCog.autocomplete_get_text_channels
         ),
         required=False,
         parameter_name="str_channel_id",
