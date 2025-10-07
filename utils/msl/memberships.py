@@ -1,5 +1,6 @@
 """Module for checking membership status."""
 
+import contextlib
 import logging
 from typing import TYPE_CHECKING
 
@@ -7,101 +8,117 @@ import aiohttp
 import bs4
 from bs4 import BeautifulSoup
 
+from config import settings
+from exceptions import MSLMembershipError
 from utils import GLOBAL_SSL_CONTEXT
 
-from .core import BASE_COOKIES, BASE_HEADERS, ORGANISATION_ID
-
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Mapping, Sequence
     from logging import Logger
     from typing import Final
 
+
 __all__: "Sequence[str]" = (
-    "get_full_membership_list",
-    "get_membership_count",
-    "is_student_id_member",
+    "fetch_community_group_members_count",
+    "fetch_community_group_members_list",
+    "is_id_a_community_group_member",
 )
 
-MEMBERS_LIST_URL: "Final[str]" = (
-    f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
-)
-
-membership_list_cache: set[tuple[str, int]] = set()
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-async def get_full_membership_list() -> set[tuple[str, int]]:
-    """Get a list of tuples of student ID to names."""
+BASE_SU_PLATFORM_WEB_HEADERS: "Final[Mapping[str, str]]" = {
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
+    "Expires": "0",
+}
+
+BASE_SU_PLATFORM_WEB_COOKIES: "Final[Mapping[str, str]]" = {
+    ".ASPXAUTH": settings["SU_PLATFORM_ACCESS_COOKIE"],
+}
+
+MEMBERS_LIST_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{settings['ORGANISATION_ID']}/?sort=groups"
+
+_membership_list_cache: set[int] = set()
+
+
+async def fetch_community_group_members_list() -> set[int]:
+    """
+    Make a web request to fetch your community group's full membership list.
+
+    Returns a set of IDs.
+    """
     async with (
-        aiohttp.ClientSession(headers=BASE_HEADERS, cookies=BASE_COOKIES) as http_session,
+        aiohttp.ClientSession(
+            headers=BASE_SU_PLATFORM_WEB_HEADERS, cookies=BASE_SU_PLATFORM_WEB_COOKIES
+        ) as http_session,
         http_session.get(url=MEMBERS_LIST_URL, ssl=GLOBAL_SSL_CONTEXT) as http_response,
     ):
         response_html: str = await http_response.text()
 
     parsed_html: BeautifulSoup = BeautifulSoup(markup=response_html, features="html.parser")
 
-    standard_members_table: bs4.Tag | bs4.NavigableString | None = parsed_html.find(
-        name="table",
-        attrs={"id": "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl03_gvMemberships"},
-    )
+    member_ids: set[int] = set()
 
-    all_members_table: bs4.Tag | bs4.NavigableString | None = parsed_html.find(
-        name="table",
-        attrs={"id": "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl05_gvMemberships"},
-    )
-
-    if standard_members_table is None or all_members_table is None:
-        logger.warning("One or both of the membership tables could not be found!")
-        logger.debug(response_html)
-        return set()
-
-    if isinstance(standard_members_table, bs4.NavigableString) or isinstance(
-        all_members_table, bs4.NavigableString
+    table_id: str
+    for table_id in (
+        "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl03_gvMemberships",
+        "ctl00_ctl00_Main_AdminPageContent_rptGroups_ctl05_gvMemberships",
     ):
-        logger.warning(
-            "Both membership tables were found but one or both are the wrong format!",
+        filtered_table: bs4.Tag | bs4.NavigableString | None = parsed_html.find(
+            name="table", attrs={"id": table_id}
         )
-        logger.debug(standard_members_table)
-        logger.debug(all_members_table)
-        return set()
 
-    standard_members: list[bs4.Tag] = standard_members_table.find_all(name="tr")
-    all_members: list[bs4.Tag] = all_members_table.find_all(name="tr")
+        if filtered_table is None:
+            logger.warning("Membership table with ID %s could not be found.", table_id)
+            logger.debug(response_html)
+            continue
 
-    standard_members.pop(0)
-    all_members.pop(0)
+        if isinstance(filtered_table, bs4.NavigableString):
+            INVALID_MEMBER_TABLE_FORMAT_MESSAGE: str = (
+                f"Membership table with ID {table_id} was found but is in the wrong format."
+            )
+            logger.warning(INVALID_MEMBER_TABLE_FORMAT_MESSAGE)
+            logger.debug(filtered_table)
+            raise MSLMembershipError(message=INVALID_MEMBER_TABLE_FORMAT_MESSAGE)
 
-    member_list: set[tuple[str, int]] = {
-        (
-            member.find_all(name="td")[0].text.strip(),
-            member.find_all(name="td")[
-                1
-            ].text.strip(),  # NOTE: This will not properly handle external members who do not have an ID... There does not appear to be a solution to this other than simply checking manually.
-        )
-        for member in standard_members + all_members
-    }
+        with contextlib.suppress(IndexError):
+            member: bs4.Tag
+            for member in filtered_table.find_all(name="tr")[1:]:
+                raw_id: str = member.find_all(name="td")[1].text.strip()
+                try:
+                    member_ids.add(int(raw_id))
+                except ValueError:
+                    logger.warning(
+                        "Failed to convert ID '%s' in membership table to an integer", raw_id
+                    )
 
-    membership_list_cache.clear()
-    membership_list_cache.update(member_list)
+    if not member_ids:  # NOTE: this should never be possible, because to fetch the page you need to have admin access, which requires being a member.
+        NO_MEMBERS_MESSAGE: Final[str] = "No members were found in either membership table."
+        logger.warning(NO_MEMBERS_MESSAGE)
+        logger.debug(response_html)
+        raise MSLMembershipError(message=NO_MEMBERS_MESSAGE)
 
-    return member_list
+    _membership_list_cache.clear()
+    _membership_list_cache.update(member_ids)
+
+    return _membership_list_cache
 
 
-async def is_student_id_member(student_id: str | int) -> bool:
-    """Check if the student ID is a member of the society."""
-    all_ids: set[str] = {str(member[1]) for member in membership_list_cache}
-
-    if str(student_id) in all_ids:
+async def is_id_a_community_group_member(member_id: int) -> bool:
+    """Check whether the given ID is a member of your community group."""
+    if member_id in _membership_list_cache:
         return True
 
-    logger.debug("Student ID %s not found in cache, fetching updated list.", student_id)
+    logger.debug(
+        "ID %s not found in community group membership list cache; Fetching updated list.",
+        member_id,
+    )
 
-    new_ids: set[str] = {str(member[1]) for member in await get_full_membership_list()}
-
-    return str(student_id) in new_ids
+    return member_id in await fetch_community_group_members_list()
 
 
-async def get_membership_count() -> int:
-    """Return the total number of members."""
-    return len(await get_full_membership_list())
+async def fetch_community_group_members_count() -> int:
+    """Return the total number of members in your community group."""
+    return len(await fetch_community_group_members_list())

@@ -73,8 +73,8 @@ class TeXBot(discord.Bot):
         logger.info("TeX-Bot manually terminated.")
 
     @property
-    def EXIT_WAS_DUE_TO_KILL_COMMAND(self) -> bool:  # noqa: N802
-        """Return whether the TeX-Bot exited due to the kill command being used."""
+    def EXIT_WAS_DUE_TO_KILL_COMMAND(self) -> bool:  # noqa: D102, N802
+        # NOTE: Identifies whether TeX-Bot exited due to the kill command being used."""
         return self._exit_was_due_to_kill_command
 
     @property

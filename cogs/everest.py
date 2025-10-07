@@ -59,8 +59,9 @@ class _CourseTypes(Enum):
 class EverestCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/everest" command and its call-back method."""
 
+    @staticmethod
     async def autocomplete_get_course_years(
-        self, ctx: "TeXBotAutocompleteContext"
+        ctx: "TeXBotAutocompleteContext",
     ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[int] | AbstractSet[str]":
         """Autocomplete for the course year option."""
         try:
@@ -85,10 +86,10 @@ class EverestCommandCog(TeXBotBaseCog):
             case _CourseTypes.M_SCI:
                 return {1, 2, 3, 4}
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="everest", description="How many steps of everest is your assignment worth?"
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="course-type",
         description="The type of your university course.",
         input_type=str,
@@ -99,7 +100,7 @@ class EverestCommandCog(TeXBotBaseCog):
         required=True,
         parameter_name="raw_course_type",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="course-year",
         description="The current year of your university course.",
         input_type=int,
@@ -107,7 +108,7 @@ class EverestCommandCog(TeXBotBaseCog):
         required=True,
         parameter_name="course_year",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="percentage-of-module",
         description="The percentage of the module that the assignment is worth.",
         input_type=float,
@@ -120,7 +121,7 @@ class EverestCommandCog(TeXBotBaseCog):
         required=True,
         parameter_name="percentage_of_module",
     )
-    async def everest(  # type: ignore[misc]
+    async def everest(
         self,
         ctx: "TeXBotApplicationContext",
         raw_course_type: str,
@@ -132,19 +133,19 @@ class EverestCommandCog(TeXBotBaseCog):
             course_type: _CourseTypes = _CourseTypes[raw_course_type]
         except KeyError:
             await self.command_send_error(
-                ctx=ctx, message=f"Invalid course type: '{raw_course_type}'."
+                ctx, message=f"Invalid course type: '{raw_course_type}'."
             )
             return
 
         if course_year < 1 or course_year > 10:
             await self.command_send_error(
-                ctx=ctx, message=f"Invalid course year: '{course_year}'."
+                ctx, message=f"Invalid course year: '{course_year}'."
             )
             return
 
         if percentage_of_module < 0 or percentage_of_module > 100:
             await self.command_send_error(
-                ctx=ctx,
+                ctx,
                 message=(
                     f"Percentage of module: '{percentage_of_module}' is not valid. "
                     "Please enter a percentage between 0 - 100."

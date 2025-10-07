@@ -11,18 +11,21 @@ from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotBaseCog
-from utils.msl import get_membership_count, is_student_id_member
+from utils.msl import fetch_community_group_members_count, is_id_a_community_group_member
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
+    from collections.abc import Sequence
     from logging import Logger
     from typing import Final
 
     from utils import TeXBotApplicationContext
 
+
 __all__: "Sequence[str]" = ("MakeMemberCommandCog", "MemberCountCommandCog")
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+
 
 _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: "Final[str]" = f"""{
     "Student"
@@ -47,33 +50,18 @@ _GROUP_MEMBER_ID_ARGUMENT_NAME: "Final[str]" = (
     _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME.lower().replace(" ", "")
 )
 
-REQUEST_HEADERS: "Final[Mapping[str, str]]" = {
-    "Cache-Control": "no-cache",
-    "Pragma": "no-cache",
-    "Expires": "0",
-}
-
-REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
-    ".ASPXAUTH": settings["SU_PLATFORM_ACCESS_COOKIE"]
-}
-
-BASE_MEMBERS_URL: "Final[str]" = (
-    f"https://guildofstudents.com/organisation/memberlist/{settings['ORGANISATION_ID']}"
-)
-GROUPED_MEMBERS_URL: "Final[str]" = f"{BASE_MEMBERS_URL}/?sort=groups"
-
 
 class MakeMemberCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/make-member" command and its call-back method."""
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="make-member",
         description=(
             "Gives you the Member role "
             f"when supplied with an appropriate {_GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME}."
         ),
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name=_GROUP_MEMBER_ID_ARGUMENT_NAME,
         description=(
             f"""Your UoB Student {
@@ -99,10 +87,12 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         required=True,
         max_length=7,
         min_length=7,
-        parameter_name="group_member_id",
+        parameter_name="raw_group_member_id",
     )
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_member(self, ctx: "TeXBotApplicationContext", group_member_id: str) -> None:  # type: ignore[misc]
+    async def make_member(
+        self, ctx: "TeXBotApplicationContext", raw_group_member_id: str
+    ) -> None:
         """
         Definition & callback response of the "make_member" command.
 
@@ -110,9 +100,23 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         has purchased a valid membership to your community group,
         then gives the member the "Member" role.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         member_role: discord.Role = await self.bot.member_role
         interaction_member: discord.Member = await ctx.bot.get_main_guild_member(ctx.user)
+
+        INVALID_GROUP_MEMBER_ID_MESSAGE: Final[str] = (
+            f"{raw_group_member_id!r} is not a valid {self.bot.group_member_id_type} ID."
+        )
+
+        if not re.fullmatch(r"\A\d{7}\Z", raw_group_member_id):
+            await self.command_send_error(ctx, message=(INVALID_GROUP_MEMBER_ID_MESSAGE))
+            return
+
+        try:
+            group_member_id: int = int(raw_group_member_id)
+        except ValueError:
+            await self.command_send_error(ctx, message=INVALID_GROUP_MEMBER_ID_MESSAGE)
+            return
 
         await ctx.defer(ephemeral=True)
         async with ctx.typing():
@@ -123,16 +127,6 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                         "- why are you trying this again? :information_source:"
                     ),
                     ephemeral=True,
-                )
-                return
-
-            if not re.fullmatch(r"\A\d{7}\Z", group_member_id):
-                await self.command_send_error(
-                    ctx,
-                    message=(
-                        f"{group_member_id!r} is not a valid "
-                        f"{self.bot.group_member_id_type} ID."
-                    ),
                 )
                 return
 
@@ -152,7 +146,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 )
                 return
 
-            if not await is_student_id_member(student_id=group_member_id):
+            if not await is_id_a_community_group_member(member_id=group_member_id):
                 await self.command_send_error(
                     ctx,
                     message=(
@@ -171,7 +165,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             )
 
             try:
-                await GroupMadeMember.objects.acreate(group_member_id=group_member_id)  # type: ignore[misc]
+                await GroupMadeMember.objects.acreate(group_member_id=raw_group_member_id)  # type: ignore[misc]
             except ValidationError as create_group_made_member_error:
                 error_is_already_exists: bool = (
                     "hashed_group_member_id" in create_group_made_member_error.message_dict
@@ -217,10 +211,10 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 class MemberCountCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/member-count" command and its call-back method."""
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="member-count", description="Displays the number of members in the group."
     )
-    async def member_count(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def member_count(self, ctx: "TeXBotApplicationContext") -> None:
         """Definition & callback response of the "member_count" command."""
         await ctx.defer(ephemeral=False)
 
@@ -228,6 +222,6 @@ class MemberCountCommandCog(TeXBotBaseCog):
             await ctx.followup.send(
                 content=(
                     f"{self.bot.group_full_name} has "
-                    f"{await get_membership_count()} members! :tada:"
+                    f"{await fetch_community_group_members_count()} members! :tada:"
                 )
             )

@@ -5,10 +5,11 @@ dev = [
     { include-group = "test" },
     { include-group = "type-check" },
 ]
-lint-format = ["ccft-pymarkdown>=2.0", "ruff>=0.12"]
+lint-format = ["pymarkdownlnt>=0.9.28", "ruff>=0.12"]
 main = [
     "asyncstdlib>=3.13",
     "beautifulsoup4>=4.12",
+    "django-stubs-ext>=5.2",
     "django>=5.1",
     "emoji>=2.14",
     "matplotlib>=3.10",
@@ -17,12 +18,16 @@ main = [
     "py-cord>=2.6",
     "python-dotenv>=1.0",
     "python-logging-discord-handler>=0.1",
-    "typed_classproperties>=1.1.3",
+    "typed_classproperties>=1.2",
     "validators>=0.34",
 ]
 pre-commit = ["pre-commit>=4.0"]
 test = ["pytest-cov>=6.1", "pytest>=8.3"]
-type-check = ["django-stubs[compatible-mypy]>=5.1", "mypy>=1.13", "types-beautifulsoup4>=4.12"]
+type-check = [
+    "django-stubs[compatible-mypy]>=5.1",
+    "mypy>=1.18.2",
+    "types-beautifulsoup4>=4.12",
+]
 
 [project] # TODO: Remove [project] table once https://github.com/astral-sh/uv/issues/8582 is completed
 name = "TeX-Bot-Py-V2"
@@ -59,6 +64,7 @@ enable_error_code = [
     "unused-awaitable",
 ]
 extra_checks = true
+mypy_path = "stubs"
 no_implicit_reexport = true
 plugins = ["mypy_django_plugin.main"]
 strict_equality = true
@@ -166,9 +172,6 @@ banned-aliases = { "regex" = [
 ] }
 banned-from = ["abc", "re", "regex"]
 
-[tool.ruff.lint.per-file-ignores]
-"tests/**/test_*.py" = ["S101"]
-
 [tool.ruff.lint.flake8-self]
 extend-ignore-names = ["_base_manager", "_default_manager", "_get_wrap_line_width", "_meta"]
 
@@ -183,6 +186,11 @@ known-first-party = ["cogs", "config", "db", "exceptions", "main", "tests", "uti
 [tool.ruff.lint.pep8-naming]
 classmethod-decorators = ["typed_classproperties.classproperty"]
 extend-ignore-names = ["BROKEN_*_MESSAGE", "INVALID_*_MESSAGE", "NO_*_MESSAGE"]
+
+[tool.ruff.lint.per-file-ignores]
+"stubs/discord/**/*.pyi" = ["F403"]
+"stubs/discord/commands/__init__.pyi" = ["F405"]
+"tests/**/test_*.py" = ["S101"]
 
 [tool.ruff.lint.pycodestyle]
 ignore-overlong-task-comments = true

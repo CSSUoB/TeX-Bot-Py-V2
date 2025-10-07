@@ -43,19 +43,19 @@ class EditMessageCommandCog(TeXBotBaseCog):
 
         return await TeXBotBaseCog.autocomplete_get_text_channels(ctx)
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="edit-message",
         description="Edits a message sent by TeX-Bot to the value supplied.",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="channel",
         description="The channel that the message, you wish to edit, is in.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),
         required=True,
         parameter_name="str_channel_id",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="message_id",
         input_type=str,
         description="The ID of the message you wish to edit.",
@@ -64,7 +64,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         min_length=17,
         parameter_name="str_message_id",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="text",
         input_type=str,
         description="The new text you want the message to say.",
@@ -75,7 +75,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def edit_message(  # type: ignore[misc]
+    async def edit_message(
         self,
         ctx: "TeXBotApplicationContext",
         str_channel_id: str,
@@ -87,7 +87,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
 
         The "write_roles" command edits a message sent by TeX-Bot to the value supplied.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
         if not re.fullmatch(r"\A\d{17,20}\Z", str_channel_id):

@@ -142,7 +142,6 @@ uv sync
 > [!TIP]
 > Syncing the dependencies is not required. uv performs this automatically every time the `uv run` command is used
 
-
 ### Creating Your [Bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)
 
 A full guide on how to create your bot's account can be found [here; on Pycord's wiki](https://docs.pycord.dev/en/stable/discord.html).

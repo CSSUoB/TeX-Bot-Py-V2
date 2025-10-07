@@ -129,11 +129,11 @@ jobs:
               with:
                 enable-cache: true
 
-            - name: Install CCFT-PyMarkdown From Locked Dependencies
+            - name: Install PyMarkdown From Locked Dependencies
               run: uv sync --only-group lint-format
 
             - name: Run PyMarkdown scan
-              run: uv run -- ccft-pymarkdown scan-all
+              run: uv run -- pymarkdown scan .
 
     pytest:
         needs: [uv-check]
@@ -241,7 +241,7 @@ jobs:
 
         steps:
             - name: Log in to the Container registry
-              uses: docker/login-action@v3.5.0
+              uses: docker/login-action@v3.6.0
               with:
                 registry: ${{env.REGISTRY}}
                 username: ${{github.actor}}
