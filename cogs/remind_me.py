@@ -194,7 +194,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
         input_type=str,
         description="The amount of time to wait before reminding you.",
         required=True,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_delays),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_delays),
     )
     @discord.option(
         name="message",

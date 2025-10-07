@@ -190,7 +190,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
         name="user",
         description="The user to add to the channel.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),
         required=True,
         parameter_name="user_id_str",
     )
@@ -245,7 +245,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
         name="role",
         description="The role to add to the channel.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_roles),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_roles),
         required=True,
         parameter_name="role_id_str",
     )

@@ -51,7 +51,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         name="channel",
         description="The channel that the message, you wish to edit, is in.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_text_channels),
         required=True,
         parameter_name="str_channel_id",
     )

@@ -23,7 +23,11 @@ def option[**P, **Q, T, T_context: AutocompleteContext](
     parameter_name: str = ...,
     autocomplete: Callable[
         [T_context],
-        Awaitable[Iterable[OptionChoice] | Iterable[str] | Iterable[int] | Iterable[float]],
+        Awaitable[Iterable[OptionChoice] | Iterable[str]],
+    ]
+    | Callable[
+        [T_context],
+        Awaitable[Iterable[OptionChoice] | Iterable[str] | Iterable[int]],
     ] = ...,
 ) -> Callable[[Callable[P, Awaitable[None]]], Callable[Q, Awaitable[None]]]: ...
 @overload
@@ -37,7 +41,11 @@ def option[**P, **Q, T_context: AutocompleteContext](
     choices: Iterable[OptionChoice] | Iterable[str] | Iterable[int] | Iterable[float] = ...,
     autocomplete: Callable[
         [T_context],
-        Awaitable[Iterable[OptionChoice] | Iterable[str] | Iterable[int] | Iterable[float]],
+        Awaitable[Iterable[OptionChoice] | Iterable[str]],
+    ]
+    | Callable[
+        [T_context],
+        Awaitable[Iterable[OptionChoice] | Iterable[str] | Iterable[int]],
     ] = ...,
     required: bool = ...,
     min_length: int = ...,
