@@ -182,13 +182,13 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
 class CheckSUPlatformAuthorisationCommandCog(CheckSUPlatformAuthorisationBaseCog):
     """Cog class that defines the "/check-su-platform-authorisation" command."""
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="check-su-platform-authorisation",
         description="Checks the authorisation held by the SU platform access cookie.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def check_su_platform_authorisation(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def check_su_platform_authorisation(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition of the "check_su_platform_authorisation" command.
 
