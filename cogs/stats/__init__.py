@@ -20,13 +20,13 @@ if TYPE_CHECKING:
 
     from utils import TeXBotApplicationContext
 
-__all__: "Sequence[str]" = ("StatsCommandsCog",)
+__all__: Sequence[str] = ("StatsCommandsCog",)
 
 
 class StatsCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/stats" command group and its command call-back methods."""
 
-    _DISCORD_SERVER_NAME: "Final[str]" = f"""{
+    _DISCORD_SERVER_NAME: Final[str] = f"""{
         "the "
         if (
             settings["_GROUP_SHORT_NAME"] is not None
@@ -74,9 +74,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         required=False,
         parameter_name="str_channel_id",
     )
-    async def channel_stats(
-        self, ctx: "TeXBotApplicationContext", str_channel_id: str
-    ) -> None:
+    async def channel_stats(self, ctx: TeXBotApplicationContext, str_channel_id: str) -> None:
         """
         Definition & callback response of the "channel_stats" command.
 
@@ -146,7 +144,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         name="server",
         description=f"Displays the stats for the whole of {_DISCORD_SERVER_NAME}",
     )
-    async def server_stats(self, ctx: "TeXBotApplicationContext") -> None:
+    async def server_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "server_stats" command.
 
@@ -225,7 +223,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         name="self", description="Displays stats about the number of messages you have sent."
     )
     @CommandChecks.check_interaction_user_in_main_guild
-    async def user_stats(self, ctx: "TeXBotApplicationContext") -> None:
+    async def user_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "user_stats" command.
 
@@ -304,7 +302,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         name="left-members",
         description=f"Displays the stats about members that have left {_DISCORD_SERVER_NAME}",
     )
-    async def left_member_stats(self, ctx: "TeXBotApplicationContext") -> None:
+    async def left_member_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "left_member_stats" command.
 

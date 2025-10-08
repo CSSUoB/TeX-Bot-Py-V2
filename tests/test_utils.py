@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Final
 
-__all__: "Sequence[str]" = ()
+__all__: Sequence[str] = ()
 
 
 # TODO(CarrotManMatt): Move to stats_tests  # noqa: FIX002
