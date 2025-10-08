@@ -6,6 +6,7 @@ These values are used to configure the functionality of the bot at run-time.
 """
 
 import abc
+import asyncio
 import datetime
 import functools
 import importlib
@@ -1022,3 +1023,5 @@ def run_setup() -> None:
     importlib.import_module("django.core.management").call_command("migrate")
 
     logger.debug("Database setup completed")
+
+    asyncio.set_event_loop(asyncio.new_event_loop())

@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:python3.13-trixie-slim AS builder
+FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim AS builder
 
 RUN apt-get update && \
     apt-get upgrade -y && \
@@ -20,7 +20,7 @@ COPY utils/ /app/utils/
 COPY db/ /app/db/
 COPY cogs/ /app/cogs/
 
-FROM python:3.13-slim-trixie
+FROM python:3.14-slim-trixie
 
 LABEL org.opencontainers.image.source=https://github.com/CSSUoB/TeX-Bot-Py-V2
 LABEL org.opencontainers.image.licenses=Apache-2.0
