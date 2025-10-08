@@ -1,7 +1,7 @@
 [project]  # TODO: Remove [project] table once https://github.com/astral-sh/uv/issues/8582 is completed
 name = "TeX-Bot-Py-V2"
 version = "0.1.0"
-requires-python = "==3.13.*"  # TODO: Make minimum version Python 3.14, once Pycord makes a new release with support for it
+requires-python = ">=3.14"
 
 [dependency-groups]
 dev = [
