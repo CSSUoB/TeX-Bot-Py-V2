@@ -24,9 +24,9 @@ if TYPE_CHECKING:
     from logging import Logger
     from typing import Final
 
-__all__: "Sequence[str]" = ("StartupCog",)
+__all__: Sequence[str] = ("StartupCog",)
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class StartupCog(TeXBotBaseCog):

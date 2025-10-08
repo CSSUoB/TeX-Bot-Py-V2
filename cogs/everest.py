@@ -16,11 +16,11 @@ if TYPE_CHECKING:
 
     from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
-__all__: "Sequence[str]" = ("EverestCommandCog",)
+__all__: Sequence[str] = ("EverestCommandCog",)
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
-MOUNT_EVEREST_TOTAL_STEPS: "Final[int]" = 44250
+MOUNT_EVEREST_TOTAL_STEPS: Final[int] = 44250
 
 
 class _CourseTypes(Enum):
@@ -61,8 +61,8 @@ class EverestCommandCog(TeXBotBaseCog):
 
     @staticmethod
     async def autocomplete_get_course_years(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[int] | AbstractSet[str]":
+        ctx: TeXBotAutocompleteContext,
+    ) -> AbstractSet[discord.OptionChoice] | AbstractSet[int] | AbstractSet[str]:
         """Autocomplete for the course year option."""
         try:
             selected_course_type: _CourseTypes | str = ctx.options["course-type"]
@@ -123,7 +123,7 @@ class EverestCommandCog(TeXBotBaseCog):
     )
     async def everest(
         self,
-        ctx: "TeXBotApplicationContext",
+        ctx: TeXBotApplicationContext,
         raw_course_type: str,
         course_year: int,
         percentage_of_module: float,

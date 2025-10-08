@@ -16,9 +16,9 @@ if TYPE_CHECKING:
 
     from utils import TeXBotApplicationContext
 
-__all__: "Sequence[str]" = ("ConfirmKillView", "KillCommandCog")
+__all__: Sequence[str] = ("ConfirmKillView", "KillCommandCog")
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class ConfirmKillView(View):
@@ -49,7 +49,7 @@ class KillCommandCog(TeXBotBaseCog):
     @discord.slash_command(name="kill", description="Shutdown TeX-Bot.")
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def kill(self, ctx: "TeXBotApplicationContext") -> None:
+    async def kill(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "kill" command.
 

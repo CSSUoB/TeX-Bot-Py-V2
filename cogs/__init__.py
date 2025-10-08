@@ -51,7 +51,7 @@ if TYPE_CHECKING:
 
     from utils import TeXBot, TeXBotBaseCog
 
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "AddUsersToThreadsAndChannelsCommandCog",
     "AnnualRolesResetCommandCog",
     "AnnualYearChannelsIncrementCommandCog",
@@ -91,7 +91,7 @@ __all__: "Sequence[str]" = (
 )
 
 
-def setup(bot: "TeXBot") -> None:
+def setup(bot: TeXBot) -> None:
     """Add all the cogs to the bot, at bot startup."""
     cogs: Iterable[type[TeXBotBaseCog]] = (
         AddUsersToThreadsAndChannelsCommandCog,

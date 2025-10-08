@@ -20,10 +20,10 @@ if TYPE_CHECKING:
     from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 
-__all__: "Sequence[str]" = ("AddUsersToThreadsAndChannelsCommandCog",)
+__all__: Sequence[str] = ("AddUsersToThreadsAndChannelsCommandCog",)
 
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
@@ -31,8 +31,8 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
 
     @staticmethod
     async def autocomplete_get_members(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+        ctx: TeXBotAutocompleteContext,
+    ) -> AbstractSet[discord.OptionChoice] | AbstractSet[str]:
         """Autocomplete callable that generates the set of available selectable members."""
         try:
             main_guild: discord.Guild = ctx.bot.main_guild
@@ -58,8 +58,8 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
 
     @staticmethod
     async def autocomplete_get_roles(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+        ctx: TeXBotAutocompleteContext,
+    ) -> AbstractSet[discord.OptionChoice] | AbstractSet[str]:
         """Autocomplete callable that generates the set of available selectable roles."""
         try:
             main_guild: discord.Guild = ctx.bot.main_guild
@@ -205,7 +205,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def add_user_to_channel(
         self,
-        ctx: "TeXBotApplicationContext",
+        ctx: TeXBotApplicationContext,
         user_id_str: str,
         silent: bool,  # noqa: FBT001
     ) -> None:
@@ -260,7 +260,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def add_role_to_channel(
         self,
-        ctx: "TeXBotApplicationContext",
+        ctx: TeXBotApplicationContext,
         role_id_str: str,
         silent: bool,  # noqa: FBT001
     ) -> None:

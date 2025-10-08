@@ -8,7 +8,7 @@ import django
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-__all__: "Sequence[str]" = ()
+__all__: Sequence[str] = ()
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "db._settings"
 

@@ -19,28 +19,22 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import NoReturn
 
-__all__: "Sequence[str]" = ("bot",)
+__all__: Sequence[str] = ("bot",)
 
 with SuppressTraceback():
     config.run_setup()
 
-    intents: discord.Intents = discord.Intents.default()
-    intents.members = True
-
     bot: TeXBot = TeXBot(
-        intents=intents
+        intents=discord.Intents.default() | discord.Intents.members
     )  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
 
     bot.load_extension("cogs")
 
 
-def _run_bot() -> "NoReturn":  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
+def _run_bot() -> NoReturn:  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
     bot.run(settings["DISCORD_BOT_TOKEN"])
 
-    if bot.EXIT_WAS_DUE_TO_KILL_COMMAND:
-        raise SystemExit(0)
-
-    raise SystemExit(1)
+    raise SystemExit(0 if bot.EXIT_WAS_DUE_TO_KILL_COMMAND else 1)
 
 
 if __name__ == "__main__":

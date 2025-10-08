@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from collections.abc import Set as AbstractSet
 
-__all__: "Sequence[str]" = ("ImproperlyConfiguredError", "RestartRequiredDueToConfigChange")
+__all__: Sequence[str] = ("ImproperlyConfiguredError", "RestartRequiredDueToConfigChange")
 
 
 class ImproperlyConfiguredError(BaseTeXBotError, Exception):
@@ -32,7 +32,7 @@ class RestartRequiredDueToConfigChange(BaseTeXBotError, Exception):  # noqa: N81
 
     @override
     def __init__(
-        self, message: str | None = None, changed_settings: "AbstractSet[str] | None" = None
+        self, message: str | None = None, changed_settings: AbstractSet[str] | None = None
     ) -> None:
         """Initialise an Exception to apply configuration changes."""
         self.changed_settings: AbstractSet[str] | None = (

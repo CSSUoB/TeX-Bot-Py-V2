@@ -32,16 +32,16 @@ if TYPE_CHECKING:
 
     from utils import TeXBot
 
-__all__: "Sequence[str]" = ("SendIntroductionRemindersTaskCog",)
+__all__: Sequence[str] = ("SendIntroductionRemindersTaskCog",)
 
-logger: "Logger" = logging.getLogger("TeX-Bot")
+logger: Logger = logging.getLogger("TeX-Bot")
 
 
 class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
     """Cog class that defines the send_introduction_reminders task."""
 
     @override
-    def __init__(self, bot: "TeXBot") -> None:
+    def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
         if settings["SEND_INTRODUCTION_REMINDERS"]:
             if settings["SEND_INTRODUCTION_REMINDERS"] == "interval":
@@ -195,7 +195,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         """
 
         @override
-        def __init__(self, bot: "TeXBot") -> None:
+        def __init__(self, bot: TeXBot) -> None:
             """Initialise a new discord.View, to opt-in/out of introduction reminders."""
             self.bot: TeXBot = (
                 bot  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261

@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
     from utils import TeXBotApplicationContext
 
-__all__: "Sequence[str]" = ("SourceCommandCog",)
+__all__: Sequence[str] = ("SourceCommandCog",)
 
 
 class SourceCommandCog(TeXBotBaseCog):
@@ -20,7 +20,7 @@ class SourceCommandCog(TeXBotBaseCog):
     @discord.slash_command(
         description="Displays information about the source code of TeX-Bot."
     )
-    async def source(self, ctx: "TeXBotApplicationContext") -> None:
+    async def source(self, ctx: TeXBotApplicationContext) -> None:
         """Definition & callback response of the "source" command."""
         await ctx.respond(
             (
