@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
+FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim AS builder
 
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 
@@ -16,7 +16,7 @@ COPY utils/ /app/utils/
 COPY db/ /app/db/
 COPY cogs/ /app/cogs/
 
-FROM python:3.12-slim-bookworm
+FROM python:3.14-slim-trixie
 
 LABEL org.opencontainers.image.source=https://github.com/CSSUoB/TeX-Bot-Py-V2
 LABEL org.opencontainers.image.licenses=Apache-2.0
