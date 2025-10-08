@@ -23,28 +23,26 @@ if TYPE_CHECKING:
 
     from utils import TeXBot, TeXBotApplicationContext
 
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "CheckSUPlatformAuthorisationCommandCog",
     "CheckSUPlatformAuthorisationTaskCog",
 )
 
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
-REQUEST_HEADERS: "Final[Mapping[str, str]]" = {
+REQUEST_HEADERS: Final[Mapping[str, str]] = {
     "Cache-Control": "no-cache",
     "Pragma": "no-cache",
     "Expires": "0",
 }
 
-REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
+REQUEST_COOKIES: Final[Mapping[str, str]] = {
     ".AspNet.SharedCookie": settings["SU_PLATFORM_ACCESS_COOKIE"]
 }
 
-SU_PLATFORM_PROFILE_URL: "Final[str]" = "https://guildofstudents.com/profile"
-SU_PLATFORM_ORGANISATION_URL: "Final[str]" = (
-    "https://www.guildofstudents.com/organisation/admin"
-)
+SU_PLATFORM_PROFILE_URL: Final[str] = "https://guildofstudents.com/profile"
+SU_PLATFORM_ORGANISATION_URL: Final[str] = "https://www.guildofstudents.com/organisation/admin"
 
 
 class SUPlatformAccessCookieStatus(Enum):
@@ -112,7 +110,7 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
         )
         return SUPlatformAccessCookieStatus.INVALID
 
-    async def get_su_platform_organisations(self) -> "Iterable[str]":
+    async def get_su_platform_organisations(self) -> Iterable[str]:
         """Retrieve the MSL organisations the current SU platform cookie has access to."""
         response_object: bs4.BeautifulSoup = bs4.BeautifulSoup(
             await self._fetch_url_content_with_session(SU_PLATFORM_PROFILE_URL), "html.parser"
@@ -189,7 +187,7 @@ class CheckSUPlatformAuthorisationCommandCog(CheckSUPlatformAuthorisationBaseCog
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def check_su_platform_authorisation(self, ctx: "TeXBotApplicationContext") -> None:
+    async def check_su_platform_authorisation(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition of the "check_su_platform_authorisation" command.
 
@@ -228,7 +226,7 @@ class CheckSUPlatformAuthorisationTaskCog(CheckSUPlatformAuthorisationBaseCog):
     """Cog class defining a repeated task for checking SU platform access cookie."""
 
     @override
-    def __init__(self, bot: "TeXBot") -> None:
+    def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
         if settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"]:
             _ = self.su_platform_access_cookie_check_task.start()

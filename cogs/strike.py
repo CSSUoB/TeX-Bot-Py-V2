@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
     from utils.message_sender_components import MessageSavingSenderComponent
 
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "BaseStrikeCog",
     "ConfirmManualModerationView",
     "ConfirmStrikeMemberView",
@@ -46,9 +46,9 @@ __all__: "Sequence[str]" = (
 )
 
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
-FORMATTED_MODERATION_ACTIONS: "Final[Mapping[discord.AuditLogAction, str]]" = {
+FORMATTED_MODERATION_ACTIONS: Final[Mapping[discord.AuditLogAction, str]] = {
     discord.AuditLogAction.member_update: "timed-out",
     discord.AuditLogAction.kick: "kicked",
     discord.AuditLogAction.ban: "banned",
@@ -226,7 +226,7 @@ class BaseStrikeCog(TeXBotBaseCog):
     by child strike cog container classes.
     """
 
-    SUGGESTED_ACTIONS: "Final[Mapping[int, str]]" = {1: "time-out", 2: "kick", 3: "ban"}  # noqa: RUF012
+    SUGGESTED_ACTIONS: Final[Mapping[int, str]] = {1: "time-out", 2: "kick", 3: "ban"}
 
     async def _send_strike_user_message(
         self, strike_user: discord.User | discord.Member, member_strikes: DiscordMemberStrikes
@@ -263,7 +263,7 @@ class BaseStrikeCog(TeXBotBaseCog):
 
     async def _confirm_perform_moderation_action(
         self,
-        message_sender_component: "MessageSavingSenderComponent",
+        message_sender_component: MessageSavingSenderComponent,
         interaction_user: discord.User,
         strike_user: discord.Member,
         confirm_strike_message: str,
@@ -314,7 +314,7 @@ class BaseStrikeCog(TeXBotBaseCog):
 
     async def _confirm_increase_strike(
         self,
-        message_sender_component: "MessageSavingSenderComponent",
+        message_sender_component: MessageSavingSenderComponent,
         interaction_user: discord.User,
         strike_user: discord.User | discord.Member,
         member_strikes: DiscordMemberStrikes,
@@ -393,7 +393,7 @@ class BaseStrikeCog(TeXBotBaseCog):
         )
 
     async def _command_perform_strike(
-        self, ctx: "TeXBotApplicationContext", strike_member: discord.Member
+        self, ctx: TeXBotApplicationContext, strike_member: discord.Member
     ) -> None:
         """
         Perform the actual process of giving a member an additional strike.
@@ -803,8 +803,8 @@ class StrikeCommandsCog(BaseStrikeCog):
 
     @staticmethod
     async def autocomplete_get_members(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+        ctx: TeXBotAutocompleteContext,
+    ) -> AbstractSet[discord.OptionChoice] | AbstractSet[str]:
         """
         Autocomplete callable that generates the set of available selectable members.
 
@@ -847,7 +847,7 @@ class StrikeCommandsCog(BaseStrikeCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def strike(self, ctx: "TeXBotApplicationContext", str_strike_member_id: str) -> None:
+    async def strike(self, ctx: TeXBotApplicationContext, str_strike_member_id: str) -> None:
         """
         Definition & callback response of the "strike" command.
 
@@ -879,7 +879,7 @@ class StrikeCommandsCog(BaseStrikeCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def get_strikes(
-        self, ctx: "TeXBotApplicationContext", str_strike_member_id: str
+        self, ctx: TeXBotApplicationContext, str_strike_member_id: str
     ) -> None:
         """
         Define method and callback response of of the "get-strikes" command.
@@ -923,7 +923,7 @@ class StrikeCommandsCog(BaseStrikeCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def decrement_strikes(
-        self, ctx: "TeXBotApplicationContext", str_strike_member_id: str
+        self, ctx: TeXBotApplicationContext, str_strike_member_id: str
     ) -> None:
         """
         Definition & callback response of the "decrement-strikes" command.
@@ -993,7 +993,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
     """Cog class that defines the context menu strike command and its call-back method."""
 
     async def _send_message_to_committee(
-        self, ctx: "TeXBotApplicationContext", message: discord.Message
+        self, ctx: TeXBotApplicationContext, message: discord.Message
     ) -> None:
         """Send a provided message to committee channels."""
         discord_channel: discord.TextChannel | None = discord.utils.get(
@@ -1074,9 +1074,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
     @discord.user_command(name="Strike User")
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def user_strike(
-        self, ctx: "TeXBotApplicationContext", member: discord.Member
-    ) -> None:
+    async def user_strike(self, ctx: TeXBotApplicationContext, member: discord.Member) -> None:
         """Call the _strike command, providing the required command arguments."""
         await self._command_perform_strike(ctx, strike_member=member)
 
@@ -1084,7 +1082,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def strike_message_author(
-        self, ctx: "TeXBotApplicationContext", message: discord.Message
+        self, ctx: TeXBotApplicationContext, message: discord.Message
     ) -> None:
         """Call the _strike command on the message author."""
         strike_user: discord.Member = await self.bot.get_member_from_str_id(
@@ -1100,7 +1098,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def send_message_to_committee(
-        self, ctx: "TeXBotApplicationContext", message: discord.Message
+        self, ctx: TeXBotApplicationContext, message: discord.Message
     ) -> None:
         """Send a copy of the selected message to committee channels for review."""
         await self._send_message_to_committee(ctx, message=message)

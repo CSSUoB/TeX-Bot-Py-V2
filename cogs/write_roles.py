@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
     from utils import TeXBotApplicationContext
 
-__all__: "Sequence[str]" = ("WriteRolesCommandCog",)
+__all__: Sequence[str] = ("WriteRolesCommandCog",)
 
 
 class WriteRolesCommandCog(TeXBotBaseCog):
@@ -23,7 +23,7 @@ class WriteRolesCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def write_roles(self, ctx: "TeXBotApplicationContext") -> None:
+    async def write_roles(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "write_roles" command.
 

@@ -18,27 +18,29 @@ if TYPE_CHECKING:
     from typing import Final
 
 
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "fetch_community_group_members_count",
     "fetch_community_group_members_list",
     "is_id_a_community_group_member",
 )
 
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
-BASE_SU_PLATFORM_WEB_HEADERS: "Final[Mapping[str, str]]" = {
+BASE_SU_PLATFORM_WEB_HEADERS: Final[Mapping[str, str]] = {
     "Cache-Control": "no-cache",
     "Pragma": "no-cache",
     "Expires": "0",
 }
 
-BASE_SU_PLATFORM_WEB_COOKIES: "Final[Mapping[str, str]]" = {
+BASE_SU_PLATFORM_WEB_COOKIES: Final[Mapping[str, str]] = {
     ".AspNet.SharedCookie": settings["SU_PLATFORM_ACCESS_COOKIE"],
 }
 
-MEMBERS_LIST_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{settings['ORGANISATION_ID']}/?sort=groups"
+MEMBERS_LIST_URL: Final[str] = (
+    f"https://guildofstudents.com/organisation/memberlist/{settings['ORGANISATION_ID']}/?sort=groups"
+)
 
 _membership_list_cache: set[int] = set()
 

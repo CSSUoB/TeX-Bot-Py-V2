@@ -7,7 +7,7 @@ from django.apps import AppConfig
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-__all__: "Sequence[str]" = ("CoreConfig",)
+__all__: Sequence[str] = ("CoreConfig",)
 
 
 class CoreConfig(AppConfig):

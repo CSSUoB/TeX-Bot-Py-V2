@@ -30,7 +30,7 @@ from .strike import NoAuditLogsStrikeTrackingError, StrikeTrackingError
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "ApplicantRoleDoesNotExistError",
     "ArchivistRoleDoesNotExistError",
     "ChannelDoesNotExistError",
