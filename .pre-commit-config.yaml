@@ -2,7 +2,7 @@ default_install_hook_types: [pre-commit, commit-msg]
 default_stages: [pre-commit, pre-merge-commit, manual]
 
 default_language_version:
-    python: python3.12
+    python: python3.13
 
 repos:
     - repo: https://github.com/hadolint/hadolint
@@ -11,7 +11,7 @@ repos:
         - id: hadolint-docker
 
     - repo: https://github.com/renovatebot/pre-commit-hooks
-      rev: 41.138.1
+      rev: 41.143.1
       hooks:
         - id: renovate-config-validator
           args: [--strict]
@@ -74,7 +74,7 @@ repos:
           stages: [manual]
 
     - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.13.3
+      rev: v0.14.0
       hooks:
         - id: ruff
           args: [--fix]
@@ -82,7 +82,7 @@ repos:
         - id: ruff-format
 
     - repo: https://github.com/astral-sh/uv-pre-commit
-      rev: 0.8.24
+      rev: 0.9.0
       hooks:
         - id: uv-lock
           always_run: true
