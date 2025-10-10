@@ -1,5 +1,6 @@
 import datetime
 from collections.abc import Awaitable, Callable, Iterable, Sequence
+from collections.abc import Set as AbstractSet
 from typing import Literal
 
 from discord.abc import Snowflake
@@ -16,8 +17,8 @@ __all__: Sequence[str] = (
     "utcnow",
 )
 
-type Values = Iterable[OptionChoice] | Iterable[str]
-type ValuesWithInt = Values | Iterable[int]
+type Values = AbstractSet[OptionChoice] | AbstractSet[str]
+type ValuesWithInt = Values | AbstractSet[int]
 type AllValuesWithInt = ValuesWithInt | Awaitable[ValuesWithInt]
 
 def basic_autocomplete[T_context: AutocompleteContext](
