@@ -6,6 +6,7 @@ These values are used to configure the functionality of the bot at run-time.
 """
 
 import abc
+import datetime
 import functools
 import importlib
 import json
@@ -13,7 +14,6 @@ import logging
 import os
 import re
 from collections.abc import Iterable, Mapping
-import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, final
 
