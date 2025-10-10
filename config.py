@@ -624,7 +624,9 @@ class Settings(abc.ABC):
             .replace(" ", ""),
         )
 
-        raw_timedelta_send_introduction_reminders_delay: datetime.timedelta = datetime.timedelta()
+        raw_timedelta_send_introduction_reminders_delay: datetime.timedelta = (
+            datetime.timedelta()
+        )
 
         if cls._settings["SEND_INTRODUCTION_REMINDERS"]:
             if not raw_send_introduction_reminders_delay:
