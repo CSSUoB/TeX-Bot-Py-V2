@@ -502,11 +502,9 @@ class Settings(abc.ABC):
             default="",
         ).strip()
 
-        if not raw_su_platform_access_cookie or not re.fullmatch(
-            r"\A[A-Fa-f\d]{128,256}\Z", raw_su_platform_access_cookie
-        ):
+        if not raw_su_platform_access_cookie:
             INVALID_SU_PLATFORM_ACCESS_COOKIE_MESSAGE: Final[str] = (
-                "SU_PLATFORM_ACCESS_COOKIE must be a valid .ASPXAUTH cookie."
+                "SU_PLATFORM_ACCESS_COOKIE must be a valid .aspNet.SharedCookie cookie."
             )
             raise ImproperlyConfiguredError(INVALID_SU_PLATFORM_ACCESS_COOKIE_MESSAGE)
 

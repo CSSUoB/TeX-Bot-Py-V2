@@ -35,7 +35,7 @@ BASE_SU_PLATFORM_WEB_HEADERS: "Final[Mapping[str, str]]" = {
 }
 
 BASE_SU_PLATFORM_WEB_COOKIES: "Final[Mapping[str, str]]" = {
-    ".ASPXAUTH": settings["SU_PLATFORM_ACCESS_COOKIE"],
+    ".aspNet.SharedCookie": settings["SU_PLATFORM_ACCESS_COOKIE"],
 }
 
 MEMBERS_LIST_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{settings['ORGANISATION_ID']}/?sort=groups"
