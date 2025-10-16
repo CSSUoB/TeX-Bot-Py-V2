@@ -13,7 +13,7 @@ import discord
 
 import config
 from config import settings
-from utils import SuppressTraceback, TeXBot
+from utils import TeXBot
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -21,17 +21,17 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = ("bot",)
 
-with SuppressTraceback():
-    config.run_setup()
+# with SuppressTraceback():
+config.run_setup()
 
-    intents: discord.Intents = discord.Intents.default()
-    intents.members = True
+intents: discord.Intents = discord.Intents.default()
+intents.members = True
 
-    bot: TeXBot = TeXBot(
-        intents=intents
-    )  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
+bot: TeXBot = TeXBot(
+    intents=intents
+)  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
 
-    bot.load_extension("cogs")
+bot.load_extension("cogs")
 
 
 def _run_bot() -> "NoReturn":  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
