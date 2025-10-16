@@ -43,6 +43,7 @@ __all__: "Sequence[str]" = (
     "settings",
 )
 
+
 PROJECT_ROOT: "Final[Path]" = Path(__file__).parent.resolve()
 
 TRUE_VALUES: "Final[AbstractSet[str]]" = {"true", "1", "t", "y", "yes", "on"}
@@ -987,7 +988,7 @@ class Settings(abc.ABC):
 
 def _settings_class_factory() -> type[Settings]:
     @final
-    class RuntimeSettings(Settings):
+    class RuntimeSettings(Settings):  # noqa: CAR160
         """
         Settings class that provides access to all settings values.
 

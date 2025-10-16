@@ -32,7 +32,7 @@ _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: "Final[str]" = f"""{
     if (
         settings["_GROUP_FULL_NAME"]
         and (
-            "computer science society" in settings["_GROUP_FULL_NAME"].lower()
+            "computer science society" in settings["_GROUP_FULL_NAME"].lower()  # noqa: CAR180
             or "css" in settings["_GROUP_FULL_NAME"].lower()
             or "uob" in settings["_GROUP_FULL_NAME"].lower()
             or "university of birmingham" in settings["_GROUP_FULL_NAME"].lower()
@@ -69,7 +69,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 if (
                     settings["_GROUP_FULL_NAME"]
                     and (
-                        "computer science society" in settings["_GROUP_FULL_NAME"].lower()
+                        "computer science society" in settings["_GROUP_FULL_NAME"].lower()  # noqa: CAR180
                         or "css" in settings["_GROUP_FULL_NAME"].lower()
                         or "uob" in settings["_GROUP_FULL_NAME"].lower()
                         or "university of birmingham" in settings["_GROUP_FULL_NAME"].lower()

@@ -17,12 +17,13 @@ if TYPE_CHECKING:
 
     from utils import AllChannelTypes, TeXBotApplicationContext, TeXBotAutocompleteContext
 
-__all__: "Sequence[str]" = ("ArchiveCommandCog",)
+__all__: "Sequence[str]" = ("ArchiveCommandsCog",)
+
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-class ArchiveCommandCog(TeXBotBaseCog):
+class ArchiveCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/archive" command and its call-back method."""
 
     @staticmethod
@@ -89,7 +90,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
             discord.OptionChoice(name=channel.name, value=str(channel.id))
             for channel in main_guild.channels
             if (
-                not isinstance(channel, discord.CategoryChannel)
+                not isinstance(channel, discord.CategoryChannel)  # noqa: CAR180
                 and channel.category
                 and "archive" not in channel.category.name.lower()
                 and isinstance(interaction_user, discord.Member)

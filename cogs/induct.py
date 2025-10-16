@@ -35,6 +35,7 @@ __all__: "Sequence[str]" = (
     "InductSlashCommandCog",
 )
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
@@ -53,7 +54,7 @@ class InductSendMessageCog(TeXBotBaseCog):
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
-        if before.guild != main_guild or after.guild != main_guild or before.bot or after.bot:
+        if before.guild != main_guild or after.guild != main_guild or before.bot or after.bot:  # noqa: CAR180
             return
 
         try:
