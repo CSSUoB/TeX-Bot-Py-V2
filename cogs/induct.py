@@ -93,28 +93,33 @@ class InductSendMessageCog(TeXBotBaseCog):
             (
                 f"**Congrats on joining the {self.bot.group_short_name} Discord server "
                 f"as a {user_type}!** "
-                "You now have access to communicate in all the public channels.\n\n"
+                "\n\n"
+            )
+        ]
+
+        if user_type == "member":
+            messages_to_send.append(
+                f"**Thank you for becomming a member of {self.bot.group_short_name}.**\n"
+                "you now have access to all public channels including the minecraft server and other member only channels.\n"
+                "and you now also have that shiny new Role"
+            )
+
+        if user_type != "member":
+            messages_to_send.append(
                 "Some things to do to get started:\n"
                 f"1. Check out our rules in {
                     await self.bot.get_mention_string(self.bot.rules_channel)
                 }\n"
-                f"2. Head to {
-                    await self.bot.get_mention_string(self.bot.roles_channel)
-                } and click on the icons to get optional roles like pronouns and year groups\n"
+                f"2. Head to Channels & Roles in the Onboarding screen and click on the icons to get optional roles like pronouns, year groups and games\n"
                 "3. Change your nickname to whatever you wish others to refer to you as "
                 "(You can do this by right-clicking your name in the members-list "
                 'to the right & selecting "Edit Server Profile").'
-            )
-        ]
-
-        if user_type != "member":
-            messages_to_send.append(
-                f"You can also get yourself an annual membership "
+                "You can also get yourself an annual membership "
                 f"to {self.bot.group_full_name} for only £5! "
                 f"Just head to {settings['PURCHASE_MEMBERSHIP_URL']}. "
-                "You'll get awesome perks like a free T-shirt:shirt:, "
-                "access to member only events:calendar_spiral: and a cool green name on "
-                f"the {self.bot.group_short_name} Discord server:green_square:! "
+                f"You'll get awesome perks like acess to the {self.bot.group_short_name} Minecraft server :pick:, "
+                "access to member only events :calendar_spiral: and a cool blue Role on "
+                f"the {self.bot.group_short_name} Discord server :blue_square:! "
                 f"Checkout all the perks at {settings['MEMBERSHIP_PERKS_URL']}"
             )
 
