@@ -108,7 +108,7 @@ class ConfirmStrikeMemberView(View):
     @discord.ui.button(
         label="Yes", style=discord.ButtonStyle.red, custom_id="yes_strike_member"
     )
-    async def yes_strike_member_button_callback(  # noqa: type: ignore[misc]
+    async def yes_strike_member_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
