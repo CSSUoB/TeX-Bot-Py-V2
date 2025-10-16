@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = ("EverestCommandCog",)
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 MOUNT_EVEREST_TOTAL_STEPS: "Final[int]" = 44250

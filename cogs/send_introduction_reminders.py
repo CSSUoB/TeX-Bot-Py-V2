@@ -34,7 +34,8 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = ("SendIntroductionRemindersTaskCog",)
 
-logger: "Logger" = logging.getLogger("TeX-Bot")
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class SendIntroductionRemindersTaskCog(TeXBotBaseCog):

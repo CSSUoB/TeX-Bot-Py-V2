@@ -40,10 +40,11 @@ __all__: "Sequence[str]" = (
     "ConfirmStrikeMemberView",
     "ConfirmStrikesOutOfSyncWithBanView",
     "ManualModerationCog",
-    "StrikeCommandCog",
+    "StrikeCommandsCog",
     "StrikeContextCommandsCog",
     "perform_moderation_action",
 )
+
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
@@ -797,7 +798,7 @@ class ManualModerationCog(BaseStrikeCog):
         )
 
 
-class StrikeCommandCog(BaseStrikeCog):
+class StrikeCommandsCog(BaseStrikeCog):
     """Cog class that defines the "/strike" command and its call-back method."""
 
     @staticmethod

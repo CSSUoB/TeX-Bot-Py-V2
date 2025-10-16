@@ -20,13 +20,13 @@ if TYPE_CHECKING:
     from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 
-__all__: "Sequence[str]" = ("AddUsersToThreadsAndChannelsCommandCog",)
+__all__: "Sequence[str]" = ("AddUsersToThreadsAndChannelsCommandsCog",)
 
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
+class AddUsersToThreadsAndChannelsCommandsCog(TeXBotBaseCog):
     """Cog for adding users to threads."""
 
     @staticmethod

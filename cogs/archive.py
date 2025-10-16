@@ -17,12 +17,13 @@ if TYPE_CHECKING:
 
     from utils import AllChannelTypes, TeXBotApplicationContext, TeXBotAutocompleteContext
 
-__all__: "Sequence[str]" = ("ArchiveCommandCog",)
+__all__: "Sequence[str]" = ("ArchiveCommandsCog",)
+
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-class ArchiveCommandCog(TeXBotBaseCog):
+class ArchiveCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/archive" command and its call-back method."""
 
     @staticmethod

@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = ("ConfirmKillView", "KillCommandCog")
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 

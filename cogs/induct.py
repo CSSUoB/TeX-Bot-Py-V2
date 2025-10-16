@@ -35,6 +35,7 @@ __all__: "Sequence[str]" = (
     "InductSlashCommandCog",
 )
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 

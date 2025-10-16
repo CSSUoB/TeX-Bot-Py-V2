@@ -56,7 +56,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         parameter_name="str_channel_id",
     )
     @discord.option(
-        name="message_id",
+        name="message-id",
         input_type=str,
         description="The ID of the message you wish to edit.",
         required=True,

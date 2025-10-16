@@ -2,3 +2,4 @@
 select = CAR,TXB
 extend_exclude = migrations,.venv
 require_plugins = flake8-carrot
+ignore = CAR180
