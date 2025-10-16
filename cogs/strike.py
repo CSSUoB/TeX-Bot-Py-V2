@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
     from collections.abc import Set as AbstractSet
     from logging import Logger
-    from typing import Final, Never
+    from typing import Final
 
     from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
     from utils.message_sender_components import MessageSavingSenderComponent
@@ -108,8 +108,8 @@ class ConfirmStrikeMemberView(View):
     @discord.ui.button(
         label="Yes", style=discord.ButtonStyle.red, custom_id="yes_strike_member"
     )
-    async def yes_strike_member_button_callback(
-        self, _: "discord.ui.Button[Never]", interaction: discord.Interaction
+    async def yes_strike_member_button_callback(  # noqa: type: ignore[misc]
+        self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
         Delete the message associated with the view when the Yes button is pressed.
@@ -127,8 +127,8 @@ class ConfirmStrikeMemberView(View):
     @discord.ui.button(
         label="No", style=discord.ButtonStyle.grey, custom_id="no_strike_member"
     )
-    async def no_strike_member_button_callback(
-        self, _: "discord.ui.Button[Never]", interaction: discord.Interaction
+    async def no_strike_member_button_callback(  # type: ignore[misc]
+        self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
         Delete the message associated with the view when the No button is pressed.
@@ -150,8 +150,8 @@ class ConfirmManualModerationView(View):
     @discord.ui.button(
         label="Yes", style=discord.ButtonStyle.red, custom_id="yes_manual_moderation_action"
     )
-    async def yes_manual_moderation_action_button_callback(
-        self, _: "discord.ui.Button[Never]", interaction: discord.Interaction
+    async def yes_manual_moderation_action_button_callback(  # type: ignore[misc]
+        self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
         Delete the message associated with the view when the Yes button is pressed.
@@ -170,8 +170,8 @@ class ConfirmManualModerationView(View):
     @discord.ui.button(
         label="No", style=discord.ButtonStyle.grey, custom_id="no_manual_moderation_action"
     )
-    async def no_manual_moderation_action_button_callback(
-        self, _: "discord.ui.Button[Never]", interaction: discord.Interaction
+    async def no_manual_moderation_action_button_callback(  # type: ignore[misc]
+        self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
         Delete the message associated with the view when the No button is pressed.
@@ -194,8 +194,8 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
     @discord.ui.button(
         label="Yes", style=discord.ButtonStyle.red, custom_id="yes_out_of_sync_ban_member"
     )
-    async def yes_out_of_sync_ban_member_button_callback(
-        self, _: "discord.ui.Button[Never]", interaction: discord.Interaction
+    async def yes_out_of_sync_ban_member_button_callback(  # type: ignore[misc]
+        self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
         Delete the message associated with the view when the Yes button is pressed.
@@ -214,8 +214,8 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
     @discord.ui.button(
         label="No", style=discord.ButtonStyle.grey, custom_id="no_out_of_sync_ban_member"
     )
-    async def no_out_of_sync_ban_member_button_callback(
-        self, _: "discord.ui.Button[Never]", interaction: discord.Interaction
+    async def no_out_of_sync_ban_member_button_callback(  # type: ignore[misc]
+        self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """
         Delete the message associated with the view when the No button is pressed.
