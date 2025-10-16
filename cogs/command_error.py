@@ -72,16 +72,12 @@ class CommandErrorCog(TeXBotBaseCog):
             error.original, GuildDoesNotExistError
         ):
             command_name: str | None = (
-                (
-                    ctx.command.callback.__name__
-                    if (
-                        hasattr(ctx.command, "callback")
-                        and not ctx.command.callback.__name__.startswith("_")
-                    )
-                    else ctx.command.qualified_name
+                ctx.command.callback.__name__
+                if (
+                    hasattr(ctx.command, "callback")
+                    and not ctx.command.callback.__name__.startswith("_")
                 )
-                if ctx.command is not None
-                else None
+                else ctx.command.qualified_name
             )
             logger.critical(
                 " ".join(

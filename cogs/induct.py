@@ -239,9 +239,7 @@ class BaseInductCog(TeXBotBaseCog):
                         applicant_role, reason=INDUCT_AUDIT_MESSAGE
                     )
 
-            tex_emoji: discord.Emoji | discord.AppEmoji | None = self.bot.get_emoji(
-                743218410409820213
-            )
+            tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
             if not tex_emoji:
                 tex_emoji = discord.utils.get(main_guild.emojis, name="TeX")
 
