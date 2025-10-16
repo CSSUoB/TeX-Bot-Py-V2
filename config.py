@@ -504,7 +504,7 @@ class Settings(abc.ABC):
 
         if not raw_su_platform_access_cookie:
             INVALID_SU_PLATFORM_ACCESS_COOKIE_MESSAGE: Final[str] = (
-                "SU_PLATFORM_ACCESS_COOKIE must be a valid .aspNet.SharedCookie cookie."
+                "SU_PLATFORM_ACCESS_COOKIE must be a valid .AspNet.SharedCookie cookie."
             )
             raise ImproperlyConfiguredError(INVALID_SU_PLATFORM_ACCESS_COOKIE_MESSAGE)
 
