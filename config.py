@@ -502,7 +502,9 @@ class Settings(abc.ABC):
             default="",
         ).strip()
 
-        if not raw_su_platform_access_cookie:
+        if not raw_su_platform_access_cookie or not re.fullmatch(
+            r"\A[\w-]{512,1024}\Z", raw_su_platform_access_cookie
+        ):
             INVALID_SU_PLATFORM_ACCESS_COOKIE_MESSAGE: Final[str] = (
                 "SU_PLATFORM_ACCESS_COOKIE must be a valid .AspNet.SharedCookie cookie."
             )
