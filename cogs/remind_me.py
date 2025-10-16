@@ -210,6 +210,12 @@ class RemindMeCommandCog(TeXBotBaseCog):
 
         The "remind_me" command responds with the given message after the specified time.
         """
+        if ctx.channel is None:
+            CTX_CHANNEL_IS_NONE_MESSAGE: Final[str] = (
+                "Cannot create reminder where `ctx.channel` is `None`."
+            )
+            raise TypeError(CTX_CHANNEL_IS_NONE_MESSAGE)
+
         parsed_time: tuple[time.struct_time, int] = parsedatetime.Calendar().parseDT(
             delay, tzinfo=timezone.get_current_timezone()
         )

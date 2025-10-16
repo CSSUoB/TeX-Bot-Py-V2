@@ -86,7 +86,24 @@ class StatsCommandsCog(TeXBotBaseCog):
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
-        channel_id: int = ctx.channel_id
+        match ctx.channel:
+            case None:
+                CTX_CHANNEL_IS_NONE_MESSAGE: Final[str] = (
+                    "Cannot send stats graph when `ctx.channel` is `None`."
+                )
+                raise TypeError(CTX_CHANNEL_IS_NONE_MESSAGE)
+            case discord.ForumChannel() | discord.CategoryChannel():
+                await self.command_send_error(
+                    ctx,
+                    message=(
+                        f"The `/{ctx.command}` command cannot be used in the channel: {
+                            ctx.channel.mention
+                        }"
+                    ),
+                )
+                return
+
+        channel_id: int | None = ctx.channel_id
 
         if str_channel_id:
             if not re.fullmatch(r"\A\d{17,20}\Z", str_channel_id):
@@ -96,6 +113,12 @@ class StatsCommandsCog(TeXBotBaseCog):
                 return
 
             channel_id = int(str_channel_id)
+
+        if channel_id is None:
+            CTX_CHANNEL_ID_IS_NONE_MESSAGE: Final[str] = (
+                "Cannot produce stats graph when `ctx.channel_id` is `None`."
+            )
+            raise TypeError(CTX_CHANNEL_ID_IS_NONE_MESSAGE)
 
         channel: discord.TextChannel | None = discord.utils.get(
             main_guild.text_channels, id=channel_id
@@ -156,6 +179,23 @@ class StatsCommandsCog(TeXBotBaseCog):
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
+
+        match ctx.channel:
+            case None:
+                CTX_CHANNEL_IS_NONE_MESSAGE: Final[str] = (
+                    "Cannot send stats graph when `ctx.channel` is `None`."
+                )
+                raise TypeError(CTX_CHANNEL_IS_NONE_MESSAGE)
+            case discord.ForumChannel() | discord.CategoryChannel():
+                await self.command_send_error(
+                    ctx,
+                    message=(
+                        f"The `/{ctx.command}` command cannot be used in the channel: {
+                            ctx.channel.mention
+                        }"
+                    ),
+                )
+                return
 
         await ctx.defer(ephemeral=True)
 
@@ -248,6 +288,23 @@ class StatsCommandsCog(TeXBotBaseCog):
             )
             return
 
+        match ctx.channel:
+            case None:
+                CTX_CHANNEL_IS_NONE_MESSAGE: Final[str] = (
+                    "Cannot send stats graph when `ctx.channel` is `None`."
+                )
+                raise TypeError(CTX_CHANNEL_IS_NONE_MESSAGE)
+            case discord.ForumChannel() | discord.CategoryChannel():
+                await self.command_send_error(
+                    ctx,
+                    message=(
+                        f"The `/{ctx.command}` command cannot be used in the channel: {
+                            ctx.channel.mention
+                        }"
+                    ),
+                )
+                return
+
         await ctx.defer(ephemeral=True)
 
         message_counts: dict[str, int] = {"Total": 0}
@@ -313,6 +370,23 @@ class StatsCommandsCog(TeXBotBaseCog):
         """
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
+
+        match ctx.channel:
+            case None:
+                CTX_CHANNEL_IS_NONE_MESSAGE: Final[str] = (
+                    "Cannot send stats graph when `ctx.channel` is `None`."
+                )
+                raise TypeError(CTX_CHANNEL_IS_NONE_MESSAGE)
+            case discord.ForumChannel() | discord.CategoryChannel():
+                await self.command_send_error(
+                    ctx,
+                    message=(
+                        f"The `/{ctx.command}` command cannot be used in the channel: {
+                            ctx.channel.mention
+                        }"
+                    ),
+                )
+                return
 
         await ctx.defer(ephemeral=True)
 
