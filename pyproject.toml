@@ -241,6 +241,10 @@ plugins.ul-style.style = "asterisk"
 
 [tool.uv]
 default-groups = ["dev", "main"]
+no-binary-package = ["py-cord"]
 no-build = true
 package = false
 required-version = ">=0.6.10"
+
+[tool.uv.sources]
+py-cord = { git = "https://github.com/Pycord-Development/pycord" }
