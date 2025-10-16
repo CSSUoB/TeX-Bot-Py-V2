@@ -169,7 +169,7 @@ You'll also need to set a number of [environment variables](https://wikipedia.or
 * `SU_PLATFORM_ACCESS_COOKIE`: The SU platform [access session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie).
   * This [session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie) will [authenticate](https://wikipedia.org/wiki/Authentication) TeX-Bot to view your group's members list on the SU platform, as if it were [logged in to the website](https://wikipedia.org/wiki/Login_session) as a Committee member.
   * This can be [extracted from your web-browser](https://wikihow.com/View-Cookies), after logging in to view your members list yourself.
-    It will most likely be listed as a [cookie](https://wikipedia.org/wiki/HTTP_cookie) named [`.ASPXAUTH`](https://stackoverflow.com/a/424061/14403974).
+    It will most likely be listed as a [cookie](https://wikipedia.org/wiki/HTTP_cookie) named `.AspNet.SharedCookie`.
   * If you wish to test TeX-Bot with the SU platform-access disabled, a dummy value of 128 `0` characters can be used.
     Note that this will cause many commands and scheduled tasks to fail when they are used at runtime.
 
