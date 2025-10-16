@@ -62,6 +62,9 @@ class CommandErrorCog(TeXBotBaseCog):
                     "members can run this command."
                 )
 
+        else:
+            logging_message = error
+
         await self.command_send_error(
             ctx, error_code=error_code, message=message, logging_message=logging_message
         )
