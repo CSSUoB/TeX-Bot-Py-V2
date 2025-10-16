@@ -91,4 +91,6 @@ repos:
       rev: v0.18.1
       hooks:
         - id: yamlfmt
+          entry: yamlfmt
           types: [yaml]
+          pass_filenames: true
