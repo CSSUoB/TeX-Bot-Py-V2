@@ -109,7 +109,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         )
 
         if not re.fullmatch(r"\A\d{7}\Z", raw_group_member_id):
-            await self.command_send_error(ctx, message=(INVALID_GROUP_MEMBER_ID_MESSAGE))
+            await self.command_send_error(ctx, message=INVALID_GROUP_MEMBER_ID_MESSAGE)
             return
 
         try:
@@ -195,6 +195,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                         guest_role,
                         reason=f'{ctx.user} used TeX Bot slash-command: "/make-member"',
                     )
+
             applicant_role: discord.Role | None
             try:
                 applicant_role = await ctx.bot.applicant_role

@@ -28,7 +28,7 @@ from utils.error_capture_decorators import (
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from logging import Logger
-    from typing import Final
+    from typing import Final, Never
 
     from utils import TeXBot
 
@@ -231,8 +231,8 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             style=discord.ButtonStyle.red,
             emoji=discord.PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias")),
         )
-        async def opt_out_introduction_reminders_button_callback(  # type: ignore[misc]
-            self, button: discord.Button, interaction: discord.Interaction
+        async def opt_out_introduction_reminders_button_callback(
+            self, button: "discord.ui.Button[Never]", interaction: discord.Interaction
         ) -> None:
             """
             Set the opt-in/out flag depending on the status of the button.

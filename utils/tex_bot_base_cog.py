@@ -82,12 +82,16 @@ class TeXBotBaseCog(Cog):
         application command context.
         """
         COMMAND_NAME: Final[str] = (
-            ctx.command.callback.__name__
-            if (
-                hasattr(ctx.command, "callback")
-                and not ctx.command.callback.__name__.startswith("_")
+            (
+                ctx.command.callback.__name__
+                if (
+                    hasattr(ctx.command, "callback")
+                    and not ctx.command.callback.__name__.startswith("_")
+                )
+                else ctx.command.qualified_name
             )
-            else ctx.command.qualified_name
+            if ctx.command is not None
+            else ""
         )
 
         await self.send_error(
@@ -115,6 +119,7 @@ class TeXBotBaseCog(Cog):
         The constructed error message is then sent as the response to the given interaction.
         """
         construct_error_message: str = ":warning:There was an error"
+        interaction_name = interaction_name.strip()
 
         if error_code:
             construct_error_message = (
@@ -150,7 +155,7 @@ class TeXBotBaseCog(Cog):
                     message_part
                     for message_part in (
                         error_code if error_code else "",
-                        f"({interaction_name})",
+                        f"({interaction_name})" if interaction_name else "",
                         str(logging_message),
                     )
                     if message_part
