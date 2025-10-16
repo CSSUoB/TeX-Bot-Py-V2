@@ -28,7 +28,6 @@ jobs:
             UV_FROZEN: true
             UV_NO_SYNC: true
             UV_PYTHON_DOWNLOADS: never
-        needs: [uv-check]
         runs-on: ubuntu-latest
 
         steps:
@@ -37,18 +36,15 @@ jobs:
             - name: Set Up Python
               uses: actions/setup-python@v6
               with:
-                python-version-file: .python-version
+                python-version: 3.14
 
             - name: Install uv
               uses: astral-sh/setup-uv@v7
               with:
                 enable-cache: true
 
-            - name: Install Flake8 From Locked Dependencies
-              run: uv sync --no-group dev
-
             - name: Run Flake8
-              run: uv run -- flake8
+              run: uvx --python 3.14 --with flake8-carrot -- flake8
 
     mypy:
         needs: [uv-check]
@@ -126,7 +122,7 @@ jobs:
             - name: Save pre-commit Checks Which Require Skipping
               run: |
                 if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_name }}" == "${{ github.event.repository.default_branch }}" ]]; then
-                    echo "SKIP=check-github-workflows,flake8,ruff-check,uv-lock,gitlint-ci" >> $GITHUB_ENV
+                    echo "SKIP=check-github-workflows,ruff-check,uv-lock,gitlint-ci" >> $GITHUB_ENV
                 else
                     echo "SKIP=check-github-workflows,ruff,uv-lock" >> $GITHUB_ENV
                 fi
@@ -256,7 +252,7 @@ jobs:
             github.event.pull_request.head.repo.full_name == 'CSSUoB/TeX-Bot-Py-V2'
         runs-on: ubuntu-latest
         environment: publish
-        needs: [flake8, mypy, pre-commit, pymarkdown, pytest, ruff-lint, uv-check]
+        needs: [mypy, pre-commit, pymarkdown, pytest, ruff-lint, uv-check]
         permissions:
             contents: read
             packages: write
