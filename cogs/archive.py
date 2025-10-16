@@ -90,7 +90,7 @@ class ArchiveCommandsCog(TeXBotBaseCog):
             discord.OptionChoice(name=channel.name, value=str(channel.id))
             for channel in main_guild.channels
             if (
-                not isinstance(channel, discord.CategoryChannel)
+                not isinstance(channel, discord.CategoryChannel)  # noqa: CAR180
                 and channel.category
                 and "archive" not in channel.category.name.lower()
                 and isinstance(interaction_user, discord.Member)

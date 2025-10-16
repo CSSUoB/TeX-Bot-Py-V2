@@ -340,7 +340,7 @@ class TeXBot(discord.Bot):
         return (
             "UoB Student"
             if (
-                "computer science society" in self.group_full_name.lower()
+                "computer science society" in self.group_full_name.lower()  # noqa: CAR180
                 or "css" in self.group_full_name.lower()
                 or "uob" in self.group_full_name.lower()
                 or "university of birmingham" in self.group_full_name.lower()
@@ -363,7 +363,7 @@ class TeXBot(discord.Bot):
         return (
             "the Guild of Students"
             if (
-                "computer science society" in self.group_full_name.lower()
+                "computer science society" in self.group_full_name.lower()  # noqa: CAR180
                 or "css" in self.group_full_name.lower()
                 or "uob" in self.group_full_name.lower()
                 or "university of birmingham" in self.group_full_name.lower()

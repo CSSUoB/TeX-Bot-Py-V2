@@ -172,7 +172,7 @@ class AddUsersToThreadsAndChannelsCommandsCog(TeXBotBaseCog):
         committee_elect_role: discord.Role = await self.bot.committee_elect_role
 
         if (
-            thread.parent is None
+            thread.parent is None  # noqa: CAR180
             or thread.parent.category is None
             or "committee" not in thread.parent.category.name.lower()
             or not settings["AUTO_ADD_COMMITTEE_TO_THREADS"]

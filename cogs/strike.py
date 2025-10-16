@@ -277,7 +277,7 @@ class BaseStrikeCog(TeXBotBaseCog):
         button_interaction: discord.Interaction = await self.bot.wait_for(
             "interaction",
             check=lambda interaction: (
-                interaction.type == discord.InteractionType.component
+                interaction.type == discord.InteractionType.component  # noqa: CAR180
                 and interaction.user == interaction_user
                 and interaction.channel == button_callback_channel
                 and "custom_id" in interaction.data
@@ -587,7 +587,7 @@ class ManualModerationCog(BaseStrikeCog):
             out_of_sync_ban_button_interaction: discord.Interaction = await self.bot.wait_for(
                 "interaction",
                 check=lambda interaction: (
-                    interaction.type == discord.InteractionType.component
+                    interaction.type == discord.InteractionType.component  # noqa: CAR180
                     and (
                         (interaction.user == applied_action_user)
                         if not applied_action_user.bot
@@ -684,7 +684,7 @@ class ManualModerationCog(BaseStrikeCog):
         button_interaction: discord.Interaction = await self.bot.wait_for(
             "interaction",
             check=lambda interaction: (
-                interaction.type == discord.InteractionType.component
+                interaction.type == discord.InteractionType.component  # noqa: CAR180
                 and (
                     (interaction.user == applied_action_user)
                     if not applied_action_user.bot
@@ -742,7 +742,7 @@ class ManualModerationCog(BaseStrikeCog):
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
-        if before.guild != main_guild or after.guild != main_guild or before.bot or after.bot:
+        if before.guild != main_guild or after.guild != main_guild or before.bot or after.bot:  # noqa: CAR180
             return
 
         if not after.timed_out or before.timed_out == after.timed_out:
