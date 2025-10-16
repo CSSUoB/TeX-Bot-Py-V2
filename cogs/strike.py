@@ -45,6 +45,21 @@ __all__: "Sequence[str]" = (
     "perform_moderation_action",
 )
 
+
+if TYPE_CHECKING:
+    type AllChannels = (
+        discord.VoiceChannel
+        | discord.StageChannel
+        | discord.TextChannel
+        | discord.ForumChannel
+        | discord.CategoryChannel
+        | discord.Thread
+        | discord.DMChannel
+        | discord.GroupChannel
+        | discord.PartialMessageable
+        | None
+    )
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 FORMATTED_MODERATION_ACTIONS: "Final[Mapping[discord.AuditLogAction, str]]" = {
@@ -263,11 +278,11 @@ class BaseStrikeCog(TeXBotBaseCog):
     async def _confirm_perform_moderation_action(
         self,
         message_sender_component: "MessageSavingSenderComponent",
-        interaction_user: discord.User,
+        interaction_user: discord.Member | discord.User,
         strike_user: discord.Member,
         confirm_strike_message: str,
         actual_strike_amount: int,
-        button_callback_channel: discord.TextChannel | discord.DMChannel,
+        button_callback_channel: "AllChannels",
     ) -> None:
         await message_sender_component.send(
             content=confirm_strike_message, view=ConfirmStrikeMemberView()
@@ -314,10 +329,10 @@ class BaseStrikeCog(TeXBotBaseCog):
     async def _confirm_increase_strike(
         self,
         message_sender_component: "MessageSavingSenderComponent",
-        interaction_user: discord.User,
-        strike_user: discord.User | discord.Member,
+        interaction_user: discord.Member | discord.User,
+        strike_user: discord.Member | discord.User,
         member_strikes: DiscordMemberStrikes,
-        button_callback_channel: discord.TextChannel | discord.DMChannel,
+        button_callback_channel: "AllChannels",
         *,
         perform_action: bool,
     ) -> None:
@@ -503,8 +518,11 @@ class ManualModerationCog(BaseStrikeCog):
                 async for _audit_log_entry in main_guild.audit_logs(
                     after=discord.utils.utcnow() - datetime.timedelta(minutes=1), action=action
                 )
-                if _audit_log_entry.target.id
-                == strike_user.id  # NOTE: IDs are checked here rather than the objects themselves as the audit log provides an unusual object type in some cases.
+                if (
+                    _audit_log_entry.target is not None
+                    and _audit_log_entry.target.id == strike_user.id
+                    # NOTE: IDs are checked here rather than the objects themselves as the audit log provides an unusual object type in some cases.
+                )
             )
         except (StopIteration, StopAsyncIteration):
             logger.debug("Printing 5 most recent audit logs:")
@@ -749,11 +767,13 @@ class ManualModerationCog(BaseStrikeCog):
 
         audit_log_entry: discord.AuditLogEntry
         async for audit_log_entry in main_guild.audit_logs(limit=5):
-            FOUND_CORRECT_AUDIT_LOG_ENTRY: bool = audit_log_entry.target.id == after.id and (
+            if audit_log_entry.target is None:
+                continue
+
+            if audit_log_entry.target.id == after.id and (
                 audit_log_entry.action
                 == discord.AuditLogAction.auto_moderation_user_communication_disabled
-            )
-            if FOUND_CORRECT_AUDIT_LOG_ENTRY:
+            ):
                 await self._confirm_manual_add_strike(
                     strike_user=after, action=audit_log_entry.action
                 )

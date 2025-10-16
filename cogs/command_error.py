@@ -71,7 +71,7 @@ class CommandErrorCog(TeXBotBaseCog):
         if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(
             error.original, GuildDoesNotExistError
         ):
-            command_name: str = (
+            command_name: str | None = (
                 ctx.command.callback.__name__
                 if (
                     hasattr(ctx.command, "callback")
@@ -84,7 +84,14 @@ class CommandErrorCog(TeXBotBaseCog):
                     message_part
                     for message_part in (
                         error.original.ERROR_CODE,
-                        f"({command_name})" if command_name in self.ERROR_ACTIVITIES else "",
+                        (
+                            f"({command_name})"
+                            if (
+                                command_name is not None
+                                and command_name in self.ERROR_ACTIVITIES
+                            )
+                            else ""
+                        ),
                         str(error.original).rstrip(".:"),
                     )
                     if message_part
