@@ -556,9 +556,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     async def list_user_actions(  # NOTE: Committee role check is not present because non-committee can have actions, and need to be able to list their own actions.
         self,
         ctx: "TeXBotApplicationContext",
-        action_member_id: None | str,
+        action_member_id: "None | str",
         ping: bool,  # noqa: FBT001
-        status: None | str,
+        status: "None | str",
     ) -> None:
         """
         Definition and callback of the "/list" command.
