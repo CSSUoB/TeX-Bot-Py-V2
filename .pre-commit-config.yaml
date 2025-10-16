@@ -95,7 +95,7 @@ repos:
     - repo: https://github.com/google/yamlfmt
       rev: v0.18.1
       hooks:
-        - id: yamlfmt
-          entry: yamlfmt
-          types: [yaml]
+        - entry: yamlfmt
+          id: yamlfmt
           pass_filenames: true
+          types: [yaml]
