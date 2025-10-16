@@ -38,7 +38,7 @@ REQUEST_HEADERS: "Final[Mapping[str, str]]" = {
 }
 
 REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
-    ".ASPXAUTH": settings["SU_PLATFORM_ACCESS_COOKIE"]
+    ".AspNet.SharedCookie": settings["SU_PLATFORM_ACCESS_COOKIE"]
 }
 
 SU_PLATFORM_PROFILE_URL: "Final[str]" = "https://guildofstudents.com/profile"
