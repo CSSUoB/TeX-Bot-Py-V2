@@ -40,7 +40,7 @@ class AsyncBaseModel(models.Model):
         }
 
         with transaction.atomic():
-            super().__init__(*args, **kwargs)  # noqa: 151
+            super().__init__(*args, **kwargs)  # noqa: CAR151
 
             field_name: str
             value: object
