@@ -22,8 +22,7 @@ jobs:
             - name: Check uv.lock (ensure all dependencies up to date)
               run: uv lock --check
 
-    # yamllint disable-line rule:key-ordering
-    flake8:
+    flake8:  # yamllint disable-line rule:key-ordering
         env:
             UV_FROZEN: true
             UV_NO_SYNC: true
