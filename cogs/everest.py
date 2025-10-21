@@ -93,10 +93,10 @@ class EverestCommandCog(TeXBotBaseCog):
         name="course-type",
         description="The type of your university course.",
         input_type=str,
-        choices=(  # NOTE: Display name is stored in the enum's value.
+        choices={  # NOTE: Display name is stored in the enum's value.
             discord.OptionChoice(name=course_type.value, value=course_type.name)
             for course_type in _CourseTypes
-        ),
+        },
         required=True,
         parameter_name="raw_course_type",
     )
@@ -113,10 +113,10 @@ class EverestCommandCog(TeXBotBaseCog):
         description="The percentage of the module that the assignment is worth.",
         input_type=float,
         autocomplete=discord.utils.basic_autocomplete(  # NOTE: Pycord documents that they accept any iterable, testing shows that they only accept lists (generators do not work correctly).
-            [
+            {
                 discord.OptionChoice(name=f"{percentage * 5:.1f}%", value=percentage * 5)
                 for percentage in range(1, 21)
-            ]
+            }
         ),
         required=True,
         parameter_name="percentage_of_module",
