@@ -6,6 +6,7 @@ These values are used to configure the functionality of the bot at run-time.
 """
 
 import abc
+import datetime
 import functools
 import importlib
 import json
@@ -13,7 +14,6 @@ import logging
 import os
 import re
 from collections.abc import Iterable, Mapping
-from datetime import timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, final
 
@@ -503,10 +503,10 @@ class Settings(abc.ABC):
         ).strip()
 
         if not raw_su_platform_access_cookie or not re.fullmatch(
-            r"\A[A-Fa-f\d]{128,256}\Z", raw_su_platform_access_cookie
+            r"\A[\w-]{512,1024}\Z", raw_su_platform_access_cookie
         ):
             INVALID_SU_PLATFORM_ACCESS_COOKIE_MESSAGE: Final[str] = (
-                "SU_PLATFORM_ACCESS_COOKIE must be a valid .ASPXAUTH cookie."
+                "SU_PLATFORM_ACCESS_COOKIE must be a valid .AspNet.SharedCookie cookie."
             )
             raise ImproperlyConfiguredError(INVALID_SU_PLATFORM_ACCESS_COOKIE_MESSAGE)
 
@@ -570,7 +570,7 @@ class Settings(abc.ABC):
         }
 
         if (
-            timedelta(
+            datetime.timedelta(
                 **raw_timedelta_auto_su_platform_access_cookie_checking_interval
             ).total_seconds()
             <= 3
@@ -624,7 +624,9 @@ class Settings(abc.ABC):
             .replace(" ", ""),
         )
 
-        raw_timedelta_send_introduction_reminders_delay: timedelta = timedelta()
+        raw_timedelta_send_introduction_reminders_delay: datetime.timedelta = (
+            datetime.timedelta()
+        )
 
         if cls._settings["SEND_INTRODUCTION_REMINDERS"]:
             if not raw_send_introduction_reminders_delay:
@@ -636,7 +638,7 @@ class Settings(abc.ABC):
                     INVALID_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE
                 )
 
-            raw_timedelta_send_introduction_reminders_delay = timedelta(
+            raw_timedelta_send_introduction_reminders_delay = datetime.timedelta(
                 **{
                     key: float(value)
                     for key, value in raw_send_introduction_reminders_delay.groupdict().items()
@@ -644,7 +646,7 @@ class Settings(abc.ABC):
                 }
             )
 
-            if raw_timedelta_send_introduction_reminders_delay < timedelta(days=1):
+            if raw_timedelta_send_introduction_reminders_delay < datetime.timedelta(days=1):
                 TOO_SMALL_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE: Final[str] = (
                     "SEND_INTRODUCTION_REMINDERS_DELAY must be longer than or equal to 1 day."
                 )
@@ -694,7 +696,7 @@ class Settings(abc.ABC):
             }
 
             if (
-                timedelta(
+                datetime.timedelta(
                     **raw_timedelta_details_send_introduction_reminders_interval
                 ).total_seconds()
                 <= 3
@@ -741,7 +743,7 @@ class Settings(abc.ABC):
             .replace(" ", ""),
         )
 
-        raw_timedelta_send_get_roles_reminders_delay: timedelta = timedelta()
+        raw_timedelta_send_get_roles_reminders_delay: datetime.timedelta = datetime.timedelta()
 
         if cls._settings["SEND_GET_ROLES_REMINDERS"]:
             if not raw_send_get_roles_reminders_delay:
@@ -751,7 +753,7 @@ class Settings(abc.ABC):
                 )
                 raise ImproperlyConfiguredError(INVALID_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE)
 
-            raw_timedelta_send_get_roles_reminders_delay = timedelta(
+            raw_timedelta_send_get_roles_reminders_delay = datetime.timedelta(
                 **{
                     key: float(value)
                     for key, value in raw_send_get_roles_reminders_delay.groupdict().items()
@@ -759,7 +761,7 @@ class Settings(abc.ABC):
                 }
             )
 
-            if raw_timedelta_send_get_roles_reminders_delay < timedelta(days=1):
+            if raw_timedelta_send_get_roles_reminders_delay < datetime.timedelta(days=1):
                 TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE: Final[str] = (
                     "SEND_GET_ROLES_REMINDERS_DELAY must be longer than or equal to 1 day."
                 )
@@ -831,7 +833,7 @@ class Settings(abc.ABC):
             )
             raise ImproperlyConfiguredError(TOO_SMALL_STATISTICS_DAYS_MESSAGE)
 
-        cls._settings["STATISTICS_DAYS"] = timedelta(days=raw_statistics_days)
+        cls._settings["STATISTICS_DAYS"] = datetime.timedelta(days=raw_statistics_days)
 
     @classmethod
     def _setup_statistics_roles(cls) -> None:

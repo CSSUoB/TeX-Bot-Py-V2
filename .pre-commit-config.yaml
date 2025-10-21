@@ -6,19 +6,19 @@ default_language_version:
 
 repos:
     - repo: https://github.com/hadolint/hadolint
-      rev: v2.13.1
+      rev: v2.14.0
       hooks:
         - id: hadolint-docker
 
     - repo: https://github.com/renovatebot/pre-commit-hooks
-      rev: 41.98.4
+      rev: 41.154.1
       hooks:
         - id: renovate-config-validator
           args: [--strict]
           stages: [manual]
 
     - repo: https://github.com/python-jsonschema/check-jsonschema
-      rev: 0.33.3
+      rev: 0.34.1
       hooks:
         - id: check-github-workflows
 
@@ -74,7 +74,7 @@ repos:
           stages: [manual]
 
     - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.12.12
+      rev: v0.14.1
       hooks:
         - id: ruff
           args: [--fix]
@@ -82,12 +82,15 @@ repos:
         - id: ruff-format
 
     - repo: https://github.com/astral-sh/uv-pre-commit
-      rev: 0.8.15
+      rev: 0.9.4
       hooks:
         - id: uv-lock
           always_run: true
 
     - repo: https://github.com/google/yamlfmt
-      rev: v0.17.2
+      rev: v0.19.0
       hooks:
         - id: yamlfmt
+          entry: yamlfmt
+          types: [yaml]
+          pass_filenames: true

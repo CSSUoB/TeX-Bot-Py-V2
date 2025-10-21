@@ -59,14 +59,14 @@ _GROUP_MEMBER_ID_ARGUMENT_NAME: "Final[str]" = (
 class MakeMemberCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/make-member" command and its call-back method."""
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="make-member",
         description=(
             "Gives you the Member role "
             f"when supplied with an appropriate {_GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME}."
         ),
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name=_GROUP_MEMBER_ID_ARGUMENT_NAME,
         description=(
             f"""Your UoB Student {
@@ -95,7 +95,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         parameter_name="raw_group_member_id",
     )
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_member(  # type: ignore[misc]
+    async def make_member(
         self, ctx: "TeXBotApplicationContext", raw_group_member_id: str
     ) -> None:
         """
@@ -105,7 +105,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         has purchased a valid membership to your community group,
         then gives the member the "Member" role.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         member_role: discord.Role = await self.bot.member_role
         interaction_member: discord.Member = await ctx.bot.get_main_guild_member(ctx.user)
 
@@ -216,10 +216,10 @@ class MakeMemberCommandCog(TeXBotBaseCog):
 class MemberCountCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/member-count" command and its call-back method."""
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="member-count", description="Displays the number of members in the group."
     )
-    async def member_count(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def member_count(self, ctx: "TeXBotApplicationContext") -> None:
         """Definition & callback response of the "member_count" command."""
         await ctx.defer(ephemeral=False)
 
