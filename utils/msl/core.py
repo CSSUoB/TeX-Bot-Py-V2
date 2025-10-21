@@ -1,8 +1,7 @@
 """Functions to enable interaction with MSL based SU websites."""
 
-import datetime as dt
+import datetime
 import logging
-from datetime import datetime
 from typing import TYPE_CHECKING
 
 import aiohttp
@@ -13,7 +12,6 @@ from utils import GLOBAL_SSL_CONTEXT
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
-    from datetime import timezone
     from http.cookies import Morsel
     from logging import Logger
     from typing import Final
@@ -23,17 +21,17 @@ __all__: "Sequence[str]" = ()
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-DEFAULT_TIMEZONE: "Final[timezone]" = dt.UTC
-TODAYS_DATE: "Final[datetime]" = datetime.now(tz=DEFAULT_TIMEZONE)
+DEFAULT_TIMEZONE: "Final[datetime.timezone]" = datetime.UTC
+TODAYS_DATE: "Final[datetime.datetime]" = datetime.datetime.now(tz=DEFAULT_TIMEZONE)
 
-CURRENT_YEAR_START_DATE: "Final[datetime]" = datetime(
+CURRENT_YEAR_START_DATE: "Final[datetime.datetime]" = datetime.datetime(
     year=TODAYS_DATE.year if TODAYS_DATE.month >= 7 else TODAYS_DATE.year - 1,
     month=7,
     day=1,
     tzinfo=DEFAULT_TIMEZONE,
 )
 
-CURRENT_YEAR_END_DATE: "Final[datetime]" = datetime(
+CURRENT_YEAR_END_DATE: "Final[datetime.datetime]" = datetime.datetime(
     year=TODAYS_DATE.year if TODAYS_DATE.month >= 7 else TODAYS_DATE.year - 1,
     month=6,
     day=30,

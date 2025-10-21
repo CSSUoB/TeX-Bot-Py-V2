@@ -324,7 +324,7 @@ class MakeMemberModalCommandCog(TeXBotBaseCog):
             view=OpenMemberVerifyModalView(),
         )
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="make-member-modal",
         description=(
             "prints a message with a button that allows users to open the make member modal, "
@@ -332,7 +332,7 @@ class MakeMemberModalCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_member_modal(  # type: ignore[misc]
+    async def make_member_modal(
         self,
         ctx: "TeXBotApplicationContext",
     ) -> None:
