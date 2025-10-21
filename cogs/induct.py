@@ -100,7 +100,7 @@ class InductSendMessageCog(TeXBotBaseCog):
         if user_type == "member":
             messages_to_send.append(
                 f"**Thank you for becomming a member of {self.bot.group_short_name}.**\n"
-                "you now have access to all public channels including the minecraft server and other member only channels.\n"
+                "you now have access to all public channels including the minecraft server.\n"
                 "and you now also have that shiny new Role"
             )
 
@@ -110,17 +110,18 @@ class InductSendMessageCog(TeXBotBaseCog):
                 f"1. Check out our rules in {
                     await self.bot.get_mention_string(self.bot.rules_channel)
                 }\n"
-                f"2. Head to Channels & Roles in the Onboarding screen and click on the icons to get optional roles like pronouns, year groups and games\n"
+                f"2. Head to Channels & Roles in the Onboarding screen and click on the "
+                "icons to get optional roles like pronouns, year groups and games\n"
                 "3. Change your nickname to whatever you wish others to refer to you as "
                 "(You can do this by right-clicking your name in the members-list "
                 'to the right & selecting "Edit Server Profile").'
                 "You can also get yourself an annual membership "
                 f"to {self.bot.group_full_name} for only £5! "
                 f"Just head to {settings['PURCHASE_MEMBERSHIP_URL']}. "
-                f"You'll get awesome perks like acess to the {self.bot.group_short_name} Minecraft server :pick:, "
-                "access to member only events :calendar_spiral: and a cool blue Role on "
-                f"the {self.bot.group_short_name} Discord server :blue_square:! "
-                f"Checkout all the perks at {settings['MEMBERSHIP_PERKS_URL']}"
+                f"You'll get awesome perks like acess to the {self.bot.group_short_name} "
+                "Minecraft server :pick: , access to member only events :calendar_spiral: , "
+                f"and a cool blue Role on the {self.bot.group_short_name} Discord server "
+                f":blue_square:! Checkout all the perks at {settings['MEMBERSHIP_PERKS_URL']}"
             )
 
         try:
