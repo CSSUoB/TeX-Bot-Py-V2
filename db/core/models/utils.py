@@ -33,14 +33,14 @@ class AsyncBaseModel(models.Model):
         abstract: "ClassVar[bool]" = True
 
     @override
-    def __init__(self, *args: object, **kwargs: object) -> None:
+    def __init__(self, *args: object, **kwargs: object) -> None:  # noqa: CAR150
         proxy_fields: dict[str, object] = {
             field_name: kwargs.pop(field_name)
             for field_name in set(kwargs.keys()) & self._get_proxy_field_names()
         }
 
         with transaction.atomic():
-            super().__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)  # noqa: CAR151
 
             field_name: str
             value: object
@@ -73,7 +73,7 @@ class AsyncBaseModel(models.Model):
         force_update: bool = False,
         using: str | None = None,
         update_fields: "Iterable[str] | None" = None,
-        **kwargs: object,
+        **kwargs: object,  # noqa: CAR150
     ) -> None:
         """
         Change an in-memory object's values, then save it to the database.
@@ -127,7 +127,7 @@ class AsyncBaseModel(models.Model):
         force_update: bool = False,
         using: str | None = None,
         update_fields: "Iterable[str] | None" = None,
-        **kwargs: object,
+        **kwargs: object,  # noqa: CAR150
     ) -> None:
         """
         Asynchronously change an in-memory object's values, then save it to the database.

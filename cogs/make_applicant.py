@@ -21,6 +21,7 @@ __all__: "Sequence[str]" = (
     "MakeApplicantSlashCommandCog",
 )
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
