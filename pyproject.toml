@@ -8,6 +8,7 @@ dev = [
 lint-format = ["pymarkdownlnt>=0.9.28", "ruff>=0.12"]
 main = [
     "asyncstdlib>=3.13",
+    "audioop-lts; python_version > '3.12'",
     "beautifulsoup4>=4.12",
     "django-stubs-ext>=5.2",
     "django>=5.1",
@@ -31,7 +32,7 @@ type-check = [
 
 [project] # TODO: Remove [project] table once https://github.com/astral-sh/uv/issues/8582 is completed
 name = "TeX-Bot-Py-V2"
-requires-python = ">=3.12,<3.13" # TODO: Allow Python 3.13 once py-cord makes a new release with support for it
+requires-python = "==3.13.*" # TODO: Make minimum version Python 3.14, once Pycord makes a new release with support for it
 version = "0.1.0"
 
 
