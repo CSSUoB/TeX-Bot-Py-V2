@@ -70,7 +70,13 @@ DEFAULT_STATISTICS_ROLES: "Final[AbstractSet[LiteralString]]" = {
     "Postdoc",
     "Quiz Victor",
 }
-LOG_LEVEL_CHOICES: "Final[Sequence[LiteralString]]" = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
+LOG_LEVEL_CHOICES: "Final[Sequence[LiteralString]]" = (
+    "DEBUG",
+    "INFO",
+    "WARNING",
+    "ERROR",
+    "CRITICAL",
+)
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 discord_logger: "Final[Logger]" = logging.getLogger("discord")
