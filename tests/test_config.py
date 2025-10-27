@@ -32,11 +32,14 @@ from utils import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Mapping
+    from collections.abc import Callable, Mapping, Sequence
     from typing import IO, Final, TextIO
 
     from _pytest._code import ExceptionInfo
     from _pytest.logging import LogCaptureFixture
+
+
+__all__: "Sequence[str]" = ()
 
 
 class TestSettings:
@@ -1062,7 +1065,7 @@ class TestSetupPingCommandEasterEggProbability:
         RuntimeSettings._is_env_variables_setup = True
 
         assert isinstance(
-            RuntimeSettings()["PING_COMMAND_EASTER_EGG_PROBABILITY"], float | int
+            RuntimeSettings()["PING_COMMAND_EASTER_EGG_PROBABILITY"], (float, int)
         )
         assert 0 <= RuntimeSettings()["PING_COMMAND_EASTER_EGG_PROBABILITY"] <= 100
 
@@ -1831,7 +1834,7 @@ class TestSetupSendIntroductionRemindersInterval:
         assert RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"] == {
             key: float(value)
             for key, value in (
-                re.match(
+                re.fullmatch(
                     r"\A(?:(?P<seconds>(?:\d*\.)?\d+)\s*s)?\s*(?:(?P<minutes>(?:\d*\.)?\d+)\s*m)?\s*(?:(?P<hours>(?:\d*\.)?\d+)\s*h)?\Z",
                     test_send_introduction_reminders_interval.lower().strip(),
                 )
@@ -1848,7 +1851,7 @@ class TestSetupSendIntroductionRemindersInterval:
         )
 
         assert all(
-            isinstance(value, float | int)
+            isinstance(value, (float, int))
             for value in RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"].values()
         )
 
@@ -1887,7 +1890,7 @@ class TestSetupSendIntroductionRemindersInterval:
         )
 
         assert all(
-            isinstance(value, float | int)
+            isinstance(value, (float, int))
             for value in RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"].values()
         )
 
