@@ -1408,8 +1408,8 @@ class TestSetupSUPlatformAccessCookie:
     @pytest.mark.parametrize(
         "test_su_platform_access_cookie",
         (
-            "".join(random.choices(string.hexdigits, k=random.randint(128, 256))),
-            f"  {''.join(random.choices(string.hexdigits, k=random.randint(128, 256)))}   ",
+            "".join(random.choices(string.hexdigits, k=random.randint(512, 1024))),
+            f"  {''.join(random.choices(string.hexdigits, k=random.randint(512, 1024)))}   ",
         ),
         ids=[f"case_{i}" for i in range(2)],
     )
