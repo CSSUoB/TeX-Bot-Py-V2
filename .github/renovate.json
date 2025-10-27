@@ -5,8 +5,7 @@
     "dependencyDashboard": true,
     "dependencyDashboardAutoclose": true,
     "dependencyDashboardLabels": [
-        "dependencies",
-        "tracker"
+        "dependencies"
     ],
     "enabled": true,
     "enabledManagers": [
