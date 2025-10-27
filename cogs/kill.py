@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = ("ConfirmKillView", "KillCommandCog")
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
@@ -82,7 +83,7 @@ class KillCommandCog(TeXBotBaseCog):
         button_interaction: discord.Interaction = await self.bot.wait_for(
             "interaction",
             check=lambda interaction: (
-                interaction.type == discord.InteractionType.component
+                interaction.type == discord.InteractionType.component  # noqa: CAR180
                 and interaction.message.id == confirmation_message.id
                 and ((committee_role in interaction.user.roles) if committee_role else True)
                 and "custom_id" in interaction.data

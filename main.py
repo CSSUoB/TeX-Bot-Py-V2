@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = ("bot",)
 
+
 with SuppressTraceback():
     config.run_setup()
 

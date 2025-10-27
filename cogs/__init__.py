@@ -7,13 +7,13 @@ cogs for each activity.
 
 from typing import TYPE_CHECKING
 
-from .add_users_to_threads_and_channels import AddUsersToThreadsAndChannelsCommandCog
+from .add_users_to_threads_and_channels import AddUsersToThreadsAndChannelsCommandsCog
 from .annual_handover_and_reset import (
     AnnualRolesResetCommandCog,
     AnnualYearChannelsIncrementCommandCog,
     CommitteeHandoverCommandCog,
 )
-from .archive import ArchiveCommandCog
+from .archive import ArchiveCommandsCog
 from .check_su_platform_authorisation import (
     CheckSUPlatformAuthorisationCommandCog,
     CheckSUPlatformAuthorisationTaskCog,
@@ -44,7 +44,7 @@ from .send_introduction_reminders import SendIntroductionRemindersTaskCog
 from .source import SourceCommandCog
 from .startup import StartupCog
 from .stats import StatsCommandsCog
-from .strike import ManualModerationCog, StrikeCommandCog, StrikeContextCommandsCog
+from .strike import ManualModerationCog, StrikeCommandsCog, StrikeContextCommandsCog
 from .write_roles import WriteRolesCommandCog
 
 if TYPE_CHECKING:
@@ -96,10 +96,10 @@ __all__: "Sequence[str]" = (
 def setup(bot: "TeXBot") -> None:
     """Add all the cogs to the bot, at bot startup."""
     cogs: Iterable[type[TeXBotBaseCog]] = (
-        AddUsersToThreadsAndChannelsCommandCog,
+        AddUsersToThreadsAndChannelsCommandsCog,
         AnnualRolesResetCommandCog,
         AnnualYearChannelsIncrementCommandCog,
-        ArchiveCommandCog,
+        ArchiveCommandsCog,
         ClearRemindersBacklogTaskCog,
         CommandErrorCog,
         CommitteeActionsTrackingSlashCommandsCog,
@@ -128,7 +128,7 @@ def setup(bot: "TeXBot") -> None:
         SourceCommandCog,
         StartupCog,
         StatsCommandsCog,
-        StrikeCommandCog,
+        StrikeCommandsCog,
         StrikeContextCommandsCog,
         CheckSUPlatformAuthorisationTaskCog,
         WriteRolesCommandCog,

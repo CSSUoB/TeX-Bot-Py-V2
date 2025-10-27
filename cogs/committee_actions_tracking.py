@@ -39,6 +39,7 @@ __all__: "Sequence[str]" = (
     "CommitteeActionsTrackingSlashCommandsCog",
 )
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
@@ -542,7 +543,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     )
     @discord.option(
         name="description",
-        description="The description to be used for the action",
+        description="The description to be used for the action.",
         input_type=str,
         required=True,
         parameter_name="action_description",
@@ -598,7 +599,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     )
     @discord.option(
         name="description",
-        description="The description to be used for the action",
+        description="The description to be used for the action.",
         input_type=str,
         required=True,
         parameter_name="action_description",
@@ -657,11 +658,11 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
     @committee_actions.command(
         name="action-all-committee",
-        description="Creates an action with the description for every committee member",
+        description="Creates an action with the description for every committee member.",
     )
     @discord.option(
         name="description",
-        description="The description to be used for the actions",
+        description="The description to be used for the actions.",
         input_type=str,
         required=True,
         parameter_name="action_description",
@@ -722,7 +723,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         await ctx.respond(content=response_message)
 
     @committee_actions.command(
-        name="list", description="Lists all actions for a specified user"
+        name="list", description="Lists all actions for a specified user."
     )
     @discord.option(
         name="user",
@@ -752,7 +753,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     async def list_user_actions(  # NOTE: Committee role check is not present because non-committee can have actions, and need to be able to list their own actions.
         self,
         ctx: "TeXBotApplicationContext",
-        action_member_id: "None | str",
+        action_member_id: str | None,
         ping: bool,  # noqa: FBT001
         raw_status: "None | str",
     ) -> None:

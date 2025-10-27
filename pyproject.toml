@@ -128,6 +128,7 @@ allowed-confusables = [
     "ᴡ",
     "ᴢ",
 ]
+external = ["CAR", "TXB"]
 ignore = [
     "C90",
     "COM812",
