@@ -754,7 +754,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         ctx: "TeXBotApplicationContext",
         action_member_id: "None | str",
         ping: bool,  # noqa: FBT001
-        status: "None | str",
+        raw_status: "None | str",
     ) -> None:
         """
         Definition and callback of the "/list" command.
