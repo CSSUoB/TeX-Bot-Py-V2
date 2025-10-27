@@ -35,6 +35,7 @@ __all__: "Sequence[str]" = (
     "InductSlashCommandCog",
 )
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
@@ -50,10 +51,10 @@ class InductSendMessageCog(TeXBotBaseCog):
         These post-induction actions are only applied to users that have just been inducted as
         a guest into your group's Discord guild.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
-        if before.guild != main_guild or after.guild != main_guild or before.bot or after.bot:
+        if before.guild != main_guild or after.guild != main_guild or before.bot or after.bot:  # noqa: CAR180
             return
 
         try:
@@ -183,7 +184,7 @@ class BaseInductCog(TeXBotBaseCog):
         silent: bool,
     ) -> None:
         """Perform the actual process of inducting a member by giving them the Guest role."""
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
@@ -304,21 +305,21 @@ class InductSlashCommandCog(BaseInductCog):
             discord.OptionChoice(name=member.name, value=str(member.id)) for member in members
         }
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="induct",
         description=(
             "Gives a user the @Guest role, then sends a message in #general saying hello."
         ),
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="user",
         description="The user to induct.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),
         required=True,
         parameter_name="str_induct_member_id",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="silent",
         description="Triggers whether a message is sent or not.",
         input_type=bool,
@@ -327,7 +328,7 @@ class InductSlashCommandCog(BaseInductCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def induct(  # type: ignore[misc]
+    async def induct(
         self, ctx: "TeXBotApplicationContext", str_induct_member_id: str, *, silent: bool
     ) -> None:
         """
@@ -351,10 +352,10 @@ class InductSlashCommandCog(BaseInductCog):
 class InductContextCommandsCog(BaseInductCog):
     """Cog class to define the context-menu induction commands and their call-back methods."""
 
-    @discord.user_command(name="Induct User")  # type: ignore[no-untyped-call, misc]
+    @discord.user_command(name="Induct User")
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def non_silent_user_induct(  # type: ignore[misc]
+    async def non_silent_user_induct(
         self, ctx: "TeXBotApplicationContext", member: discord.Member
     ) -> None:
         """
@@ -367,10 +368,10 @@ class InductContextCommandsCog(BaseInductCog):
         """
         await self._perform_induction(ctx, member, silent=False)
 
-    @discord.user_command(name="Silently Induct User")  # type: ignore[no-untyped-call, misc]
+    @discord.user_command(name="Silently Induct User")
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def silent_user_induct(  # type: ignore[misc]
+    async def silent_user_induct(
         self, ctx: "TeXBotApplicationContext", member: discord.Member
     ) -> None:
         """
@@ -383,10 +384,10 @@ class InductContextCommandsCog(BaseInductCog):
         """
         await self._perform_induction(ctx, member, silent=True)
 
-    @discord.message_command(name="Induct Message Author")  # type: ignore[no-untyped-call, misc]
+    @discord.message_command(name="Induct Message Author")
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def non_silent_message_induct(  # type: ignore[misc]
+    async def non_silent_message_induct(
         self, ctx: "TeXBotApplicationContext", message: discord.Message
     ) -> None:
         """
@@ -418,13 +419,13 @@ class InductContextCommandsCog(BaseInductCog):
 class EnsureMembersInductedCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/ensure-members-inducted" command and call-back method."""
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="ensure-members-inducted",
         description="Ensures all users with the @Member role also have the @Guest role.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def ensure_members_inducted(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def ensure_members_inducted(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "ensure_members_inducted" command.
 
@@ -432,7 +433,7 @@ class EnsureMembersInductedCommandCog(TeXBotBaseCog):
         within your group's Discord guild that have the "Member" role
         have also been given the "Guest" role.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         member_role: discord.Role = await self.bot.member_role
         guest_role: discord.Role = await self.bot.guest_role

@@ -34,7 +34,8 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = ("SendIntroductionRemindersTaskCog",)
 
-logger: "Logger" = logging.getLogger("TeX-Bot")
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
@@ -82,7 +83,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         See README.md for the full list of conditions for when these
         reminders are sent.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
         member: discord.Member
@@ -131,14 +132,15 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 continue
 
             async for message in member.history():
-                MESSAGE_CONTAINS_OPT_IN_OUT_BUTTON: bool = bool(
-                    bool(message.components)
+                if (
+                    message.components  # noqa: CAR180
                     and isinstance(message.components[0], discord.ActionRow)
                     and isinstance(message.components[0].children[0], discord.Button)
-                    and message.components[0].children[0].custom_id
-                    == "opt_out_introduction_reminders_button"
-                )
-                if MESSAGE_CONTAINS_OPT_IN_OUT_BUTTON:
+                    and (
+                        message.components[0].children[0].custom_id
+                        == "opt_out_introduction_reminders_button"
+                    )
+                ):
                     await message.edit(view=None)
 
             if (

@@ -17,12 +17,13 @@ if TYPE_CHECKING:
 
     from utils import AllChannelTypes, TeXBotApplicationContext, TeXBotAutocompleteContext
 
-__all__: "Sequence[str]" = ("ArchiveCommandCog",)
+__all__: "Sequence[str]" = ("ArchiveCommandsCog",)
+
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-class ArchiveCommandCog(TeXBotBaseCog):
+class ArchiveCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/archive" command and its call-back method."""
 
     @staticmethod
@@ -89,7 +90,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
             discord.OptionChoice(name=channel.name, value=str(channel.id))
             for channel in main_guild.channels
             if (
-                not isinstance(channel, discord.CategoryChannel)
+                not isinstance(channel, discord.CategoryChannel)  # noqa: CAR180
                 and channel.category
                 and "archive" not in channel.category.name.lower()
                 and isinstance(interaction_user, discord.Member)
@@ -97,20 +98,20 @@ class ArchiveCommandCog(TeXBotBaseCog):
             )
         }
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="archive-category", description="Archives the selected category."
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="category",
         description="The category to archive.",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(
-            autocomplete_get_non_archival_categories  # type: ignore[arg-type]
+            autocomplete_get_non_archival_categories
         ),
         required=True,
         parameter_name="str_category_id",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="allow-archivist-access",
         description="Whether to allow archivists to access the category.",
         input_type=bool,
@@ -119,7 +120,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def archive_category(  # type: ignore[misc]
+    async def archive_category(
         self,
         ctx: "TeXBotApplicationContext",
         str_category_id: str,
@@ -132,7 +133,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         have the "Archivist" role. This can be overridden via a boolean parameter to allow
         for committee channels to be archived with the same command but not be visible.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         archivist_role: discord.Role = await self.bot.archivist_role
 
@@ -190,28 +191,28 @@ class ArchiveCommandCog(TeXBotBaseCog):
             content=f":white_check_mark: Category '{category.name}' successfully archived."
         )
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="archive-channel", description="Archives the selected channel."
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="channel",
         description="The channel to archive.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_non_archived_channels),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_non_archived_channels),
         required=True,
         parameter_name="str_channel_id",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="category",
         description="The category to move the channel to.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_archival_categories),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_archival_categories),
         required=True,
         parameter_name="str_category_id",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def archive_channel(  # type: ignore[misc]
+    async def archive_channel(
         self, ctx: "TeXBotApplicationContext", str_channel_id: str, str_category_id: str
     ) -> None:
         """
@@ -220,7 +221,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
         The "archive-channel" command moves the channel into the selected category
         and syncs the permissions to the category's permissions.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
         if not re.fullmatch(r"\A\d{17,20}\Z", str_channel_id):

@@ -1,8 +1,7 @@
 default_install_hook_types: [pre-commit, commit-msg]
-default_stages: [pre-commit, pre-merge-commit, manual]
-
 default_language_version:
     python: python3.12
+default_stages: [pre-commit, pre-merge-commit, manual]
 
 repos:
     - repo: https://github.com/hadolint/hadolint
@@ -10,15 +9,21 @@ repos:
       hooks:
         - id: hadolint-docker
 
+    - repo: https://github.com/adrienverge/yamllint.git
+      rev: v1.37.1
+      hooks:
+        - id: yamllint
+          args: [--strict]
+
     - repo: https://github.com/renovatebot/pre-commit-hooks
-      rev: 41.125.3
+      rev: 41.156.1
       hooks:
         - id: renovate-config-validator
           args: [--strict]
           stages: [manual]
 
     - repo: https://github.com/python-jsonschema/check-jsonschema
-      rev: 0.34.0
+      rev: 0.34.1
       hooks:
         - id: check-github-workflows
 
@@ -56,7 +61,7 @@ repos:
         - id: name-tests-test
           args: [--pytest-test-first]
         - id: pretty-format-json
-          args: [--autofix, --indent, '4']
+          args: [--autofix, --indent, "4"]
 
     - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
       rev: v2.15.0
@@ -74,20 +79,23 @@ repos:
           stages: [manual]
 
     - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.13.1
+      rev: v0.14.1
       hooks:
-        - id: ruff
+        - id: ruff-check
           args: [--fix]
 
         - id: ruff-format
 
     - repo: https://github.com/astral-sh/uv-pre-commit
-      rev: 0.8.20
+      rev: 0.9.4
       hooks:
         - id: uv-lock
           always_run: true
 
     - repo: https://github.com/google/yamlfmt
-      rev: v0.17.2
+      rev: v0.19.0
       hooks:
-        - id: yamlfmt
+        - entry: yamlfmt
+          id: yamlfmt
+          pass_filenames: true
+          types: [yaml]

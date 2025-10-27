@@ -28,6 +28,7 @@ __all__: "Sequence[str]" = (
     "CheckSUPlatformAuthorisationTaskCog",
 )
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 REQUEST_HEADERS: "Final[Mapping[str, str]]" = {
@@ -37,7 +38,7 @@ REQUEST_HEADERS: "Final[Mapping[str, str]]" = {
 }
 
 REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
-    ".ASPXAUTH": settings["SU_PLATFORM_ACCESS_COOKIE"]
+    ".AspNet.SharedCookie": settings["SU_PLATFORM_ACCESS_COOKIE"]
 }
 
 SU_PLATFORM_PROFILE_URL: "Final[str]" = "https://guildofstudents.com/profile"
@@ -182,13 +183,13 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
 class CheckSUPlatformAuthorisationCommandCog(CheckSUPlatformAuthorisationBaseCog):
     """Cog class that defines the "/check-su-platform-authorisation" command."""
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="check-su-platform-authorisation",
         description="Checks the authorisation held by the SU platform access cookie.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def check_su_platform_authorisation(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def check_su_platform_authorisation(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition of the "check_su_platform_authorisation" command.
 
