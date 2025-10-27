@@ -1,5 +1,6 @@
 """Automated test suite for the `Settings` class & related functions within `config.py`."""
 
+import datetime
 import functools
 import itertools
 import json
@@ -9,7 +10,6 @@ import random
 import re
 import string
 from collections.abc import Iterable
-from datetime import timedelta
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING
@@ -1854,9 +1854,9 @@ class TestSetupSendIntroductionRemindersInterval:
 
         timedelta_error: TypeError
         try:
-            assert timedelta(
+            assert datetime.timedelta(
                 **RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"]
-            ) > timedelta(seconds=3)
+            ) > datetime.timedelta(seconds=3)
 
         except TypeError as timedelta_error:
             if "invalid keyword argument for __new__()" not in str(timedelta_error):
@@ -1893,9 +1893,9 @@ class TestSetupSendIntroductionRemindersInterval:
 
         timedelta_error: TypeError
         try:
-            assert timedelta(
+            assert datetime.timedelta(
                 **RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_INTERVAL"]
-            ) > timedelta(seconds=3)
+            ) > datetime.timedelta(seconds=3)
 
         except TypeError as timedelta_error:
             if "invalid keyword argument for __new__()" not in str(timedelta_error):
@@ -2094,7 +2094,9 @@ class TestSetupSendIntroductionRemindersDelay:
 
         assert RuntimeSettings()["SEND_INTRODUCTION_REMINDERS"] == "once"
 
-        assert RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_DELAY"] == timedelta(hours=40)
+        assert RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_DELAY"] == datetime.timedelta(
+            hours=40
+        )
 
     @pytest.mark.parametrize(
         "too_short_introduction_reminders_delay",
@@ -2181,7 +2183,7 @@ class TestSetupSendIntroductionRemindersDelay:
 
         RuntimeSettings._is_env_variables_setup = True
 
-        assert RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_DELAY"] == timedelta(
+        assert RuntimeSettings()["SEND_INTRODUCTION_REMINDERS_DELAY"] == datetime.timedelta(
             **{
                 key: float(value)
                 for key, value in (
@@ -2396,7 +2398,9 @@ class TestSetupSendGetRolesRemindersDelay:
 
         RuntimeSettings._is_env_variables_setup = True
 
-        assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS_DELAY"] == timedelta(hours=40)
+        assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS_DELAY"] == datetime.timedelta(
+            hours=40
+        )
 
     @pytest.mark.parametrize(
         "too_short_get_roles_reminders_delay",
@@ -2467,7 +2471,7 @@ class TestSetupSendGetRolesRemindersDelay:
 
         RuntimeSettings._is_env_variables_setup = True
 
-        assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS_DELAY"] == timedelta(
+        assert RuntimeSettings()["SEND_GET_ROLES_REMINDERS_DELAY"] == datetime.timedelta(
             **{
                 key: float(value)
                 for key, value in (
@@ -2498,7 +2502,7 @@ class TestSetupStatisticsDays:
 
         RuntimeSettings._is_env_variables_setup = True
 
-        assert RuntimeSettings()["STATISTICS_DAYS"] == timedelta(
+        assert RuntimeSettings()["STATISTICS_DAYS"] == datetime.timedelta(
             days=float(test_statistics_days.strip()),
         )
 
@@ -2511,9 +2515,9 @@ class TestSetupStatisticsDays:
 
         RuntimeSettings._is_env_variables_setup = True
 
-        assert isinstance(RuntimeSettings()["STATISTICS_DAYS"], timedelta)
+        assert isinstance(RuntimeSettings()["STATISTICS_DAYS"], datetime.timedelta)
 
-        assert RuntimeSettings()["STATISTICS_DAYS"] > timedelta(days=1)
+        assert RuntimeSettings()["STATISTICS_DAYS"] > datetime.timedelta(days=1)
 
     @pytest.mark.parametrize(
         "invalid_statistics_days",
@@ -2890,7 +2894,7 @@ class TestSetupOrganisationID:
             EnvVariableDeleter("ORGANISATION_ID"),
             pytest.raises(
                 ImproperlyConfiguredError,
-                match="ORGANISATION_ID must be an integer 4 to 5 digits long.",
+                match=r"ORGANISATION_ID must be an integer 4 to 5 digits long.",
             ),
         ):
             RuntimeSettings._setup_organisation_id()
