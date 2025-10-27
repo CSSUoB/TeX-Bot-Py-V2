@@ -936,6 +936,20 @@ class Settings(abc.ABC):
         )
 
     @classmethod
+    def _setup_auto_slow_mode(cls) -> None:
+        raw_auto_slow_mode: str = str(
+            os.getenv("AUTO_SLOW_MODE", "True"),
+        ).lower()
+
+        if raw_auto_slow_mode not in TRUE_VALUES | FALSE_VALUES:
+            INVALID_AUTO_SLOW_MODE_MESSAGE: Final[str] = (
+                "AUTO_SLOW_MODE must be a boolean value."
+            )
+            raise ImproperlyConfiguredError(INVALID_AUTO_SLOW_MODE_MESSAGE)
+
+        cls._settings["AUTO_SLOW_MODE"] = raw_auto_slow_mode in TRUE_VALUES
+
+    @classmethod
     def _setup_env_variables(cls) -> None:
         """
         Load environment values into the settings dictionary.
@@ -980,6 +994,7 @@ class Settings(abc.ABC):
             cls._setup_moderation_document_url()
             cls._setup_strike_performed_manually_warning_location()
             cls._setup_auto_add_committee_to_threads()
+            cls._setup_auto_slow_mode()
         except ImproperlyConfiguredError as improper_config_error:
             webhook_config_logger.error(improper_config_error.message)  # noqa: TRY400
             raise improper_config_error from improper_config_error
