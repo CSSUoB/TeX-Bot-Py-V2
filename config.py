@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from collections.abc import Set as AbstractSet
     from logging import Logger
-    from typing import IO, Any, ClassVar, Final
+    from typing import IO, Any, ClassVar, Final, LiteralString
 
 __all__: "Sequence[str]" = (
     "DEFAULT_STATISTICS_ROLES",
@@ -43,14 +43,15 @@ __all__: "Sequence[str]" = (
     "settings",
 )
 
+
 PROJECT_ROOT: "Final[Path]" = Path(__file__).parent.resolve()
 
-TRUE_VALUES: "Final[AbstractSet[str]]" = {"true", "1", "t", "y", "yes", "on"}
-FALSE_VALUES: "Final[AbstractSet[str]]" = {"false", "0", "f", "n", "no", "off"}
-VALID_SEND_INTRODUCTION_REMINDERS_VALUES: "Final[AbstractSet[str]]" = (
+TRUE_VALUES: "Final[AbstractSet[LiteralString]]" = {"true", "1", "t", "y", "yes", "on"}
+FALSE_VALUES: "Final[AbstractSet[LiteralString]]" = {"false", "0", "f", "n", "no", "off"}
+VALID_SEND_INTRODUCTION_REMINDERS_VALUES: "Final[AbstractSet[LiteralString]]" = (
     {"once", "interval"} | TRUE_VALUES | FALSE_VALUES
 )
-DEFAULT_STATISTICS_ROLES: "Final[AbstractSet[str]]" = {
+DEFAULT_STATISTICS_ROLES: "Final[AbstractSet[LiteralString]]" = {
     "Committee",
     "Committee-Elect",
     "Student Rep",
@@ -69,7 +70,13 @@ DEFAULT_STATISTICS_ROLES: "Final[AbstractSet[str]]" = {
     "Postdoc",
     "Quiz Victor",
 }
-LOG_LEVEL_CHOICES: "Final[Sequence[str]]" = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
+LOG_LEVEL_CHOICES: "Final[Sequence[LiteralString]]" = (
+    "DEBUG",
+    "INFO",
+    "WARNING",
+    "ERROR",
+    "CRITICAL",
+)
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 discord_logger: "Final[Logger]" = logging.getLogger("discord")
@@ -989,7 +996,7 @@ class Settings(abc.ABC):
 
 def _settings_class_factory() -> type[Settings]:
     @final
-    class RuntimeSettings(Settings):
+    class RuntimeSettings(Settings):  # noqa: CAR160
         """
         Settings class that provides access to all settings values.
 
