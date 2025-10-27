@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = (
     "CommitteeActionsTrackingBaseCog",
-    "CommitteeActionsTrackingContextCommandsCog",
+    "CommitteeActionsTrackingContextCommandCog",
     "CommitteeActionsTrackingRemindersTaskCog",
     "CommitteeActionsTrackingSlashCommandsCog",
 )
@@ -1013,7 +1013,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         await ctx.respond(content=f"Action `{action_description}` successfully deleted.")
 
 
-class CommitteeActionsTrackingContextCommandsCog(CommitteeActionsTrackingBaseCog):
+class CommitteeActionsTrackingContextCommandCog(CommitteeActionsTrackingBaseCog):
     """Cog class to define the actions tracking message context commands."""
 
     @discord.message_command(

@@ -20,7 +20,7 @@ from .check_su_platform_authorisation import (
 )
 from .command_error import CommandErrorCog
 from .committee_actions_tracking import (
-    CommitteeActionsTrackingContextCommandsCog,
+    CommitteeActionsTrackingContextCommandCog,
     CommitteeActionsTrackingRemindersTaskCog,
     CommitteeActionsTrackingSlashCommandsCog,
 )
@@ -61,7 +61,7 @@ __all__: "Sequence[str]" = (
     "CheckSUPlatformAuthorisationTaskCog",
     "ClearRemindersBacklogTaskCog",
     "CommandErrorCog",
-    "CommitteeActionsTrackingContextCommandsCog",
+    "CommitteeActionsTrackingContextCommandCog",
     "CommitteeActionsTrackingRemindersTaskCog",
     "CommitteeActionsTrackingSlashCommandsCog",
     "CommitteeHandoverCommandCog",
@@ -104,7 +104,7 @@ def setup(bot: "TeXBot") -> None:
         CommandErrorCog,
         CommitteeActionsTrackingSlashCommandsCog,
         CommitteeActionsTrackingRemindersTaskCog,
-        CommitteeActionsTrackingContextCommandsCog,
+        CommitteeActionsTrackingContextCommandCog,
         CommitteeHandoverCommandCog,
         DeleteAllCommandsCog,
         EditMessageCommandCog,
