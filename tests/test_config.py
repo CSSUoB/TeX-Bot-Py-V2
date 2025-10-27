@@ -1440,7 +1440,7 @@ class TestSetupSUPlatformAccessCookie:
             EnvVariableDeleter("SU_PLATFORM_ACCESS_COOKIE"),
             pytest.raises(
                 ImproperlyConfiguredError,
-                match=r"SU_PLATFORM_ACCESS_COOKIE.*valid.*\.ASPXAUTH cookie",
+                match=r"SU_PLATFORM_ACCESS_COOKIE.*valid.*\.AspNet.SharedCookie cookie",
             ),
         ):
             RuntimeSettings._setup_su_platform_access_cookie()
@@ -1466,7 +1466,7 @@ class TestSetupSUPlatformAccessCookie:
     ) -> None:
         """Test that an error occurs when `SU_PLATFORM_ACCESS_COOKIE` is invalid."""
         INVALID_MEMBERS_LIST_URL_SESSION_COOKIE_MESSAGE: Final[str] = (
-            "SU_PLATFORM_ACCESS_COOKIE must be a valid .ASPXAUTH cookie"
+            "SU_PLATFORM_ACCESS_COOKIE must be a valid .AspNet.SharedCookie cookie"
         )
 
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
