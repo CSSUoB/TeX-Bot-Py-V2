@@ -35,6 +35,7 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = ("TeXBot",)
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
@@ -48,7 +49,7 @@ class TeXBot(discord.Bot):
     """
 
     @override
-    def __init__(self, *args: object, **options: object) -> None:
+    def __init__(self, *args: object, **options: object) -> None:  # noqa: CAR150
         """Initialise a new Pycord Bot subclass with empty shortcut accessors."""
         self._main_guild: discord.Guild | None = None
         self._committee_role: discord.Role | None = None
@@ -64,7 +65,7 @@ class TeXBot(discord.Bot):
 
         self._main_guild_set: bool = False
 
-        super().__init__(*args, **options)  # type: ignore[no-untyped-call]
+        super().__init__(*args, **options)  # type: ignore[no-untyped-call]  # noqa: CAR151
 
     @override
     async def close(self) -> "NoReturn":  # type: ignore[misc]
@@ -339,7 +340,7 @@ class TeXBot(discord.Bot):
         return (
             "UoB Student"
             if (
-                "computer science society" in self.group_full_name.lower()
+                "computer science society" in self.group_full_name.lower()  # noqa: CAR180
                 or "css" in self.group_full_name.lower()
                 or "uob" in self.group_full_name.lower()
                 or "university of birmingham" in self.group_full_name.lower()
@@ -362,7 +363,7 @@ class TeXBot(discord.Bot):
         return (
             "the Guild of Students"
             if (
-                "computer science society" in self.group_full_name.lower()
+                "computer science society" in self.group_full_name.lower()  # noqa: CAR180
                 or "css" in self.group_full_name.lower()
                 or "uob" in self.group_full_name.lower()
                 or "university of birmingham" in self.group_full_name.lower()

@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = ("CommandErrorCog",)
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
@@ -60,6 +61,9 @@ class CommandErrorCog(TeXBotBaseCog):
                     f"Only {await self.bot.get_mention_string(self.bot.committee_role)} "
                     "members can run this command."
                 )
+
+        else:
+            logging_message = error
 
         await self.command_send_error(
             ctx, error_code=error_code, message=message, logging_message=logging_message

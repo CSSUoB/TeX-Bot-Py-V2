@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = ()
 
+
 # TODO(CarrotManMatt): Move to stats_tests  # noqa: FIX002
 # https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/57
 # class TestPlotBarChart:

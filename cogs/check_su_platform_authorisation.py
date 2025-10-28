@@ -27,6 +27,7 @@ __all__: "Sequence[str]" = (
     "CheckSUPlatformAuthorisationTaskCog",
 )
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
