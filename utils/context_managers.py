@@ -3,7 +3,7 @@
 import hashlib
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 import git
 
@@ -31,6 +31,7 @@ class EnvVariableDeleter:
     and the .env file in this project's root directory.
     """
 
+    @override
     def __init__(self, env_variable_name: str) -> None:
         """Store the current state of any instances of the stored environment variable."""
         self.env_variable_name: str = env_variable_name
@@ -81,6 +82,7 @@ class TemporarySettingsKeyReplacer:
         except KeyError:
             return cls.NOT_SET
 
+    @override
     def __init__(self, settings_key_name: str, new_settings_value: object) -> None:
         """Store the current state of the settings value if it exists."""
         self.settings_key_name: str = settings_key_name
@@ -115,6 +117,7 @@ class FileTemporaryDeleter:
     The file at the given file path is restored after the context manager exits.
     """
 
+    @override
     def __init__(self, file_path: Path) -> None:
         """Store the given file path to delete."""
         self.file_path: Path = file_path
