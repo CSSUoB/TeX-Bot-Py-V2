@@ -164,8 +164,6 @@ class ArchiveCommandsCog(TeXBotBaseCog):
             )
             return
 
-        await ctx.defer(ephemeral=True)
-
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
             content=f"Archiving {category.name}...", ephemeral=True
         )
