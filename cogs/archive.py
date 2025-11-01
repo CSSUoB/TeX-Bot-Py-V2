@@ -2,7 +2,6 @@
 
 import logging
 import re
-import contextlib
 from typing import TYPE_CHECKING
 
 import discord
@@ -200,8 +199,7 @@ class ArchiveCommandsCog(TeXBotBaseCog):
 
         await category.edit(name=f"archive-{category.name}")
 
-        with contextlib.suppress(discord.HTTPException, discord.InvalidArgument):
-            await category.edit(position=len(main_guild.categories) - 1)
+        await category.edit(position=len(main_guild.categories))
 
         await initial_response.edit(
             content=f":white_check_mark: Category '{category.name}' successfully archived."
