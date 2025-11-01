@@ -2,6 +2,7 @@
 
 import logging
 import re
+import contextlib
 from typing import TYPE_CHECKING
 
 import discord
@@ -164,6 +165,8 @@ class ArchiveCommandsCog(TeXBotBaseCog):
             )
             return
 
+        await ctx.defer(ephemeral=True)
+
         initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
             content=f"Archiving {category.name}...", ephemeral=True
         )
@@ -176,16 +179,29 @@ class ArchiveCommandsCog(TeXBotBaseCog):
 
             await channel.edit(sync_permissions=True)
 
-        overwrite: discord.Member | discord.Role
-        for overwrite in category.overwrites:
-            await category.set_permissions(overwrite, overwrite=None)
+        target: discord.Member | discord.Role
+        for target in category.overwrites:
+            await category.set_permissions(target=target, overwrite=None)
+
+        everyone_role: discord.Role = await ctx.bot.get_everyone_role()
+        await category.set_permissions(
+            target=everyone_role,
+            view_channel=False,
+        )
 
         if allow_archivist:
             await category.set_permissions(
-                target=archivist_role, read_messages=True, read_message_history=True
+                target=archivist_role,
+                view_channel=True,
+                read_messages=True,
+                read_message_history=True,
+                send_messages=False,
             )
 
         await category.edit(name=f"archive-{category.name}")
+
+        with contextlib.suppress(discord.HTTPException, discord.InvalidArgument):
+            await category.edit(position=len(main_guild.categories) - 1)
 
         await initial_response.edit(
             content=f":white_check_mark: Category '{category.name}' successfully archived."
