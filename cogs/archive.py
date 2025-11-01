@@ -176,16 +176,31 @@ class ArchiveCommandsCog(TeXBotBaseCog):
 
             await channel.edit(sync_permissions=True)
 
-        overwrite: discord.Member | discord.Role
-        for overwrite in category.overwrites:
-            await category.set_permissions(overwrite, overwrite=None)
+        target: discord.Member | discord.Role
+        for target in category.overwrites:
+            await category.set_permissions(target=target, overwrite=None)
+
+        everyone_role: discord.Role = await ctx.bot.get_everyone_role()
+        await category.set_permissions(
+            target=everyone_role,
+            view_channel=False,
+        )
 
         if allow_archivist:
             await category.set_permissions(
-                target=archivist_role, read_messages=True, read_message_history=True
+                target=archivist_role,
+                view_channel=True,
+                read_messages=True,
+                read_message_history=True,
+                send_messages=False,
+                send_messages_in_threads=False,
+                create_public_threads=False,
+                create_private_threads=False,
             )
 
         await category.edit(name=f"archive-{category.name}")
+
+        await category.edit(position=len(main_guild.categories))
 
         await initial_response.edit(
             content=f":white_check_mark: Category '{category.name}' successfully archived."
