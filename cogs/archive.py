@@ -193,6 +193,9 @@ class ArchiveCommandsCog(TeXBotBaseCog):
                 read_messages=True,
                 read_message_history=True,
                 send_messages=False,
+                send_messages_in_threads=False,
+                create_public_threads=False,
+                create_private_threads=False,
             )
 
         await category.edit(name=f"archive-{category.name}")
