@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
+from exceptions import EveryoneRoleCouldNotBeRetrievedError
 from exceptions.base import BaseDoesNotExistError
 from utils import CommandChecks, TeXBotBaseCog
 
@@ -180,11 +181,17 @@ class ArchiveCommandsCog(TeXBotBaseCog):
         for target in category.overwrites:
             await category.set_permissions(target=target, overwrite=None)
 
-        everyone_role: discord.Role = await ctx.bot.get_everyone_role()
-        await category.set_permissions(
-            target=everyone_role,
-            view_channel=False,
-        )
+        try:
+            everyone_role: discord.Role = await ctx.bot.get_everyone_role()
+            await category.set_permissions(
+                target=everyone_role,
+                view_channel=False,
+            )
+        except EveryoneRoleCouldNotBeRetrievedError:
+            logger.exception(
+                "Could not retrieve the @everyone role when archiving category %r",
+                category.name,
+            )
 
         if allow_archivist:
             await category.set_permissions(
