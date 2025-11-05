@@ -181,16 +181,19 @@ class ArchiveCommandsCog(TeXBotBaseCog):
         for target in category.overwrites:
             await category.set_permissions(target=target, overwrite=None)
 
+        everyone_role: discord.Role | None = None
         try:
-            everyone_role: discord.Role = await ctx.bot.get_everyone_role()
-            await category.set_permissions(
-                target=everyone_role,
-                view_channel=False,
-            )
+            everyone_role = await ctx.bot.get_everyone_role()
         except EveryoneRoleCouldNotBeRetrievedError:
             logger.exception(
                 "Could not retrieve the @everyone role when archiving category %r",
                 category.name,
+            )
+
+        if everyone_role:
+            await category.set_permissions(
+                target=everyone_role,
+                view_channel=False,
             )
 
         if allow_archivist:
@@ -205,9 +208,9 @@ class ArchiveCommandsCog(TeXBotBaseCog):
                 create_private_threads=False,
             )
 
-        await category.edit(name=f"archive-{category.name}")
-
-        await category.edit(position=len(main_guild.categories))
+        await category.edit(
+            name=f"archive-{category.name}", position=len(main_guild.categories)
+        )
 
         await initial_response.edit(
             content=f":white_check_mark: Category '{category.name}' successfully archived."
