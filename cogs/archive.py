@@ -181,16 +181,14 @@ class ArchiveCommandsCog(TeXBotBaseCog):
         for target in category.overwrites:
             await category.set_permissions(target=target, overwrite=None)
 
-        everyone_role: discord.Role | None = None
         try:
-            everyone_role = await ctx.bot.get_everyone_role()
+            everyone_role: discord.Role = await ctx.bot.get_everyone_role()
         except EveryoneRoleCouldNotBeRetrievedError:
             logger.exception(
                 "Could not retrieve the @everyone role when archiving category %r",
                 category.name,
             )
-
-        if everyone_role:
+        else:
             await category.set_permissions(
                 target=everyone_role,
                 view_channel=False,
