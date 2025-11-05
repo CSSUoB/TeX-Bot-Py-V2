@@ -207,7 +207,8 @@ class ArchiveCommandsCog(TeXBotBaseCog):
             )
 
         await category.edit(
-            name=f"archive-{category.name}", position=len(main_guild.categories)
+            name=f"archive-{category.name}",
+            position=len(main_guild.categories)
         )
 
         await initial_response.edit(
