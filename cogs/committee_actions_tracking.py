@@ -5,6 +5,8 @@ import logging
 import random
 from enum import Enum
 from typing import TYPE_CHECKING
+from itertools import groupby
+from collections import defaultdict
 
 import discord
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
@@ -749,46 +751,41 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         ping: bool,  # noqa: FBT001
         status: str | None,
     ) -> None:
-        """List all actions."""  # NOTE: this doesn't actually list *all* actions as it is possible for non-committee to be actioned.
-        committee_role: discord.Role = await self.bot.committee_role
-
-        actions: list[AssignedCommitteeAction] = [
-            action async for action in AssignedCommitteeAction.objects.select_related().all()
+        """List all actions."""
+        filtered_actions: list[AssignedCommitteeAction] = [
+            action
+            async for action in AssignedCommitteeAction.objects.filter(
+                status__in=[status]
+                if status
+                else [
+                    Status.NOT_STARTED.value,
+                    Status.IN_PROGRESS.value,
+                    Status.BLOCKED.value,
+                ]
+            )
         ]
 
-        desired_status: list[str] = (
-            [status]
-            if status
-            else [Status.NOT_STARTED.value, Status.IN_PROGRESS.value, Status.BLOCKED.value]
-        )
-
-        committee_members: list[discord.Member] = committee_role.members
-
-        committee_actions: dict[discord.Member, list[AssignedCommitteeAction]] = {
-            committee: [
-                action
-                for action in actions
-                if str(action.discord_member) == str(committee.id)
-                and action.status in desired_status
-            ]
-            for committee in committee_members
-        }
-
-        filtered_committee_actions = {
-            committee: actions for committee, actions in committee_actions.items() if actions
-        }
-
-        if not filtered_committee_actions:
+        if not filtered_actions:
             await ctx.respond(content="No one has any actions that match the request!")
             logger.debug("No actions found with the status filter: %s", status)
             return
 
-        all_actions_message: str = "\n".join(
+        grouped_actions: dict[int, list[AssignedCommitteeAction]] = defaultdict(list)
+        for action in filtered_actions:
+            grouped_actions[int(action.discord_member.discord_id)].append(action)
+
+        all_actions_message: Final[str] = "\n".join(
             [
-                f"\n{committee.mention if ping else committee}, Actions:"
-                f"\n{', \n'.join(str(action.description) + f' ({AssignedCommitteeAction.Status(action.status).label})' for action in actions)}"  # noqa: E501
-                for committee, actions in filtered_committee_actions.items()
-            ],
+                f"\n{f'<@{user_id}>' if ping else f'User {user_id}'}, Actions:"
+                f"\n{
+                    ', \n'.join(
+                        f'{action.description} '
+                        f'({AssignedCommitteeAction.Status(action.status).label})'
+                        for action in actions
+                    )
+                }"
+                for user_id, actions in grouped_actions.items()
+            ]
         )
 
         await ctx.respond(content=all_actions_message)
