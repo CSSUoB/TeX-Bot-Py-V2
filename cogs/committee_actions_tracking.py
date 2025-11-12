@@ -3,10 +3,9 @@
 import contextlib
 import logging
 import random
+from collections import defaultdict
 from enum import Enum
 from typing import TYPE_CHECKING
-from itertools import groupby
-from collections import defaultdict
 
 import discord
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
