@@ -667,12 +667,26 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             return
 
         if not member_id:
-            logger.debug("Member ID was not provided, selecting a random committee member.")
-            with contextlib.suppress(CommitteeRoleDoesNotExistError):
+            logger.debug(
+                "Member ID was not provided, selecting a random committee member "
+                "to assign the action to."
+            )
+            try:
                 committee_members: list[discord.Member] = (
                     await self.bot.committee_role
                 ).members
+            except CommitteeRoleDoesNotExistError:
+                await self.command_send_error(
+                    ctx,
+                    message="Committee role does not exist! No action has been taken.",
+                )
+                return
+
             if not committee_members:
+                logger.debug(
+                    "Committee role was found but had no members while attempting to "
+                    "randomly re-assign, but no members held the role."
+                )
                 await ctx.respond(
                     content=(
                         "No committee members were found to randomly select from! "
