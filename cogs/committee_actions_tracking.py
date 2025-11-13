@@ -913,13 +913,6 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
     @committee_actions.command(name="list-all", description="List all current actions.")
     @discord.option(
-        name="ping",
-        description="Triggers whether the message pings users or not.",
-        input_type=bool,
-        default=False,
-        required=False,
-    )
-    @discord.option(
         name="status-filter",
         description="The filter to apply to the status of actions.",
         input_type=str,
