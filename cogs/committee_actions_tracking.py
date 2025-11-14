@@ -684,8 +684,8 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
             if not committee_members:
                 logger.debug(
-                    "Committee role was found but had no members while attempting to "
-                    "randomly re-assign, but no members held the role."
+                    "Committee role was found but no members held the role, "
+                    "while attempting to randomly re-assign action."
                 )
                 await ctx.respond(
                     content=(
