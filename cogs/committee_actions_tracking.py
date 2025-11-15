@@ -430,21 +430,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             return
 
-        index: int = random.randint(0, len(committee_members) - 1)  # noqa: S311
-
-        try:
-            action_user: discord.Member = committee_members[index]
-        except IndexError:
-            logger.debug("Index: %s was out of range! Printing list...", index)
-            logger.debug(committee_members)
-            await self.command_send_error(
-                ctx,
-                message=(
-                    f"Index {index} out of range for {len(committee_members)} "
-                    "committee members... check the logs!"
-                ),
-            )
-            return
+        action_user: discord.Member = random.choice(committee_members)  # noqa: S311
 
         try:
             await self._create_action(
@@ -658,16 +644,16 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     )
     @discord.option(
         name="user",
-        description="The user to list actions for.",
+        description="The user to reassign the action to.",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members),
-        required=True,
+        required=False,
         parameter_name="member_id",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def reassign_action(
-        self, ctx: "TeXBotApplicationContext", action_id: str, member_id: str
+        self, ctx: "TeXBotApplicationContext", action_id: str, member_id: str | None
     ) -> None:
         """Reassign the specified action to the specified user."""
         try:
@@ -679,6 +665,37 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
             )
             return
+
+        if not member_id:
+            logger.debug(
+                "Member ID was not provided, selecting a random committee member "
+                "to assign the action to."
+            )
+            try:
+                committee_members: list[discord.Member] = (
+                    await self.bot.committee_role
+                ).members
+            except CommitteeRoleDoesNotExistError:
+                await self.command_send_error(
+                    ctx,
+                    message="Committee role does not exist! No action has been taken.",
+                )
+                return
+
+            if not committee_members:
+                logger.debug(
+                    "Committee role was found but no members held the role, "
+                    "while attempting to randomly re-assign action."
+                )
+                await ctx.respond(
+                    content=(
+                        "No committee members were found to randomly select from! "
+                        "No action has been taken."
+                    )
+                )
+                return
+
+            member_id = str(random.choice(committee_members).id)  # noqa: S311
 
         new_user_to_action: discord.Member = await self.bot.get_member_from_str_id(
             member_id,
