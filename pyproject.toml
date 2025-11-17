@@ -1,5 +1,3 @@
-#:tombi schema.strict = false
-
 [project]  # TODO: Remove [project] table once https://github.com/astral-sh/uv/issues/8582 is completed
 name = "TeX-Bot-Py-V2"
 version = "0.1.0"
@@ -84,10 +82,6 @@ warn_unused_ignores = true
 warn_incomplete_stub = true
 
 [[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["discord_logging.handler", "mplcyberpunk", "parsedatetime", "validators"]
-
-[[tool.mypy.overrides]]
 ignore_errors = true
 module = ["db.core.migrations.*"]
 
@@ -108,8 +102,8 @@ plugins.ul-start-left.enabled = true
 plugins.ul-style.style = "asterisk"
 
 [tool.pytest]
-strict = true
 filterwarnings = ["ignore:'audioop':DeprecationWarning"]
+strict = true
 
 [tool.ruff]
 extend-exclude = ["db/**/migrations/"]
@@ -236,6 +230,11 @@ keep-runtime-typing = true
 [tool.tombi.format.rules]
 indent-width = 4
 line-width = 95
+
+[[tool.tombi.schemas]]
+root = "tool.pytest"
+path = "https://raw.githubusercontent.com/CarrotManMatt/schemastore/refs/heads/fix-tombi-implementation/src/schemas/json/partial-pytest.json"
+include = ["pyproject.toml"]
 
 [tool.uv]
 default-groups = ["dev", "main"]
