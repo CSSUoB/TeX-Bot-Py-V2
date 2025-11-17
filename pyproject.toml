@@ -1,17 +1,24 @@
+#:tombi schema.strict = false
+
+[project]  # TODO: Remove [project] table once https://github.com/astral-sh/uv/issues/8582 is completed
+name = "TeX-Bot-Py-V2"
+version = "0.1.0"
+requires-python = "==3.13.*"  # TODO: Make minimum version Python 3.14, once Pycord makes a new release with support for it
+
 [dependency-groups]
 dev = [
     { include-group = "lint-format" },
     { include-group = "pre-commit" },
     { include-group = "test" },
-    { include-group = "type-check" },
+    { include-group = "type-check" }
 ]
 lint-format = ["pymarkdownlnt>=0.9.28", "ruff>=0.12"]
 main = [
     "asyncstdlib>=3.13",
     "audioop-lts; python_version > '3.12'",
     "beautifulsoup4>=4.12",
-    "django-stubs-ext>=5.2",
     "django>=5.1",
+    "django-stubs-ext>=5.2",
     "emoji>=2.14",
     "matplotlib>=3.10",
     "mplcyberpunk>=0.7",
@@ -20,25 +27,23 @@ main = [
     "python-dotenv>=1.0",
     "python-logging-discord-handler>=0.1",
     "typed_classproperties>=1.2",
-    "validators>=0.34",
+    "validators>=0.34"
 ]
 pre-commit = ["pre-commit>=4.0"]
-test = ["pytest-cov>=6.1", "pytest>=8.3"]
+test = ["pytest>=9", "pytest-cov>=6.1"]
 type-check = [
     "django-stubs[compatible-mypy]>=5.1",
     "mypy>=1.18.2",
-    "types-beautifulsoup4>=4.12",
+    "types-beautifulsoup4>=4.12"
 ]
 
-[project] # TODO: Remove [project] table once https://github.com/astral-sh/uv/issues/8582 is completed
-name = "TeX-Bot-Py-V2"
-requires-python = "==3.13.*" # TODO: Make minimum version Python 3.14, once Pycord makes a new release with support for it
-version = "0.1.0"
+[tool.coverage.report]
+exclude_also = ["if TYPE_CHECKING:"]
+skip_covered = true
+sort = "cover"
 
-
-[tool.pytest.ini_options]
-filterwarnings = ["ignore:'audioop':DeprecationWarning"]
-
+[tool.django-stubs]
+django_settings_module = "db._settings"
 
 [tool.mypy]
 check_untyped_defs = true
@@ -62,18 +67,21 @@ enable_error_code = [
     "redundant-self",
     "truthy-bool",
     "truthy-iterable",
-    "unused-awaitable",
+    "unused-awaitable"
 ]
 extra_checks = true
 mypy_path = "stubs"
 no_implicit_reexport = true
 plugins = ["mypy_django_plugin.main"]
+strict_bytes = true
 strict_equality = true
+strict_equality_for_none = true  # tombi: lint.rules.key-not-allowed.disabled = true
 warn_redundant_casts = true
 warn_return_any = true
 warn_unreachable = true
 warn_unused_configs = true
 warn_unused_ignores = true
+warn_incomplete_stub = true
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
@@ -83,10 +91,25 @@ module = ["discord_logging.handler", "mplcyberpunk", "parsedatetime", "validator
 ignore_errors = true
 module = ["db.core.migrations.*"]
 
+[tool.pymarkdown]
+extensions.front-matter.enabled = true
+mode.strict-config = true
+plugins.code-block-style.style = "fenced"
+plugins.code-fence-style.style = "backtick"
+plugins.heading-style.style = "atx"
+plugins.hr-style.style = "---"
+plugins.line-length.enabled = false
+plugins.no-inline-html.allow_first_image_element = false
+plugins.no-inline-html.allowed_elements = "!--,br"
+plugins.no-trailing-spaces.strict = true
+plugins.ol-prefix.style = "ordered"
+plugins.ul-indent.indent = 4
+plugins.ul-start-left.enabled = true
+plugins.ul-style.style = "asterisk"
 
-[tool.django-stubs]
-django_settings_module = "db._settings"
-
+[tool.pytest]
+strict = true
+filterwarnings = ["ignore:'audioop':DeprecationWarning"]
 
 [tool.ruff]
 extend-exclude = ["db/**/migrations/"]
@@ -127,7 +150,7 @@ allowed-confusables = [
     "ᴜ",
     "ᴠ",
     "ᴡ",
-    "ᴢ",
+    "ᴢ"
 ]
 external = ["CAR", "TXB"]
 ignore = [
@@ -156,21 +179,15 @@ ignore = [
     "SIM910",
     "TD002",
     "TD003",
-    "W191",
+    "W191"
 ]
 select = ["ALL", "D204", "D213", "D401"]
 task-tags = ["BUG", "DONE", "FIXME", "HACK", "IDEA", "ISSUE", "NOBUG", "NOTE", "REQ", "TODO"]
 
 [tool.ruff.lint.flake8-import-conventions]
-aliases = {}
-banned-aliases = { "regex" = [
-    "re",
-], "numpy" = [
-    "np",
-], "matplotlib" = [
-    "mpl",
-], "matplotlib.pyplot" = [
-    "plt",
+aliases = {  }
+banned-aliases = { "regex" = ["re"], "numpy" = ["np"], "matplotlib" = ["mpl"], "matplotlib.pyplot" = [
+    "plt"
 ] }
 banned-from = ["abc", "date", "datetime", "re", "regex"]
 
@@ -216,29 +233,9 @@ parametrize-values-type = "tuple"
 [tool.ruff.lint.pyupgrade]
 keep-runtime-typing = true
 
-
-[tool.coverage.report]
-exclude_also = ["if TYPE_CHECKING:"]
-skip_covered = true
-sort = "cover"
-
-
-[tool.pymarkdown]
-extensions.front-matter.enabled = true
-mode.strict-config = true
-plugins.code-block-style.style = "fenced"
-plugins.code-fence-style.style = "backtick"
-plugins.heading-style.style = "atx"
-plugins.hr-style.style = "---"
-plugins.line-length.enabled = false
-plugins.no-inline-html.allow_first_image_element = false
-plugins.no-inline-html.allowed_elements = "!--,br"
-plugins.no-trailing-spaces.strict = true
-plugins.ol-prefix.style = "ordered"
-plugins.ul-indent.indent = 4
-plugins.ul-start-left.enabled = true
-plugins.ul-style.style = "asterisk"
-
+[tool.tombi.format.rules]
+indent-width = 4
+line-width = 95
 
 [tool.uv]
 default-groups = ["dev", "main"]
