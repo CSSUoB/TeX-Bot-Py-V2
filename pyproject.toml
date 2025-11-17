@@ -82,6 +82,10 @@ warn_unused_ignores = true
 warn_incomplete_stub = true
 
 [[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = ["discord_logging.handler", "mplcyberpunk", "parsedatetime", "validators"]
+
+[[tool.mypy.overrides]]
 ignore_errors = true
 module = ["db.core.migrations.*"]
 
