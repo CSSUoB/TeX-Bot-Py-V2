@@ -1068,7 +1068,7 @@ dev = [
     { name = "mypy", specifier = ">=1.18.2" },
     { name = "pre-commit", specifier = ">=4.0" },
     { name = "pymarkdownlnt", specifier = ">=0.9.28" },
-    { name = "pytest", specifier = ">=8.3" },
+    { name = "pytest", specifier = ">=9" },
     { name = "pytest-cov", specifier = ">=6.1" },
     { name = "ruff", specifier = ">=0.12" },
     { name = "types-beautifulsoup4", specifier = ">=4.12" },
@@ -1095,7 +1095,7 @@ main = [
 ]
 pre-commit = [{ name = "pre-commit", specifier = ">=4.0" }]
 test = [
-    { name = "pytest", specifier = ">=8.3" },
+    { name = "pytest", specifier = ">=9" },
     { name = "pytest-cov", specifier = ">=6.1" },
 ]
 type-check = [
