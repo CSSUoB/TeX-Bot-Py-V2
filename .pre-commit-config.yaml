@@ -16,7 +16,7 @@ repos:
           args: [--strict]
 
     - repo: https://github.com/renovatebot/pre-commit-hooks
-      rev: 42.7.0
+      rev: 42.13.3
       hooks:
         - id: renovate-config-validator
           args: [--strict]
@@ -26,6 +26,12 @@ repos:
       rev: 0.35.0
       hooks:
         - id: check-github-workflows
+
+        - id: check-jsonschema
+          args: [--schemafile, 'https://json.schemastore.org/yamllint.json']  # yamllint disable-line rule:quoted-strings
+          files: ^\.yamllint\.yaml$  # yamllint disable-line rule:key-ordering
+          name: Check yamllint configuration file
+          types: [yaml]
 
     - repo: https://github.com/jorisroovers/gitlint
       rev: v0.19.1
@@ -69,17 +75,14 @@ repos:
         - id: pretty-format-ini
           args: [--autofix]
 
-    - repo: https://github.com/ComPWA/taplo-pre-commit
-      rev: v0.9.3
+    - repo: https://github.com/tombi-toml/tombi-pre-commit
+      rev: v0.6.50
       hooks:
-        - id: taplo-format
-
-        - id: taplo-lint
-          args: [--default-schema-catalogs]
-          stages: [manual]
+        - id: tombi-format
+        - id: tombi-lint
 
     - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.14.4
+      rev: v0.14.5
       hooks:
         - id: ruff-check
           args: [--fix]
@@ -87,7 +90,7 @@ repos:
         - id: ruff-format
 
     - repo: https://github.com/astral-sh/uv-pre-commit
-      rev: 0.9.9
+      rev: 0.9.10
       hooks:
         - id: uv-lock
           always_run: true
