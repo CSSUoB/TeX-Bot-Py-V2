@@ -43,7 +43,8 @@ jobs:
                 enable-cache: true
 
             - name: Run Flake8
-              run: uvx --python 3.14 --with flake8-carrot -- flake8
+              # TODO: Run from locked dependencies, once project's Python version has been updated to 3.14
+              run: uvx --python 3.14 --with flake8-carrot>=0.1.4 -- flake8
 
     mypy:  # yamllint disable-line rule:key-ordering
         env:
