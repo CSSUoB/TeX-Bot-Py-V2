@@ -76,10 +76,6 @@ warn_unused_configs = true
 warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["discord_logging.handler", "mplcyberpunk", "parsedatetime", "validators"]
-
-[[tool.mypy.overrides]]
 ignore_errors = true
 module = ["db.core.migrations.*"]
 
@@ -190,6 +186,7 @@ classmethod-decorators = ["typed_classproperties.classproperty"]
 extend-ignore-names = ["BROKEN_*_MESSAGE", "INVALID_*_MESSAGE", "NO_*_MESSAGE"]
 
 [tool.ruff.lint.per-file-ignores]
+"stubs/**.pyi" = ["N"]
 "stubs/discord/**/*.pyi" = ["F403"]
 "stubs/discord/commands/__init__.pyi" = ["F405"]
 "tests/**/test_*.py" = ["S101"]
