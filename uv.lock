@@ -1083,6 +1083,8 @@ main = [
 ]
 pre-commit = [
     { name = "pre-commit" },
+    { name = "pymarkdownlnt" },
+    { name = "ruff" },
 ]
 test = [
     { name = "gitpython" },
@@ -1135,7 +1137,11 @@ main = [
     { name = "typed-classproperties", specifier = ">=1.2" },
     { name = "validators", specifier = ">=0.34" },
 ]
-pre-commit = [{ name = "pre-commit", specifier = ">=4.0" }]
+pre-commit = [
+    { name = "pre-commit", specifier = ">=4.0" },
+    { name = "pymarkdownlnt", specifier = ">=0.9.28" },
+    { name = "ruff", specifier = ">=0.12" },
+]
 test = [
     { name = "gitpython", specifier = ">=3.1.44" },
     { name = "pytest", specifier = ">=8.3" },
