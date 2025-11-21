@@ -27,12 +27,13 @@ main = [
     "typed_classproperties>=1.2",
     "validators>=0.34"
 ]
-pre-commit = ["pre-commit>=4.0"]
+pre-commit = ["pre-commit>=4.0", { include-group = "lint-format" }]
 test = ["pytest>=9", "pytest-cov>=6.1"]
 type-check = [
     "django-stubs[compatible-mypy]>=5.1",
     "mypy>=1.18.2",
-    "types-beautifulsoup4>=4.12"
+    "types-beautifulsoup4>=4.12",
+    { include-group = "test" }
 ]
 
 [tool.coverage.report]
