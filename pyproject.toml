@@ -28,8 +28,8 @@ main = [
     "validators>=0.34"
 ]
 pre-commit = ["pre-commit>=4.0"]
-test = ["pytest-cov>=6.1.1", { include-group = "test-core" }]
-test-core = ["gitpython>=3.1.44", "pytest>=8.3"]
+test = ["pytest-cov>=7", { include-group = "test-core" }]
+test-core = ["gitpython>=3.1.45", "pytest>=9"]
 type-check = [
     "django-stubs[compatible-mypy]>=5.1",
     "mypy>=1.18.2",
