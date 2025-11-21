@@ -1049,6 +1049,8 @@ main = [
 ]
 pre-commit = [
     { name = "pre-commit" },
+    { name = "pymarkdownlnt" },
+    { name = "ruff" },
 ]
 test = [
     { name = "pytest" },
@@ -1057,6 +1059,8 @@ test = [
 type-check = [
     { name = "django-stubs", extra = ["compatible-mypy"] },
     { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
     { name = "types-beautifulsoup4" },
 ]
 
@@ -1093,7 +1097,11 @@ main = [
     { name = "typed-classproperties", specifier = ">=1.2" },
     { name = "validators", specifier = ">=0.34" },
 ]
-pre-commit = [{ name = "pre-commit", specifier = ">=4.0" }]
+pre-commit = [
+    { name = "pre-commit", specifier = ">=4.0" },
+    { name = "pymarkdownlnt", specifier = ">=0.9.28" },
+    { name = "ruff", specifier = ">=0.12" },
+]
 test = [
     { name = "pytest", specifier = ">=9" },
     { name = "pytest-cov", specifier = ">=6.1" },
@@ -1101,6 +1109,8 @@ test = [
 type-check = [
     { name = "django-stubs", extras = ["compatible-mypy"], specifier = ">=5.1" },
     { name = "mypy", specifier = ">=1.18.2" },
+    { name = "pytest", specifier = ">=9" },
+    { name = "pytest-cov", specifier = ">=6.1" },
     { name = "types-beautifulsoup4", specifier = ">=4.12" },
 ]
 
