@@ -27,7 +27,7 @@ main = [
     "typed_classproperties>=1.2",
     "validators>=0.34"
 ]
-pre-commit = ["pre-commit>=4.0"]
+pre-commit = ["pre-commit>=4.0", { include-group = "lint-format" }]
 test = ["pytest-cov>=7", { include-group = "test-core" }]
 test-core = ["gitpython>=3.1.45", "pytest>=9"]
 type-check = [
