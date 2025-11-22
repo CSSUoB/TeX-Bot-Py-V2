@@ -808,6 +808,13 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             ],
         )
 
+        if len(all_actions_message) >= 2000:
+            chunks: list[str] = all_actions_message.split('\n\n')
+            await ctx.respond("Action list exceeds maximum message length, sending in chunks:")
+            for chunk in chunks:
+                await ctx.respond(content=chunk)
+            return
+
         await ctx.respond(content=all_actions_message)
 
     @committee_actions.command(
