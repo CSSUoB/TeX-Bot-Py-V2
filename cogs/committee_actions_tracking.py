@@ -341,6 +341,19 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         }
 
     @staticmethod
+    async def autocomplete_get_users_with_actions(
+        ctx: "TeXBotAutocompleteContext",  # noqa: ARG004
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+        """Autocomplete callable that provides a set of users who have actions assigned."""
+        return {
+            discord.OptionChoice(
+                name=f"{action.discord_member}",
+                value=str(action.discord_member.discord_id),
+            )
+            async for action in AssignedCommitteeAction.objects.select_related().all()
+        }
+
+    @staticmethod
     async def autocomplete_get_user_action_ids(
         ctx: "TeXBotAutocompleteContext",
     ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
@@ -715,7 +728,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         name="user",
         description="The user to list actions for.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members),
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_users_with_actions),
         required=False,
         default=None,
         parameter_name="action_member_id",
