@@ -74,7 +74,7 @@ no_implicit_reexport = true
 plugins = ["mypy_django_plugin.main"]
 strict_bytes = true
 strict_equality = true
-strict_equality_for_none = true  # tombi: lint.rules.key-not-allowed.disabled = true
+strict_equality_for_none = true
 warn_redundant_casts = true
 warn_return_any = true
 warn_unreachable = true
