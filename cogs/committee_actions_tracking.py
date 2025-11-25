@@ -347,7 +347,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         """Autocomplete callable that provides a set of users who have actions assigned."""
         discord_users_with_actions: set[discord.User] = {
             user
-            for action in AssignedCommitteeAction.objects.select_related()
+            for action in AssignedCommitteeAction.objects.select_related().all()
             if (user := await ctx.bot.get_or_fetch_user(int(action.discord_member.discord_id)))
         }
 
