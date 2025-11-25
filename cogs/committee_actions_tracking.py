@@ -342,15 +342,21 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
     @staticmethod
     async def autocomplete_get_users_with_actions(
-        ctx: "TeXBotAutocompleteContext",  # noqa: ARG004
+        ctx: "TeXBotAutocompleteContext",
     ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """Autocomplete callable that provides a set of users who have actions assigned."""
+        discord_users_with_actions: set[discord.User] = {
+            user
+            for action in AssignedCommitteeAction.objects.select_related()
+            if (user := await ctx.bot.get_or_fetch_user(int(action.discord_member.discord_id)))
+        }
+
         return {
             discord.OptionChoice(
-                name=f"{action.discord_member}",
-                value=str(action.discord_member.discord_id),
+                name=f"{user.name}",
+                value=str(user.id),
             )
-            async for action in AssignedCommitteeAction.objects.select_related().all()
+            for user in discord_users_with_actions
         }
 
     @staticmethod
