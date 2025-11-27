@@ -3,6 +3,7 @@
 import contextlib
 import logging
 import random
+import textwrap
 from enum import Enum
 from typing import TYPE_CHECKING
 
@@ -630,9 +631,13 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         )
 
         if len(actions_message) >= 2000:
-            number_of_chunks: int = len(actions_message) // 2000 + 1
-            for index in range(number_of_chunks):
-                await ctx.respond(content=actions_message[index * 2000 : (index + 1) * 2000])
+            for chunk in textwrap.wrap(
+                text=actions_message,
+                width=2000,
+                break_long_words=False,
+                fix_sentence_endings=True,
+            ):
+                await ctx.respond(content=chunk)
             return
 
         await ctx.respond(content=actions_message)
@@ -818,6 +823,14 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             chunks: list[str] = all_actions_message.split("\n\n")
             await ctx.respond("Action list exceeds maximum message length, sending in chunks:")
             for chunk in chunks:
+                if len(chunk) >= 2000:
+                    for sub_chunk in textwrap.wrap(
+                        text=chunk,
+                        width=2000,
+                        break_long_words=False,
+                        fix_sentence_endings=True,
+                    ):
+                        await ctx.respond(content=sub_chunk)
                 await ctx.respond(content=chunk)
             return
 
