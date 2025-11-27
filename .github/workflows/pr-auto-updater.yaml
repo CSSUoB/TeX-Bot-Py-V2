@@ -15,12 +15,12 @@ jobs:
               name: Generate Access Token
               uses: actions/create-github-app-token@v2
               with:
-                app-id: ${{ vars.PR_AUTO_UPDATE_CLIENT_ID }}
-                private-key: ${{ secrets.PR_AUTO_UPDATE_PRIVATE_KEY }}
+                app-id: ${{vars.PR_AUTO_UPDATE_CLIENT_ID}}
+                private-key: ${{secrets.PR_AUTO_UPDATE_PRIVATE_KEY}}
 
             - uses: CSSUoB/pr-auto-updater@v2.3.1
               env:  # yamllint disable-line rule:key-ordering
-                GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+                GITHUB_TOKEN: ${{steps.generate-token.outputs.token}}
                 MERGE_CONFLICT_ACTION: label
                 MERGE_CONFLICT_LABEL: conflict
                 PR_FILTER: labelled
