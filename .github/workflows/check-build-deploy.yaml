@@ -74,8 +74,13 @@ jobs:
 
             - name: Install mypy From Locked Dependencies
               run: |
-                if [ "${{matrix.component}}" == "tests" ]; then
+                if [ "${{matrix.component}}" == "package" ]; then
+                  ARGS=""
+                elif [ "${{matrix.component}}" == "tests" ]; then
                   ARGS="--group test"
+                else
+                  echo "Error: Unknown matrix.component value: '${{matrix.component}}'" >&2
+                  exit 1
                 fi
 
                 uv sync --no-group dev --group type-check $ARGS
@@ -302,7 +307,7 @@ jobs:
 
             - id: docker-extract-metadata
               name: Extract metadata (tags, labels) for Docker
-              uses: docker/metadata-action@v5.9.0
+              uses: docker/metadata-action@v5.10.0
               with:
                 images: ${{env.REGISTRY}}/${{env.IMAGE_NAME}}
                 tags: |-
