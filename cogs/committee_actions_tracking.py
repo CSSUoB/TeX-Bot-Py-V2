@@ -629,6 +629,12 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             }"
         )
 
+        if len(actions_message) >= 2000:
+            number_of_chunks: int = len(actions_message) // 2000 + 1
+            for index in range(number_of_chunks):
+                await ctx.respond(content=actions_message[index * 2000 : (index + 1) * 2000])
+            return
+
         await ctx.respond(content=actions_message)
 
     @committee_actions.command(
