@@ -631,9 +631,12 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         )
 
         if len(actions_message) >= 2000:
+            await ctx.respond(
+                content="Actions list exceeds maximum message length, sending in chunks"
+            )
             for chunk in textwrap.wrap(
                 text=actions_message,
-                width=2000,
+                width=1950,
                 break_long_words=False,
                 fix_sentence_endings=True,
             ):
@@ -821,17 +824,16 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         if len(all_actions_message) >= 2000:
             chunks: list[str] = all_actions_message.split("\n\n")
-            await ctx.respond("Action list exceeds maximum message length, sending in chunks:")
+            chunk: str
             for chunk in chunks:
-                if len(chunk) >= 2000:
-                    for sub_chunk in textwrap.wrap(
-                        text=chunk,
-                        width=2000,
-                        break_long_words=False,
-                        fix_sentence_endings=True,
-                    ):
-                        await ctx.respond(content=sub_chunk)
-                await ctx.respond(content=chunk)
+                sub_chunk: str
+                for sub_chunk in textwrap.wrap(
+                    text=chunk,
+                    width=1950,
+                    break_long_words=False,
+                    fix_sentence_endings=True,
+                ):
+                    await ctx.respond(content=sub_chunk)
             return
 
         await ctx.respond(content=all_actions_message)
