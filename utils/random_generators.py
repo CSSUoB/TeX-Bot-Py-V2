@@ -3,7 +3,6 @@
 import abc
 import random
 import string
-from collections.abc import Iterable
 from typing import TYPE_CHECKING, override
 
 if TYPE_CHECKING:
