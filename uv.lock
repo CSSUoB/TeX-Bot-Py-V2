@@ -1099,7 +1099,6 @@ type-check = [
     { name = "django-stubs", extra = ["compatible-mypy"] },
     { name = "gitpython" },
     { name = "mypy" },
-    { name = "pytest" },
     { name = "types-beautifulsoup4" },
 ]
 
@@ -1155,7 +1154,6 @@ type-check = [
     { name = "django-stubs", extras = ["compatible-mypy"], specifier = ">=5.1" },
     { name = "gitpython", specifier = ">=3.1.45" },
     { name = "mypy", specifier = ">=1.18.2" },
-    { name = "pytest", specifier = ">=9" },
     { name = "types-beautifulsoup4", specifier = ">=4.12" },
 ]
 

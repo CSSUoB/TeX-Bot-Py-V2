@@ -54,6 +54,11 @@ jobs:
         needs: [uv-check]
         runs-on: ubuntu-latest
 
+        strategy:
+            fail-fast: false
+            matrix:
+                component: [package, tests]
+
         steps:
             - uses: actions/checkout@v6
 
@@ -68,7 +73,17 @@ jobs:
                 enable-cache: true
 
             - name: Install mypy From Locked Dependencies
-              run: uv sync --no-group dev --group type-check
+              run: |
+                if [ "${{matrix.component}}" == "package" ]; then
+                  ARGS=""
+                elif [ "${{matrix.component}}" == "tests" ]; then
+                  ARGS="--group test"
+                else
+                  echo "Error: Unknown matrix.component value: '${{matrix.component}}'" >&2
+                  exit 1
+                fi
+
+                uv sync --no-group dev --group type-check $ARGS
 
             - id: store-hashed-python-version
               name: Store Hashed Python Version
@@ -77,11 +92,21 @@ jobs:
 
             - uses: actions/cache@v4
               with:
-                key: mypy|${{steps.store-hashed-python-version.outputs.hashed_python_version}}
+                key: mypy|${{steps.store-hashed-python-version.outputs.hashed_python_version}}|${{matrix.component}}
                 path: ./.mypy_cache
 
-            - name: Run mypy
-              run: uv run -- mypy .  # TODO: Add GitHub workflows output format
+            - name: Run mypy  # TODO: Add GitHub workflows output format
+              run: |
+                if [ "${{matrix.component}}" == "package" ]; then
+                  ARGS=". --exclude tests/"
+                elif [ "${{matrix.component}}" == "tests" ]; then
+                  ARGS="tests/"
+                else
+                  echo "Error: Unknown matrix.component value: '${{matrix.component}}'" >&2
+                  exit 1
+                fi
+
+                uv run -- mypy $ARGS
 
     pre-commit:  # yamllint disable-line rule:key-ordering
         env:
@@ -128,7 +153,7 @@ jobs:
 
             - name: Save pre-commit Checks Which Require Skipping
               run: |
-                if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_name }}" == "${{ github.event.repository.default_branch }}" ]]; then
+                if [[ "${{github.event_name}}" == "push" && "${{github.ref_name}}" == "${{github.event.repository.default_branch}}" ]]; then
                     echo "SKIP=check-github-workflows,ruff-check,uv-lock,gitlint-ci" >> $GITHUB_ENV
                 else
                     echo "SKIP=check-github-workflows,ruff,uv-lock" >> $GITHUB_ENV
@@ -205,13 +230,13 @@ jobs:
             - name: Run pytest
               run: uv run pytest --cov --cov-branch --cov-report=xml --junitxml=junit.xml
 
-            - if: ${{ !cancelled() }}
+            - if: ${{!cancelled()}}
               name: Upload test results to Codecov
               uses: codecov/test-results-action@v1
               with:
                 use_oidc: true
 
-            - if: ${{ !cancelled() }}
+            - if: ${{!cancelled()}}
               name: Upload coverage report to Codecov
               uses: codecov/codecov-action@v5
               with:
@@ -318,6 +343,6 @@ jobs:
         steps:
             - name: Create GitHub Release
               env:  # yamllint disable-line rule:key-ordering
-                GITHUB_TOKEN: ${{ github.token }}
-              run: gh release create '${{ github.ref_name }}' --repo '${{github.repository}}' --verify-tag
+                GITHUB_TOKEN: ${{github.token}}
+              run: gh release create '${{github.ref_name}}' --repo '${{github.repository}}' --verify-tag
                 --generate-notes
