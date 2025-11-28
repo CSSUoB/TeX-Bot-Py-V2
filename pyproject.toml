@@ -32,8 +32,7 @@ test = ["pytest>=9", "pytest-cov>=6.1"]
 type-check = [
     "django-stubs[compatible-mypy]>=5.1",
     "mypy>=1.18.2",
-    "types-beautifulsoup4>=4.12",
-    { include-group = "test" }
+    "types-beautifulsoup4>=4.12"
 ]
 
 [tool.coverage.report]
