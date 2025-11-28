@@ -17,10 +17,7 @@ from exceptions import (
     InvalidActionDescriptionError,
     InvalidActionTargetError,
 )
-from utils import (
-    CommandChecks,
-    TeXBotBaseCog,
-)
+from utils import CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -28,16 +25,14 @@ if TYPE_CHECKING:
     from logging import Logger
     from typing import Final
 
-    from utils import (
-        TeXBotApplicationContext,
-        TeXBotAutocompleteContext,
-    )
+    from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 __all__: "Sequence[str]" = (
     "CommitteeActionsTrackingBaseCog",
-    "CommitteeActionsTrackingContextCommandsCog",
+    "CommitteeActionsTrackingContextCommandCog",
     "CommitteeActionsTrackingSlashCommandsCog",
 )
+
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
@@ -78,8 +73,10 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
             raise InvalidActionTargetError(message=INVALID_ACTION_TARGET_MESSAGE)
 
         try:
-            action: AssignedCommitteeAction = await AssignedCommitteeAction.objects.acreate(  # type: ignore[misc]
-                discord_id=int(action_user.id),
+            action: AssignedCommitteeAction = await AssignedCommitteeAction.objects.acreate(
+                discord_member=(
+                    await DiscordMember.objects.aget_or_create(discord_id=action_user.id)
+                )[0],
                 description=description,
             )
         except ValidationError as create_action_error:
@@ -92,23 +89,22 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
             )
             if not error_is_already_exits:
                 await self.command_send_error(ctx, message="An unrecoverable error occured.")
-                logger.critical(
-                    "Error upon creating Action object: %s",
-                    create_action_error,
-                )
+                logger.critical("Error upon creating Action object: %s", create_action_error)
                 await self.bot.close()
 
             DUPLICATE_ACTION_MESSAGE: Final[str] = (
                 f"User: {action_user} already has an action with description: {description}!"
             )
             logger.debug(
-                "Action creation for user: %s, failed because an action "
-                "with description: %s, already exists.",
+                (
+                    "Action creation for user: %s, failed because an action "
+                    "with description: %s, already exists."
+                ),
                 action_user,
                 description,
             )
             raise InvalidActionDescriptionError(
-                message=DUPLICATE_ACTION_MESSAGE,
+                message=DUPLICATE_ACTION_MESSAGE
             ) from create_action_error
         return action
 
@@ -161,35 +157,33 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
         try:
             interaction_user: discord.Member = await ctx.bot.get_member_from_str_id(
-                str(ctx.interaction.user.id),
+                str(ctx.interaction.user.id)
             )
         except ValueError:
             logger.debug("User action ID autocomplete could not acquire an interaction user!")
             return set()
 
         admin_role: discord.Role | None = discord.utils.get(
-            ctx.bot.main_guild.roles,
-            name="Admin",
+            ctx.bot.main_guild.roles, name="Admin"
         )
 
         if admin_role and admin_role in interaction_user.roles:
             return {
                 discord.OptionChoice(
-                    name=f"{action.description} ({action.status})",
-                    value=str(action.id),
+                    name=f"{action.description} ({action.status})", value=str(action.id)
                 )
                 async for action in AssignedCommitteeAction.objects.select_related().all()
             }
 
         return {
             discord.OptionChoice(name=action.description, value=str(action.id))
-            async for action in await AssignedCommitteeAction.objects.afilter(
+            async for action in AssignedCommitteeAction.objects.filter(
                 (
                     Q(status=Status.IN_PROGRESS.value)
                     | Q(status=Status.BLOCKED.value)
                     | Q(status=Status.NOT_STARTED.value)
                 ),
-                discord_id=int(interaction_user.id),
+                discord_member__discord_id=interaction_user.id,
             )
         }
 
@@ -209,21 +203,20 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         return {discord.OptionChoice(name=value, value=code) for code, value in status_options}
 
     @committee_actions.command(
-        name="create",
-        description="Adds a new action with the specified description.",
+        name="create", description="Adds a new action with the specified description."
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="description",
         description="The description of the action to assign.",
         input_type=str,
         required=True,
         parameter_name="action_description",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="user",
         description="The user to assign the action to.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members),
         required=False,
         default=None,
         parameter_name="action_member_id",
@@ -234,7 +227,6 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         self,
         ctx: "TeXBotApplicationContext",
         action_description: str,
-        *,
         action_member_id: str | None,
     ) -> None:
         """
@@ -248,9 +240,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         member_id: str = action_member_id if action_member_id else str(ctx.user.id)
 
         try:
-            action_user: discord.Member = await self.bot.get_member_from_str_id(
-                member_id,
-            )
+            action_user: discord.Member = await self.bot.get_member_from_str_id(member_id)
         except ValueError:
             await ctx.respond(
                 content=f":warning: The user ID provided: {member_id}, was not valid.",
@@ -266,7 +256,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         try:
             await self._create_action(ctx, action_user, action_description)
             await ctx.respond(
-                content=f"Action `{action_description}` created for: {action_user.mention}",
+                content=f"Action `{action_description}` created for: {action_user.mention}"
             )
         except (
             InvalidActionDescriptionError,
@@ -275,22 +265,21 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             await ctx.respond(content=creation_failed_error.message)
 
     @committee_actions.command(
-        name="update-status",
-        description="Update the status of the provided action.",
+        name="update-status", description="Update the status of the provided action."
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="action",
         description="The action to mark as completed.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids),
         required=True,
         parameter_name="action_id",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="status",
         description="The desired status of the action.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_action_status),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_action_status),
         required=True,
         parameter_name="status",
     )
@@ -319,8 +308,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
             await self.command_send_error(
-                ctx,
-                message="Action provided was either not unique or could not be found.",
+                ctx, message="Action provided was either not unique or could not be found."
             )
             return
 
@@ -328,15 +316,14 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             new_status: AssignedCommitteeAction.Status = AssignedCommitteeAction.Status(status)
         except (ValueError, KeyError) as invalid_status:
             await self.command_send_error(
-                ctx,
-                message=f"Status ({status}) provided was not valid or could not be found.",
+                ctx, message=f"Status ({status}) provided was not valid or could not be found."
             )
             logger.debug(invalid_status)
             return
 
         if not new_status:
             await self.command_send_error(
-                ctx=ctx,
+                ctx,
                 message=f"Status ({status}) provided was not valid or could not be found.",
             )
             logger.debug("An invalid status was provided but did not raise an exception.")
@@ -350,20 +337,19 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         )
 
     @committee_actions.command(
-        name="update-description",
-        description="Update the description of the provided action.",
+        name="update-description", description="Update the description of the provided action."
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="action",
         description="The action to mark as completed.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids),
         required=True,
         parameter_name="action_id",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="description",
-        description="The description to be used for the action",
+        description="The description to be used for the action.",
         input_type=str,
         required=True,
         parameter_name="action_description",
@@ -379,7 +365,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         """
         if len(new_description) >= 200:
             await ctx.respond(
-                content=":warning: The provided description was too long! No action taken.",
+                content=":warning: The provided description was too long! No action taken."
             )
             return
 
@@ -387,7 +373,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             action_id_int: int = int(action_id)
         except ValueError:
             await self.command_send_error(
-                ctx=ctx,
+                ctx,
                 message="Action ID entered was not valid! Please use the autocomplete.",
                 logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
             )
@@ -399,8 +385,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
             await self.command_send_error(
-                ctx=ctx,
-                message="Action provided was either not unique or could not be found.",
+                ctx, message="Action provided was either not unique or could not be found."
             )
             return
 
@@ -409,16 +394,16 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         await action.aupdate(description=new_description)
 
         await ctx.respond(
-            content=f"Action `{old_description}` updated to `{action.description}`!",
+            content=f"Action `{old_description}` updated to `{action.description}`!"
         )
 
     @committee_actions.command(
         name="action-random-user",
         description="Creates an action object with the specified description and random user.",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="description",
-        description="The description to be used for the action",
+        description="The description to be used for the action.",
         input_type=str,
         required=True,
         parameter_name="action_description",
@@ -441,32 +426,18 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             await ctx.respond(
                 content=(
                     "No committee members were found to randomly select from! Command aborted."
-                ),
+                )
             )
             return
 
-        index: int = random.randint(0, len(committee_members) - 1)  # noqa: S311
-
-        try:
-            action_user: discord.Member = committee_members[index]
-        except IndexError:
-            logger.debug("Index: %s was out of range! Printing list...", index)
-            logger.debug(committee_members)
-            await self.command_send_error(
-                ctx=ctx,
-                message=f"Index {index} out of range for {len(committee_members)} "
-                "committee members... check the logs!",
-            )
-            return
+        action_user: discord.Member = random.choice(committee_members)  # noqa: S311
 
         try:
             await self._create_action(
-                ctx=ctx,
-                action_user=action_user,
-                description=action_description,
+                ctx, action_user=action_user, description=action_description
             )
             await ctx.respond(
-                content=f"Action `{action_description}` created for: {action_user.mention}",
+                content=f"Action `{action_description}` created for: {action_user.mention}"
             )
         except (
             InvalidActionTargetError,
@@ -477,11 +448,11 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
     @committee_actions.command(
         name="action-all-committee",
-        description="Creates an action with the description for every committee member",
+        description="Creates an action with the description for every committee member.",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="description",
-        description="The description to be used for the actions",
+        description="The description to be used for the actions.",
         input_type=str,
         required=True,
         parameter_name="action_description",
@@ -510,9 +481,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         for committee_member in committee_members:
             try:
                 _: AssignedCommitteeAction | None = await self._create_action(
-                    ctx=ctx,
-                    action_user=committee_member,
-                    description=action_description,
+                    ctx, action_user=committee_member, description=action_description
                 )
                 success_members.append(committee_member)
             except (
@@ -544,30 +513,29 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         await ctx.respond(content=response_message)
 
     @committee_actions.command(
-        name="list",
-        description="Lists all actions for a specified user",
+        name="list", description="Lists all actions for a specified user."
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="user",
         description="The user to list actions for.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members),
         required=False,
         default=None,
         parameter_name="action_member_id",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="ping",
         description="Triggers whether the message pings users or not.",
         input_type=bool,
         default=False,
         required=False,
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="status",
         description="The desired status of the action.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_action_status),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_action_status),
         required=False,
         default=None,
         parameter_name="status",
@@ -575,10 +543,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     async def list_user_actions(  # NOTE: Committee role check is not present because non-committee can have actions, and need to be able to list their own actions.
         self,
         ctx: "TeXBotApplicationContext",
-        *,
-        action_member_id: None | str,
-        ping: bool,
-        status: None | str,
+        action_member_id: str | None,
+        ping: bool,  # noqa: FBT001
+        status: str | None,
     ) -> None:
         """
         Definition and callback of the "/list" command.
@@ -605,8 +572,10 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 ephemeral=True,
             )
             logger.debug(
-                "User: %s, tried to list actions for user: %s, "
-                "but did not have the committee role.",
+                (
+                    "User: %s, tried to list actions for user: %s, "
+                    "but did not have the committee role."
+                ),
                 ctx.user,
                 action_member,
             )
@@ -617,32 +586,34 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         if not status:
             user_actions = [
                 action
-                async for action in await AssignedCommitteeAction.objects.afilter(
+                async for action in AssignedCommitteeAction.objects.filter(
                     (
                         Q(status=Status.IN_PROGRESS.value)
                         | Q(status=Status.BLOCKED.value)
                         | Q(status=Status.NOT_STARTED.value)
                     ),
-                    discord_id=int(action_member.id),
+                    discord_member__discord_id=action_member.id,
                 )
             ]
         else:
             user_actions = [
                 action
-                async for action in await AssignedCommitteeAction.objects.afilter(
+                async for action in AssignedCommitteeAction.objects.filter(
                     status=status,
-                    discord_id=int(action_member.id),
+                    discord_member__discord_id=action_member.id,
                 )
             ]
 
         if not user_actions:
             await ctx.respond(
                 content=(
-                    f"User: {action_member.mention if ping else action_member} has no "
-                    "in progress actions."
+                    (
+                        f"User: {action_member.mention if ping else action_member} has no "
+                        "in progress actions."
+                    )
                     if not status
                     else "actions matching given filter."
-                ),
+                )
             )
             return
 
@@ -661,45 +632,74 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         await ctx.respond(content=actions_message)
 
     @committee_actions.command(
-        name="reassign",
-        description="Reassign the specified action to another user.",
+        name="reassign", description="Reassign the specified action to another user."
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="action",
         description="The action to reassign.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids),
         required=True,
         parameter_name="action_id",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="user",
-        description="The user to list actions for.",
+        description="The user to reassign the action to.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members),  # type: ignore[arg-type]
-        required=True,
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members),
+        required=False,
         parameter_name="member_id",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def reassign_action(
-        self, ctx: "TeXBotApplicationContext", action_id: str, member_id: str
+        self, ctx: "TeXBotApplicationContext", action_id: str, member_id: str | None
     ) -> None:
         """Reassign the specified action to the specified user."""
         try:
             action_id_int: int = int(action_id)
         except ValueError:
             await self.command_send_error(
-                ctx=ctx,
+                ctx,
                 message="Action ID entered was not valid! Please use the autocomplete.",
                 logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
             )
             return
 
+        if not member_id:
+            logger.debug(
+                "Member ID was not provided, selecting a random committee member "
+                "to assign the action to."
+            )
+            try:
+                committee_members: list[discord.Member] = (
+                    await self.bot.committee_role
+                ).members
+            except CommitteeRoleDoesNotExistError:
+                await self.command_send_error(
+                    ctx,
+                    message="Committee role does not exist! No action has been taken.",
+                )
+                return
+
+            if not committee_members:
+                logger.debug(
+                    "Committee role was found but no members held the role, "
+                    "while attempting to randomly re-assign action."
+                )
+                await ctx.respond(
+                    content=(
+                        "No committee members were found to randomly select from! "
+                        "No action has been taken."
+                    )
+                )
+                return
+
+            member_id = str(random.choice(committee_members).id)  # noqa: S311
+
         new_user_to_action: discord.Member = await self.bot.get_member_from_str_id(
             member_id,
         )
-        new_user_to_action_hash: str = DiscordMember.hash_discord_id(new_user_to_action.id)
 
         try:
             action_to_reassign: AssignedCommitteeAction = (
@@ -707,23 +707,22 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
         except (MultipleObjectsReturned, ObjectDoesNotExist):
             await self.command_send_error(
-                ctx,
-                message="Action provided was either not unique or could not be found.",
+                ctx, message="Action provided was either not unique or could not be found."
             )
             return
 
-        if str(action_to_reassign.discord_member) == new_user_to_action_hash:
+        if str(action_to_reassign.discord_member) == str(new_user_to_action.id):
             await ctx.respond(
                 content=(
                     f"HEY! Action `{action_to_reassign.description}` is already assigned "
                     f"to user: {new_user_to_action.mention}\nNo action has been taken."
-                ),
+                )
             )
             return
 
         try:
             new_action: AssignedCommitteeAction | None = await self._create_action(
-                ctx=ctx,
+                ctx,
                 action_user=new_user_to_action,
                 description=action_to_reassign.description,
             )
@@ -733,7 +732,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                     content=(
                         f"Action `{new_action.description}` successfully "
                         f"reassigned to {new_user_to_action.mention}!"
-                    ),
+                    )
                 )
         except (
             InvalidActionDescriptionError,
@@ -742,22 +741,19 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             await ctx.respond(content=invalid_description_error.message)
             return
 
-    @committee_actions.command(
-        name="list-all",
-        description="List all current actions.",
-    )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @committee_actions.command(name="list-all", description="List all current actions.")
+    @discord.option(
         name="ping",
         description="Triggers whether the message pings users or not.",
         input_type=bool,
         default=False,
         required=False,
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="status-filter",
         description="The filter to apply to the status of actions.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_action_status),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_action_status),
         required=False,
         default=None,
         parameter_name="status",
@@ -765,7 +761,10 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def list_all_actions(
-        self, ctx: "TeXBotApplicationContext", *, ping: bool, status: str
+        self,
+        ctx: "TeXBotApplicationContext",
+        ping: bool,  # noqa: FBT001
+        status: str | None,
     ) -> None:
         """List all actions."""  # NOTE: this doesn't actually list *all* actions as it is possible for non-committee to be actioned.
         committee_role: discord.Role = await self.bot.committee_role
@@ -777,11 +776,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         desired_status: list[str] = (
             [status]
             if status
-            else [
-                Status.NOT_STARTED.value,
-                Status.IN_PROGRESS.value,
-                Status.BLOCKED.value,
-            ]
+            else [Status.NOT_STARTED.value, Status.IN_PROGRESS.value, Status.BLOCKED.value]
         )
 
         committee_members: list[discord.Member] = committee_role.members
@@ -790,7 +785,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             committee: [
                 action
                 for action in actions
-                if str(action.discord_member) == DiscordMember.hash_discord_id(committee.id)
+                if str(action.discord_member) == str(committee.id)
                 and action.status in desired_status
             ]
             for committee in committee_members
@@ -816,14 +811,13 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         await ctx.respond(content=all_actions_message)
 
     @committee_actions.command(
-        name="delete",
-        description="Deletes the specified action from the database completely.",
+        name="delete", description="Deletes the specified action from the database completely."
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="action",
         description="The action to delete.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_user_action_ids),
         required=True,
         parameter_name="action_id",
     )
@@ -839,7 +833,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             action_id_int: int = int(action_id)
         except ValueError:
             await self.command_send_error(
-                ctx=ctx,
+                ctx,
                 message="Action ID entered was not valid! Please use the autocomplete.",
                 logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
             )
@@ -851,8 +845,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
         except (ObjectDoesNotExist, MultipleObjectsReturned):
             await self.command_send_error(
-                ctx=ctx,
-                message="Action provided was either not unique or could not be found.",
+                ctx, message="Action provided was either not unique or could not be found."
             )
             return
 
@@ -863,16 +856,16 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         await ctx.respond(content=f"Action `{action_description}` successfully deleted.")
 
 
-class CommitteeActionsTrackingContextCommandsCog(CommitteeActionsTrackingBaseCog):
+class CommitteeActionsTrackingContextCommandCog(CommitteeActionsTrackingBaseCog):
     """Cog class to define the actions tracking message context commands."""
 
-    @discord.message_command(  # type: ignore[no-untyped-call, misc]
+    @discord.message_command(
         name="Action Message Author",
         description="Creates a new action for the message author using the message content.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def action_message_author(  # type: ignore[misc]
+    async def action_message_author(
         self, ctx: "TeXBotApplicationContext", message: discord.Message
     ) -> None:
         """
@@ -895,13 +888,13 @@ class CommitteeActionsTrackingContextCommandsCog(CommitteeActionsTrackingBaseCog
 
         try:
             await self._create_action(
-                ctx=ctx,
-                action_user=actioned_message_user,
-                description=actioned_message_text,
+                ctx, action_user=actioned_message_user, description=actioned_message_text
             )
             await ctx.respond(
-                content=f"Action `{actioned_message_text}` created "
-                f"for: {actioned_message_user.mention}",
+                content=(
+                    f"Action `{actioned_message_text}` created "
+                    f"for: {actioned_message_user.mention}"
+                )
             )
         except (
             InvalidActionTargetError,

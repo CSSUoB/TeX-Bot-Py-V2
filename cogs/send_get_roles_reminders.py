@@ -10,7 +10,7 @@ from discord.ext import tasks
 
 import utils
 from config import settings
-from db.core.models import SentGetRolesReminderMember
+from db.core.models import DiscordMember, SentGetRolesReminderMember
 from exceptions import GuestRoleDoesNotExistError
 from utils import TeXBotBaseCog
 from utils.error_capture_decorators import (
@@ -27,6 +27,7 @@ if TYPE_CHECKING:
     from utils import TeXBot
 
 __all__: "Sequence[str]" = ("SendGetRolesRemindersTaskCog",)
+
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
@@ -68,7 +69,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         See README.md for the full list of conditions for when these
         reminders are sent.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
         roles_channel_mention: str = await self.bot.get_mention_string(self.bot.roles_channel)
@@ -104,7 +105,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 "Rate My Meal",
                 "Website",
                 "Student Rep",
-            },
+            }
         )
 
         member: discord.Member
@@ -121,7 +122,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 continue
 
             sent_get_roles_reminder_member_exists: bool = await (
-                await SentGetRolesReminderMember.objects.afilter(discord_id=member.id)
+                SentGetRolesReminderMember.objects.filter(discord_member__discord_id=member.id)
             ).aexists()
             if sent_get_roles_reminder_member_exists:
                 continue
@@ -131,7 +132,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                 guest_role_received_time = await anext(
                     log.created_at
                     async for log in main_guild.audit_logs(
-                        action=AuditLogAction.member_role_update,
+                        action=AuditLogAction.member_role_update
                     )
                     if (
                         log.target == member
@@ -168,7 +169,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                     " but have not yet nabbed yourself any opt-in roles.\n"
                     f"You can head to {roles_channel_mention} "
                     "and click on the icons to get optional roles like pronouns "
-                    "and year group identifiers.",
+                    "and year group identifiers."
                 )
             except discord.Forbidden:
                 logger.info(
@@ -176,7 +177,11 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                     member,
                 )
 
-            await SentGetRolesReminderMember.objects.acreate(discord_id=member.id)  # type: ignore[misc]
+            await SentGetRolesReminderMember.objects.acreate(
+                discord_member=(
+                    await DiscordMember.objects.aget_or_create(discord_id=member.id)
+                )[0]
+            )
 
     @send_get_roles_reminders.before_loop
     async def before_tasks(self) -> None:

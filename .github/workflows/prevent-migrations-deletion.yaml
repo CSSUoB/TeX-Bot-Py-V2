@@ -1,20 +1,19 @@
 name: Prevent Database Migration Files Deletion
 
-on:
+"on":
     pull_request_target:
         branches: [main]
 
 jobs:
     prevent-migrations-deletion:
-        runs-on: ubuntu-latest
-
         permissions:
             pull-requests: read
+        runs-on: ubuntu-latest
 
         steps:
             - name: Prevent migrations files being changed or deleted
-              uses: xalvarez/prevent-file-change-action@v2.0.0
+              uses: xalvarez/prevent-file-change-action@v3.0.0
               with:
-                githubToken: ${{ secrets.GITHUB_TOKEN }}
-                pattern: '.*\/db\/.+\/migrations\/\d{4}\w*\.py$'
                 allowNewFiles: true
+                githubToken: ${{ secrets.GITHUB_TOKEN }}
+                pattern: .*\/db\/.+\/migrations\/\d{4}\w*\.py$

@@ -1,26 +1,37 @@
 default_install_hook_types: [pre-commit, commit-msg]
+default_language_version:
+    python: python3.13
 default_stages: [pre-commit, pre-merge-commit, manual]
 
-default_language_version:
-    python: python3.12
-
 repos:
-    - repo: https://github.com/AleksaC/hadolint-py
-      rev: v2.12.0.3
+    - repo: https://github.com/hadolint/hadolint
+      rev: v2.14.0
       hooks:
-        - id: hadolint
+        - id: hadolint-docker
+
+    - repo: https://github.com/adrienverge/yamllint.git
+      rev: v1.37.1
+      hooks:
+        - id: yamllint
+          args: [--strict]
 
     - repo: https://github.com/renovatebot/pre-commit-hooks
-      rev: 41.17.2
+      rev: 42.19.7
       hooks:
         - id: renovate-config-validator
           args: [--strict]
           stages: [manual]
 
     - repo: https://github.com/python-jsonschema/check-jsonschema
-      rev: 0.33.1
+      rev: 0.35.0
       hooks:
         - id: check-github-workflows
+
+        - id: check-jsonschema
+          args: [--schemafile, 'https://json.schemastore.org/yamllint.json']  # yamllint disable-line rule:quoted-strings
+          files: ^\.yamllint\.yaml$  # yamllint disable-line rule:key-ordering
+          name: Check yamllint configuration file
+          types: [yaml]
 
     - repo: https://github.com/jorisroovers/gitlint
       rev: v0.19.1
@@ -29,12 +40,12 @@ repos:
         - id: gitlint-ci
 
     - repo: https://github.com/gitleaks/gitleaks
-      rev: v8.27.2
+      rev: v8.29.1
       hooks:
         - id: gitleaks
 
     - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v5.0.0
+      rev: v6.0.0
       hooks:
         - id: check-added-large-files
         - id: trailing-whitespace
@@ -56,7 +67,7 @@ repos:
         - id: name-tests-test
           args: [--pytest-test-first]
         - id: pretty-format-json
-          args: [--autofix, --indent, '4']
+          args: [--autofix, --indent, "4"]
 
     - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
       rev: v2.15.0
@@ -64,30 +75,43 @@ repos:
         - id: pretty-format-ini
           args: [--autofix]
 
-    - repo: https://github.com/ComPWA/taplo-pre-commit
-      rev: v0.9.3
+    - repo: https://github.com/tombi-toml/tombi-pre-commit
+      rev: v0.6.54
       hooks:
-        - id: taplo-format
-
-        - id: taplo-lint
-          args: [--default-schema-catalogs]
-          stages: [manual]
-
-    - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.12.1
-      hooks:
-        - id: ruff
-          args: [--fix]
-
-        - id: ruff-format
+        - id: tombi-format
+        - id: tombi-lint
 
     - repo: https://github.com/astral-sh/uv-pre-commit
-      rev: 0.7.18
+      rev: 0.9.11
       hooks:
         - id: uv-lock
           always_run: true
 
-    - repo: https://github.com/google/yamlfmt
-      rev: v0.17.2
+    - repo: local
       hooks:
-        - id: yamlfmt
+        - id: ruff-check
+          args: [--fix]
+          description: Run 'ruff check' for extremely fast Python linting  # yamllint disable-line rule:key-ordering
+          entry: ruff check --force-exclude  # yamllint disable-line rule:key-ordering
+          language: python
+          minimum_pre_commit_version: 2.9.2
+          name: ruff check
+          require_serial: true
+          types_or: [python, pyi]
+
+        - id: ruff-format
+          description: Run 'ruff format' for extremely fast Python formatting  # yamllint disable-line rule:key-ordering
+          entry: ruff format --force-exclude  # yamllint disable-line rule:key-ordering
+          language: python
+          minimum_pre_commit_version: 2.9.2
+          name: ruff format
+          require_serial: true
+          types_or: [python, pyi]
+
+    - repo: https://github.com/google/yamlfmt
+      rev: v0.20.0
+      hooks:
+        - entry: yamlfmt
+          id: yamlfmt
+          pass_filenames: true
+          types: [yaml]

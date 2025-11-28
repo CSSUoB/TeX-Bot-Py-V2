@@ -1,15 +1,22 @@
+[project]  # TODO: Remove [project] table once https://github.com/astral-sh/uv/issues/8582 is completed
+name = "TeX-Bot-Py-V2"
+version = "0.1.0"
+requires-python = "==3.13.*"  # TODO: Make minimum version Python 3.14, once Pycord makes a new release with support for it
+
 [dependency-groups]
 dev = [
     { include-group = "lint-format" },
     { include-group = "pre-commit" },
     { include-group = "test" },
-    { include-group = "type-check" },
+    { include-group = "type-check" }
 ]
-lint-format = ["ccft-pymarkdown>=2.0", "ruff>=0.12"]
+lint-format = ["pymarkdownlnt>=0.9.28", "ruff>=0.12"]
 main = [
     "asyncstdlib>=3.13",
+    "audioop-lts; python_version > '3.12'",
     "beautifulsoup4>=4.12",
     "django>=5.1",
+    "django-stubs-ext>=5.2",
     "emoji>=2.14",
     "matplotlib>=3.10",
     "mplcyberpunk>=0.7",
@@ -17,8 +24,16 @@ main = [
     "py-cord>=2.6",
     "python-dotenv>=1.0",
     "python-logging-discord-handler>=0.1",
-    "typed_classproperties>=1.1.3",
-    "validators>=0.34",
+    "typed_classproperties>=1.2",
+    "validators>=0.34"
+]
+pre-commit = ["pre-commit>=4.0", { include-group = "lint-format" }]
+test = ["pytest>=9", "pytest-cov>=6.1"]
+type-check = [
+    "django-stubs[compatible-mypy]>=5.1",
+    "mypy>=1.18.2",
+    "types-beautifulsoup4>=4.12",
+    { include-group = "test" }
 ]
 pre-commit = ["pre-commit>=4.0"]
 test = ["pytest-cov>=6.1.1", { include-group = "test-core" }]
@@ -30,15 +45,13 @@ type-check = [
     { include-group = "test-core" },
 ]
 
-[project] # TODO: Remove [project] table once https://github.com/astral-sh/uv/issues/8582 is completed
-name = "TeX-Bot-Py-V2"
-requires-python = ">=3.12,<3.13" # TODO: Allow Python 3.13 once py-cord makes a new release with support for it
-version = "0.1.0"
+[tool.coverage.report]
+exclude_also = ["if TYPE_CHECKING:"]
+skip_covered = true
+sort = "cover"
 
-
-[tool.pytest.ini_options]
-filterwarnings = ["ignore:'audioop':DeprecationWarning"]
-
+[tool.django-stubs]
+django_settings_module = "db._settings"
 
 [tool.mypy]
 check_untyped_defs = true
@@ -62,30 +75,45 @@ enable_error_code = [
     "redundant-self",
     "truthy-bool",
     "truthy-iterable",
-    "unused-awaitable",
+    "unused-awaitable"
 ]
 extra_checks = true
+mypy_path = "stubs"
 no_implicit_reexport = true
 plugins = ["mypy_django_plugin.main"]
+strict_bytes = true
 strict_equality = true
+strict_equality_for_none = true
 warn_redundant_casts = true
 warn_return_any = true
 warn_unreachable = true
 warn_unused_configs = true
 warn_unused_ignores = true
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["discord_logging.handler", "mplcyberpunk", "parsedatetime", "validators"]
+warn_incomplete_stub = true
 
 [[tool.mypy.overrides]]
 ignore_errors = true
 module = ["db.core.migrations.*"]
 
+[tool.pymarkdown]
+extensions.front-matter.enabled = true
+mode.strict-config = true
+plugins.code-block-style.style = "fenced"
+plugins.code-fence-style.style = "backtick"
+plugins.heading-style.style = "atx"
+plugins.hr-style.style = "---"
+plugins.line-length.enabled = false
+plugins.no-inline-html.allow_first_image_element = false
+plugins.no-inline-html.allowed_elements = "!--,br"
+plugins.no-trailing-spaces.strict = true
+plugins.ol-prefix.style = "ordered"
+plugins.ul-indent.indent = 4
+plugins.ul-start-left.enabled = true
+plugins.ul-style.style = "asterisk"
 
-[tool.django-stubs]
-django_settings_module = "db._settings"
-
+[tool.pytest]
+filterwarnings = ["ignore:'audioop':DeprecationWarning"]
+strict = true
 
 [tool.ruff]
 extend-exclude = ["db/**/migrations/"]
@@ -126,8 +154,9 @@ allowed-confusables = [
     "ᴜ",
     "ᴠ",
     "ᴡ",
-    "ᴢ",
+    "ᴢ"
 ]
+external = ["CAR", "TXB"]
 ignore = [
     "C90",
     "COM812",
@@ -154,21 +183,15 @@ ignore = [
     "SIM910",
     "TD002",
     "TD003",
-    "W191",
+    "W191"
 ]
 select = ["ALL", "D204", "D213", "D401"]
 task-tags = ["BUG", "DONE", "FIXME", "HACK", "IDEA", "ISSUE", "NOBUG", "NOTE", "REQ", "TODO"]
 
 [tool.ruff.lint.flake8-import-conventions]
-aliases = {}
-banned-aliases = { "regex" = [
-    "re",
-], "numpy" = [
-    "np",
-], "matplotlib" = [
-    "mpl",
-], "matplotlib.pyplot" = [
-    "plt",
+aliases = {  }
+banned-aliases = { "regex" = ["re"], "numpy" = ["np"], "matplotlib" = ["mpl"], "matplotlib.pyplot" = [
+    "plt"
 ] }
 banned-from = ["abc", "re", "regex"]
 
@@ -189,6 +212,12 @@ known-first-party = ["cogs", "config", "db", "exceptions", "main", "tests", "uti
 [tool.ruff.lint.pep8-naming]
 classmethod-decorators = ["typed_classproperties.classproperty"]
 extend-ignore-names = ["BROKEN_*_MESSAGE", "INVALID_*_MESSAGE", "NO_*_MESSAGE"]
+
+[tool.ruff.lint.per-file-ignores]
+"stubs/**.pyi" = ["N"]
+"stubs/discord/**/*.pyi" = ["F403"]
+"stubs/discord/commands/__init__.pyi" = ["F405"]
+"tests/**/test_*.py" = ["S101"]
 
 [tool.ruff.lint.pycodestyle]
 ignore-overlong-task-comments = true

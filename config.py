@@ -6,6 +6,7 @@ These values are used to configure the functionality of the bot at run-time.
 """
 
 import abc
+import datetime
 import functools
 import importlib
 import json
@@ -13,7 +14,6 @@ import logging
 import os
 import re
 from collections.abc import Iterable, Mapping
-from datetime import timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, final
 
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from collections.abc import Set as AbstractSet
     from logging import Logger
-    from typing import IO, Any, ClassVar, Final
+    from typing import IO, Any, ClassVar, Final, LiteralString
 
 __all__: "Sequence[str]" = (
     "DEFAULT_STATISTICS_ROLES",
@@ -43,14 +43,15 @@ __all__: "Sequence[str]" = (
     "settings",
 )
 
+
 PROJECT_ROOT: "Final[Path]" = Path(__file__).parent.resolve()
 
-TRUE_VALUES: "Final[AbstractSet[str]]" = {"true", "1", "t", "y", "yes", "on"}
-FALSE_VALUES: "Final[AbstractSet[str]]" = {"false", "0", "f", "n", "no", "off"}
-VALID_SEND_INTRODUCTION_REMINDERS_VALUES: "Final[AbstractSet[str]]" = (
+TRUE_VALUES: "Final[AbstractSet[LiteralString]]" = {"true", "1", "t", "y", "yes", "on"}
+FALSE_VALUES: "Final[AbstractSet[LiteralString]]" = {"false", "0", "f", "n", "no", "off"}
+VALID_SEND_INTRODUCTION_REMINDERS_VALUES: "Final[AbstractSet[LiteralString]]" = (
     {"once", "interval"} | TRUE_VALUES | FALSE_VALUES
 )
-DEFAULT_STATISTICS_ROLES: "Final[AbstractSet[str]]" = {
+DEFAULT_STATISTICS_ROLES: "Final[AbstractSet[LiteralString]]" = {
     "Committee",
     "Committee-Elect",
     "Student Rep",
@@ -69,7 +70,7 @@ DEFAULT_STATISTICS_ROLES: "Final[AbstractSet[str]]" = {
     "Postdoc",
     "Quiz Victor",
 }
-LOG_LEVEL_CHOICES: "Final[Sequence[str]]" = (
+LOG_LEVEL_CHOICES: "Final[Sequence[LiteralString]]" = (
     "DEBUG",
     "INFO",
     "WARNING",
@@ -78,6 +79,7 @@ LOG_LEVEL_CHOICES: "Final[Sequence[str]]" = (
 )
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+discord_logger: "Final[Logger]" = logging.getLogger("discord")
 
 
 class Settings(abc.ABC):
@@ -114,7 +116,7 @@ class Settings(abc.ABC):
 
         if re.fullmatch(r"\A[A-Z](?:[A-Z_]*[A-Z])?\Z", item):
             INVALID_SETTINGS_KEY_MESSAGE: Final[str] = self.get_invalid_settings_key_message(
-                item,
+                item
             )
             raise AttributeError(INVALID_SETTINGS_KEY_MESSAGE)
 
@@ -134,26 +136,57 @@ class Settings(abc.ABC):
             raise KeyError(key_error_message) from None
 
     @staticmethod
-    def _setup_logging() -> None:
+    def _setup_console_logging() -> None:
         raw_console_log_level: str = os.getenv("CONSOLE_LOG_LEVEL", "INFO").upper().strip()
 
         if raw_console_log_level not in LOG_LEVEL_CHOICES:
-            INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"""LOG_LEVEL must be one of {
-                ",".join(
-                    f"{log_level_choice!r}" for log_level_choice in LOG_LEVEL_CHOICES[:-1]
+            INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"CONSOLE_LOG_LEVEL must be one of {
+                ','.join(
+                    f'{log_level_choice!r}' for log_level_choice in LOG_LEVEL_CHOICES[:-1]
                 )
-            } or {LOG_LEVEL_CHOICES[-1]!r}."""
+            } or {LOG_LEVEL_CHOICES[-1]!r}."
             raise ImproperlyConfiguredError(INVALID_LOG_LEVEL_MESSAGE)
 
         logger.setLevel(getattr(logging, raw_console_log_level))
 
         console_logging_handler: logging.Handler = logging.StreamHandler()
         console_logging_handler.setFormatter(
-            logging.Formatter("{asctime} | {name} | {levelname:^8} - {message}", style="{"),
+            logging.Formatter("{asctime} | {name} | {levelname:^8} - {message}", style="{")
         )
 
         logger.addHandler(console_logging_handler)
         logger.propagate = False
+
+    @staticmethod
+    def _setup_discord_log_level() -> None:
+        raw_discord_log_level: str = os.getenv("DISCORD_LOG_LEVEL", "").upper().strip()
+
+        if not raw_discord_log_level:
+            logger.debug("DISCORD_LOG_LEVEL is not set, skipping Discord logging setup.")
+            return
+
+        if raw_discord_log_level not in LOG_LEVEL_CHOICES:
+            INVALID_LOG_LEVEL_MESSAGE: Final[str] = (
+                "DISCORD_LOG_LEVEL must be one of "
+                f"{
+                    ','.join(
+                        f'{log_level_choice!r}' for log_level_choice in LOG_LEVEL_CHOICES[:-1]
+                    )
+                } or {LOG_LEVEL_CHOICES[-1]!r}"
+            )
+            raise ImproperlyConfiguredError(INVALID_LOG_LEVEL_MESSAGE)
+
+        discord_logger.setLevel(getattr(logging, raw_discord_log_level))
+
+        discord_log_handler: logging.Handler = logging.FileHandler(
+            filename="discord.log", encoding="utf-8", mode="a"
+        )
+        discord_log_handler.setFormatter(
+            logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
+        )
+
+        discord_logger.addHandler(discord_log_handler)
+        discord_logger.propagate = False
 
     @classmethod
     def _setup_discord_bot_token(cls) -> None:
@@ -279,7 +312,7 @@ class Settings(abc.ABC):
             raw_purchase_membership_url = "https://" + raw_purchase_membership_url
             logger.warning(
                 "PURCHASE_MEMBERSHIP_URL was missing a URL protocol. "
-                "Please ensure all URLs are valid HTTPS URLs.",
+                "Please ensure all URLs are valid HTTPS URLs."
             )
 
         if not validators.url(raw_purchase_membership_url):
@@ -308,7 +341,7 @@ class Settings(abc.ABC):
             raw_membership_perks_url = "https://" + raw_membership_perks_url
             logger.warning(
                 "MEMBERSHIP_PERKS_URL was missing a URL protocol. "
-                "Please ensure all URLs are valid HTTPS URLs.",
+                "Please ensure all URLs are valid HTTPS URLs."
             )
 
         if not validators.url(raw_membership_perks_url):
@@ -341,7 +374,7 @@ class Settings(abc.ABC):
             raw_custom_discord_invite_url = "https://" + raw_custom_discord_invite_url
             logger.warning(
                 "CUSTOM_DISCORD_INVITE_URL was missing a URL protocol. "
-                "Please ensure all URLs are valid HTTPS URLs.",
+                "Please ensure all URLs are valid HTTPS URLs."
             )
 
         if not validators.url(raw_custom_discord_invite_url):
@@ -355,8 +388,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_ping_command_easter_egg_probability(cls) -> None:
         raw_ping_command_easter_egg_probability_string: str = os.getenv(
-            "PING_COMMAND_EASTER_EGG_PROBABILITY",
-            default="",
+            "PING_COMMAND_EASTER_EGG_PROBABILITY", default=""
         ).strip()
 
         if not raw_ping_command_easter_egg_probability_string:
@@ -422,7 +454,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_welcome_messages(cls) -> None:
         messages_dict: Mapping[str, object] = cls._get_messages_dict(
-            os.getenv("MESSAGES_FILE_PATH"),
+            os.getenv("MESSAGES_FILE_PATH")
         )
 
         if "welcome_messages" not in messages_dict:
@@ -430,12 +462,11 @@ class Settings(abc.ABC):
 
         WELCOME_MESSAGES_KEY_IS_VALID: Final[bool] = bool(
             isinstance(messages_dict["welcome_messages"], Iterable)
-            and messages_dict["welcome_messages"],
+            and messages_dict["welcome_messages"]
         )
         if not WELCOME_MESSAGES_KEY_IS_VALID:
             raise MessagesJSONFileValueError(
-                dict_key="welcome_messages",
-                invalid_value=messages_dict["welcome_messages"],
+                dict_key="welcome_messages", invalid_value=messages_dict["welcome_messages"]
             )
 
         cls._settings["WELCOME_MESSAGES"] = set(messages_dict["welcome_messages"])  # type: ignore[call-overload]
@@ -443,7 +474,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_roles_messages(cls) -> None:
         messages_dict: Mapping[str, object] = cls._get_messages_dict(
-            os.getenv("MESSAGES_FILE_PATH"),
+            os.getenv("MESSAGES_FILE_PATH")
         )
 
         if "roles_messages" not in messages_dict:
@@ -454,8 +485,7 @@ class Settings(abc.ABC):
         ) and bool(messages_dict["roles_messages"])
         if not ROLES_MESSAGES_KEY_IS_VALID:
             raise MessagesJSONFileValueError(
-                dict_key="roles_messages",
-                invalid_value=messages_dict["roles_messages"],
+                dict_key="roles_messages", invalid_value=messages_dict["roles_messages"]
             )
 
         cls._settings["ROLES_MESSAGES"] = set(messages_dict["roles_messages"])  # type: ignore[call-overload]
@@ -473,22 +503,95 @@ class Settings(abc.ABC):
         cls._settings["ORGANISATION_ID"] = raw_organisation_id
 
     @classmethod
-    def _setup_members_list_auth_session_cookie(cls) -> None:
-        raw_members_list_auth_session_cookie: str = os.getenv(
-            "MEMBERS_LIST_URL_SESSION_COOKIE",
+    def _setup_su_platform_access_cookie(cls) -> None:
+        raw_su_platform_access_cookie: str = os.getenv(
+            "SU_PLATFORM_ACCESS_COOKIE",
             default="",
         ).strip()
 
-        if not raw_members_list_auth_session_cookie or not re.fullmatch(
-            r"\A[A-Fa-f\d]{128,256}\Z", raw_members_list_auth_session_cookie
+        if not raw_su_platform_access_cookie or not re.fullmatch(
+            r"\A[\w-]{512,1024}\Z", raw_su_platform_access_cookie
         ):
-            INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE: Final[str] = (
-                "MEMBERS_LIST_URL_SESSION_COOKIE must be a valid .ASPXAUTH cookie."
+            INVALID_SU_PLATFORM_ACCESS_COOKIE_MESSAGE: Final[str] = (
+                "SU_PLATFORM_ACCESS_COOKIE must be a valid .AspNet.SharedCookie cookie."
             )
-            raise ImproperlyConfiguredError(INVALID_MEMBERS_LIST_AUTH_SESSION_COOKIE_MESSAGE)
+            raise ImproperlyConfiguredError(INVALID_SU_PLATFORM_ACCESS_COOKIE_MESSAGE)
 
-        cls._settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"] = (
-            raw_members_list_auth_session_cookie
+        cls._settings["SU_PLATFORM_ACCESS_COOKIE"] = raw_su_platform_access_cookie
+
+    @classmethod
+    def _setup_auto_su_platform_access_cookie_checking(cls) -> None:
+        raw_auto_auth_session_cookie_checking: str = (
+            os.getenv("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING", "False").lower().strip()
+        )
+
+        if raw_auto_auth_session_cookie_checking not in TRUE_VALUES | FALSE_VALUES:
+            INVALID_AUTO_AUTH_CHECKING_MESSAGE: Final[str] = (
+                "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING must be a boolean value."
+            )
+            raise ImproperlyConfiguredError(INVALID_AUTO_AUTH_CHECKING_MESSAGE)
+
+        cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"] = (
+            raw_auto_auth_session_cookie_checking in TRUE_VALUES
+        )
+
+    @classmethod
+    def _setup_auto_su_platform_access_cookie_checking_interval(cls) -> None:
+        if "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING" not in cls._settings:
+            INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+                "Invalid setup order: AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING must be set up "
+                "before AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL can be set up."
+            )
+            raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
+
+        if not cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"]:
+            cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"] = {"hours": 24}
+            return
+
+        raw_auto_su_platform_access_cookie_checking_interval: re.Match[str] | None = (
+            re.fullmatch(
+                r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
+                os.getenv("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL", "24h")
+                .strip()
+                .lower()
+                .replace(" ", ""),
+            )
+        )
+
+        if not raw_auto_su_platform_access_cookie_checking_interval:
+            INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE: Final[str] = (
+                "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL must contain the delay "
+                "in any combination of seconds, minutes, hours, days or weeks."
+            )
+            logger.debug(raw_auto_su_platform_access_cookie_checking_interval)
+            raise ImproperlyConfiguredError(
+                INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE
+            )
+
+        raw_timedelta_auto_su_platform_access_cookie_checking_interval: Mapping[str, float] = {
+            key: float(stripped_value)
+            for key, value in (
+                raw_auto_su_platform_access_cookie_checking_interval.groupdict().items()
+            )
+            if value and (stripped_value := value.strip())
+        }
+
+        if (
+            datetime.timedelta(
+                **raw_timedelta_auto_su_platform_access_cookie_checking_interval
+            ).total_seconds()
+            <= 3
+        ):
+            TOO_SMALL_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE: Final[str] = (
+                "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL "
+                "must be greater than 3 seconds."
+            )
+            raise ImproperlyConfiguredError(
+                TOO_SMALL_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE,
+            )
+
+        cls._settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"] = (
+            raw_timedelta_auto_su_platform_access_cookie_checking_interval
         )
 
     @classmethod
@@ -528,7 +631,9 @@ class Settings(abc.ABC):
             .replace(" ", ""),
         )
 
-        raw_timedelta_send_introduction_reminders_delay: timedelta = timedelta()
+        raw_timedelta_send_introduction_reminders_delay: datetime.timedelta = (
+            datetime.timedelta()
+        )
 
         if cls._settings["SEND_INTRODUCTION_REMINDERS"]:
             if not raw_send_introduction_reminders_delay:
@@ -537,18 +642,18 @@ class Settings(abc.ABC):
                     "in any combination of seconds, minutes, hours, days or weeks."
                 )
                 raise ImproperlyConfiguredError(
-                    INVALID_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE,
+                    INVALID_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE
                 )
 
-            raw_timedelta_send_introduction_reminders_delay = timedelta(
+            raw_timedelta_send_introduction_reminders_delay = datetime.timedelta(
                 **{
                     key: float(value)
                     for key, value in raw_send_introduction_reminders_delay.groupdict().items()
                     if value
-                },
+                }
             )
 
-            if raw_timedelta_send_introduction_reminders_delay < timedelta(days=1):
+            if raw_timedelta_send_introduction_reminders_delay < datetime.timedelta(days=1):
                 TOO_SMALL_SEND_INTRODUCTION_REMINDERS_DELAY_MESSAGE: Final[str] = (
                     "SEND_INTRODUCTION_REMINDERS_DELAY must be longer than or equal to 1 day."
                 )
@@ -578,7 +683,7 @@ class Settings(abc.ABC):
         )
 
         raw_timedelta_details_send_introduction_reminders_interval: Mapping[str, float] = {
-            "hours": 6,
+            "hours": 6
         }
 
         if cls._settings["SEND_INTRODUCTION_REMINDERS"]:
@@ -588,7 +693,7 @@ class Settings(abc.ABC):
                     "in any combination of seconds, minutes or hours."
                 )
                 raise ImproperlyConfiguredError(
-                    INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE,
+                    INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE
                 )
 
             raw_timedelta_details_send_introduction_reminders_interval = {
@@ -598,7 +703,7 @@ class Settings(abc.ABC):
             }
 
             if (
-                timedelta(
+                datetime.timedelta(
                     **raw_timedelta_details_send_introduction_reminders_interval
                 ).total_seconds()
                 <= 3
@@ -607,7 +712,7 @@ class Settings(abc.ABC):
                     "SEND_INTRODUCTION_REMINDERS_INTERVAL must be longer than 3 seconds."
                 )
                 raise ImproperlyConfiguredError(
-                    TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE,
+                    TOO_SMALL_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE
                 )
 
         cls._settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
@@ -645,7 +750,7 @@ class Settings(abc.ABC):
             .replace(" ", ""),
         )
 
-        raw_timedelta_send_get_roles_reminders_delay: timedelta = timedelta()
+        raw_timedelta_send_get_roles_reminders_delay: datetime.timedelta = datetime.timedelta()
 
         if cls._settings["SEND_GET_ROLES_REMINDERS"]:
             if not raw_send_get_roles_reminders_delay:
@@ -653,24 +758,22 @@ class Settings(abc.ABC):
                     "SEND_GET_ROLES_REMINDERS_DELAY must contain the delay "
                     "in any combination of seconds, minutes, hours, days or weeks."
                 )
-                raise ImproperlyConfiguredError(
-                    INVALID_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE,
-                )
+                raise ImproperlyConfiguredError(INVALID_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE)
 
-            raw_timedelta_send_get_roles_reminders_delay = timedelta(
+            raw_timedelta_send_get_roles_reminders_delay = datetime.timedelta(
                 **{
                     key: float(value)
                     for key, value in raw_send_get_roles_reminders_delay.groupdict().items()
                     if value
-                },
+                }
             )
 
-            if raw_timedelta_send_get_roles_reminders_delay < timedelta(days=1):
+            if raw_timedelta_send_get_roles_reminders_delay < datetime.timedelta(days=1):
                 TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE: Final[str] = (
                     "SEND_GET_ROLES_REMINDERS_DELAY must be longer than or equal to 1 day."
                 )
                 raise ImproperlyConfiguredError(
-                    TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE,
+                    TOO_SMALL_SEND_GET_ROLES_REMINDERS_DELAY_MESSAGE
                 )
 
         cls._settings["SEND_GET_ROLES_REMINDERS_DELAY"] = (
@@ -705,7 +808,7 @@ class Settings(abc.ABC):
                     "in any combination of seconds, minutes or hours."
                 )
                 raise ImproperlyConfiguredError(
-                    INVALID_ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE,
+                    INVALID_ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL_MESSAGE
                 )
 
             raw_timedelta_details_advanced_send_get_roles_reminders_interval = {
@@ -737,7 +840,7 @@ class Settings(abc.ABC):
             )
             raise ImproperlyConfiguredError(TOO_SMALL_STATISTICS_DAYS_MESSAGE)
 
-        cls._settings["STATISTICS_DAYS"] = timedelta(days=raw_statistics_days)
+        cls._settings["STATISTICS_DAYS"] = datetime.timedelta(days=raw_statistics_days)
 
     @classmethod
     def _setup_statistics_roles(cls) -> None:
@@ -755,6 +858,22 @@ class Settings(abc.ABC):
 
         cls._settings["STATISTICS_ROLES"] = (
             statistics_roles if statistics_roles else DEFAULT_STATISTICS_ROLES
+        )
+
+    @classmethod
+    def _setup_membership_dependent_roles(cls) -> None:
+        raw_membership_dependent_roles: str = os.getenv(
+            "MEMBERSHIP_DEPENDENT_ROLES", default=""
+        ).strip()
+
+        if not raw_membership_dependent_roles:
+            cls._settings["MEMBERSHIP_DEPENDENT_ROLES"] = frozenset()
+            return
+
+        cls._settings["MEMBERSHIP_DEPENDENT_ROLES"] = frozenset(
+            raw_membership_dependent_role.strip()
+            for raw_membership_dependent_role in raw_membership_dependent_roles.split(",")
+            if raw_membership_dependent_role.strip()
         )
 
     @classmethod
@@ -782,7 +901,7 @@ class Settings(abc.ABC):
             raw_moderation_document_url = "https://" + raw_moderation_document_url
             logger.warning(
                 "MODERATION_DOCUMENT_URL was missing a URL protocol. "
-                "Please ensure all URLs are valid HTTPS URLs.",
+                "Please ensure all URLs are valid HTTPS URLs."
             )
 
         if not validators.url(raw_moderation_document_url):
@@ -840,7 +959,8 @@ class Settings(abc.ABC):
         webhook_config_logger: Logger = cls._setup_discord_log_channel_webhook()
 
         try:
-            cls._setup_logging()
+            cls._setup_console_logging()
+            cls._setup_discord_log_level()
             cls._setup_discord_bot_token()
             cls._setup_discord_guild_id()
             cls._setup_group_full_name()
@@ -849,7 +969,9 @@ class Settings(abc.ABC):
             cls._setup_welcome_messages()
             cls._setup_roles_messages()
             cls._setup_organisation_id()
-            cls._setup_members_list_auth_session_cookie()
+            cls._setup_su_platform_access_cookie()
+            cls._setup_auto_su_platform_access_cookie_checking()
+            cls._setup_auto_su_platform_access_cookie_checking_interval()
             cls._setup_membership_perks_url()
             cls._setup_purchase_membership_url()
             cls._setup_custom_discord_invite_url()
@@ -861,6 +983,7 @@ class Settings(abc.ABC):
             cls._setup_advanced_send_get_roles_reminders_interval()
             cls._setup_statistics_days()
             cls._setup_statistics_roles()
+            cls._setup_membership_dependent_roles()
             cls._setup_moderation_document_url()
             cls._setup_strike_performed_manually_warning_location()
             cls._setup_auto_add_committee_to_threads()
@@ -873,7 +996,7 @@ class Settings(abc.ABC):
 
 def _settings_class_factory() -> type[Settings]:
     @final
-    class RuntimeSettings(Settings):
+    class RuntimeSettings(Settings):  # noqa: CAR160
         """
         Settings class that provides access to all settings values.
 

@@ -35,6 +35,7 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = ("TeXBot",)
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
@@ -48,7 +49,7 @@ class TeXBot(discord.Bot):
     """
 
     @override
-    def __init__(self, *args: object, **options: object) -> None:
+    def __init__(self, *args: object, **options: object) -> None:  # noqa: CAR150
         """Initialise a new Pycord Bot subclass with empty shortcut accessors."""
         self._main_guild: discord.Guild | None = None
         self._committee_role: discord.Role | None = None
@@ -64,7 +65,7 @@ class TeXBot(discord.Bot):
 
         self._main_guild_set: bool = False
 
-        super().__init__(*args, **options)  # type: ignore[no-untyped-call]
+        super().__init__(*args, **options)  # type: ignore[no-untyped-call]  # noqa: CAR151
 
     @override
     async def close(self) -> "NoReturn":  # type: ignore[misc]
@@ -73,8 +74,8 @@ class TeXBot(discord.Bot):
         logger.info("TeX-Bot manually terminated.")
 
     @property
-    def EXIT_WAS_DUE_TO_KILL_COMMAND(self) -> bool:  # noqa: N802
-        """Return whether the TeX-Bot exited due to the kill command being used."""
+    def EXIT_WAS_DUE_TO_KILL_COMMAND(self) -> bool:  # noqa: D102, N802
+        # NOTE: Identifies whether TeX-Bot exited due to the kill command being used."""
         return self._exit_was_due_to_kill_command
 
     @property
@@ -110,8 +111,7 @@ class TeXBot(discord.Bot):
         """
         if not self._committee_role or not self._main_guild_has_role(self._committee_role):
             self._committee_role = discord.utils.get(
-                await self.main_guild.fetch_roles(),
-                name="Committee",
+                await self.main_guild.fetch_roles(), name="Committee"
             )
 
         if not self._committee_role:
@@ -131,12 +131,11 @@ class TeXBot(discord.Bot):
         """
         COMMITTEE_ELECT_ROLE_NEEDS_FETCHING: Final[bool] = bool(
             not self._committee_elect_role
-            or not self._main_guild_has_role(self._committee_elect_role),
+            or not self._main_guild_has_role(self._committee_elect_role)
         )
         if COMMITTEE_ELECT_ROLE_NEEDS_FETCHING:
             self._committee_elect_role = discord.utils.get(
-                await self.main_guild.fetch_roles(),
-                name="Committee-Elect",
+                await self.main_guild.fetch_roles(), name="Committee-Elect"
             )
 
         if not self._committee_elect_role:
@@ -158,8 +157,7 @@ class TeXBot(discord.Bot):
         """
         if not self._guest_role or not self._main_guild_has_role(self._guest_role):
             self._guest_role = discord.utils.get(
-                await self.main_guild.fetch_roles(),
-                name="Guest",
+                await self.main_guild.fetch_roles(), name="Guest"
             )
 
         if not self._guest_role:
@@ -182,8 +180,7 @@ class TeXBot(discord.Bot):
         if not self._member_role or not self._main_guild_has_role(self._member_role):
             self._member_role = discord.utils.get(self.main_guild.roles, name="Member")
             self._member_role = discord.utils.get(
-                await self.main_guild.fetch_roles(),
-                name="Member",
+                await self.main_guild.fetch_roles(), name="Member"
             )
 
         if not self._member_role:
@@ -203,8 +200,7 @@ class TeXBot(discord.Bot):
         """
         if not self._archivist_role or not self._main_guild_has_role(self._archivist_role):
             self._archivist_role = discord.utils.get(
-                await self.main_guild.fetch_roles(),
-                name="Archivist",
+                await self.main_guild.fetch_roles(), name="Archivist"
             )
 
         if not self._archivist_role:
@@ -221,8 +217,7 @@ class TeXBot(discord.Bot):
         """
         if not self._applicant_role or not self._main_guild_has_role(self._applicant_role):
             self._applicant_role = discord.utils.get(
-                await self.main_guild.fetch_roles(),
-                name="Applicant",
+                await self.main_guild.fetch_roles(), name="Applicant"
             )
 
         if not self._applicant_role:
@@ -329,18 +324,9 @@ class TeXBot(discord.Bot):
                     else self.group_full_name
                 )
             )
-            .replace(
-                "the",
-                "",
-            )
-            .replace(
-                "THE",
-                "",
-            )
-            .replace(
-                "The",
-                "",
-            )
+            .replace("the", "")
+            .replace("THE", "")
+            .replace("The", "")
             .strip()
         )
 
@@ -354,7 +340,7 @@ class TeXBot(discord.Bot):
         return (
             "UoB Student"
             if (
-                "computer science society" in self.group_full_name.lower()
+                "computer science society" in self.group_full_name.lower()  # noqa: CAR180
                 or "css" in self.group_full_name.lower()
                 or "uob" in self.group_full_name.lower()
                 or "university of birmingham" in self.group_full_name.lower()
@@ -377,7 +363,7 @@ class TeXBot(discord.Bot):
         return (
             "the Guild of Students"
             if (
-                "computer science society" in self.group_full_name.lower()
+                "computer science society" in self.group_full_name.lower()  # noqa: CAR180
                 or "css" in self.group_full_name.lower()
                 or "uob" in self.group_full_name.lower()
                 or "university of birmingham" in self.group_full_name.lower()
@@ -403,9 +389,7 @@ class TeXBot(discord.Bot):
         self, name: "LiteralString"
     ) -> discord.TextChannel | None:
         text_channel: AllChannelTypes | None = discord.utils.get(
-            await self.main_guild.fetch_channels(),
-            name=name,
-            type=discord.ChannelType.text,
+            await self.main_guild.fetch_channels(), name=name, type=discord.ChannelType.text
         )
 
         if text_channel is not None and not isinstance(text_channel, discord.TextChannel):
@@ -444,11 +428,11 @@ class TeXBot(discord.Bot):
         could not be retrieved.
         """
         everyone_role: discord.Role | None = discord.utils.get(
-            self.main_guild.roles,
-            name="@everyone",
+            self.main_guild.roles, name="@everyone"
         )
         if not everyone_role:
             raise EveryoneRoleCouldNotBeRetrievedError
+
         return everyone_role
 
     async def check_user_has_committee_role(self, user: discord.Member | discord.User) -> bool:
@@ -481,6 +465,7 @@ class TeXBot(discord.Bot):
         main_guild_member: discord.Member | None = self.main_guild.get_member(user.id)
         if not main_guild_member:
             raise DiscordMemberNotInMainGuildError(user_id=user.id)
+
         return main_guild_member
 
     async def get_member_from_str_id(self, str_member_id: str) -> discord.Member:
@@ -499,7 +484,7 @@ class TeXBot(discord.Bot):
         user: discord.User | None = self.get_user(int(str_member_id))
         if not user:
             raise ValueError(
-                DiscordMemberNotInMainGuildError(user_id=int(str_member_id)).message,
+                DiscordMemberNotInMainGuildError(user_id=int(str_member_id)).message
             )
 
         user_not_in_main_guild_error: DiscordMemberNotInMainGuildError
@@ -523,11 +508,11 @@ class TeXBot(discord.Bot):
                 "when no DISCORD_LOG_CHANNEL_WEBHOOK_URL has been set."
             )
             raise ValueError(NO_LOG_CHANNEL_MESSAGE)
+
         session: aiohttp.ClientSession
         async with aiohttp.ClientSession() as session:
             partial_webhook: Webhook = Webhook.from_url(
-                settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
-                session=session,
+                settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"], session=session
             )
 
             full_webhook: Webhook = await partial_webhook.fetch()

@@ -8,14 +8,22 @@ import inspect
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import django_stubs_ext
+
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Mapping, Sequence
     from typing import Final
 
 __all__: "Sequence[str]" = ()
 
-# Build paths inside the project like this: BASE_DIR / "subdir".
-BASE_DIR = Path(__file__).resolve().parent
+
+# Monkeypatching Django, so stubs will work for all generics,
+# SOURCE: https://github.com/typeddjango/django-stubs
+django_stubs_ext.monkeypatch()
+
+
+# NOTE: Build paths inside the project like this: BASE_DIR / "subdir".
+BASE_DIR: "Final[Path]" = Path(__file__).resolve().parent
 
 # NOTE: settings.py is called when setting up the mypy_django_plugin & when running Pytest. When mypy/Pytest runs no config settings variables are set, so they should not be accessed
 IMPORTED_BY_MYPY_OR_PYTEST: "Final[bool]" = any(
@@ -32,36 +40,29 @@ else:
     SECRET_KEY = settings.DISCORD_BOT_TOKEN
 
 
-# Application definition
+# Application Definition
 
-INSTALLED_APPS = ["django.contrib.contenttypes", "db.core.app_config.CoreConfig"]
+INSTALLED_APPS: "Final[Sequence[str]]" = [
+    "django.contrib.contenttypes",
+    "db.core.app_config.CoreConfig",
+]
 
-MIDDLEWARE = ["django.middleware.common.CommonMiddleware"]
+MIDDLEWARE: "Final[Sequence[str]]" = ["django.middleware.common.CommonMiddleware"]
 
 
-# Database
-# https://docs.djangoproject.com/en/stable/ref/settings/#databases
+# Database Settings
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "core.db",
-    },
+DATABASES: "Final[Mapping[str, object]]" = {  # SOURCE: https://docs.djangoproject.com/en/stable/ref/settings#databases
+    "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "core.db"}
 }
 
+DEFAULT_AUTO_FIELD: "Final[str]" = "django.db.models.BigAutoField"  # SOURCE: https://docs.djangoproject.com/en/stable/ref/settings#default-auto-field
 
-# Internationalization
-# https://docs.djangoproject.com/en/stable/topics/i18n/
 
-LANGUAGE_CODE = "en-gb"
+# Internationalisation, Language & Time Settings
+# SOURCE: https://docs.djangoproject.com/en/stable/topics/i18n
 
-TIME_ZONE = "Europe/London"
-
-USE_I18N = True
-
-USE_TZ = True
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/stable/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+LANGUAGE_CODE: "Final[str]" = "en-gb"
+TIME_ZONE: "Final[str]" = "Europe/London"
+USE_I18N: "Final[bool]" = True
+USE_TZ: "Final[bool]" = True

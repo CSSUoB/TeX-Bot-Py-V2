@@ -23,13 +23,11 @@ __all__: "Sequence[str]" = (
     "capture_strike_tracking_error",
 )
 
+
 if TYPE_CHECKING:
     type WrapperInputFunc[**P, T_ret] = (
         Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T_ret]]
-        | Callable[
-            P,
-            Coroutine[object, object, T_ret],
-        ]
+        | Callable[P, Coroutine[object, object, T_ret]]
     )
     type WrapperOutputFunc[**P, T_ret] = Callable[P, Coroutine[object, object, T_ret | None]]
     type DecoratorInputFunc[**P, T_cog: TeXBotBaseCog, T_ret] = Callable[
@@ -59,7 +57,7 @@ class ErrorCaptureDecorators:
         """  # noqa: D401
 
         @functools.wraps(func)
-        async def wrapper(self: T_cog, /, *args: P.args, **kwargs: P.kwargs) -> T_ret | None:  # type: ignore[misc]
+        async def wrapper(self: T_cog, /, *args: P.args, **kwargs: P.kwargs) -> T_ret | None:  # type: ignore[misc]  # noqa: CAR150
             try:
                 return await func(self, *args, **kwargs)
             except error_type as error:

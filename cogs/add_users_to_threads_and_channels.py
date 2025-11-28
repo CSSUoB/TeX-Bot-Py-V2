@@ -20,13 +20,13 @@ if TYPE_CHECKING:
     from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 
-__all__: "Sequence[str]" = ("AddUsersToThreadsAndChannelsCommandCog",)
+__all__: "Sequence[str]" = ("AddUsersToThreadsAndChannelsCommandsCog",)
 
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
+class AddUsersToThreadsAndChannelsCommandsCog(TeXBotBaseCog):
     """Cog for adding users to threads."""
 
     @staticmethod
@@ -96,8 +96,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
 
         if isinstance(channel_or_thread, discord.Thread):
             message: discord.Message = await channel_or_thread.send(
-                content=f"Adding {users_or_roles!r} to thread...",
-                silent=True,
+                content=f"Adding {users_or_roles!r} to thread...", silent=True
             )
             await message.edit(content=f"{users_or_roles.mention}")
             await message.delete(delay=1)
@@ -161,19 +160,19 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
         )
 
         await channel_or_thread.send(
-            content=f"{users_or_roles.mention} has been added to the channel.",
+            content=f"{users_or_roles.mention} has been added to the channel."
         )
 
     @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
     async def on_thread_create(self, thread: discord.Thread) -> None:
         """Add users to a thread when it is created."""
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         committee_role: discord.Role = await self.bot.committee_role
         committee_elect_role: discord.Role = await self.bot.committee_elect_role
 
         if (
-            thread.parent is None
+            thread.parent is None  # noqa: CAR180
             or thread.parent.category is None
             or "committee" not in thread.parent.category.name.lower()
             or not settings["AUTO_ADD_COMMITTEE_TO_THREADS"]
@@ -184,19 +183,18 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
             users_or_roles=(committee_role, committee_elect_role), channel_or_thread=thread
         )
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="add-users-to-channel",
-        description="Adds selected users to a channel or thread.",
+    @discord.slash_command(
+        name="add-users-to-channel", description="Adds selected users to a channel or thread."
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="user",
         description="The user to add to the channel.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),
         required=True,
         parameter_name="user_id_str",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="silent",
         description="Whether the users being added should be pinged or not.",
         input_type=bool,
@@ -205,7 +203,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def add_user_to_channel(  # type: ignore[misc]
+    async def add_user_to_channel(
         self,
         ctx: "TeXBotApplicationContext",
         user_id_str: str,
@@ -214,7 +212,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
         """Add users or roles to a channel."""
         if not isinstance(ctx.channel, (discord.TextChannel, discord.Thread)):
             await self.command_send_error(
-                ctx=ctx,
+                ctx,
                 message="This command currently only supports text channels or threads.",
             )
             return
@@ -239,19 +237,19 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
             ephemeral=True,
         )
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="add-role-to-channel",
         description="Adds the selected role and it's users to a channel or thread.",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="role",
         description="The role to add to the channel.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_roles),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_roles),
         required=True,
         parameter_name="role_id_str",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="silent",
         description="Whether the users being added should be pinged or not.",
         input_type=bool,
@@ -260,7 +258,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def add_role_to_channel(  # type: ignore[misc]
+    async def add_role_to_channel(
         self,
         ctx: "TeXBotApplicationContext",
         role_id_str: str,
@@ -271,7 +269,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
             ctx.channel, discord.TextChannel
         ):
             await self.command_send_error(
-                ctx=ctx, message="This command can only be used in a text channel or thread."
+                ctx, message="This command can only be used in a text channel or thread."
             )
             return
 
@@ -288,8 +286,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
 
         if role_to_add is None:
             await self.command_send_error(
-                ctx=ctx,
-                message=f"The role: <@{role_id}> is not valid or couldn't be found.",
+                ctx, message=f"The role: <@{role_id}> is not valid or couldn't be found."
             )
             return
 

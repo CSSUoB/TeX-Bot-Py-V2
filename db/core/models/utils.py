@@ -1,21 +1,22 @@
 """Utility classes and functions."""
 
-import hashlib
-import re
 from typing import TYPE_CHECKING, override
 
 from asgiref.sync import sync_to_async
 from django.core.exceptions import FieldDoesNotExist
 from django.core.validators import RegexValidator
-from django.db import models
-
-from .managers import HashedDiscordMemberManager, RelatedDiscordMemberManager
+from django.db import models, transaction
+from django.utils.translation import gettext_lazy as _
+from django_stubs_ext.db.models import TypedModelMeta
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
-    from typing import Final, Never, NoReturn
+    from collections.abc import Set as AbstractSet
+    from typing import ClassVar, Final
 
-__all__: "Sequence[str]" = ("AsyncBaseModel", "BaseDiscordMemberWrapper", "DiscordMember")
+    from django.db.models.base import ModelBase
+
+__all__: "Sequence[str]" = ("AsyncBaseModel", "DiscordMember")
 
 
 class AsyncBaseModel(models.Model):
@@ -23,33 +24,34 @@ class AsyncBaseModel(models.Model):
     Asynchronous base model, defining extra synchronous and asynchronous utility methods.
 
     This class is abstract so should not be instantiated or have a table made for it in the
-    database (see https://docs.djangoproject.com/en/stable/topics/db/models/#abstract-base-classes).
+    database (see https://docs.djangoproject.com/en/stable/topics/db/models#abstract-base-classes).
     """
 
     INSTANCES_NAME_PLURAL: str
 
-    class Meta:  # noqa: D106
-        abstract = True
+    class Meta(TypedModelMeta):  # noqa: D106
+        abstract: "ClassVar[bool]" = True
 
     @override
-    def __init__(self, *args: object, **kwargs: object) -> None:
+    def __init__(self, *args: object, **kwargs: object) -> None:  # noqa: CAR150
         proxy_fields: dict[str, object] = {
             field_name: kwargs.pop(field_name)
-            for field_name in set(kwargs.keys()) & self.get_proxy_field_names()
+            for field_name in set(kwargs.keys()) & self._get_proxy_field_names()
         }
 
-        super().__init__(*args, **kwargs)
+        with transaction.atomic():
+            super().__init__(*args, **kwargs)  # noqa: CAR151
 
-        field_name: str
-        value: object
-        for field_name, value in proxy_fields.items():
-            setattr(self, field_name, value)
+            field_name: str
+            value: object
+            for field_name, value in proxy_fields.items():
+                setattr(self, field_name, value)
 
     @override
-    def save(  # type: ignore[override]
+    def save(
         self,
         *,
-        force_insert: bool = False,
+        force_insert: bool | tuple["ModelBase", ...] = False,
         force_update: bool = False,
         using: str | None = None,
         update_fields: "Iterable[str] | None" = None,
@@ -67,11 +69,11 @@ class AsyncBaseModel(models.Model):
         self,
         *,
         commit: bool = True,
-        force_insert: bool = False,
+        force_insert: bool | tuple["ModelBase", ...] = False,
         force_update: bool = False,
         using: str | None = None,
         update_fields: "Iterable[str] | None" = None,
-        **kwargs: object,
+        **kwargs: object,  # noqa: CAR150
     ) -> None:
         """
         Change an in-memory object's values, then save it to the database.
@@ -87,7 +89,7 @@ class AsyncBaseModel(models.Model):
         unexpected_kwargs: set[str] = set()
 
         field_name: str
-        for field_name in set(kwargs.keys()) - self.get_proxy_field_names():
+        for field_name in set(kwargs.keys()) - self._get_proxy_field_names():
             try:
                 self._meta.get_field(field_name)
             except FieldDoesNotExist:
@@ -100,34 +102,35 @@ class AsyncBaseModel(models.Model):
             )
             raise TypeError(UNEXPECTED_KWARGS_MESSAGE)
 
-        value: object
-        for field_name, value in kwargs.items():
-            setattr(self, field_name, value)
+        with transaction.atomic():
+            value: object
+            for field_name, value in kwargs.items():
+                setattr(self, field_name, value)
 
-        if commit:
-            return self.save(
-                force_insert=force_insert,
-                force_update=force_update,
-                using=using,
-                update_fields=update_fields,
-            )
+            if commit:
+                return self.save(
+                    force_insert=force_insert,
+                    force_update=force_update,
+                    using=using,
+                    update_fields=update_fields,
+                )
 
-        return None
+            return None
 
-    update.alters_data: bool = True  # type: ignore[attr-defined, misc]
+    setattr(update, "alters_data", True)  # noqa: B010
 
     async def aupdate(
         self,
         *,
         commit: bool = True,
-        force_insert: bool = False,
+        force_insert: bool | tuple["ModelBase", ...] = False,
         force_update: bool = False,
         using: str | None = None,
         update_fields: "Iterable[str] | None" = None,
-        **kwargs: object,
+        **kwargs: object,  # noqa: CAR150
     ) -> None:
         """
-        Asyncronously change an in-memory object's values, then save it to the database.
+        Asynchronously change an in-memory object's values, then save it to the database.
 
         This simplifies the two steps into a single operation
         (based on Django's Queryset.bulk_update method).
@@ -146,10 +149,10 @@ class AsyncBaseModel(models.Model):
             **kwargs,
         )
 
-    aupdate.alters_data: bool = True  # type: ignore[attr-defined, misc]
+    setattr(aupdate, "alters_data", True)  # noqa: B010
 
     @classmethod
-    def get_proxy_field_names(cls) -> set[str]:
+    def _get_proxy_field_names(cls) -> "AbstractSet[str]":
         """
         Return the set of extra names of properties that can be saved to the database.
 
@@ -167,125 +170,40 @@ class DiscordMember(AsyncBaseModel):
     Instances of this model are related to other models to store information
     about reminders, opt-in/out states, tracked committee actions, etc.
 
-    The Discord guild member is identified by their hashed Discord member ID.
+    The Discord guild member is identified by their Discord member ID.
     """
 
-    hashed_discord_id = models.CharField(
-        "Hashed Discord Member ID",
+    discord_id = models.CharField(
+        _("Discord Member ID"),
         unique=True,
         null=False,
         blank=False,
-        max_length=64,
-        validators=[
+        max_length=20,
+        validators=(
             RegexValidator(
-                r"\A[A-Fa-f0-9]{64}\Z",
-                "hashed_discord_id must be a valid sha256 hex-digest.",
+                r"\A\d{17,20}\Z",
+                "discord_id must be a valid Discord member ID (see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)",
             ),
-        ],
+        ),
     )
 
-    objects = HashedDiscordMemberManager()
-
     @override
     def __str__(self) -> str:
-        return f"{self.hashed_discord_id}"
+        return self.discord_id
 
     @override
     def __repr__(self) -> str:
-        return f"<{self._meta.verbose_name}: {self.hashed_discord_id!r}>"
-
-    @override
-    def __setattr__(self, name: str, value: object) -> None:
-        if name in ("discord_id", "member_id"):
-            if not isinstance(value, str | int):
-                MEMBER_ID_INVALID_TYPE_MESSAGE: Final[str] = (
-                    f"{name} must be an instance of str or int."
-                )
-                raise TypeError(MEMBER_ID_INVALID_TYPE_MESSAGE)
-
-            self.hashed_discord_id = self.hash_discord_id(value)
-            return
-
-        super().__setattr__(name, value)
+        return f"<{self._meta.verbose_name}: {self.discord_id!r}>"
 
     @property
-    def discord_id(self) -> "NoReturn":
-        """Return the Discord ID of this member."""
-        HASHED_ID_CANNOT_BE_REVERSED_ERROR_MESSAGE: Final[str] = (
-            "The Discord IDs of members are hashed before being sent into the database. "
-            "The raw IDs cannot be retrieved after this hashing process."
-        )
-        raise ValueError(HASHED_ID_CANNOT_BE_REVERSED_ERROR_MESSAGE)
+    def member_id(self) -> str:  # noqa: D102
+        return self.discord_id
 
-    @property
-    def member_id(self) -> "NoReturn":
-        """Return the Discord ID of this member."""
-        return self.discord_id  # type: ignore[misc]
-
-    @property
-    def hashed_member_id(self) -> "NoReturn":
-        """Return the hashed Discord ID of this member."""
-        raise DeprecationWarning
-
-    @hashed_member_id.setter
-    def hashed_member_id(self, value: "Never") -> None:  # noqa: ARG002
-        """Assign the hashed Discord ID of this member."""
-        raise DeprecationWarning
-
-    @classmethod
-    def hash_member_id(cls, member_id: "Never") -> "NoReturn":  # noqa: ARG003
-        """
-        Hash the provided discord_id.
-
-        The member_id value is hashed
-        into the format that hashed_discord_ids are stored in the database
-        when new objects of this class are created.
-        """
-        raise DeprecationWarning
-
-    @classmethod
-    def hash_discord_id(cls, discord_id: str | int) -> str:
-        """
-        Hash the provided discord_id.
-
-        The discord_id value is hashed
-        into the format that hashed_discord_ids are stored in the database
-        when new objects of this class are created.
-        """
-        if not re.fullmatch(r"\A\d{17,20}\Z", str(discord_id)):
-            INVALID_MEMBER_ID_MESSAGE: Final[str] = (
-                f"{discord_id!r} is not a valid Discord member ID "
-                "(see https://docs.pycord.dev/en/stable/api/abcs.html#discord.abc.Snowflake.id)"
-            )
-            raise ValueError(INVALID_MEMBER_ID_MESSAGE)
-
-        return hashlib.sha256(str(discord_id).encode()).hexdigest()
+    @member_id.setter
+    def member_id(self, value: str | int) -> None:
+        self.discord_id = str(value)
 
     @classmethod
     @override
-    def get_proxy_field_names(cls) -> set[str]:
-        return super().get_proxy_field_names() | {"discord_id", "member_id"}
-
-
-class BaseDiscordMemberWrapper(AsyncBaseModel):
-    """
-    Abstract base class to wrap more information around a DiscordMember instance.
-
-    This class is abstract so should not be instantiated or have a table made for it in the
-    database (see https://docs.djangoproject.com/en/stable/topics/db/models/#abstract-base-classes).
-    """
-
-    discord_member: DiscordMember
-
-    objects = RelatedDiscordMemberManager()
-
-    class Meta:  # noqa: D106
-        abstract = True
-
-    @override
-    def __str__(self) -> str:
-        return str(self.discord_member)
-
-    @override
-    def __repr__(self) -> str:
-        return f"<{self._meta.verbose_name}: {self.discord_member}>"
+    def _get_proxy_field_names(cls) -> "AbstractSet[str]":
+        return {*super()._get_proxy_field_names(), "member_id"}

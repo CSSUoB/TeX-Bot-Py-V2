@@ -14,6 +14,7 @@ from django.core.exceptions import ValidationError
 import utils
 from config import settings
 from db.core.models import (
+    DiscordMember,
     IntroductionReminderOptOutMember,
     SentOneOffIntroductionReminderMember,
 )
@@ -32,6 +33,7 @@ if TYPE_CHECKING:
     from utils import TeXBot
 
 __all__: "Sequence[str]" = ("SendIntroductionRemindersTaskCog",)
+
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
@@ -62,9 +64,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
     @TeXBotBaseCog.listener()
     async def on_ready(self) -> None:
         """Add OptOutIntroductionRemindersView to the bot's list of permanent views."""
-        self.bot.add_view(
-            self.OptOutIntroductionRemindersView(self.bot),
-        )
+        self.bot.add_view(self.OptOutIntroductionRemindersView(self.bot))
 
     @tasks.loop(**settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"])
     @functools.partial(
@@ -83,7 +83,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         See README.md for the full list of conditions for when these
         reminders are sent.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
         member: discord.Member
@@ -106,8 +106,8 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             member_needs_one_off_reminder: bool = (
                 settings["SEND_INTRODUCTION_REMINDERS"] == "once"
                 and not await (
-                    await SentOneOffIntroductionReminderMember.objects.afilter(
-                        discord_id=member.id,
+                    SentOneOffIntroductionReminderMember.objects.filter(
+                        discord_member__discord_id=member.id,
                     )
                 ).aexists()
             )
@@ -118,8 +118,8 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 discord.utils.utcnow() - member.joined_at
             ) <= settings["SEND_INTRODUCTION_REMINDERS_DELAY"]
             member_opted_out_from_reminders: bool = await (
-                await IntroductionReminderOptOutMember.objects.afilter(
-                    discord_id=member.id,
+                IntroductionReminderOptOutMember.objects.filter(
+                    discord_member__discord_id=member.id,
                 )
             ).aexists()
             member_needs_reminder: bool = (
@@ -132,14 +132,15 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 continue
 
             async for message in member.history():
-                MESSAGE_CONTAINS_OPT_IN_OUT_BUTTON: bool = bool(
-                    bool(message.components)
+                if (
+                    message.components  # noqa: CAR180
                     and isinstance(message.components[0], discord.ActionRow)
                     and isinstance(message.components[0].children[0], discord.Button)
-                    and message.components[0].children[0].custom_id
-                    == "opt_out_introduction_reminders_button"
-                )
-                if MESSAGE_CONTAINS_OPT_IN_OUT_BUTTON:
+                    and (
+                        message.components[0].children[0].custom_id
+                        == "opt_out_introduction_reminders_button"
+                    )
+                ):
                     await message.edit(view=None)
 
             if (
@@ -171,13 +172,17 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 )
             except discord.Forbidden:
                 logger.info(
-                    "Failed to open DM channel with user, %s, "
-                    "so no induction reminder was sent.",
+                    (
+                        "Failed to open DM channel with user, %s, "
+                        "so no induction reminder was sent."
+                    ),
                     member,
                 )
 
-            await SentOneOffIntroductionReminderMember.objects.acreate(  # type: ignore[misc]
-                discord_id=member.id,
+            await SentOneOffIntroductionReminderMember.objects.acreate(
+                discord_member=(
+                    await DiscordMember.objects.aget_or_create(discord_id=member.id)
+                )[0],
             )
 
     class OptOutIntroductionRemindersView(View):
@@ -226,9 +231,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             label="Opt-out of introduction reminders",
             custom_id="opt_out_introduction_reminders_button",
             style=discord.ButtonStyle.red,
-            emoji=discord.PartialEmoji.from_str(
-                emoji.emojize(":no_good:", language="alias"),
-            ),
+            emoji=discord.PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias")),
         )
         async def opt_out_introduction_reminders_button_callback(  # type: ignore[misc]
             self, button: discord.Button, interaction: discord.Interaction
@@ -247,11 +250,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
             BUTTON_WILL_MAKE_OPT_IN: Final[bool] = bool(
                 button.style == discord.ButtonStyle.green
-                or str(button.emoji)
-                == emoji.emojize(
-                    ":raised_hand:",
-                    language="alias",
-                )
+                or str(button.emoji) == emoji.emojize(":raised_hand:", language="alias")
                 or (button.label and "Opt back in" in button.label)
             )
             INCOMPATIBLE_BUTTONS: Final[bool] = bool(
@@ -270,7 +269,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
             try:
                 interaction_member: discord.Member = await self.bot.get_main_guild_member(
-                    interaction.user,
+                    interaction.user
                 )
             except DiscordMemberNotInMainGuildError:
                 await self.send_error(
@@ -287,18 +286,22 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
             if BUTTON_WILL_MAKE_OPT_OUT:
                 try:
-                    await IntroductionReminderOptOutMember.objects.acreate(  # type: ignore[misc]
-                        discord_id=interaction_member.id,
+                    await IntroductionReminderOptOutMember.objects.acreate(
+                        discord_member=(
+                            await DiscordMember.objects.aget_or_create(
+                                discord_id=interaction_member.id
+                            )
+                        )[0],
                     )
                 except ValidationError as create_introduction_reminder_opt_out_member_error:
                     error_is_already_exists: bool = (
-                        "hashed_member_id"
+                        "discord_id"
                         in create_introduction_reminder_opt_out_member_error.message_dict
                         and any(
                             "already exists" in error
                             for error in (
                                 create_introduction_reminder_opt_out_member_error.message_dict[
-                                    "hashed_member_id"
+                                    "discord_id"
                                 ]
                             )
                         )
@@ -309,7 +312,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 button.style = discord.ButtonStyle.green
                 button.label = "Opt back in to introduction reminders"
                 button.emoji = discord.PartialEmoji.from_str(
-                    emoji.emojize(":raised_hand:", language="alias"),
+                    emoji.emojize(":raised_hand:", language="alias")
                 )
 
                 await interaction.response.edit_message(view=self)
@@ -318,7 +321,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 try:
                     introduction_reminder_opt_out_member: IntroductionReminderOptOutMember = (
                         await IntroductionReminderOptOutMember.objects.aget(
-                            discord_id=interaction_member.id,
+                            discord_member__discord_id=interaction_member.id
                         )
                     )
                 except IntroductionReminderOptOutMember.DoesNotExist:
@@ -329,7 +332,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 button.style = discord.ButtonStyle.red
                 button.label = "Opt-out of introduction reminders"
                 button.emoji = discord.PartialEmoji.from_str(
-                    emoji.emojize(":no_good:", language="alias"),
+                    emoji.emojize(":no_good:", language="alias")
                 )
 
                 await interaction.response.edit_message(view=self)

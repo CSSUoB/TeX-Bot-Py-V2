@@ -3,10 +3,7 @@
 from typing import TYPE_CHECKING
 
 from .committee_actions import InvalidActionDescriptionError, InvalidActionTargetError
-from .config_changes import (
-    ImproperlyConfiguredError,
-    RestartRequiredDueToConfigChange,
-)
+from .config_changes import ImproperlyConfiguredError, RestartRequiredDueToConfigChange
 from .does_not_exist import (
     ApplicantRoleDoesNotExistError,
     ArchivistRoleDoesNotExistError,
@@ -21,15 +18,13 @@ from .does_not_exist import (
     RolesChannelDoesNotExistError,
     RulesChannelDoesNotExistError,
 )
-from .guild import (
-    DiscordMemberNotInMainGuildError,
-    EveryoneRoleCouldNotBeRetrievedError,
-)
+from .guild import DiscordMemberNotInMainGuildError, EveryoneRoleCouldNotBeRetrievedError
 from .messages import (
     InvalidMessagesJSONFileError,
     MessagesJSONFileMissingKeyError,
     MessagesJSONFileValueError,
 )
+from .msl import MSLMembershipError
 from .strike import NoAuditLogsStrikeTrackingError, StrikeTrackingError
 
 if TYPE_CHECKING:
@@ -50,6 +45,7 @@ __all__: "Sequence[str]" = (
     "InvalidActionDescriptionError",
     "InvalidActionTargetError",
     "InvalidMessagesJSONFileError",
+    "MSLMembershipError",
     "MemberRoleDoesNotExistError",
     "MessagesJSONFileMissingKeyError",
     "MessagesJSONFileValueError",

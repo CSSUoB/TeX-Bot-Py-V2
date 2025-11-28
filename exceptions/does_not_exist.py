@@ -118,7 +118,7 @@ class CommitteeRoleDoesNotExistError(RoleDoesNotExistError):
                 "ensure-members-inducted",
                 "kill",
                 "committee-handover",
-            },
+            }
         )
 
     @classproperty
@@ -164,7 +164,7 @@ class GuestRoleDoesNotExistError(RoleDoesNotExistError):
                 "archive",
                 "ensure-members-inducted",
                 "increment-year-channels",
-            },
+            }
         )
 
     @classproperty
@@ -189,7 +189,7 @@ class MemberRoleDoesNotExistError(RoleDoesNotExistError):
     @classproperty
     @override
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]:
-        return frozenset({"makemember", "ensure-members-inducted", "annual-roles-reset"})
+        return frozenset({"make-member", "ensure-members-inducted", "annual-roles-reset"})
 
     @classproperty
     @override
@@ -262,7 +262,7 @@ class ChannelDoesNotExistError(BaseDoesNotExistError):
 
         if not message and HAS_DEPENDANTS:
             message = self.get_formatted_message(
-                non_existent_object_identifier=self.CHANNEL_NAME,
+                non_existent_object_identifier=self.CHANNEL_NAME
             )
 
         super().__init__(message)
