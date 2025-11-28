@@ -28,21 +28,13 @@ main = [
     "validators>=0.34"
 ]
 pre-commit = ["pre-commit>=4.0", { include-group = "lint-format" }]
-test = ["pytest>=9", "pytest-cov>=6.1"]
+test = ["pytest-cov>=7", { include-group = "test-core" }]
+test-core = ["gitpython>=3.1.45", "pytest>=9"]
 type-check = [
     "django-stubs[compatible-mypy]>=5.1",
     "mypy>=1.18.2",
     "types-beautifulsoup4>=4.12",
-    { include-group = "test" }
-]
-pre-commit = ["pre-commit>=4.0"]
-test = ["pytest-cov>=6.1.1", { include-group = "test-core" }]
-test-core = ["gitpython>=3.1.44", "pytest>=8.3"]
-type-check = [
-    "django-stubs[compatible-mypy]>=5.1",
-    "mypy>=1.13",
-    "types-beautifulsoup4>=4.12",
-    { include-group = "test-core" },
+    { include-group = "test-core" }
 ]
 
 [tool.coverage.report]
@@ -193,10 +185,7 @@ aliases = {  }
 banned-aliases = { "regex" = ["re"], "numpy" = ["np"], "matplotlib" = ["mpl"], "matplotlib.pyplot" = [
     "plt"
 ] }
-banned-from = ["abc", "re", "regex"]
-
-[tool.ruff.lint.per-file-ignores]
-"tests/**/test_*.py" = ["S101", "S311", "SLF001"]
+banned-from = ["abc", "date", "datetime", "re", "regex"]
 
 [tool.ruff.lint.flake8-self]
 extend-ignore-names = ["_base_manager", "_default_manager", "_get_wrap_line_width", "_meta"]
@@ -217,7 +206,7 @@ extend-ignore-names = ["BROKEN_*_MESSAGE", "INVALID_*_MESSAGE", "NO_*_MESSAGE"]
 "stubs/**.pyi" = ["N"]
 "stubs/discord/**/*.pyi" = ["F403"]
 "stubs/discord/commands/__init__.pyi" = ["F405"]
-"tests/**/test_*.py" = ["S101"]
+"tests/**/test_*.py" = ["S101", "S311", "SLF001"]
 
 [tool.ruff.lint.pycodestyle]
 ignore-overlong-task-comments = true
@@ -241,27 +230,9 @@ parametrize-values-type = "tuple"
 [tool.ruff.lint.pyupgrade]
 keep-runtime-typing = true
 
-[tool.coverage.report]
-exclude_also = ["if TYPE_CHECKING:"]
-skip_covered = true
-sort = "cover"
-
-[tool.pymarkdown]
-extensions.front-matter.enabled = true
-mode.strict-config = true
-plugins.code-block-style.style = "fenced"
-plugins.code-fence-style.style = "backtick"
-plugins.heading-style.style = "atx"
-plugins.hr-style.style = "---"
-plugins.line-length.enabled = false
-plugins.no-inline-html.allow_first_image_element = false
-plugins.no-inline-html.allowed_elements = "!--,br"
-plugins.no-trailing-spaces.strict = true
-plugins.ol-prefix.style = "ordered"
-plugins.ul-indent.indent = 4
-plugins.ul-start-left.enabled = true
-plugins.ul-style.style = "asterisk"
-
+[tool.tombi.format.rules]
+indent-width = 4
+line-width = 95
 
 [tool.uv]
 default-groups = ["dev", "main"]
