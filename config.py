@@ -943,6 +943,137 @@ class Settings(abc.ABC):
         )
 
     @classmethod
+    def _setup_send_committee_actions_reminders(cls) -> None:
+        raw_send_committee_actions_reminders: str = (
+            str(
+                os.getenv("SEND_COMMITTEE_ACTIONS_REMINDERS", "True"),
+            )
+            .strip()
+            .lower()
+        )
+
+        if raw_send_committee_actions_reminders not in TRUE_VALUES | FALSE_VALUES:
+            INVALID_SEND_COMMITTEE_ACTIONS_REMINDERS_MESSAGE: Final[str] = (
+                "SEND_COMMITTEE_ACTIONS_REMINDERS  must be a boolean value."
+            )
+            raise ImproperlyConfiguredError(INVALID_SEND_COMMITTEE_ACTIONS_REMINDERS_MESSAGE)
+
+        cls._settings["SEND_COMMITTEE_ACTIONS_REMINDERS"] = (
+            raw_send_committee_actions_reminders in TRUE_VALUES
+        )
+
+    @classmethod
+    def _setup_committee_actions_reminders_interval(cls) -> None:
+        if "SEND_COMMITTEE_ACTIONS_REMINDERS" not in cls._settings:
+            INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+                "Invalid setup order: SEND_COMMITTEE_ACTIONS_REMINDERS must be set up "
+                "before COMMITTEE_ACTIONS_REMINDERS_INTERVAL can be set up."
+            )
+            raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
+
+        raw_committee_actions_reminders_interval: re.Match[str] | None = re.fullmatch(
+            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
+            str(os.getenv("COMMITTEE_ACTIONS_REMINDERS_INTERVAL", "24h")),
+        )
+
+        raw_timedelta_committee_actions_reminders_interval: Mapping[str, float] = {
+            "hours": 24,
+        }
+
+        if cls._settings["SEND_COMMITTEE_ACTIONS_REMINDERS"]:
+            if not raw_committee_actions_reminders_interval:
+                INVALID_COMMITTEE_ACTIONS_REMINDERS_INTERVAL_MESSAGE: Final[str] = (
+                    "COMMITTEE_ACTIONS_REMINDERS_INTERVAL must contain the interval "
+                    "in any combination of seconds, minutes or hours."
+                )
+                raise ImproperlyConfiguredError(
+                    INVALID_COMMITTEE_ACTIONS_REMINDERS_INTERVAL_MESSAGE,
+                )
+
+            raw_timedelta_committee_actions_reminders_interval = {
+                key: float(value)
+                for key, value in (
+                    raw_committee_actions_reminders_interval.groupdict().items()
+                )
+                if value
+            }
+
+        cls._settings["COMMITTEE_ACTIONS_REMINDERS_INTERVAL"] = (
+            raw_timedelta_committee_actions_reminders_interval
+        )
+
+    @classmethod
+    def _setup_committee_actions_reminders_channel(cls) -> None:
+        if "SEND_COMMITTEE_ACTIONS_REMINDERS" not in cls._settings:
+            INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+                "Invalid setup order: SEND_COMMITTEE_ACTIONS_REMINDERS must be set up "
+                "before COMMITTEE_ACTIONS_REMINDERS_CHANNEL can be set up."
+            )
+            raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
+
+        raw_committee_actions_reminders_channel: str = (
+            os.getenv("COMMITTEE_ACTIONS_REMINDERS_CHANNEL", "committee-general")
+            .strip()
+            .lower()
+        )
+
+        if not raw_committee_actions_reminders_channel:
+            INVALID_COMMITTEE_ACTIONS_REMINDERS_CHANNEL_MESSAGE: Final[str] = (
+                "COMMITTEE_ACTIONS_REMINDERS_CHANNEL must be a valid name"
+                " of a channel in your group's Discord guild."
+            )
+            raise ImproperlyConfiguredError(
+                INVALID_COMMITTEE_ACTIONS_REMINDERS_CHANNEL_MESSAGE
+            )
+
+        cls._settings["COMMITTEE_ACTIONS_REMINDERS_CHANNEL"] = (
+            raw_committee_actions_reminders_channel
+        )
+
+    @classmethod
+    def _setup_display_committee_actions_board(cls) -> None:
+        raw_display_committee_actions_board: str = (
+            os.getenv("DISPLAY_COMMITTEE_ACTIONS_BOARD", "True").strip().lower()
+        )
+
+        if raw_display_committee_actions_board not in TRUE_VALUES | FALSE_VALUES:
+            INVALID_DISPLAY_COMMITTEE_ACTIONS_BOARD_MESSAGE: Final[str] = (
+                "DISPLAY_COMMITTEE_ACTIONS_BOARD must be a boolean value."
+            )
+            raise ImproperlyConfiguredError(INVALID_DISPLAY_COMMITTEE_ACTIONS_BOARD_MESSAGE)
+
+        cls._settings["DISPLAY_COMMITTEE_ACTIONS_BOARD"] = (
+            raw_display_committee_actions_board in TRUE_VALUES
+        )
+
+    @classmethod
+    def _setup_committee_actions_board_channel(cls) -> None:
+        if "DISPLAY_COMMITTEE_ACTIONS_BOARD" not in cls._settings:
+            INVALID_SETUP_ORDER_MESSAGE: Final[str] = (
+                "Invalid setup order: DISPLAY_COMMITTEE_ACTIONS_BOARD must be set up "
+                "before COMMITTEE_ACTIONS_BOARD_CHANNEL can be set up."
+            )
+            raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
+
+        raw_committee_actions_board_channel: str = (
+            os.getenv(
+                "COMMITTEE_ACTIONS_BOARD_CHANNEL",
+                "committee-actions-board",
+            )
+            .strip()
+            .lower()
+        )
+
+        if not raw_committee_actions_board_channel:
+            INVALID_COMMITTEE_ACTIONS_BOARD_CHANNEL_MESSAGE: Final[str] = (
+                "COMMITTEE_ACTIONS_BOARD_CHANNEL must be a valid name "
+                "of a channel in your group's Discord guild."
+            )
+            raise ImproperlyConfiguredError(INVALID_COMMITTEE_ACTIONS_BOARD_CHANNEL_MESSAGE)
+
+        cls._settings["COMMITTEE_ACTIONS_BOARD_CHANNEL"] = raw_committee_actions_board_channel
+
+    @classmethod
     def _setup_env_variables(cls) -> None:
         """
         Load environment values into the settings dictionary.
@@ -987,6 +1118,11 @@ class Settings(abc.ABC):
             cls._setup_moderation_document_url()
             cls._setup_strike_performed_manually_warning_location()
             cls._setup_auto_add_committee_to_threads()
+            cls._setup_send_committee_actions_reminders()
+            cls._setup_committee_actions_reminders_channel()
+            cls._setup_display_committee_actions_board()
+            cls._setup_committee_actions_board_channel()
+            cls._setup_committee_actions_reminders_interval()
         except ImproperlyConfiguredError as improper_config_error:
             webhook_config_logger.error(improper_config_error.message)  # noqa: TRY400
             raise improper_config_error from improper_config_error
