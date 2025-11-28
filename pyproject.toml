@@ -28,11 +28,13 @@ main = [
     "validators>=0.34"
 ]
 pre-commit = ["pre-commit>=4.0", { include-group = "lint-format" }]
-test = ["pytest>=9", "pytest-cov>=6.1"]
+test = ["pytest-cov>=7", { include-group = "test-core" }]
+test-core = ["gitpython>=3.1.45", "pytest>=9"]
 type-check = [
     "django-stubs[compatible-mypy]>=5.1",
     "mypy>=1.18.2",
-    "types-beautifulsoup4>=4.12"
+    "types-beautifulsoup4>=4.12",
+    { include-group = "test-core" }
 ]
 
 [tool.coverage.report]
@@ -204,7 +206,7 @@ extend-ignore-names = ["BROKEN_*_MESSAGE", "INVALID_*_MESSAGE", "NO_*_MESSAGE"]
 "stubs/**.pyi" = ["N"]
 "stubs/discord/**/*.pyi" = ["F403"]
 "stubs/discord/commands/__init__.pyi" = ["F405"]
-"tests/**/test_*.py" = ["S101"]
+"tests/**/test_*.py" = ["S101", "S311", "SLF001"]
 
 [tool.ruff.lint.pycodestyle]
 ignore-overlong-task-comments = true
