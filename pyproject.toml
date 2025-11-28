@@ -33,7 +33,8 @@ test-core = ["gitpython>=3.1.45", "pytest>=9"]
 type-check = [
     "django-stubs[compatible-mypy]>=5.1",
     "mypy>=1.18.2",
-    "types-beautifulsoup4>=4.12"
+    "types-beautifulsoup4>=4.12",
+    { include-group = "test-core" }
 ]
 
 [tool.coverage.report]
