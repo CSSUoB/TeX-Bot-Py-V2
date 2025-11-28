@@ -86,11 +86,13 @@ class TestGenerateInviteURL:
     @staticmethod
     def test_url_generates() -> None:
         """Test that the invite URL generates successfully when valid arguments are passed."""
-        DISCORD_BOT_APPLICATION_ID: Final[int] = random.randint(  # noqa: S311
-            10000000000000000, 99999999999999999999
+        DISCORD_BOT_APPLICATION_ID: Final[int] = random.randint(
+            10000000000000000,
+            99999999999999999999,
         )
-        DISCORD_MAIN_GUILD_ID: Final[int] = random.randint(  # noqa: S311
-            10000000000000000, 99999999999999999999
+        DISCORD_MAIN_GUILD_ID: Final[int] = random.randint(
+            10000000000000000,
+            99999999999999999999,
         )
 
         invite_url: str = utils.generate_invite_url(
