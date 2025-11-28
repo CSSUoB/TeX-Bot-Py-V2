@@ -1012,7 +1012,7 @@ class TestMemberRoleDoesNotExistError:
 
     def test_member_role_does_not_exist_dependent_commands(self) -> None:
         """Test that the dependent commands are set correctly."""
-        assert frozenset({"makemember", "ensure-members-inducted", "annual-roles-reset"}) == (
+        assert frozenset({"make-member", "ensure-members-inducted", "annual-roles-reset"}) == (
             MemberRoleDoesNotExistError.DEPENDENT_COMMANDS
         )
 
