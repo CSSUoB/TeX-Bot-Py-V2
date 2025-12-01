@@ -89,6 +89,16 @@ repos:
 
     - repo: local
       hooks:
+        - id: flake8
+          # yamllint disable-line rule:key-ordering
+          description: "`flake8` is a command-line utility for enforcing style consistency across
+            Python projects."
+          entry: flake8  # yamllint disable-line rule:key-ordering
+          language: python
+          name: flake8
+          require_serial: true
+          types: [python]
+
         - id: ruff-check
           args: [--fix]
           description: Run 'ruff check' for extremely fast Python linting  # yamllint disable-line rule:key-ordering
