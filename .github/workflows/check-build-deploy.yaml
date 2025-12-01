@@ -35,17 +35,18 @@ jobs:
             - name: Set Up Python
               uses: actions/setup-python@v6
               with:
-                python-version: 3.14
+                python-version-file: .python-version
 
             - name: Install uv
               uses: astral-sh/setup-uv@v7
               with:
                 enable-cache: true
 
+            - name: Install Flake8 From Locked Dependencies
+              run: uv sync --only-group lint-format
+
             - name: Run Flake8
-              # TODO: Run from locked dependencies, once project's Python version has been updated to 3.14
-              run: uvx --python 3.14 --with "flake8-carrot>=0.1.4" --with "flake8-pyproject>=1.2"
-                -- flake8
+              run: uv run -- flake8
 
     mypy:  # yamllint disable-line rule:key-ordering
         env:
