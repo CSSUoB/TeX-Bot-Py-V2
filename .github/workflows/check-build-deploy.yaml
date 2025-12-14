@@ -44,8 +44,8 @@ jobs:
 
             - name: Run Flake8
               # TODO: Run from locked dependencies, once project's Python version has been updated to 3.14
-              run: uvx --python 3.14 --with flake8-carrot>=0.1.4 --with flake8-pyproject>=1.2 --
-                flake8
+              run: uvx --python 3.14 --with "flake8-carrot>=0.1.4" --with "flake8-pyproject>=1.2"
+                -- flake8
 
     mypy:  # yamllint disable-line rule:key-ordering
         env:
@@ -76,20 +76,20 @@ jobs:
             - name: Install mypy From Locked Dependencies
               run: |
                 if [ "${{matrix.component}}" == "package" ]; then
-                  ARGS=""
+                    ARGS=()
                 elif [ "${{matrix.component}}" == "tests" ]; then
-                  ARGS="--group test"
+                    ARGS=("--group" "test")
                 else
-                  echo "Error: Unknown matrix.component value: '${{matrix.component}}'" >&2
-                  exit 1
+                    echo "Error: Unknown matrix.component value: '${{matrix.component}}'" >&2
+                    exit 1
                 fi
 
-                uv sync --no-group dev --group type-check $ARGS
+                uv sync --no-group dev --group type-check "${ARGS[@]}"
 
             - id: store-hashed-python-version
               name: Store Hashed Python Version
               run: echo "hashed_python_version=$(uv run -- python -VV | sha256sum | cut -d' ' -f1)"
-                >> $GITHUB_OUTPUT
+                >> "$GITHUB_OUTPUT"
 
             - uses: actions/cache@v5
               with:
@@ -99,15 +99,15 @@ jobs:
             - name: Run mypy  # TODO: Add GitHub workflows output format
               run: |
                 if [ "${{matrix.component}}" == "package" ]; then
-                  ARGS=". --exclude tests/"
+                    ARGS=("." "--exclude" "tests/")
                 elif [ "${{matrix.component}}" == "tests" ]; then
-                  ARGS="tests/"
+                    ARGS=("tests/")
                 else
-                  echo "Error: Unknown matrix.component value: '${{matrix.component}}'" >&2
-                  exit 1
+                    echo "Error: Unknown matrix.component value: '${{matrix.component}}'" >&2
+                    exit 1
                 fi
 
-                uv run -- mypy $ARGS
+                uv run -- mypy "${ARGS[@]}"
 
     pre-commit:  # yamllint disable-line rule:key-ordering
         env:
@@ -142,7 +142,7 @@ jobs:
             - id: store-hashed-python-version
               name: Store Hashed Python Version
               run: echo "hashed_python_version=$(uv run -- python -VV | sha256sum | cut -d' ' -f1)"
-                >> $GITHUB_OUTPUT
+                >> "$GITHUB_OUTPUT"
 
             - uses: actions/cache@v5
               with:
@@ -155,13 +155,18 @@ jobs:
             - name: Save pre-commit Checks Which Require Skipping
               run: |
                 if [[ "${{github.event_name}}" == "push" && "${{github.ref_name}}" == "${{github.event.repository.default_branch}}" ]]; then
-                    echo "SKIP=check-github-workflows,flake8,ruff-check,uv-lock,gitlint-ci" >> $GITHUB_ENV
+                    echo "SKIP=flake8,ruff-check,uv-lock,gitlint-ci" >> "$GITHUB_ENV"
                 else
-                    echo "SKIP=check-github-workflows,flake8,ruff-check,uv-lock" >> $GITHUB_ENV
+                    echo "SKIP=flake8,ruff-check,uv-lock" >> "$GITHUB_ENV"
                 fi
 
             - name: Run pre-commit
-              run: uv run -- pre-commit run --all-files --hook-stage manual  # TODO: Add GitHub workflows output format
+              run: |
+                set -o pipefail
+                uv run -- pre-commit run --all-files --hook-stage manual | tee /tmp/pre-commit.log
+
+            - name: Ensure No Warnings
+              run: if grep -q "\[WARNING\]" /tmp/pre-commit.log; then exit 1; fi
 
             - if: ${{!cancelled()}}
               uses: pre-commit-ci/lite-action@v1.1.0
@@ -221,7 +226,7 @@ jobs:
             - id: store-hashed-python-version
               name: Store Hashed Python Version
               run: echo "hashed_python_version=$(uv run -- python -VV | sha256sum | cut -d' ' -f1)"
-                >> $GITHUB_OUTPUT
+                >> "$GITHUB_OUTPUT"
 
             - uses: actions/cache@v5
               with:
@@ -269,7 +274,7 @@ jobs:
             - id: store-hashed-python-version
               name: Store Hashed Python Version
               run: echo "hashed_python_version=$(uv run -- python -VV | sha256sum | cut -d' ' -f1)"
-                >> $GITHUB_OUTPUT
+                >> "$GITHUB_OUTPUT"
 
             - uses: actions/cache@v5
               with:
@@ -284,9 +289,8 @@ jobs:
             IMAGE_NAME: ${{github.repository}}
             REGISTRY: ghcr.io
         environment: publish
-        if: |
-            github.event_name != 'pull_request' ||
-            github.event.pull_request.head.repo.full_name == 'CSSUoB/TeX-Bot-Py-V2'
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name
+            == 'CSSUoB/TeX-Bot-Py-V2'
         needs: [mypy, pre-commit, pymarkdown, pytest, ruff-lint, uv-check]
         permissions:
             attestations: write
