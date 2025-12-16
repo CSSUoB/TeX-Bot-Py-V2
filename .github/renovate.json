@@ -23,8 +23,8 @@
         "dependencies"
     ],
     "lockFileMaintenance": {
-        "enabled": true,
-        "automerge": true
+        "automerge": true,
+        "enabled": true
     },
     "packageRules": [
         {
