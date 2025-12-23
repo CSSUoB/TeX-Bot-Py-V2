@@ -27,7 +27,7 @@ main = [
     "typed_classproperties>=1.2",
     "validators>=0.34"
 ]
-pre-commit = ["prek>=0.2"]
+pre-commit = ["prek>=0.2,!=0.2.23"]
 test = ["pytest>=9", "pytest-cov>=6.1"]
 type-check = [
     "django-stubs[compatible-mypy]>=5.1",
