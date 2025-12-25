@@ -91,7 +91,7 @@ class StatsCommandsCog(TeXBotBaseCog):
             )
             return
 
-        stats_channel: discord.TextChannel | None
+        stats_channel: discord.TextChannel | None = None
 
         if not str_channel_id:
             if not isinstance(ctx.channel, discord.TextChannel):
@@ -192,7 +192,7 @@ class StatsCommandsCog(TeXBotBaseCog):
             await self.command_send_error(
                 ctx,
                 message=(
-                    "Interaction channel was None while attempting to send left member stats."
+                    "Interaction channel was None while attempting to send server stats."
                 ),
             )
             return
@@ -203,7 +203,7 @@ class StatsCommandsCog(TeXBotBaseCog):
             await self.command_send_error(
                 ctx,
                 message=(
-                    "Left member stats cannot be sent in a voice, forum, or category channel."
+                    "Server stats cannot be sent in a voice, forum, or category channel."
                 ),
             )
             return
@@ -303,7 +303,7 @@ class StatsCommandsCog(TeXBotBaseCog):
             await self.command_send_error(
                 ctx,
                 message=(
-                    "Interaction channel was None while attempting to send left member stats."
+                    "Interaction channel was None while attempting to send user stats."
                 ),
             )
             return
@@ -314,7 +314,7 @@ class StatsCommandsCog(TeXBotBaseCog):
             await self.command_send_error(
                 ctx,
                 message=(
-                    "Left member stats cannot be sent in a voice, forum, or category channel."
+                    "User stats cannot be sent in a voice, forum, or category channel."
                 ),
             )
             return
