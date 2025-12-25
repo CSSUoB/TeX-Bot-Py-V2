@@ -302,9 +302,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         if not ctx.channel:
             await self.command_send_error(
                 ctx,
-                message=(
-                    "Interaction channel was None while attempting to send user stats."
-                ),
+                message=("Interaction channel was None while attempting to send user stats."),
             )
             return
 
@@ -313,9 +311,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         ):
             await self.command_send_error(
                 ctx,
-                message=(
-                    "User stats cannot be sent in a voice, forum, or category channel."
-                ),
+                message=("User stats cannot be sent in a voice, forum, or category channel."),
             )
             return
 
