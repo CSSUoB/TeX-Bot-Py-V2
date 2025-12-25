@@ -1,7 +1,6 @@
 """Contains cog classes for any stats interactions."""
 
 import math
-import re
 from typing import TYPE_CHECKING
 
 import discord
@@ -83,32 +82,64 @@ class StatsCommandsCog(TeXBotBaseCog):
         The "channel_stats" command sends a graph of the stats about messages sent in the given
         channel.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = self.bot.main_guild
-
-        channel_id: int = ctx.channel_id
-
-        if str_channel_id:
-            if not re.fullmatch(r"\A\d{17,20}\Z", str_channel_id):
-                await self.command_send_error(
-                    ctx, message=f"{str_channel_id!r} is not a valid channel ID."
-                )
-                return
-
-            channel_id = int(str_channel_id)
-
-        channel: discord.TextChannel | None = discord.utils.get(
-            main_guild.text_channels, id=channel_id
-        )
-        if not channel:
+        if not ctx.channel or not isinstance(
+            ctx.channel, (discord.TextChannel, discord.DMChannel)
+        ):
             await self.command_send_error(
-                ctx, message=f"Text channel with ID {str(channel_id)!r} does not exist."
+                ctx,
+                message="Channel statistics cannot be sent in this channel.",
             )
             return
 
+        stats_channel: discord.TextChannel | None
+
+        if not str_channel_id:
+            if not isinstance(ctx.channel, discord.TextChannel):
+                await self.command_send_error(
+                    ctx,
+                    message=(
+                        "User did not provide a channel ID and the interaction channel "
+                        "is not a text channel."
+                    ),
+                )
+                return
+            stats_channel = ctx.channel
+
+        if not stats_channel:
+            try:
+                channel_id: int = int(str_channel_id)
+            except ValueError:
+                await self.command_send_error(
+                    ctx,
+                    message="The provided channel ID was not a valid integer.",
+                )
+                return
+
+            result_channel = ctx.bot.get_channel(channel_id)
+            if not result_channel:
+                await self.command_send_error(
+                    ctx,
+                    message="The provided channel ID was not valid or could not be found.",
+                )
+                return
+
+            if not isinstance(result_channel, discord.TextChannel):
+                await self.command_send_error(
+                    ctx,
+                    message=(
+                        "The provided channel ID relates to a channel type "
+                        "that is not supported."
+                    ),
+                )
+                return
+
+            stats_channel = result_channel
+
         await ctx.defer(ephemeral=True)
 
-        message_counts: Mapping[str, int] = await get_channel_message_counts(channel=channel)
+        message_counts: Mapping[str, int] = await get_channel_message_counts(
+            channel=stats_channel
+        )
 
         if math.ceil(max(message_counts.values()) / 15) < 1:
             await self.command_send_error(
@@ -128,11 +159,11 @@ class StatsCommandsCog(TeXBotBaseCog):
                         amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")
                     })"""
                 ),
-                title=f"Most Active Roles in #{channel.name}",
-                filename=f"{channel.name}_channel_stats.png",
+                title=f"Most Active Roles in #{stats_channel.name}",
+                filename=f"{stats_channel.name}_channel_stats.png",
                 description=(
                     "Bar chart of the number of messages "
-                    f"sent by different roles in {channel.mention}."
+                    f"sent by different roles in {stats_channel.mention}."
                 ),
                 extra_text=(
                     "Messages sent by members with multiple roles are counted once "
@@ -156,6 +187,26 @@ class StatsCommandsCog(TeXBotBaseCog):
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
+
+        if not ctx.channel:
+            await self.command_send_error(
+                ctx,
+                message=(
+                    "Interaction channel was None while attempting to send left member stats."
+                ),
+            )
+            return
+
+        if isinstance(
+            ctx.channel, (discord.VoiceChannel, discord.ForumChannel, discord.CategoryChannel)
+        ):
+            await self.command_send_error(
+                ctx,
+                message=(
+                    "Left member stats cannot be sent in a voice, forum, or category channel."
+                ),
+            )
+            return
 
         await ctx.defer(ephemeral=True)
 
@@ -248,6 +299,26 @@ class StatsCommandsCog(TeXBotBaseCog):
             )
             return
 
+        if not ctx.channel:
+            await self.command_send_error(
+                ctx,
+                message=(
+                    "Interaction channel was None while attempting to send left member stats."
+                ),
+            )
+            return
+
+        if isinstance(
+            ctx.channel, (discord.VoiceChannel, discord.ForumChannel, discord.CategoryChannel)
+        ):
+            await self.command_send_error(
+                ctx,
+                message=(
+                    "Left member stats cannot be sent in a voice, forum, or category channel."
+                ),
+            )
+            return
+
         await ctx.defer(ephemeral=True)
 
         message_counts: dict[str, int] = {"Total": 0}
@@ -313,6 +384,26 @@ class StatsCommandsCog(TeXBotBaseCog):
         """
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
+
+        if not ctx.channel:
+            await self.command_send_error(
+                ctx,
+                message=(
+                    "Interaction channel was None while attempting to send left member stats."
+                ),
+            )
+            return
+
+        if isinstance(
+            ctx.channel, (discord.VoiceChannel, discord.ForumChannel, discord.CategoryChannel)
+        ):
+            await self.command_send_error(
+                ctx,
+                message=(
+                    "Left member stats cannot be sent in a voice, forum, or category channel."
+                ),
+            )
+            return
 
         await ctx.defer(ephemeral=True)
 

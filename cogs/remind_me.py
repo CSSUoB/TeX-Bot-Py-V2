@@ -210,6 +210,13 @@ class RemindMeCommandCog(TeXBotBaseCog):
 
         The "remind_me" command responds with the given message after the specified time.
         """
+        if not ctx.channel:
+            await self.command_send_error(
+                ctx,
+                message="Interaction channel was None while trying to set a reminder.",
+            )
+            return
+
         parsed_time: tuple[time.struct_time, int] = parsedatetime.Calendar().parseDT(
             delay, tzinfo=timezone.get_current_timezone()
         )
