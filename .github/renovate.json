@@ -8,6 +8,7 @@
         "dependencies"
     ],
     "enabled": true,
+    "automerge": true,
     "enabledManagers": [
         "github-actions",
         "pep621",
@@ -81,7 +82,8 @@
     ],
     "prHourlyLimit": 10,
     "pre-commit": {
-        "enabled": true
+        "enabled": true,
+        "automerge": true
     },
     "timezone": "Europe/London"
 }
