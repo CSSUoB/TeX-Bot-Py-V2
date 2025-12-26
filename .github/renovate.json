@@ -1,6 +1,7 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
     "assignAutomerge": true,
+    "automerge": true,
     "configMigration": true,
     "dependencyDashboard": true,
     "dependencyDashboardAutoclose": true,
@@ -8,7 +9,6 @@
         "dependencies"
     ],
     "enabled": true,
-    "automerge": true,
     "enabledManagers": [
         "github-actions",
         "pep621",
@@ -82,8 +82,8 @@
     ],
     "prHourlyLimit": 10,
     "pre-commit": {
-        "enabled": true,
-        "automerge": true
+        "automerge": true,
+        "enabled": true
     },
     "timezone": "Europe/London"
 }
