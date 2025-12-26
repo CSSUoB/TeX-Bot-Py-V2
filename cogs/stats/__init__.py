@@ -404,7 +404,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         await ctx.defer(ephemeral=True)
 
         left_member_counts: dict[str, int] = {
-            "Total": await LeftDiscordMember.objects.acount()
+            "Total": await LeftDiscordMember.objects.acount()  # codespell:ignore acount
         }
 
         role_name: str
