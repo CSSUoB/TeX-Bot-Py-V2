@@ -631,9 +631,6 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         )
 
         if len(actions_message) >= 2000:
-            await ctx.respond(
-                content="Actions list exceeds maximum message length, sending in chunks"
-            )
             for chunk in textwrap.wrap(
                 text=actions_message,
                 width=1950,
