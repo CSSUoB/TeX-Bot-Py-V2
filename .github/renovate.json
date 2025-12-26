@@ -82,7 +82,6 @@
     ],
     "prHourlyLimit": 10,
     "pre-commit": {
-        "automerge": true,
         "enabled": true
     },
     "timezone": "Europe/London"
