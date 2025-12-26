@@ -89,7 +89,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 )
             )
             if not error_is_already_exits:
-                await self.command_send_error(ctx, message="An unrecoverable error occured.")
+                await self.command_send_error(ctx, message="An unrecoverable error occurred.")
                 logger.critical("Error upon creating Action object: %s", create_action_error)
                 await self.bot.close()
 
