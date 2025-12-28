@@ -81,7 +81,7 @@ class TeXBotBaseCog(Cog):
         The constructed error message is then sent as the response to the given
         application command context.
         """
-        COMMAND_NAME: Final[str] = (
+        command_name: str | None = (
             (
                 ctx.command.callback.__name__
                 if (
@@ -91,13 +91,13 @@ class TeXBotBaseCog(Cog):
                 else ctx.command.qualified_name
             )
             if ctx.command
-            else "UnknownCommand"
+            else None
         )
 
         await self.send_error(
             self.bot,
             ctx.interaction,
-            interaction_name=COMMAND_NAME,
+            interaction_name=command_name,
             error_code=error_code,
             message=message,
             logging_message=logging_message,
@@ -108,7 +108,7 @@ class TeXBotBaseCog(Cog):
         cls,
         bot: "TeXBot",
         interaction: discord.Interaction,
-        interaction_name: str,
+        interaction_name: str | None,
         error_code: str | None = None,
         message: str | None = None,
         logging_message: str | BaseException | None = None,
@@ -128,7 +128,7 @@ class TeXBotBaseCog(Cog):
                 f"{error_code}**\n"
             ) + construct_error_message
 
-        if interaction_name in cls.ERROR_ACTIVITIES:
+        if interaction_name and interaction_name in cls.ERROR_ACTIVITIES:
             construct_error_message += (
                 f" when trying to {cls.ERROR_ACTIVITIES[interaction_name]}"
             )

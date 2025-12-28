@@ -72,7 +72,7 @@ class CommandErrorCog(TeXBotBaseCog):
         if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(
             error.original, GuildDoesNotExistError
         ):
-            command_name: str = (
+            command_name: str | None = (
                 (
                     ctx.command.callback.__name__
                     if (
@@ -82,7 +82,7 @@ class CommandErrorCog(TeXBotBaseCog):
                     else ctx.command.qualified_name
                 )
                 if ctx.command
-                else "UnknownCommand"
+                else None
             )
             logger.critical(
                 " ".join(
