@@ -631,6 +631,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         )
 
         if len(actions_message) >= 2000:
+            chunk: str
             for chunk in textwrap.wrap(
                 text=actions_message,
                 width=1950,
@@ -820,9 +821,8 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         )
 
         if len(all_actions_message) >= 2000:
-            chunks: list[str] = all_actions_message.split("\n\n")
             chunk: str
-            for chunk in chunks:
+            for chunk in all_actions_message.split("\n\n"):
                 sub_chunk: str
                 for sub_chunk in textwrap.wrap(
                     text=chunk,
