@@ -1063,7 +1063,7 @@ main = [
     { name = "matplotlib", specifier = ">=3.10" },
     { name = "mplcyberpunk", specifier = ">=0.7" },
     { name = "parsedatetime", specifier = ">=2.6" },
-    { name = "py-cord", specifier = ">=2.6,<2.7" },
+    { name = "py-cord", specifier = ">=2.7" },
     { name = "python-dotenv", specifier = ">=1.0" },
     { name = "python-logging-discord-handler", specifier = ">=0.1" },
     { name = "typed-classproperties", specifier = ">=1.2" },
