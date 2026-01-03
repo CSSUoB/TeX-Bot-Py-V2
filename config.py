@@ -114,7 +114,7 @@ class Settings(abc.ABC):
         if item in self._settings:
             return self._settings[item]
 
-        if re.fullmatch(r"\A[A-Z](?:[A-Z_]*[A-Z])?\Z", item):
+        if re.fullmatch(pattern=r"\A[A-Z](?:[A-Z_]*[A-Z])?\Z", string=item):
             INVALID_SETTINGS_KEY_MESSAGE: Final[str] = self.get_invalid_settings_key_message(
                 item
             )
@@ -137,7 +137,9 @@ class Settings(abc.ABC):
 
     @staticmethod
     def _setup_console_logging() -> None:
-        raw_console_log_level: str = os.getenv("CONSOLE_LOG_LEVEL", "INFO").upper().strip()
+        raw_console_log_level: str = (
+            os.getenv("CONSOLE_LOG_LEVEL", default="INFO").upper().strip()
+        )
 
         if raw_console_log_level not in LOG_LEVEL_CHOICES:
             INVALID_LOG_LEVEL_MESSAGE: Final[str] = f"CONSOLE_LOG_LEVEL must be one of {
@@ -159,7 +161,7 @@ class Settings(abc.ABC):
 
     @staticmethod
     def _setup_discord_log_level() -> None:
-        raw_discord_log_level: str = os.getenv("DISCORD_LOG_LEVEL", "").upper().strip()
+        raw_discord_log_level: str = os.getenv("DISCORD_LOG_LEVEL", default="").upper().strip()
 
         if not raw_discord_log_level:
             logger.debug("DISCORD_LOG_LEVEL is not set, skipping Discord logging setup.")
@@ -193,8 +195,8 @@ class Settings(abc.ABC):
         raw_discord_bot_token: str = os.getenv("DISCORD_BOT_TOKEN", default="").strip()
 
         if not raw_discord_bot_token or not re.fullmatch(
-            r"\A([A-Za-z0-9_-]{24,26})\.([A-Za-z0-9_-]{6})\.([A-Za-z0-9_-]{27,38})\Z",
-            raw_discord_bot_token,
+            pattern=r"\A([A-Za-z0-9_-]{24,26})\.([A-Za-z0-9_-]{6})\.([A-Za-z0-9_-]{27,38})\Z",
+            string=raw_discord_bot_token,
         ):
             INVALID_DISCORD_BOT_TOKEN_MESSAGE: Final[str] = (
                 "DISCORD_BOT_TOKEN must be set to a valid Discord bot token "  # noqa: S105
@@ -207,7 +209,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_discord_log_channel_webhook(cls) -> "Logger":
         raw_discord_log_channel_webhook_url: str = os.getenv(
-            "DISCORD_LOG_CHANNEL_WEBHOOK_URL", ""
+            "DISCORD_LOG_CHANNEL_WEBHOOK_URL", default=""
         ).strip()
 
         if not raw_discord_log_channel_webhook_url:
@@ -248,7 +250,7 @@ class Settings(abc.ABC):
         raw_discord_guild_id: str = os.getenv("DISCORD_GUILD_ID", default="").strip()
 
         if not raw_discord_guild_id or not re.fullmatch(
-            r"\A\d{17,20}\Z", raw_discord_guild_id
+            pattern=r"\A\d{17,20}\Z", string=raw_discord_guild_id
         ):
             INVALID_DISCORD_GUILD_ID_MESSAGE: Final[str] = (
                 "DISCORD_GUILD_ID must be a valid Discord guild ID "
@@ -266,7 +268,9 @@ class Settings(abc.ABC):
             cls._settings["_GROUP_FULL_NAME"] = None
             return
 
-        if not re.fullmatch(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", raw_group_full_name):
+        if not re.fullmatch(
+            pattern=r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", string=raw_group_full_name
+        ):
             INVALID_GROUP_FULL_NAME: Final[str] = (
                 "GROUP_NAME must not contain any invalid characters."
             )
@@ -282,7 +286,9 @@ class Settings(abc.ABC):
             cls._settings["_GROUP_SHORT_NAME"] = None
             return
 
-        if not re.fullmatch(r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", raw_group_short_name):
+        if not re.fullmatch(
+            pattern=r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", string=raw_group_short_name
+        ):
             INVALID_GROUP_SHORT_NAME: Final[str] = (
                 "GROUP_SHORT_NAME must not contain any invalid characters."
             )
@@ -494,7 +500,9 @@ class Settings(abc.ABC):
     def _setup_organisation_id(cls) -> None:
         raw_organisation_id: str = os.getenv("ORGANISATION_ID", default="").strip()
 
-        if not raw_organisation_id or not re.fullmatch(r"\A\d{4,5}\Z", raw_organisation_id):
+        if not raw_organisation_id or not re.fullmatch(
+            pattern=r"\A\d{4,5}\Z", string=raw_organisation_id
+        ):
             INVALID_ORGANISATION_ID_MESSAGE: Final[str] = (
                 "ORGANISATION_ID must be an integer 4 to 5 digits long."
             )
@@ -510,7 +518,7 @@ class Settings(abc.ABC):
         ).strip()
 
         if not raw_su_platform_access_cookie or not re.fullmatch(
-            r"\A[\w-]{512,1024}\Z", raw_su_platform_access_cookie
+            pattern=r"\A[\w-]{512,1024}\Z", string=raw_su_platform_access_cookie
         ):
             INVALID_SU_PLATFORM_ACCESS_COOKIE_MESSAGE: Final[str] = (
                 "SU_PLATFORM_ACCESS_COOKIE must be a valid .AspNet.SharedCookie cookie."
@@ -522,7 +530,9 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_auto_su_platform_access_cookie_checking(cls) -> None:
         raw_auto_auth_session_cookie_checking: str = (
-            os.getenv("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING", "False").lower().strip()
+            os.getenv("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING", default="False")
+            .lower()
+            .strip()
         )
 
         if raw_auto_auth_session_cookie_checking not in TRUE_VALUES | FALSE_VALUES:
@@ -550,18 +560,22 @@ class Settings(abc.ABC):
 
         raw_auto_su_platform_access_cookie_checking_interval: re.Match[str] | None = (
             re.fullmatch(
-                r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-                os.getenv("AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL", "24h")
-                .strip()
-                .lower()
-                .replace(" ", ""),
+                pattern=r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
+                string=(
+                    os.getenv(
+                        "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL", default="24h"
+                    )
+                    .strip()
+                    .lower()
+                    .replace(" ", "")
+                ),
             )
         )
 
         if not raw_auto_su_platform_access_cookie_checking_interval:
             INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE: Final[str] = (
                 "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL must contain the delay "
-                "in any combination of seconds, minutes, hours, days or weeks."
+                "in any combination of seconds, minutes or hours."
             )
             logger.debug(raw_auto_su_platform_access_cookie_checking_interval)
             raise ImproperlyConfiguredError(
@@ -597,7 +611,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_send_introduction_reminders(cls) -> None:
         raw_send_introduction_reminders: str | bool = (
-            os.getenv("SEND_INTRODUCTION_REMINDERS", "Once").lower().strip()
+            os.getenv("SEND_INTRODUCTION_REMINDERS", default="Once").lower().strip()
         )
 
         if raw_send_introduction_reminders not in VALID_SEND_INTRODUCTION_REMINDERS_VALUES:
@@ -624,11 +638,13 @@ class Settings(abc.ABC):
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
         raw_send_introduction_reminders_delay: re.Match[str] | None = re.fullmatch(
-            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            os.getenv("SEND_INTRODUCTION_REMINDERS_DELAY", "40h")
-            .strip()
-            .lower()
-            .replace(" ", ""),
+            pattern=r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
+            string=(
+                os.getenv("SEND_INTRODUCTION_REMINDERS_DELAY", default="40h")
+                .strip()
+                .lower()
+                .replace(" ", "")
+            ),
         )
 
         raw_timedelta_send_introduction_reminders_delay: datetime.timedelta = (
@@ -675,11 +691,13 @@ class Settings(abc.ABC):
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
         raw_send_introduction_reminders_interval: re.Match[str] | None = re.fullmatch(
-            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", "6h")
-            .strip()
-            .lower()
-            .replace(" ", ""),
+            pattern=r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
+            string=(
+                os.getenv("SEND_INTRODUCTION_REMINDERS_INTERVAL", default="6h")
+                .strip()
+                .lower()
+                .replace(" ", "")
+            ),
         )
 
         raw_timedelta_details_send_introduction_reminders_interval: Mapping[str, float] = {
@@ -722,7 +740,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_send_get_roles_reminders(cls) -> None:
         raw_send_get_roles_reminders: str = (
-            os.getenv("SEND_GET_ROLES_REMINDERS", "True").lower().strip()
+            os.getenv("SEND_GET_ROLES_REMINDERS", default="True").lower().strip()
         )
 
         if raw_send_get_roles_reminders not in TRUE_VALUES | FALSE_VALUES:
@@ -743,11 +761,13 @@ class Settings(abc.ABC):
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
         raw_send_get_roles_reminders_delay: re.Match[str] | None = re.fullmatch(
-            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            os.getenv("SEND_GET_ROLES_REMINDERS_DELAY", "40h")
-            .strip()
-            .lower()
-            .replace(" ", ""),
+            pattern=r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
+            string=(
+                os.getenv("SEND_GET_ROLES_REMINDERS_DELAY", default="40h")
+                .strip()
+                .lower()
+                .replace(" ", "")
+            ),
         )
 
         raw_timedelta_send_get_roles_reminders_delay: datetime.timedelta = datetime.timedelta()
@@ -790,11 +810,13 @@ class Settings(abc.ABC):
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
         raw_advanced_send_get_roles_reminders_interval: re.Match[str] | None = re.fullmatch(
-            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
-            os.getenv("ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL", "24h")
-            .strip()
-            .lower()
-            .replace(" ", ""),
+            pattern=r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?\Z",
+            string=(
+                os.getenv("ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL", default="24h")
+                .strip()
+                .lower()
+                .replace(" ", "")
+            ),
         )
 
         raw_timedelta_details_advanced_send_get_roles_reminders_interval: Mapping[
@@ -827,7 +849,9 @@ class Settings(abc.ABC):
     def _setup_statistics_days(cls) -> None:
         e: ValueError
         try:
-            raw_statistics_days: float = float(os.getenv("STATISTICS_DAYS", "30").strip())
+            raw_statistics_days: float = float(
+                os.getenv("STATISTICS_DAYS", default="30").strip()
+            )
         except ValueError as e:
             INVALID_STATISTICS_DAYS_MESSAGE: Final[str] = (
                 "STATISTICS_DAYS must contain the statistics period in days."
@@ -929,7 +953,7 @@ class Settings(abc.ABC):
     @classmethod
     def _setup_auto_add_committee_to_threads(cls) -> None:
         raw_auto_add_committee_to_threads: str = (
-            os.getenv("AUTO_ADD_COMMITTEE_TO_THREADS", "True").lower().strip()
+            os.getenv("AUTO_ADD_COMMITTEE_TO_THREADS", default="True").lower().strip()
         )
 
         if raw_auto_add_committee_to_threads not in TRUE_VALUES | FALSE_VALUES:
