@@ -114,7 +114,7 @@ class Settings(abc.ABC):
         if item in self._settings:
             return self._settings[item]
 
-        if re.fullmatch(r"\A[A-Z](?:[A-Z_]*[A-Z])?\Z", item):
+        if re.fullmatch(pattern=r"\A[A-Z](?:[A-Z_]*[A-Z])?\Z", string=item):
             INVALID_SETTINGS_KEY_MESSAGE: Final[str] = self.get_invalid_settings_key_message(
                 item
             )
@@ -195,8 +195,8 @@ class Settings(abc.ABC):
         raw_discord_bot_token: str = os.getenv("DISCORD_BOT_TOKEN", default="").strip()
 
         if not raw_discord_bot_token or not re.fullmatch(
-            r"\A([A-Za-z0-9_-]{24,26})\.([A-Za-z0-9_-]{6})\.([A-Za-z0-9_-]{27,38})\Z",
-            raw_discord_bot_token,
+            pattern=r"\A([A-Za-z0-9_-]{24,26})\.([A-Za-z0-9_-]{6})\.([A-Za-z0-9_-]{27,38})\Z",
+            string=raw_discord_bot_token,
         ):
             INVALID_DISCORD_BOT_TOKEN_MESSAGE: Final[str] = (
                 "DISCORD_BOT_TOKEN must be set to a valid Discord bot token "  # noqa: S105
@@ -250,7 +250,7 @@ class Settings(abc.ABC):
         raw_discord_guild_id: str = os.getenv("DISCORD_GUILD_ID", default="").strip()
 
         if not raw_discord_guild_id or not re.fullmatch(
-            r"\A\d{17,20}\Z", raw_discord_guild_id
+            pattern=r"\A\d{17,20}\Z", string=raw_discord_guild_id
         ):
             INVALID_DISCORD_GUILD_ID_MESSAGE: Final[str] = (
                 "DISCORD_GUILD_ID must be a valid Discord guild ID "
@@ -268,7 +268,7 @@ class Settings(abc.ABC):
             cls._settings["_GROUP_FULL_NAME"] = None
             return
 
-        if not re.fullmatch(r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", raw_group_full_name):
+        if not re.fullmatch(pattern=r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", string=raw_group_full_name):
             INVALID_GROUP_FULL_NAME: Final[str] = (
                 "GROUP_NAME must not contain any invalid characters."
             )
@@ -284,7 +284,7 @@ class Settings(abc.ABC):
             cls._settings["_GROUP_SHORT_NAME"] = None
             return
 
-        if not re.fullmatch(r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", raw_group_short_name):
+        if not re.fullmatch(pattern=r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", string=raw_group_short_name):
             INVALID_GROUP_SHORT_NAME: Final[str] = (
                 "GROUP_SHORT_NAME must not contain any invalid characters."
             )
@@ -496,7 +496,7 @@ class Settings(abc.ABC):
     def _setup_organisation_id(cls) -> None:
         raw_organisation_id: str = os.getenv("ORGANISATION_ID", default="").strip()
 
-        if not raw_organisation_id or not re.fullmatch(r"\A\d{4,5}\Z", raw_organisation_id):
+        if not raw_organisation_id or not re.fullmatch(pattern=r"\A\d{4,5}\Z", string=raw_organisation_id):
             INVALID_ORGANISATION_ID_MESSAGE: Final[str] = (
                 "ORGANISATION_ID must be an integer 4 to 5 digits long."
             )
@@ -512,7 +512,7 @@ class Settings(abc.ABC):
         ).strip()
 
         if not raw_su_platform_access_cookie or not re.fullmatch(
-            r"\A[\w-]{512,1024}\Z", raw_su_platform_access_cookie
+            pattern=r"\A[\w-]{512,1024}\Z", string=raw_su_platform_access_cookie
         ):
             INVALID_SU_PLATFORM_ACCESS_COOKIE_MESSAGE: Final[str] = (
                 "SU_PLATFORM_ACCESS_COOKIE must be a valid .AspNet.SharedCookie cookie."
@@ -632,11 +632,13 @@ class Settings(abc.ABC):
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
         raw_send_introduction_reminders_delay: re.Match[str] | None = re.fullmatch(
-            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            os.getenv("SEND_INTRODUCTION_REMINDERS_DELAY", default="40h")
-            .strip()
-            .lower()
-            .replace(" ", ""),
+            pattern=r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
+            string=(
+                os.getenv("SEND_INTRODUCTION_REMINDERS_DELAY", default="40h")
+                .strip()
+                .lower()
+                .replace(" ", "")
+            ),
         )
 
         raw_timedelta_send_introduction_reminders_delay: datetime.timedelta = (
@@ -753,11 +755,13 @@ class Settings(abc.ABC):
             raise RuntimeError(INVALID_SETUP_ORDER_MESSAGE)
 
         raw_send_get_roles_reminders_delay: re.Match[str] | None = re.fullmatch(
-            r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
-            os.getenv("SEND_GET_ROLES_REMINDERS_DELAY", default="40h")
-            .strip()
-            .lower()
-            .replace(" ", ""),
+            pattern=r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?(?:(?P<minutes>(?:\d*\.)?\d+)m)?(?:(?P<hours>(?:\d*\.)?\d+)h)?(?:(?P<days>(?:\d*\.)?\d+)d)?(?:(?P<weeks>(?:\d*\.)?\d+)w)?\Z",
+            string=(
+                os.getenv("SEND_GET_ROLES_REMINDERS_DELAY", default="40h")
+                .strip()
+                .lower()
+                .replace(" ", "")
+            ),
         )
 
         raw_timedelta_send_get_roles_reminders_delay: datetime.timedelta = datetime.timedelta()
