@@ -268,7 +268,9 @@ class Settings(abc.ABC):
             cls._settings["_GROUP_FULL_NAME"] = None
             return
 
-        if not re.fullmatch(pattern=r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", string=raw_group_full_name):
+        if not re.fullmatch(
+            pattern=r"\A[A-Za-z0-9 '&!?:,.#%\"-]+\Z", string=raw_group_full_name
+        ):
             INVALID_GROUP_FULL_NAME: Final[str] = (
                 "GROUP_NAME must not contain any invalid characters."
             )
@@ -284,7 +286,9 @@ class Settings(abc.ABC):
             cls._settings["_GROUP_SHORT_NAME"] = None
             return
 
-        if not re.fullmatch(pattern=r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", string=raw_group_short_name):
+        if not re.fullmatch(
+            pattern=r"\A[A-Za-z0-9'&!?:,.#%\"-]+\Z", string=raw_group_short_name
+        ):
             INVALID_GROUP_SHORT_NAME: Final[str] = (
                 "GROUP_SHORT_NAME must not contain any invalid characters."
             )
@@ -496,7 +500,9 @@ class Settings(abc.ABC):
     def _setup_organisation_id(cls) -> None:
         raw_organisation_id: str = os.getenv("ORGANISATION_ID", default="").strip()
 
-        if not raw_organisation_id or not re.fullmatch(pattern=r"\A\d{4,5}\Z", string=raw_organisation_id):
+        if not raw_organisation_id or not re.fullmatch(
+            pattern=r"\A\d{4,5}\Z", string=raw_organisation_id
+        ):
             INVALID_ORGANISATION_ID_MESSAGE: Final[str] = (
                 "ORGANISATION_ID must be an integer 4 to 5 digits long."
             )
