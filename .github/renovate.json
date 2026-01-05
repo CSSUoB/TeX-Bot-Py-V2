@@ -29,10 +29,26 @@
     },
     "packageRules": [
         {
-            "description": "Only update major Python versions manually",
-            "enabled": false,
+            "dependencyDashboardApproval": true,
+            "description": "Only update Python versions after approval",
             "matchPackageNames": [
                 "python"
+            ],
+            "matchUpdateTypes": [
+                "major",
+                "minor"
+            ]
+        },
+        {
+            "dependencyDashboardApproval": true,
+            "description": "Only update py-cord versions after approval",
+            "matchPackageNames": [
+                "py-cord"
+            ],
+            "matchUpdateTypes": [
+                "major",
+                "minor",
+                "patch"
             ]
         },
         {
