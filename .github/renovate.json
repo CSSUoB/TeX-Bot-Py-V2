@@ -31,6 +31,7 @@
         {
             "dependencyDashboardApproval": true,
             "description": "Only update Python versions after approval",
+            "groupName": "python-version",
             "matchPackageNames": [
                 "python"
             ],
@@ -42,6 +43,7 @@
         {
             "dependencyDashboardApproval": true,
             "description": "Only update py-cord versions after approval",
+            "groupName": "py-cord-version",
             "matchPackageNames": [
                 "py-cord"
             ],
