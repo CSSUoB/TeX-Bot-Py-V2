@@ -81,7 +81,7 @@ class TeXBotBaseCog(Cog):
         The constructed error message is then sent as the response to the given
         application command context.
         """
-        command_name: str | None = (
+        COMMAND_NAME: Final[str | None] = (
             (
                 ctx.command.callback.__name__
                 if (
