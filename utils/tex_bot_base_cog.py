@@ -97,7 +97,7 @@ class TeXBotBaseCog(Cog):
         await self.send_error(
             self.bot,
             ctx.interaction,
-            interaction_name=command_name,
+            interaction_name=COMMAND_NAME,
             error_code=error_code,
             message=message,
             logging_message=logging_message,
