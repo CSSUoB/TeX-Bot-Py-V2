@@ -39,7 +39,7 @@ repos:
           args: [--strict]
 
     - repo: https://github.com/renovatebot/pre-commit-hooks
-      rev: 42.92.12
+      rev: 42.92.14
       hooks:
         - id: renovate-config-validator
           args: [--strict]
