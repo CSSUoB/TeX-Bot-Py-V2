@@ -188,7 +188,7 @@ aliases = {  }
 banned-aliases = { "regex" = ["re"], "numpy" = ["np"], "matplotlib" = ["mpl"], "matplotlib.pyplot" = [
     "plt"
 ] }
-banned-from = ["abc", "date", "datetime", "re", "regex"]
+banned-from = ["abc", "date", "datetime", "functools", "itertools", "re", "regex"]
 
 [tool.ruff.lint.flake8-self]
 extend-ignore-names = ["_base_manager", "_default_manager", "_get_wrap_line_width", "_meta"]
