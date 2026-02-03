@@ -27,7 +27,7 @@ main = [
     "typed_classproperties>=1.2",
     "validators>=0.34"
 ]
-pre-commit = ["prek>=0.2,!=0.2.23"]
+pre-commit = ["prek>=0.3.1"]
 test = ["pytest>=9", "pytest-cov>=6.1"]
 type-check = [
     "django-stubs[compatible-mypy]>=5.1",
@@ -188,7 +188,7 @@ aliases = {  }
 banned-aliases = { "regex" = ["re"], "numpy" = ["np"], "matplotlib" = ["mpl"], "matplotlib.pyplot" = [
     "plt"
 ] }
-banned-from = ["abc", "date", "datetime", "re", "regex"]
+banned-from = ["abc", "date", "datetime", "functools", "itertools", "re", "regex"]
 
 [tool.ruff.lint.flake8-self]
 extend-ignore-names = ["_base_manager", "_default_manager", "_get_wrap_line_width", "_meta"]
