@@ -131,8 +131,7 @@ async def update_group_member_list_cache() -> bool:
         await fetch_community_group_members_list()
     except MSLMembershipError as msl_membership_error:
         logger.debug(
-            "Failed to update community group member list cache: %s",
-            msl_membership_error
+            "Failed to update community group member list cache: %s", msl_membership_error
         )
         return False
     else:

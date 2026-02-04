@@ -232,6 +232,7 @@ class MemberCountCommandCog(TeXBotBaseCog):
                 )
             )
 
+
 class FetchMemberListOnStartupTaskCog(TeXBotBaseCog):
     """Cog class that defines a startup task to fetch the member list."""
 
@@ -254,12 +255,9 @@ class FetchMemberListOnStartupTaskCog(TeXBotBaseCog):
             logger.info("Successfully updated the community group member list cache.")
             return
 
-        logger.warning(
-            "Failed to update the community group member list cache on startup."
-        )
+        logger.warning("Failed to update the community group member list cache on startup.")
 
     @fetch_member_list_on_startup_task.before_loop
     async def before_tasks(self) -> None:
         """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
         await self.bot.wait_until_ready()
-
