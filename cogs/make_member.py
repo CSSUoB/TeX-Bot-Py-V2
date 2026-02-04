@@ -2,23 +2,29 @@
 
 import logging
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 import discord
+from discord.ext import tasks
 from django.core.exceptions import ValidationError
 
 from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotBaseCog
-from utils.msl import fetch_community_group_members_count, is_id_a_community_group_member
+from utils.error_capture_decorators import capture_guild_does_not_exist_error
+from utils.msl import (
+    fetch_community_group_members_count,
+    is_id_a_community_group_member,
+    update_group_member_list_cache,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from logging import Logger
     from typing import Final
 
-    from utils import TeXBotApplicationContext
+    from utils import TeXBot, TeXBotApplicationContext
 
 
 __all__: "Sequence[str]" = ("MakeMemberCommandCog", "MemberCountCommandCog")
@@ -225,3 +231,35 @@ class MemberCountCommandCog(TeXBotBaseCog):
                     f"{await fetch_community_group_members_count()} members! :tada:"
                 )
             )
+
+class FetchMemberListOnStartupTaskCog(TeXBotBaseCog):
+    """Cog class that defines a startup task to fetch the member list."""
+
+    @override
+    def __init__(self, bot: "TeXBot") -> None:
+        """Start all task managers when this cog is initialised."""
+        _ = self.fetch_member_list_on_startup_task.start()
+        super().__init__(bot)
+
+    @override
+    def cog_unload(self) -> None:
+        """Cancel all task managers when this cog is unloaded."""
+        self.fetch_member_list_on_startup_task.cancel()
+
+    @tasks.loop(count=1)
+    @capture_guild_does_not_exist_error
+    async def fetch_member_list_on_startup_task(self) -> None:
+        """Fetch the member list from the community group on bot startup."""
+        if await update_group_member_list_cache():
+            logger.info("Successfully updated the community group member list cache.")
+            return
+
+        logger.warning(
+            "Failed to update the community group member list cache on startup."
+        )
+
+    @fetch_member_list_on_startup_task.before_loop
+    async def before_tasks(self) -> None:
+        """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
+        await self.bot.wait_until_ready()
+
