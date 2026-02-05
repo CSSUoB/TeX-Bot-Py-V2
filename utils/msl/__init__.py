@@ -6,7 +6,6 @@ from .memberships import (
     fetch_community_group_members_count,
     fetch_community_group_members_list,
     is_id_a_community_group_member,
-    update_group_member_list_cache,
 )
 
 if TYPE_CHECKING:
@@ -16,5 +15,4 @@ __all__: "Sequence[str]" = (
     "fetch_community_group_members_count",
     "fetch_community_group_members_list",
     "is_id_a_community_group_member",
-    "update_group_member_list_cache",
 )

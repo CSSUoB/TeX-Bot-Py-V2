@@ -22,7 +22,6 @@ __all__: "Sequence[str]" = (
     "fetch_community_group_members_count",
     "fetch_community_group_members_list",
     "is_id_a_community_group_member",
-    "update_group_member_list_cache",
 )
 
 
@@ -123,16 +122,3 @@ async def is_id_a_community_group_member(member_id: int) -> bool:
 async def fetch_community_group_members_count() -> int:
     """Return the total number of members in your community group."""
     return len(await fetch_community_group_members_list())
-
-
-async def update_group_member_list_cache() -> bool:
-    """Update the cached community group member list."""
-    try:
-        await fetch_community_group_members_list()
-    except MSLMembershipError as msl_membership_error:
-        logger.debug(
-            "Failed to update community group member list cache: %s", msl_membership_error
-        )
-        return False
-    else:
-        return True

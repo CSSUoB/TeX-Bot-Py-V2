@@ -228,4 +228,3 @@ class MemberCountCommandCog(TeXBotBaseCog):
                     f"{await fetch_community_group_members_count()} members! :tada:"
                 )
             )
-

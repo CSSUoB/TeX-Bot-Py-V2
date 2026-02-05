@@ -116,7 +116,7 @@ class StartupCog(TeXBotBaseCog):
         except MSLMembershipError as msl_membership_error:
             logger.debug(
                 "Failed to update community group member list cache on startup: %s",
-                msl_membership_error
+                msl_membership_error,
             )
 
         if settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] != "DM":
