@@ -2,21 +2,18 @@
 
 import logging
 import re
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING
 
 import discord
-from discord.ext import tasks
 from django.core.exceptions import ValidationError
 
 from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotBaseCog
-from utils.error_capture_decorators import capture_guild_does_not_exist_error
 from utils.msl import (
     fetch_community_group_members_count,
     is_id_a_community_group_member,
-    update_group_member_list_cache,
 )
 
 if TYPE_CHECKING:
@@ -24,7 +21,7 @@ if TYPE_CHECKING:
     from logging import Logger
     from typing import Final
 
-    from utils import TeXBot, TeXBotApplicationContext
+    from utils import TeXBotApplicationContext
 
 
 __all__: "Sequence[str]" = ("MakeMemberCommandCog", "MemberCountCommandCog")

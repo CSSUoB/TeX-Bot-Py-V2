@@ -14,8 +14,8 @@ from exceptions import (
     GeneralChannelDoesNotExistError,
     GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
-    MSLMembershipError,
     MemberRoleDoesNotExistError,
+    MSLMembershipError,
     RolesChannelDoesNotExistError,
 )
 from utils import TeXBotBaseCog
