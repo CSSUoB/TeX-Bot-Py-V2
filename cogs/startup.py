@@ -14,10 +14,12 @@ from exceptions import (
     GeneralChannelDoesNotExistError,
     GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
+    MSLMembershipError,
     MemberRoleDoesNotExistError,
     RolesChannelDoesNotExistError,
 )
 from utils import TeXBotBaseCog
+from utils.msl import fetch_community_group_members_list
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -108,6 +110,14 @@ class StartupCog(TeXBotBaseCog):
 
         if not discord.utils.get(main_guild.text_channels, name="general"):
             logger.warning(GeneralChannelDoesNotExistError())
+
+        try:
+            await fetch_community_group_members_list()
+        except MSLMembershipError as msl_membership_error:
+            logger.debug(
+                "Failed to update community group member list cache on startup: %s",
+                msl_membership_error
+            )
 
         if settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] != "DM":
             manual_moderation_warning_message_location_exists: bool = bool(

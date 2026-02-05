@@ -232,32 +232,3 @@ class MemberCountCommandCog(TeXBotBaseCog):
                 )
             )
 
-
-class FetchMemberListOnStartupTaskCog(TeXBotBaseCog):
-    """Cog class that defines a startup task to fetch the member list."""
-
-    @override
-    def __init__(self, bot: "TeXBot") -> None:
-        """Start all task managers when this cog is initialised."""
-        _ = self.fetch_member_list_on_startup_task.start()
-        super().__init__(bot)
-
-    @override
-    def cog_unload(self) -> None:
-        """Cancel all task managers when this cog is unloaded."""
-        self.fetch_member_list_on_startup_task.cancel()
-
-    @tasks.loop(count=1)
-    @capture_guild_does_not_exist_error
-    async def fetch_member_list_on_startup_task(self) -> None:
-        """Fetch the member list from the community group on bot startup."""
-        if await update_group_member_list_cache():
-            logger.info("Successfully updated the community group member list cache.")
-            return
-
-        logger.warning("Failed to update the community group member list cache on startup.")
-
-    @fetch_member_list_on_startup_task.before_loop
-    async def before_tasks(self) -> None:
-        """Pre-execution hook, preventing any tasks from executing before the bot is ready."""
-        await self.bot.wait_until_ready()
