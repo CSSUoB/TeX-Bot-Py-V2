@@ -880,9 +880,7 @@ class Settings(abc.ABC):
             if raw_statistics_role.strip()
         }
 
-        cls._settings["STATISTICS_ROLES"] = (
-            statistics_roles if statistics_roles else DEFAULT_STATISTICS_ROLES
-        )
+        cls._settings["STATISTICS_ROLES"] = statistics_roles or DEFAULT_STATISTICS_ROLES
 
     @classmethod
     def _setup_membership_dependent_roles(cls) -> None:
