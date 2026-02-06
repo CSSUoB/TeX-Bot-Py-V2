@@ -6,9 +6,7 @@ from typing import TYPE_CHECKING, override
 
 import discord
 import emoji
-from discord import ui
 from discord.ext import tasks
-from discord.ui import View
 from django.core.exceptions import ValidationError
 
 import utils
@@ -185,7 +183,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 )[0],
             )
 
-    class OptOutIntroductionRemindersView(View):
+    class OptOutIntroductionRemindersView(discord.ui.View):
         """
         A discord.View containing a button to opt-in/out of introduction reminders.
 
@@ -227,13 +225,13 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 logging_message=logging_message,
             )
 
-        @ui.button(
+        @discord.ui.button(
             label="Opt-out of introduction reminders",
             custom_id="opt_out_introduction_reminders_button",
             style=discord.ButtonStyle.red,
             emoji=discord.PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias")),
         )
-        async def opt_out_introduction_reminders_button_callback(  # type: ignore[misc]
+        async def opt_out_introduction_reminders_button_callback(
             self, button: discord.Button, interaction: discord.Interaction
         ) -> None:
             """
