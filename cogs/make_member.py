@@ -11,10 +11,7 @@ from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
 from utils import CommandChecks, TeXBotBaseCog
-from utils.msl import (
-    fetch_community_group_members_count,
-    is_id_a_community_group_member,
-)
+from utils.msl import fetch_community_group_members_count, is_id_a_community_group_member
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
