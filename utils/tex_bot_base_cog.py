@@ -153,7 +153,7 @@ class TeXBotBaseCog(Cog):
                 " ".join(
                     message_part
                     for message_part in (
-                        error_code if error_code else "",
+                        error_code or "",
                         f"({interaction_name})",
                         str(logging_message),
                     )
