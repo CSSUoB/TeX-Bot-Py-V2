@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 __all__: "Sequence[str]" = (
     "fetch_community_group_members_count",
     "fetch_community_group_members_list",
+    "fetch_url_content_with_session",
     "is_id_a_community_group_member",
 )
 
@@ -43,21 +44,33 @@ MEMBERS_LIST_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memb
 _membership_list_cache: set[int] = set()
 
 
+async def fetch_url_content_with_session(url: str) -> str:
+    """Fetch the HTTP content at the given URL, using a shared aiohttp session."""
+    async with (
+        aiohttp.ClientSession(
+            headers=BASE_SU_PLATFORM_WEB_HEADERS, cookies=BASE_SU_PLATFORM_WEB_COOKIES
+        ) as http_session,
+        http_session.get(url=url, ssl=GLOBAL_SSL_CONTEXT) as http_response,
+    ):
+        if (
+            http_response.cookies.get(".AspNet.SharedCookie")
+            != settings["SU_PLATFORM_ACCESS_COOKIE"]
+        ):
+            logger.warning("MSL sent a new cookie...")
+            logger.debug("Old cookie: %s", settings["SU_PLATFORM_ACCESS_COOKIE"])
+            logger.debug("New cookie: %s", http_response.cookies.get(".AspNet.SharedCookie"))
+        return await http_response.text()
+
+
 async def fetch_community_group_members_list() -> set[int]:
     """
     Make a web request to fetch your community group's full membership list.
 
     Returns a set of IDs.
     """
-    async with (
-        aiohttp.ClientSession(
-            headers=BASE_SU_PLATFORM_WEB_HEADERS, cookies=BASE_SU_PLATFORM_WEB_COOKIES
-        ) as http_session,
-        http_session.get(url=MEMBERS_LIST_URL, ssl=GLOBAL_SSL_CONTEXT) as http_response,
-    ):
-        response_html: str = await http_response.text()
-
-    parsed_html: BeautifulSoup = BeautifulSoup(markup=response_html, features="html.parser")
+    parsed_html: BeautifulSoup = BeautifulSoup(
+        markup=await fetch_url_content_with_session(MEMBERS_LIST_URL), features="html.parser"
+    )
 
     member_ids: set[int] = set()
 
@@ -72,7 +85,7 @@ async def fetch_community_group_members_list() -> set[int]:
 
         if filtered_table is None:
             logger.warning("Membership table with ID %s could not be found.", table_id)
-            logger.debug(response_html)
+            logger.debug(parsed_html)
             continue
 
         if isinstance(filtered_table, bs4.NavigableString):
@@ -97,7 +110,7 @@ async def fetch_community_group_members_list() -> set[int]:
     if not member_ids:  # NOTE: this should never be possible, because to fetch the page you need to have admin access, which requires being a member.
         NO_MEMBERS_MESSAGE: Final[str] = "No members were found in either membership table."
         logger.warning(NO_MEMBERS_MESSAGE)
-        logger.debug(response_html)
+        logger.debug(parsed_html)
         raise MSLMembershipError(message=NO_MEMBERS_MESSAGE)
 
     _membership_list_cache.clear()
