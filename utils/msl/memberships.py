@@ -14,6 +14,7 @@ from utils import GLOBAL_SSL_CONTEXT
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
+    from http.cookies import Morsel
     from logging import Logger
     from typing import Final
 
@@ -52,13 +53,14 @@ async def fetch_url_content_with_session(url: str) -> str:
         ) as http_session,
         http_session.get(url=url, ssl=GLOBAL_SSL_CONTEXT) as http_response,
     ):
+        returned_asp_cookie: Morsel | None = http_response.cookies.get(".AspNet.SharedCookie")  # type: ignore[type-arg]
         if (
-            http_response.cookies.get(".AspNet.SharedCookie")
-            != settings["SU_PLATFORM_ACCESS_COOKIE"]
+            returned_asp_cookie
+            and returned_asp_cookie.value != settings["SU_PLATFORM_ACCESS_COOKIE"]
         ):
             logger.warning("MSL sent a new cookie...")
             logger.debug("Old cookie: %s", settings["SU_PLATFORM_ACCESS_COOKIE"])
-            logger.debug("New cookie: %s", http_response.cookies.get(".AspNet.SharedCookie"))
+            logger.debug("New cookie: %s", returned_asp_cookie)
         return await http_response.text()
 
 
