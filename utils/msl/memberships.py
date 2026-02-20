@@ -53,11 +53,11 @@ async def fetch_url_content_with_session(url: str) -> str:
         ) as http_session,
         http_session.get(url=url, ssl=GLOBAL_SSL_CONTEXT) as http_response,
     ):
-        returned_asp_cookie: Morsel[str] | None = http_response.cookies.get(".AspNet.SharedCookie")
-        if (
-            returned_asp_cookie is not None
-            and returned_asp_cookie.value
-            != BASE_SU_PLATFORM_WEB_COOKIES[".AspNet.SharedCookie"]
+        returned_asp_cookie: Morsel[str] | None = http_response.cookies.get(
+            ".AspNet.SharedCookie"
+        )
+        if returned_asp_cookie is not None and (
+            returned_asp_cookie.value != BASE_SU_PLATFORM_WEB_COOKIES[".AspNet.SharedCookie"]
         ):
             logger.info("SU platform access cookie was updated by the server; updating local.")
             BASE_SU_PLATFORM_WEB_COOKIES = {
