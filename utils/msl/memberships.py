@@ -29,7 +29,7 @@ __all__: "Sequence[str]" = (
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
-BASE_SU_PLATFORM_WEB_HEADERS: "Mapping[str, str]" = {
+BASE_SU_PLATFORM_WEB_HEADERS: "Final[Mapping[str, str]]" = {
     "Cache-Control": "no-cache",
     "Pragma": "no-cache",
     "Expires": "0",
