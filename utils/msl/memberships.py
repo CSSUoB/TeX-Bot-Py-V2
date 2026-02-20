@@ -13,7 +13,7 @@ from exceptions import MSLMembershipError
 from utils import GLOBAL_SSL_CONTEXT
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, MutableMapping, Sequence
+    from collections.abc import Mapping, Sequence
     from http.cookies import Morsel
     from logging import Logger
     from typing import Final
@@ -29,16 +29,14 @@ __all__: "Sequence[str]" = (
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
-SU_PLATFORM_ACCESS_COOKIE: "Final[str]" = settings["SU_PLATFORM_ACCESS_COOKIE"]
-
-BASE_SU_PLATFORM_WEB_HEADERS: "Final[Mapping[str, str]]" = {
+BASE_SU_PLATFORM_WEB_HEADERS: "Mapping[str, str]" = {
     "Cache-Control": "no-cache",
     "Pragma": "no-cache",
     "Expires": "0",
 }
 
-BASE_SU_PLATFORM_WEB_COOKIES: "Final[MutableMapping[str, str]]" = {
-    ".AspNet.SharedCookie": SU_PLATFORM_ACCESS_COOKIE,
+BASE_SU_PLATFORM_WEB_COOKIES: "Mapping[str, str]" = {
+    ".AspNet.SharedCookie": settings["SU_PLATFORM_ACCESS_COOKIE"],
 }
 
 MEMBERS_LIST_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{settings['ORGANISATION_ID']}/?sort=groups"
@@ -48,20 +46,23 @@ _membership_list_cache: set[int] = set()
 
 async def fetch_url_content_with_session(url: str) -> str:
     """Fetch the HTTP content at the given URL, using a shared aiohttp session."""
+    global BASE_SU_PLATFORM_WEB_COOKIES  # noqa: PLW0603
     async with (
         aiohttp.ClientSession(
             headers=BASE_SU_PLATFORM_WEB_HEADERS, cookies=BASE_SU_PLATFORM_WEB_COOKIES
         ) as http_session,
         http_session.get(url=url, ssl=GLOBAL_SSL_CONTEXT) as http_response,
     ):
-        returned_asp_cookie: Morsel | None = http_response.cookies.get(".AspNet.SharedCookie")  # type: ignore[type-arg]
+        returned_asp_cookie: Morsel[str] | None = http_response.cookies.get(".AspNet.SharedCookie")
         if (
-            returned_asp_cookie
+            returned_asp_cookie is not None
             and returned_asp_cookie.value
             != BASE_SU_PLATFORM_WEB_COOKIES[".AspNet.SharedCookie"]
         ):
             logger.info("SU platform access cookie was updated by the server; updating local.")
-            BASE_SU_PLATFORM_WEB_COOKIES[".AspNet.SharedCookie"] = returned_asp_cookie.value
+            BASE_SU_PLATFORM_WEB_COOKIES = {
+                ".AspNet.SharedCookie": returned_asp_cookie.value,
+            }
         return await http_response.text()
 
 
