@@ -13,7 +13,7 @@ from exceptions import MSLMembershipError
 from utils import GLOBAL_SSL_CONTEXT
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
+    from collections.abc import Mapping, MutableMapping, Sequence
     from http.cookies import Morsel
     from logging import Logger
     from typing import Final
@@ -29,6 +29,7 @@ __all__: "Sequence[str]" = (
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
+SU_PLATFORM_ACCESS_COOKIE: "Final[str]" = settings["SU_PLATFORM_ACCESS_COOKIE"]
 
 BASE_SU_PLATFORM_WEB_HEADERS: "Final[Mapping[str, str]]" = {
     "Cache-Control": "no-cache",
@@ -36,8 +37,8 @@ BASE_SU_PLATFORM_WEB_HEADERS: "Final[Mapping[str, str]]" = {
     "Expires": "0",
 }
 
-BASE_SU_PLATFORM_WEB_COOKIES: "Final[Mapping[str, str]]" = {
-    ".AspNet.SharedCookie": settings["SU_PLATFORM_ACCESS_COOKIE"],
+BASE_SU_PLATFORM_WEB_COOKIES: "Final[MutableMapping[str, str]]" = {
+    ".AspNet.SharedCookie": SU_PLATFORM_ACCESS_COOKIE,
 }
 
 MEMBERS_LIST_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{settings['ORGANISATION_ID']}/?sort=groups"
@@ -56,11 +57,11 @@ async def fetch_url_content_with_session(url: str) -> str:
         returned_asp_cookie: Morsel | None = http_response.cookies.get(".AspNet.SharedCookie")  # type: ignore[type-arg]
         if (
             returned_asp_cookie
-            and returned_asp_cookie.value != settings["SU_PLATFORM_ACCESS_COOKIE"]
+            and returned_asp_cookie.value
+            != BASE_SU_PLATFORM_WEB_COOKIES[".AspNet.SharedCookie"]
         ):
-            logger.warning("MSL sent a new cookie...")
-            logger.debug("Old cookie: %s", settings["SU_PLATFORM_ACCESS_COOKIE"])
-            logger.debug("New cookie: %s", returned_asp_cookie)
+            logger.info("SU platform access cookie was updated by the server; updating local.")
+            BASE_SU_PLATFORM_WEB_COOKIES[".AspNet.SharedCookie"] = returned_asp_cookie.value
         return await http_response.text()
 
 
