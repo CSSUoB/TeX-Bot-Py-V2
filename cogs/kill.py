@@ -28,7 +28,7 @@ class ConfirmKillView(View):
     @discord.ui.button(
         label="SHUTDOWN", style=discord.ButtonStyle.red, custom_id="shutdown_confirm"
     )
-    async def confirm_shutdown_button_callback(  # type: ignore[misc]
+    async def confirm_shutdown_button_callback(
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """When the shutdown button is pressed, delete the message."""
@@ -37,7 +37,7 @@ class ConfirmKillView(View):
     @discord.ui.button(
         label="CANCEL", style=discord.ButtonStyle.grey, custom_id="shutdown_cancel"
     )
-    async def cancel_shutdown_button_callback(  # type: ignore[misc]
+    async def cancel_shutdown_button_callback(
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """When the cancel button is pressed, delete the message."""
