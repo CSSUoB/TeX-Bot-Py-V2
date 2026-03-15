@@ -1078,7 +1078,6 @@ type-check = [
 ]
 
 [package.metadata]
-
 [package.metadata.requires-dev]
 dev = [
     { name = "django-stubs", extras = ["compatible-mypy"], specifier = ">=5.1" },
