@@ -13,7 +13,7 @@ jobs:
         steps:
             - id: generate-token
               name: Generate Access Token
-              uses: actions/create-github-app-token@v2
+              uses: actions/create-github-app-token@v3
               with:
                 app-id: ${{vars.PR_AUTO_UPDATE_CLIENT_ID}}
                 private-key: ${{secrets.PR_AUTO_UPDATE_PRIVATE_KEY}}
