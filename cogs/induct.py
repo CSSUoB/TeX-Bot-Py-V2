@@ -366,6 +366,17 @@ class InductContextCommandsCog(BaseInductCog):
         Therefore, it will induct a given member into your group's Discord guild
         by giving them the "Guest" role.
         """
+        if not self.bot.main_guild.get_member(member.id):
+            await ctx.respond(
+                (
+                    ":information_source: No changes made. User cannot be inducted "
+                    "because they have left the server "
+                    ":information_source:"
+                ),
+                ephemeral=True,
+            )
+            return
+
         await self._perform_induction(ctx, member, silent=False)
 
     @discord.user_command(name="Silently Induct User")
@@ -382,6 +393,17 @@ class InductContextCommandsCog(BaseInductCog):
         Therefore, it will induct a given member into your group's Discord guild
         by giving them the "Guest" role, only without broadcasting a welcome message.
         """
+        if not self.bot.main_guild.get_member(member.id):
+            await ctx.respond(
+                (
+                    ":information_source: No changes made. User cannot be inducted "
+                    "because they have left the server "
+                    ":information_source:"
+                ),
+                ephemeral=True,
+            )
+            return
+
         await self._perform_induction(ctx, member, silent=True)
 
     @discord.message_command(name="Induct Message Author")
