@@ -179,7 +179,7 @@ class BaseInductCog(TeXBotBaseCog):
     async def _perform_induction(
         self,
         ctx: "TeXBotApplicationContext",
-        induction_member: discord.Member,
+        induction_member: discord.Member | discord.User,
         *,
         silent: bool,
     ) -> None:
@@ -188,9 +188,21 @@ class BaseInductCog(TeXBotBaseCog):
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
+        main_guild_member: discord.Member | None = main_guild.get_member(induction_member.id)
+        if not main_guild_member:
+            await ctx.respond(
+                (
+                    ":information_source: No changes made. User cannot be inducted "
+                    "because they have left the server "
+                    ":information_source:"
+                ),
+                ephemeral=True,
+            )
+            return
+
         await ctx.defer(ephemeral=True)
         async with ctx.typing():
-            logger.debug("Inducting member %s, silent=%s", induction_member, silent)
+            logger.debug("Inducting member %s, silent=%s", main_guild_member, silent)
 
             INDUCT_AUDIT_MESSAGE: Final[str] = (
                 f'{ctx.user} used TeX Bot slash-command: "/induct"'
@@ -200,13 +212,13 @@ class BaseInductCog(TeXBotBaseCog):
                 main_guild.text_channels, name="introductions"
             )
 
-            if induction_member.bot:
+            if main_guild_member.bot:
                 await self.command_send_error(
                     ctx, message="Member cannot be inducted because they are a bot."
                 )
                 return
 
-            if guest_role in induction_member.roles:
+            if guest_role in main_guild_member.roles:
                 await ctx.respond(
                     content=(
                         ":information_source: No changes made. "
@@ -218,25 +230,25 @@ class BaseInductCog(TeXBotBaseCog):
 
             if not silent:
                 await (await self.bot.general_channel).send(
-                    f"{await self.get_random_welcome_message(induction_member)} :tada:\n"
+                    f"{await self.get_random_welcome_message(main_guild_member)} :tada:\n"
                     f"Remember to grab your roles in {
                         await self.bot.get_mention_string(self.bot.roles_channel)
                     } and say hello to everyone here! :wave:"
                 )
 
-            await induction_member.add_roles(guest_role, reason=INDUCT_AUDIT_MESSAGE)
+            await main_guild_member.add_roles(guest_role, reason=INDUCT_AUDIT_MESSAGE)
 
             news_role: discord.Role | None = discord.utils.get(main_guild.roles, name="News")
-            if news_role and news_role not in induction_member.roles:
-                await induction_member.add_roles(news_role, reason=INDUCT_AUDIT_MESSAGE)
+            if news_role and news_role not in main_guild_member.roles:
+                await main_guild_member.add_roles(news_role, reason=INDUCT_AUDIT_MESSAGE)
 
             try:
                 applicant_role: discord.Role = await ctx.bot.applicant_role
             except ApplicantRoleDoesNotExistError:
                 pass
             else:
-                if applicant_role in induction_member.roles:
-                    await induction_member.remove_roles(
+                if applicant_role in main_guild_member.roles:
+                    await main_guild_member.remove_roles(
                         applicant_role, reason=INDUCT_AUDIT_MESSAGE
                     )
 
@@ -247,7 +259,7 @@ class BaseInductCog(TeXBotBaseCog):
             if intro_channel:
                 recent_message: discord.Message
                 for recent_message in await intro_channel.history(limit=30).flatten():
-                    if recent_message.author.id == induction_member.id:
+                    if recent_message.author.id == main_guild_member.id:
                         try:
                             if tex_emoji:
                                 await recent_message.add_reaction(tex_emoji)
@@ -366,19 +378,7 @@ class InductContextCommandsCog(BaseInductCog):
         Therefore, it will induct a given member into your group's Discord guild
         by giving them the "Guest" role.
         """
-        main_guild_member: discord.Member | None = self.bot.main_guild.get_member(member.id)
-        if not main_guild_member:
-            await ctx.respond(
-                (
-                    ":information_source: No changes made. User cannot be inducted "
-                    "because they have left the server "
-                    ":information_source:"
-                ),
-                ephemeral=True,
-            )
-            return
-
-        await self._perform_induction(ctx, main_guild_member, silent=False)
+        await self._perform_induction(ctx, member, silent=False)
 
     @discord.user_command(name="Silently Induct User")
     @CommandChecks.check_interaction_user_has_committee_role
@@ -394,19 +394,7 @@ class InductContextCommandsCog(BaseInductCog):
         Therefore, it will induct a given member into your group's Discord guild
         by giving them the "Guest" role, only without broadcasting a welcome message.
         """
-        main_guild_member: discord.Member | None = self.bot.main_guild.get_member(member.id)
-        if not main_guild_member:
-            await ctx.respond(
-                (
-                    ":information_source: No changes made. User cannot be inducted "
-                    "because they have left the server "
-                    ":information_source:"
-                ),
-                ephemeral=True,
-            )
-            return
-
-        await self._perform_induction(ctx, main_guild_member, silent=True)
+        await self._perform_induction(ctx, member, silent=True)
 
     @discord.message_command(name="Induct Message Author")
     @CommandChecks.check_interaction_user_has_committee_role
