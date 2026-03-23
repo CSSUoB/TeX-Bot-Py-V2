@@ -356,7 +356,7 @@ class InductContextCommandsCog(BaseInductCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def non_silent_user_induct(
-        self, ctx: "TeXBotApplicationContext", member: discord.Member
+        self, ctx: "TeXBotApplicationContext", member: discord.Member | discord.User
     ) -> None:
         """
         Definition & callback response of the "non_silent_induct" user-context-command.
@@ -366,7 +366,8 @@ class InductContextCommandsCog(BaseInductCog):
         Therefore, it will induct a given member into your group's Discord guild
         by giving them the "Guest" role.
         """
-        if not self.bot.main_guild.get_member(member.id):
+        main_guild_member: discord.Member | None = self.bot.main_guild.get_member(member.id)
+        if not main_guild_member:
             await ctx.respond(
                 (
                     ":information_source: No changes made. User cannot be inducted "
@@ -377,13 +378,13 @@ class InductContextCommandsCog(BaseInductCog):
             )
             return
 
-        await self._perform_induction(ctx, member, silent=False)
+        await self._perform_induction(ctx, main_guild_member, silent=False)
 
     @discord.user_command(name="Silently Induct User")
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def silent_user_induct(
-        self, ctx: "TeXBotApplicationContext", member: discord.Member
+        self, ctx: "TeXBotApplicationContext", member: discord.Member | discord.User
     ) -> None:
         """
         Definition & callback response of the "silent_induct" user-context-command.
@@ -393,7 +394,8 @@ class InductContextCommandsCog(BaseInductCog):
         Therefore, it will induct a given member into your group's Discord guild
         by giving them the "Guest" role, only without broadcasting a welcome message.
         """
-        if not self.bot.main_guild.get_member(member.id):
+        main_guild_member: discord.Member | None = self.bot.main_guild.get_member(member.id)
+        if not main_guild_member:
             await ctx.respond(
                 (
                     ":information_source: No changes made. User cannot be inducted "
@@ -404,7 +406,7 @@ class InductContextCommandsCog(BaseInductCog):
             )
             return
 
-        await self._perform_induction(ctx, member, silent=True)
+        await self._perform_induction(ctx, main_guild_member, silent=True)
 
     @discord.message_command(name="Induct Message Author")
     @CommandChecks.check_interaction_user_has_committee_role
