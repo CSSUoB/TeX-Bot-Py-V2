@@ -21,6 +21,7 @@ logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class ModerationCog(TeXBotBaseCog):
+    """Cog to track moderation actions and report them to the committee."""
 
     most_recently_deleted_message: discord.Message | None = None
 
@@ -99,12 +100,15 @@ class ModerationCog(TeXBotBaseCog):
     @capture_guild_does_not_exist_error
     async def on_audit_log_entry(self, entry: discord.AuditLogEntry) -> None:
         """Listen for audit log entries."""
-        if entry.action != discord.AuditLogAction.message_delete or not self.most_recently_deleted_message:
+        if (
+            entry.action != discord.AuditLogAction.message_delete
+            or not self.most_recently_deleted_message
+        ):
             return
 
         deleter: discord.Member | discord.User | None = entry.user
         author: discord.User | discord.Member | None = entry.target
-        channel: discord.TextChannel | None = entry.extra.channel
+        channel: discord.TextChannel | None = entry.extra.channel  # type: ignore[union-attr]
 
         if (
             not isinstance(channel, discord.TextChannel)
@@ -116,17 +120,4 @@ class ModerationCog(TeXBotBaseCog):
         if author != self.most_recently_deleted_message.author:
             return
 
-        author_name = author.name
-        author_id = author.id
-        channel_name = channel.name
-        deleter_name = deleter.name
-        deleter_id = deleter.id
-
-        logger.error(
-            "Message by %s (ID: %s) in #%s was deleted by %s (ID: %s).",
-            author_name,
-            author_id,
-            channel_name,
-            deleter_name,
-            deleter_id,
-        )
+        await self._send_message_to_committee(self.most_recently_deleted_message, deleter)
