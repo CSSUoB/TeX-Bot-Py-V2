@@ -128,6 +128,6 @@ class ModerationCog(TeXBotBaseCog):
         ):
             return
 
-        self.most_recently_deleted_message = None
-
         await self._send_message_to_committee(self.most_recently_deleted_message, deleter)
+
+        self.most_recently_deleted_message = None
