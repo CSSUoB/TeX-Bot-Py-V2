@@ -393,7 +393,7 @@ class BaseStrikeCog(TeXBotBaseCog):
         )
 
     async def _command_perform_strike(
-        self, ctx: "TeXBotApplicationContext", strike_member: discord.Member
+        self, ctx: "TeXBotApplicationContext", strike_member: discord.Member | discord.User
     ) -> None:
         """
         Perform the actual process of giving a member an additional strike.
@@ -1090,7 +1090,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def user_strike(
-        self, ctx: "TeXBotApplicationContext", member: discord.Member
+        self, ctx: "TeXBotApplicationContext", member: discord.Member | discord.User
     ) -> None:
         """Call the _strike command, providing the required command arguments."""
         await self._command_perform_strike(ctx, strike_member=member)
