@@ -91,9 +91,11 @@ class ModerationCog(TeXBotBaseCog):
         )
 
     @TeXBotBaseCog.listener()
-    @capture_guild_does_not_exist_error
     async def on_message_delete(self, message: discord.Message) -> None:
         """Listen for message deletions."""
+        if message.guild is None or message.author.bot or message.guild != self.bot.main_guild:
+            return
+
         self.most_recently_deleted_message = message
 
     @TeXBotBaseCog.listener()
@@ -125,5 +127,7 @@ class ModerationCog(TeXBotBaseCog):
             or committee_role in author.roles
         ):
             return
+
+        self.most_recently_deleted_message = None
 
         await self._send_message_to_committee(self.most_recently_deleted_message, deleter)
