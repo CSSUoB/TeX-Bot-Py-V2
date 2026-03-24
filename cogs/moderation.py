@@ -100,6 +100,8 @@ class ModerationCog(TeXBotBaseCog):
     @capture_guild_does_not_exist_error
     async def on_audit_log_entry(self, entry: discord.AuditLogEntry) -> None:
         """Listen for audit log entries."""
+        committee_role: discord.Role = await self.bot.committee_role
+
         if (
             entry.action != discord.AuditLogAction.message_delete
             or not self.most_recently_deleted_message
@@ -117,7 +119,11 @@ class ModerationCog(TeXBotBaseCog):
         ):
             return
 
-        if author != self.most_recently_deleted_message.author:
+        if (
+            author != self.most_recently_deleted_message.author
+            or channel != self.most_recently_deleted_message.channel
+            or committee_role in author.roles
+        ):
             return
 
         await self._send_message_to_committee(self.most_recently_deleted_message, deleter)
