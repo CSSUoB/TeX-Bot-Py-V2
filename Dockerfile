@@ -22,13 +22,17 @@ COPY cogs/ /app/cogs/
 
 FROM python:3.13-slim-trixie
 
+RUN groupadd --system --gid 999 nonroot && useradd --system --gid 999 --uid 999 --create-home nonroot
+
 LABEL org.opencontainers.image.source=https://github.com/CSSUoB/TeX-Bot-Py-V2
 LABEL org.opencontainers.image.licenses=Apache-2.0
 
-COPY --from=builder --chown=app:app /app /app
+COPY --from=builder --chown=nonroot:nonroot /app /app
 
 ENV LANG=C.UTF-8 PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
+
+USER nonroot
 
 ENTRYPOINT ["python", "-m", "main"]
