@@ -11,7 +11,7 @@ WORKDIR /app
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --locked --no-install-project --no-group dev
+    uv sync --frozen --no-install-project --no-group dev
 
 COPY LICENSE /app/
 COPY config.py main.py messages.json /app/
