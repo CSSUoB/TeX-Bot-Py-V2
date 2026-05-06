@@ -242,6 +242,7 @@ jobs:
             attestations: write
             id-token: write
             packages: write
+            artifact-metadata: write
         runs-on: ubuntu-latest
 
         steps:
