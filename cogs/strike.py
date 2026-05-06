@@ -1063,6 +1063,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
                 description=embed_content,
                 colour=message.author.colour,
                 image=embed_image,
+                timestamp=message.created_at,
             ),
         )
 
