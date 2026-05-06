@@ -239,10 +239,10 @@ jobs:
             == 'CSSUoB/TeX-Bot-Py-V2'
         needs: [mypy, pre-commit, pymarkdown, pytest, ruff-lint, uv-check]
         permissions:
+            artifact-metadata: write
             attestations: write
             id-token: write
             packages: write
-            artifact-metadata: write
         runs-on: ubuntu-latest
 
         steps:
