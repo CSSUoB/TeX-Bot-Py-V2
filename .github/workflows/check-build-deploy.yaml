@@ -113,6 +113,7 @@ jobs:
                 uv run -- mypy "${ARGS[@]}"
 
     pre-commit:  # yamllint disable-line rule:key-ordering
+        if: github.event_name != 'pull_request'
         uses: ./.github/workflows/autofix-pre-commit.yaml
         with:
             skip-autofix: true
