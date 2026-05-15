@@ -273,7 +273,7 @@ class AddUsersToThreadsAndChannelsCommandsCog(TeXBotBaseCog):
             )
             return
 
-        await ctx.defer()
+        await ctx.defer(ephemeral=True)
 
         main_guild: discord.Guild = ctx.bot.main_guild
 
