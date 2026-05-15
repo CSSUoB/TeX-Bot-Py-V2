@@ -217,7 +217,7 @@ class AddUsersToThreadsAndChannelsCommandsCog(TeXBotBaseCog):
             )
             return
 
-        await ctx.defer()
+        await ctx.defer(ephemeral=True)
 
         try:
             user_to_add: discord.Member = await self.bot.get_member_from_str_id(user_id_str)
