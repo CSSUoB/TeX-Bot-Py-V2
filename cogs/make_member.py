@@ -16,7 +16,6 @@ from utils.msl import (
     fetch_community_group_members_count,
     is_id_a_community_group_member,
 )
-from utils.tex_bot import TeXBot
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -234,8 +233,8 @@ class MemberCountCommandCog(TeXBotBaseCog):
             )
 
 
-class MakeMemberModalActual(Modal):
-    """A discord.Modal containing a the input box for make member user interaction."""
+class MakeMemberModal(Modal):
+    """A Modal containing an input field for users to enter their student ID."""
 
     @override
     def __init__(self, bot: "TeXBot") -> None:
@@ -294,8 +293,8 @@ class MakeMemberModalActual(Modal):
         await interaction.followup.send(content=message, ephemeral=True)
 
 
-class OpenMemberVerifyModalView(View):
-    """A discord.View containing a button to open a new member verification modal."""
+class OpenMemberVerificationModalView(View):
+    """A View containing a button to open a new member verification modal."""
 
     @override
     def __init__(self, bot: "TeXBot") -> None:
@@ -308,7 +307,7 @@ class OpenMemberVerifyModalView(View):
     async def verify_new_member_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
-        await interaction.response.send_modal(MakeMemberModalActual(bot=self.bot))
+        await interaction.response.send_modal(MakeMemberModal(bot=self.bot))
 
 
 class MakeMemberModalCommandCog(MakeMemberBaseCog):
@@ -317,7 +316,7 @@ class MakeMemberModalCommandCog(MakeMemberBaseCog):
     @TeXBotBaseCog.listener()
     async def on_ready(self) -> None:
         """Add OpenMemberVerifyModalView to the bot's list of permanent views."""
-        self.bot.add_view(OpenMemberVerifyModalView(bot=self.bot))
+        self.bot.add_view(OpenMemberVerificationModalView(bot=self.bot))
 
     async def _open_make_new_member_modal(
         self,
@@ -325,7 +324,7 @@ class MakeMemberModalCommandCog(MakeMemberBaseCog):
     ) -> None:
         await button_callback_channel.send(
             content="Click below to verify membership!",
-            view=OpenMemberVerifyModalView(bot=self.bot),
+            view=OpenMemberVerificationModalView(bot=self.bot),
         )
 
     @discord.slash_command(
@@ -346,7 +345,7 @@ class MakeMemberModalCommandCog(MakeMemberBaseCog):
         The "send-make-member-modal" command sends a message with a button that allows users
         to open the make member modal
         """
-        if not isinstance(ctx.channel, (discord.TextChannel)):
+        if not isinstance(ctx.channel, discord.TextChannel):
             await ctx.respond(
                 content="This command can only be used in text channels.",
                 ephemeral=True,
