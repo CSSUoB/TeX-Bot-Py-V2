@@ -2847,7 +2847,7 @@ class TestSetupCustomDiscordInviteUrl:
         "test_invalid_discord_invite_url",
         (
             "definitely not a url",
-            "https://couldbeaurlbutactually.com really isnt",
+            "https://couldbeaurlbutactually.com really isn't",
             "www.ican'tbelieveit'snotbutter",
         ),
     )
