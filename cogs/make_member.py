@@ -208,7 +208,7 @@ class MakeMemberCommandCog(MakeMemberBaseCog):
         await ctx.defer(ephemeral=True)
 
         async with ctx.typing():
-            message = await self.perform_make_member(
+            message: str = await self.perform_make_member(
                 user=ctx.user, raw_group_member_id=raw_group_member_id
             )
 
@@ -287,7 +287,7 @@ class MakeMemberModalActual(Modal):
             )
             return
 
-        message = await cog.perform_make_member(
+        message: str = await cog.perform_make_member(
             user=interaction.user, raw_group_member_id=raw_student_id
         )
 
@@ -300,7 +300,7 @@ class OpenMemberVerifyModalView(View):
     @override
     def __init__(self, bot: "TeXBot") -> None:
         super().__init__(timeout=None)
-        self.bot = bot
+        self.bot: TeXBot = bot
 
     @discord.ui.button(
         label="Verify", style=discord.ButtonStyle.primary, custom_id="verify_new_member"
@@ -308,7 +308,7 @@ class OpenMemberVerifyModalView(View):
     async def verify_new_member_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
-        await interaction.response.send_modal(MakeMemberModalActual(self.bot))
+        await interaction.response.send_modal(MakeMemberModalActual(bot=self.bot))
 
 
 class MakeMemberModalCommandCog(MakeMemberBaseCog):
@@ -317,33 +317,33 @@ class MakeMemberModalCommandCog(MakeMemberBaseCog):
     @TeXBotBaseCog.listener()
     async def on_ready(self) -> None:
         """Add OpenMemberVerifyModalView to the bot's list of permanent views."""
-        self.bot.add_view(OpenMemberVerifyModalView(self.bot))
+        self.bot.add_view(OpenMemberVerifyModalView(bot=self.bot))
 
     async def _open_make_new_member_modal(
         self,
         button_callback_channel: discord.TextChannel | discord.DMChannel,
     ) -> None:
         await button_callback_channel.send(
-            content="would you like to open the make member modal",
-            view=OpenMemberVerifyModalView(self.bot),
+            content="Click below to verify membership!",
+            view=OpenMemberVerifyModalView(bot=self.bot),
         )
 
     @discord.slash_command(
-        name="make-member-modal",
+        name="send-make-member-modal",
         description=(
-            "prints a message with a button that allows users to open the make member modal, "
+            "Sends a message with a button that allows users to open the make member modal."
         ),
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_member_modal(
+    async def send_make_member_modal(
         self,
         ctx: "TeXBotApplicationContext",
     ) -> None:
         """
-        Definition & callback response of the "make-member-modal" command.
+        Definition & callback response of the "send-make-member-modal" command.
 
-        The "make-member-modal" command prints a message with a button that allows users
+        The "send-make-member-modal" command sends a message with a button that allows users
         to open the make member modal
         """
         await self._open_make_new_member_modal(
@@ -351,6 +351,6 @@ class MakeMemberModalCommandCog(MakeMemberBaseCog):
         )
 
         await ctx.respond(
-            content="The make member modal has been opened in this channel.",
+            content="The make member modal message has been sent in this channel.",
             ephemeral=True,
         )
