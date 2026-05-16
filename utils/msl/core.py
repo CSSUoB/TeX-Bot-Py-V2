@@ -1,7 +1,7 @@
 """Functions to enable interaction with MSL based SU websites."""
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 import aiohttp
 
@@ -29,6 +29,7 @@ ORGANISATION_ADMIN_URL: "Final[str]" = (
 class SUPlatformClient:
     """A client for making authenticated requests to the SU platform."""
 
+    @override
     def __init__(self) -> None:
         self.headers: Mapping[str, str] = settings["SU_PLATFORM_WEB_HEADERS"]
         self.cookies: Mapping[str, str] = settings["SU_PLATFORM_ACCESS_COOKIE"]
