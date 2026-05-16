@@ -233,7 +233,7 @@ To create a new cog, follow these steps:
 
        def do_something(self, message: str) -> None:
            """Perform a simple action."""
-           print(f"Doing something with {message}.")
+           self.logger.info("Doing something with %s.", message)
    ```
 
 3. Add Commands and Listeners
@@ -324,12 +324,16 @@ To add a new environment variable to the project, follow these steps:
    def _setup_new_variable(cls) -> None:
        raw_value: str | None = os.getenv("NEW_VARIABLE")
 
-       if raw_value is not None and not re.fullmatch(r"<validation_regex>", raw_value):
+       if raw_value is None:
+           raise ImproperlyConfiguredError("NEW_VARIABLE is required.")
+
+       if not re.fullmatch(r"<validation_regex>", raw_value):
            raise ImproperlyConfiguredError("NEW_VARIABLE is invalid.")
 
        cls._settings["NEW_VARIABLE"] = raw_value
    ```
 
+   * If the variable is optional, skip the required check and store `None` in `cls._settings` when it is missing.
    * Replace `<validation_regex>` with a regular expression to validate the variable's format, if applicable.
 
 3. Call the Setup Method

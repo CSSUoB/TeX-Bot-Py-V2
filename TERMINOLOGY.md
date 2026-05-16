@@ -52,7 +52,7 @@ An [Application Command](https://discord.com/developers/docs/interactions/applic
 
 ### [Slash Commands](https://discord.com/developers/docs/interactions/application-commands#slash-commands)
 
-Slash commands are executed by sending a chat message.
+Slash commands are executed by typing a slash (/) followed by the command name in the message input.
 They are made up of a name, description and a set of options.
 Bots are limited to 100 slash commands.
 
