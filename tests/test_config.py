@@ -1634,7 +1634,7 @@ class TestSetupAutoSUPlatformAccessCookieChecking:
         """Test that an error is raised when the interval is invalid."""
         INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE: Final[str] = (
             "AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL must contain the delay "
-            "in any combination of seconds, minutes, hours, days or weeks."
+            "in any combination of seconds, minutes or hours."
         )
 
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
