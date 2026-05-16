@@ -1,14 +1,14 @@
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
+    "BoundedFloatValidator",
+    "CustomBoolValidator",
+    "DiscordSnowflakeValidator",
     "DiscordWebhookURLValidator",
     "LogLevelValidator",
-    "DiscordSnowflakeValidator",
     "RegexMatcher",
-    "BoundedFloatValidator",
-    "TimeDeltaValidator",
     "SendIntroductionRemindersFlagValidator",
-    "CustomBoolValidator",
+    "TimeDeltaValidator",
 )
 
 
@@ -67,7 +67,7 @@ class DiscordWebhookURLValidator(strictyaml.Url):  # type: ignore[misc]
         # noinspection PyUnresolvedReferences
         CHUNK_IS_VALID: Final[bool] = bool(
             self._Url__is_absolute_url(chunk.contents)
-            and chunk.contents.startswith("https://discord.com/api/webhooks/")  # noqa: COM812
+            and chunk.contents.startswith("https://discord.com/api/webhooks/")
         )
         if not CHUNK_IS_VALID:
             chunk.expecting_but_found("when expecting a Discord webhook URL")
@@ -82,7 +82,7 @@ class DiscordWebhookURLValidator(strictyaml.Url):  # type: ignore[misc]
         # noinspection PyUnresolvedReferences
         DATA_IS_VALID: Final[bool] = bool(
             self._Url__is_absolute_url(data)
-            and data.startswith("https://discord.com/api/webhooks/")  # type: ignore[attr-defined] # noqa: COM812
+            and data.startswith("https://discord.com/api/webhooks/")  # type: ignore[attr-defined]
         )
         if not DATA_IS_VALID:
             INVALID_DATA_MESSAGE: Final[str] = f"'{data}' is not a Discord webhook URL."
@@ -107,7 +107,7 @@ class DiscordSnowflakeValidator(strictyaml.Int):  # type: ignore[misc]
         DATA_IS_VALID: Final[bool] = bool(
             (strictyaml_utils.is_string(data) or isinstance(data, int))
             and strictyaml_utils.is_integer(str(data))
-            and re.fullmatch(r"\A\d{17,20}\Z", str(data))  # noqa: COM812
+            and re.fullmatch(r"\A\d{17,20}\Z", str(data))
         )
         if not DATA_IS_VALID:
             INVALID_DATA_MESSAGE: Final[str] = f"'{data}' is not a Discord snowflake ID."
@@ -207,7 +207,7 @@ class TimeDeltaValidator(strictyaml.ScalarValidator):  # type: ignore[misc]
         hours: bool = True,
         days: bool = False,
         weeks: bool = False,
-    ) -> None:  # noqa: E501
+    ) -> None:
         regex_matcher: str = r"\A"
 
         time_resolution_name: str

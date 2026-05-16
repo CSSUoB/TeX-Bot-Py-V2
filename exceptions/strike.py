@@ -1,15 +1,18 @@
 """Custom exception classes raised when errors occur during use of the "/strike" command."""
 
-from typing import TYPE_CHECKING, override
+from collections.abc import Sequence
 
-from typed_classproperties import classproperty
+__all__: Sequence[str] = (
+    "StrikeTrackingError",
+    "NoAuditLogsStrikeTrackingError",
+)
+
+
+from typing import override
+
+from classproperties import classproperty
 
 from .base import BaseTeXBotError
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-__all__: "Sequence[str]" = ("NoAuditLogsStrikeTrackingError", "StrikeTrackingError")
 
 
 class StrikeTrackingError(BaseTeXBotError, RuntimeError):
@@ -20,9 +23,10 @@ class StrikeTrackingError(BaseTeXBotError, RuntimeError):
     and not tracked correctly.
     """
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEFAULT_MESSAGE(cls) -> str:
+    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
         return "An error occurred while trying to track manually applied moderation actions."
 
 
@@ -34,7 +38,8 @@ class NoAuditLogsStrikeTrackingError(BaseTeXBotError, RuntimeError):
     and not tracked correctly.
     """
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEFAULT_MESSAGE(cls) -> str:
+    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
         return "Unable to retrieve audit log entry after possible manual moderation action."

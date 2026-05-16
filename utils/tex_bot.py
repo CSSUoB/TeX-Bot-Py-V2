@@ -510,7 +510,7 @@ class TeXBot(discord.Bot):
 
     async def get_main_guild_member(
         self, user: discord.Member | discord.User | str | int
-    ) -> discord.Member:  # noqa: E501
+    ) -> discord.Member:
         """
         Util method to retrieve a member of your group's Discord guild from their ID or User.
 

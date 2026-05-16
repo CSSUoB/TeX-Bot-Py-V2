@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("SlugKeyValidator", "SlugKeyMap")
+__all__: Sequence[str] = ("SlugKeyMap", "SlugKeyValidator")
 
 
 from typing import override
@@ -22,7 +22,7 @@ class SlugKeyMap(strictyaml.Map):  # type: ignore[misc]
         self,
         validator: dict[object, object],
         key_validator: strictyaml.Validator | None = None,
-    ) -> None:  # type: ignore[misc] # noqa: E501
+    ) -> None:  # type: ignore[misc]
         super().__init__(
             validator=validator,
             key_validator=key_validator if key_validator is not None else SlugKeyValidator(),

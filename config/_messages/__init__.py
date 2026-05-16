@@ -33,7 +33,7 @@ class MessagesAccessor:
             raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
         IN_MESSAGE_KEY_FORMAT: Final[bool] = bool(
-            re.fullmatch(r"\A(?!.*__.*)(?:[A-Z]|[A-Z_][A-Z]|[A-Z_][A-Z][A-Z_]*[A-Z])\Z", item)  # noqa: COM812
+            re.fullmatch(r"\A(?!.*__.*)(?:[A-Z]|[A-Z_][A-Z]|[A-Z_][A-Z][A-Z_]*[A-Z])\Z", item)
         )
         if not IN_MESSAGE_KEY_FORMAT:
             raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
@@ -56,7 +56,7 @@ class MessagesAccessor:
 
             ERROR_WAS_FROM_INVALID_KEY_NAME: Final[bool] = (
                 self.format_invalid_message_id_message(item)
-                in str(  # noqa: E501
+                in str(
                     attribute_not_exist_error,
                 )
             )

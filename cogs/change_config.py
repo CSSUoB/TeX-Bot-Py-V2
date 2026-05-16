@@ -98,7 +98,7 @@ class ConfirmSetConfigSettingValueView(View):
     )
     async def confirm_set_config_button_callback(
         self, _: discord.Button, interaction: discord.Interaction
-    ) -> None:  # noqa: E501
+    ) -> None:
         """When the yes button is pressed, delete the message."""
         logger.debug('"Yes" button pressed. %s', interaction)
 
@@ -109,7 +109,7 @@ class ConfirmSetConfigSettingValueView(View):
     )
     async def cancel_set_config_button_callback(
         self, _: discord.Button, interaction: discord.Interaction
-    ) -> None:  # noqa: E501
+    ) -> None:
         """When the no button is pressed, delete the message."""
         logger.debug('"No" button pressed. %s', interaction)
 
@@ -140,7 +140,7 @@ class CheckConfigFileChangedTaskCog(TeXBotBaseCog):
     @classmethod
     async def _file_raw_contents_is_same(
         cls, current_file: AsyncFile[bytes], previous_raw_contents: bytes
-    ) -> bool:  # noqa: E501
+    ) -> bool:
         BUFFER_SIZE: Final[int] = 8 * 1024
 
         previous_file: BytesIO = BytesIO(previous_raw_contents)
@@ -157,7 +157,7 @@ class CheckConfigFileChangedTaskCog(TeXBotBaseCog):
     @classmethod
     async def _check_config_actually_is_same(
         cls, previous_file_comparer: FileComparer
-    ) -> bool:  # noqa: E501
+    ) -> bool:
         SETTINGS_FILE_PATH: Final[
             AsyncPath
         ] = await config._settings.utils.get_settings_file_path()
@@ -248,7 +248,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     @staticmethod
     async def autocomplete_get_settings_names(
         ctx: TeXBotAutocompleteContext,
-    ) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
+    ) -> Set[discord.OptionChoice] | Set[str]:
         """Autocomplete callable that generates the set of available settings names."""
         if not ctx.interaction.user:
             return set()
@@ -264,7 +264,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     @staticmethod
     async def autocomplete_get_unsetable_settings_names(
         ctx: TeXBotAutocompleteContext,
-    ) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
+    ) -> Set[discord.OptionChoice] | Set[str]:
         """Autocomplete callable that generates the set of unsetable settings names."""
         if not ctx.interaction.user:
             return set()
@@ -284,10 +284,10 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     @staticmethod
     async def autocomplete_get_example_setting_values(
         ctx: TeXBotAutocompleteContext,
-    ) -> Set[discord.OptionChoice] | Set[str]:  # noqa: C901,PLR0911,PLR0912,E501
+    ) -> Set[discord.OptionChoice] | Set[str]:
         """Autocomplete callable that generates example values for a configuration setting."""
         HAS_CONTEXT: Final[bool] = bool(
-            ctx.interaction.user and "setting" in ctx.options and ctx.options["setting"]  # noqa: COM812
+            ctx.interaction.user and "setting" in ctx.options and ctx.options["setting"]
         )
         if not HAS_CONTEXT:
             return set()
@@ -414,7 +414,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                     "-delay",
                     "-interval",
                 ),
-            )  # noqa: COM812
+            )
         )
         if SETTING_NAME_IS_TIMEDELTA:
             timedelta_scales: MutableSequence[str] = ["s", "m"]
@@ -559,7 +559,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def get_config_value(
         self, ctx: TeXBotApplicationContext, config_setting_name: str
-    ) -> None:  # noqa: E501
+    ) -> None:
         """Definition & callback response of the "get_config_value" command."""
         if config_setting_name not in config.CONFIG_SETTINGS_HELPS:
             await self.command_send_error(
@@ -578,7 +578,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         CONFIG_SETTING_IS_SECRET: Final[bool] = bool(
             "token" in config_setting_name
             or "cookie" in config_setting_name
-            or "secret" in config_setting_name  # noqa: COM812
+            or "secret" in config_setting_name
         )
 
         await ctx.respond(
@@ -622,7 +622,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def help_config_setting(
         self, ctx: TeXBotApplicationContext, config_setting_name: str
-    ) -> None:  # noqa: E501
+    ) -> None:
         """Definition & callback response of the "help_config_setting" command."""
         if config_setting_name not in config.CONFIG_SETTINGS_HELPS:
             await self.command_send_error(
@@ -695,7 +695,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def set_config_value(
         self, ctx: TeXBotApplicationContext, config_setting_name: str, new_config_value: str
-    ) -> None:  # noqa: E501
+    ) -> None:
         """Definition & callback response of the "set_config_value" command."""
         if config_setting_name not in config.CONFIG_SETTINGS_HELPS:
             await self.command_send_error(
@@ -744,7 +744,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                     in {
                         "shutdown_confirm",
                         "shutdown_cancel",
-                    }  # noqa: COM812
+                    }
                 ),
             )
 
@@ -830,7 +830,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         CONFIG_SETTING_IS_SECRET: Final[bool] = bool(
             "token" in config_setting_name
             or "cookie" in config_setting_name
-            or "secret" in config_setting_name  # noqa: COM812
+            or "secret" in config_setting_name
         )
         await responder.respond(
             content=(
@@ -869,7 +869,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def unset_config_value(
         self, ctx: TeXBotApplicationContext, config_setting_name: str
-    ) -> None:  # noqa: E501
+    ) -> None:
         """Definition & callback response of the "unset_config_value" command."""
         if config_setting_name not in config.CONFIG_SETTINGS_HELPS:
             await self.command_send_error(

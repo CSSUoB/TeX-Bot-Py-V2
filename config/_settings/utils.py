@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-__all__: Sequence[str] = ("is_running_in_async", "get_settings_file_path")
+__all__: Sequence[str] = ("get_settings_file_path", "is_running_in_async")
 
 
 import asyncio

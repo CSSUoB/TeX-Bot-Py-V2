@@ -1,57 +1,60 @@
 """Custom exception classes to be raised when retrieved Discord objects do not exist."""
 
-import abc
-from typing import TYPE_CHECKING, override
+from collections.abc import Sequence
 
-from typed_classproperties import classproperty
+__all__: Sequence[str] = (
+    "RulesChannelDoesNotExistError",
+    "GuildDoesNotExistError",
+    "RoleDoesNotExistError",
+    "CommitteeRoleDoesNotExistError",
+    "CommitteeElectRoleDoesNotExistError",
+    "GuestRoleDoesNotExistError",
+    "MemberRoleDoesNotExistError",
+    "ArchivistRoleDoesNotExistError",
+    "ApplicantRoleDoesNotExistError",
+    "ChannelDoesNotExistError",
+    "RolesChannelDoesNotExistError",
+    "GeneralChannelDoesNotExistError",
+)
+
+
+import abc
+from typing import Final, override
+
+from classproperties import classproperty
 
 from .base import BaseDoesNotExistError, BaseTeXBotError
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from typing import Final
-
-__all__: "Sequence[str]" = (
-    "ApplicantRoleDoesNotExistError",
-    "ArchivistRoleDoesNotExistError",
-    "ChannelDoesNotExistError",
-    "CommitteeElectRoleDoesNotExistError",
-    "CommitteeRoleDoesNotExistError",
-    "GeneralChannelDoesNotExistError",
-    "GuestRoleDoesNotExistError",
-    "GuildDoesNotExistError",
-    "MemberRoleDoesNotExistError",
-    "RoleDoesNotExistError",
-    "RolesChannelDoesNotExistError",
-    "RulesChannelDoesNotExistError",
-)
 
 
 class RulesChannelDoesNotExistError(BaseTeXBotError, ValueError):
     """Exception class to raise when the channel, marked as the rules channel, is missing."""
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEFAULT_MESSAGE(cls) -> str:
+    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
         return "There is no channel marked as the rules channel."
 
 
 class GuildDoesNotExistError(BaseDoesNotExistError):
     """Exception class to raise when a required Discord guild is missing."""
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEFAULT_MESSAGE(cls) -> str:
+    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
         return "Server with given ID does not exist or is not accessible to the bot."
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def ERROR_CODE(cls) -> str:
+    def ERROR_CODE(cls) -> str:  # noqa: N805
         return "E1011"
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DOES_NOT_EXIST_TYPE(cls) -> str:
+    def DOES_NOT_EXIST_TYPE(cls) -> str:  # noqa: N805
         return "guild"
 
     @override
@@ -68,26 +71,29 @@ class GuildDoesNotExistError(BaseDoesNotExistError):
 class RoleDoesNotExistError(BaseDoesNotExistError, abc.ABC):
     """Exception class to raise when a required Discord role is missing."""
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEFAULT_MESSAGE(cls) -> str:
+    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
         return f'Role with name "{cls.ROLE_NAME}" does not exist.'
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DOES_NOT_EXIST_TYPE(cls) -> str:
+    def DOES_NOT_EXIST_TYPE(cls) -> str:  # noqa: N805
         return "role"
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def ROLE_NAME(cls) -> str:  # noqa: N802
-        """The name of the Discord role that does not exist."""
+    def ROLE_NAME(cls) -> str:  # noqa: N802, N805
+        """The name of the Discord role that does not exist."""  # noqa: D401
 
     @override
     def __init__(self, message: str | None = None) -> None:
         """Initialise a new DoesNotExist exception for a role not existing."""
         HAS_DEPENDANTS: Final[bool] = bool(
-            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS
+            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS  # noqa: COM812
         )
 
         if not message and HAS_DEPENDANTS:
@@ -99,14 +105,17 @@ class RoleDoesNotExistError(BaseDoesNotExistError, abc.ABC):
 class CommitteeRoleDoesNotExistError(RoleDoesNotExistError):
     """Exception class to raise when the "Committee" Discord role is missing."""
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def ERROR_CODE(cls) -> str:
+    def ERROR_CODE(cls) -> str:  # noqa: N805
         return "E1021"
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N805
+        # noinspection SpellCheckingInspection
         return frozenset(
             {
                 "writeroles",
@@ -118,45 +127,52 @@ class CommitteeRoleDoesNotExistError(RoleDoesNotExistError):
                 "ensure-members-inducted",
                 "kill",
                 "committee-handover",
-            }
+            },
         )
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def ROLE_NAME(cls) -> str:
+    def ROLE_NAME(cls) -> str:  # noqa: N805
         return "Committee"
 
 
 class CommitteeElectRoleDoesNotExistError(RoleDoesNotExistError):
     """Exception class to raise when the "Committee-Elect" Discord role is missing."""
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def ERROR_CODE(cls) -> str:
+    def ERROR_CODE(cls) -> str:  # noqa: N805
         return "E1026"
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N805
         return frozenset({"handover"})
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def ROLE_NAME(cls) -> str:
+    def ROLE_NAME(cls) -> str:  # noqa: N805
         return "Committee-Elect"
 
 
 class GuestRoleDoesNotExistError(RoleDoesNotExistError):
     """Exception class to raise when the "Guest" Discord role is missing."""
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def ERROR_CODE(cls) -> str:
+    def ERROR_CODE(cls) -> str:  # noqa: N805
         return "E1022"
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N805
+        # noinspection SpellCheckingInspection
         return frozenset(
             {
                 "induct",
@@ -164,105 +180,122 @@ class GuestRoleDoesNotExistError(RoleDoesNotExistError):
                 "archive",
                 "ensure-members-inducted",
                 "increment-year-channels",
-            }
+            },
         )
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEPENDENT_TASKS(cls) -> frozenset[str]:
+    def DEPENDENT_TASKS(cls) -> frozenset[str]:  # noqa: N805
+        # noinspection SpellCheckingInspection
         return frozenset({"send_get_roles_reminders"})
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def ROLE_NAME(cls) -> str:
+    def ROLE_NAME(cls) -> str:  # noqa: N805
         return "Guest"
 
 
 class MemberRoleDoesNotExistError(RoleDoesNotExistError):
     """Exception class to raise when the "Member" Discord role is missing."""
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def ERROR_CODE(cls) -> str:
+    def ERROR_CODE(cls) -> str:  # noqa: N805
         return "E1023"
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:
-        return frozenset({"make-member", "ensure-members-inducted", "annual-roles-reset"})
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N805
+        # noinspection SpellCheckingInspection
+        return frozenset({"makemember", "ensure-members-inducted", "annual-roles-reset"})
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def ROLE_NAME(cls) -> str:
+    def ROLE_NAME(cls) -> str:  # noqa: N805
         return "Member"
 
 
 class ArchivistRoleDoesNotExistError(RoleDoesNotExistError):
     """Exception class to raise when the "Archivist" Discord role is missing."""
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def ERROR_CODE(cls) -> str:
+    def ERROR_CODE(cls) -> str:  # noqa: N805
         return "E1024"
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N805
+        # noinspection SpellCheckingInspection
         return frozenset({"archive", "increment-year-channels"})
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def ROLE_NAME(cls) -> str:
+    def ROLE_NAME(cls) -> str:  # noqa: N805
         return "Archivist"
 
 
 class ApplicantRoleDoesNotExistError(RoleDoesNotExistError):
     """Exception class to raise when the "Applicant" Discord role is missing."""
 
+    # noinspection PyMethodParameters
     @classproperty
     @override
-    def ERROR_CODE(cls) -> str:
+    def ERROR_CODE(cls) -> str:  # noqa: N805
         return "E1025"
 
+    # noinspection PyMethodParameters
     @classproperty
     @override
-    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N805
         return frozenset({"make_applicant"})
 
+    # noinspection PyMethodParameters
     @classproperty
     @override
-    def ROLE_NAME(cls) -> str:
+    def ROLE_NAME(cls) -> str:  # noqa: N805
         return "Applicant"
 
 
 class ChannelDoesNotExistError(BaseDoesNotExistError):
     """Exception class to raise when a required Discord channel is missing."""
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEFAULT_MESSAGE(cls) -> str:
+    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
         return f'Channel with name "{cls.CHANNEL_NAME}" does not exist.'
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DOES_NOT_EXIST_TYPE(cls) -> str:
+    def DOES_NOT_EXIST_TYPE(cls) -> str:  # noqa: N805
         return "channel"
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
-    def CHANNEL_NAME(cls) -> str:  # noqa: N802
-        """The name of the Discord channel that does not exist."""
+    def CHANNEL_NAME(cls) -> str:  # noqa: N802, N805
+        """The name of the Discord channel that does not exist."""  # noqa: D401
 
     @override
     def __init__(self, message: str | None = None) -> None:
         """Initialise a new DoesNotExist exception for a role not existing."""
         HAS_DEPENDANTS: Final[bool] = bool(
-            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS
+            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS  # noqa: COM812
         )
 
         if not message and HAS_DEPENDANTS:
             message = self.get_formatted_message(
-                non_existent_object_identifier=self.CHANNEL_NAME
+                non_existent_object_identifier=self.CHANNEL_NAME,
             )
 
         super().__init__(message)
@@ -271,36 +304,44 @@ class ChannelDoesNotExistError(BaseDoesNotExistError):
 class RolesChannelDoesNotExistError(ChannelDoesNotExistError):
     """Exception class to raise when the "Roles" Discord channel is missing."""
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def ERROR_CODE(cls) -> str:
+    def ERROR_CODE(cls) -> str:  # noqa: N805
         return "E1031"
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N805
+        # noinspection SpellCheckingInspection
         return frozenset({"writeroles"})
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def CHANNEL_NAME(cls) -> str:
+    def CHANNEL_NAME(cls) -> str:  # noqa: N805
         return "roles"
 
 
 class GeneralChannelDoesNotExistError(ChannelDoesNotExistError):
     """Exception class to raise when the "General" Discord channel is missing."""
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def ERROR_CODE(cls) -> str:
+    def ERROR_CODE(cls) -> str:  # noqa: N805
         return "E1032"
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N805
+        # noinspection SpellCheckingInspection
         return frozenset({"induct"})
 
+    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def CHANNEL_NAME(cls) -> str:
+    def CHANNEL_NAME(cls) -> str:  # noqa: N805
         return "general"
