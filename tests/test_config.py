@@ -1819,6 +1819,7 @@ class TestSetupSendIntroductionRemindersInterval:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with (
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"),
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"),
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"),
         ):
@@ -2087,6 +2088,7 @@ class TestSetupSendIntroductionRemindersDelay:
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
         with (
+            EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"),
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"),
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"),
         ):
