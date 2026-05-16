@@ -81,10 +81,13 @@ class MakeMemberBaseCog(TeXBotBaseCog):
             return False, INVALID_GROUP_MEMBER_ID_MESSAGE
 
         if member_role in discord_member.roles:
-            return (False, (
-                ":information_source: No changes made. "
-                "You're already a member - why are you trying this again? :information_source:"
-            ))
+            return (
+                False,
+                (
+                    ":information_source: No changes made. "
+                    "You're already a member - why are you trying this again? :information_source:"
+                ),
+            )
 
         if await GroupMadeMember.objects.filter(
             hashed_group_member_id=GroupMadeMember.hash_group_member_id(
