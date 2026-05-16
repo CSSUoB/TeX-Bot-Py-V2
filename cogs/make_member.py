@@ -318,7 +318,7 @@ class OpenMemberVerificationModalView(View):
 
 
 class MakeMemberModalCommandCog(MakeMemberBaseCog):
-    """Cog class that defines the "/send-make-member-modal" command and its call-back method."""
+    """Cog class that defines the "/send-make-member-modal" command and its call-back method."""  # noqa: W505, E501
 
     @TeXBotBaseCog.listener()
     async def on_ready(self) -> None:
