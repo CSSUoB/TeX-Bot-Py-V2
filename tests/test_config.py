@@ -1817,12 +1817,13 @@ class TestSetupSendIntroductionRemindersInterval:
         and so must be saved successfully.
         """
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
-        RuntimeSettings._setup_send_introduction_reminders()
 
         with (
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"),
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"),
         ):
+            RuntimeSettings._setup_send_introduction_reminders()
+
             os.environ["SEND_INTRODUCTION_REMINDERS_INTERVAL"] = (
                 test_send_introduction_reminders_interval
             )
@@ -1876,9 +1877,9 @@ class TestSetupSendIntroductionRemindersInterval:
     def test_default_send_introduction_reminders_interval(self) -> None:
         """Test that a default value is used when no `SEND_INTRODUCTION_REMINDERS_INTERVAL`."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
-        RuntimeSettings._setup_send_introduction_reminders()
 
         with EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"):
+            RuntimeSettings._setup_send_introduction_reminders()
             RuntimeSettings._setup_send_introduction_reminders_interval()
 
         RuntimeSettings._is_env_variables_setup = True
@@ -2084,12 +2085,12 @@ class TestSetupSendIntroductionRemindersDelay:
     def test_default_send_introduction_reminders_delay(self) -> None:
         """Test that a default value is used when no `SEND_INTRODUCTION_REMINDERS_DELAY`."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
-        RuntimeSettings._setup_send_introduction_reminders()
 
         with (
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"),
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"),
         ):
+            RuntimeSettings._setup_send_introduction_reminders()
             assert os.environ.get("SEND_INTRODUCTION_REMINDERS_DELAY") is None
             RuntimeSettings._setup_send_introduction_reminders_delay()
 
@@ -2114,13 +2115,13 @@ class TestSetupSendIntroductionRemindersDelay:
         )
 
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
-        RuntimeSettings._setup_send_introduction_reminders()
 
         with (
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"),
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"),
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"),
         ):
+            RuntimeSettings._setup_send_introduction_reminders()
             os.environ["SEND_INTRODUCTION_REMINDERS_DELAY"] = (
                 too_short_introduction_reminders_delay
             )
@@ -2146,13 +2147,12 @@ class TestSetupSendIntroductionRemindersDelay:
 
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
 
-        RuntimeSettings._setup_send_introduction_reminders()
-
         with (
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"),
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"),
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"),
         ):
+            RuntimeSettings._setup_send_introduction_reminders()
             os.environ["SEND_INTRODUCTION_REMINDERS_DELAY"] = (
                 test_invalid_introduction_reminders_delay
             )
@@ -2171,13 +2171,13 @@ class TestSetupSendIntroductionRemindersDelay:
     ) -> None:
         """Test that the given `SEND_INTRODUCTION_REMINDERS_DELAY` is used when provided."""
         RuntimeSettings: Final[type[Settings]] = config._settings_class_factory()
-        RuntimeSettings._setup_send_introduction_reminders()
 
         with (
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_DELAY"),
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS"),
             EnvVariableDeleter("SEND_INTRODUCTION_REMINDERS_INTERVAL"),
         ):
+            RuntimeSettings._setup_send_introduction_reminders()
             os.environ["SEND_INTRODUCTION_REMINDERS_DELAY"] = (
                 test_send_introduction_reminders_delay
             )
