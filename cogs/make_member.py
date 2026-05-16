@@ -2,7 +2,7 @@
 
 import logging
 import re
-from enum import auto, Enum
+from enum import Enum, auto
 from typing import TYPE_CHECKING, override
 
 import discord
