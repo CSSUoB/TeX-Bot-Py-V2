@@ -13,13 +13,14 @@ if TYPE_CHECKING:
     from logging import Logger
     from typing import Final
 
-    from utils import TeXBotApplicationContext
+    from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 __all__: "Sequence[str]" = (
     "BaseMakeApplicantCog",
     "MakeApplicantContextCommandsCog",
     "MakeApplicantSlashCommandCog",
 )
+
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
@@ -33,13 +34,26 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
     """
 
     async def _perform_make_applicant(
-        self, ctx: "TeXBotApplicationContext", applicant_member: discord.Member
+        self, ctx: "TeXBotApplicationContext", applicant_member_id: int
     ) -> None:
         """Perform the actual process of making the user into a group-applicant."""
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = ctx.bot.main_guild
         applicant_role: discord.Role = await ctx.bot.applicant_role
         guest_role: discord.Role = await ctx.bot.guest_role
+
+        applicant_member: discord.Member | None = main_guild.get_member(applicant_member_id)
+
+        if not applicant_member:
+            await ctx.respond(
+                content=(
+                    ":information_source: "
+                    "No changes made. User cannot be made into an applicant "
+                    "because they have left the server :information_source:"
+                ),
+                ephemeral=True,
+            )
+            return
 
         if applicant_role in applicant_member.roles:
             await ctx.respond("User is already an applicant! Command aborted.")
@@ -133,7 +147,7 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
 
     @staticmethod
     async def autocomplete_get_members(
-        ctx: "TeXBotApplicationContext",
+        ctx: "TeXBotAutocompleteContext",
     ) -> set[discord.OptionChoice]:
         """
         Autocomplete callable that generates the set of available selectable members.
@@ -163,21 +177,21 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
             discord.OptionChoice(name=member.name, value=str(member.id)) for member in members
         }
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="make-applicant",
         description="Gives the user @Applicant role and removes the @Guest role if present.",
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="user",
         description="The user to make an Applicant.",
         input_type=str,
-        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),  # type: ignore[arg-type]
+        autocomplete=discord.utils.basic_autocomplete(autocomplete_get_members),
         required=True,
         parameter_name="str_applicant_member_id",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def make_applicant(  # type: ignore[misc]
+    async def make_applicant(
         self, ctx: "TeXBotApplicationContext", str_applicant_member_id: str
     ) -> None:
         """
@@ -195,17 +209,17 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
             await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
             return
 
-        await self._perform_make_applicant(ctx, applicant_member)
+        await self._perform_make_applicant(ctx, applicant_member.id)
 
 
 class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
     """Cog class that defines the context menu make-applicant commands."""
 
-    @discord.user_command(name="Make Applicant")  # type: ignore[no-untyped-call, misc]
+    @discord.user_command(name="Make Applicant")
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def user_make_applicant(  # type: ignore[misc]
-        self, ctx: "TeXBotApplicationContext", member: discord.Member
+    async def user_make_applicant(
+        self, ctx: "TeXBotApplicationContext", member: discord.Member | discord.User
     ) -> None:
         """
         Definition and callback response of the "make_applicant" user-context-command.
@@ -214,12 +228,12 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
         the "make_applicant" slash-command and thus gives the specified user the
         "Applicant" role and removes the "Guest" role if they have it.
         """
-        await self._perform_make_applicant(ctx, member)
+        await self._perform_make_applicant(ctx, member.id)
 
-    @discord.message_command(name="Make Message Author Applicant")  # type: ignore[no-untyped-call, misc]
+    @discord.message_command(name="Make Message Author Applicant")
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def message_make_applicant(  # type: ignore[misc]
+    async def message_make_applicant(
         self, ctx: "TeXBotApplicationContext", message: discord.Message
     ) -> None:
         """
@@ -229,19 +243,4 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
         the "make_applicant" slash-command and thus gives the specified user the
         "Applicant" role and removes the "Guest" role if they have it.
         """
-        try:
-            member: discord.Member = await self.bot.get_member_from_str_id(
-                str(message.author.id)
-            )
-        except ValueError:
-            await ctx.respond(
-                content=(
-                    ":information_source: "
-                    "No changes made. User cannot be made into an applicant "
-                    "because they have left the server :information_source:"
-                ),
-                ephemeral=True,
-            )
-            return
-
-        await self._perform_make_applicant(ctx, member)
+        await self._perform_make_applicant(ctx, message.author.id)

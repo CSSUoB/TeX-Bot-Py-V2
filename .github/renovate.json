@@ -1,12 +1,12 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "assignAutomerge": true,
+    "assignAutomerge": false,
+    "automerge": true,
     "configMigration": true,
     "dependencyDashboard": true,
     "dependencyDashboardAutoclose": true,
     "dependencyDashboardLabels": [
-        "dependencies",
-        "tracker"
+        "dependencies"
     ],
     "enabled": true,
     "enabledManagers": [
@@ -20,18 +20,42 @@
         "replacements:all",
         "workarounds:all"
     ],
+    "gitIgnoredAuthors": [
+        "autofix-ci@users.noreply.github.com",
+        "autofix-ci[bot]@users.noreply.github.com",
+        "114827586+autofix-ci[bot]@users.noreply.github.com"
+    ],
     "labels": [
         "dependencies"
     ],
     "lockFileMaintenance": {
+        "automerge": true,
         "enabled": true
     },
     "packageRules": [
         {
-            "description": "Only update major Python versions manually",
-            "enabled": false,
+            "dependencyDashboardApproval": true,
+            "description": "Only update Python versions after approval",
+            "groupName": "python-version",
             "matchPackageNames": [
                 "python"
+            ],
+            "matchUpdateTypes": [
+                "major",
+                "minor"
+            ]
+        },
+        {
+            "dependencyDashboardApproval": true,
+            "description": "Only update py-cord versions after approval",
+            "groupName": "py-cord-version",
+            "matchPackageNames": [
+                "py-cord"
+            ],
+            "matchUpdateTypes": [
+                "major",
+                "minor",
+                "patch"
             ]
         },
         {

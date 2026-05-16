@@ -1,4 +1,8 @@
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
+FROM ghcr.io/astral-sh/uv:python3.13-trixie-slim AS builder
+
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y git=1:2.* --no-install-recommends
 
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 
@@ -16,15 +20,19 @@ COPY utils/ /app/utils/
 COPY db/ /app/db/
 COPY cogs/ /app/cogs/
 
-FROM python:3.12-slim-bookworm
+FROM python:3.13-slim-trixie
+
+RUN groupadd --system --gid 999 nonroot && useradd --system --gid 999 --uid 999 --create-home nonroot
 
 LABEL org.opencontainers.image.source=https://github.com/CSSUoB/TeX-Bot-Py-V2
 LABEL org.opencontainers.image.licenses=Apache-2.0
 
-COPY --from=builder --chown=app:app /app /app
+COPY --from=builder --chown=nonroot:nonroot /app /app
 
 ENV LANG=C.UTF-8 PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
+
+USER nonroot
 
 ENTRYPOINT ["python", "-m", "main"]

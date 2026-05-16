@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = ("ConfirmKillView", "KillCommandCog")
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
@@ -46,12 +47,10 @@ class ConfirmKillView(View):
 class KillCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/kill" command and its call-back method."""
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
-        name="kill", description="Shutdown TeX-Bot."
-    )
+    @discord.slash_command(name="kill", description="Shutdown TeX-Bot.")
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def kill(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def kill(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "kill" command.
 
@@ -84,7 +83,7 @@ class KillCommandCog(TeXBotBaseCog):
         button_interaction: discord.Interaction = await self.bot.wait_for(
             "interaction",
             check=lambda interaction: (
-                interaction.type == discord.InteractionType.component
+                interaction.type == discord.InteractionType.component  # noqa: CAR180
                 and interaction.message.id == confirmation_message.id
                 and ((committee_role in interaction.user.roles) if committee_role else True)
                 and "custom_id" in interaction.data

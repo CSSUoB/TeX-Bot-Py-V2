@@ -1,26 +1,75 @@
 default_install_hook_types: [pre-commit, commit-msg]
+default_language_version:
+    python: python3.13
 default_stages: [pre-commit, pre-merge-commit, manual]
 
-default_language_version:
-    python: python3.12
-
 repos:
-    - repo: https://github.com/AleksaC/hadolint-py
-      rev: v2.12.0.3
+    - repo: https://github.com/astral-sh/uv-pre-commit
+      rev: 0.11.13
       hooks:
-        - id: hadolint
+        - id: uv-lock
+          always_run: true
+
+    - repo: https://github.com/gitleaks/gitleaks
+      rev: v8.30.1
+      hooks:
+        - id: gitleaks
+
+    - repo: https://github.com/codespell-project/codespell
+      rev: v2.4.2
+      hooks:
+        - id: codespell
+
+    - repo: https://github.com/tombi-toml/tombi-pre-commit
+      rev: v0.11.2
+      hooks:
+        - id: tombi-format
+        - id: tombi-lint
+
+    - repo: https://github.com/tsvikas/sync-with-uv
+      rev: v0.5.0
+      hooks:
+        - id: sync-with-uv
+
+    - repo: https://github.com/rhysd/actionlint
+      rev: v1.7.12
+      hooks:
+        - id: actionlint
+          additional_dependencies: [github.com/wasilibs/go-shellcheck/cmd/shellcheck@latest]  # yamllint disable-line rule:key-ordering
+          args: [-pyflakes=]
+
+    - repo: https://github.com/dotenv-linter/dotenv-linter
+      rev: v4.0.0
+      hooks:
+        - id: dotenv-linter
+          args: [fix, --no-backup]
+
+    - repo: https://github.com/hadolint/hadolint
+      rev: v2.14.0
+      hooks:
+        - id: hadolint-docker
+
+    - repo: https://github.com/adrienverge/yamllint.git
+      rev: v1.38.0
+      hooks:
+        - id: yamllint
+          args: [--strict]
 
     - repo: https://github.com/renovatebot/pre-commit-hooks
-      rev: 41.17.2
+      rev: 43.150.0
       hooks:
         - id: renovate-config-validator
           args: [--strict]
           stages: [manual]
 
     - repo: https://github.com/python-jsonschema/check-jsonschema
-      rev: 0.33.1
+      rev: 0.37.2
       hooks:
-        - id: check-github-workflows
+        - id: check-jsonschema
+          args: [--schemafile, 'https://json.schemastore.org/yamllint.json']  # yamllint disable-line rule:quoted-strings
+          files: ^\.yamllint\.yaml$  # yamllint disable-line rule:key-ordering
+          name: Check yamllint configuration file
+          types: [yaml]
 
     - repo: https://github.com/jorisroovers/gitlint
       rev: v0.19.1
@@ -28,66 +77,55 @@ repos:
         - id: gitlint
         - id: gitlint-ci
 
-    - repo: https://github.com/gitleaks/gitleaks
-      rev: v8.27.2
-      hooks:
-        - id: gitleaks
-
     - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v5.0.0
+      rev: v6.0.0
+      hooks:
+        - id: check-illegal-windows-names
+        - id: check-shebang-scripts-are-executable
+        - id: check-vcs-permalinks
+        - id: destroyed-symlinks
+        - id: check-case-conflict
+        - id: name-tests-test
+          args: [--pytest-test-first]
+          files: (?:^|\/)tests\/(?:[^\/]+\/)*(?!_)[^\/]+\.py$  # yamllint disable-line rule:key-ordering
+        - id: pretty-format-json
+          args: [--autofix, --indent, "4"]
+
+    - repo: builtin
       hooks:
         - id: check-added-large-files
         - id: trailing-whitespace
         - id: check-executables-have-shebangs
-        - id: check-illegal-windows-names
-        - id: check-shebang-scripts-are-executable
         - id: check-json
+        - id: check-toml
+        - id: check-yaml
+        - id: end-of-file-fixer
         - id: check-xml
         - id: check-symlinks
         - id: check-merge-conflict
-        - id: check-vcs-permalinks
-        - id: destroyed-symlinks
         - id: mixed-line-ending
           args: [--fix=lf]
-        - id: check-case-conflict
         - id: detect-private-key
         - id: fix-byte-order-marker
           args: [-h]
-        - id: name-tests-test
-          args: [--pytest-test-first]
-        - id: pretty-format-json
-          args: [--autofix, --indent, '4']
 
     - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-      rev: v2.15.0
+      rev: v2.16.0
       hooks:
         - id: pretty-format-ini
           args: [--autofix]
 
-    - repo: https://github.com/ComPWA/taplo-pre-commit
-      rev: v0.9.3
-      hooks:
-        - id: taplo-format
-
-        - id: taplo-lint
-          args: [--default-schema-catalogs]
-          stages: [manual]
-
     - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.12.1
+      rev: v0.15.12
       hooks:
-        - id: ruff
+        - id: ruff-check
           args: [--fix]
-
         - id: ruff-format
 
-    - repo: https://github.com/astral-sh/uv-pre-commit
-      rev: 0.7.18
-      hooks:
-        - id: uv-lock
-          always_run: true
-
     - repo: https://github.com/google/yamlfmt
-      rev: v0.17.2
+      rev: v0.21.0
       hooks:
-        - id: yamlfmt
+        - entry: yamlfmt
+          id: yamlfmt
+          pass_filenames: true
+          types: [yaml]

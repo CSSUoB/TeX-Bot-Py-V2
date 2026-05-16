@@ -6,11 +6,12 @@ from typing import TYPE_CHECKING
 
 import discord
 
+from config import settings
 from db.core.models import GroupMadeMember
 from utils import CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Collection, Mapping, Sequence
     from logging import Logger
     from typing import Final
 
@@ -22,19 +23,20 @@ __all__: "Sequence[str]" = (
     "CommitteeHandoverCommandCog",
 )
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class CommitteeHandoverCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/committee-handover" command."""
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="committee-handover",
         description="Initiates the annual Discord handover procedure for new committee.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def committee_handover(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def committee_handover(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "committee_handover" command.
 
@@ -47,7 +49,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
 
         To do this, TeX-Bot will need to hold a role above that of the "Committee" role.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         committee_role: discord.Role = await self.bot.committee_role
         committee_elect_role: discord.Role = await self.bot.committee_elect_role
@@ -176,13 +178,13 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
         }
     )
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="annual-roles-reset",
         description="Removes the @Member role and academic year roles from all users.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def annual_roles_reset(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def annual_roles_reset(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "annual_roles_reset" command.
 
@@ -190,7 +192,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
         from any user that has them and subsequently deletes all instances of
         the GroupMadeMember database model.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         member_role: discord.Role = await self.bot.member_role
 
@@ -200,12 +202,31 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
             )
 
             ROLE_RESET_AUDIT_MESSAGE: Final[str] = (
-                f'{ctx.user} used TeX-Bot slash-command: "/annual_roles_reset"'
+                f'{ctx.user} used TeX-Bot slash-command: "/annual-roles-reset"'
             )
+
+            membership_dependent_roles: Mapping[str, discord.Role] = {
+                role.name: role
+                for role in main_guild.roles
+                if role.name in settings["MEMBERSHIP_DEPENDENT_ROLES"]
+            }
+
+            not_found_role_names: Collection[str] = settings[
+                "MEMBERSHIP_DEPENDENT_ROLES"
+            ] - set(membership_dependent_roles.keys())
+            if not_found_role_names:
+                logger.warning(
+                    "Membership dependent roles %s were configured but could not be found.",
+                    ", ".join(not_found_role_names),
+                )
 
             member: discord.Member
             for member in member_role.members:
                 await member.remove_roles(member_role, reason=ROLE_RESET_AUDIT_MESSAGE)
+
+                await member.remove_roles(
+                    *membership_dependent_roles.values(), reason=ROLE_RESET_AUDIT_MESSAGE
+                )
 
             logger.debug("Removed Member role from all users.")
             await initial_response.edit(
@@ -225,6 +246,11 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
                 if (role := discord.utils.get(main_guild.roles, name=role_name))
             }
 
+            await initial_response.edit(
+                content=":hourglass: Removing all members from each year role... :hourglass:"
+            )
+            logger.debug("Found %d year roles to reset.", len(year_roles))
+
             year_role: discord.Role
             for year_role in year_roles:
                 logger.debug("Removing all members from role: %s", year_role)
@@ -241,13 +267,13 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
 class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/increment-year-channels" command."""
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="increment-year-channels",
         description="Increments the year channels, archiving and creating channels as needed.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def increment_year_channels(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def increment_year_channels(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition and callback response of the "increment_year_channels" command.
 
@@ -257,9 +283,12 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
         - Renames the current "first-years" channel to "second-years"
         - Creates a new "first-years" channel
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
+        INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE: Final[str] = (
+            f'{ctx.user} used TeX-Bot slash-command: "/increment-year-channels"'
+        )
 
         async with ctx.typing():
             initial_message: discord.Interaction | discord.WebhookMessage = await ctx.respond(
@@ -276,11 +305,18 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                 )
                 archivist_role: discord.Role = await self.bot.archivist_role
 
-                await final_year_channel.set_permissions(guest_role, overwrite=None)
-                await final_year_channel.set_permissions(archivist_role, read_messages=True)
+                await final_year_channel.set_permissions(
+                    guest_role, overwrite=None, reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE
+                )
+                await final_year_channel.set_permissions(
+                    archivist_role,
+                    read_messages=True,
+                    reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
+                )
 
                 await final_year_channel.edit(
-                    name=f"final-years-{datetime.datetime.now(tz=datetime.UTC).year}"
+                    name=f"final-years-{datetime.datetime.now(tz=datetime.UTC).year}",
+                    reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
                 )
 
                 archived_category: discord.CategoryChannel | None = discord.utils.get(
@@ -289,7 +325,9 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
 
                 if archived_category:
                     await final_year_channel.edit(
-                        category=archived_category, sync_permissions=True
+                        category=archived_category,
+                        sync_permissions=True,
+                        reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
                     )
 
             second_years_channel: discord.TextChannel | None = discord.utils.get(
@@ -297,14 +335,22 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
             )
 
             if second_years_channel:
-                await second_years_channel.edit(name="final-years")
+                await second_years_channel.edit(
+                    name="final-years",
+                    topic="Channel for final-years to chat and ask questions.",
+                    reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
+                )
 
             first_year_channel: discord.TextChannel | None = discord.utils.get(
                 main_guild.text_channels, name="first-years"
             )
 
             if first_year_channel:
-                await first_year_channel.edit(name="second-years")
+                await first_year_channel.edit(
+                    name="second-years",
+                    topic="Channel for second-years to chat and ask questions.",
+                    reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
+                )
 
             year_channels_category: discord.CategoryChannel | None = discord.utils.get(
                 main_guild.categories, name="Year Chats"
@@ -318,16 +364,26 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
             )
 
             new_first_years_channel: discord.TextChannel = (
-                await main_guild.create_text_channel(name="first-years")
+                await main_guild.create_text_channel(
+                    name="first-years",
+                    topic="Channel for first-years to chat and ask questions.",
+                    reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
+                )
             )
 
             if year_channels_category:
                 await new_first_years_channel.edit(
-                    category=year_channels_category, sync_permissions=True, position=0
+                    category=year_channels_category,
+                    sync_permissions=True,
+                    position=0,
+                    reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
                 )
             else:
                 await new_first_years_channel.set_permissions(
-                    guest_role, read_messages=True, send_messages=True
+                    guest_role,
+                    read_messages=True,
+                    send_messages=True,
+                    reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
                 )
 
             await initial_message.edit(

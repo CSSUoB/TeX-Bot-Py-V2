@@ -35,6 +35,7 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = ("TeXBot",)
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
@@ -48,7 +49,7 @@ class TeXBot(discord.Bot):
     """
 
     @override
-    def __init__(self, *args: object, **options: object) -> None:
+    def __init__(self, *args: object, **options: object) -> None:  # noqa: CAR150
         """Initialise a new Pycord Bot subclass with empty shortcut accessors."""
         self._main_guild: discord.Guild | None = None
         self._committee_role: discord.Role | None = None
@@ -64,7 +65,7 @@ class TeXBot(discord.Bot):
 
         self._main_guild_set: bool = False
 
-        super().__init__(*args, **options)  # type: ignore[no-untyped-call]
+        super().__init__(*args, **options)  # type: ignore[no-untyped-call]  # noqa: CAR151
 
     @override
     async def close(self) -> "NoReturn":  # type: ignore[misc]
@@ -73,8 +74,8 @@ class TeXBot(discord.Bot):
         logger.info("TeX-Bot manually terminated.")
 
     @property
-    def EXIT_WAS_DUE_TO_KILL_COMMAND(self) -> bool:  # noqa: N802
-        """Return whether the TeX-Bot exited due to the kill command being used."""
+    def EXIT_WAS_DUE_TO_KILL_COMMAND(self) -> bool:  # noqa: D102, N802
+        # NOTE: Identifies whether TeX-Bot exited due to the kill command being used."""
         return self._exit_was_due_to_kill_command
 
     @property
@@ -289,17 +290,13 @@ class TeXBot(discord.Bot):
         The group-full-name is either retrieved from the provided environment variable
         or automatically identified from the name of your group's Discord guild.
         """
-        return (
-            settings["_GROUP_FULL_NAME"]
-            if settings["_GROUP_FULL_NAME"]
-            else (
-                "The Computer Science Society"
-                if (
-                    "computer science society" in self.main_guild.name.lower()
-                    or "css" in self.main_guild.name.lower()
-                )
-                else self.main_guild.name
+        return settings["_GROUP_FULL_NAME"] or (
+            "The Computer Science Society"
+            if (
+                "computer science society" in self.main_guild.name.lower()
+                or "css" in self.main_guild.name.lower()
             )
+            else self.main_guild.name
         )
 
     @property
@@ -307,14 +304,13 @@ class TeXBot(discord.Bot):
         """
         The short colloquial name of your community group.
 
-        This defaults to `TeXBot.group_full_name`,
+        This defaults to `TeXBot.group_full_name`
         if no group-short-name is provided/could not be determined.
         """
         return (
             (
                 settings["_GROUP_SHORT_NAME"]
-                if settings["_GROUP_SHORT_NAME"]
-                else (
+                or (
                     "CSS"
                     if (
                         "computer science society" in self.group_full_name.lower()
@@ -339,7 +335,7 @@ class TeXBot(discord.Bot):
         return (
             "UoB Student"
             if (
-                "computer science society" in self.group_full_name.lower()
+                "computer science society" in self.group_full_name.lower()  # noqa: CAR180
                 or "css" in self.group_full_name.lower()
                 or "uob" in self.group_full_name.lower()
                 or "university of birmingham" in self.group_full_name.lower()
@@ -362,7 +358,7 @@ class TeXBot(discord.Bot):
         return (
             "the Guild of Students"
             if (
-                "computer science society" in self.group_full_name.lower()
+                "computer science society" in self.group_full_name.lower()  # noqa: CAR180
                 or "css" in self.group_full_name.lower()
                 or "uob" in self.group_full_name.lower()
                 or "university of birmingham" in self.group_full_name.lower()

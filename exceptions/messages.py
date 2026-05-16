@@ -46,8 +46,8 @@ class MessagesJSONFileMissingKeyError(InvalidMessagesJSONFileError):
         super().__init__(message, dict_key=missing_key)
 
     @property
-    def missing_key(self) -> str | None:
-        """The key that was missing from the messages.json file."""
+    def missing_key(self) -> str | None:  # noqa: D102
+        # NOTE: The key that was missing from the messages.json file.
         return self.dict_key
 
     @missing_key.setter

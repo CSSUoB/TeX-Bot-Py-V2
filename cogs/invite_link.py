@@ -18,10 +18,10 @@ __all__: "Sequence[str]" = ("InviteLinkCommandCog",)
 class InviteLinkCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/invite-link" command and its call-back method."""
 
-    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+    @discord.slash_command(
         name="invite-link", description="Display the invite link to this server."
     )
-    async def invite_link(self, ctx: "TeXBotApplicationContext") -> None:  # type: ignore[misc]
+    async def invite_link(self, ctx: "TeXBotApplicationContext") -> None:
         """Definition & callback response of the "invite_link" command."""
         discord_invite_url: str | None = settings["CUSTOM_DISCORD_INVITE_URL"]
 
