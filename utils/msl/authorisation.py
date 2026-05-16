@@ -1,16 +1,14 @@
 """Module for authorisation checks."""
 
 import logging
+from enum import Enum
 from typing import TYPE_CHECKING
 
-import aiohttp
 import bs4
 
-from cogs.check_su_platform_authorisation import SUPlatformAccessCookieStatus
 from config import settings
-from utils import GLOBAL_SSL_CONTEXT
 
-from .core import BASE_COOKIES, BASE_HEADERS
+from .core import su_platform_client
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
@@ -19,6 +17,7 @@ if TYPE_CHECKING:
 
 
 __all__: "Sequence[str]" = (
+    "SUPlatformAccessCookieStatus",
     "get_su_platform_access_cookie_status",
     "get_su_platform_organisations",
 )
@@ -33,19 +32,36 @@ SU_PLATFORM_ORGANISATION_URL: "Final[str]" = (
 )
 
 
-async def _fetch_url_content_with_session(url: str) -> str:
-    """Fetch the HTTP content at the given URL, using a shared aiohttp session."""
-    async with (
-        aiohttp.ClientSession(headers=BASE_HEADERS, cookies=BASE_COOKIES) as http_session,
-        http_session.get(url=url, ssl=GLOBAL_SSL_CONTEXT) as http_response,
-    ):
-        return await http_response.text()
+class SUPlatformAccessCookieStatus(Enum):
+    """Enum class defining the status of the SU Platform Access Cookie."""
+
+    INVALID = (
+        logging.WARNING,
+        (
+            "The SU platform access cookie is not associated with any MSL user, "
+            "meaning it is invalid or expired."
+        ),
+    )
+    VALID = (
+        logging.WARNING,
+        (
+            "The SU platform access cookie is associated with a valid MSL user, "
+            "but is not an admin to any MSL organisations."
+        ),
+    )
+    AUTHORISED = (
+        logging.INFO,
+        (
+            "The SU platform access cookie is associated with a valid MSL user and "
+            "has access to at least one MSL organisation."
+        ),
+    )
 
 
 async def get_su_platform_access_cookie_status() -> SUPlatformAccessCookieStatus:
     """Retrieve the current validity status of the SU platform access cookie."""
     response_object: bs4.BeautifulSoup = bs4.BeautifulSoup(
-        await _fetch_url_content_with_session(SU_PLATFORM_PROFILE_URL), "html.parser"
+        await su_platform_client.fetch_url_content(SU_PLATFORM_PROFILE_URL), "html.parser"
     )
     page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
     if not page_title or "Login" in str(page_title):
@@ -55,7 +71,7 @@ async def get_su_platform_access_cookie_status() -> SUPlatformAccessCookieStatus
     organisation_admin_url: str = (
         f"{SU_PLATFORM_ORGANISATION_URL}/{settings['ORGANISATION_ID']}"
     )
-    response_html: str = await _fetch_url_content_with_session(organisation_admin_url)
+    response_html: str = await su_platform_client.fetch_url_content(organisation_admin_url)
 
     if "admin tools" in response_html.lower():
         return SUPlatformAccessCookieStatus.AUTHORISED
@@ -72,7 +88,7 @@ async def get_su_platform_access_cookie_status() -> SUPlatformAccessCookieStatus
 async def get_su_platform_organisations() -> "Iterable[str]":
     """Retrieve the MSL organisations the current SU platform cookie has access to."""
     response_object: bs4.BeautifulSoup = bs4.BeautifulSoup(
-        await _fetch_url_content_with_session(SU_PLATFORM_PROFILE_URL), "html.parser"
+        await su_platform_client.fetch_url_content(SU_PLATFORM_PROFILE_URL), "html.parser"
     )
 
     page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")

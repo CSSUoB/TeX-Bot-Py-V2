@@ -2,11 +2,14 @@
 
 from typing import TYPE_CHECKING
 
-from .authorisation import get_su_platform_access_cookie_status, get_su_platform_organisations
+from .authorisation import (
+    SUPlatformAccessCookieStatus,
+    get_su_platform_access_cookie_status,
+    get_su_platform_organisations,
+)
 from .memberships import (
     fetch_community_group_members_count,
     fetch_community_group_members_list,
-    fetch_url_content_with_session,
     is_id_a_community_group_member,
 )
 
@@ -15,8 +18,11 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = (
     "GLOBAL_SSL_CONTEXT",
+    "SUPlatformAccessCookieStatus",
     "fetch_community_group_members_count",
     "fetch_community_group_members_list",
     "fetch_url_content_with_session",
+    "get_su_platform_access_cookie_status",
+    "get_su_platform_organisations",
     "is_id_a_community_group_member",
 )

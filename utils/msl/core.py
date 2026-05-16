@@ -4,7 +4,6 @@ import logging
 from typing import TYPE_CHECKING
 
 import aiohttp
-from bs4 import BeautifulSoup
 
 from config import settings
 from utils import GLOBAL_SSL_CONTEXT
@@ -20,17 +19,6 @@ __all__: "Sequence[str]" = ()
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
-
-BASE_HEADERS: "Final[Mapping[str, str]]" = {
-    "Cache-Control": "no-cache",
-    "Pragma": "no-cache",
-    "Expires": "0",
-}
-
-BASE_COOKIES: "Final[Mapping[str, str]]" = {
-    ".ASPXAUTH": settings["SU_PLATFORM_ACCESS_COOKIE"],
-}
-
 ORGANISATION_ID: "Final[str]" = settings["ORGANISATION_ID"]
 
 ORGANISATION_ADMIN_URL: "Final[str]" = (
@@ -38,28 +26,30 @@ ORGANISATION_ADMIN_URL: "Final[str]" = (
 )
 
 
-async def get_msl_context(url: str) -> tuple[dict[str, str], dict[str, str]]:
-    """Get the required context headers, data and cookies to make a request to MSL."""
-    http_session: aiohttp.ClientSession = aiohttp.ClientSession(
-        headers=BASE_HEADERS,
-        cookies=BASE_COOKIES,
-    )
-    data_fields: dict[str, str] = {}
-    cookies: dict[str, str] = {}
-    async with http_session, http_session.get(url=url, ssl=GLOBAL_SSL_CONTEXT) as field_data:
-        data_response = BeautifulSoup(
-            markup=await field_data.text(),
-            features="html.parser",
-        )
+class SUPlatformClient:
+    """A client for making authenticated requests to the SU platform."""
 
-        for field in data_response.find_all(name="input"):
-            if field.get("name") and field.get("value"):
-                data_fields[field.get("name")] = field.get("value")
+    def __init__(self) -> None:
+        self.headers: Mapping[str, str] = settings["SU_PLATFORM_WEB_HEADERS"]
+        self.cookies: Mapping[str, str] = settings["SU_PLATFORM_ACCESS_COOKIE"]
 
-        for cookie in field_data.cookies:
-            cookie_morsel: Morsel[str] | None = field_data.cookies.get(cookie)
-            if cookie_morsel is not None:
-                cookies[cookie] = cookie_morsel.value
-        cookies[".ASPXAUTH"] = settings["MEMBERS_LIST_AUTH_SESSION_COOKIE"]
+    async def fetch_url_content(self, url: str) -> str:
+        async with (
+            aiohttp.ClientSession(headers=self.headers, cookies=self.cookies) as http_session,
+            http_session.get(url=url, ssl=GLOBAL_SSL_CONTEXT) as http_response,
+        ):
+            returned_asp_cookie: Morsel[str] | None = http_response.cookies.get(
+                ".AspNet.SharedCookie"
+            )
+            if not returned_asp_cookie:
+                return await http_response.text()
 
-    return data_fields, cookies
+            if returned_asp_cookie.value != self.cookies[".AspNet.SharedCookie"]:
+                logger.info("New SU platform access cookie given by server; updating local.")
+                self.cookies = {
+                    ".AspNet.SharedCookie": returned_asp_cookie.value,
+                }
+            return await http_response.text()
+
+
+su_platform_client: "Final[SUPlatformClient]" = SUPlatformClient()
