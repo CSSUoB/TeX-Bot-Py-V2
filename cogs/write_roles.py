@@ -34,7 +34,7 @@ class WriteRolesCommandCog(TeXBotBaseCog):
         roles_channel: discord.TextChannel = await self.bot.roles_channel
 
         roles_message: str
-        for roles_message in settings["ROLES_MESSAGES"]:
+        for roles_message in messages["OPT_IN_ROLES_SELECTORS"]:
             await roles_channel.send(
                 roles_message.replace("<Group_Name>", self.bot.group_short_name)
             )

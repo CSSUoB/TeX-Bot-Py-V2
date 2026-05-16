@@ -13,7 +13,7 @@ import discord
 
 import config
 from config import settings
-from utils import SuppressTraceback, TeXBot
+from utils import SuppressTraceback, TeXBot, TeXBotExitReason
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

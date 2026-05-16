@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from config import settings
+from config import messages, settings
 from db.core.models import IntroductionReminderOptOutMember
 from exceptions import (
     ApplicantRoleDoesNotExistError,
@@ -161,8 +161,8 @@ class BaseInductCog(TeXBotBaseCog):
                     "<Committee>", committee_role_mention
                 )
 
-        if "<Purchase_Membership_URL>" in random_welcome_message:
-            if not settings["PURCHASE_MEMBERSHIP_URL"]:
+        if "<Purchase_Membership_Link>" in random_welcome_message:
+            if not settings["PURCHASE_MEMBERSHIP_LINK"]:
                 return await self.get_random_welcome_message(induction_member)
 
             random_welcome_message = random_welcome_message.replace(

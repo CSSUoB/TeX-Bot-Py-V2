@@ -27,32 +27,63 @@ logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 class CommandErrorCog(TeXBotBaseCog):
     """Cog class that defines additional code to execute upon a command error."""
 
+    @classmethod
+    def _get_logging_message_from_error(cls, error: discord.ApplicationCommandInvokeError) -> str | None:  # noqa: E501
+        if isinstance(error.original, GuildDoesNotExistError):
+            return None
+
+        if not str(error.original).strip(". -\"'"):
+            return f"{error.original.__class__.__name__} was raised."
+
+        if str(error.original).startswith("\"") or str(error.original).startswith("'"):
+            return f"{error.original.__class__.__name__}: {error.original}"
+
+        if isinstance(error.original, UnknownDjangoError):
+            return str(error.original)
+
+        if isinstance(error.original, RuntimeError | NotImplementedError):
+            return f"{error.original.__class__.__name__}: {error.original}"
+
+        return str(error.original)
+
+    @classmethod
+    def _get_error_code_from_error(cls, error: discord.ApplicationCommandInvokeError) -> str:
+        if isinstance(error.original, Forbidden):
+            return "E1044"
+
+        if isinstance(error.original, BaseErrorWithErrorCode):
+            return error.original.ERROR_CODE
+
+        raise ErrorCodeCouldNotBeIdentifiedError(other_error=error.original)
+
     @TeXBotBaseCog.listener()
     async def on_application_command_error(
         self, ctx: "TeXBotApplicationContext", error: discord.ApplicationCommandError
     ) -> None:
         """Log any major command errors in the logging channel & stderr."""
+        IS_FATAL: Final[bool] = bool(
+            isinstance(error, discord.ApplicationCommandInvokeError)
+            and bool(
+                isinstance(error.original, RuntimeError | NotImplementedError)
+                or type(error.original) is Exception  # noqa: COM812
+            )  # noqa: COM812
+        )
+
         error_code: str | None = None
-        message: str | None = "Please contact a committee member."
+        message: str | None = "Please contact a committee member." if not IS_FATAL else ""
         logging_message: str | BaseException | None = None
 
         if isinstance(error, discord.ApplicationCommandInvokeError):
-            message = None
-            logging_message = (
-                None if isinstance(error.original, GuildDoesNotExistError) else error.original
-            )
-
-            if isinstance(error.original, Forbidden):
-                error_code = "E1044"
-
-            elif isinstance(error.original, BaseErrorWithErrorCode):
-                error_code = error.original.ERROR_CODE
+            logging_message = self._get_logging_message_from_error(error)
+            with contextlib.suppress(ErrorCodeCouldNotBeIdentifiedError):
+                error_code = self._get_error_code_from_error(error)
 
         elif isinstance(error, CheckAnyFailure):
             # TODO: Remove type ignore comments once #349 is resolved  # noqa: FIX002
             if CommandChecks.is_interaction_user_in_main_guild_failure(error.checks[0]):  # type: ignore[arg-type]
                 message = (
-                    f"You must be a member of the {self.bot.group_short_name} Discord server "
+                    "You must be a member of "
+                    f"the {self.bot.group_short_name} Discord server "
                     "to use this command."
                 )
 
@@ -78,7 +109,28 @@ class CommandErrorCog(TeXBotBaseCog):
                     hasattr(ctx.command, "callback")
                     and not ctx.command.callback.__name__.startswith("_")
                 )
-                else ctx.command.qualified_name
+                logger.critical(
+                    " ".join(
+                        message_part
+                        for message_part in (
+                            error.original.ERROR_CODE,
+                            (
+                                f"({command_name})"
+                                if command_name in self.ERROR_ACTIVITIES
+                                else ""
+                            ),
+                            str(error.original).rstrip(".:"),
+                        )
+                        if message_part
+                    ),
+                )
+
+            TEX_BOT_NEEDS_CLOSING: Final[bool] = (
+                isinstance(
+                    error.original,
+                    RuntimeError | NotImplementedError | GuildDoesNotExistError,
+                )
+                or type(error.original) is Exception
             )
             logger.critical(
                 " ".join(
