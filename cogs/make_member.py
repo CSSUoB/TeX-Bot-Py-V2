@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from logging import Logger
     from typing import Final
 
-    from utils import TeXBotApplicationContext
+    from utils import TeXBot, TeXBotApplicationContext
 
 __all__: "Sequence[str]" = (
     "MakeMemberCommandCog",
@@ -150,7 +150,7 @@ class MakeMemberBaseCog(TeXBotBaseCog):
                         reason=f"{discord_member} used TeX-Bot to become a member.",
                     )
 
-        return True, ""
+        return True, "Successfully made you a member!"
 
 
 class MakeMemberCommandCog(MakeMemberBaseCog):
@@ -235,8 +235,9 @@ class MakeMemberModalActual(Modal, MakeMemberBaseCog):
     """A discord.Modal containing a the input box for make member user interaction."""
 
     @override
-    def __init__(self) -> None:
+    def __init__(self, bot: "TeXBot") -> None:
         super().__init__(title="Make Member Modal")
+        self.bot = bot
         self.add_item(
             discord.ui.InputText(
                 label="Student ID",
@@ -279,8 +280,9 @@ class MakeMemberModalActual(Modal, MakeMemberBaseCog):
 class OpenMemberVerifyModalView(View):
     """A discord.View containing a button to open a new member verification modal."""
 
-    def __init__(self) -> None:
+    def __init__(self, bot: "TeXBot") -> None:
         super().__init__(timeout=None)
+        self.bot = bot
 
     @discord.ui.button(
         label="Verify", style=discord.ButtonStyle.primary, custom_id="verify_new_member"
@@ -288,7 +290,7 @@ class OpenMemberVerifyModalView(View):
     async def verify_new_member_button_callback(  # type: ignore[misc]
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
-        await interaction.response.send_modal(MakeMemberModalActual())
+        await interaction.response.send_modal(MakeMemberModalActual(self.bot))
 
 
 class MakeMemberModalCommandCog(MakeMemberBaseCog):
@@ -297,7 +299,7 @@ class MakeMemberModalCommandCog(MakeMemberBaseCog):
     @TeXBotBaseCog.listener()
     async def on_ready(self) -> None:
         """Add OpenMemberVerifyModalView to the bot's list of permanent views."""
-        self.bot.add_view(OpenMemberVerifyModalView())
+        self.bot.add_view(OpenMemberVerifyModalView(self.bot))
 
     async def _open_make_new_member_modal(
         self,
@@ -305,7 +307,7 @@ class MakeMemberModalCommandCog(MakeMemberBaseCog):
     ) -> None:
         await button_callback_channel.send(
             content="would you like to open the make member modal",
-            view=OpenMemberVerifyModalView(),
+            view=OpenMemberVerifyModalView(self.bot),
         )
 
     @discord.slash_command(
