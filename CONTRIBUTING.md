@@ -231,9 +231,9 @@ To create a new cog, follow these steps:
    class ExampleCog(TeXBotBaseCog):
        """A cog for demonstrating functionality."""
 
-       def do_something(self, input_text: str) -> None:
+       def do_something(self, message: str) -> None:
            """Perform a simple action."""
-           print(f"Doing something with {input_text}.")
+           print(f"Doing something with {message}.")
    ```
 
 3. Add Commands and Listeners
@@ -278,7 +278,7 @@ To create a new cog, follow these steps:
    ```python
    from .example_commands import ExampleCog
 
-   __all__: "Sequence[str]" = (
+   __all__: Sequence[str] = (
        ...existing cogs...
        "ExampleCog",
    )
