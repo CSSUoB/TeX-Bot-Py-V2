@@ -126,31 +126,31 @@ class MakeMemberBaseCog(TeXBotBaseCog):
             if not error_is_already_exists:
                 raise
 
-            try:
-                guest_role: discord.Role = await self.bot.guest_role
-            except GuestRoleDoesNotExistError:
-                logger.warning(
-                    '"/make-member" command used but the "Guest" role does not exist. '
-                    'Some user\'s may now have the "Member" role without the "Guest" role. '
-                    'Use the "/ensure-members-inducted" command to fix this issue.'
+        try:
+            guest_role: discord.Role = await self.bot.guest_role
+        except GuestRoleDoesNotExistError:
+            logger.warning(
+                '"/make-member" command used but the "Guest" role does not exist. '
+                'Some user\'s may now have the "Member" role without the "Guest" role. '
+                'Use the "/ensure-members-inducted" command to fix this issue.'
+            )
+        else:
+            if guest_role not in discord_member.roles:
+                await discord_member.add_roles(
+                    guest_role,
+                    reason=f"{discord_member} used TeX-Bot to become a member.",
                 )
-            else:
-                if guest_role not in discord_member.roles:
-                    await discord_member.add_roles(
-                        guest_role,
-                        reason=f"{discord_member} used TeX-Bot to become a member.",
-                    )
 
-            try:
-                applicant_role: discord.Role = await self.bot.applicant_role
-            except ApplicantRoleDoesNotExistError:
-                pass
-            else:
-                if applicant_role in discord_member.roles:
-                    await discord_member.remove_roles(
-                        applicant_role,
-                        reason=f"{discord_member} used TeX-Bot to become a member.",
-                    )
+        try:
+            applicant_role: discord.Role = await self.bot.applicant_role
+        except ApplicantRoleDoesNotExistError:
+            pass
+        else:
+            if applicant_role in discord_member.roles:
+                await discord_member.remove_roles(
+                    applicant_role,
+                    reason=f"{discord_member} used TeX-Bot to become a member.",
+                )
 
         return ":information_source: Successfully made you a member!"
 
