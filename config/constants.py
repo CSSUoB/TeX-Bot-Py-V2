@@ -1,6 +1,6 @@
 """Constant values that are defined for quick access."""
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping, Sequence
@@ -44,6 +44,7 @@ SendIntroductionRemindersFlagType: "TypeAlias" = Literal["once", "interval", Fal
 
 
 class MetaEnum(EnumMeta):
+    @override
     def __contains__(cls, item: object) -> bool:
         try:
             cls(item)

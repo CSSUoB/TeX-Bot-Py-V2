@@ -1,9 +1,13 @@
 """Base exception classes inherited by other custom exceptions used within this project."""
 
-from typing import TYPE_CHECKING
+import abc
+from typing import TYPE_CHECKING, override
+
+from typed_classproperties import classproperty
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from typing import Final
 
 __all__: "Sequence[str]" = (
     "BaseDoesNotExistError",
@@ -12,19 +16,9 @@ __all__: "Sequence[str]" = (
 )
 
 
-import abc
-from typing import TYPE_CHECKING, override
-
-from typed_classproperties import classproperty
-
-if TYPE_CHECKING:
-    from typing import Final
-
-
 class BaseTeXBotError(BaseException, abc.ABC):
     """Base exception parent class."""
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
     def DEFAULT_MESSAGE(cls) -> str:  # noqa: N802
@@ -57,10 +51,9 @@ class BaseTeXBotError(BaseException, abc.ABC):
         return formatted
 
 
-class BaseErrorWithErrorCode(BaseTeXBotError, abc.ABC):
+class BaseErrorWithErrorCode(BaseTeXBotError, abc.ABC):  # noqa: N818
     """Base class for exception errors that have an error code."""
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
     def ERROR_CODE(cls) -> str:  # noqa: N802
@@ -70,7 +63,6 @@ class BaseErrorWithErrorCode(BaseTeXBotError, abc.ABC):
 class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
     """Exception class to raise when a required Discord entity is missing."""
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N802
         """
@@ -81,7 +73,6 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
         """
         return frozenset()
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     def DEPENDENT_TASKS(cls) -> frozenset[str]:  # noqa: N802
         """
@@ -92,7 +83,6 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
         """
         return frozenset()
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     def DEPENDENT_EVENTS(cls) -> frozenset[str]:  # noqa: N802
         """
@@ -103,7 +93,6 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
         """
         return frozenset()
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @abc.abstractmethod
     def DOES_NOT_EXIST_TYPE(cls) -> str:  # noqa: N802

@@ -1,21 +1,15 @@
 """Custom exception classes raised when errors occur during use of the "/strike" command."""
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-__all__: "Sequence[str]" = (
-    "NoAuditLogsStrikeTrackingError",
-    "StrikeTrackingError",
-)
-
-
-from typing import override
+from typing import TYPE_CHECKING, override
 
 from typed_classproperties import classproperty
 
 from .base import BaseTeXBotError
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__: "Sequence[str]" = ("NoAuditLogsStrikeTrackingError", "StrikeTrackingError")
 
 
 class StrikeTrackingError(BaseTeXBotError, RuntimeError):
@@ -26,7 +20,6 @@ class StrikeTrackingError(BaseTeXBotError, RuntimeError):
     and not tracked correctly.
     """
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:
@@ -41,7 +34,6 @@ class NoAuditLogsStrikeTrackingError(BaseTeXBotError, RuntimeError):
     and not tracked correctly.
     """
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:
