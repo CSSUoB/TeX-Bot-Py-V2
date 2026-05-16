@@ -222,7 +222,7 @@ class ArchiveCommandsCog(TeXBotBaseCog):
         description="The channel to archive.",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_non_archived_channels),
-        required=True,
+        required=False,
         parameter_name="str_channel_id",
     )
     @discord.option(
@@ -236,16 +236,20 @@ class ArchiveCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def archive_channel(
-        self, ctx: "TeXBotApplicationContext", str_channel_id: str, str_category_id: str
+        self, ctx: "TeXBotApplicationContext", str_channel_id: str | None, str_category_id: str
     ) -> None:
         """
         Definition & callback response of the "archive-channel" command.
 
         The "archive-channel" command moves the channel into the selected category
-        and syncs the permissions to the category's permissions.
+        and syncs the permissions to the category's permissions. Defaults to current
+        channel if no channel is provided.
         """
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
+
+        if not str_channel_id:
+            str_channel_id = str(ctx.channel_id)
 
         if not re.fullmatch(r"\A\d{17,20}\Z", str_channel_id):
             await self.command_send_error(
@@ -277,6 +281,7 @@ class ArchiveCommandsCog(TeXBotBaseCog):
             await self.command_send_error(
                 ctx, message=f"{str_category_id!r} is not a valid category ID."
             )
+            return
 
         category_id: int = int(str_category_id)
 
