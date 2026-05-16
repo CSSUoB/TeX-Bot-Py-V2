@@ -2,6 +2,7 @@
 
 import logging
 import re
+from enum import auto, Enum
 from typing import TYPE_CHECKING, override
 
 import discord
@@ -58,12 +59,20 @@ _GROUP_MEMBER_ID_ARGUMENT_NAME: "Final[str]" = (
 )
 
 
+class MakeMemberStatus(Enum):
+    """An Enum representing the possible statuses of a make member attempt."""
+
+    SUCCESS = auto()
+    ERROR = auto()
+    INFO = auto()
+
+
 class MakeMemberBaseCog(TeXBotBaseCog):
     """Base cog class for make member interactions."""
 
     async def perform_make_member(
         self, user: discord.User | discord.Member, raw_group_member_id: str
-    ) -> tuple[bool, str]:
+    ) -> tuple[MakeMemberStatus, str]:
         """Perform the actions to make a user a member."""
         member_role: discord.Role = await self.bot.member_role
         discord_member: discord.Member = await self.bot.get_main_guild_member(user)
@@ -73,16 +82,16 @@ class MakeMemberBaseCog(TeXBotBaseCog):
         )
 
         if not re.fullmatch(r"\A\d{7}\Z", raw_group_member_id):
-            return False, INVALID_GROUP_MEMBER_ID_MESSAGE
+            return MakeMemberStatus.ERROR, INVALID_GROUP_MEMBER_ID_MESSAGE
 
         try:
             group_member_id: int = int(raw_group_member_id)
         except ValueError:
-            return False, INVALID_GROUP_MEMBER_ID_MESSAGE
+            return MakeMemberStatus.ERROR, INVALID_GROUP_MEMBER_ID_MESSAGE
 
         if member_role in discord_member.roles:
             return (
-                False,
+                MakeMemberStatus.INFO,
                 ":information_source: No changes made. "
                 "You're already a member - why are you trying this again? "
                 ":information_source:",
@@ -94,7 +103,7 @@ class MakeMemberBaseCog(TeXBotBaseCog):
             )
         ).aexists():
             return (
-                False,
+                MakeMemberStatus.INFO,
                 ":information_source: This student ID has already been used. "
                 "Please contact a committee member if you think this is a mistake."
                 " :information_source:",
@@ -102,7 +111,7 @@ class MakeMemberBaseCog(TeXBotBaseCog):
 
         if not await is_id_a_community_group_member(member_id=group_member_id):
             return (
-                False,
+                MakeMemberStatus.INFO,
                 f"You must be a member of {self.bot.group_full_name} "
                 "to use this command.\n"
                 f"The provided {_GROUP_MEMBER_ID_ARGUMENT_NAME} must match "
@@ -155,7 +164,7 @@ class MakeMemberBaseCog(TeXBotBaseCog):
                     reason=f"{discord_member} used TeX-Bot to become a member.",
                 )
 
-        return True, ":information_source: Successfully made you a member!"
+        return MakeMemberStatus.SUCCESS, ":information_source: Successfully made you a member!"
 
 
 class MakeMemberCommandCog(MakeMemberBaseCog):
@@ -214,7 +223,7 @@ class MakeMemberCommandCog(MakeMemberBaseCog):
                 user=ctx.user, raw_group_member_id=raw_group_member_id
             )
 
-            if not status:
+            if status == MakeMemberStatus.ERROR:
                 await self.command_send_error(ctx=ctx, message=message)
                 return
 
