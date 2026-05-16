@@ -3,18 +3,18 @@
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
-    "RulesChannelDoesNotExistError",
-    "GuildDoesNotExistError",
-    "RoleDoesNotExistError",
-    "CommitteeRoleDoesNotExistError",
-    "CommitteeElectRoleDoesNotExistError",
-    "GuestRoleDoesNotExistError",
-    "MemberRoleDoesNotExistError",
-    "ArchivistRoleDoesNotExistError",
     "ApplicantRoleDoesNotExistError",
+    "ArchivistRoleDoesNotExistError",
     "ChannelDoesNotExistError",
-    "RolesChannelDoesNotExistError",
+    "CommitteeElectRoleDoesNotExistError",
+    "CommitteeRoleDoesNotExistError",
     "GeneralChannelDoesNotExistError",
+    "GuestRoleDoesNotExistError",
+    "GuildDoesNotExistError",
+    "MemberRoleDoesNotExistError",
+    "RoleDoesNotExistError",
+    "RolesChannelDoesNotExistError",
+    "RulesChannelDoesNotExistError",
 )
 
 
@@ -93,7 +93,7 @@ class RoleDoesNotExistError(BaseDoesNotExistError, abc.ABC):
     def __init__(self, message: str | None = None) -> None:
         """Initialise a new DoesNotExist exception for a role not existing."""
         HAS_DEPENDANTS: Final[bool] = bool(
-            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS  # noqa: COM812
+            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS
         )
 
         if not message and HAS_DEPENDANTS:
@@ -290,7 +290,7 @@ class ChannelDoesNotExistError(BaseDoesNotExistError):
     def __init__(self, message: str | None = None) -> None:
         """Initialise a new DoesNotExist exception for a role not existing."""
         HAS_DEPENDANTS: Final[bool] = bool(
-            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS  # noqa: COM812
+            self.DEPENDENT_COMMANDS or self.DEPENDENT_TASKS or self.DEPENDENT_EVENTS
         )
 
         if not message and HAS_DEPENDANTS:

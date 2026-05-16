@@ -3,9 +3,9 @@
 from collections.abc import Sequence
 
 __all__: Sequence[str] = (
-    "BaseTeXBotError",
-    "BaseErrorWithErrorCode",
     "BaseDoesNotExistError",
+    "BaseErrorWithErrorCode",
+    "BaseTeXBotError",
 )
 
 
@@ -104,7 +104,7 @@ class BaseDoesNotExistError(BaseErrorWithErrorCode, ValueError, abc.ABC):
         """The name of the Discord entity that this `DoesNotExistError` is associated with."""  # noqa: D401
 
     @classmethod
-    def get_formatted_message(cls, non_existent_object_identifier: str) -> str:  # noqa: C901, PLR0912, PLR0915
+    def get_formatted_message(cls, non_existent_object_identifier: str) -> str:  # noqa: PLR0912, PLR0915
         """
         Format the exception message with the dependants that require the non-existent object.
 

@@ -4,10 +4,6 @@ Contains settings values and setup functions.
 Settings values are imported from the tex-bot-deployment.yaml file.
 These values are used to configure the functionality of the bot at run-time.
 """
-
-__all__: Sequence[str] = ("SettingsAccessor", "get_settings_file_path")
-
-
 import logging
 import re
 from collections.abc import Iterable, Mapping
@@ -31,6 +27,7 @@ if TYPE_CHECKING:
 
     from aiopath import AsyncPath
 
+__all__: Sequence[str] = ("SettingsAccessor", "get_settings_file_path")
 
 NestedMapping: "TypeAlias" = Mapping[str, "NestedMapping | str"]
 
@@ -52,7 +49,7 @@ class SettingsAccessor:
         """Return the message to state that the given settings key is invalid."""
         return f"{item!r} is not a valid settings key."
 
-    def __getattr__(self, item: str) -> "Any":  # type: ignore[misc]  # noqa: ANN401
+    def __getattr__(self, item: str) -> "Any":  # type: ignore[misc, explicit-any]  # noqa: ANN401
         """Retrieve settings value by attribute lookup."""
         MISSING_ATTRIBUTE_MESSAGE: Final[str] = (
             f"{type(self).__name__!r} object has no attribute {item!r}"

@@ -26,7 +26,7 @@ class ErrorCodeCouldNotBeIdentifiedError(BaseTeXBotError, Exception):
         self,
         message: str | None = None,
         other_error: Exception | type[Exception] | None = None,
-    ) -> None:  # noqa: E501
+    ) -> None:
         """Initialize an exception for a non-existent error code."""
         self.other_error: Exception | type[Exception] | None = other_error
 

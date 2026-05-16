@@ -28,11 +28,9 @@ class RestartRequiredDueToConfigChange(BaseTeXBotError, Exception):
     @override
     def __init__(
         self, message: str | None = None, changed_settings: Set[str] | None = None
-    ) -> None:  # noqa: E501
+    ) -> None:
         """Initialise an Exception to apply configuration changes."""
-        self.changed_settings: Set[str] | None = (
-            changed_settings if changed_settings else set()
-        )
+        self.changed_settings: Set[str] | None = changed_settings or set()
 
         super().__init__(message)
 
@@ -53,7 +51,7 @@ class ChangingSettingWithRequiredSiblingError(BaseTeXBotError, ValueError):
     @override
     def __init__(
         self, message: str | None = None, config_setting_name: str | None = None
-    ) -> None:  # noqa: E501
+    ) -> None:
         self.config_setting_name: str | None = config_setting_name
 
         super().__init__(
@@ -63,5 +61,5 @@ class ChangingSettingWithRequiredSiblingError(BaseTeXBotError, ValueError):
                 f"because it has one or more required sibling settings that must be set first."
                 if config_setting_name
                 else message
-            )  # noqa: COM812
+            )
         )
