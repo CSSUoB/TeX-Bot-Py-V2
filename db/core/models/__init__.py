@@ -211,7 +211,7 @@ class GroupMadeMember(AsyncBaseModel):
     @override
     def __setattr__(self, name: str, value: object) -> None:
         if name == "group_member_id":
-            if not isinstance(value, str | int):
+            if not isinstance(value, (str, int)):
                 INVALID_GROUP_MEMBER_ID_TYPE_MESSAGE: Final[str] = (
                     "group_member_id must be an instance of str or int."
                 )

@@ -28,6 +28,7 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = ("SendGetRolesRemindersTaskCog",)
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 

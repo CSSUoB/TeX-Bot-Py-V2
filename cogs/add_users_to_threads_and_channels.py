@@ -20,13 +20,13 @@ if TYPE_CHECKING:
     from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 
-__all__: "Sequence[str]" = ("AddUsersToThreadsAndChannelsCommandCog",)
+__all__: "Sequence[str]" = ("AddUsersToThreadsAndChannelsCommandsCog",)
 
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
+class AddUsersToThreadsAndChannelsCommandsCog(TeXBotBaseCog):
     """Cog for adding users to threads."""
 
     @staticmethod
@@ -172,7 +172,7 @@ class AddUsersToThreadsAndChannelsCommandCog(TeXBotBaseCog):
         committee_elect_role: discord.Role = await self.bot.committee_elect_role
 
         if (
-            thread.parent is None
+            thread.parent is None  # noqa: CAR180
             or thread.parent.category is None
             or "committee" not in thread.parent.category.name.lower()
             or not settings["AUTO_ADD_COMMITTEE_TO_THREADS"]

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
+from exceptions import EveryoneRoleCouldNotBeRetrievedError
 from exceptions.base import BaseDoesNotExistError
 from utils import CommandChecks, TeXBotBaseCog
 
@@ -17,12 +18,13 @@ if TYPE_CHECKING:
 
     from utils import AllChannelTypes, TeXBotApplicationContext, TeXBotAutocompleteContext
 
-__all__: "Sequence[str]" = ("ArchiveCommandCog",)
+__all__: "Sequence[str]" = ("ArchiveCommandsCog",)
+
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-class ArchiveCommandCog(TeXBotBaseCog):
+class ArchiveCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/archive" command and its call-back method."""
 
     @staticmethod
@@ -89,7 +91,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
             discord.OptionChoice(name=channel.name, value=str(channel.id))
             for channel in main_guild.channels
             if (
-                not isinstance(channel, discord.CategoryChannel)
+                not isinstance(channel, discord.CategoryChannel)  # noqa: CAR180
                 and channel.category
                 and "archive" not in channel.category.name.lower()
                 and isinstance(interaction_user, discord.Member)
@@ -175,16 +177,38 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
             await channel.edit(sync_permissions=True)
 
-        overwrite: discord.Member | discord.Role
-        for overwrite in category.overwrites:
-            await category.set_permissions(overwrite, overwrite=None)
+        target: discord.Member | discord.Role
+        for target in category.overwrites:
+            await category.set_permissions(target=target, overwrite=None)
+
+        try:
+            everyone_role: discord.Role = await ctx.bot.get_everyone_role()
+        except EveryoneRoleCouldNotBeRetrievedError:
+            logger.exception(
+                "Could not retrieve the @everyone role when archiving category %r",
+                category.name,
+            )
+        else:
+            await category.set_permissions(
+                target=everyone_role,
+                view_channel=False,
+            )
 
         if allow_archivist:
             await category.set_permissions(
-                target=archivist_role, read_messages=True, read_message_history=True
+                target=archivist_role,
+                view_channel=True,
+                read_messages=True,
+                read_message_history=True,
+                send_messages=False,
+                send_messages_in_threads=False,
+                create_public_threads=False,
+                create_private_threads=False,
             )
 
-        await category.edit(name=f"archive-{category.name}")
+        await category.edit(
+            name=f"archive-{category.name}", position=len(main_guild.categories)
+        )
 
         await initial_response.edit(
             content=f":white_check_mark: Category '{category.name}' successfully archived."

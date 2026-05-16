@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = ()
 
+
 os.environ["DJANGO_SETTINGS_MODULE"] = "db._settings"
 
 

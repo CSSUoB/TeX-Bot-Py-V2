@@ -3,6 +3,7 @@
 import contextlib
 import logging
 import random
+import textwrap
 from enum import Enum
 from typing import TYPE_CHECKING
 
@@ -29,9 +30,10 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = (
     "CommitteeActionsTrackingBaseCog",
-    "CommitteeActionsTrackingContextCommandsCog",
+    "CommitteeActionsTrackingContextCommandCog",
     "CommitteeActionsTrackingSlashCommandsCog",
 )
+
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
@@ -87,7 +89,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 )
             )
             if not error_is_already_exits:
-                await self.command_send_error(ctx, message="An unrecoverable error occured.")
+                await self.command_send_error(ctx, message="An unrecoverable error occurred.")
                 logger.critical("Error upon creating Action object: %s", create_action_error)
                 await self.bot.close()
 
@@ -236,7 +238,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         In normal use the autocomplete should be used, but a discord ID can be
         used directly if the user wishes to action a user not included in the autocomplete.
         """
-        member_id: str = action_member_id if action_member_id else str(ctx.user.id)
+        member_id: str = action_member_id or str(ctx.user.id)
 
         try:
             action_user: discord.Member = await self.bot.get_member_from_str_id(member_id)
@@ -348,7 +350,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     )
     @discord.option(
         name="description",
-        description="The description to be used for the action",
+        description="The description to be used for the action.",
         input_type=str,
         required=True,
         parameter_name="action_description",
@@ -402,7 +404,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     )
     @discord.option(
         name="description",
-        description="The description to be used for the action",
+        description="The description to be used for the action.",
         input_type=str,
         required=True,
         parameter_name="action_description",
@@ -429,21 +431,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             )
             return
 
-        index: int = random.randint(0, len(committee_members) - 1)  # noqa: S311
-
-        try:
-            action_user: discord.Member = committee_members[index]
-        except IndexError:
-            logger.debug("Index: %s was out of range! Printing list...", index)
-            logger.debug(committee_members)
-            await self.command_send_error(
-                ctx,
-                message=(
-                    f"Index {index} out of range for {len(committee_members)} "
-                    "committee members... check the logs!"
-                ),
-            )
-            return
+        action_user: discord.Member = random.choice(committee_members)  # noqa: S311
 
         try:
             await self._create_action(
@@ -461,11 +449,11 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
     @committee_actions.command(
         name="action-all-committee",
-        description="Creates an action with the description for every committee member",
+        description="Creates an action with the description for every committee member.",
     )
     @discord.option(
         name="description",
-        description="The description to be used for the actions",
+        description="The description to be used for the actions.",
         input_type=str,
         required=True,
         parameter_name="action_description",
@@ -526,7 +514,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         await ctx.respond(content=response_message)
 
     @committee_actions.command(
-        name="list", description="Lists all actions for a specified user"
+        name="list", description="Lists all actions for a specified user."
     )
     @discord.option(
         name="user",
@@ -556,9 +544,9 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     async def list_user_actions(  # NOTE: Committee role check is not present because non-committee can have actions, and need to be able to list their own actions.
         self,
         ctx: "TeXBotApplicationContext",
-        action_member_id: "None | str",
+        action_member_id: str | None,
         ping: bool,  # noqa: FBT001
-        status: "None | str",
+        status: str | None,
     ) -> None:
         """
         Definition and callback of the "/list" command.
@@ -642,6 +630,17 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             }"
         )
 
+        if len(actions_message) >= 2000:
+            chunk: str
+            for chunk in textwrap.wrap(
+                text=actions_message,
+                width=1950,
+                break_long_words=False,
+                fix_sentence_endings=True,
+            ):
+                await ctx.respond(content=chunk)
+            return
+
         await ctx.respond(content=actions_message)
 
     @committee_actions.command(
@@ -657,16 +656,16 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
     )
     @discord.option(
         name="user",
-        description="The user to list actions for.",
+        description="The user to reassign the action to.",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(autocomplete_get_committee_members),
-        required=True,
+        required=False,
         parameter_name="member_id",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def reassign_action(
-        self, ctx: "TeXBotApplicationContext", action_id: str, member_id: str
+        self, ctx: "TeXBotApplicationContext", action_id: str, member_id: str | None
     ) -> None:
         """Reassign the specified action to the specified user."""
         try:
@@ -678,6 +677,37 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 logging_message=f"{ctx.user} entered action ID: {action_id} which was invalid",
             )
             return
+
+        if not member_id:
+            logger.debug(
+                "Member ID was not provided, selecting a random committee member "
+                "to assign the action to."
+            )
+            try:
+                committee_members: list[discord.Member] = (
+                    await self.bot.committee_role
+                ).members
+            except CommitteeRoleDoesNotExistError:
+                await self.command_send_error(
+                    ctx,
+                    message="Committee role does not exist! No action has been taken.",
+                )
+                return
+
+            if not committee_members:
+                logger.debug(
+                    "Committee role was found but no members held the role, "
+                    "while attempting to randomly re-assign action."
+                )
+                await ctx.respond(
+                    content=(
+                        "No committee members were found to randomly select from! "
+                        "No action has been taken."
+                    )
+                )
+                return
+
+            member_id = str(random.choice(committee_members).id)  # noqa: S311
 
         new_user_to_action: discord.Member = await self.bot.get_member_from_str_id(
             member_id,
@@ -790,6 +820,19 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             ],
         )
 
+        if len(all_actions_message) >= 2000:
+            chunk: str
+            for chunk in all_actions_message.split("\n\n"):
+                sub_chunk: str
+                for sub_chunk in textwrap.wrap(
+                    text=chunk,
+                    width=1950,
+                    break_long_words=False,
+                    fix_sentence_endings=True,
+                ):
+                    await ctx.respond(content=sub_chunk)
+            return
+
         await ctx.respond(content=all_actions_message)
 
     @committee_actions.command(
@@ -838,7 +881,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         await ctx.respond(content=f"Action `{action_description}` successfully deleted.")
 
 
-class CommitteeActionsTrackingContextCommandsCog(CommitteeActionsTrackingBaseCog):
+class CommitteeActionsTrackingContextCommandCog(CommitteeActionsTrackingBaseCog):
     """Cog class to define the actions tracking message context commands."""
 
     @discord.message_command(

@@ -23,6 +23,7 @@ __all__: "Sequence[str]" = (
     "CommitteeHandoverCommandCog",
 )
 
+
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
