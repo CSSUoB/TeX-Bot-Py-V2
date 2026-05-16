@@ -85,7 +85,7 @@ class MakeMemberBaseCog(TeXBotBaseCog):
                 False,
                 ":information_source: No changes made. "
                 "You're already a member - why are you trying this again? "
-                ":information_source:"
+                ":information_source:",
             )
 
         if await GroupMadeMember.objects.filter(
@@ -97,7 +97,7 @@ class MakeMemberBaseCog(TeXBotBaseCog):
                 False,
                 ":information_source: This student ID has already been used. "
                 "Please contact a committee member if you think this is a mistake."
-                " :information_source:"
+                " :information_source:",
             )
 
         if not await is_id_a_community_group_member(member_id=group_member_id):
@@ -107,7 +107,7 @@ class MakeMemberBaseCog(TeXBotBaseCog):
                 "to use this command.\n"
                 f"The provided {_GROUP_MEMBER_ID_ARGUMENT_NAME} must match "
                 f"the {self.bot.group_member_id_type} ID "
-                f"that you purchased your {self.bot.group_short_name} membership with."
+                f"that you purchased your {self.bot.group_short_name} membership with.",
             )
 
         await discord_member.add_roles(
