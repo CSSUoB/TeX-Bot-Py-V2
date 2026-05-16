@@ -16,6 +16,7 @@ from utils.msl import (
     fetch_community_group_members_count,
     is_id_a_community_group_member,
 )
+from utils.tex_bot import TeXBot
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -61,9 +62,9 @@ _GROUP_MEMBER_ID_ARGUMENT_NAME: "Final[str]" = (
 class MakeMemberBaseCog(TeXBotBaseCog):
     """Base cog class for make member interactions."""
 
-    async def _perform_make_member(
+    async def perform_make_member(
         self, user: discord.User | discord.Member, raw_group_member_id: str
-    ) -> tuple[bool, str]:
+    ) -> str:
         """Perform the actions to make a user a member."""
         member_role: discord.Role = await self.bot.member_role
         discord_member: discord.Member = await self.bot.get_main_guild_member(user)
@@ -73,21 +74,18 @@ class MakeMemberBaseCog(TeXBotBaseCog):
         )
 
         if not re.fullmatch(r"\A\d{7}\Z", raw_group_member_id):
-            return False, INVALID_GROUP_MEMBER_ID_MESSAGE
+            return INVALID_GROUP_MEMBER_ID_MESSAGE
 
         try:
             group_member_id: int = int(raw_group_member_id)
         except ValueError:
-            return False, INVALID_GROUP_MEMBER_ID_MESSAGE
+            return INVALID_GROUP_MEMBER_ID_MESSAGE
 
         if member_role in discord_member.roles:
             return (
-                False,
-                (
-                    ":information_source: No changes made. "
-                    "You're already a member - why are you trying this again? "
-                    ":information_source:"
-                ),
+                ":information_source: No changes made. "
+                "You're already a member - why are you trying this again? "
+                ":information_source:"
             )
 
         if await GroupMadeMember.objects.filter(
@@ -95,10 +93,14 @@ class MakeMemberBaseCog(TeXBotBaseCog):
                 group_member_id, self.bot.group_member_id_type
             )
         ).aexists():
-            return False, "This student ID has already been used."
+            return (
+                ":information_source: This student ID has already been used. "
+                "Please contact a committee member if you think this is a mistake."
+                " :information_source:"
+            )
 
         if not await is_id_a_community_group_member(member_id=group_member_id):
-            return False, (
+            return (
                 f"You must be a member of {self.bot.group_full_name} "
                 "to use this command.\n"
                 f"The provided {_GROUP_MEMBER_ID_ARGUMENT_NAME} must match "
@@ -151,7 +153,7 @@ class MakeMemberBaseCog(TeXBotBaseCog):
                         reason=f"{discord_member} used TeX-Bot to become a member.",
                     )
 
-        return True, "Successfully made you a member!"
+        return ":information_source: Successfully made you a member!"
 
 
 class MakeMemberCommandCog(MakeMemberBaseCog):
@@ -205,8 +207,8 @@ class MakeMemberCommandCog(MakeMemberBaseCog):
         """
         await ctx.defer(ephemeral=True)
 
-        with ctx.typing():
-            _, message = await self._perform_make_member(
+        async with ctx.typing():
+            message = await self.perform_make_member(
                 user=ctx.user, raw_group_member_id=raw_group_member_id
             )
 
@@ -232,13 +234,13 @@ class MemberCountCommandCog(TeXBotBaseCog):
             )
 
 
-class MakeMemberModalActual(Modal, MakeMemberBaseCog):
+class MakeMemberModalActual(Modal):
     """A discord.Modal containing a the input box for make member user interaction."""
 
     @override
     def __init__(self, bot: "TeXBot") -> None:
         super().__init__(title="Make Member Modal")
-        self.bot = bot
+        self.bot: TeXBot = bot
         self.add_item(
             discord.ui.InputText(
                 label="Student ID",
@@ -271,7 +273,21 @@ class MakeMemberModalActual(Modal, MakeMemberBaseCog):
 
         await interaction.response.defer(ephemeral=True)
 
-        _, message = await self._perform_make_member(
+        cog: discord.Cog | None = self.bot.get_cog("MakeMemberCommandCog")
+        if not cog or not isinstance(cog, MakeMemberCommandCog):
+            await interaction.followup.send(
+                content="Something went wrong, contact a committee member if this persists.",
+                ephemeral=True,
+            )
+            logger.error(
+                "MakeMemberModal could not find MakeMemberCommandCog in bot's cogs. "
+                "Make sure MakeMemberCommandCog is loaded. "
+                "Current cogs: %s",
+                list(self.bot.cogs.keys()),
+            )
+            return
+
+        message = await cog.perform_make_member(
             user=interaction.user, raw_group_member_id=raw_student_id
         )
 
