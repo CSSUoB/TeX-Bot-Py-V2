@@ -1,6 +1,17 @@
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = (
+if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+    from typing import Final
+
+    from strictyaml import YAML
+
+    from config.constants import (
+        LogLevels,
+        SendIntroductionRemindersFlagType,
+    )
+
+__all__: "Sequence[str]" = (
     "SETTINGS_YAML_SCHEMA",
     "BoundedFloatValidator",
     "DiscordSnowflakeValidator",
@@ -11,11 +22,7 @@ __all__: Sequence[str] = (
 )
 
 
-from collections.abc import Mapping
-from typing import Final
-
 import strictyaml
-from strictyaml import YAML
 
 from config.constants import (
     DEFAULT_CHECK_IF_CONFIG_CHANGED_INTERVAL,
@@ -35,8 +42,6 @@ from config.constants import (
     DEFAULT_STRIKE_COMMAND_TIMEOUT_DURATION,
     DEFAULT_STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION,
     MESSAGES_LOCALE_CODES,
-    LogLevels,
-    SendIntroductionRemindersFlagType,
 )
 
 from .custom_map_validator import SlugKeyMap
@@ -51,52 +56,44 @@ from .custom_scalar_validators import (
     TimeDeltaValidator,
 )
 
-_DEFAULT_CONSOLE_LOGGING_SETTINGS: Final[Mapping[str, LogLevels]] = {
+_DEFAULT_CONSOLE_LOGGING_SETTINGS: "Final[Mapping[str, LogLevels]]" = {
     "log-level": DEFAULT_CONSOLE_LOG_LEVEL,
 }
-_DEFAULT_LOGGING_SETTINGS: Final[Mapping[str, Mapping[str, LogLevels]]] = {
+_DEFAULT_LOGGING_SETTINGS: "Final[Mapping[str, Mapping[str, LogLevels]]]" = {
     "console": _DEFAULT_CONSOLE_LOGGING_SETTINGS,
 }
-_DEFAULT_PING_COMMAND_SETTINGS: Final[Mapping[str, float]] = {
+_DEFAULT_PING_COMMAND_SETTINGS: "Final[Mapping[str, float]]" = {
     "easter-egg-probability": DEFAULT_PING_COMMAND_EASTER_EGG_PROBABILITY,
 }
-_DEFAULT_STATS_COMMAND_SETTINGS: Final[Mapping[str, float | Sequence[str]]] = {
+_DEFAULT_STATS_COMMAND_SETTINGS: "Final[Mapping[str, float | Sequence[str]]]" = {
     "lookback-days": DEFAULT_STATS_COMMAND_LOOKBACK_DAYS,
     "displayed-roles": DEFAULT_STATS_COMMAND_DISPLAYED_ROLES,
 }
-_DEFAULT_STRIKE_COMMAND_SETTINGS: Final[Mapping[str, str]] = {
+_DEFAULT_STRIKE_COMMAND_SETTINGS: "Final[Mapping[str, str]]" = {
     "timeout-duration": DEFAULT_STRIKE_COMMAND_TIMEOUT_DURATION,
     "performed-manually-warning-location": DEFAULT_STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION,
 }
-_DEFAULT_COMMANDS_SETTINGS: Final[
-    Mapping[str, Mapping[str, float] | Mapping[str, float | Sequence[str]] | Mapping[str, str]]
-] = {
+_DEFAULT_COMMANDS_SETTINGS: "Final[Mapping[str, Mapping[str, float] | Mapping[str, float | Sequence[str]] | Mapping[str, str]]]" = {
     "ping": _DEFAULT_PING_COMMAND_SETTINGS,
     "stats": _DEFAULT_STATS_COMMAND_SETTINGS,
     "strike": _DEFAULT_STRIKE_COMMAND_SETTINGS,
 }
-_DEFAULT_SEND_INTRODUCTION_REMINDERS_SETTINGS: Final[
-    Mapping[str, SendIntroductionRemindersFlagType | str]
-] = {
+_DEFAULT_SEND_INTRODUCTION_REMINDERS_SETTINGS: "Final[Mapping[str, SendIntroductionRemindersFlagType | str]]" = {
     "enabled": DEFAULT_SEND_INTRODUCTION_REMINDERS_ENABLED,
     "delay": DEFAULT_SEND_INTRODUCTION_REMINDERS_DELAY,
     "interval": DEFAULT_SEND_INTRODUCTION_REMINDERS_INTERVAL,
 }
-_DEFAULT_SEND_GET_ROLES_REMINDERS_SETTINGS: Final[Mapping[str, bool | str]] = {
+_DEFAULT_SEND_GET_ROLES_REMINDERS_SETTINGS: "Final[Mapping[str, bool | str]]" = {
     "enabled": DEFAULT_SEND_GET_ROLES_REMINDERS_ENABLED,
     "delay": DEFAULT_SEND_GET_ROLES_REMINDERS_DELAY,
     "interval": DEFAULT_SEND_GET_ROLES_REMINDERS_INTERVAL,
 }
-_DEFAULT_REMINDERS_SETTINGS: Final[
-    Mapping[
-        str, Mapping[str, bool | str] | Mapping[str, SendIntroductionRemindersFlagType | str]
-    ]
-] = {
+_DEFAULT_REMINDERS_SETTINGS: "Final[Mapping[str, Mapping[str, bool | str] | Mapping[str, SendIntroductionRemindersFlagType | str]]]" = {
     "send-introduction-reminders": _DEFAULT_SEND_INTRODUCTION_REMINDERS_SETTINGS,
     "send-get-roles-reminders": _DEFAULT_SEND_GET_ROLES_REMINDERS_SETTINGS,
 }
 
-SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(
+SETTINGS_YAML_SCHEMA: "Final[strictyaml.Validator]" = SlugKeyMap(
     {
         strictyaml.Optional("logging", default=_DEFAULT_LOGGING_SETTINGS): SlugKeyMap(
             {
@@ -251,7 +248,7 @@ SETTINGS_YAML_SCHEMA: Final[strictyaml.Validator] = SlugKeyMap(
 )
 
 
-def load_yaml(raw_yaml: str, file_name: str = "tex-bot-deployment.yaml") -> YAML:
+def load_yaml(raw_yaml: str, file_name: str = "tex-bot-deployment.yaml") -> "YAML":
     parsed_yaml: YAML = strictyaml.load(raw_yaml, SETTINGS_YAML_SCHEMA, label=file_name)
 
     # noinspection SpellCheckingInspection

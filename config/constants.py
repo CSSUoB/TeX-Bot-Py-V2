@@ -1,8 +1,12 @@
 """Constant values that are defined for quick access."""
 
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = (
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Mapping, Sequence
+    from typing import Final, TypeAlias
+
+__all__: "Sequence[str]" = (
     "CONFIG_SETTINGS_HELPS",
     "DEFAULT_CHECK_IF_CONFIG_CHANGED_INTERVAL",
     "DEFAULT_CONSOLE_LOG_LEVEL",
@@ -30,14 +34,13 @@ __all__: Sequence[str] = (
 )
 
 
-from collections.abc import Iterable, Mapping
 from enum import Enum, EnumMeta
 from pathlib import Path
-from typing import Final, Literal, NamedTuple, TypeAlias
+from typing import Literal, NamedTuple
 
 from strictyaml import constants as strictyaml_constants
 
-SendIntroductionRemindersFlagType: TypeAlias = Literal["once", "interval", False]
+SendIntroductionRemindersFlagType: "TypeAlias" = Literal["once", "interval", False]
 
 
 class MetaEnum(EnumMeta):
@@ -69,7 +72,7 @@ class ConfigSettingHelp(NamedTuple):
     default: str | None = None
 
 
-def _selectable_required_format_message(options: Iterable[str]) -> str:
+def _selectable_required_format_message(options: "Iterable[str]") -> str:
     return f"Must be one of: `{'`, `'.join(options)}`."
 
 
@@ -87,24 +90,24 @@ def _custom_required_format_message(type_value: str, info_link: str | None = Non
     }{f' (see <{info_link}>)' if info_link else ''}."
 
 
-PROJECT_ROOT: Final[Path] = Path(__file__).parent.parent.resolve()
+PROJECT_ROOT: "Final[Path]" = Path(__file__).parent.parent.resolve()
 
-MESSAGES_LOCALE_CODES: Final[frozenset[str]] = frozenset({"en-GB"})
+MESSAGES_LOCALE_CODES: "Final[frozenset[str]]" = frozenset({"en-GB"})
 
 
-VALID_SEND_INTRODUCTION_REMINDERS_RAW_VALUES: Final[frozenset[str]] = frozenset(
+VALID_SEND_INTRODUCTION_REMINDERS_RAW_VALUES: "Final[frozenset[str]]" = frozenset(
     ({"once", "interval"} | set(strictyaml_constants.BOOL_VALUES)),
 )
 
-DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME: Final[str] = "TeX-Bot"
+DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME: "Final[str]" = "TeX-Bot"
 
 
-DEFAULT_CONSOLE_LOG_LEVEL: Final[LogLevels] = LogLevels.INFO
-DEFAULT_DISCORD_LOGGING_LOG_LEVEL: Final[LogLevels] = LogLevels.WARNING
-DEFAULT_MEMBERS_LIST_ID_FORMAT: Final[str] = r"\A\d{6,7}\Z"
-DEFAULT_PING_COMMAND_EASTER_EGG_PROBABILITY: Final[float] = 0.01
-DEFAULT_STATS_COMMAND_LOOKBACK_DAYS: Final[float] = 30.0
-DEFAULT_STATS_COMMAND_DISPLAYED_ROLES: Final[Sequence[str]] = [
+DEFAULT_CONSOLE_LOG_LEVEL: "Final[LogLevels]" = LogLevels.INFO
+DEFAULT_DISCORD_LOGGING_LOG_LEVEL: "Final[LogLevels]" = LogLevels.WARNING
+DEFAULT_MEMBERS_LIST_ID_FORMAT: "Final[str]" = r"\A\d{6,7}\Z"
+DEFAULT_PING_COMMAND_EASTER_EGG_PROBABILITY: "Final[float]" = 0.01
+DEFAULT_STATS_COMMAND_LOOKBACK_DAYS: "Final[float]" = 30.0
+DEFAULT_STATS_COMMAND_DISPLAYED_ROLES: "Final[Sequence[str]]" = [
     "Committee",
     "Committee-Elect",
     "Student Rep",
@@ -123,18 +126,20 @@ DEFAULT_STATS_COMMAND_DISPLAYED_ROLES: Final[Sequence[str]] = [
     "Postdoc",
     "Quiz Victor",
 ]
-DEFAULT_STRIKE_COMMAND_TIMEOUT_DURATION: Final[str] = "24h"
-DEFAULT_STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION: Final[str] = "DM"
-DEFAULT_MESSAGE_LOCALE_CODE: Final[str] = "en-GB"
-DEFAULT_SEND_INTRODUCTION_REMINDERS_ENABLED: Final[SendIntroductionRemindersFlagType] = "once"
-DEFAULT_SEND_INTRODUCTION_REMINDERS_DELAY: Final[str] = "40h"
-DEFAULT_SEND_INTRODUCTION_REMINDERS_INTERVAL: Final[str] = "6h"
-DEFAULT_SEND_GET_ROLES_REMINDERS_ENABLED: Final[bool] = True
-DEFAULT_SEND_GET_ROLES_REMINDERS_DELAY: Final[str] = "40h"
-DEFAULT_SEND_GET_ROLES_REMINDERS_INTERVAL: Final[str] = "6h"
-DEFAULT_CHECK_IF_CONFIG_CHANGED_INTERVAL: Final[str] = "30s"
+DEFAULT_STRIKE_COMMAND_TIMEOUT_DURATION: "Final[str]" = "24h"
+DEFAULT_STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION: "Final[str]" = "DM"
+DEFAULT_MESSAGE_LOCALE_CODE: "Final[str]" = "en-GB"
+DEFAULT_SEND_INTRODUCTION_REMINDERS_ENABLED: "Final[SendIntroductionRemindersFlagType]" = (
+    "once"
+)
+DEFAULT_SEND_INTRODUCTION_REMINDERS_DELAY: "Final[str]" = "40h"
+DEFAULT_SEND_INTRODUCTION_REMINDERS_INTERVAL: "Final[str]" = "6h"
+DEFAULT_SEND_GET_ROLES_REMINDERS_ENABLED: "Final[bool]" = True
+DEFAULT_SEND_GET_ROLES_REMINDERS_DELAY: "Final[str]" = "40h"
+DEFAULT_SEND_GET_ROLES_REMINDERS_INTERVAL: "Final[str]" = "6h"
+DEFAULT_CHECK_IF_CONFIG_CHANGED_INTERVAL: "Final[str]" = "30s"
 
-CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
+CONFIG_SETTINGS_HELPS: "Mapping[str, ConfigSettingHelp]" = {
     "logging:console:log-level": ConfigSettingHelp(
         description=(
             "The minimum level that logs must meet in order to be logged "

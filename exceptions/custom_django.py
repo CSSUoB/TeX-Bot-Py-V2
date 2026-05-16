@@ -1,13 +1,16 @@
 """Custom exception classes related to Django processes."""
 
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = ("UnknownDjangoError",)
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__: "Sequence[str]" = ("UnknownDjangoError",)
 
 
 from typing import override
 
-from classproperties import classproperty
+from typed_classproperties import classproperty
 
 from .base import BaseTeXBotError
 
@@ -15,8 +18,7 @@ from .base import BaseTeXBotError
 class UnknownDjangoError(BaseTeXBotError, RuntimeError):
     """Exception class to raise when an unknown Django error occurs."""
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
+    def DEFAULT_MESSAGE(cls) -> str:
         return "An unknown Django error occurred."

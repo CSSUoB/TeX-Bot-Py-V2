@@ -1,32 +1,44 @@
 """Contains cog classes for any config-changing interactions."""
 
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = ("CheckConfigFileChangedTaskCog", "ConfigChangeCommandsCog")
+if TYPE_CHECKING:
+    from collections.abc import MutableSequence, Sequence
+    from collections.abc import Set as AbstractSet
+    from logging import Logger
+    from typing import Final, Self
+
+    from aiopath import AsyncPath
+    from anyio import AsyncFile
+
+    from config import ConfigSettingHelp
+    from utils import (
+        GenericResponderComponent,
+        TeXBot,
+        TeXBotApplicationContext,
+        TeXBotAutocompleteContext,
+    )
+
+__all__: "Sequence[str]" = ("CheckConfigFileChangedTaskCog", "ConfigChangeCommandsCog")
 
 
 import contextlib
 import itertools
 import logging
-import os
 import random
 import re
 import stat
 import urllib.parse
-from collections.abc import MutableSequence, Set
 from io import BytesIO
-from logging import Logger
-from typing import Final, NamedTuple, Self, override
+from typing import TYPE_CHECKING, NamedTuple, override
 
 import discord
-from aiopath import AsyncPath
-from anyio import AsyncFile
 from discord.ext import tasks
 from discord.ui import View
 from strictyaml import StrictYAMLError
 
 import config
-from config import CONFIG_SETTINGS_HELPS, ConfigSettingHelp, LogLevels, settings
+from config import CONFIG_SETTINGS_HELPS, LogLevels, settings
 from config.constants import MESSAGES_LOCALE_CODES, SendIntroductionRemindersFlagType
 from exceptions import (
     ChangingSettingWithRequiredSiblingError,
@@ -37,15 +49,14 @@ from exceptions.base import BaseDoesNotExistError
 from utils import (
     CommandChecks,
     EditorResponseComponent,
-    GenericResponderComponent,
     SenderResponseComponent,
-    TeXBot,
-    TeXBotApplicationContext,
-    TeXBotAutocompleteContext,
     TeXBotBaseCog,
 )
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    import os
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class FileStats(NamedTuple):
@@ -56,11 +67,11 @@ class FileStats(NamedTuple):
     modified_time: float
 
     @classmethod
-    async def _public_from_file_path(cls, file_path: AsyncPath) -> Self:  # type: ignore[misc]
+    async def _public_from_file_path(cls, file_path: "AsyncPath") -> "Self":  # type: ignore[misc]
         return cls._public_from_full_stats(await file_path.stat())
 
     @classmethod
-    def _public_from_full_stats(cls, full_stats: os.stat_result) -> Self:
+    def _public_from_full_stats(cls, full_stats: "os.stat_result") -> "Self":
         file_type: int = stat.S_IFMT(full_stats.st_mode)
         if file_type != stat.S_IFREG:
             INVALID_FILE_TYPE_MESSAGE: Final[str] = "File type must be 'S_IFREG'."
@@ -80,7 +91,7 @@ class FileComparer(NamedTuple):
     raw_content: bytes
 
     @classmethod
-    async def _public_from_file_path(cls, file_path: AsyncPath) -> Self:  # type: ignore[misc]
+    async def _public_from_file_path(cls, file_path: "AsyncPath") -> "Self":  # type: ignore[misc]
         # noinspection PyProtectedMember
         return cls(
             stats=await FileStats._public_from_file_path(file_path),  # noqa: SLF001
@@ -117,10 +128,10 @@ class ConfirmSetConfigSettingValueView(View):
 class CheckConfigFileChangedTaskCog(TeXBotBaseCog):
     """Cog class that defines the check_config_file_changed task."""
 
-    _STATS_CACHE: Final[dict[tuple[FileStats, FileStats], bool]] = {}
+    _STATS_CACHE: "Final[dict[tuple[FileStats, FileStats], bool]]" = {}
 
     @override
-    def __init__(self, bot: TeXBot) -> None:
+    def __init__(self, bot: "TeXBot") -> None:
         """Start all task managers when this cog is initialised."""
         self._previous_file_comparer: FileComparer | None = None
 
@@ -139,7 +150,7 @@ class CheckConfigFileChangedTaskCog(TeXBotBaseCog):
 
     @classmethod
     async def _file_raw_contents_is_same(
-        cls, current_file: AsyncFile[bytes], previous_raw_contents: bytes
+        cls, current_file: "AsyncFile[bytes]", previous_raw_contents: bytes
     ) -> bool:
         BUFFER_SIZE: Final[int] = 8 * 1024
 
@@ -247,8 +258,8 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
 
     @staticmethod
     async def autocomplete_get_settings_names(
-        ctx: TeXBotAutocompleteContext,
-    ) -> Set[discord.OptionChoice] | Set[str]:
+        ctx: "TeXBotAutocompleteContext",
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """Autocomplete callable that generates the set of available settings names."""
         if not ctx.interaction.user:
             return set()
@@ -263,8 +274,8 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
 
     @staticmethod
     async def autocomplete_get_unsetable_settings_names(
-        ctx: TeXBotAutocompleteContext,
-    ) -> Set[discord.OptionChoice] | Set[str]:
+        ctx: "TeXBotAutocompleteContext",
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """Autocomplete callable that generates the set of unsetable settings names."""
         if not ctx.interaction.user:
             return set()
@@ -283,8 +294,8 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
 
     @staticmethod
     async def autocomplete_get_example_setting_values(
-        ctx: TeXBotAutocompleteContext,
-    ) -> Set[discord.OptionChoice] | Set[str]:
+        ctx: "TeXBotAutocompleteContext",
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """Autocomplete callable that generates example values for a configuration setting."""
         HAS_CONTEXT: Final[bool] = bool(
             ctx.interaction.user and "setting" in ctx.options and ctx.options["setting"]
@@ -558,7 +569,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def get_config_value(
-        self, ctx: TeXBotApplicationContext, config_setting_name: str
+        self, ctx: "TeXBotApplicationContext", config_setting_name: str
     ) -> None:
         """Definition & callback response of the "get_config_value" command."""
         if config_setting_name not in config.CONFIG_SETTINGS_HELPS:
@@ -621,7 +632,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def help_config_setting(
-        self, ctx: TeXBotApplicationContext, config_setting_name: str
+        self, ctx: "TeXBotApplicationContext", config_setting_name: str
     ) -> None:
         """Definition & callback response of the "help_config_setting" command."""
         if config_setting_name not in config.CONFIG_SETTINGS_HELPS:
@@ -694,7 +705,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def set_config_value(
-        self, ctx: TeXBotApplicationContext, config_setting_name: str, new_config_value: str
+        self, ctx: "TeXBotApplicationContext", config_setting_name: str, new_config_value: str
     ) -> None:
         """Definition & callback response of the "set_config_value" command."""
         if config_setting_name not in config.CONFIG_SETTINGS_HELPS:
@@ -868,7 +879,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def unset_config_value(
-        self, ctx: TeXBotApplicationContext, config_setting_name: str
+        self, ctx: "TeXBotApplicationContext", config_setting_name: str
     ) -> None:
         """Definition & callback response of the "unset_config_value" command."""
         if config_setting_name not in config.CONFIG_SETTINGS_HELPS:

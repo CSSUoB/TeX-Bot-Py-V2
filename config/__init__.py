@@ -5,9 +5,14 @@ Settings values are imported from the .env file or the current environment varia
 These values are used to configure the functionality of the bot at run-time.
 """
 
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = (
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from logging import Logger
+    from typing import Final
+
+__all__: "Sequence[str]" = (
     "CONFIG_SETTINGS_HELPS",
     "MESSAGES_LOCALE_CODES",
     "PROJECT_ROOT",
@@ -29,9 +34,7 @@ __all__: Sequence[str] = (
 import importlib
 import logging
 import os
-from collections.abc import Iterable
-from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING
 
 from asgiref.sync import async_to_sync
 
@@ -46,10 +49,13 @@ from .constants import (
     LogLevels,
 )
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
-settings: Final[_SettingsAccessor] = _SettingsAccessor()
-messages: Final[_MessagesAccessor] = _MessagesAccessor()
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+
+settings: "Final[_SettingsAccessor]" = _SettingsAccessor()
+messages: "Final[_MessagesAccessor]" = _MessagesAccessor()
 
 
 def run_setup() -> None:

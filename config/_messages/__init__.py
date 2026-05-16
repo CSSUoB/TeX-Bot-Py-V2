@@ -1,11 +1,14 @@
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = ("MessagesAccessor",)
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import Any, ClassVar, Final
+
+__all__: "Sequence[str]" = ("MessagesAccessor",)
 
 
 import json
 import re
-from typing import Any, ClassVar, Final
 
 from aiopath import AsyncPath
 
@@ -13,15 +16,15 @@ from config.constants import MESSAGES_LOCALE_CODES, PROJECT_ROOT
 
 
 class MessagesAccessor:
-    _messages: ClassVar[dict[str, str | set[str] | Sequence[str]]] = {}
-    _messages_already_loaded: ClassVar[bool] = False
+    _messages: "ClassVar[dict[str, str | set[str] | Sequence[str]]]" = {}
+    _messages_already_loaded: "ClassVar[bool]" = False
 
     @classmethod
     def _format_invalid_message_id_message(cls, item: str) -> str:
         """Return the message to state that the given message ID is invalid."""
         return f"{item!r} is not a valid message ID."
 
-    def __getattr__(self, item: str) -> Any:  # type: ignore[misc]  # noqa: ANN401
+    def __getattr__(self, item: str) -> "Any":  # type: ignore[misc]  # noqa: ANN401
         """Retrieve message(s) value by attribute lookup."""
         MISSING_ATTRIBUTE_MESSAGE: Final[str] = (
             f"{type(self).__name__!r} object has no attribute {item!r}"
@@ -46,7 +49,7 @@ class MessagesAccessor:
 
         return self._messages[item]
 
-    def __getitem__(self, item: str) -> Any:  # type: ignore[misc]  # noqa: ANN401
+    def __getitem__(self, item: str) -> "Any":  # type: ignore[misc]  # noqa: ANN401
         """Retrieve message(s) value by key lookup."""
         attribute_not_exist_error: AttributeError
         try:

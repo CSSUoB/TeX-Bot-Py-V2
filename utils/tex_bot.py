@@ -416,7 +416,7 @@ class TeXBot(discord.Bot):
         self._exit_reason = TeXBotExitReason.KILL_COMMAND_USED
         await self.close()
 
-    async def perform_restart_after_config_changes(self) -> NoReturn:
+    async def perform_restart_after_config_changes(self) -> "NoReturn":
         """Restart TeX-Bot after the config changes."""
         if self.EXIT_REASON is not TeXBotExitReason.UNKNOWN_ERROR:
             EXIT_REASON_ALREADY_SET_MESSAGE: Final[str] = (
@@ -504,7 +504,7 @@ class TeXBot(discord.Bot):
         Raises `DiscordMemberNotInMainGuild` if the user is not in your group's Discord guild.
         Raises `ValueError` if the provided ID is not a valid user ID.
         """
-        str_member_id = re.sub(r"\A\s*(<@)(.*)(?(1)>|)\s*\Z", r"\2", str_member_id)
+        re.sub(r"\A\s*(<@)(.*)(?(1)>|)\s*\Z", r"\2", str_member_id)
 
         return await self.get_main_guild_member(user)
 
@@ -534,6 +534,7 @@ class TeXBot(discord.Bot):
             raise ValueError(
                 DiscordMemberNotInMainGuildError(user_id=int(str_member_id)).message
             )
+        return None
 
     async def fetch_log_channel(self) -> discord.TextChannel:
         """

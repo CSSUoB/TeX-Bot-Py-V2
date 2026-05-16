@@ -1,19 +1,24 @@
 """Custom exception classes related to configuration changes."""
 
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = (
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__: "Sequence[str]" = (
     "ChangingSettingWithRequiredSiblingError",
     "RestartRequiredDueToConfigChange",
 )
 
 
-from collections.abc import Set
-from typing import override
+from typing import TYPE_CHECKING, override
 
-from classproperties import classproperty
+from typed_classproperties import classproperty
 
 from .base import BaseTeXBotError
+
+if TYPE_CHECKING:
+    from collections.abc import Set as AbstractSet
 
 
 class RestartRequiredDueToConfigChange(BaseTeXBotError, Exception):
@@ -22,15 +27,15 @@ class RestartRequiredDueToConfigChange(BaseTeXBotError, Exception):
     # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
+    def DEFAULT_MESSAGE(cls) -> str:
         return "TeX-Bot requires a restart to apply configuration changes."
 
     @override
     def __init__(
-        self, message: str | None = None, changed_settings: Set[str] | None = None
+        self, message: str | None = None, changed_settings: "AbstractSet[str] | None" = None
     ) -> None:
         """Initialise an Exception to apply configuration changes."""
-        self.changed_settings: Set[str] | None = changed_settings or set()
+        self.changed_settings: AbstractSet[str] | None = changed_settings or set()
 
         super().__init__(message)
 
@@ -38,11 +43,10 @@ class RestartRequiredDueToConfigChange(BaseTeXBotError, Exception):
 class ChangingSettingWithRequiredSiblingError(BaseTeXBotError, ValueError):
     """Exception class for when a setting cannot be changed because of required siblings."""
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
-        """The message to be displayed alongside this exception class if none is provided."""  # noqa: D401
+    def DEFAULT_MESSAGE(cls) -> str:
+        """The message to be displayed alongside this exception class if none is provided."""
         return (
             "The given setting cannot be changed "
             "because it has one or more required sibling settings that must be set first."

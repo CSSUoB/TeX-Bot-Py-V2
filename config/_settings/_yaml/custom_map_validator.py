@@ -1,18 +1,23 @@
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = ("SlugKeyMap", "SlugKeyValidator")
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__: "Sequence[str]" = ("SlugKeyMap", "SlugKeyValidator")
 
 
-from typing import override
+from typing import TYPE_CHECKING, override
 
 import slugify
 import strictyaml
-from strictyaml.yamllocation import YAMLChunk
+
+if TYPE_CHECKING:
+    from strictyaml.yamllocation import YAMLChunk
 
 
 class SlugKeyValidator(strictyaml.ScalarValidator):  # type: ignore[misc]
     @override
-    def validate_scalar(self, chunk: YAMLChunk) -> str:  # type: ignore[misc]
+    def validate_scalar(self, chunk: "YAMLChunk") -> str:  # type: ignore[misc]
         return slugify.slugify(str(chunk.contents))
 
 
