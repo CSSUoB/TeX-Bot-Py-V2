@@ -31,7 +31,11 @@ class SUPlatformClient:
 
     @override
     def __init__(self) -> None:
-        self.headers: Mapping[str, str] = settings["SU_PLATFORM_WEB_HEADERS"]
+        self.headers: Mapping[str, str] = {
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        }
         self.cookies: Mapping[str, str] = settings["SU_PLATFORM_ACCESS_COOKIE"]
 
     async def fetch_url_content(self, url: str) -> str:

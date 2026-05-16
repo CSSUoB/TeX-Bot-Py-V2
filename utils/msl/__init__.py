@@ -17,11 +17,9 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
 __all__: "Sequence[str]" = (
-    "GLOBAL_SSL_CONTEXT",
     "SUPlatformAccessCookieStatus",
     "fetch_community_group_members_count",
     "fetch_community_group_members_list",
-    "fetch_url_content_with_session",
     "get_su_platform_access_cookie_status",
     "get_su_platform_organisations",
     "is_id_a_community_group_member",

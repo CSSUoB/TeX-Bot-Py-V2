@@ -33,12 +33,6 @@ __all__: "Sequence[str]" = (
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-SU_PLATFORM_PROFILE_URL: "Final[str]" = "https://guildofstudents.com/profile"
-SU_PLATFORM_ORGANISATION_URL: "Final[str]" = (
-    "https://www.guildofstudents.com/organisation/admin"
-)
-
-
 class CheckSUPlatformAuthorisationCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/check-su-platform-authorisation" command."""
 
