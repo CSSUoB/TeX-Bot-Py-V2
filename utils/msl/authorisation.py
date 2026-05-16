@@ -6,9 +6,7 @@ from typing import TYPE_CHECKING
 
 import bs4
 
-from config import settings
-
-from .core import su_platform_client
+from .core import ORGANISATION_ADMIN_URL, su_platform_client
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
@@ -27,9 +25,6 @@ logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 SU_PLATFORM_PROFILE_URL: "Final[str]" = "https://guildofstudents.com/profile"
-SU_PLATFORM_ORGANISATION_URL: "Final[str]" = (
-    "https://www.guildofstudents.com/organisation/admin"
-)
 
 
 class SUPlatformAccessCookieStatus(Enum):
@@ -68,10 +63,7 @@ async def get_su_platform_access_cookie_status() -> SUPlatformAccessCookieStatus
         logger.debug("Token is invalid or expired.")
         return SUPlatformAccessCookieStatus.INVALID
 
-    organisation_admin_url: str = (
-        f"{SU_PLATFORM_ORGANISATION_URL}/{settings['ORGANISATION_ID']}"
-    )
-    response_html: str = await su_platform_client.fetch_url_content(organisation_admin_url)
+    response_html: str = await su_platform_client.fetch_url_content(ORGANISATION_ADMIN_URL)
 
     if "admin tools" in response_html.lower():
         return SUPlatformAccessCookieStatus.AUTHORISED

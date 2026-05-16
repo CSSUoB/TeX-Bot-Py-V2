@@ -36,7 +36,9 @@ class SUPlatformClient:
             "Pragma": "no-cache",
             "Expires": "0",
         }
-        self.cookies: Mapping[str, str] = settings["SU_PLATFORM_ACCESS_COOKIE"]
+        self.cookies: Mapping[str, str] = {
+             ".AspNet.SharedCookie": settings["SU_PLATFORM_ACCESS_COOKIE"],
+         }
 
     async def fetch_url_content(self, url: str) -> str:
         async with (
