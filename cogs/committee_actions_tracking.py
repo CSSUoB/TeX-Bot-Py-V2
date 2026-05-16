@@ -3,6 +3,7 @@
 import contextlib
 import logging
 import random
+import textwrap
 from enum import Enum
 from typing import TYPE_CHECKING
 
@@ -88,7 +89,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
                 )
             )
             if not error_is_already_exits:
-                await self.command_send_error(ctx, message="An unrecoverable error occured.")
+                await self.command_send_error(ctx, message="An unrecoverable error occurred.")
                 logger.critical("Error upon creating Action object: %s", create_action_error)
                 await self.bot.close()
 
@@ -237,7 +238,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         In normal use the autocomplete should be used, but a discord ID can be
         used directly if the user wishes to action a user not included in the autocomplete.
         """
-        member_id: str = action_member_id if action_member_id else str(ctx.user.id)
+        member_id: str = action_member_id or str(ctx.user.id)
 
         try:
             action_user: discord.Member = await self.bot.get_member_from_str_id(member_id)
@@ -629,6 +630,17 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
             }"
         )
 
+        if len(actions_message) >= 2000:
+            chunk: str
+            for chunk in textwrap.wrap(
+                text=actions_message,
+                width=1950,
+                break_long_words=False,
+                fix_sentence_endings=True,
+            ):
+                await ctx.respond(content=chunk)
+            return
+
         await ctx.respond(content=actions_message)
 
     @committee_actions.command(
@@ -807,6 +819,19 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
                 for committee, actions in filtered_committee_actions.items()
             ],
         )
+
+        if len(all_actions_message) >= 2000:
+            chunk: str
+            for chunk in all_actions_message.split("\n\n"):
+                sub_chunk: str
+                for sub_chunk in textwrap.wrap(
+                    text=chunk,
+                    width=1950,
+                    break_long_words=False,
+                    fix_sentence_endings=True,
+                ):
+                    await ctx.respond(content=sub_chunk)
+            return
 
         await ctx.respond(content=all_actions_message)
 

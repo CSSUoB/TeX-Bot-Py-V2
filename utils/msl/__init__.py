@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from .memberships import (
     fetch_community_group_members_count,
     fetch_community_group_members_list,
+    fetch_url_content_with_session,
     is_id_a_community_group_member,
 )
 
@@ -14,5 +15,6 @@ if TYPE_CHECKING:
 __all__: "Sequence[str]" = (
     "fetch_community_group_members_count",
     "fetch_community_group_members_list",
+    "fetch_url_content_with_session",
     "is_id_a_community_group_member",
 )
