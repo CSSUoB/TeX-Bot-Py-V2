@@ -20,6 +20,11 @@
         "replacements:all",
         "workarounds:all"
     ],
+    "gitIgnoredAuthors": [
+        "autofix-ci@users.noreply.github.com",
+        "autofix-ci[bot]@users.noreply.github.com",
+        "114827586+autofix-ci[bot]@users.noreply.github.com"
+    ],
     "labels": [
         "dependencies"
     ],

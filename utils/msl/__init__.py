@@ -6,6 +6,7 @@ from .authorisation import get_su_platform_access_cookie_status, get_su_platform
 from .memberships import (
     fetch_community_group_members_count,
     fetch_community_group_members_list,
+    fetch_url_content_with_session,
     is_id_a_community_group_member,
 )
 
@@ -16,7 +17,6 @@ __all__: "Sequence[str]" = (
     "GLOBAL_SSL_CONTEXT",
     "fetch_community_group_members_count",
     "fetch_community_group_members_list",
-    "get_su_platform_access_cookie_status",
-    "get_su_platform_organisations",
+    "fetch_url_content_with_session",
     "is_id_a_community_group_member",
 )

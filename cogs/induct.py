@@ -179,7 +179,7 @@ class BaseInductCog(TeXBotBaseCog):
     async def _perform_induction(
         self,
         ctx: "TeXBotApplicationContext",
-        induction_member: discord.Member,
+        induction_member_id: int,
         *,
         silent: bool,
     ) -> None:
@@ -187,6 +187,18 @@ class BaseInductCog(TeXBotBaseCog):
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
+
+        induction_member: discord.Member | None = main_guild.get_member(induction_member_id)
+        if not induction_member:
+            await ctx.respond(
+                (
+                    ":information_source: No changes made. User cannot be inducted "
+                    "because they have left the server "
+                    ":information_source:"
+                ),
+                ephemeral=True,
+            )
+            return
 
         await ctx.defer(ephemeral=True)
         async with ctx.typing():
@@ -346,7 +358,7 @@ class InductSlashCommandCog(BaseInductCog):
             await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
             return
 
-        await self._perform_induction(ctx, induct_member, silent=silent)
+        await self._perform_induction(ctx, induct_member.id, silent=silent)
 
 
 class InductContextCommandsCog(BaseInductCog):
@@ -356,7 +368,7 @@ class InductContextCommandsCog(BaseInductCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def non_silent_user_induct(
-        self, ctx: "TeXBotApplicationContext", member: discord.Member
+        self, ctx: "TeXBotApplicationContext", member: discord.Member | discord.User
     ) -> None:
         """
         Definition & callback response of the "non_silent_induct" user-context-command.
@@ -366,13 +378,13 @@ class InductContextCommandsCog(BaseInductCog):
         Therefore, it will induct a given member into your group's Discord guild
         by giving them the "Guest" role.
         """
-        await self._perform_induction(ctx, member, silent=False)
+        await self._perform_induction(ctx, member.id, silent=False)
 
     @discord.user_command(name="Silently Induct User")
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def silent_user_induct(
-        self, ctx: "TeXBotApplicationContext", member: discord.Member
+        self, ctx: "TeXBotApplicationContext", member: discord.Member | discord.User
     ) -> None:
         """
         Definition & callback response of the "silent_induct" user-context-command.
@@ -382,7 +394,7 @@ class InductContextCommandsCog(BaseInductCog):
         Therefore, it will induct a given member into your group's Discord guild
         by giving them the "Guest" role, only without broadcasting a welcome message.
         """
-        await self._perform_induction(ctx, member, silent=True)
+        await self._perform_induction(ctx, member.id, silent=True)
 
     @discord.message_command(name="Induct Message Author")
     @CommandChecks.check_interaction_user_has_committee_role
@@ -413,7 +425,7 @@ class InductContextCommandsCog(BaseInductCog):
             )
             return
 
-        await self._perform_induction(ctx, member, silent=False)
+        await self._perform_induction(ctx, member.id, silent=False)
 
 
 class EnsureMembersInductedCommandCog(TeXBotBaseCog):

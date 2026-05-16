@@ -12,7 +12,7 @@ jobs:
 
         steps:
             - name: Prevent migrations files being changed or deleted
-              uses: xalvarez/prevent-file-change-action@v3.0.0
+              uses: xalvarez/prevent-file-change-action@v3.0.1
               with:
                 allowNewFiles: true
                 githubToken: ${{secrets.GITHUB_TOKEN}}
