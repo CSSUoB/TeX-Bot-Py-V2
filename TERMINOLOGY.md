@@ -8,51 +8,6 @@ Therefore, the same terminology (["guild"](https://discord.com/developers/docs/r
 
 The term "main guild" is used throughout the code in this repository to refer specifically to your community group's main [Discord guild](https://discord.com/developers/docs/resources/guild).
 
-
-## [Interactions](https://discord.com/developers/docs/interactions/overview)
-
-Interactions in Discord are a way for bots to communicate with users in a structured and interactive manner. They are the initial entry point to allow users to begin interacting with the bot. (Note that a Discord bot's functionality could also be triggered via non-interaction methods like scheduled tasks or event handlers.) The primary types of interactions are:
-
-1. **Application Commands**: These include Slash Commands, Message Commands, and User Commands. They are predefined commands that users can invoke to perform specific actions.
-2. **Message Components**: These are interactive elements like buttons, select menus, and modals that can be attached to messages to provide a richer user experience.
-3. **Modal Submissions**: These are forms that users can fill out and submit, allowing bots to collect structured input from users, though TeX-Bot does not currently make use of these.
-
-For more details, refer to the [Discord Developer Documentation on Interactions](https://discord.com/developers/docs/interactions/overview).
-
-
-## [Application Commands](https://discord.com/developers/docs/interactions/application-commands)
-
-
-An [Application Command](https://discord.com/developers/docs/interactions/application-commands) can be a [Slash Command](#slash-commands), [Message Command](#message-commands) or [User Command](#user-commands).
-
-Bots are limited to only 100 [Slash Commands](#slash-commands), 5 [Message Commands](#message-commands) and 5 [User Commands](#user-commands).
-
-The primary difference is the way these commands are triggered. [Slash Commands](#slash-commands) are triggered by sending a message into the chat, while both [User Commands](#user-commands) and [Message Commands](#message-commands) are triggered via a UI context menu provided by right-clicking on a [User](https://discord.com/developers/docs/resources/user) or [Message](https://discord.com/developers/docs/resources/message) respectively.
-
-
-### [Slash Commands](https://discord.com/developers/docs/interactions/application-commands#slash-commands)
-
-
-Slash commands, also known as `CHAT_INPUT` commands are executed via sending a chat message and are made up of a name, description and a set of options. These can be defined using the `@discord.slash_command()` decorator.
-
-
-For example usages, check the [Guides section](CONTRIBUTING.md#Guides) of the [CONTRIBUTING.md document](CONTRIBUTING.md).
-
-
-### Context Commands
-
-#### [Message Commands](https://discord.com/developers/docs/interactions/application-commands#message-commands)
-
-
-Message-context commands are executed via right-clicking on a [Discord *Message*](https://discord.com/developers/docs/resources/message), clicking "Apps", then selecting the command from the menu. The interaction callback method is provided information about which message was clicked, along with which user clicked it.
-
-The main difference between [Context Commands](#context-commands) and [Slash Commands](#slash-commands) is that [Context Commands](#context-commands) do not take user defined arguments and are limited to the [Message](https://discord.com/developers/docs/resources/message) that the command is issued on and the context which is passed alongside it.
-
-
-#### [User Commands](https://discord.com/developers/docs/interactions/application-commands#user-commands)
-
-
-
 ## "User" Vs "Member" Vs "Guest"
 
 ### [Discord Objects](https://discord.com/developers/docs)
@@ -76,3 +31,43 @@ Some commands may require you to create [roles](https://discord.com/developers/d
 
 In some other contexts, the term "user" may be used to refer to any person/organisation making use of this project.
 (E.g. the description within [the "Error Codes" section](README.md#error-codes).)
+
+## [Interactions](https://discord.com/developers/docs/interactions/overview)
+
+Interactions in Discord are a way for bots to communicate with users in a structured and interactive manner.
+They are the initial entry point to allow users to begin interacting with the bot.
+(Note that a Discord bot's functionality could also be triggered via non-interaction methods like scheduled tasks or event handlers.)
+The primary types of interactions are:
+
+1. **Application Commands**: These include [Slash Commands](#slash-commands), [Message Commands](#message-commands), and [User Commands](#user-commands).
+   They are predefined commands that users can invoke to perform specific actions.
+2. **Message Components**: These are interactive elements like buttons, select menus, and modals that can be attached to messages to provide a richer user experience.
+3. **Modal Submissions**: These are forms that users can fill out and submit, allowing bots to collect structured input from users, though TeX-Bot does not currently make use of these.
+
+For more details, refer to the [Discord Developer Documentation on Interactions](https://discord.com/developers/docs/interactions/overview).
+
+## [Application Commands](https://discord.com/developers/docs/interactions/application-commands)
+
+An [Application Command](https://discord.com/developers/docs/interactions/application-commands) can be a [Slash Command](#slash-commands), [Message Command](#message-commands) or [User Command](#user-commands).
+
+### [Slash Commands](https://discord.com/developers/docs/interactions/application-commands#slash-commands)
+
+Slash commands are executed by sending a chat message.
+They are made up of a name, description and a set of options.
+Bots are limited to 100 slash commands.
+
+### Context Commands
+
+Context commands are triggered via a UI context menu that appears when right-clicking on a [User](https://discord.com/developers/docs/resources/user) or [Message](https://discord.com/developers/docs/resources/message).
+They do not take user-defined arguments, and instead receive the context that was clicked.
+Bots are limited to 5 [Message Commands](#message-commands) and 5 [User Commands](#user-commands).
+
+#### [Message Commands](https://discord.com/developers/docs/interactions/application-commands#message-commands)
+
+Message-context commands are executed via right-clicking on a [Discord message](https://discord.com/developers/docs/resources/message), clicking "Apps", then selecting the command from the menu.
+The interaction callback method is provided information about which message was clicked, along with which user clicked it.
+
+#### [User Commands](https://discord.com/developers/docs/interactions/application-commands#user-commands)
+
+User-context commands are executed via right-clicking on a [Discord user](https://discord.com/developers/docs/resources/user), clicking "Apps", then selecting the command from the menu.
+The interaction callback method is provided information about which user was clicked, along with which user clicked it.
