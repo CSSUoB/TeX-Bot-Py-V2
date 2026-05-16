@@ -63,7 +63,7 @@ class MakeMemberBaseCog(TeXBotBaseCog):
 
     async def perform_make_member(
         self, user: discord.User | discord.Member, raw_group_member_id: str
-    ) -> str:
+    ) -> tuple[bool, str]:
         """Perform the actions to make a user a member."""
         member_role: discord.Role = await self.bot.member_role
         discord_member: discord.Member = await self.bot.get_main_guild_member(user)
@@ -73,15 +73,16 @@ class MakeMemberBaseCog(TeXBotBaseCog):
         )
 
         if not re.fullmatch(r"\A\d{7}\Z", raw_group_member_id):
-            return INVALID_GROUP_MEMBER_ID_MESSAGE
+            return False, INVALID_GROUP_MEMBER_ID_MESSAGE
 
         try:
             group_member_id: int = int(raw_group_member_id)
         except ValueError:
-            return INVALID_GROUP_MEMBER_ID_MESSAGE
+            return False, INVALID_GROUP_MEMBER_ID_MESSAGE
 
         if member_role in discord_member.roles:
             return (
+                False,
                 ":information_source: No changes made. "
                 "You're already a member - why are you trying this again? "
                 ":information_source:"
@@ -93,6 +94,7 @@ class MakeMemberBaseCog(TeXBotBaseCog):
             )
         ).aexists():
             return (
+                False,
                 ":information_source: This student ID has already been used. "
                 "Please contact a committee member if you think this is a mistake."
                 " :information_source:"
@@ -100,6 +102,7 @@ class MakeMemberBaseCog(TeXBotBaseCog):
 
         if not await is_id_a_community_group_member(member_id=group_member_id):
             return (
+                False,
                 f"You must be a member of {self.bot.group_full_name} "
                 "to use this command.\n"
                 f"The provided {_GROUP_MEMBER_ID_ARGUMENT_NAME} must match "
@@ -152,7 +155,7 @@ class MakeMemberBaseCog(TeXBotBaseCog):
                     reason=f"{discord_member} used TeX-Bot to become a member.",
                 )
 
-        return ":information_source: Successfully made you a member!"
+        return True, ":information_source: Successfully made you a member!"
 
 
 class MakeMemberCommandCog(MakeMemberBaseCog):
@@ -207,9 +210,13 @@ class MakeMemberCommandCog(MakeMemberBaseCog):
         await ctx.defer(ephemeral=True)
 
         async with ctx.typing():
-            message: str = await self.perform_make_member(
+            status, message = await self.perform_make_member(
                 user=ctx.user, raw_group_member_id=raw_group_member_id
             )
+
+            if not status:
+                await self.command_send_error(ctx=ctx, message=message)
+                return
 
             await ctx.followup.send(content=message, ephemeral=True)
 
@@ -286,7 +293,7 @@ class MakeMemberModal(Modal):
             )
             return
 
-        message: str = await cog.perform_make_member(
+        _, message = await cog.perform_make_member(
             user=interaction.user, raw_group_member_id=raw_student_id
         )
 
