@@ -231,9 +231,9 @@ To create a new cog, follow these steps:
    class ExampleCog(TeXBotBaseCog):
        """A cog for demonstrating functionality."""
 
-       def do_something(self, arguments: str) -> None:
+       def do_something(self, input_text: str) -> None:
            """Perform a simple action."""
-           print(f"Doing something with {arguments}.")
+           print(f"Doing something with {input_text}.")
    ```
 
 3. Add Commands and Listeners
@@ -553,7 +553,9 @@ To create and interact with Django models, follow these steps:
                if search_term is None:
                    await ctx.respond("Provide a search term to filter records.", ephemeral=True)
                    return
-               records = await ExampleRecord.objects.filter(name__icontains=search_term)
+               records = [
+                   record async for record in ExampleRecord.objects.filter(name__icontains=search_term)
+               ]
                names = ", ".join(record.name for record in records)
                await ctx.respond(f"Matching records: {names or 'None found.'}")
                return
