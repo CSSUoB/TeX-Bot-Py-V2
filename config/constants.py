@@ -70,16 +70,21 @@ class ConfigSettingHelp(NamedTuple):
 
 
 def _selectable_required_format_message(options: Iterable[str]) -> str:
-    return f"Must be one of: `{"`, `".join(options)}`."
+    return f"Must be one of: `{'`, `'.join(options)}`."
 
 
 def _custom_required_format_message(type_value: str, info_link: str | None = None) -> str:
     return f"Must be a valid {
-        type_value.lower().replace("discord", "Discord").replace(
-            "id",
-            "ID",
-        ).replace("url", "URL").replace("dm", "DM").strip(".")
-    }{f" (see <{info_link}>)" if info_link else ""}."
+        type_value.lower()
+        .replace('discord', 'Discord')
+        .replace(
+            'id',
+            'ID',
+        )
+        .replace('url', 'URL')
+        .replace('dm', 'DM')
+        .strip('.')
+    }{f' (see <{info_link}>)' if info_link else ''}."
 
 
 PROJECT_ROOT: Final[Path] = Path(__file__).parent.parent.resolve()
@@ -247,7 +252,7 @@ CONFIG_SETTINGS_HELPS: Mapping[str, ConfigSettingHelp] = {
             "Ensure that all members are visible without pagination, "
             "(for example, "
             "if your members-list is found on the UoB Guild of Students website, "
-            "ensure the URL includes the \"sort by groups\" option)."
+            'ensure the URL includes the "sort by groups" option).'
         ),
         requires_restart_after_changed=False,
         value_type_message=_custom_required_format_message("URL"),

@@ -27,7 +27,9 @@ class MessagesAccessor:
             f"{type(self).__name__!r} object has no attribute {item!r}"
         )
 
-        if "_pytest" in item or item in ("__bases__", "__test__"):  # NOTE: Overriding __getattr__() leads to many edge-case issues where external libraries will attempt to call getattr() with peculiar values
+        if (
+            "_pytest" in item or item in ("__bases__", "__test__")
+        ):  # NOTE: Overriding __getattr__() leads to many edge-case issues where external libraries will attempt to call getattr() with peculiar values
             raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
         IN_MESSAGE_KEY_FORMAT: Final[bool] = bool(
@@ -52,8 +54,11 @@ class MessagesAccessor:
         except AttributeError as attribute_not_exist_error:
             key_error_message: str = item
 
-            ERROR_WAS_FROM_INVALID_KEY_NAME: Final[bool] = self.format_invalid_message_id_message(item) in str(  # noqa: E501
-                attribute_not_exist_error,
+            ERROR_WAS_FROM_INVALID_KEY_NAME: Final[bool] = (
+                self.format_invalid_message_id_message(item)
+                in str(  # noqa: E501
+                    attribute_not_exist_error,
+                )
             )
             if ERROR_WAS_FROM_INVALID_KEY_NAME:
                 key_error_message = str(attribute_not_exist_error)
@@ -64,7 +69,7 @@ class MessagesAccessor:
     async def _public_load(cls, messages_locale_code: str) -> None:
         if messages_locale_code not in MESSAGES_LOCALE_CODES:
             INVALID_MESSAGES_LOCALE_CODE_MESSAGE: Final[str] = (
-                f"{"messages_locale_code"!r} must be one of "
+                f"{'messages_locale_code'!r} must be one of "
                 f"'{"', '".join(MESSAGES_LOCALE_CODES)}'"
             )
             raise ValueError(INVALID_MESSAGES_LOCALE_CODE_MESSAGE)

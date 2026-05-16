@@ -243,12 +243,12 @@ class RemindMeCommandCog(TeXBotBaseCog):
                 )
             )
             if not ERROR_IS_ALREADY_EXISTS:
-                raise UnknownDjangoError(
-                    message=(
-                        f"Error when creating DiscordReminder object: "
-                        f"{create_discord_reminder_error}"
-                    ),
-                ) from create_discord_reminder_error
+                await self.command_send_error(ctx, message="An unrecoverable error occurred.")
+                logger.critical(
+                    "Error when creating DiscordReminder object: %s",
+                    create_discord_reminder_error,
+                )
+                await self.bot.close()
 
             await self.command_send_error(
                 ctx, message="You already have a reminder with that message in this channel!"

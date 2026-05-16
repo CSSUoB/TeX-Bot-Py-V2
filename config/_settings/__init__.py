@@ -55,7 +55,9 @@ class SettingsAccessor:
             f"{type(self).__name__!r} object has no attribute {item!r}"
         )
 
-        if "_pytest" in item or item in ("__bases__", "__test__"):  # NOTE: Overriding __getattr__() leads to many edge-case issues where external libraries will attempt to call getattr() with peculiar values
+        if (
+            "_pytest" in item or item in ("__bases__", "__test__")
+        ):  # NOTE: Overriding __getattr__() leads to many edge-case issues where external libraries will attempt to call getattr() with peculiar values
             raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
         IN_SETTING_KEY_FORMAT: Final[bool] = bool(
@@ -96,7 +98,8 @@ class SettingsAccessor:
             key_error_message: str = item
 
             ERROR_WAS_FROM_INVALID_KEY_NAME: Final[bool] = (
-                self._get_invalid_settings_key_message(item) in str(
+                self._get_invalid_settings_key_message(item)
+                in str(
                     attribute_not_exist_error,
                 )
             )
@@ -204,7 +207,9 @@ class SettingsAccessor:
         if not CONSOLE_LOGGING_SETTINGS_CHANGED:
             return set()
 
-        ALL_HANDLERS: Final[Iterable[logging.Handler]] = logger.handlers  # NOTE: The collection of handlers needs to be retrieved before the new StreamHandler is created
+        ALL_HANDLERS: Final[Iterable[logging.Handler]] = (
+            logger.handlers
+        )  # NOTE: The collection of handlers needs to be retrieved before the new StreamHandler is created
 
         console_logging_handler: logging.StreamHandler[TextIO] = logging.StreamHandler()
 
@@ -247,7 +252,9 @@ class SettingsAccessor:
         return {"logging:console:log-level"}
 
     @classmethod
-    def _reload_discord_log_channel_logging(cls, discord_channel_logging_settings: YAML | None) -> set[str]:  # type: ignore[misc] # noqa: E501
+    def _reload_discord_log_channel_logging(
+        cls, discord_channel_logging_settings: YAML | None
+    ) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the Discord log channel logging configuration.
 
@@ -256,7 +263,8 @@ class SettingsAccessor:
         DISCORD_CHANNEL_LOGGING_SETTINGS_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "DISCORD_LOG_CHANNEL_WEBHOOK_URL" not in cls._settings
-            or discord_channel_logging_settings != cls._most_recent_yaml["logging"].get(
+            or discord_channel_logging_settings
+            != cls._most_recent_yaml["logging"].get(
                 "discord-channel",
                 None,
             )  # noqa: COM812
@@ -299,7 +307,8 @@ class SettingsAccessor:
             )
             if ONLY_DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED:
                 DISCORD_LOG_CHANNEL_LOG_LEVEL_IS_SAME: Final[bool] = bool(
-                    discord_channel_logging_settings["log-level"] == cls._most_recent_yaml[  # type: ignore[index]
+                    discord_channel_logging_settings["log-level"]
+                    == cls._most_recent_yaml[  # type: ignore[index]
                         "logging"
                     ]["discord-channel"]["log-level"]  # noqa: COM812
                 )
@@ -347,7 +356,8 @@ class SettingsAccessor:
         DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or cls._most_recent_yaml["logging"].get("discord-channel", None) is None
-            or discord_channel_logging_settings["log-level"] != cls._most_recent_yaml["logging"]["discord-channel"]["log-level"]  # noqa: COM812, E501
+            or discord_channel_logging_settings["log-level"]
+            != cls._most_recent_yaml["logging"]["discord-channel"]["log-level"]  # noqa: COM812, E501
         )
         if DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED:
             changed_settings.add("logging:discord-channel:log-level")
@@ -402,7 +412,8 @@ class SettingsAccessor:
         GROUP_FULL_NAME_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "_GROUP_FULL_NAME" not in cls._settings
-            or group_full_name != cls._most_recent_yaml["community-group"].get(
+            or group_full_name
+            != cls._most_recent_yaml["community-group"].get(
                 "full-name",
                 None,
             )  # noqa: COM812
@@ -426,7 +437,8 @@ class SettingsAccessor:
         GROUP_SHORT_NAME_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "_GROUP_SHORT_NAME" not in cls._settings
-            or group_short_name != cls._most_recent_yaml["community-group"].get(
+            or group_short_name
+            != cls._most_recent_yaml["community-group"].get(
                 "short-name",
                 None,
             )  # noqa: COM812
@@ -441,7 +453,9 @@ class SettingsAccessor:
         return {"community-group:short-name"}
 
     @classmethod
-    def _reload_purchase_membership_link(cls, purchase_membership_link: YAML | None) -> set[str]:  # type: ignore[misc] # noqa: E501
+    def _reload_purchase_membership_link(
+        cls, purchase_membership_link: YAML | None
+    ) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the link to allow people to purchase a membership.
 
@@ -450,7 +464,8 @@ class SettingsAccessor:
         PURCHASE_MEMBERSHIP_LINK_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "PURCHASE_MEMBERSHIP_LINK" not in cls._settings
-            or purchase_membership_link != cls._most_recent_yaml["community-group"]["links"].get(  # noqa: E501
+            or purchase_membership_link
+            != cls._most_recent_yaml["community-group"]["links"].get(  # noqa: E501
                 "purchase-membership",
                 None,
             )  # noqa: COM812
@@ -476,7 +491,8 @@ class SettingsAccessor:
         MEMBERSHIP_PERKS_LINK_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "MEMBERSHIP_PERKS_LINK" not in cls._settings
-            or membership_perks_link != cls._most_recent_yaml["community-group"]["links"].get(
+            or membership_perks_link
+            != cls._most_recent_yaml["community-group"]["links"].get(
                 "membership-perks",
                 None,
             )  # noqa: COM812
@@ -502,7 +518,8 @@ class SettingsAccessor:
         MODERATION_DOCUMENT_LINK_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "MODERATION_DOCUMENT_LINK" not in cls._settings
-            or moderation_document_link != cls._most_recent_yaml["community-group"]["links"]["moderation-document"]  # noqa: COM812, E501
+            or moderation_document_link
+            != cls._most_recent_yaml["community-group"]["links"]["moderation-document"]  # noqa: COM812, E501
         )
         if not MODERATION_DOCUMENT_LINK_CHANGED:
             return set()
@@ -521,7 +538,8 @@ class SettingsAccessor:
         MEMBERS_LIST_URL_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "MEMBERS_LIST_URL" not in cls._settings
-            or members_list_url != cls._most_recent_yaml["community-group"]["members-list"]["url"]  # noqa: COM812, E501
+            or members_list_url
+            != cls._most_recent_yaml["community-group"]["members-list"]["url"]  # noqa: COM812, E501
         )
         if not MEMBERS_LIST_URL_CHANGED:
             return set()
@@ -531,7 +549,9 @@ class SettingsAccessor:
         return {"community-group:members-list:url"}
 
     @classmethod
-    def _reload_members_list_auth_session_cookie(cls, members_list_auth_session_cookie: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
+    def _reload_members_list_auth_session_cookie(
+        cls, members_list_auth_session_cookie: YAML
+    ) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the auth session cookie used to authenticate to access your members-list.
 
@@ -540,7 +560,8 @@ class SettingsAccessor:
         MEMBERS_LIST_AUTH_SESSION_COOKIE_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "MEMBERS_LIST_AUTH_SESSION_COOKIE" not in cls._settings
-            or members_list_auth_session_cookie != cls._most_recent_yaml["community-group"]["members-list"]["auth-session-cookie"]  # noqa: COM812, E501
+            or members_list_auth_session_cookie
+            != cls._most_recent_yaml["community-group"]["members-list"]["auth-session-cookie"]  # noqa: COM812, E501
         )
         if not MEMBERS_LIST_AUTH_SESSION_COOKIE_CHANGED:
             return set()
@@ -561,7 +582,8 @@ class SettingsAccessor:
         MEMBERS_LIST_ID_FORMAT_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "MEMBERS_LIST_ID_FORMAT" not in cls._settings
-            or members_list_id_format != cls._most_recent_yaml["community-group"]["members-list"]["id-format"]  # noqa: COM812, E501
+            or members_list_id_format
+            != cls._most_recent_yaml["community-group"]["members-list"]["id-format"]  # noqa: COM812, E501
         )
         if not MEMBERS_LIST_ID_FORMAT_CHANGED:
             return set()
@@ -571,7 +593,9 @@ class SettingsAccessor:
         return {"community-group:members-list:id-format"}
 
     @classmethod
-    def _reload_ping_command_easter_egg_probability(cls, ping_command_easter_egg_probability: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
+    def _reload_ping_command_easter_egg_probability(
+        cls, ping_command_easter_egg_probability: YAML
+    ) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the probability that the rarer response will show when using the ping command.
 
@@ -580,7 +604,8 @@ class SettingsAccessor:
         PING_COMMAND_EASTER_EGG_PROBABILITY_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "PING_COMMAND_EASTER_EGG_PROBABILITY" not in cls._settings
-            or ping_command_easter_egg_probability != cls._most_recent_yaml["commands"]["ping"]["easter-egg-probability"]  # noqa: COM812, E501
+            or ping_command_easter_egg_probability
+            != cls._most_recent_yaml["commands"]["ping"]["easter-egg-probability"]  # noqa: COM812, E501
         )
         if not PING_COMMAND_EASTER_EGG_PROBABILITY_CHANGED:
             return set()
@@ -592,7 +617,9 @@ class SettingsAccessor:
         return {"commands:ping:easter-egg-probability"}
 
     @classmethod
-    def _reload_stats_command_lookback_days(cls, stats_command_lookback_days: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
+    def _reload_stats_command_lookback_days(
+        cls, stats_command_lookback_days: YAML
+    ) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the number of days to lookback for statistics.
 
@@ -601,7 +628,8 @@ class SettingsAccessor:
         STATS_COMMAND_LOOKBACK_DAYS_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "STATS_COMMAND_LOOKBACK_DAYS" not in cls._settings
-            or stats_command_lookback_days != cls._most_recent_yaml["commands"]["stats"]["lookback-days"]  # noqa: COM812, E501
+            or stats_command_lookback_days
+            != cls._most_recent_yaml["commands"]["stats"]["lookback-days"]  # noqa: COM812, E501
         )
         if not STATS_COMMAND_LOOKBACK_DAYS_CHANGED:
             return set()
@@ -613,7 +641,9 @@ class SettingsAccessor:
         return {"commands:stats:lookback-days"}
 
     @classmethod
-    def _reload_stats_command_displayed_roles(cls, stats_command_displayed_roles: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
+    def _reload_stats_command_displayed_roles(
+        cls, stats_command_displayed_roles: YAML
+    ) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the set of roles used to display statistics about.
 
@@ -622,7 +652,8 @@ class SettingsAccessor:
         STATS_COMMAND_DISPLAYED_ROLES_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "STATS_COMMAND_DISPLAYED_ROLES" not in cls._settings
-            or stats_command_displayed_roles != cls._most_recent_yaml["commands"]["stats"]["displayed-roles"]  # noqa: COM812, E501
+            or stats_command_displayed_roles
+            != cls._most_recent_yaml["commands"]["stats"]["displayed-roles"]  # noqa: COM812, E501
         )
         if not STATS_COMMAND_DISPLAYED_ROLES_CHANGED:
             return set()
@@ -632,7 +663,9 @@ class SettingsAccessor:
         return {"commands:stats:displayed-roles"}
 
     @classmethod
-    def _reload_strike_command_timeout_duration(cls, strike_command_timeout_duration: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
+    def _reload_strike_command_timeout_duration(
+        cls, strike_command_timeout_duration: YAML
+    ) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the duration to use when applying a timeout action for a strike increase.
 
@@ -641,7 +674,8 @@ class SettingsAccessor:
         STRIKE_COMMAND_TIMEOUT_DURATION_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "STRIKE_COMMAND_TIMEOUT_DURATION" not in cls._settings
-            or strike_command_timeout_duration != cls._most_recent_yaml["commands"]["strike"]["timeout-duration"]  # noqa: COM812, E501
+            or strike_command_timeout_duration
+            != cls._most_recent_yaml["commands"]["strike"]["timeout-duration"]  # noqa: COM812, E501
         )
         if not STRIKE_COMMAND_TIMEOUT_DURATION_CHANGED:
             return set()
@@ -651,7 +685,9 @@ class SettingsAccessor:
         return {"commands:strike:timeout-duration"}
 
     @classmethod
-    def _reload_strike_performed_manually_warning_location(cls, strike_performed_manually_warning_location: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
+    def _reload_strike_performed_manually_warning_location(
+        cls, strike_performed_manually_warning_location: YAML
+    ) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the location to send warning messages when strikes are performed manually.
 
@@ -660,7 +696,10 @@ class SettingsAccessor:
         STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION" not in cls._settings
-            or strike_performed_manually_warning_location != cls._most_recent_yaml["commands"]["strike"]["performed-manually-warning-location"]  # noqa: COM812, E501
+            or strike_performed_manually_warning_location
+            != cls._most_recent_yaml["commands"]["strike"][
+                "performed-manually-warning-location"
+            ]  # noqa: COM812, E501
         )
         if not STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION_CHANGED:
             return set()
@@ -691,7 +730,9 @@ class SettingsAccessor:
         return {"messages-locale-code"}
 
     @classmethod
-    def _reload_send_introduction_reminders_enabled(cls, send_introduction_reminders_enabled: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
+    def _reload_send_introduction_reminders_enabled(
+        cls, send_introduction_reminders_enabled: YAML
+    ) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the flag for whether the "send-introduction-reminders" task is enabled.
 
@@ -700,7 +741,8 @@ class SettingsAccessor:
         SEND_INTRODUCTION_REMINDERS_ENABLED_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "SEND_INTRODUCTION_REMINDERS_ENABLED" not in cls._settings
-            or send_introduction_reminders_enabled != cls._most_recent_yaml["reminders"]["send-introduction-reminders"]["enabled"]  # noqa: COM812, E501
+            or send_introduction_reminders_enabled
+            != cls._most_recent_yaml["reminders"]["send-introduction-reminders"]["enabled"]  # noqa: COM812, E501
         )
         if not SEND_INTRODUCTION_REMINDERS_ENABLED_CHANGED:
             return set()
@@ -712,7 +754,9 @@ class SettingsAccessor:
         return {"reminders:send-introduction-reminders:enabled"}
 
     @classmethod
-    def _reload_send_introduction_reminders_delay(cls, send_introduction_reminders_delay: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
+    def _reload_send_introduction_reminders_delay(
+        cls, send_introduction_reminders_delay: YAML
+    ) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the amount of time to wait before sending introduction-reminders to a user.
 
@@ -723,7 +767,8 @@ class SettingsAccessor:
         SEND_INTRODUCTION_REMINDERS_DELAY_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "SEND_INTRODUCTION_REMINDERS_DELAY" not in cls._settings
-            or send_introduction_reminders_delay != cls._most_recent_yaml["reminders"]["send-introduction-reminders"]["delay"]  # noqa: COM812, E501
+            or send_introduction_reminders_delay
+            != cls._most_recent_yaml["reminders"]["send-introduction-reminders"]["delay"]  # noqa: COM812, E501
         )
         if not SEND_INTRODUCTION_REMINDERS_DELAY_CHANGED:
             return set()
@@ -735,7 +780,9 @@ class SettingsAccessor:
         return {"reminders:send-introduction-reminders:delay"}
 
     @classmethod
-    def _reload_send_introduction_reminders_interval(cls, send_introduction_reminders_interval: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
+    def _reload_send_introduction_reminders_interval(
+        cls, send_introduction_reminders_interval: YAML
+    ) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the interval of time between executing the task to send introduction-reminders.
 
@@ -744,7 +791,8 @@ class SettingsAccessor:
         SEND_INTRODUCTION_REMINDERS_INTERVAL_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "SEND_INTRODUCTION_REMINDERS_INTERVAL_SECONDS" not in cls._settings
-            or send_introduction_reminders_interval != cls._most_recent_yaml["reminders"]["send-introduction-reminders"]["interval"]  # noqa: COM812, E501
+            or send_introduction_reminders_interval
+            != cls._most_recent_yaml["reminders"]["send-introduction-reminders"]["interval"]  # noqa: COM812, E501
         )
         if not SEND_INTRODUCTION_REMINDERS_INTERVAL_CHANGED:
             return set()
@@ -756,7 +804,9 @@ class SettingsAccessor:
         return {"reminders:send-introduction-reminders:interval"}
 
     @classmethod
-    def _reload_send_get_roles_reminders_enabled(cls, send_get_roles_reminders_enabled: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
+    def _reload_send_get_roles_reminders_enabled(
+        cls, send_get_roles_reminders_enabled: YAML
+    ) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the flag for whether the "send-get-roles-reminders" task is enabled.
 
@@ -765,7 +815,8 @@ class SettingsAccessor:
         SEND_GET_ROLES_REMINDERS_ENABLED_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "SEND_GET_ROLES_REMINDERS_ENABLED" not in cls._settings
-            or send_get_roles_reminders_enabled != cls._most_recent_yaml["reminders"]["send-get-roles-reminders"]["enabled"]  # noqa: COM812, E501
+            or send_get_roles_reminders_enabled
+            != cls._most_recent_yaml["reminders"]["send-get-roles-reminders"]["enabled"]  # noqa: COM812, E501
         )
         if not SEND_GET_ROLES_REMINDERS_ENABLED_CHANGED:
             return set()
@@ -777,7 +828,9 @@ class SettingsAccessor:
         return {"reminders:send-get-roles-reminders:enabled"}
 
     @classmethod
-    def _reload_send_get_roles_reminders_delay(cls, send_get_roles_reminders_delay: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
+    def _reload_send_get_roles_reminders_delay(
+        cls, send_get_roles_reminders_delay: YAML
+    ) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the amount of time to wait before sending get-roles-reminders to a user.
 
@@ -789,7 +842,8 @@ class SettingsAccessor:
         SEND_GET_ROLES_REMINDERS_DELAY_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "SEND_GET_ROLES_REMINDERS_DELAY" not in cls._settings
-            or send_get_roles_reminders_delay != cls._most_recent_yaml["reminders"]["send-get-roles-reminders"]["delay"]  # noqa: COM812, E501
+            or send_get_roles_reminders_delay
+            != cls._most_recent_yaml["reminders"]["send-get-roles-reminders"]["delay"]  # noqa: COM812, E501
         )
         if not SEND_GET_ROLES_REMINDERS_DELAY_CHANGED:
             return set()
@@ -799,7 +853,9 @@ class SettingsAccessor:
         return {"reminders:send-get-roles-reminders:delay"}
 
     @classmethod
-    def _reload_send_get_roles_reminders_interval(cls, send_get_roles_reminders_interval: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
+    def _reload_send_get_roles_reminders_interval(
+        cls, send_get_roles_reminders_interval: YAML
+    ) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the interval of time between executing the task to send get-roles-reminders.
 
@@ -808,7 +864,8 @@ class SettingsAccessor:
         SEND_GET_ROLES_REMINDERS_INTERVAL_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "SEND_GET_ROLES_REMINDERS_INTERVAL_SECONDS" not in cls._settings
-            or send_get_roles_reminders_interval != cls._most_recent_yaml["reminders"]["send-get-roles-reminders"]["interval"]  # noqa: COM812, E501
+            or send_get_roles_reminders_interval
+            != cls._most_recent_yaml["reminders"]["send-get-roles-reminders"]["interval"]  # noqa: COM812, E501
         )
         if not SEND_GET_ROLES_REMINDERS_INTERVAL_CHANGED:
             return set()
@@ -820,7 +877,9 @@ class SettingsAccessor:
         return {"reminders:send-get-roles-reminders:interval"}
 
     @classmethod
-    def _reload_check_if_config_changed_interval(cls, check_if_config_changed_interval: YAML) -> set[str]:  # type: ignore[misc] # noqa: E501
+    def _reload_check_if_config_changed_interval(
+        cls, check_if_config_changed_interval: YAML
+    ) -> set[str]:  # type: ignore[misc] # noqa: E501
         """
         Reload the interval of time between executing the task to send check if config changed.
 
@@ -829,7 +888,8 @@ class SettingsAccessor:
         CHECK_IF_CONFIG_CHANGED_INTERVAL_CHANGED: Final[bool] = bool(
             cls._most_recent_yaml is None
             or "CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS" not in cls._settings
-            or check_if_config_changed_interval != cls._most_recent_yaml["check-if-config-changed-interval"]  # noqa: COM812, E501
+            or check_if_config_changed_interval
+            != cls._most_recent_yaml["check-if-config-changed-interval"]  # noqa: COM812, E501
         )
         if not CHECK_IF_CONFIG_CHANGED_INTERVAL_CHANGED:
             return set()
@@ -841,7 +901,9 @@ class SettingsAccessor:
         return {"check-if-config-changed-interval"}
 
     @classmethod
-    def _get_scalar_value(cls, config_setting_name: str, yaml_settings_tree: YAML) -> str | None:  # type: ignore[misc] # noqa: E501
+    def _get_scalar_value(
+        cls, config_setting_name: str, yaml_settings_tree: YAML
+    ) -> str | None:  # type: ignore[misc] # noqa: E501
         single_yaml_scalar_setting: YAML | None = yaml_settings_tree.get(
             config_setting_name,
             None,
@@ -893,7 +955,9 @@ class SettingsAccessor:
         raise NotImplementedError
 
     @classmethod
-    def _get_mapping_value(cls, partial_config_setting_name: str, partial_yaml_settings_tree: YAML) -> str | None:  # type: ignore[misc] # noqa: E501
+    def _get_mapping_value(
+        cls, partial_config_setting_name: str, partial_yaml_settings_tree: YAML
+    ) -> str | None:  # type: ignore[misc] # noqa: E501
         if ":" not in partial_config_setting_name:
             return cls._get_scalar_value(
                 partial_config_setting_name,
@@ -929,7 +993,9 @@ class SettingsAccessor:
         return cls._get_mapping_value(config_setting_name, current_yaml)
 
     @classmethod
-    def _set_scalar_or_sequence_value(cls, config_setting_name: str, new_config_setting_value: str, yaml_settings_tree: YAML) -> YAML:  # type: ignore[misc] # noqa: E501
+    def _set_scalar_or_sequence_value(
+        cls, config_setting_name: str, new_config_setting_value: str, yaml_settings_tree: YAML
+    ) -> YAML:  # type: ignore[misc] # noqa: E501
         if config_setting_name not in yaml_settings_tree:
             yaml_settings_tree[config_setting_name] = new_config_setting_value
             return yaml_settings_tree
@@ -957,7 +1023,12 @@ class SettingsAccessor:
         raise RuntimeError(UNKNOWN_CONFIG_TYPE_MESSAGE)
 
     @classmethod
-    def _set_mapping_value(cls, partial_config_setting_name: str, new_config_setting_value: str, partial_yaml_settings_tree: YAML) -> YAML:  # type: ignore[misc] # noqa: E501
+    def _set_mapping_value(
+        cls,
+        partial_config_setting_name: str,
+        new_config_setting_value: str,
+        partial_yaml_settings_tree: YAML,
+    ) -> YAML:  # type: ignore[misc] # noqa: E501
         if ":" not in partial_config_setting_name:
             return cls._set_scalar_or_sequence_value(
                 partial_config_setting_name,
@@ -992,7 +1063,12 @@ class SettingsAccessor:
         )
 
     @classmethod
-    def _set_required_value_from_validator(cls, partial_config_setting_name: str | None, new_config_setting_value: str, yaml_validator: strictyaml.Validator) -> "NestedMapping | str | Sequence[str]":  # type: ignore[misc] # noqa: E501
+    def _set_required_value_from_validator(
+        cls,
+        partial_config_setting_name: str | None,
+        new_config_setting_value: str,
+        yaml_validator: strictyaml.Validator,
+    ) -> "NestedMapping | str | Sequence[str]":  # type: ignore[misc] # noqa: E501
         VALIDATOR_IS_SCALAR_TYPE: Final[bool] = bool(
             isinstance(yaml_validator, strictyaml.ScalarValidator)
             and (partial_config_setting_name is None or ":" not in partial_config_setting_name)  # noqa: COM812
@@ -1007,8 +1083,7 @@ class SettingsAccessor:
         if VALIDATOR_IS_SEQUENCE_TYPE:
             return [
                 sequence_value.strip()
-                for sequence_value
-                in new_config_setting_value.strip().split(",")
+                for sequence_value in new_config_setting_value.strip().split(",")
             ]
 
         VALIDATOR_IS_MAPPING_TYPE: Final[bool] = bool(
@@ -1040,7 +1115,9 @@ class SettingsAccessor:
         raise RuntimeError(UNKNOWN_CONFIG_TYPE_MESSAGE)
 
     @classmethod
-    async def _public_assign_single_raw_value(cls, config_setting_name: str, new_config_setting_value: str) -> None:  # noqa: E501
+    async def _public_assign_single_raw_value(
+        cls, config_setting_name: str, new_config_setting_value: str
+    ) -> None:  # noqa: E501
         # noinspection GrazieInspection
         """Set the value of a single configuration setting within settings tree hierarchy."""
         current_yaml: YAML | None = cls._most_recent_yaml
@@ -1065,7 +1142,9 @@ class SettingsAccessor:
         await (await utils.get_settings_file_path()).write_text(current_yaml.as_yaml())
 
     @classmethod
-    def _remove_value(cls, partial_config_setting_name: str, partial_yaml_settings_tree: YAML) -> YAML:  # type: ignore[misc] # noqa: E501
+    def _remove_value(
+        cls, partial_config_setting_name: str, partial_yaml_settings_tree: YAML
+    ) -> YAML:  # type: ignore[misc] # noqa: E501
         if ":" not in partial_config_setting_name:
             del partial_yaml_settings_tree[partial_config_setting_name]
             return partial_yaml_settings_tree

@@ -161,15 +161,8 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
         except (GuildDoesNotExistError, ApplicantRoleDoesNotExistError):
             return set()
 
-        return {
-            discord.OptionChoice(
-                name=(
-                    f"@{member.name}"
-                    if not ctx.value or ctx.value.startswith("@")
-                    else member.name
-                ),
-                value=str(member.id),
-            )
+        members: set[discord.Member] = {
+            member
             for member in main_guild.members
             if not member.bot and applicant_role not in member.roles
         }

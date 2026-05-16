@@ -159,10 +159,10 @@ class TeXBotBaseCog(Cog):
             )
             construct_error_message += f"\n`{message}`"
 
-                construct_error_message = (
-                    f"**Contact a {non_fatal_committee_mention} member, "
-                    f"referencing error code: {error_code}**\n"
-                ) + construct_error_message
+            construct_error_message = (
+                f"**Contact a {non_fatal_committee_mention} member, "
+                f"referencing error code: {error_code}**\n"
+            ) + construct_error_message
 
             if interaction_name in cls.ERROR_ACTIVITIES:
                 construct_error_message += (
@@ -179,8 +179,8 @@ class TeXBotBaseCog(Cog):
             if message:
                 construct_error_message += f"\n`{
                     re.sub(
-                        r"<([@&#]?|(@[&#])?)\d+>",
-                        lambda match: f"`{match.group(0)!s}`",
+                        r'<([@&#]?|(@[&#])?)\d+>',
+                        lambda match: f'`{match.group(0)!s}`',
                         message.strip(),
                     )
                 }`"

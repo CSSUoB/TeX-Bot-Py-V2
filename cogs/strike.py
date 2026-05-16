@@ -285,33 +285,32 @@ class BaseStrikeCog(TeXBotBaseCog):
             ),
         )
 
-        match button_interaction.data["custom_id"]:  # type: ignore[index, typeddict-item]
-            case "no_strike_member":
-                await button_interaction.edit_original_response(
-                    content=(
-                        "Aborted performing "
-                        f"{self.SUGGESTED_ACTIONS[actual_strike_amount]} action "
-                        f"on {strike_user.mention}."
-                    ),
-                    view=None,
-                )
+        if button_interaction.data["custom_id"] == "no_strike_member":  # type: ignore[index, typeddict-item]
+            await button_interaction.edit_original_response(
+                content=(
+                    "Aborted performing "
+                    f"{self.SUGGESTED_ACTIONS[actual_strike_amount]} action "
+                    f"on {strike_user.mention}."
+                ),
+                view=None,
+            )
+            return
 
         if button_interaction.data["custom_id"] == "yes_strike_member":  # type: ignore[index, typeddict-item]
             await perform_moderation_action(
                 strike_user, actual_strike_amount, committee_member=interaction_user
             )
 
-                await button_interaction.edit_original_response(
-                    content=(
-                        "Successfully performed "
-                        f"{self.SUGGESTED_ACTIONS[actual_strike_amount]} "
-                        f"action on {strike_user.mention}."
-                    ),
-                    view=None,
-                )
+            await button_interaction.edit_original_response(
+                content=(
+                    f"Successfully performed {self.SUGGESTED_ACTIONS[actual_strike_amount]} "
+                    f"action on {strike_user.mention}."
+                ),
+                view=None,
+            )
+            return
 
-            case _:
-                raise ValueError
+        raise ValueError
 
     async def _confirm_increase_strike(
         self,
@@ -651,8 +650,7 @@ class ManualModerationCog(BaseStrikeCog):
                 await out_of_sync_ban_confirmation_message.delete()
                 return
 
-                case _:
-                    raise ValueError
+            raise ValueError
 
         try:
             confirmation_message: discord.Message = await confirmation_message_channel.send(
@@ -726,18 +724,16 @@ class ManualModerationCog(BaseStrikeCog):
             if not interaction_user:
                 raise StrikeTrackingError
 
-                await self._confirm_increase_strike(
-                    message_sender_component=ChannelMessageSender(confirmation_message_channel),
-                    interaction_user=interaction_user,
-                    strike_user=strike_user,
-                    member_strikes=member_strikes,
-                    button_callback_channel=confirmation_message_channel,
-                    perform_action=False,
-                )
-                # NOTE: Message deletion is performed within self._confirm_increase_strike()
+            await self._confirm_increase_strike(
+                message_sender_component=ChannelMessageSender(confirmation_message_channel),
+                interaction_user=interaction_user,
+                strike_user=strike_user,
+                member_strikes=member_strikes,
+                button_callback_channel=confirmation_message_channel,
+                perform_action=False,
+            )
 
-            case _:
-                raise ValueError
+        raise ValueError
 
     @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
@@ -751,8 +747,6 @@ class ManualModerationCog(BaseStrikeCog):
 
         if not after.timed_out or before.timed_out == after.timed_out:
             return
-
-        mute_action_type: KnownModerationActions = discord.AuditLogAction.member_update
 
         audit_log_entry: discord.AuditLogEntry
         async for audit_log_entry in main_guild.audit_logs(limit=5):
@@ -822,17 +816,18 @@ class StrikeCommandsCog(BaseStrikeCog):
         except GuildDoesNotExistError:
             return set()
 
+        members: set[discord.Member] = {
+            member for member in main_guild.members if not member.bot
+        }
+
+        if not ctx.value or re.fullmatch(r"\A@.*\Z", ctx.value):
+            return {
+                discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
+                for member in members
+            }
+
         return {
-            discord.OptionChoice(
-                name=(
-                    f"@{member.name}"
-                    if not ctx.value or re.fullmatch(r"\A@.*\Z", ctx.value)
-                    else member.name
-                ),
-                value=str(member.id),
-            )
-            for member in main_guild.members
-            if not member.bot
+            discord.OptionChoice(name=member.name, value=str(member.id)) for member in members
         }
 
     @discord.slash_command(

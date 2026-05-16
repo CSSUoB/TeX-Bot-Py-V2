@@ -22,7 +22,11 @@ class ErrorCodeCouldNotBeIdentifiedError(BaseTeXBotError, Exception):
         return "The error code could not be retrieved from the given error."
 
     @override
-    def __init__(self, message: str | None = None, other_error: Exception | type[Exception] | None = None) -> None:  # noqa: E501
+    def __init__(
+        self,
+        message: str | None = None,
+        other_error: Exception | type[Exception] | None = None,
+    ) -> None:  # noqa: E501
         """Initialize an exception for a non-existent error code."""
         self.other_error: Exception | type[Exception] | None = other_error
 

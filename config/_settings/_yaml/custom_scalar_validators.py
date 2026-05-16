@@ -40,7 +40,7 @@ class LogLevelValidator(strictyaml.ScalarValidator):  # type: ignore[misc]
 
         if val not in LogLevels:
             chunk.expecting_but_found(
-                "when expecting a valid log-level " f"(one of: '{"', '".join(LogLevels)}')",
+                f"when expecting a valid log-level (one of: '{"', '".join(LogLevels)}')",
             )
             raise RuntimeError
 
@@ -199,7 +199,15 @@ class BoundedFloatValidator(strictyaml.Float):  # type: ignore[misc]
 
 class TimeDeltaValidator(strictyaml.ScalarValidator):  # type: ignore[misc]
     @override
-    def __init__(self, *, seconds: Literal[True] = True, minutes: bool = True, hours: bool = True, days: bool = False, weeks: bool = False) -> None:  # noqa: E501
+    def __init__(
+        self,
+        *,
+        seconds: Literal[True] = True,
+        minutes: bool = True,
+        hours: bool = True,
+        days: bool = False,
+        weeks: bool = False,
+    ) -> None:  # noqa: E501
         regex_matcher: str = r"\A"
 
         time_resolution_name: str

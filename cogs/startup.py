@@ -8,7 +8,6 @@ from discord_logging.handler import DiscordHandler
 
 import utils
 from config import settings
-from config.constants import DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME
 from exceptions import (
     ArchivistRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
@@ -36,11 +35,10 @@ logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 class StartupCog(TeXBotBaseCog):
     """Cog class that defines additional code to execute upon startup."""
 
-    def _setup_discord_log_channel(self) -> None:
-        NO_DISCORD_LOG_CHANNEL_SET_MESSAGE: Final[str] = (
-            "Discord log-channel webhook-URL was not set, "
-            "so error logs will not be sent to the Discord log-channel."
-        )
+    @TeXBotBaseCog.listener()
+    async def on_ready(self) -> None:
+        """
+        Populate the shortcut accessors of TeX-Bot after initialisation.
 
         Shortcut accessors should only be populated once TeX-Bot is ready to make API requests.
         """
@@ -59,42 +57,7 @@ class StartupCog(TeXBotBaseCog):
                 logging.Formatter("{levelname} | {message}", style="{")
             )
 
-        if len(discord_logging_handlers) == 1:
-            existing_discord_logging_handler: DiscordHandler = discord_logging_handlers.pop()
-
-            logger.removeHandler(existing_discord_logging_handler)
-
-            if settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
-                new_discord_logging_handler: DiscordHandler = DiscordHandler(
-                    (
-                        existing_discord_logging_handler.name
-                        if existing_discord_logging_handler.name != DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME  # noqa: E501
-                        else (
-                            self.bot.user.name
-                            if self.bot.user
-                            else DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME
-                        )
-                    ),
-                    settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
-                    avatar_url=(
-                        self.bot.user.avatar.url
-                        if self.bot.user and self.bot.user.avatar
-                        else None
-                    ),
-                )
-                new_discord_logging_handler.setLevel(existing_discord_logging_handler.level)
-                new_discord_logging_handler.setFormatter(
-                    existing_discord_logging_handler.formatter,
-                )
-                new_discord_logging_handler.avatar_url = new_discord_logging_handler.avatar_url
-
-                logger.addHandler(new_discord_logging_handler)
-
-            else:
-                logger.warning(NO_DISCORD_LOG_CHANNEL_SET_MESSAGE)
-
-        elif len(discord_logging_handlers) == 0 or not settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:  # noqa: E501
-            logger.warning(NO_DISCORD_LOG_CHANNEL_SET_MESSAGE)
+            logger.addHandler(discord_logging_handler)
 
         else:
             logger.warning(
@@ -102,7 +65,6 @@ class StartupCog(TeXBotBaseCog):
                 "so error logs will not be sent to the Discord log channel."
             )
 
-    async def _initialise_main_guild(self) -> None:
         try:
             main_guild: discord.Guild | None = self.bot.main_guild
         except GuildDoesNotExistError:
@@ -129,13 +91,7 @@ class StartupCog(TeXBotBaseCog):
                 utils.generate_invite_url(
                     self.bot.application_id, settings["_DISCORD_MAIN_GUILD_ID"]
                 ),
-                repr("DM"),
             )
-
-        await self.bot.close()
-
-    async def _check_all_shortcut_accessors(self) -> None:
-        main_guild: discord.Guild = self.bot.main_guild
 
         if not discord.utils.get(main_guild.roles, name="Committee"):
             logger.warning(CommitteeRoleDoesNotExistError())
@@ -192,7 +148,5 @@ class StartupCog(TeXBotBaseCog):
                         repr("DM"),
                     )
                 await self.bot.close()
-
-        await self._check_all_shortcut_accessors()
 
         logger.info("Ready! Logged in as %s", self.bot.user)
