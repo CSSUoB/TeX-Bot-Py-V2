@@ -8,7 +8,19 @@ import certifi
 import discord
 
 from .command_checks import CommandChecks
+from .context_managers import (
+    EnvVariableDeleter,
+    FileTemporaryDeleter,
+    TemporarySettingsKeyReplacer,
+)
 from .message_sender_components import MessageSavingSenderComponent
+from .random_generators import (
+    BaseRandomEnvVariableValueGenerator,
+    RandomDiscordBotTokenGenerator,
+    RandomDiscordGuildIDGenerator,
+    RandomDiscordLogChannelWebhookURLGenerator,
+    RandomOrganisationIDGenerator,
+)
 from .suppress_traceback import SuppressTraceback
 from .tex_bot import TeXBot
 from .tex_bot_base_cog import TeXBotBaseCog
@@ -21,13 +33,21 @@ if TYPE_CHECKING:
 __all__: "Sequence[str]" = (
     "GLOBAL_SSL_CONTEXT",
     "AllChannelTypes",
+    "BaseRandomEnvVariableValueGenerator",
     "CommandChecks",
+    "EnvVariableDeleter",
+    "FileTemporaryDeleter",
     "MessageSavingSenderComponent",
+    "RandomDiscordBotTokenGenerator",
+    "RandomDiscordGuildIDGenerator",
+    "RandomDiscordLogChannelWebhookURLGenerator",
+    "RandomOrganisationIDGenerator",
     "SuppressTraceback",
     "TeXBot",
     "TeXBotApplicationContext",
     "TeXBotAutocompleteContext",
     "TeXBotBaseCog",
+    "TemporarySettingsKeyReplacer",
     "generate_invite_url",
     "is_member_inducted",
     "is_running_in_async",
