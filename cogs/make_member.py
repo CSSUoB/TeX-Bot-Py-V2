@@ -85,7 +85,8 @@ class MakeMemberBaseCog(TeXBotBaseCog):
                 False,
                 (
                     ":information_source: No changes made. "
-                    "You're already a member - why are you trying this again? :information_source:"
+                    "You're already a member - why are you trying this again? "
+                    ":information_source:"
                 ),
             )
 
@@ -280,6 +281,7 @@ class MakeMemberModalActual(Modal, MakeMemberBaseCog):
 class OpenMemberVerifyModalView(View):
     """A discord.View containing a button to open a new member verification modal."""
 
+    @override
     def __init__(self, bot: "TeXBot") -> None:
         super().__init__(timeout=None)
         self.bot = bot
