@@ -321,7 +321,7 @@ class MakeMemberModalCommandCog(MakeMemberBaseCog):
 
     async def _open_make_new_member_modal(
         self,
-        button_callback_channel: discord.TextChannel | discord.DMChannel,
+        button_callback_channel: discord.TextChannel,
     ) -> None:
         await button_callback_channel.send(
             content="Click below to verify membership!",
@@ -346,6 +346,13 @@ class MakeMemberModalCommandCog(MakeMemberBaseCog):
         The "send-make-member-modal" command sends a message with a button that allows users
         to open the make member modal
         """
+        if not isinstance(ctx.channel, (discord.TextChannel)):
+            await ctx.respond(
+                content="This command can only be used in text channels.",
+                ephemeral=True,
+            )
+            return
+
         await self._open_make_new_member_modal(
             button_callback_channel=ctx.channel,
         )
