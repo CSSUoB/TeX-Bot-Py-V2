@@ -16,10 +16,10 @@ if TYPE_CHECKING:
 __all__: "Sequence[str]" = ("SettingsAccessor", "get_settings_file_path")
 
 
+import datetime
 import logging
 import re
 from collections.abc import Iterable, Mapping
-from datetime import timedelta
 from typing import TYPE_CHECKING
 
 import strictyaml
@@ -641,7 +641,7 @@ class SettingsAccessor:
         if not STATS_COMMAND_LOOKBACK_DAYS_CHANGED:
             return set()
 
-        cls._settings["STATS_COMMAND_LOOKBACK_DAYS"] = timedelta(
+        cls._settings["STATS_COMMAND_LOOKBACK_DAYS"] = datetime.timedelta(
             days=stats_command_lookback_days.data,
         )
 
