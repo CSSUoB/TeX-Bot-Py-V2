@@ -1,21 +1,31 @@
-
 from typing import TYPE_CHECKING
 
 import strictyaml
+
+from .custom_scalar_validators import (
+    BoundedFloatValidator,
+    CustomBoolValidator,
+    DiscordSnowflakeValidator,
+    DiscordWebhookURLValidator,
+    LogLevelValidator,
+    SendIntroductionRemindersFlagValidator,
+    TimeDeltaValidator,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
     from typing import Final
 
+    from config.constants import (
+        LogLevels,
+        SendIntroductionRemindersFlagType,
+    )
+
 
 __all__: "Sequence[str]" = ()
 
 from config.constants import (
-    DEFAULT_CHECK_IF_CONFIG_CHANGED_INTERVAL,
     DEFAULT_CONSOLE_LOG_LEVEL,
-    DEFAULT_DISCORD_LOGGING_LOG_LEVEL,
-    DEFAULT_MEMBERS_LIST_ID_FORMAT,
-    DEFAULT_MESSAGE_LOCALE_CODE,
     DEFAULT_PING_COMMAND_EASTER_EGG_PROBABILITY,
     DEFAULT_SEND_GET_ROLES_REMINDERS_DELAY,
     DEFAULT_SEND_GET_ROLES_REMINDERS_ENABLED,
@@ -27,9 +37,6 @@ from config.constants import (
     DEFAULT_STATS_COMMAND_LOOKBACK_DAYS,
     DEFAULT_STRIKE_COMMAND_TIMEOUT_DURATION,
     DEFAULT_STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION,
-    MESSAGES_LOCALE_CODES,
-    LogLevels,
-    SendIntroductionRemindersFlagType,
 )
 
 _DEFAULT_CONSOLE_LOGGING_SETTINGS: "Final[Mapping[str, LogLevels]]" = {
@@ -70,11 +77,55 @@ _DEFAULT_REMINDERS_SETTINGS: "Final[Mapping[str, Mapping[str, bool | str] | Mapp
 }
 
 
-SETTINGS_YAML_SCHEMA: "Final[strictyaml.Validator]" = strictyaml.Map(
-    
-)
-
-
-
-
-
+SETTINGS_YAML_SCHEMA: "Final[strictyaml.Validator]" = strictyaml.Map({
+    strictyaml.Optional("logging", default=_DEFAULT_LOGGING_SETTINGS): strictyaml.Map({
+        strictyaml.Optional("console", default=_DEFAULT_CONSOLE_LOGGING_SETTINGS): strictyaml.Map({
+            strictyaml.Optional("log-level", default=DEFAULT_CONSOLE_LOG_LEVEL): LogLevelValidator(),
+        }),
+        strictyaml.Optional("discord-channel", default=_DEFAULT_CONSOLE_LOGGING_SETTINGS): strictyaml.Map({
+            "webhook-url": DiscordWebhookURLValidator(),
+            strictyaml.Optional("log-level", default=DEFAULT_CONSOLE_LOG_LEVEL): LogLevelValidator(),
+        }),
+    }),
+    "discord": strictyaml.Map({
+        "bot-token": strictyaml.Regex(
+            r"\A(?!.*__.*)(?!.*--.*)(?:([A-Za-z0-9]{24,26})\.([A-Za-z0-9]{6})\.([A-Za-z0-9_-]{27,38}))\Z",
+        ),
+        "main-guild-id": DiscordSnowflakeValidator(),
+    }),
+    "community-group": strictyaml.Map({
+        strictyaml.Optional("full-name"): strictyaml.Regex(r"\A.{1,50}\Z"),
+        strictyaml.Optional("short-name"): strictyaml.Regex(r"\A(?!.*['&!?:,.#%\"-]['&!?:,.#%\"-].*)(?:[A-Za-z0-9'&!?:,.#%\"-]+)\Z",),
+        "links": strictyaml.Map({
+            strictyaml.Optional("purchase-membership"): strictyaml.Url(),
+            strictyaml.Optional("membership-perks"): strictyaml.Url(),
+            strictyaml.Optional("moderation-policy"): strictyaml.Url(),
+        }),
+        "msl": strictyaml.Map({
+            strictyaml.Optional("organisation-id"): strictyaml.Regex(r"\A\d{4,5}\Z"),
+            strictyaml.Optional("auth-cookie"): strictyaml.Regex(r"\A[\w-]{512,1024}\Z"),
+        }),
+    }),
+    strictyaml.Optional("commands", default=_DEFAULT_COMMANDS_SETTINGS): strictyaml.Map({
+        strictyaml.Optional("ping", default=_DEFAULT_PING_COMMAND_SETTINGS): strictyaml.Map({
+            strictyaml.Optional("easter-egg-probability", default=DEFAULT_PING_COMMAND_EASTER_EGG_PROBABILITY): BoundedFloatValidator(0, 1),
+        }),
+        strictyaml.Optional("stats", default=_DEFAULT_STATS_COMMAND_SETTINGS): strictyaml.Map({
+            strictyaml.Optional("lookback-days", default=DEFAULT_STATS_COMMAND_LOOKBACK_DAYS): BoundedFloatValidator(5, 1826),
+            strictyaml.Optional("displayed-roles", default=DEFAULT_STATS_COMMAND_DISPLAYED_ROLES): strictyaml.UniqueSeq(strictyaml.Str()),
+        }),
+        strictyaml.Optional("strike", default=_DEFAULT_STRIKE_COMMAND_SETTINGS): strictyaml.Map({
+            strictyaml.Optional("performed-manually-warning-location", default=DEFAULT_STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION): strictyaml.Str(),
+        }),
+    }),
+    strictyaml.Optional("reminders", default=_DEFAULT_REMINDERS_SETTINGS): strictyaml.Map({
+        strictyaml.Optional("send-introduction-reminders", default=_DEFAULT_SEND_INTRODUCTION_REMINDERS_SETTINGS): strictyaml.Map({
+            strictyaml.Optional("enabled", default=DEFAULT_SEND_INTRODUCTION_REMINDERS_ENABLED): SendIntroductionRemindersFlagValidator(),
+            strictyaml.Optional("delay", default=DEFAULT_SEND_INTRODUCTION_REMINDERS_DELAY): TimeDeltaValidator(minutes=True, hours=True, days=True),
+            strictyaml.Optional("interval", default=DEFAULT_SEND_INTRODUCTION_REMINDERS_INTERVAL): TimeDeltaValidator(minutes=True, hours=True, days=True),
+        }),
+        strictyaml.Optional("send-get-roles-reminders", default=_DEFAULT_SEND_GET_ROLES_REMINDERS_SETTINGS): strictyaml.Map({
+            "enabled": CustomBoolValidator(),
+        }),
+    }),
+})

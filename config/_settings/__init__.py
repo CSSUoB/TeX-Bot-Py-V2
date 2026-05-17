@@ -6,11 +6,11 @@ These values are used to configure the functionality of the bot at run-time.
 """
 
 import logging
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from logging import Logger
-    from typing import Final
+    from typing import ClassVar, Final
 
     from strictyaml import YAML
 
@@ -25,8 +25,8 @@ class SettingsAccessor:
     Settings values can be accessed via key (like a dictionary) or via class attributes.
     """
 
-    _settings: ClassVar[dict[str, object]] = {}
-    _most_recent_yaml: ClassVar["YAML | None"] = None
+    _settings: "ClassVar[dict[str, object]]" = {}
+    _most_recent_yaml: "ClassVar[YAML | None]" = None
 
     @classmethod
     def _get_invalid_settings_key_message(cls, item: str) -> str:
@@ -50,8 +50,3 @@ class SettingsAccessor:
         If the setting does not exist, it will be created.
         """
         return
-
-
-
-
-
