@@ -1,7 +1,7 @@
-from typing import TYPE_CHECKING
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
     from typing import Any, ClassVar, Final
 
 __all__: "Sequence[str]" = ("MessagesAccessor",)
@@ -24,7 +24,7 @@ class MessagesAccessor:
         """Return the message to state that the given message ID is invalid."""
         return f"{item!r} is not a valid message ID."
 
-    def __getattr__(self, item: str) -> "Any":  # type: ignore[misc]  # noqa: ANN401
+    def __getattr__(self, item: str) -> str | set[str] | Sequence[str]:
         """Retrieve message(s) value by attribute lookup."""
         MISSING_ATTRIBUTE_MESSAGE: Final[str] = (
             f"{type(self).__name__!r} object has no attribute {item!r}"
@@ -42,23 +42,23 @@ class MessagesAccessor:
             raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
         if item not in self._messages:
-            INVALID_MESSAGE_ID_MESSAGE: Final[str] = self.format_invalid_message_id_message(
+            INVALID_MESSAGE_ID_MESSAGE: Final[str] = self._format_invalid_message_id_message(
                 item,
             )
             raise AttributeError(INVALID_MESSAGE_ID_MESSAGE)
 
         return self._messages[item]
 
-    def __getitem__(self, item: str) -> "Any":  # type: ignore[misc]  # noqa: ANN401
+    def __getitem__(self, item: str) -> str | set[str] | Sequence[str]:
         """Retrieve message(s) value by key lookup."""
         attribute_not_exist_error: AttributeError
         try:
-            return getattr(self, item)
+            return cast(str, getattr(self, item))
         except AttributeError as attribute_not_exist_error:
             key_error_message: str = item
 
             ERROR_WAS_FROM_INVALID_KEY_NAME: Final[bool] = (
-                self.format_invalid_message_id_message(item)
+                self._format_invalid_message_id_message(item)
                 in str(
                     attribute_not_exist_error,
                 )
@@ -86,7 +86,6 @@ class MessagesAccessor:
         )
 
         try:
-            # noinspection PyTypeChecker
             messages_locale_file_path: AsyncPath = await anext(
                 path
                 async for path in (
@@ -107,9 +106,7 @@ class MessagesAccessor:
             if not hasattr(raw_messages, "__getitem__"):
                 raise TypeError
 
-            # noinspection PyUnresolvedReferences
             cls._messages["WELCOME_MESSAGES"] = set(raw_messages["welcome-messages"])
-            # noinspection PyUnresolvedReferences
             cls._messages["OPT_IN_ROLES_SELECTORS"] = tuple(
                 raw_messages["opt-in-roles-selectors"],
             )
