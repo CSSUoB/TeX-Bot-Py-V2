@@ -1,0 +1,3 @@
+class YAMLChunk:
+    contents: str
+    def expecting_but_found(self, expecting: str, found: str = ...) -> None: ...
