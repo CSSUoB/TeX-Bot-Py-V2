@@ -16,13 +16,9 @@ if TYPE_CHECKING:
     from typing import Final
 
 
-__all__: "Sequence[str]" = (
-    "settings",
-)
+__all__: "Sequence[str]" = ("settings",)
 
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
-settings: Final[SettingsAccessor] = SettingsAccessor()
-
-
+settings: "Final[SettingsAccessor]" = SettingsAccessor()

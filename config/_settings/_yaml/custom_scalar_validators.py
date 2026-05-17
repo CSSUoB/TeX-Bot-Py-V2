@@ -13,7 +13,6 @@ __all__: Sequence[str] = (
 
 
 import datetime
-import functools
 import math
 import re
 from typing import TYPE_CHECKING, override
@@ -29,7 +28,6 @@ from config.constants import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
     from typing import Final, Literal, NoReturn
 
     from strictyaml.yamllocation import YAMLChunk
@@ -46,7 +44,7 @@ class LogLevelValidator(strictyaml.ScalarValidator):
 
         if val not in LogLevels:
             chunk.expecting_but_found(
-                "when expecting a valid log-level " f"(one of: '{"', '".join(LogLevels)}')",
+                f"when expecting a valid log-level (one of: '{"', '".join(LogLevels)}')",
             )
             raise RuntimeError
 
@@ -134,7 +132,6 @@ class RegexMatcher(strictyaml.ScalarValidator):
 
         return chunk.contents  # type: ignore[no-any-return]
 
-
     @override
     def to_yaml(self, data: object) -> str:
         self.should_be_string(data, self.MATCHING_MESSAGE)
@@ -201,7 +198,15 @@ class BoundedFloatValidator(strictyaml.Float):
 
 class TimeDeltaValidator(strictyaml.ScalarValidator):
     @override
-    def __init__(self, *, seconds: "Literal[True]" = True, minutes: bool = True, hours: bool = True, days: bool = False, weeks: bool = False) -> None:  # noqa: E501
+    def __init__(
+        self,
+        *,
+        seconds: "Literal[True]" = True,
+        minutes: bool = True,
+        hours: bool = True,
+        days: bool = False,
+        weeks: bool = False,
+    ) -> None:
         regex_matcher: str = r"\A"
 
         time_resolution_name: str
@@ -243,11 +248,12 @@ class TimeDeltaValidator(strictyaml.ScalarValidator):
 
     @override
     def validate_scalar(self, chunk: "YAMLChunk") -> datetime.timedelta:
-        chunk_error_func: Callable[[], NoReturn] = functools.partial(
-            chunk.expecting_but_found,
-            expecting="when expecting a delay/interval string",
-            found="found non-matching string",
-        )
+        def chunk_error_func() -> "NoReturn":
+            chunk.expecting_but_found(
+                expecting="when expecting a delay/interval string",
+                found="found non-matching string",
+            )
+            raise RuntimeError
 
         match: re.Match[str] | None = self.regex_matcher.fullmatch(chunk.contents)
         if match is None:
@@ -264,7 +270,6 @@ class TimeDeltaValidator(strictyaml.ScalarValidator):
         except ValueError:
             chunk_error_func()
 
-    
     @override
     def to_yaml(self, data: object) -> str:
         if strictyaml_utils.is_string(data):
@@ -316,7 +321,6 @@ class SendIntroductionRemindersFlagValidator(strictyaml.ScalarValidator):
             return False
 
         return val  # type: ignore[return-value]
-
 
     @override
     def to_yaml(self, data: object) -> str:
