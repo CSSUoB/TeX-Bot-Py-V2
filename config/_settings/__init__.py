@@ -56,7 +56,7 @@ class SettingsAccessor:
         """Return the message to state that the given settings key is invalid."""
         return f"{item!r} is not a valid settings key."
 
-    def __getattr__(self, item: str) -> "Any":  # type: ignore[misc]  # noqa: ANN401
+    def __getattr__(self, item: str) -> "Any":  # type: ignore[explicit-any]  # noqa: ANN401
         """Retrieve settings value by attribute lookup."""
         MISSING_ATTRIBUTE_MESSAGE: Final[str] = (
             f"{type(self).__name__!r} object has no attribute {item!r}"
@@ -96,9 +96,8 @@ class SettingsAccessor:
 
         return self._settings[item]
 
-    def __getitem__(self, item: str) -> "Any":  # type: ignore[misc]  # noqa: ANN401
+    def __getitem__(self, item: str) -> "Any":  # type: ignore[explicit-any]  # noqa: ANN401
         """Retrieve settings value by key lookup."""
-        attribute_not_exist_error: AttributeError
         try:
             return getattr(self, item)
         except AttributeError as attribute_not_exist_error:
@@ -201,7 +200,7 @@ class SettingsAccessor:
         cls._most_recent_yaml = current_yaml
 
     @classmethod
-    def _reload_console_logging(cls, console_logging_settings: "YAML") -> set[str]:  # type: ignore[misc]
+    def _reload_console_logging(cls, console_logging_settings: "YAML") -> set[str]:
         """
         Reload the console logging configuration with the new given log level.
 
@@ -253,7 +252,7 @@ class SettingsAccessor:
             raise ValueError
 
         console_logging_handler.setLevel(
-            getattr(logging, console_logging_settings["log-level"].data),
+            getattr(logging, str(console_logging_settings["log-level"].data)),
         )
 
         return {"logging:console:log-level"}
@@ -261,7 +260,7 @@ class SettingsAccessor:
     @classmethod
     def _reload_discord_log_channel_logging(
         cls, discord_channel_logging_settings: "YAML | None"
-    ) -> set[str]:  # type: ignore[misc]
+    ) -> set[str]:
         """
         Reload the Discord log channel logging configuration.
 
