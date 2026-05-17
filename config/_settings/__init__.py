@@ -314,7 +314,7 @@ class SettingsAccessor:
             if ONLY_DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED:
                 DISCORD_LOG_CHANNEL_LOG_LEVEL_IS_SAME: Final[bool] = bool(
                     discord_channel_logging_settings["log-level"]
-                    == cls._most_recent_yaml[  # type: ignore[index]
+                    == cls._most_recent_yaml[
                         "logging"
                     ]["discord-channel"]["log-level"]
                 )
@@ -325,7 +325,7 @@ class SettingsAccessor:
                     raise ValueError(LOG_LEVEL_DIDNT_CHANGE_MESSAGE)
 
                 existing_discord_logging_handler.setLevel(
-                    getattr(logging, discord_channel_logging_settings["log-level"].data),  # type: ignore[index]
+                    getattr(logging, discord_channel_logging_settings["log-level"].data),
                 )
                 return {"logging:discord-channel:log-level"}
 
@@ -350,7 +350,6 @@ class SettingsAccessor:
         discord_logging_handler.setLevel(
             getattr(logging, discord_channel_logging_settings["log-level"].data),
         )
-        # noinspection SpellCheckingInspection
         discord_logging_handler.setFormatter(
             logging.Formatter("{levelname} | {message}", style="{"),
         )
@@ -371,7 +370,7 @@ class SettingsAccessor:
         return changed_settings
 
     @classmethod
-    def _reload_discord_bot_token(cls, discord_bot_token: "YAML") -> set[str]:  # type: ignore[misc]
+    def _reload_discord_bot_token(cls, discord_bot_token: "YAML") -> set[str]:
         """
         Reload the Discord bot-token.
 
@@ -390,7 +389,7 @@ class SettingsAccessor:
         return {"discord:bot-token"}
 
     @classmethod
-    def _reload_discord_main_guild_id(cls, discord_main_guild_id: "YAML") -> set[str]:  # type: ignore[misc]
+    def _reload_discord_main_guild_id(cls, discord_main_guild_id: "YAML") -> set[str]:
         """
         Reload the Discord main-guild ID.
 
@@ -409,7 +408,7 @@ class SettingsAccessor:
         return {"discord:main-guild-id"}
 
     @classmethod
-    def _reload_group_full_name(cls, group_full_name: "YAML | None") -> set[str]:  # type: ignore[misc]
+    def _reload_group_full_name(cls, group_full_name: "YAML | None") -> set[str]:
         """
         Reload the community-group full name.
 
@@ -434,7 +433,7 @@ class SettingsAccessor:
         return {"community-group:full-name"}
 
     @classmethod
-    def _reload_group_short_name(cls, group_short_name: "YAML | None") -> set[str]:  # type: ignore[misc]
+    def _reload_group_short_name(cls, group_short_name: "YAML | None") -> set[str]:
         """
         Reload the community-group short name.
 
@@ -461,7 +460,7 @@ class SettingsAccessor:
     @classmethod
     def _reload_purchase_membership_link(
         cls, purchase_membership_link: "YAML | None"
-    ) -> set[str]:  # type: ignore[misc]
+    ) -> set[str]:
         """
         Reload the link to allow people to purchase a membership.
 
@@ -488,7 +487,7 @@ class SettingsAccessor:
         return {"community-group:links:purchase-membership"}
 
     @classmethod
-    def _reload_membership_perks_link(cls, membership_perks_link: "YAML | None") -> set[str]:  # type: ignore[misc]
+    def _reload_membership_perks_link(cls, membership_perks_link: "YAML | None") -> set[str]:
         """
         Reload the link to view the perks of getting a membership to join your community group.
 
@@ -515,7 +514,7 @@ class SettingsAccessor:
         return {"community-group:links:membership-perks"}
 
     @classmethod
-    def _reload_moderation_document_link(cls, moderation_document_link: "YAML") -> set[str]:  # type: ignore[misc]
+    def _reload_moderation_document_link(cls, moderation_document_link: "YAML") -> set[str]:
         """
         Reload the link to view your community group's moderation document.
 
@@ -535,7 +534,7 @@ class SettingsAccessor:
         return {"community-group:links:moderation-document"}
 
     @classmethod
-    def _reload_members_list_url(cls, members_list_url: "YAML") -> set[str]:  # type: ignore[misc]
+    def _reload_members_list_url(cls, members_list_url: "YAML") -> set[str]:
         """
         Reload the url that points to the location of your community group's members-list.
 
@@ -557,7 +556,7 @@ class SettingsAccessor:
     @classmethod
     def _reload_members_list_auth_session_cookie(
         cls, members_list_auth_session_cookie: "YAML"
-    ) -> set[str]:  # type: ignore[misc]
+    ) -> set[str]:
         """
         Reload the auth session cookie used to authenticate to access your members-list.
 
@@ -579,7 +578,7 @@ class SettingsAccessor:
         return {"community-group:members-list:auth-session-cookie"}
 
     @classmethod
-    def _reload_members_list_id_format(cls, members_list_id_format: "YAML") -> set[str]:  # type: ignore[misc]
+    def _reload_members_list_id_format(cls, members_list_id_format: "YAML") -> set[str]:
         """
         Reload the format regex matcher for IDs in your community group's members-list.
 
@@ -601,7 +600,7 @@ class SettingsAccessor:
     @classmethod
     def _reload_ping_command_easter_egg_probability(
         cls, ping_command_easter_egg_probability: "YAML"
-    ) -> set[str]:  # type: ignore[misc]
+    ) -> set[str]:
         """
         Reload the probability that the rarer response will show when using the ping command.
 
@@ -625,7 +624,7 @@ class SettingsAccessor:
     @classmethod
     def _reload_stats_command_lookback_days(
         cls, stats_command_lookback_days: "YAML"
-    ) -> set[str]:  # type: ignore[misc]
+    ) -> set[str]:
         """
         Reload the number of days to lookback for statistics.
 
@@ -649,7 +648,7 @@ class SettingsAccessor:
     @classmethod
     def _reload_stats_command_displayed_roles(
         cls, stats_command_displayed_roles: "YAML"
-    ) -> set[str]:  # type: ignore[misc]
+    ) -> set[str]:
         """
         Reload the set of roles used to display statistics about.
 
@@ -671,7 +670,7 @@ class SettingsAccessor:
     @classmethod
     def _reload_strike_command_timeout_duration(
         cls, strike_command_timeout_duration: "YAML"
-    ) -> set[str]:  # type: ignore[misc]
+    ) -> set[str]:
         """
         Reload the duration to use when applying a timeout action for a strike increase.
 
@@ -693,7 +692,7 @@ class SettingsAccessor:
     @classmethod
     def _reload_strike_performed_manually_warning_location(
         cls, strike_performed_manually_warning_location: "YAML"
-    ) -> set[str]:  # type: ignore[misc]
+    ) -> set[str]:
         """
         Reload the location to send warning messages when strikes are performed manually.
 
@@ -717,7 +716,7 @@ class SettingsAccessor:
         return {"commands:strike:performed-manually-warning-location"}
 
     @classmethod
-    def _reload_messages_locale_code(cls, messages_locale_code: "YAML") -> set[str]:  # type: ignore[misc]
+    def _reload_messages_locale_code(cls, messages_locale_code: "YAML") -> set[str]:
         """
         Reload the selected locale for messages to be sent in.
 
@@ -738,7 +737,7 @@ class SettingsAccessor:
     @classmethod
     def _reload_send_introduction_reminders_enabled(
         cls, send_introduction_reminders_enabled: "YAML"
-    ) -> set[str]:  # type: ignore[misc]
+    ) -> set[str]:
         """
         Reload the flag for whether the "send-introduction-reminders" task is enabled.
 
@@ -762,7 +761,7 @@ class SettingsAccessor:
     @classmethod
     def _reload_send_introduction_reminders_delay(
         cls, send_introduction_reminders_delay: "YAML"
-    ) -> set[str]:  # type: ignore[misc]
+    ) -> set[str]:
         """
         Reload the amount of time to wait before sending introduction-reminders to a user.
 
@@ -788,7 +787,7 @@ class SettingsAccessor:
     @classmethod
     def _reload_send_introduction_reminders_interval(
         cls, send_introduction_reminders_interval: "YAML"
-    ) -> set[str]:  # type: ignore[misc]
+    ) -> set[str]:
         """
         Reload the interval of time between executing the task to send introduction-reminders.
 
@@ -812,7 +811,7 @@ class SettingsAccessor:
     @classmethod
     def _reload_send_get_roles_reminders_enabled(
         cls, send_get_roles_reminders_enabled: "YAML"
-    ) -> set[str]:  # type: ignore[misc]
+    ) -> set[str]:
         """
         Reload the flag for whether the "send-get-roles-reminders" task is enabled.
 
@@ -836,7 +835,7 @@ class SettingsAccessor:
     @classmethod
     def _reload_send_get_roles_reminders_delay(
         cls, send_get_roles_reminders_delay: "YAML"
-    ) -> set[str]:  # type: ignore[misc]
+    ) -> set[str]:
         """
         Reload the amount of time to wait before sending get-roles-reminders to a user.
 
@@ -861,7 +860,7 @@ class SettingsAccessor:
     @classmethod
     def _reload_send_get_roles_reminders_interval(
         cls, send_get_roles_reminders_interval: "YAML"
-    ) -> set[str]:  # type: ignore[misc]
+    ) -> set[str]:
         """
         Reload the interval of time between executing the task to send get-roles-reminders.
 
@@ -885,7 +884,7 @@ class SettingsAccessor:
     @classmethod
     def _reload_check_if_config_changed_interval(
         cls, check_if_config_changed_interval: "YAML"
-    ) -> set[str]:  # type: ignore[misc]
+    ) -> set[str]:
         """
         Reload the interval of time between executing the task to send check if config changed.
 
@@ -909,7 +908,7 @@ class SettingsAccessor:
     @classmethod
     def _get_scalar_value(
         cls, config_setting_name: str, yaml_settings_tree: "YAML"
-    ) -> str | None:  # type: ignore[misc]
+    ) -> str | None:
         single_yaml_scalar_setting: YAML | None = yaml_settings_tree.get(
             config_setting_name,
             None,
@@ -963,7 +962,7 @@ class SettingsAccessor:
     @classmethod
     def _get_mapping_value(
         cls, partial_config_setting_name: str, partial_yaml_settings_tree: "YAML"
-    ) -> str | None:  # type: ignore[misc]
+    ) -> str | None:
         if ":" not in partial_config_setting_name:
             return cls._get_scalar_value(
                 partial_config_setting_name,
@@ -1001,7 +1000,7 @@ class SettingsAccessor:
     @classmethod
     def _set_scalar_or_sequence_value(
         cls, config_setting_name: str, new_config_setting_value: str, yaml_settings_tree: "YAML"
-    ) -> "YAML":  # type: ignore[misc]
+    ) -> "YAML":
         if config_setting_name not in yaml_settings_tree:
             yaml_settings_tree[config_setting_name] = new_config_setting_value
             return yaml_settings_tree
@@ -1034,7 +1033,7 @@ class SettingsAccessor:
         partial_config_setting_name: str,
         new_config_setting_value: str,
         partial_yaml_settings_tree: "YAML",
-    ) -> "YAML":  # type: ignore[misc]
+    ) -> "YAML":
         if ":" not in partial_config_setting_name:
             return cls._set_scalar_or_sequence_value(
                 partial_config_setting_name,
@@ -1074,7 +1073,7 @@ class SettingsAccessor:
         partial_config_setting_name: str | None,
         new_config_setting_value: str,
         yaml_validator: strictyaml.Validator,
-    ) -> "NestedMapping | str | Sequence[str]":  # type: ignore[misc]
+    ) -> "NestedMapping | str | Sequence[str]":
         VALIDATOR_IS_SCALAR_TYPE: Final[bool] = bool(
             isinstance(yaml_validator, strictyaml.ScalarValidator)
             and (partial_config_setting_name is None or ":" not in partial_config_setting_name)
@@ -1150,7 +1149,7 @@ class SettingsAccessor:
     @classmethod
     def _remove_value(
         cls, partial_config_setting_name: str, partial_yaml_settings_tree: "YAML"
-    ) -> "YAML":  # type: ignore[misc]
+    ) -> "YAML":
         if ":" not in partial_config_setting_name:
             del partial_yaml_settings_tree[partial_config_setting_name]
             return partial_yaml_settings_tree
