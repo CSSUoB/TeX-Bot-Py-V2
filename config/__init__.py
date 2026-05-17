@@ -5,33 +5,36 @@ Settings values are imported from the .env file or the current environment varia
 These values are used to configure the functionality of the bot at run-time.
 """
 
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = (
-    "PROJECT_ROOT",
-    "MESSAGES_LOCALE_CODES",
-    "LogLevels",
-    "run_setup",
-    "reload_settings",
-    "load_messages",
-    "settings",
-    "check_for_deprecated_environment_variables",
-    "messages",
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from logging import Logger
+    from typing import Final
+
+__all__: "Sequence[str]" = (
     "CONFIG_SETTINGS_HELPS",
+    "MESSAGES_LOCALE_CODES",
+    "PROJECT_ROOT",
     "ConfigSettingHelp",
-    "get_settings_file_path",
-    "view_single_config_setting_value",
+    "LogLevels",
     "assign_single_config_setting_value",
+    "check_for_deprecated_environment_variables",
+    "get_settings_file_path",
+    "load_messages",
+    "messages",
+    "reload_settings",
     "remove_single_config_setting_value",
+    "run_setup",
+    "settings",
+    "view_single_config_setting_value",
 )
 
 
 import importlib
 import logging
 import os
-from collections.abc import Iterable
-from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING
 
 from asgiref.sync import async_to_sync
 
@@ -46,10 +49,13 @@ from .constants import (
     LogLevels,
 )
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
-settings: Final[_SettingsAccessor] = _SettingsAccessor()
-messages: Final[_MessagesAccessor] = _MessagesAccessor()
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+
+settings: "Final[_SettingsAccessor]" = _SettingsAccessor()
+messages: "Final[_MessagesAccessor]" = _MessagesAccessor()
 
 
 def run_setup() -> None:
@@ -159,7 +165,7 @@ def check_for_deprecated_environment_variables() -> None:
             deprecated_environment_variable_name.upper() in os.environ
             or deprecated_environment_variable_name.lower() in os.environ
             or f"TEX_BOT_{deprecated_environment_variable_name}".upper() in os.environ
-            or f"TEX_BOT_{deprecated_environment_variable_name}".lower() in os.environ  # noqa: COM812
+            or f"TEX_BOT_{deprecated_environment_variable_name}".lower() in os.environ
         )
         if DEPRECATED_ENVIRONMENT_VARIABLE_FOUND:
             raise CONFIGURATION_VIA_ENVIRONMENT_VARIABLES_IS_DEPRECATED_ERROR
@@ -178,7 +184,9 @@ def view_single_config_setting_value(config_setting_name: str) -> str | None:
     return settings._public_view_single_raw_value(config_setting_name=config_setting_name)  # noqa: SLF001
 
 
-async def assign_single_config_setting_value(config_setting_name: str, new_config_setting_value: str) -> None:  # noqa: E501
+async def assign_single_config_setting_value(
+    config_setting_name: str, new_config_setting_value: str
+) -> None:
     # noinspection GrazieInspection
     """Set the value of a single configuration setting within settings tree hierarchy."""
     # noinspection PyProtectedMember

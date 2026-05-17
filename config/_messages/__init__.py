@@ -1,11 +1,14 @@
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = ("MessagesAccessor",)
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import Any, ClassVar, Final
+
+__all__: "Sequence[str]" = ("MessagesAccessor",)
 
 
 import json
 import re
-from typing import Any, ClassVar, Final
 
 from aiopath import AsyncPath
 
@@ -13,25 +16,27 @@ from config.constants import MESSAGES_LOCALE_CODES, PROJECT_ROOT
 
 
 class MessagesAccessor:
-    _messages: ClassVar[dict[str, str | set[str] | Sequence[str]]] = {}
-    _messages_already_loaded: ClassVar[bool] = False
+    _messages: "ClassVar[dict[str, str | set[str] | Sequence[str]]]" = {}
+    _messages_already_loaded: "ClassVar[bool]" = False
 
     @classmethod
     def _format_invalid_message_id_message(cls, item: str) -> str:
         """Return the message to state that the given message ID is invalid."""
         return f"{item!r} is not a valid message ID."
 
-    def __getattr__(self, item: str) -> Any:  # type: ignore[misc]  # noqa: ANN401
+    def __getattr__(self, item: str) -> "Any":  # type: ignore[misc]  # noqa: ANN401
         """Retrieve message(s) value by attribute lookup."""
         MISSING_ATTRIBUTE_MESSAGE: Final[str] = (
             f"{type(self).__name__!r} object has no attribute {item!r}"
         )
 
-        if "_pytest" in item or item in ("__bases__", "__test__"):  # NOTE: Overriding __getattr__() leads to many edge-case issues where external libraries will attempt to call getattr() with peculiar values
+        if (
+            "_pytest" in item or item in ("__bases__", "__test__")
+        ):  # NOTE: Overriding __getattr__() leads to many edge-case issues where external libraries will attempt to call getattr() with peculiar values
             raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
         IN_MESSAGE_KEY_FORMAT: Final[bool] = bool(
-            re.fullmatch(r"\A(?!.*__.*)(?:[A-Z]|[A-Z_][A-Z]|[A-Z_][A-Z][A-Z_]*[A-Z])\Z", item)  # noqa: COM812
+            re.fullmatch(r"\A(?!.*__.*)(?:[A-Z]|[A-Z_][A-Z]|[A-Z_][A-Z][A-Z_]*[A-Z])\Z", item)
         )
         if not IN_MESSAGE_KEY_FORMAT:
             raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
@@ -44,7 +49,7 @@ class MessagesAccessor:
 
         return self._messages[item]
 
-    def __getitem__(self, item: str) -> Any:  # type: ignore[misc]  # noqa: ANN401
+    def __getitem__(self, item: str) -> "Any":  # type: ignore[misc]  # noqa: ANN401
         """Retrieve message(s) value by key lookup."""
         attribute_not_exist_error: AttributeError
         try:
@@ -52,8 +57,11 @@ class MessagesAccessor:
         except AttributeError as attribute_not_exist_error:
             key_error_message: str = item
 
-            ERROR_WAS_FROM_INVALID_KEY_NAME: Final[bool] = self.format_invalid_message_id_message(item) in str(  # noqa: E501
-                attribute_not_exist_error,
+            ERROR_WAS_FROM_INVALID_KEY_NAME: Final[bool] = (
+                self.format_invalid_message_id_message(item)
+                in str(
+                    attribute_not_exist_error,
+                )
             )
             if ERROR_WAS_FROM_INVALID_KEY_NAME:
                 key_error_message = str(attribute_not_exist_error)
@@ -64,7 +72,7 @@ class MessagesAccessor:
     async def _public_load(cls, messages_locale_code: str) -> None:
         if messages_locale_code not in MESSAGES_LOCALE_CODES:
             INVALID_MESSAGES_LOCALE_CODE_MESSAGE: Final[str] = (
-                f"{"messages_locale_code"!r} must be one of "
+                f"{'messages_locale_code'!r} must be one of "
                 f"'{"', '".join(MESSAGES_LOCALE_CODES)}'"
             )
             raise ValueError(INVALID_MESSAGES_LOCALE_CODE_MESSAGE)

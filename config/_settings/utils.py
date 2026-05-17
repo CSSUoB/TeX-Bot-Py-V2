@@ -1,19 +1,25 @@
-from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = ("is_running_in_async", "get_settings_file_path")
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import Final
+
+__all__: "Sequence[str]" = ("get_settings_file_path", "is_running_in_async")
 
 
 import asyncio
 import logging
 import os
-from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING
 
 from aiopath import AsyncPath
 
 from config.constants import PROJECT_ROOT
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    from logging import Logger
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 async def get_settings_file_path() -> AsyncPath:
