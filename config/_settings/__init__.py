@@ -314,9 +314,7 @@ class SettingsAccessor:
             if ONLY_DISCORD_LOG_CHANNEL_LOG_LEVEL_CHANGED:
                 DISCORD_LOG_CHANNEL_LOG_LEVEL_IS_SAME: Final[bool] = bool(
                     discord_channel_logging_settings["log-level"]
-                    == cls._most_recent_yaml[
-                        "logging"
-                    ]["discord-channel"]["log-level"]
+                    == cls._most_recent_yaml["logging"]["discord-channel"]["log-level"]
                 )
                 if DISCORD_LOG_CHANNEL_LOG_LEVEL_IS_SAME:
                     LOG_LEVEL_DIDNT_CHANGE_MESSAGE: Final[str] = (
@@ -1101,11 +1099,9 @@ class SettingsAccessor:
             remainder: str
             key, _, remainder = partial_config_setting_name.partition(":")  # type: ignore[union-attr]
 
-            # noinspection PyProtectedMember,PyUnresolvedReferences
             if set(yaml_validator._required_keys) - {key}:  # noqa: SLF001
                 raise ChangingSettingWithRequiredSiblingError
 
-            # noinspection PyUnresolvedReferences
             return {
                 key: cls._set_required_value_from_validator(  # type: ignore[dict-item]
                     remainder if ":" in partial_config_setting_name else None,  # type: ignore[operator]
@@ -1132,7 +1128,6 @@ class SettingsAccessor:
             )
             raise RuntimeError(YAML_NOT_LOADED_MESSAGE)
 
-        config_setting_error: ChangingSettingWithRequiredSiblingError
         try:
             current_yaml = cls._set_mapping_value(
                 config_setting_name,

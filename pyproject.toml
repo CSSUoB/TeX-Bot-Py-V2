@@ -4,6 +4,7 @@ version = "0.1.0"
 requires-python = "==3.13.*"  # TODO: Make minimum version Python 3.14, once Pycord makes a new release with support for it
 dependencies = [
     "aiopath>=0.7.7",
+    "python-slugify>=8.0.4",
     "strictyaml>=1.7.3",
 ]
 
