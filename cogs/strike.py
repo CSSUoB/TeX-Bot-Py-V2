@@ -91,7 +91,7 @@ async def perform_moderation_action(
 class ConfirmStrikeMemberView(View):
     """A discord.View containing two buttons to confirm giving the member a strike."""
 
-    @discord.ui.button(
+    @discord.ui.button(  # type: ignore[arg-type]
         label="Yes", style=discord.ButtonStyle.red, custom_id="yes_strike_member"
     )
     async def yes_strike_member_button_callback(
@@ -110,7 +110,7 @@ class ConfirmStrikeMemberView(View):
             view=None
         )  # NOTE: Despite removing the view within the normal command processing loop, the view also needs to be removed here to prevent an Unknown Webhook error
 
-    @discord.ui.button(
+    @discord.ui.button(  # type: ignore[arg-type]
         label="No", style=discord.ButtonStyle.grey, custom_id="no_strike_member"
     )
     async def no_strike_member_button_callback(
@@ -133,7 +133,7 @@ class ConfirmStrikeMemberView(View):
 class ConfirmManualModerationView(View):
     """A discord.View to confirm manually applying a moderation action."""
 
-    @discord.ui.button(
+    @discord.ui.button(  # type: ignore[arg-type]
         label="Yes", style=discord.ButtonStyle.red, custom_id="yes_manual_moderation_action"
     )
     async def yes_manual_moderation_action_button_callback(
@@ -153,7 +153,7 @@ class ConfirmManualModerationView(View):
             view=None
         )  # NOTE: Despite removing the view within the normal command processing loop, the view also needs to be removed here to prevent an Unknown Webhook error
 
-    @discord.ui.button(
+    @discord.ui.button(  # type: ignore[arg-type]
         label="No", style=discord.ButtonStyle.grey, custom_id="no_manual_moderation_action"
     )
     async def no_manual_moderation_action_button_callback(
@@ -177,7 +177,7 @@ class ConfirmManualModerationView(View):
 class ConfirmStrikesOutOfSyncWithBanView(View):
     """A discord.View containing two buttons to confirm banning a member with > 3 strikes."""
 
-    @discord.ui.button(
+    @discord.ui.button(  # type: ignore[arg-type]
         label="Yes", style=discord.ButtonStyle.red, custom_id="yes_out_of_sync_ban_member"
     )
     async def yes_out_of_sync_ban_member_button_callback(
@@ -197,7 +197,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
             view=None
         )  # NOTE: Despite removing the view within the normal command processing loop, the view also needs to be removed here to prevent an Unknown Webhook error
 
-    @discord.ui.button(
+    @discord.ui.button(  # type: ignore[arg-type]
         label="No", style=discord.ButtonStyle.grey, custom_id="no_out_of_sync_ban_member"
     )
     async def no_out_of_sync_ban_member_button_callback(
