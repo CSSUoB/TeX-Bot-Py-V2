@@ -86,7 +86,9 @@ class StatsCommandsCog(TeXBotBaseCog):
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
-        if isinstance(ctx.channel, (None | discord.CategoryChannel | discord.ForumChannel)):
+        if not ctx.channel or isinstance(
+            ctx.channel, (discord.CategoryChannel, discord.ForumChannel)
+        ):
             await self.command_send_error(
                 ctx, message="This command can only be used in text channels."
             )
@@ -163,7 +165,9 @@ class StatsCommandsCog(TeXBotBaseCog):
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
-        if isinstance(ctx.channel, (None | discord.CategoryChannel | discord.ForumChannel)):
+        if not ctx.channel or isinstance(
+            ctx.channel, (discord.CategoryChannel, discord.ForumChannel)
+        ):
             await self.command_send_error(
                 ctx, message="This command can only be used in text channels."
             )
@@ -249,7 +253,9 @@ class StatsCommandsCog(TeXBotBaseCog):
         interaction_member: discord.Member = await self.bot.get_main_guild_member(ctx.user)
         guest_role: discord.Role = await self.bot.guest_role
 
-        if isinstance(ctx.channel, (None | discord.CategoryChannel | discord.ForumChannel)):
+        if not ctx.channel or isinstance(
+            ctx.channel, (discord.CategoryChannel, discord.ForumChannel)
+        ):
             await self.command_send_error(
                 ctx, message="This command can only be used in text channels."
             )
@@ -332,7 +338,9 @@ class StatsCommandsCog(TeXBotBaseCog):
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
-        if isinstance(ctx.channel, (None | discord.CategoryChannel | discord.ForumChannel)):
+        if not ctx.channel or isinstance(
+            ctx.channel, (discord.CategoryChannel, discord.ForumChannel)
+        ):
             await self.command_send_error(
                 ctx, message="This command can only be used in text channels."
             )
