@@ -213,6 +213,11 @@ class RemindMeCommandCog(TeXBotBaseCog):
         parsed_time: tuple[time.struct_time, int] = parsedatetime.Calendar().parseDT(
             delay, tzinfo=timezone.get_current_timezone()
         )
+        if not ctx.channel:
+            await self.command_send_error(
+                ctx, message="This command can only be used in channels."
+            )
+            return
 
         if parsed_time[1] == 0:
             await self.command_send_error(
@@ -305,8 +310,9 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                 discord.utils.utcnow() - reminder.send_datetime
             )
             if time_since_reminder_needed_to_be_sent > datetime.timedelta(minutes=15):
-                user: discord.User | None = await self.bot.get_or_fetch_user(
-                    int(reminder.discord_member.discord_id)
+                user: discord.User | None = await self.bot.get_or_fetch(
+                    object_type=discord.User,
+                    object_id=int(reminder.discord_member.discord_id)
                 )
 
                 if not user:
