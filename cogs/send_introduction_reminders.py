@@ -233,7 +233,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             style=discord.ButtonStyle.red,
             emoji=discord.PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias")),
         )
-        async def opt_out_introduction_reminders_button_callback(  # type: ignore[misc]
+        async def opt_out_introduction_reminders_button_callback(
             self, button: discord.Button, interaction: discord.Interaction
         ) -> None:
             """
