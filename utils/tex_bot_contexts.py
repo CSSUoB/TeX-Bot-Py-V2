@@ -43,4 +43,4 @@ class TeXBotApplicationContext(discord.ApplicationContext):
 
     bot: "TeXBot"  # type: ignore[mutable-override]
 
-    respond: "Callable[..., Awaitable[Interaction | WebhookMessage]]"  # type: ignore[assignment,explicit-any]
+    respond: "Callable[..., Awaitable[Interaction | WebhookMessage]]"  # type: ignore[assignment, explicit-any]
