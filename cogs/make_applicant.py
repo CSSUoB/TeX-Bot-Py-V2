@@ -76,7 +76,9 @@ class BaseMakeApplicantCog(TeXBotBaseCog):
             await applicant_member.add_roles(applicant_role, reason=AUDIT_MESSAGE)
             logger.debug("Applicant role given to user %s", applicant_member)
 
-            tex_emoji: discord.GuildEmoji | discord.AppEmoji | None = self.bot.get_emoji(743218410409820213)
+            tex_emoji: discord.GuildEmoji | discord.AppEmoji | None = self.bot.get_emoji(
+                743218410409820213
+            )
             if not tex_emoji:
                 tex_emoji = discord.utils.get(main_guild.emojis, name="TeX")
 

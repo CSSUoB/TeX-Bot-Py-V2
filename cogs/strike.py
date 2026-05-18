@@ -510,7 +510,9 @@ class ManualModerationCog(BaseStrikeCog):
                 async for _audit_log_entry in main_guild.audit_logs(
                     after=discord.utils.utcnow() - datetime.timedelta(minutes=1), action=action
                 )
-                if _audit_log_entry.target and _audit_log_entry.target.id == strike_user.id  # NOTE: IDs are checked here rather than the objects themselves as the audit log provides an unusual object type in some cases.
+                if _audit_log_entry.target
+                and _audit_log_entry.target.id
+                == strike_user.id  # NOTE: IDs are checked here rather than the objects themselves as the audit log provides an unusual object type in some cases.
             )
         except (StopIteration, StopAsyncIteration):
             logger.debug("Printing 5 most recent audit logs:")
@@ -755,7 +757,14 @@ class ManualModerationCog(BaseStrikeCog):
 
         audit_log_entry: discord.AuditLogEntry
         async for audit_log_entry in main_guild.audit_logs(limit=5):
-            FOUND_CORRECT_AUDIT_LOG_ENTRY: bool = ((audit_log_entry.target is not None) and (audit_log_entry.target.id == after.id) and (audit_log_entry.action == discord.AuditLogAction.auto_moderation_user_communication_disabled))
+            FOUND_CORRECT_AUDIT_LOG_ENTRY: bool = (
+                (audit_log_entry.target is not None)
+                and (audit_log_entry.target.id == after.id)
+                and (
+                    audit_log_entry.action
+                    == discord.AuditLogAction.auto_moderation_user_communication_disabled
+                )
+            )
             if FOUND_CORRECT_AUDIT_LOG_ENTRY:
                 await self._confirm_manual_add_strike(
                     strike_user=after, action=audit_log_entry.action

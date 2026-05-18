@@ -311,8 +311,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
             )
             if time_since_reminder_needed_to_be_sent > datetime.timedelta(minutes=15):
                 user: discord.User | None = await self.bot.get_or_fetch(
-                    object_type=discord.User,
-                    object_id=int(reminder.discord_member.discord_id)
+                    object_type=discord.User, object_id=int(reminder.discord_member.discord_id)
                 )
 
                 if not user:
