@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
     from utils import TeXBotApplicationContext
 
-__all__: "Sequence[str]" = ("InviteLinkCommandCog",)
+__all__: Sequence[str] = ("InviteLinkCommandCog",)
 
 
 class InviteLinkCommandCog(TeXBotBaseCog):
@@ -21,7 +21,7 @@ class InviteLinkCommandCog(TeXBotBaseCog):
     @discord.slash_command(
         name="invite-link", description="Display the invite link to this server."
     )
-    async def invite_link(self, ctx: "TeXBotApplicationContext") -> None:
+    async def invite_link(self, ctx: TeXBotApplicationContext) -> None:
         """Definition & callback response of the "invite_link" command."""
         discord_invite_url: str | None = settings["CUSTOM_DISCORD_INVITE_URL"]
 

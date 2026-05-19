@@ -21,13 +21,13 @@ if TYPE_CHECKING:
     from utils import TeXBotApplicationContext
 
 
-__all__: "Sequence[str]" = ("MakeMemberCommandCog", "MemberCountCommandCog")
+__all__: Sequence[str] = ("MakeMemberCommandCog", "MemberCountCommandCog")
 
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
-_GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: "Final[str]" = f"""{
+_GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: Final[str] = f"""{
     "Student"
     if (
         settings["_GROUP_FULL_NAME"]
@@ -46,7 +46,7 @@ _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: "Final[str]" = f"""{
     else "Member"
 } ID"""
 
-_GROUP_MEMBER_ID_ARGUMENT_NAME: "Final[str]" = (
+_GROUP_MEMBER_ID_ARGUMENT_NAME: Final[str] = (
     _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME.lower().replace(" ", "")
 )
 
@@ -91,7 +91,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_in_main_guild
     async def make_member(
-        self, ctx: "TeXBotApplicationContext", raw_group_member_id: str
+        self, ctx: TeXBotApplicationContext, raw_group_member_id: str
     ) -> None:
         """
         Definition & callback response of the "make_member" command.
@@ -214,7 +214,7 @@ class MemberCountCommandCog(TeXBotBaseCog):
     @discord.slash_command(
         name="member-count", description="Displays the number of members in the group."
     )
-    async def member_count(self, ctx: "TeXBotApplicationContext") -> None:
+    async def member_count(self, ctx: TeXBotApplicationContext) -> None:
         """Definition & callback response of the "member_count" command."""
         await ctx.defer(ephemeral=False)
 

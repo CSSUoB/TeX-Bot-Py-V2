@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
     from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "BaseInductCog",
     "EnsureMembersInductedCommandCog",
     "InductContextCommandsCog",
@@ -36,7 +36,7 @@ __all__: "Sequence[str]" = (
 )
 
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class InductSendMessageCog(TeXBotBaseCog):
@@ -178,7 +178,7 @@ class BaseInductCog(TeXBotBaseCog):
 
     async def _perform_induction(
         self,
-        ctx: "TeXBotApplicationContext",
+        ctx: TeXBotApplicationContext,
         induction_member_id: int,
         *,
         silent: bool,
@@ -289,8 +289,8 @@ class InductSlashCommandCog(BaseInductCog):
 
     @staticmethod
     async def autocomplete_get_members(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+        ctx: TeXBotAutocompleteContext,
+    ) -> AbstractSet[discord.OptionChoice] | AbstractSet[str]:
         """
         Autocomplete callable that generates the set of available selectable members.
 
@@ -300,7 +300,7 @@ class InductSlashCommandCog(BaseInductCog):
         try:
             main_guild: discord.Guild = ctx.bot.main_guild
             guest_role: discord.Role = await ctx.bot.guest_role
-        except (GuildDoesNotExistError, GuestRoleDoesNotExistError):
+        except GuildDoesNotExistError, GuestRoleDoesNotExistError:
             return set()
 
         members: set[discord.Member] = {
@@ -343,7 +343,7 @@ class InductSlashCommandCog(BaseInductCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def induct(
-        self, ctx: "TeXBotApplicationContext", str_induct_member_id: str, *, silent: bool
+        self, ctx: TeXBotApplicationContext, str_induct_member_id: str, *, silent: bool
     ) -> None:
         """
         Definition & callback response of the "induct" command.
@@ -370,7 +370,7 @@ class InductContextCommandsCog(BaseInductCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def non_silent_user_induct(
-        self, ctx: "TeXBotApplicationContext", member: discord.Member | discord.User
+        self, ctx: TeXBotApplicationContext, member: discord.Member | discord.User
     ) -> None:
         """
         Definition & callback response of the "non_silent_induct" user-context-command.
@@ -386,7 +386,7 @@ class InductContextCommandsCog(BaseInductCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def silent_user_induct(
-        self, ctx: "TeXBotApplicationContext", member: discord.Member | discord.User
+        self, ctx: TeXBotApplicationContext, member: discord.Member | discord.User
     ) -> None:
         """
         Definition & callback response of the "silent_induct" user-context-command.
@@ -402,7 +402,7 @@ class InductContextCommandsCog(BaseInductCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def non_silent_message_induct(
-        self, ctx: "TeXBotApplicationContext", message: discord.Message
+        self, ctx: TeXBotApplicationContext, message: discord.Message
     ) -> None:
         """
         Definition and callback response of the "non_silent_induct" message-context-command.
@@ -439,7 +439,7 @@ class EnsureMembersInductedCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def ensure_members_inducted(self, ctx: "TeXBotApplicationContext") -> None:
+    async def ensure_members_inducted(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "ensure_members_inducted" command.
 

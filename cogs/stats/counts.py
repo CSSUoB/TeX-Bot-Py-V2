@@ -10,10 +10,10 @@ if TYPE_CHECKING:
     from collections.abc import AsyncIterable, Mapping, Sequence
 
 
-__all__: "Sequence[str]" = ("get_channel_message_counts", "get_server_message_counts")
+__all__: Sequence[str] = ("get_channel_message_counts", "get_server_message_counts")
 
 
-async def get_channel_message_counts(channel: discord.TextChannel) -> "Mapping[str, int]":
+async def get_channel_message_counts(channel: discord.TextChannel) -> Mapping[str, int]:
     """
     Get the message counts for each role in the given channel.
 
@@ -62,7 +62,7 @@ async def get_channel_message_counts(channel: discord.TextChannel) -> "Mapping[s
 
 async def get_server_message_counts(
     guild: discord.Guild, *, guest_role: discord.Role
-) -> "Mapping[str, Mapping[str, int]]":
+) -> Mapping[str, Mapping[str, int]]:
     """
     Get the message counts for each channel in the given server.
 

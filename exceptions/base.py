@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Final
 
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "BaseDoesNotExistError",
     "BaseErrorWithErrorCode",
     "BaseTeXBotError",

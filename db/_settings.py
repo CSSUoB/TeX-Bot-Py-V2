@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
     from typing import Final
 
-__all__: "Sequence[str]" = ()
+__all__: Sequence[str] = ()
 
 
 # Monkeypatching Django, so stubs will work for all generics,
@@ -23,10 +23,10 @@ django_stubs_ext.monkeypatch()
 
 
 # NOTE: Build paths inside the project like this: BASE_DIR / "subdir".
-BASE_DIR: "Final[Path]" = Path(__file__).resolve().parent
+BASE_DIR: Final[Path] = Path(__file__).resolve().parent
 
 # NOTE: settings.py is called when setting up the mypy_django_plugin & when running Pytest. When mypy/Pytest runs no config settings variables are set, so they should not be accessed
-IMPORTED_BY_MYPY_OR_PYTEST: "Final[bool]" = any(
+IMPORTED_BY_MYPY_OR_PYTEST: Final[bool] = any(
     "mypy_django_plugin" in frame.filename or "pytest" in frame.filename
     for frame in inspect.stack()[1:]
     if not frame.filename.startswith("<")
@@ -42,27 +42,31 @@ else:
 
 # Application Definition
 
-INSTALLED_APPS: "Final[Sequence[str]]" = [
+INSTALLED_APPS: Final[Sequence[str]] = [
     "django.contrib.contenttypes",
     "db.core.app_config.CoreConfig",
 ]
 
-MIDDLEWARE: "Final[Sequence[str]]" = ["django.middleware.common.CommonMiddleware"]
+MIDDLEWARE: Final[Sequence[str]] = ["django.middleware.common.CommonMiddleware"]
 
 
 # Database Settings
 
-DATABASES: "Final[Mapping[str, object]]" = {  # SOURCE: https://docs.djangoproject.com/en/stable/ref/settings#databases
+DATABASES: Final[
+    Mapping[str, object]
+] = {  # SOURCE: https://docs.djangoproject.com/en/stable/ref/settings#databases
     "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "core.db"}
 }
 
-DEFAULT_AUTO_FIELD: "Final[str]" = "django.db.models.BigAutoField"  # SOURCE: https://docs.djangoproject.com/en/stable/ref/settings#default-auto-field
+DEFAULT_AUTO_FIELD: Final[str] = (
+    "django.db.models.BigAutoField"  # SOURCE: https://docs.djangoproject.com/en/stable/ref/settings#default-auto-field
+)
 
 
 # Internationalisation, Language & Time Settings
 # SOURCE: https://docs.djangoproject.com/en/stable/topics/i18n
 
-LANGUAGE_CODE: "Final[str]" = "en-gb"
-TIME_ZONE: "Final[str]" = "Europe/London"
-USE_I18N: "Final[bool]" = True
-USE_TZ: "Final[bool]" = True
+LANGUAGE_CODE: Final[str] = "en-gb"
+TIME_ZONE: Final[str] = "Europe/London"
+USE_I18N: Final[bool] = True
+USE_TZ: Final[bool] = True

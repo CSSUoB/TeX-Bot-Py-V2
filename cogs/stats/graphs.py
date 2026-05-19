@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
     from matplotlib.text import Text as Plot_Text
 
-__all__: "Sequence[str]" = ("amount_of_time_formatter", "plot_bar_chart")
+__all__: Sequence[str] = ("amount_of_time_formatter", "plot_bar_chart")
 
 
 def amount_of_time_formatter(value: float, time_scale: str) -> str:
@@ -34,7 +34,7 @@ def amount_of_time_formatter(value: float, time_scale: str) -> str:
 
 
 def plot_bar_chart(
-    data: "Mapping[str, int]",
+    data: Mapping[str, int],
     x_label: str,
     y_label: str,
     title: str,
