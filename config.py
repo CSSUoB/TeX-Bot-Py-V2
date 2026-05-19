@@ -976,7 +976,7 @@ class Settings(abc.ABC):
 
         if raw_send_committee_actions_reminders not in TRUE_VALUES | FALSE_VALUES:
             INVALID_SEND_COMMITTEE_ACTIONS_REMINDERS_MESSAGE: Final[str] = (
-                "SEND_COMMITTEE_ACTIONS_REMINDERS  must be a boolean value."
+                "SEND_COMMITTEE_ACTIONS_REMINDERS must be a boolean value."
             )
             raise ImproperlyConfiguredError(INVALID_SEND_COMMITTEE_ACTIONS_REMINDERS_MESSAGE)
 
