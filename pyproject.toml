@@ -21,13 +21,13 @@ main = [
     "matplotlib>=3.10",
     "mplcyberpunk>=0.7",
     "parsedatetime>=2.6",
-    "py-cord>=2.6",
+    "py-cord>=2.6,<2.7",
     "python-dotenv>=1.0",
     "python-logging-discord-handler>=0.1",
     "typed_classproperties>=1.2",
     "validators>=0.34"
 ]
-pre-commit = ["pre-commit>=4.0", { include-group = "lint-format" }]
+pre-commit = ["prek>=0.3.1"]
 test = ["pytest>=9", "pytest-cov>=6.1"]
 type-check = [
     "django-stubs[compatible-mypy]>=5.1",
@@ -42,6 +42,11 @@ sort = "cover"
 
 [tool.django-stubs]
 django_settings_module = "db._settings"
+
+[tool.flake8]
+select = ["CAR", "TXB"]
+extend_exclude = ["**/migrations/", ".venv/"]
+require_plugins = ["flake8-carrot"]
 
 [tool.mypy]
 check_untyped_defs = true
@@ -179,11 +184,11 @@ select = ["ALL", "D204", "D213", "D401"]
 task-tags = ["BUG", "DONE", "FIXME", "HACK", "IDEA", "ISSUE", "NOBUG", "NOTE", "REQ", "TODO"]
 
 [tool.ruff.lint.flake8-import-conventions]
-aliases = {  }
+aliases = {}
 banned-aliases = { "regex" = ["re"], "numpy" = ["np"], "matplotlib" = ["mpl"], "matplotlib.pyplot" = [
     "plt"
 ] }
-banned-from = ["abc", "date", "datetime", "re", "regex"]
+banned-from = ["abc", "date", "datetime", "functools", "itertools", "re", "regex"]
 
 [tool.ruff.lint.flake8-self]
 extend-ignore-names = ["_base_manager", "_default_manager", "_get_wrap_line_width", "_meta"]

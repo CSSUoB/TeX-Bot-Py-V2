@@ -290,17 +290,13 @@ class TeXBot(discord.Bot):
         The group-full-name is either retrieved from the provided environment variable
         or automatically identified from the name of your group's Discord guild.
         """
-        return (
-            settings["_GROUP_FULL_NAME"]
-            if settings["_GROUP_FULL_NAME"]
-            else (
-                "The Computer Science Society"
-                if (
-                    "computer science society" in self.main_guild.name.lower()
-                    or "css" in self.main_guild.name.lower()
-                )
-                else self.main_guild.name
+        return settings["_GROUP_FULL_NAME"] or (
+            "The Computer Science Society"
+            if (
+                "computer science society" in self.main_guild.name.lower()
+                or "css" in self.main_guild.name.lower()
             )
+            else self.main_guild.name
         )
 
     @property
@@ -308,14 +304,13 @@ class TeXBot(discord.Bot):
         """
         The short colloquial name of your community group.
 
-        This defaults to `TeXBot.group_full_name`,
+        This defaults to `TeXBot.group_full_name`
         if no group-short-name is provided/could not be determined.
         """
         return (
             (
                 settings["_GROUP_SHORT_NAME"]
-                if settings["_GROUP_SHORT_NAME"]
-                else (
+                or (
                     "CSS"
                     if (
                         "computer science society" in self.group_full_name.lower()
