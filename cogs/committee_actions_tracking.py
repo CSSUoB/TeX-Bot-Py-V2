@@ -46,6 +46,16 @@ __all__: "Sequence[str]" = (
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
+class Status(Enum):
+    """Enum class to define the possible statuses of an action."""
+
+    BLOCKED = "BLK"
+    CANCELLED = "CND"
+    COMPLETED = "CMP"
+    IN_PROGRESS = "INP"
+    NOT_STARTED = "NST"
+
+
 class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
     """Base cog class that defines methods for committee actions tracking."""
 
@@ -990,6 +1000,22 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         if not filtered_actions:
             await ctx.respond(content="No one has any actions that match the request!")
             logger.debug("No actions found with the status filter: %s", raw_status)
+            return
+
+        all_actions_message: str = "\n".join(
+            f"\n<@{discord_id}>, Actions:\n"
+            f"{
+                ', \n'.join(
+                    action.status.emoji + f' {action.description} ({action.status.label})'
+                    for action in actions
+                    if action.discord_member.discord_id == discord_id
+                )
+            }"
+            for discord_id, actions in filtered_actions.items()
+        )
+
+        if len(all_actions_message) < 2000:
+            await ctx.respond(content=all_actions_message)
             return
 
         await ctx.respond(
