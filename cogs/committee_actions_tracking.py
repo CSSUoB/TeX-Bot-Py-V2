@@ -290,14 +290,14 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
 
         all_actions_message: str = "\n".join(
             [
-                f"\n{committee}, Actions:"
+                f"\n{committee_member}, Actions:"
                 f"\n{
                     ', \n'.join(
                         action.status.emoji + f' {action.description} ({action.status.label})'
                         for action in actions
                     )
                 }"
-                for committee, actions in all_actions.items()
+                for committee_member, actions in all_actions.items()
             ],
         )
 

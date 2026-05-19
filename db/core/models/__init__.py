@@ -61,8 +61,11 @@ class AssignedCommitteeAction(AsyncBaseModel):
         def __new__(  # noqa: D102
             cls, value: "LiteralString", emoji: "LiteralString | None" = None
         ) -> "AssignedCommitteeAction.Status":
-            if not emoji:  # NOTE: Will also check for empty strings
-                raise ValueError
+            if not emoji:
+                EMOJI_NOT_PROVIDED_MESSAGE: Final[str] = (
+                    "The 'emoji' argument must be provided and non-empty."
+                )
+                raise ValueError(EMOJI_NOT_PROVIDED_MESSAGE)
 
             obj: AssignedCommitteeAction.Status = str.__new__(cls, value)
 
@@ -72,7 +75,8 @@ class AssignedCommitteeAction(AsyncBaseModel):
             return obj
 
         @classproperty
-        def TODO_FILTER(cls) -> "AssignedCommitteeAction._StatusCollection":  # noqa: D102, N802
+        def TODO_FILTER(cls) -> "AssignedCommitteeAction._StatusCollection":  # noqa: N802
+            """A collection of Stats enum items that are considered to be 'to-do' statuses."""
             return AssignedCommitteeAction._StatusCollection(
                 [cls.IN_PROGRESS, cls.BLOCKED, cls.NOT_STARTED]
             )
@@ -115,7 +119,8 @@ class AssignedCommitteeAction(AsyncBaseModel):
     )
 
     @property
-    def status(self) -> Status:  # noqa: D102
+    def status(self) -> Status:
+        """Return the status of this assigned committee action as a Status enum item."""
         return self.Status(self.raw_status)
 
     @status.setter
