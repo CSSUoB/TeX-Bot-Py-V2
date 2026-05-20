@@ -2,7 +2,10 @@
 
 import logging
 from enum import Enum, auto
+import re
 from typing import TYPE_CHECKING
+
+import bs4
 
 from .authorisation import SUPlatformAccessCookieStatus, get_su_platform_access_cookie_status
 from .core import SGF_URL, su_platform_client
@@ -28,6 +31,7 @@ class ExpenseStatus(Enum):
     PENDING_L3_APPROVAL = 5
     REFERRED = 32
     REJECTED = 33
+    CANCELLED = 31
 
     PENDING_FINANCE_APPROVAL = auto()
     PENDING_FINANCE_PROCESSING = auto()
@@ -72,11 +76,61 @@ async def get_expense(expense_id: int) -> "Expense | None":
 
     response_object: str = await su_platform_client.fetch_url_content(EXPENSE_URL)
 
-    if "<!-- StatusId:" not in response_object:
+    type_match: re.Match[str] | None = re.search(r"StatusId:\s*(\d+)", response_object)
+    if not type_match:
         logger.info(
             "Expense ID %d could not be found.",
             expense_id,
         )
+        return None
+
+    expense_status: ExpenseStatus
+    match type_match:
+        case re.Match() as m if m.group(1) == "2":
+            expense_status = ExpenseStatus.DRAFT
+        case re.Match() as m if m.group(1) == "3":
+            expense_status = ExpenseStatus.PENDING_COMMITTEE_APPROVAL
+        case re.Match() as m if m.group(1) == "4":
+            expense_status = ExpenseStatus.PENDING_L2_APPROVAL
+        case re.Match() as m if m.group(1) == "5":
+            expense_status = ExpenseStatus.PENDING_L3_APPROVAL
+        case re.Match() as m if m.group(1) == "32":
+            expense_status = ExpenseStatus.REFERRED
+        case re.Match() as m if m.group(1) == "33":
+            expense_status = ExpenseStatus.REJECTED
+        case re.Match() as m if m.group(1) == "10":
+            expense_status = ExpenseStatus.PENDING_PAYMENT
+        case re.Match() as m if m.group(1) == "30":
+            expense_status = ExpenseStatus.PAID
+        case re.Match() as m if m.group(1) == "31":
+            expense_status = ExpenseStatus.CANCELLED
+        case re.Match() as m if m.group(1) == "40":
+            expense_status = ExpenseStatus.PO_OR_INVOICE_APPROVED
+        case _:
+            logger.warning(
+                "Expense ID %d has an unrecognised status code: %s",
+                expense_id,
+                type_match.group(1),
+            )
+            return None
+
+    logger.debug("Expense ID %d has status: %s", expense_id, expense_status.name)
+
+
+    expense_type_html = bs4.BeautifulSoup(response_object, "html.parser").find(
+        "select", {"id": "Fields_RequestSubtypeCode_"}
+    )
+
+    if not isinstance(expense_type_html, bs4.Tag):
+        logger.debug("Expense is not a specific type...")
+        return None
+
+    expense_type_option_html = expense_type_html.find_all("option", selected=True)
+
+    expense_type: Optional[ExpenseType] = None
+
+
+    logger.debug(expense_type_option_html)
 
 
 

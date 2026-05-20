@@ -70,8 +70,6 @@ class SUPlatformClient:
                 ".AspNet.SharedCookie"
             )
 
-            logger.debug("Fetched content from %s with status code %d.", url, http_response.status)
-
             sgf_cookie: Morsel[str] | None = http_response.cookies.get("AntiForgery.Sgf")
             if sgf_cookie:
                 self.set_cookie("AntiForgery.Sgf", sgf_cookie.value)
