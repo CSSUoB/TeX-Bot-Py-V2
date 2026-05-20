@@ -41,8 +41,19 @@ class MSLCommandsCog(TeXBotBaseCog):
             )
             return
 
-        await ctx.respond("Fetching expense details...", ephemeral=True)
+        await ctx.defer(ephemeral=True)
 
-        await finance.get_expense(int(expense_id))
+        expense = await finance.get_expense(int(expense_id))
 
+        if not expense:
+            await ctx.respond(
+                f"Could not fetch expense with ID {expense_id}. Please ensure the ID is correct and try again.",
+                ephemeral=True,
+            )
+            return
+
+        await ctx.respond(
+            f"Expense ID: {expense.id}\nStatus: {expense.status.name}\nType: {expense.type.name}",
+            ephemeral=True,
+        )
 

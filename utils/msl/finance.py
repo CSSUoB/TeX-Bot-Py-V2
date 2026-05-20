@@ -114,24 +114,30 @@ async def get_expense(expense_id: int) -> "Expense | None":
             )
             return None
 
-    logger.debug("Expense ID %d has status: %s", expense_id, expense_status.name)
-
-
-    expense_type_html = bs4.BeautifulSoup(response_object, "html.parser").find(
-        "select", {"id": "Fields_RequestSubtypeCode_"}
-    )
-
-    if not isinstance(expense_type_html, bs4.Tag):
-        logger.debug("Expense is not a specific type...")
+    page_title: bs4.Tag | bs4.NavigableString | None = bs4.BeautifulSoup(response_object, "html.parser").find("title")
+    if not page_title:
+        logger.warning(
+            "Expense page returned no content when fetching details for expense ID %d.",
+            expense_id,
+        )
         return None
 
-    expense_type_option_html = expense_type_html.find_all("option", selected=True)
+    expense_type: ExpenseType
+    match page_title:
+        case bs4.Tag() as t if t.string and "Personal Expense" in t.string:
+            expense_type = ExpenseType.PERSONAL_EXPENSE
+        case bs4.Tag() as t if t.string and "External Payment" in t.string:
+            expense_type = ExpenseType.EXTERNAL_PAYMENT
+        case bs4.Tag() as t if t.string and "Purchase Order" in t.string:
+            expense_type = ExpenseType.PURCHASE_ORDER
+        case bs4.Tag() as t if t.string and "Sales Invoice" in t.string:
+            expense_type = ExpenseType.SALES_INVOICE
+        case _:
+            logger.warning(
+                "Expense ID %d has an unrecognised type: %s",
+                expense_id,
+                str(page_title),
+            )
+            return None
 
-    expense_type: Optional[ExpenseType] = None
-
-
-    logger.debug(expense_type_option_html)
-
-
-
-    return None
+    return Expense(expense_id=expense_id, status=expense_status, expense_type=expense_type)
