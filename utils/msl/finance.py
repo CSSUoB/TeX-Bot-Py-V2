@@ -67,6 +67,13 @@ class Expense:
         self.payee: str = payee  # NOTE: it's possible for a payee to be empty, but never None
         self.total_amount: float = total_amount
 
+    @override
+    def __repr__(self) -> str:
+        return (
+            f"Expense(id={self.id}, status={self.status.name}, type={self.type.name}, "
+            f"payee='{self.payee}', total_amount={self.total_amount})"
+        )
+
 
 async def get_expense(expense_id: int) -> "Expense | None":
     """Retrieve the details of an MSL expense."""
@@ -137,7 +144,20 @@ async def get_expense(expense_id: int) -> "Expense | None":
         case bs4.Tag() as t if t.string and "Edit Sales Invoice" in t.string:
             expense_type = ExpenseType.SALES_INVOICE
         case bs4.Tag() as t if t.string and "Edit Expense Request" in t.string:
-            
+            expense_type_html = bs4.BeautifulSoup(response_object, "html.parser").find("select", {"id": "Fields_RequestSubtypeCode_"})
+            expense_type_option_html = expense_type_html.find("option", selected=True)
+            expense_type_option_value = str(expense_type_option_html.get("value", ""))
+            if expense_type_option_value == "1":
+                expense_type = ExpenseType.PERSONAL_EXPENSE
+            elif expense_type_option_value == "2":
+                expense_type = ExpenseType.EXTERNAL_PAYMENT
+            else:
+                logger.warning(
+                    "Expense ID %d has an unrecognised expense type: %s",
+                    expense_id,
+                    expense_type_option_value,
+                )
+                return None
         case _:
             logger.warning(
                 "Expense ID %d has an unrecognised type: %s",

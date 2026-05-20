@@ -46,13 +46,13 @@ class MSLCommandsCog(TeXBotBaseCog):
         expense = await finance.get_expense(int(expense_id))
 
         if not expense:
-            await ctx.respond(
+            await ctx.followup.send(
                 f"Could not fetch expense with ID {expense_id}. Please ensure the ID is correct and try again.",
                 ephemeral=True,
             )
             return
 
-        await ctx.respond(
+        await ctx.followup.send(
             str(expense),
             ephemeral=True,
         )
