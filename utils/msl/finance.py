@@ -3,7 +3,7 @@
 import logging
 from enum import Enum, auto
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 import bs4
 
@@ -54,11 +54,18 @@ class Expense:
     """Class representing an MSL expense."""
 
     def __init__(
-        self, expense_id: int, status: ExpenseStatus, expense_type: ExpenseType
+        self,
+        expense_id: int,
+        status: ExpenseStatus,
+        expense_type: ExpenseType,
+        payee: str,
+        total_amount: float,
     ) -> None:
-        self.id = expense_id
-        self.status = status
-        self.type = expense_type
+        self.id: int = expense_id
+        self.status: ExpenseStatus = status
+        self.type: ExpenseType = expense_type
+        self.payee: str = payee  # NOTE: it's possible for a payee to be empty, but never None
+        self.total_amount: float = total_amount
 
 
 async def get_expense(expense_id: int) -> "Expense | None":
@@ -75,6 +82,7 @@ async def get_expense(expense_id: int) -> "Expense | None":
         return None
 
     response_object: str = await su_platform_client.fetch_url_content(EXPENSE_URL)
+    response_html: bs4.BeautifulSoup = bs4.BeautifulSoup(response_object, "html.parser")
 
     type_match: re.Match[str] | None = re.search(r"StatusId:\s*(\d+)", response_object)
     if not type_match:
@@ -114,7 +122,7 @@ async def get_expense(expense_id: int) -> "Expense | None":
             )
             return None
 
-    page_title: bs4.Tag | bs4.NavigableString | None = bs4.BeautifulSoup(response_object, "html.parser").find("title")
+    page_title: bs4.Tag | bs4.NavigableString | None = response_html.find("title")
     if not page_title:
         logger.warning(
             "Expense page returned no content when fetching details for expense ID %d.",
@@ -124,14 +132,12 @@ async def get_expense(expense_id: int) -> "Expense | None":
 
     expense_type: ExpenseType
     match page_title:
-        case bs4.Tag() as t if t.string and "Personal Expense" in t.string:
-            expense_type = ExpenseType.PERSONAL_EXPENSE
-        case bs4.Tag() as t if t.string and "External Payment" in t.string:
-            expense_type = ExpenseType.EXTERNAL_PAYMENT
-        case bs4.Tag() as t if t.string and "Purchase Order" in t.string:
+        case bs4.Tag() as t if t.string and "Edit Purchase Order" in t.string:
             expense_type = ExpenseType.PURCHASE_ORDER
-        case bs4.Tag() as t if t.string and "Sales Invoice" in t.string:
+        case bs4.Tag() as t if t.string and "Edit Sales Invoice" in t.string:
             expense_type = ExpenseType.SALES_INVOICE
+        case bs4.Tag() as t if t.string and "Edit Expense Request" in t.string:
+            
         case _:
             logger.warning(
                 "Expense ID %d has an unrecognised type: %s",
@@ -140,4 +146,42 @@ async def get_expense(expense_id: int) -> "Expense | None":
             )
             return None
 
-    return Expense(expense_id=expense_id, status=expense_status, expense_type=expense_type)
+    payee_name_html: bs4.Tag | bs4.NavigableString | None = response_html.find(
+        "input", id="Fields_PayeeName_"
+    )
+
+    payee_name: str = ""
+    if payee_name_html and isinstance(payee_name_html, bs4.Tag):
+        payee_name = str(payee_name_html.get("value", ""))
+
+    total_amount_html: bs4.Tag | bs4.NavigableString | None = response_html.find_all(
+        "td", class_="amount"
+    )[-1]
+
+    if not isinstance(total_amount_html, bs4.Tag):
+        logger.warning(
+            "Couldn't find the total amount for expense ID %d when scraping the expense page HTML.",
+            expense_id,
+        )
+        logger.debug("Retrieved HTML: %s", response_object)
+        return None
+
+    total_amount_text: str = total_amount_html.get_text(strip=True).replace(",", "")
+    total_amount: float | None
+    try:
+        total_amount = float(total_amount_text)
+    except ValueError:
+        logger.warning(
+            "Couldn't parse the total amount for expense ID %d when scraping the expense page HTML. Found text: %s",
+            expense_id,
+            total_amount_text,
+        )
+        return None
+
+    return Expense(
+        expense_id=expense_id,
+        status=expense_status,
+        expense_type=expense_type,
+        payee=payee_name,
+        total_amount=total_amount,
+    )

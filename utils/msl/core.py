@@ -60,7 +60,6 @@ class SUPlatformClient:
             cookie_name: cookie_value,
         }
 
-
     async def fetch_url_content(self, url: str) -> str:
         async with (
             aiohttp.ClientSession(headers=self.headers, cookies=self.cookies) as http_session,

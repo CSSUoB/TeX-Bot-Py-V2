@@ -53,7 +53,6 @@ class MSLCommandsCog(TeXBotBaseCog):
             return
 
         await ctx.respond(
-            f"Expense ID: {expense.id}\nStatus: {expense.status.name}\nType: {expense.type.name}",
+            str(expense),
             ephemeral=True,
         )
-
