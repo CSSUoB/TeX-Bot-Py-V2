@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from typing import Final
 
 
-__all__: "Sequence[str]" = ("ORGANISATION_ADMIN_URL", "SGF_LANDING_URL", "SGF_URL", "su_platform_client")
+__all__: "Sequence[str]" = ("ORGANISATION_ADMIN_URL", "SGF_URL", "su_platform_client")
 
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
@@ -27,7 +27,6 @@ ORGANISATION_ADMIN_URL: "Final[str]" = (
 )
 
 SGF_URL: "Final[str]" = f"https://www.guildofstudents.com/sgf/{ORGANISATION_ID}/"
-SGF_LANDING_URL: "Final[str]" = f"{SGF_URL}/Landing/Member"
 
 
 class SUPlatformClient:

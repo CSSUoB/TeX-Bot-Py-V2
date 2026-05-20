@@ -5,7 +5,7 @@ from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 from .authorisation import SUPlatformAccessCookieStatus, get_su_platform_access_cookie_status
-from .core import SGF_LANDING_URL, SGF_URL, su_platform_client
+from .core import SGF_URL, su_platform_client
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -59,7 +59,7 @@ class Expense:
 
 async def get_expense(expense_id: int) -> "Expense | None":
     """Retrieve the details of an MSL expense."""
-    EXPENSE_URL: "Final[str]" = f"{SGF_URL}/Request/Edit?RequestId={expense_id}"
+    EXPENSE_URL: "Final[str]" = f"{SGF_URL}Request/Edit?RequestId={expense_id}"
 
     status: SUPlatformAccessCookieStatus = await get_su_platform_access_cookie_status()
 
@@ -70,12 +70,14 @@ async def get_expense(expense_id: int) -> "Expense | None":
         )
         return None
 
-    primer: str = await su_platform_client.fetch_url_content(SGF_LANDING_URL)
-
-    logger.debug(primer)
-
     response_object: str = await su_platform_client.fetch_url_content(EXPENSE_URL)
 
-    logger.debug(response_object)
+    if "<!-- StatusId:" not in response_object:
+        logger.info(
+            "Expense ID %d could not be found.",
+            expense_id,
+        )
+
+
 
     return None
