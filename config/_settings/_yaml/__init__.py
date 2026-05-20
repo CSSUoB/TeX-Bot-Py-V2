@@ -73,7 +73,7 @@ _DEFAULT_COMMANDS_SETTINGS: "Final[Mapping[str, Mapping[str, float] | Mapping[st
     "stats": _DEFAULT_STATS_COMMAND_SETTINGS,
     "strike": _DEFAULT_STRIKE_COMMAND_SETTINGS,
 }
-_DEFAULT_MSL_AUTO_COOKIE_CHECKING_SETTINGS: "Final[Mapping[str, bool]]" = {
+_DEFAULT_MSL_AUTO_COOKIE_CHECKING_SETTINGS: "Final[Mapping[str, bool | str]]" = {
     "enabled": DEFAULT_MSL_AUTO_COOKIE_CHECKING_ENABLED,
     "interval": DEFAULT_MSL_AUTO_COOKIE_CHECKING_INTERVAL,
 }
@@ -115,7 +115,7 @@ SETTINGS_YAML_SCHEMA: "Final[strictyaml.Validator]" = strictyaml.Map({
     "community-group": strictyaml.Map({
         strictyaml.Optional("full-name"): strictyaml.Regex(r"\A.{1,50}\Z"),
         strictyaml.Optional("short-name"): strictyaml.Regex(r"\A(?!.*['&!?:,.#%\"-]['&!?:,.#%\"-].*)(?:[A-Za-z0-9'&!?:,.#%\"-]+)\Z",),
-        strictyaml.Optional("membership-dependent-roles"): strictyaml.Str(),
+        strictyaml.Optional("membership-dependent-roles"): strictyaml.UniqueSeq(strictyaml.Str()),
         "links": strictyaml.Map({
             strictyaml.Optional("purchase-membership"): strictyaml.Url(),
             strictyaml.Optional("membership-perks"): strictyaml.Url(),
