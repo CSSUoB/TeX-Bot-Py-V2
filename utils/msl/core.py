@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from typing import Final
 
 
-__all__: "Sequence[str]" = ("ORGANISATION_ADMIN_URL", "SGF_URL", "su_platform_client")
+__all__: "Sequence[str]" = ("ORGANISATION_ADMIN_URL", "SGF_LANDING_URL", "SGF_URL", "su_platform_client")
 
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
@@ -27,6 +27,7 @@ ORGANISATION_ADMIN_URL: "Final[str]" = (
 )
 
 SGF_URL: "Final[str]" = f"https://www.guildofstudents.com/sgf/{ORGANISATION_ID}/"
+SGF_LANDING_URL: "Final[str]" = f"{SGF_URL}/Landing/Member"
 
 
 class SUPlatformClient:
@@ -43,6 +44,24 @@ class SUPlatformClient:
             ".AspNet.SharedCookie": settings["SU_PLATFORM_ACCESS_COOKIE"],
         }
 
+    def set_cookies(self, cookies: "Mapping[str, str]") -> None:
+        """Set the SU platform access cookie."""
+        self.cookies = cookies
+
+    def set_cookie(self, cookie_name: str, cookie_value: str) -> None:
+        """Set a specific cookie in the SU platform access cookie."""
+        if cookie_name in self.cookies:
+            new_cookies: dict[str, str] = dict(self.cookies)
+            new_cookies[cookie_name] = cookie_value
+            self.cookies = new_cookies
+            return
+
+        self.cookies = {
+            **self.cookies,
+            cookie_name: cookie_value,
+        }
+
+
     async def fetch_url_content(self, url: str) -> str:
         async with (
             aiohttp.ClientSession(headers=self.headers, cookies=self.cookies) as http_session,
@@ -51,14 +70,18 @@ class SUPlatformClient:
             returned_asp_cookie: Morsel[str] | None = http_response.cookies.get(
                 ".AspNet.SharedCookie"
             )
+
+            sgf_cookie: Morsel[str] | None = http_response.cookies.get("AntiForgery.Sgf")
+            if sgf_cookie:
+                self.set_cookie("AntiForgery.Sgf", sgf_cookie.value)
+                logger.debug("AntiForgery.Sgf cookie updated from response.")
+
             if not returned_asp_cookie:
                 return await http_response.text()
 
             if returned_asp_cookie.value != self.cookies[".AspNet.SharedCookie"]:
                 logger.info("New SU platform access cookie given by server; updating local.")
-                self.cookies = {
-                    ".AspNet.SharedCookie": returned_asp_cookie.value,
-                }
+                self.set_cookie(".AspNet.SharedCookie", returned_asp_cookie.value)
             return await http_response.text()
 
 

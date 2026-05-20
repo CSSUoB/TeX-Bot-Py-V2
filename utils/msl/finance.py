@@ -4,10 +4,8 @@ import logging
 from enum import Enum, auto
 from typing import TYPE_CHECKING
 
-import bs4
-
-from .core import SGF_URL, su_platform_client
-from .authorisation import get_su_platform_access_cookie_status, SUPlatformAccessCookieStatus
+from .authorisation import SUPlatformAccessCookieStatus, get_su_platform_access_cookie_status
+from .core import SGF_LANDING_URL, SGF_URL, su_platform_client
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -72,7 +70,11 @@ async def get_expense(expense_id: int) -> "Expense | None":
         )
         return None
 
-    response_object = await su_platform_client.fetch_url_content(EXPENSE_URL)
+    primer: str = await su_platform_client.fetch_url_content(SGF_LANDING_URL)
+
+    logger.debug(primer)
+
+    response_object: str = await su_platform_client.fetch_url_content(EXPENSE_URL)
 
     logger.debug(response_object)
 
