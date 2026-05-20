@@ -47,7 +47,8 @@ class MSLCommandsCog(TeXBotBaseCog):
 
         if not expense:
             await ctx.followup.send(
-                f"Could not fetch expense with ID {expense_id}. Please ensure the ID is correct and try again.",
+                f"Could not fetch expense with ID {expense_id}. "
+                "Please ensure the ID is correct and try again.",
                 ephemeral=True,
             )
             return

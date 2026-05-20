@@ -1,8 +1,8 @@
 """Module for handling finance related MSL operations."""
 
 import logging
-from enum import Enum, auto
 import re
+from enum import Enum, auto
 from typing import TYPE_CHECKING, override
 
 import bs4
@@ -13,7 +13,7 @@ from .core import SGF_URL, su_platform_client
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from logging import Logger
-    from typing import Final, Optional
+    from typing import Final
 
 
 __all__: "Sequence[str]" = ()
@@ -124,7 +124,9 @@ async def get_type_from_html(response_html: bs4.BeautifulSoup) -> ExpenseType | 
     if "Edit Expense Request" not in page_title.string:
         return None
 
-    expense_type_html: bs4.Tag | bs4.NavigableString | None = response_html.find("select", {"id": "Fields_RequestSubtypeCode_"})
+    expense_type_html: bs4.Tag | bs4.NavigableString | None = response_html.find(
+        "select", {"id": "Fields_RequestSubtypeCode_"}
+    )
     if not isinstance(expense_type_html, bs4.Tag):
         return None
 
@@ -145,7 +147,7 @@ async def get_type_from_html(response_html: bs4.BeautifulSoup) -> ExpenseType | 
 
 async def get_expense(expense_id: int) -> "Expense | None":
     """Retrieve the details of an MSL expense."""
-    EXPENSE_URL: "Final[str]" = f"{SGF_URL}Request/Edit?RequestId={expense_id}"
+    EXPENSE_URL: Final[str] = f"{SGF_URL}Request/Edit?RequestId={expense_id}"
 
     status: SUPlatformAccessCookieStatus = await get_su_platform_access_cookie_status()
 
@@ -166,7 +168,6 @@ async def get_expense(expense_id: int) -> "Expense | None":
         logger.debug("Retrieved HTML: %s", response_object)
         return None
 
-
     response_html: bs4.BeautifulSoup = bs4.BeautifulSoup(response_object, "html.parser")
 
     expense_type: ExpenseType | None = await get_type_from_html(response_html)
@@ -177,7 +178,6 @@ async def get_expense(expense_id: int) -> "Expense | None":
         )
         logger.debug("Retrieved HTML: %s", response_object)
         return None
-
 
     payee_name_html: bs4.Tag | bs4.NavigableString | None = response_html.find(
         "input", id="Fields_PayeeName_"
@@ -193,7 +193,8 @@ async def get_expense(expense_id: int) -> "Expense | None":
 
     if not isinstance(total_amount_html, bs4.Tag):
         logger.warning(
-            "Couldn't find the total amount for expense ID %d when scraping the expense page HTML.",
+            "Couldn't find the total amount for expense ID %d "
+            "when scraping the expense page HTML.",
             expense_id,
         )
         logger.debug("Retrieved HTML: %s", response_object)
@@ -205,7 +206,8 @@ async def get_expense(expense_id: int) -> "Expense | None":
         total_amount = float(total_amount_text)
     except ValueError:
         logger.warning(
-            "Couldn't parse the total amount for expense ID %d when scraping the expense page HTML. Found text: %s",
+            "Couldn't parse the total amount for expense ID %d when "
+            "scraping the expense page HTML. Found text: %s",
             expense_id,
             total_amount_text,
         )
