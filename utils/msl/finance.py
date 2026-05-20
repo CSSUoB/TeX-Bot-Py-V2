@@ -75,32 +75,14 @@ class Expense:
         )
 
 
-async def get_expense(expense_id: int) -> "Expense | None":
-    """Retrieve the details of an MSL expense."""
-    EXPENSE_URL: "Final[str]" = f"{SGF_URL}Request/Edit?RequestId={expense_id}"
-
-    status: SUPlatformAccessCookieStatus = await get_su_platform_access_cookie_status()
-
-    if status != SUPlatformAccessCookieStatus.AUTHORISED:
-        logger.info(
-            "Failed to retrieve expense details for expense ID %d. No admin access.",
-            expense_id,
-        )
-        return None
-
-    response_object: str = await su_platform_client.fetch_url_content(EXPENSE_URL)
-    response_html: bs4.BeautifulSoup = bs4.BeautifulSoup(response_object, "html.parser")
-
-    type_match: re.Match[str] | None = re.search(r"StatusId:\s*(\d+)", response_object)
-    if not type_match:
-        logger.info(
-            "Expense ID %d could not be found.",
-            expense_id,
-        )
+async def get_status_from_html(response_object: str) -> ExpenseStatus | None:
+    """Extract the expense status from the HTML of an expense page."""
+    status_match: re.Match[str] | None = re.search(r"StatusId:\s*(\d+)", response_object)
+    if not status_match:
         return None
 
     expense_status: ExpenseStatus
-    match type_match:
+    match status_match:
         case re.Match() as m if m.group(1) == "2":
             expense_status = ExpenseStatus.DRAFT
         case re.Match() as m if m.group(1) == "3":
@@ -122,49 +104,80 @@ async def get_expense(expense_id: int) -> "Expense | None":
         case re.Match() as m if m.group(1) == "40":
             expense_status = ExpenseStatus.PO_OR_INVOICE_APPROVED
         case _:
-            logger.warning(
-                "Expense ID %d has an unrecognised status code: %s",
-                expense_id,
-                type_match.group(1),
-            )
             return None
 
+    return expense_status
+
+
+async def get_type_from_html(response_html: bs4.BeautifulSoup) -> ExpenseType | None:
+    """Extract the expense type from the HTML of an expense page."""
     page_title: bs4.Tag | bs4.NavigableString | None = response_html.find("title")
-    if not page_title:
-        logger.warning(
-            "Expense page returned no content when fetching details for expense ID %d.",
+    if not isinstance(page_title, bs4.Tag) or not page_title.string:
+        return None
+
+    if "Edit Purchase Order" in page_title.string:
+        return ExpenseType.PURCHASE_ORDER
+
+    if "Edit Sales Invoice" in page_title.string:
+        return ExpenseType.SALES_INVOICE
+
+    if "Edit Expense Request" not in page_title.string:
+        return None
+
+    expense_type_html: bs4.Tag | bs4.NavigableString | None = response_html.find("select", {"id": "Fields_RequestSubtypeCode_"})
+    if not isinstance(expense_type_html, bs4.Tag):
+        return None
+
+    expense_type_option_html = expense_type_html.find("option", selected=True)
+    if not isinstance(expense_type_option_html, bs4.Tag):
+        return None
+
+    expense_type_option_value = str(expense_type_option_html.get("value", ""))
+
+    if expense_type_option_value == "1":
+        return ExpenseType.PERSONAL_EXPENSE
+
+    if expense_type_option_value == "2":
+        return ExpenseType.EXTERNAL_PAYMENT
+
+    return None
+
+
+async def get_expense(expense_id: int) -> "Expense | None":
+    """Retrieve the details of an MSL expense."""
+    EXPENSE_URL: "Final[str]" = f"{SGF_URL}Request/Edit?RequestId={expense_id}"
+
+    status: SUPlatformAccessCookieStatus = await get_su_platform_access_cookie_status()
+
+    if status != SUPlatformAccessCookieStatus.AUTHORISED:
+        logger.info(
+            "Failed to retrieve expense details for expense ID %d. No admin access.",
             expense_id,
         )
         return None
 
-    expense_type: ExpenseType
-    match page_title:
-        case bs4.Tag() as t if t.string and "Edit Purchase Order" in t.string:
-            expense_type = ExpenseType.PURCHASE_ORDER
-        case bs4.Tag() as t if t.string and "Edit Sales Invoice" in t.string:
-            expense_type = ExpenseType.SALES_INVOICE
-        case bs4.Tag() as t if t.string and "Edit Expense Request" in t.string:
-            expense_type_html = bs4.BeautifulSoup(response_object, "html.parser").find("select", {"id": "Fields_RequestSubtypeCode_"})
-            expense_type_option_html = expense_type_html.find("option", selected=True)
-            expense_type_option_value = str(expense_type_option_html.get("value", ""))
-            if expense_type_option_value == "1":
-                expense_type = ExpenseType.PERSONAL_EXPENSE
-            elif expense_type_option_value == "2":
-                expense_type = ExpenseType.EXTERNAL_PAYMENT
-            else:
-                logger.warning(
-                    "Expense ID %d has an unrecognised expense type: %s",
-                    expense_id,
-                    expense_type_option_value,
-                )
-                return None
-        case _:
-            logger.warning(
-                "Expense ID %d has an unrecognised type: %s",
-                expense_id,
-                str(page_title),
-            )
-            return None
+    response_object: str = await su_platform_client.fetch_url_content(EXPENSE_URL)
+    expense_status: ExpenseStatus | None = await get_status_from_html(response_object)
+    if not expense_status:
+        logger.warning(
+            "Couldn't find the status of expense ID %d when scraping the expense page HTML.",
+            expense_id,
+        )
+        logger.debug("Retrieved HTML: %s", response_object)
+        return None
+
+
+    response_html: bs4.BeautifulSoup = bs4.BeautifulSoup(response_object, "html.parser")
+
+    expense_type: ExpenseType | None = await get_type_from_html(response_html)
+    if not expense_type:
+        logger.warning(
+            "Couldn't find the type of expense ID %d when scraping the expense page HTML.",
+            expense_id,
+        )
+        logger.debug("Retrieved HTML: %s", response_object)
+        return None
+
 
     payee_name_html: bs4.Tag | bs4.NavigableString | None = response_html.find(
         "input", id="Fields_PayeeName_"
