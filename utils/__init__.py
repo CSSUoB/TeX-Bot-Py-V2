@@ -26,6 +26,7 @@ __all__: Sequence[str] = (  # noqa: PLE0604
 
 from typing import TypeAlias
 
+import certifi
 import discord
 
 # noinspection PyUnresolvedReferences,PyProtectedMember
@@ -43,12 +44,38 @@ from .tex_bot import TeXBot, TeXBotExitReason
 from .tex_bot_base_cog import TeXBotBaseCog
 from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
 
-AllChannelTypes: TypeAlias = (
-    discord.VoiceChannel
-    | discord.StageChannel
-    | discord.TextChannel
-    | discord.ForumChannel
-    | discord.CategoryChannel
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import Final
+
+__all__: "Sequence[str]" = (
+    "GLOBAL_SSL_CONTEXT",
+    "AllChannelTypes",
+    "CommandChecks",
+    "MessageSavingSenderComponent",
+    "SuppressTraceback",
+    "TeXBot",
+    "TeXBotApplicationContext",
+    "TeXBotAutocompleteContext",
+    "TeXBotBaseCog",
+    "generate_invite_url",
+    "is_member_inducted",
+    "is_running_in_async",
+)
+
+
+if TYPE_CHECKING:
+    type AllChannelTypes = (
+        discord.VoiceChannel
+        | discord.StageChannel
+        | discord.TextChannel
+        | discord.ForumChannel
+        | discord.CategoryChannel
+        | None
+    )
+
+GLOBAL_SSL_CONTEXT: "Final[ssl.SSLContext]" = ssl.create_default_context(
+    cafile=certifi.where()
 )
 
 

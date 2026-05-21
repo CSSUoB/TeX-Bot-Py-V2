@@ -1,16 +1,9 @@
 """Custom cog subclass that stores a reference to the custom bot class."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("TeXBotBaseCog",)
-
-
 import contextlib
 import logging
 import re
-from collections.abc import Mapping, Set
-from logging import Logger
-from typing import TYPE_CHECKING, Final, override
+from typing import TYPE_CHECKING, override
 
 import discord
 from discord import Cog
@@ -25,19 +18,28 @@ from .tex_bot import TeXBot
 from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 if TYPE_CHECKING:
-    from typing import TypeAlias
+    from collections.abc import Mapping, Sequence
+    from collections.abc import Set as AbstractSet
+    from logging import Logger
+    from typing import Final
+
+    from .tex_bot import TeXBot
+    from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
+
+
+__all__: "Sequence[str]" = ("TeXBotBaseCog",)
 
 
 if TYPE_CHECKING:
-    MentionableMember: TypeAlias = discord.Member | discord.Role
+    type MentionableMember = discord.Member | discord.Role
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class TeXBotBaseCog(Cog):
     """Base Cog subclass that stores a reference to the currently running TeXBot instance."""
 
-    ERROR_ACTIVITIES: Final[Mapping[str, str]] = {
+    ERROR_ACTIVITIES: "Final[Mapping[str, str]]" = {  # noqa: RUF012
         "archive": "archive the selected category",
         "delete_all_reminders": (
             "delete all `DiscordReminder` objects from the backend database"
@@ -64,7 +66,7 @@ class TeXBotBaseCog(Cog):
     }
 
     @override
-    def __init__(self, bot: TeXBot) -> None:
+    def __init__(self, bot: "TeXBot") -> None:
         """
         Initialise a new cog instance.
 
@@ -179,13 +181,14 @@ class TeXBotBaseCog(Cog):
         if logging_message:
             logger.error(
                 " ".join(
-                    message_part for message_part in (
-                        error_code if error_code else "",
+                    message_part
+                    for message_part in (
+                        error_code or "",
                         f"({interaction_name})",
                         str(logging_message),
                     )
                     if message_part
-                ).rstrip(": ;"),
+                ).rstrip(": ;")
             )
 
         if is_fatal and error_code:
@@ -196,7 +199,9 @@ class TeXBotBaseCog(Cog):
             raise ValueError(FATAL_AND_ERROR_CODE_MESSAGE)
 
     @staticmethod
-    async def autocomplete_get_text_channels(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
+    async def autocomplete_get_text_channels(
+        ctx: "TeXBotAutocompleteContext",
+    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """
         Autocomplete callable that generates the set of available selectable channels.
 
@@ -208,14 +213,13 @@ class TeXBotBaseCog(Cog):
 
         try:
             main_guild: discord.Guild = ctx.bot.main_guild
-            # noinspection PyUnusedLocal
             channel_permissions_limiter: MentionableMember = await ctx.bot.guest_role
         except BaseDoesNotExistError:
             return set()
 
         with contextlib.suppress(DiscordMemberNotInMainGuildError):
             channel_permissions_limiter = await ctx.bot.get_main_guild_member(
-                ctx.interaction.user,
+                ctx.interaction.user
             )
 
         return {

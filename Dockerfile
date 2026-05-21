@@ -1,37 +1,35 @@
-FROM python:3.12 AS builder
+FROM ghcr.io/astral-sh/uv:python3.13-trixie-slim AS builder
 
-ENV PYTHONUNBUFFERED=true \
-    PYTHONDONTWRITEBYTECODE=true \
-    PIP_NO_CACHE_DIR=off \
-    PIP_DISABLE_PIP_VERSION_CHECK=on \
-    PIP_DEFAULT_TIMEOUT=100 \
-    POETRY_NO_INTERACTION=true \
-    POETRY_VIRTUALENVS_IN_PROJECT=true \
-    POETRY_VIRTUALENVS_CREATE=true \
-    POETRY_CACHE_DIR=/tmp/poetry_cache \
-    POETRY_VIRTUALENVS_OPTIONS_ALWAYS_COPY=true \
-    POETRY_VIRTUALENVS_OPTIONS_NO_PIP=true \
-    POETRY_HOME=/opt/poetry
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y git=1:2.* --no-install-recommends
 
-
-RUN apt-get update && apt-get install --no-install-recommends -y curl build-essential
-RUN python3 -m venv $POETRY_HOME
-RUN $POETRY_HOME/bin/pip install poetry==1.8.3
-
+ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 
 WORKDIR /app
 
-COPY poetry.lock pyproject.toml README.md ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project --no-group dev
 
-RUN --mount=type=cache,target=$POETRY_CACHE_DIR $POETRY_HOME/bin/poetry install --without dev --no-root --no-interaction
+COPY LICENSE /app/
+COPY config.py main.py messages.json /app/
+COPY exceptions/ /app/exceptions/
+COPY utils/ /app/utils/
+COPY db/ /app/db/
+COPY cogs/ /app/cogs/
 
-FROM python:3.12-slim AS runtime
+FROM python:3.13-slim-trixie
 
-ENV LANG=C.UTF-8 \
-    VIRTUAL_ENV=/app/.venv \
-    PATH="/app/.venv/bin:$PATH"
+RUN groupadd --system --gid 999 nonroot && useradd --system --gid 999 --uid 999 --create-home nonroot
 
-COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+LABEL org.opencontainers.image.source=https://github.com/CSSUoB/TeX-Bot-Py-V2
+LABEL org.opencontainers.image.licenses=Apache-2.0
+
+COPY --from=builder --chown=nonroot:nonroot /app /app
+
+ENV LANG=C.UTF-8 PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
 

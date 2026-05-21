@@ -1,13 +1,7 @@
 """Contains cog classes for any startup interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("StartupCog",)
-
-
 import logging
-from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING
 
 import discord
 from discord_logging.handler import DiscordHandler
@@ -22,11 +16,21 @@ from exceptions import (
     GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
     MemberRoleDoesNotExistError,
+    MSLMembershipError,
     RolesChannelDoesNotExistError,
 )
 from utils import TeXBotBaseCog
+from utils.msl import fetch_community_group_members_list
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from logging import Logger
+    from typing import Final
+
+__all__: "Sequence[str]" = ("StartupCog",)
+
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class StartupCog(TeXBotBaseCog):
@@ -101,8 +105,7 @@ class StartupCog(TeXBotBaseCog):
                 logger.info(
                     "Invite URL: %s",
                     utils.generate_invite_url(
-                        self.bot.application_id,
-                        settings["_DISCORD_MAIN_GUILD_ID"],
+                        self.bot.application_id, settings["_DISCORD_MAIN_GUILD_ID"]
                     ),
                 )
             logger.critical(

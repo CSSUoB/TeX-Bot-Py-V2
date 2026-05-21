@@ -1,13 +1,8 @@
 """Test suite for utils package."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ()
-
-
 import random
 import re
-from typing import Final
+from typing import TYPE_CHECKING
 
 import utils
 

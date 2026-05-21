@@ -1,0 +1,111 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "assignAutomerge": false,
+    "automerge": true,
+    "configMigration": true,
+    "dependencyDashboard": true,
+    "dependencyDashboardAutoclose": true,
+    "dependencyDashboardLabels": [
+        "dependencies"
+    ],
+    "enabled": true,
+    "enabledManagers": [
+        "github-actions",
+        "pep621",
+        "pep723",
+        "pre-commit",
+        "dockerfile"
+    ],
+    "extends": [
+        "replacements:all",
+        "workarounds:all"
+    ],
+    "gitIgnoredAuthors": [
+        "autofix-ci@users.noreply.github.com",
+        "autofix-ci[bot]@users.noreply.github.com",
+        "114827586+autofix-ci[bot]@users.noreply.github.com"
+    ],
+    "labels": [
+        "dependencies"
+    ],
+    "lockFileMaintenance": {
+        "automerge": true,
+        "enabled": true
+    },
+    "packageRules": [
+        {
+            "dependencyDashboardApproval": true,
+            "description": "Only update Python versions after approval",
+            "groupName": "python-version",
+            "matchPackageNames": [
+                "python"
+            ],
+            "matchUpdateTypes": [
+                "major",
+                "minor"
+            ]
+        },
+        {
+            "dependencyDashboardApproval": true,
+            "description": "Only update py-cord versions after approval",
+            "groupName": "py-cord-version",
+            "matchPackageNames": [
+                "py-cord"
+            ],
+            "matchUpdateTypes": [
+                "major",
+                "minor",
+                "patch"
+            ]
+        },
+        {
+            "groupName": "pep621",
+            "matchManagers": [
+                "pep621"
+            ]
+        },
+        {
+            "groupName": "github-actions",
+            "matchDatasources": [
+                "github-tags"
+            ],
+            "matchManagers": [
+                "github-actions"
+            ]
+        },
+        {
+            "groupName": "github-runners",
+            "matchDatasources": [
+                "github-runners"
+            ],
+            "matchManagers": [
+                "github-actions"
+            ]
+        },
+        {
+            "groupName": "pre-commit",
+            "matchManagers": [
+                "pre-commit"
+            ]
+        },
+        {
+            "description": "Update frequently changing pre-commit hooks on Tuesday mornings",
+            "matchManagers": [
+                "pre-commit"
+            ],
+            "matchPackageNames": [
+                "renovatebot/pre-commit-hooks",
+                "astral-sh/uv-pre-commit",
+                "astral-sh/ruff-pre-commit"
+            ],
+            "schedule": [
+                "* 3-8 * * 2"
+            ]
+        }
+    ],
+    "prHourlyLimit": 10,
+    "pre-commit": {
+        "enabled": true
+    },
+    "timezone": "Europe/London"
+}

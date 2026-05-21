@@ -1,6 +1,7 @@
 """Class definitions of components that send provided message content to a defined endpoint."""
 
-from collections.abc import Sequence
+import abc
+from typing import TYPE_CHECKING, final, override
 
 __all__: Sequence[str] = (
     "GenericResponderComponent",
@@ -8,17 +9,26 @@ __all__: Sequence[str] = (
     "EditorResponseComponent",
     "MessageSavingSenderComponent",
     "ChannelMessageSender",
+    "MessageSavingSenderComponent",
     "ResponseMessageSender",
 )
 
 
-import abc
-from typing import Final, TypedDict, final, override
+if TYPE_CHECKING:
 
-import discord
-from discord.ui import View
+    class _BaseChannelSendKwargs(TypedDict):
+        """Type-hint for the required kwargs to the channel-send-function."""
 
-from .tex_bot_contexts import TeXBotApplicationContext
+        content: str
+
+    class _ChannelSendKwargs(_BaseChannelSendKwargs, total=False):
+        """
+        Type-hint-definition for all kwargs to the channel-send-function.
+
+        Includes both required & optional kwargs.
+        """
+
+        view: "View"
 
 
 # noinspection PyPep8Naming
@@ -91,7 +101,8 @@ class MessageSavingSenderComponent(abc.ABC):
     """
     Abstract protocol definition of a sending component that saves the sent-message.
 
-    Defines the way to send a provided message content & optional view to the defined endpoint.
+    Defines the way to send a provided message content
+    and optional view to the defined endpoint.
     """
 
     @override
@@ -99,16 +110,18 @@ class MessageSavingSenderComponent(abc.ABC):
         self.sent_message: discord.Message | discord.Interaction | None = None
 
     @abc.abstractmethod
-    async def _send(self, content: str, *, view: View | None = None) -> discord.Message | discord.Interaction:  # noqa: E501
+    async def _send(
+        self, content: str, *, view: "View | None" = None
+    ) -> discord.Message | discord.Interaction:
         """
         Subclass implementation of `send()` method.
 
-        Implementations should send the provided message content & optional view
+        Implementations should send the provided message content and optional view
         to the defined endpoint.
         """
 
     @final
-    async def send(self, content: str, *, view: View | None = None) -> None:
+    async def send(self, content: str, *, view: "View | None" = None) -> None:
         """Send the provided message content & optional view to the defined endpoint."""
         if self.sent_message is not None:
             ALREADY_SENT_MESSAGE: Final[str] = (
@@ -147,22 +160,10 @@ class ChannelMessageSender(MessageSavingSenderComponent):
         super().__init__()
 
     @override
-    async def _send(self, content: str, *, view: View | None = None) -> discord.Message | discord.Interaction:  # noqa: E501
-        class _BaseChannelSendKwargs(TypedDict):
-            """Type-hint-definition for the required kwargs to the channel-send-function."""
-
-            content: str
-
-        class ChannelSendKwargs(_BaseChannelSendKwargs, total=False):
-            """
-            Type-hint-definition for all kwargs to the channel-send-function.
-
-            Includes both required & optional kwargs.
-            """
-
-            view: View
-
-        send_kwargs: ChannelSendKwargs = {"content": content}
+    async def _send(
+        self, content: str, *, view: "View | None" = None
+    ) -> discord.Message | discord.Interaction:
+        send_kwargs: _ChannelSendKwargs = {"content": content}
         if view:
             send_kwargs["view"] = view
 
@@ -178,11 +179,13 @@ class ResponseMessageSender(MessageSavingSenderComponent):
     """
 
     @override
-    def __init__(self, ctx: TeXBotApplicationContext) -> None:
+    def __init__(self, ctx: "TeXBotApplicationContext") -> None:
         self.ctx: TeXBotApplicationContext = ctx
 
         super().__init__()
 
     @override
-    async def _send(self, content: str, *, view: View | None = None) -> discord.Message | discord.Interaction:  # noqa: E501
+    async def _send(
+        self, content: str, *, view: "View | None" = None
+    ) -> discord.Message | discord.Interaction:
         return await self.ctx.respond(content=content, view=view, ephemeral=True)

@@ -1,0 +1,5 @@
+failure-threshold: style
+label-schema:
+    org.opencontainers.image.licenses: spdx
+    org.opencontainers.image.source: url
+strict-labels: true

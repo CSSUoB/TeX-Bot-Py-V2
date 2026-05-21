@@ -4,44 +4,37 @@ Common decorator utilities to capture & suppress errors.
 Capturing errors is necessary in contexts where exceptions are not already suppressed.
 """
 
-from collections.abc import Sequence
+import functools
+import logging
+from typing import TYPE_CHECKING
 
-__all__: Sequence[str] = (
+from exceptions import GuildDoesNotExistError, StrikeTrackingError
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Coroutine, Sequence
+    from logging import Logger
+    from typing import Concatenate, Final
+
+    from .tex_bot_base_cog import TeXBotBaseCog
+
+__all__: "Sequence[str]" = (
     "ErrorCaptureDecorators",
     "capture_guild_does_not_exist_error",
     "capture_strike_tracking_error",
 )
 
 
-import functools
-import logging
-from collections.abc import Callable, Coroutine
-from logging import Logger
-from typing import TYPE_CHECKING, Final, ParamSpec, TypeVar
-
-from exceptions import GuildDoesNotExistError, StrikeTrackingError
-
-from .tex_bot_base_cog import TeXBotBaseCog
-
 if TYPE_CHECKING:
-    from typing import Concatenate, TypeAlias
-
-
-P = ParamSpec("P")
-T_ret = TypeVar("T_ret")
-T_cog = TypeVar("T_cog", bound=TeXBotBaseCog)
-
-if TYPE_CHECKING:
-    WrapperInputFunc: TypeAlias = (
+    type WrapperInputFunc[**P, T_ret] = (
         Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T_ret]]
         | Callable[P, Coroutine[object, object, T_ret]]
     )
-    WrapperOutputFunc: TypeAlias = Callable[P, Coroutine[object, object, T_ret | None]]
-    DecoratorInputFunc: TypeAlias = (
-        Callable[Concatenate[T_cog, P], Coroutine[object, object, T_ret]]
-    )
+    type WrapperOutputFunc[**P, T_ret] = Callable[P, Coroutine[object, object, T_ret | None]]
+    type DecoratorInputFunc[**P, T_cog: TeXBotBaseCog, T_ret] = Callable[
+        Concatenate[T_cog, P], Coroutine[object, object, T_ret]
+    ]
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class ErrorCaptureDecorators:
@@ -52,7 +45,11 @@ class ErrorCaptureDecorators:
     """
 
     @staticmethod
-    def capture_error_and_close(func: "DecoratorInputFunc[T_cog, P, T_ret]", error_type: type[BaseException], close_func: Callable[[BaseException], None]) -> "WrapperOutputFunc[P, T_ret]":  # noqa: E501
+    def capture_error_and_close[**P, T_ret, T_cog: TeXBotBaseCog](
+        func: "DecoratorInputFunc[P, T_cog, T_ret]",
+        error_type: type[BaseException],
+        close_func: "Callable[[BaseException], None]",
+    ) -> "WrapperOutputFunc[P, T_ret]":
         """
         Decorator to send an error message to the user when the given exception type is raised.
 
@@ -60,7 +57,7 @@ class ErrorCaptureDecorators:
         """  # noqa: D401
 
         @functools.wraps(func)
-        async def wrapper(self: T_cog, /, *args: P.args, **kwargs: P.kwargs) -> T_ret | None:  # type: ignore[misc]
+        async def wrapper(self: T_cog, /, *args: P.args, **kwargs: P.kwargs) -> T_ret | None:  # type: ignore[misc]  # noqa: CAR150
             try:
                 return await func(self, *args, **kwargs)
             except error_type as error:
@@ -81,7 +78,9 @@ class ErrorCaptureDecorators:
         logger.warning("Critical errors are likely to lead to untracked moderation actions")
 
 
-def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T_ret]") -> "WrapperOutputFunc[P, T_ret]":  # noqa: E501
+def capture_guild_does_not_exist_error[**P, T_ret](
+    func: "WrapperInputFunc[P, T_ret]",
+) -> "WrapperOutputFunc[P, T_ret]":
     """
     Decorator to send an error message to the Discord user when a GuildDoesNotExist is raised.
 
@@ -94,7 +93,9 @@ def capture_guild_does_not_exist_error(func: "WrapperInputFunc[P, T_ret]") -> "W
     )
 
 
-def capture_strike_tracking_error(func: "WrapperInputFunc[P, T_ret]") -> "WrapperOutputFunc[P, T_ret]":  # noqa: E501
+def capture_strike_tracking_error[**P, T_ret](
+    func: "WrapperInputFunc[P, T_ret]",
+) -> "WrapperOutputFunc[P, T_ret]":
     """
     Decorator to send an error message to the user when a StrikeTrackingError is raised.
 

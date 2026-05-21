@@ -1,27 +1,26 @@
 """Custom exception classes raised when errors occur with properties of a guild object."""
 
-from collections.abc import Sequence
+from typing import TYPE_CHECKING, override
 
-__all__: Sequence[str] = (
+from typed_classproperties import classproperty
+
+from .base import BaseErrorWithErrorCode, BaseTeXBotError
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+__all__: "Sequence[str]" = (
     "DiscordMemberNotInMainGuildError",
     "EveryoneRoleCouldNotBeRetrievedError",
 )
 
 
-from typing import override
-
-from classproperties import classproperty
-
-from .base import BaseErrorWithErrorCode, BaseTeXBotError
-
-
 class DiscordMemberNotInMainGuildError(BaseTeXBotError, ValueError):
     """Exception class for when no members of your Discord guild have the given user ID."""
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
+    def DEFAULT_MESSAGE(cls) -> str:
         return "Given user ID does not represent any member of your group's Discord guild."
 
     @override
@@ -35,14 +34,12 @@ class DiscordMemberNotInMainGuildError(BaseTeXBotError, ValueError):
 class EveryoneRoleCouldNotBeRetrievedError(BaseErrorWithErrorCode, ValueError):
     """Exception class for when the "@everyone" role could not be retrieved."""
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def DEFAULT_MESSAGE(cls) -> str:  # noqa: N805
-        return "The reference to the \"@everyone\" role could not be correctly retrieved."
+    def DEFAULT_MESSAGE(cls) -> str:
+        return 'The reference to the "@everyone" role could not be correctly retrieved.'
 
-    # noinspection PyMethodParameters,PyPep8Naming
     @classproperty
     @override
-    def ERROR_CODE(cls) -> str:  # noqa: N805
+    def ERROR_CODE(cls) -> str:
         return "E1042"

@@ -1,14 +1,7 @@
 """Contains cog classes for any command_error interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("CommandErrorCog",)
-
-
-import contextlib
 import logging
-from logging import Logger
-from typing import Final
+from typing import TYPE_CHECKING
 
 import discord
 from discord import Forbidden
@@ -21,9 +14,19 @@ from exceptions import (
     UnknownDjangoError,
 )
 from exceptions.base import BaseErrorWithErrorCode
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog
 
-logger: Final[Logger] = logging.getLogger("TeX-Bot")
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from logging import Logger
+    from typing import Final
+
+    from utils import TeXBotApplicationContext
+
+__all__: "Sequence[str]" = ("CommandErrorCog",)
+
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
 class CommandErrorCog(TeXBotBaseCog):
@@ -59,7 +62,9 @@ class CommandErrorCog(TeXBotBaseCog):
         raise ErrorCodeCouldNotBeIdentifiedError(other_error=error.original)
 
     @TeXBotBaseCog.listener()
-    async def on_application_command_error(self, ctx: TeXBotApplicationContext, error: discord.ApplicationCommandError) -> None:  # noqa: E501
+    async def on_application_command_error(
+        self, ctx: "TeXBotApplicationContext", error: discord.ApplicationCommandError
+    ) -> None:
         """Log any major command errors in the logging channel & stderr."""
         IS_FATAL: Final[bool] = bool(
             isinstance(error, discord.ApplicationCommandInvokeError)
@@ -79,19 +84,22 @@ class CommandErrorCog(TeXBotBaseCog):
                 error_code = self._get_error_code_from_error(error)
 
         elif isinstance(error, CheckAnyFailure):
-            if CommandChecks.is_interaction_user_in_main_guild_failure(error.checks[0]):
+            # TODO: Remove type ignore comments once #349 is resolved  # noqa: FIX002
+            if CommandChecks.is_interaction_user_in_main_guild_failure(error.checks[0]):  # type: ignore[arg-type]
                 message = (
                     "You must be a member of "
                     f"the {self.bot.group_short_name} Discord server "
                     "to use this command."
                 )
 
-            elif CommandChecks.is_interaction_user_has_committee_role_failure(error.checks[0]):
-                # noinspection PyUnusedLocal
-                committee_role_mention: str = "@Committee"
-                with contextlib.suppress(CommitteeRoleDoesNotExistError):
-                    committee_role_mention = (await self.bot.committee_role).mention
-                message = f"Only {committee_role_mention} members can run this command."
+            elif CommandChecks.is_interaction_user_has_committee_role_failure(error.checks[0]):  # type: ignore[arg-type]
+                message = (
+                    f"Only {await self.bot.get_mention_string(self.bot.committee_role)} "
+                    "members can run this command."
+                )
+
+        else:
+            logging_message = error
 
         await self.command_send_error(
             ctx,

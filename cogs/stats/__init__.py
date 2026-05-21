@@ -1,160 +1,57 @@
 """Contains cog classes for any stats interactions."""
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("amount_of_time_formatter", "plot_bar_chart", "StatsCommandsCog")
-
-
-import io
 import math
 import re
-from collections.abc import AsyncIterable
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
 import discord
-import matplotlib.pyplot as plt
-import mplcyberpunk
 
 from config import settings
 from db.core.models import LeftDiscordMember
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
+from .counts import get_channel_message_counts, get_server_message_counts
+from .graphs import amount_of_time_formatter, plot_bar_chart
+
 if TYPE_CHECKING:
-    from collections.abc import Collection
+    from collections.abc import AsyncIterable, Mapping, Sequence
+    from typing import Final
 
-    from matplotlib.text import Text as Plot_Text
+    from utils import TeXBotApplicationContext
 
-
-def amount_of_time_formatter(value: float, time_scale: str) -> str:
-    """
-    Format the amount of time value according to the provided time_scale.
-
-    E.g. past "1 days" => past "day",
-    past "2.00 weeks" => past "2 weeks",
-    past "3.14159 months" => past "3.14 months"
-    """
-    if value == 1 or float(f"{value:.2f}") == 1:
-        return f"{time_scale}"
-
-    if value % 1 == 0 or float(f"{value:.2f}") % 1 == 0:
-        return f"{int(value)} {time_scale}s"
-
-    return f"{value:.2f} {time_scale}s"
-
-
-def plot_bar_chart(data: dict[str, int], x_label: str, y_label: str, title: str, filename: str, description: str, extra_text: str = "") -> discord.File:  # noqa: E501
-    """Generate an image of a plot bar chart from the given data & format variables."""
-    plt.style.use("cyberpunk")
-
-    max_data_value: int = max(data.values()) + 1
-
-    # NOTE: The "extra_values" dictionary represents columns of data that should be formatted differently to the standard data columns
-    extra_values: dict[str, int] = {}
-    if "Total" in data:
-        extra_values["Total"] = data.pop("Total")
-
-    if len(data) > 4:
-        data = {
-            key: value
-            for index, (key, value) in enumerate(data.items())
-            if value > 0 or index <= 4
-        }
-
-    bars = plt.bar(*zip(*data.items(), strict=True))
-
-    if extra_values:
-        extra_bars = plt.bar(*zip(*extra_values.items(), strict=True))
-        mplcyberpunk.add_bar_gradient(extra_bars)
-
-    mplcyberpunk.add_bar_gradient(bars)
-
-    x_tick_labels: Collection[Plot_Text] = plt.gca().get_xticklabels()
-    count_x_tick_labels: int = len(x_tick_labels)
-
-    index: int
-    tick_label: Plot_Text
-    for index, tick_label in enumerate(x_tick_labels):
-        if tick_label.get_text() == "Total":
-            tick_label.set_fontweight("bold")
-
-        # NOTE: Shifts the y location of every other horizontal label down so that they do not overlap with one-another
-        if index % 2 == 1 and count_x_tick_labels > 4:
-            tick_label.set_y(tick_label.get_position()[1] - 0.044)
-
-    plt.yticks(range(0, max_data_value, math.ceil(max_data_value / 15)))
-
-    x_label_obj: Plot_Text = plt.xlabel(
-        x_label,
-        fontweight="bold",
-        fontsize="large",
-        wrap=True,
-    )
-    x_label_obj._get_wrap_line_width = lambda: 475  # type: ignore[attr-defined]
-
-    y_label_obj: Plot_Text = plt.ylabel(
-        y_label,
-        fontweight="bold",
-        fontsize="large",
-        wrap=True,
-    )
-    y_label_obj._get_wrap_line_width = lambda: 375  # type: ignore[attr-defined]
-
-    title_obj: Plot_Text = plt.title(title, fontsize="x-large", wrap=True)
-    title_obj._get_wrap_line_width = lambda: 500  # type: ignore[attr-defined]
-
-    if extra_text:
-        extra_text_obj: Plot_Text = plt.text(
-            0.5,
-            -0.27,
-            extra_text,
-            ha="center",
-            transform=plt.gca().transAxes,
-            wrap=True,
-            fontstyle="italic",
-            fontsize="small",
-        )
-        extra_text_obj._get_wrap_line_width = lambda: 400  # type: ignore[attr-defined]
-        plt.subplots_adjust(bottom=0.2)
-
-    plot_file = io.BytesIO()
-    plt.savefig(plot_file, format="png")
-    plt.close()
-    plot_file.seek(0)
-
-    discord_plot_file: discord.File = discord.File(
-        plot_file,
-        filename,
-        description=description,
-    )
-
-    plot_file.close()
-
-    return discord_plot_file
+__all__: "Sequence[str]" = ("StatsCommandsCog",)
 
 
 class StatsCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/stats" command group and its command call-back methods."""
 
-    _DISCORD_SERVER_NAME: Final[str] = f"""{
-        "the " if (
+    _DISCORD_SERVER_NAME: "Final[str]" = f"""{
+        "the "
+        if (
             settings["_GROUP_SHORT_NAME"] is not None
-            and (
-                settings["_GROUP_SHORT_NAME"]
-            ).replace("the", "").replace("THE", "").replace("The", "").strip()
+            and (settings["_GROUP_SHORT_NAME"])
+            .replace("the", "")
+            .replace("THE", "")
+            .replace("The", "")
+            .strip()
         )
         else ""
     }{
         (
-            (
-                settings["_GROUP_SHORT_NAME"]
-            ).replace("the", "").replace("THE", "").replace("The", "").strip()
+            (settings["_GROUP_SHORT_NAME"])
+            .replace("the", "")
+            .replace("THE", "")
+            .replace("The", "")
+            .strip()
         )
         if (
             settings["_GROUP_SHORT_NAME"] is not None
-            and (
-                settings["_GROUP_SHORT_NAME"]
-            ).replace("the", "").replace("THE", "").replace("The", "").strip()
+            and (settings["_GROUP_SHORT_NAME"])
+            .replace("the", "")
+            .replace("THE", "")
+            .replace("The", "")
+            .strip()
         )
         else "our community group's"
     }"""
@@ -164,29 +61,29 @@ class StatsCommandsCog(TeXBotBaseCog):
         description=f"Various statistics about {_DISCORD_SERVER_NAME} Discord server",
     )
 
-    # noinspection SpellCheckingInspection
     @stats.command(
-        name="channel",
-        description="Displays the stats for the current/a given channel.",
+        name="channel", description="Displays the stats for the current/a given channel."
     )
-    @discord.option(  # type: ignore[no-untyped-call, misc]
+    @discord.option(
         name="channel",
         description="The channel to display the stats for.",
         input_type=str,
         autocomplete=discord.utils.basic_autocomplete(
-            TeXBotBaseCog.autocomplete_get_text_channels,  # type: ignore[arg-type]
+            TeXBotBaseCog.autocomplete_get_text_channels
         ),
         required=False,
         parameter_name="str_channel_id",
     )
-    async def channel_stats(self, ctx: TeXBotApplicationContext, str_channel_id: str) -> None:
+    async def channel_stats(
+        self, ctx: "TeXBotApplicationContext", str_channel_id: str
+    ) -> None:
         """
         Definition & callback response of the "channel_stats" command.
 
         The "channel_stats" command sends a graph of the stats about messages sent in the given
         channel.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
         channel_id: int = ctx.channel_id
@@ -194,66 +91,28 @@ class StatsCommandsCog(TeXBotBaseCog):
         if str_channel_id:
             if not re.fullmatch(r"\A\d{17,20}\Z", str_channel_id):
                 await self.command_send_error(
-                    ctx,
-                    message=f"{str_channel_id!r} is not a valid channel ID.",
+                    ctx, message=f"{str_channel_id!r} is not a valid channel ID."
                 )
                 return
 
             channel_id = int(str_channel_id)
 
         channel: discord.TextChannel | None = discord.utils.get(
-            main_guild.text_channels,
-            id=channel_id,
+            main_guild.text_channels, id=channel_id
         )
         if not channel:
             await self.command_send_error(
-                ctx,
-                message=f"Text channel with ID {str(channel_id)!r} does not exist.",
+                ctx, message=f"Text channel with ID {str(channel_id)!r} does not exist."
             )
             return
 
         await ctx.defer(ephemeral=True)
 
-        message_counts: dict[str, int] = {"Total": 0}
-
-        role_name: str
-        for role_name in settings["STATISTICS_ROLES"]:
-            if discord.utils.get(main_guild.roles, name=role_name):
-                message_counts[f"@{role_name}"] = 0
-
-        message_history_period: AsyncIterable[discord.Message] = channel.history(
-            after=discord.utils.utcnow() - settings["STATISTICS_DAYS"],
-        )
-        message: discord.Message
-        async for message in message_history_period:
-            if message.author.bot:
-                continue
-
-            message_counts["Total"] += 1
-
-            if isinstance(message.author, discord.User):
-                continue
-
-            author_role_names: set[str] = {
-                author_role.name for author_role in message.author.roles
-            }
-
-            author_role_name: str
-            for author_role_name in author_role_names:
-                if f"@{author_role_name}" in message_counts:
-                    is_author_role_name: bool = author_role_name == "Committee"
-                    if is_author_role_name and "Committee-Elect" in author_role_names:
-                        continue
-
-                    if author_role_name == "Guest" and "Member" in author_role_names:
-                        continue
-
-                    message_counts[f"@{author_role_name}"] += 1
+        message_counts: Mapping[str, int] = await get_channel_message_counts(channel=channel)
 
         if math.ceil(max(message_counts.values()) / 15) < 1:
             await self.command_send_error(
-                ctx,
-                message="There are not enough messages sent in this channel.",
+                ctx, message="There are not enough messages sent in this channel."
             )
             return
 
@@ -266,10 +125,7 @@ class StatsCommandsCog(TeXBotBaseCog):
                 x_label="Role Name",
                 y_label=(
                     f"""Number of Messages Sent (in the past {
-                        amount_of_time_formatter(
-                            settings["STATISTICS_DAYS"].days,
-                            "day"
-                        )
+                        amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")
                     })"""
                 ),
                 title=f"Most Active Roles in #{channel.name}",
@@ -290,70 +146,22 @@ class StatsCommandsCog(TeXBotBaseCog):
         name="server",
         description=f"Displays the stats for the whole of {_DISCORD_SERVER_NAME}",
     )
-    async def server_stats(self, ctx: TeXBotApplicationContext) -> None:
+    async def server_stats(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "server_stats" command.
 
         The "server_stats" command sends a graph of the stats about messages sent in the whole
         of your group's Discord guild.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
         await ctx.defer(ephemeral=True)
 
-        message_counts: dict[str, dict[str, int]] = {
-            "roles": {"Total": 0},
-            "channels": {},
-        }
-
-        role_name: str
-        for role_name in settings["STATISTICS_ROLES"]:
-            if discord.utils.get(main_guild.roles, name=role_name):
-                message_counts["roles"][f"@{role_name}"] = 0
-
-        channel: discord.TextChannel
-        for channel in main_guild.text_channels:
-            member_has_access_to_channel: bool = channel.permissions_for(
-                guest_role,
-            ).is_superset(
-                discord.Permissions(send_messages=True),
-            )
-            if not member_has_access_to_channel:
-                continue
-
-            message_counts["channels"][f"#{channel.name}"] = 0
-
-            message_history_period: AsyncIterable[discord.Message] = channel.history(
-                after=discord.utils.utcnow() - settings["STATISTICS_DAYS"],
-            )
-            message: discord.Message
-            async for message in message_history_period:
-                if message.author.bot:
-                    continue
-
-                message_counts["channels"][f"#{channel.name}"] += 1
-                message_counts["roles"]["Total"] += 1
-
-                if isinstance(message.author, discord.User):
-                    continue
-
-                author_role_names: set[str] = {
-                    author_role.name for author_role in message.author.roles
-                }
-
-                author_role_name: str
-                for author_role_name in author_role_names:
-                    if f"@{author_role_name}" in message_counts["roles"]:
-                        is_author_role_committee: bool = author_role_name == "Committee"
-                        if is_author_role_committee and "Committee-Elect" in author_role_names:
-                            continue
-
-                        if author_role_name == "Guest" and "Member" in author_role_names:
-                            continue
-
-                        message_counts["roles"][f"@{author_role_name}"] += 1
+        message_counts: Mapping[str, Mapping[str, int]] = await get_server_message_counts(
+            guild=main_guild, guest_role=guest_role
+        )
 
         TOO_FEW_ROLES_STATS: Final[bool] = (
             math.ceil(max(message_counts["roles"].values()) / 15) < 1
@@ -375,15 +183,11 @@ class StatsCommandsCog(TeXBotBaseCog):
                     x_label="Role Name",
                     y_label=(
                         f"""Number of Messages Sent (in the past {
-                            amount_of_time_formatter(
-                                settings["STATISTICS_DAYS"].days,
-                                "day"
-                            )
+                            amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")
                         })"""
                     ),
                     title=(
-                        "Most Active Roles in "
-                        f"the {self.bot.group_short_name} Discord Server"
+                        f"Most Active Roles in the {self.bot.group_short_name} Discord Server"
                     ),
                     filename="roles_server_stats.png",
                     description=(
@@ -401,10 +205,7 @@ class StatsCommandsCog(TeXBotBaseCog):
                     x_label="Channel Name",
                     y_label=(
                         f"""Number of Messages Sent (in the past {
-                            amount_of_time_formatter(
-                                settings["STATISTICS_DAYS"].days,
-                                "day"
-                            )
+                            amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")
                         })"""
                     ),
                     title=(
@@ -421,18 +222,17 @@ class StatsCommandsCog(TeXBotBaseCog):
         )
 
     @stats.command(
-        name="self",
-        description="Displays stats about the number of messages you have sent.",
+        name="self", description="Displays stats about the number of messages you have sent."
     )
     @CommandChecks.check_interaction_user_in_main_guild
-    async def user_stats(self, ctx: TeXBotApplicationContext) -> None:
+    async def user_stats(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "user_stats" command.
 
         The "user_stats" command sends a graph of the stats about messages sent by the given
         member.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         interaction_member: discord.Member = await self.bot.get_main_guild_member(ctx.user)
         guest_role: discord.Role = await self.bot.guest_role
@@ -455,17 +255,15 @@ class StatsCommandsCog(TeXBotBaseCog):
         channel: discord.TextChannel
         for channel in main_guild.text_channels:
             member_has_access_to_channel: bool = channel.permissions_for(
-                guest_role,
-            ).is_superset(
-                discord.Permissions(send_messages=True),
-            )
+                guest_role
+            ).is_superset(discord.Permissions(send_messages=True))
             if not member_has_access_to_channel:
                 continue
 
             message_counts[f"#{channel.name}"] = 0
 
             message_history_period: AsyncIterable[discord.Message] = channel.history(
-                after=discord.utils.utcnow() - settings["STATISTICS_DAYS"],
+                after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]
             )
             message: discord.Message
             async for message in message_history_period:
@@ -474,10 +272,7 @@ class StatsCommandsCog(TeXBotBaseCog):
                     message_counts["Total"] += 1
 
         if math.ceil(max(message_counts.values()) / 15) < 1:
-            await self.command_send_error(
-                ctx,
-                message="You have not sent enough messages.",
-            )
+            await self.command_send_error(ctx, message="You have not sent enough messages.")
             return
 
         await ctx.respond(":point_down:Your stats graph is shown below:point_down:")
@@ -489,10 +284,7 @@ class StatsCommandsCog(TeXBotBaseCog):
                 x_label="Channel Name",
                 y_label=(
                     f"""Number of Messages Sent (in the past {
-                        amount_of_time_formatter(
-                            settings["STATISTICS_DAYS"].days,
-                            "day"
-                        )
+                        amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")
                     })"""
                 ),
                 title=(
@@ -508,25 +300,24 @@ class StatsCommandsCog(TeXBotBaseCog):
             ),
         )
 
-    # noinspection SpellCheckingInspection
     @stats.command(
         name="left-members",
         description=f"Displays the stats about members that have left {_DISCORD_SERVER_NAME}",
     )
-    async def left_member_stats(self, ctx: TeXBotApplicationContext) -> None:
+    async def left_member_stats(self, ctx: "TeXBotApplicationContext") -> None:
         """
         Definition & callback response of the "left_member_stats" command.
 
         The "left_member_stats" command sends a graph of the stats about the roles that members
         had when they left your group's Discord guild.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function, so that the exceptions they raise are displayed before any further errors may be sent
+        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
         await ctx.defer(ephemeral=True)
 
         left_member_counts: dict[str, int] = {
-            "Total": await LeftDiscordMember.objects.acount(),
+            "Total": await LeftDiscordMember.objects.acount()  # codespell:ignore acount
         }
 
         role_name: str
@@ -551,8 +342,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
         if math.ceil(max(left_member_counts.values()) / 15) < 1:
             await self.command_send_error(
-                ctx,
-                message="Not enough data about members that have left the server.",
+                ctx, message="Not enough data about members that have left the server."
             )
             return
 
@@ -591,10 +381,10 @@ class StatsCommandsCog(TeXBotBaseCog):
         if member.guild != self.bot.main_guild or member.bot:
             return
 
-        await LeftDiscordMember.objects.acreate(
+        await LeftDiscordMember.objects.acreate(  # type: ignore[misc]
             roles={
                 f"@{role.name}"
                 for role in member.roles
                 if role.name.lower().strip("@").strip() != "everyone"
-            },
+            }
         )

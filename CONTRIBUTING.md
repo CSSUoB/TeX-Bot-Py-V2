@@ -24,7 +24,7 @@ Additionally, linked below are some helpful resources:
 If you are new to contributing to open-source projects on GitHub, the general workflow is as follows:
 
 1. [Fork](https://w3schools.com/git/git_remote_fork.asp) this [repository](https://phoenixnap.com/kb/what-is-a-git-repository#ftoc-heading-1) and [clone](https://w3schools.com/git/git_clone.asp) it
-2. Create a [branch](https://w3schools.com/git/git_remote_branch.asp) off main
+2. Create a [branch](https://w3schools.com/git/git_remote_branch.asp) from `main`
 3. Make your changes and [commit](https://w3schools.com/git/git_commit.asp) them
 4. [Push](https://w3schools.com/git/git_push_to_remote.asp) your local [branch](https://w3schools.com/git/git_remote_branch.asp) to your remote fork
 5. Open a new [pull request on GitHub](https://w3schools.com/git/git_remote_send_pull_request.asp)
@@ -44,7 +44,7 @@ If you find an issue with TeX-Bot, the best place to report it is through the is
 If you are looking for issues to contribute code to, it's a good idea to look at the [issues labelled "good-first-issue"](https://github.com/CSSUoB/TeX-Bot-Py-V2/issues?q=label%3A%22good+first+issue%22)!
 
 When submitting an issue, please be as descriptive as possible.
-If you are submitting a bug report, please include the steps to reproduce the bug, and the environment it is in.
+If you are submitting a bug report, please include the steps to reproduce the bug and the environment it is in.
 If you are submitting a feature request, please include the steps to implement the feature.
 
 ## Repository Structure
@@ -52,12 +52,12 @@ If you are submitting a feature request, please include the steps to implement t
 ### Top level files
 
 * [`main.py`](main.py): is the main entrypoint to instantiate the [`Bot` object](https://docs.pycord.dev/stable/api/clients.html#discord.Bot) & run it
-* [`exceptions.py`](exceptions.py): contains common [exception](https://docs.python.org/3/tutorial/errors) subclasses that may be raised when certain errors occur
 * [`config.py`](config.py): retrieves the [environment variables](README.md#setting-environment-variables) & populates the correct values into the `settings` object
 
 ### Other significant directories
 
 * [`cogs/`](cogs): contains all the [cogs](https://guide.pycord.dev/popular-topics/cogs) within this project, see [below](#cogs) for more information
+* [`exceptions/`](exceptions): contains common [exception](https://docs.python.org/3/tutorial/errors) subclasses that may be raised when certain errors occur
 * [`utils/`](utils): contains common utility classes & functions used by the top-level modules & cogs
 * [`db/core/models/`](db/core/models): contains all the [database ORM models](https://docs.djangoproject.com/en/stable/topics/db/models) to interact with storing information longer-term (between individual command events)
 * [`tests/`](tests): contains the complete test suite for this project, based on the [Pytest framework](https://pytest.org)
@@ -68,8 +68,8 @@ If you are submitting a feature request, please include the steps to implement t
 They combine related [listeners](https://guide.pycord.dev/getting-started/more-features#event-handlers) and [commands](https://guide.pycord.dev/category/application-commands) (each as individual methods) into one class.
 There are separate cog files for each activity, and one [`__init__.py`](cogs/__init__.py) file which instantiates them all:
 
-<!--- pyml disable-next-line no-emphasis-as-heading-->
-*For more information about the purpose of each cog, please look at the documentation within the files themselves*
+> [!IMPORTANT]
+> For more information about the purpose of each cog, please look at the documentation within the files themselves
 
 * [`cogs/__init__.py`](cogs/__init__.py): instantiates all the cog classes within this directory
 
@@ -92,16 +92,16 @@ There are separate cog files for each activity, and one [`__init__.py`](cogs/__i
 * [`cogs/remind_me.py`](cogs/remind_me.py): cogs to ask TeX-Bot to send a reminder message at a later date
 
 * [`cogs/send_get_roles_reminders.py`](cogs/send_get_roles_reminders.py): cogs relating to sending reminders, to Discord members, about opt-in roles.
-(See [Repeated Tasks Conditions](README.md#repeated-tasks-conditions) for which conditions are required to be met, to execute this task)
+(See [Repeated Tasks Conditions](README.md#repeated-tasks-conditions) for which conditions are required to be met to execute this task)
 
 * [`cogs/send_introduction_reminders.py`](cogs/send_introduction_reminders.py): cogs relating to sending reminders, to Discord members, about introducing themselves.
-(See [Repeated Tasks Conditions](README.md#repeated-tasks-conditions) for which conditions are required to be met, to execute this task)
+(See [Repeated Tasks Conditions](README.md#repeated-tasks-conditions) for which conditions are required to be met to execute this task)
 
 * [`cogs/source.py`](cogs/source.py): cogs for displaying information about the source-code of this project
 
 * [`cogs/startup.py`](cogs/startup.py): cogs for startup & bot initialisation
 
-* [`cogs/stats.py`](cogs/stats.py): cogs for displaying stats about your group's Discord guild, as well as its channels & Discord members
+* [`cogs/stats/`](cogs/stats): cogs for displaying stats about your group's Discord guild, as well as its channels & Discord members
 
 * [`cogs/strike.py`](cogs/strike.py): cogs for applying moderation actions to Discord members
 
@@ -112,13 +112,23 @@ There are separate cog files for each activity, and one [`__init__.py`](cogs/__i
 After you have found an issue which needs solving, it's time to start working on a fix!
 However, there are a few guidelines we would like you to follow first.
 
+### Installing pre-commit
+
+[pre-commit](https://pre-commit.com) is a selection of checks and reformatting scripts that run before your changes are committed to git.
+This ensures common formatting mistakes (see [the section on Code Style](#code-style)) and errors can be reported to you early, rather than having to wait for them to show in the CI/CD pipeline.
+The hooks can be installed with the following command:
+
+```shell
+uv run pre-commit install --install-hooks
+```
+
 ### Running tests
 
 To ensure your changes adhere to the required functionality of this project, a test suite has been provided in [the `tests` directory](tests).
 The test suite uses [Pytest](https://pytest.org), and can be run with the following command:
 
 ```shell
-poetry run pytest
+uv run pytest
 ```
 
 Pycharm & VS Code also provide GUI interfaces to run the Pytest test suite.
@@ -134,7 +144,7 @@ You should also run the [static analysis linting](https://wikipedia.org/wiki/Lin
 It can be run with the following command:
 
 ```shell
-poetry run ruff check .
+uv run ruff check
 ```
 
 There are many additional flags to provide more advanced linting help (E.g. `--fix`).
@@ -146,11 +156,8 @@ See [ruff's documentation](https://docs.astral.sh/ruff/configuration#command-lin
 It can be run with the following command:
 
 ```shell
-poetry run mypy .
+uv run mypy .
 ```
-
-Although there is [a PyCharm plugin](https://github.com/leinardi/mypy-pycharm#mypy-pycharm) to provide GUI control & inline warnings for [mypy](https://mypy-lang.org), it has been rather temperamental recently.
-So it is suggested to avoid using it, and run [mypy](https://mypy-lang.org) from the command-line instead.
 
 #### PyMarkdown
 
@@ -158,37 +165,14 @@ So it is suggested to avoid using it, and run [mypy](https://mypy-lang.org) from
 It can be run with the following command:
 
 ```shell
-poetry run python ./.github/workflows/scripts/remove_invalid_tables.py && \
-poetry run pymarkdown scan . ; \
-poetry run python ./.github/workflows/scripts/remove_invalid_tables.py --restore
-```
-
-This command includes the removal of custom-formatted tables, as discussed in [the "Markdown Linting Issues" section](#markdown-linting-issues).
-**This command will not run on Windows PowerShell!
-(Use CommandPrompt instead.)**
-
-##### Markdown Linting Issues
-
-The tools [ruff](https://ruff.rs) & [mypy](https://mypy-lang.org) can be run as normal from the command line (as long as you are [within the poetry environment](https://python-poetry.org/docs/basic-usage#activating-the-virtual-environment)), however, [PyMarkdown](https://github.com/jackdewinter/pymarkdown) will **incorrectly** throw errors if run according to its own documentation.
-This is because some markdown files contain custom-formatted tables that [PyMarkdown](https://github.com/jackdewinter/pymarkdown) cannot parse.
-
-Therefore, you *must* run this utility script before calling [PyMarkdown](https://github.com/jackdewinter/pymarkdown) to remove any custom-formatted tables from files:
-
-```shell
-poetry run python ./.github/workflows/scripts/remove_invalid_tables.py
-```
-
-The below command will restore all markdown files back to their original states:
-
-```shell
-poetry run python ./.github/workflows/scripts/remove_invalid_tables.py --restore
+uv run pymarkdown scan .
 ```
 
 ### Git Commit Messages
 
 Commit messages should be written in the imperative present tense. For example, "Fix bug #1".
 
-Commit subjects should start with a capital letter and **not** end in a full-stop
+Commit subjects should start with a capital letter and **not** end in a full-stop.
 
 Additionally, we request that you keep the commit subject under 80 characters for a comfortable viewing experience on GitHub and other git tools.
 If you need more, please use the body of the commit.
@@ -216,7 +200,7 @@ Please note that any contributions you make will be made under the terms of the 
 
 ## Guidance
 
-We aim to get more people involved with our projects, and help build members' confidence in using git and contributing to open-source.
+We aim to get more people involved with our projects and help build members' confidence in using git and contributing to open-source.
 If you see an error, we encourage you to **be bold** and fix it yourself, rather than just raising an issue.
 If you are stuck, need help, or have a question, the best place to ask is on our Discord.
 

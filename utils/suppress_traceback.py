@@ -4,14 +4,14 @@ Context manager to suppress the traceback output when an exception is raised.
 The previous traceback limit is returned when exiting the context manager.
 """
 
-from collections.abc import Sequence
-
-__all__: Sequence[str] = ("SuppressTraceback",)
-
-
 import sys
-from types import TracebackType
-from typing import override
+from typing import TYPE_CHECKING, override
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from types import TracebackType
+
+__all__: "Sequence[str]" = ("SuppressTraceback",)
 
 
 class SuppressTraceback:
@@ -23,30 +23,30 @@ class SuppressTraceback:
 
     @override
     def __init__(self) -> None:
-        # noinspection SpellCheckingInspection
         """
         Initialise a new SuppressTraceback context manager instance.
 
-        The current value of `sys.tracebacklimit` is stored for future reference
-        to revert back to upon exiting the context manager.
+        The current value of `sys.tracebacklimit` is stored for future reference to revert to
+        upon exiting the context manager.
         """
-        # noinspection SpellCheckingInspection
         self.previous_traceback_limit: int | None = getattr(sys, "tracebacklimit", None)
 
     def __enter__(self) -> None:
         """Enter the context manager, suppressing the traceback output."""
-        # noinspection SpellCheckingInspection
         sys.tracebacklimit = 0
 
-    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None) -> None:  # noqa: E501
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: "TracebackType | None",  # noqa: PYI036
+    ) -> None:
         """Exit the context manager, reverting the limit of traceback output."""
         if exc_type is not None or exc_val is not None or exc_tb is not None:
             return
 
-        # noinspection SpellCheckingInspection
         if hasattr(sys, "tracebacklimit"):
             if self.previous_traceback_limit is None:
                 del sys.tracebacklimit
             else:
-                # noinspection SpellCheckingInspection
                 sys.tracebacklimit = self.previous_traceback_limit
