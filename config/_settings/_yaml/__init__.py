@@ -142,6 +142,7 @@ SETTINGS_YAML_SCHEMA: "Final[strictyaml.Validator]" = strictyaml.Map({
         strictyaml.Optional("strike", default=_DEFAULT_STRIKE_COMMAND_SETTINGS): strictyaml.Map({
             strictyaml.Optional("performed-manually-warning-location", default=DEFAULT_STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION): strictyaml.Str(),
             strictyaml.Optional("timeout-duration", default=DEFAULT_STRIKE_COMMAND_TIMEOUT_DURATION): TimeDeltaValidator(minutes=True, hours=True, days=True),
+            strictyaml.Optional("reported-message-destination-channel", default=DEFAULT_STRIKE_REPORTED_MESSAGE_DESTINATION_CHANNEL): strictyaml.Str(),
         }),
     }),
     strictyaml.Optional("reminders", default=_DEFAULT_REMINDERS_SETTINGS): strictyaml.Map({
