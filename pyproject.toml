@@ -2,9 +2,6 @@
 name = "TeX-Bot-Py-V2"
 version = "0.1.0"
 requires-python = "==3.13.*"  # TODO: Make minimum version Python 3.14, once Pycord makes a new release with support for it
-dependencies = [
-    "strictyaml>=1.7.3",
-]
 
 [dependency-groups]
 dev = [
@@ -15,6 +12,8 @@ dev = [
 ]
 lint-format = ["pymarkdownlnt>=0.9.28", "ruff>=0.12"]
 main = [
+    "aiopath>=0.7.7",
+    "anyio>=4.13.0",
     "asyncstdlib>=3.13",
     "audioop-lts; python_version > '3.12'",
     "beautifulsoup4>=4.12",
@@ -27,6 +26,7 @@ main = [
     "py-cord>=2.6,<2.7",
     "python-dotenv>=1.0",
     "python-logging-discord-handler>=0.1",
+    "strictyaml>=1.7.3",
     "typed_classproperties>=1.2",
     "validators>=0.34"
 ]

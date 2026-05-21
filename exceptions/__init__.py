@@ -3,7 +3,10 @@
 from typing import TYPE_CHECKING
 
 from .committee_actions import InvalidActionDescriptionError, InvalidActionTargetError
-from .config_changes import ImproperlyConfiguredError, RestartRequiredDueToConfigChange
+from .config_changes import (
+    ChangingSettingWithRequiredSiblingError,
+    RestartRequiredDueToConfigChange,
+)
 from .does_not_exist import (
     ApplicantRoleDoesNotExistError,
     ArchivistRoleDoesNotExistError,
@@ -33,6 +36,7 @@ if TYPE_CHECKING:
 __all__: "Sequence[str]" = (
     "ApplicantRoleDoesNotExistError",
     "ArchivistRoleDoesNotExistError",
+    "ChangingSettingWithRequiredSiblingError",
     "ChannelDoesNotExistError",
     "CommitteeElectRoleDoesNotExistError",
     "CommitteeRoleDoesNotExistError",
