@@ -2,6 +2,9 @@
 name = "TeX-Bot-Py-V2"
 version = "0.1.0"
 requires-python = "==3.13.*"  # TODO: Make minimum version Python 3.14, once Pycord makes a new release with support for it
+dependencies = [
+    "strictyaml>=1.7.3",
+]
 
 [dependency-groups]
 dev = [
@@ -35,73 +38,10 @@ type-check = [
     "types-beautifulsoup4>=4.12"
 ]
 
-
-[tool.poetry.dependencies]
-python = "^3.12"
-py-cord = "~2.6"
-beautifulsoup4 = "^4.12"
-emoji = "^2.12"
-parsedatetime = "^2.6"
-django = "~5.0"
-matplotlib = "^3.9"
-mplcyberpunk = "^0.7"
-python-logging-discord-handler = "^0.1"
-classproperties = {git = "https://github.com/hottwaj/classproperties.git"}
-asyncstdlib = "~3.12"
-setuptools = "^70.3"
-strictyaml = "^1.7"
-python-slugify = "^8.0"
-aiopath = "^0.7"
-
-[tool.poetry.group.dev.dependencies]
-pre-commit = "^3.8"
-mypy = "~1.11"
-django-stubs = {extras = ["compatible-mypy"], version = "~5.0"}
-types-beautifulsoup4 = "^4.12"
-pytest = "^8.3"
-ruff = "^0.5"
-ccft-pymarkdown = "^1.1"
-
-
-
-[tool.pytest.ini_options]
-filterwarnings = ["ignore:'audioop':DeprecationWarning"]
-
-
-[tool.mypy]
-plugins = ["mypy_django_plugin.main"]
-exclude = ["db/_settings\\.py$", "venv/"]
-extra_checks = true
-warn_unused_configs = true
-disallow_untyped_calls = true
-disallow_untyped_defs = true
-check_untyped_defs = true
-disallow_any_generics = true
-disallow_any_unimported = false
-disallow_any_decorated = true
-disallow_any_explicit = true
-disallow_subclassing_any = true
-disallow_untyped_decorators = true
-disallow_incomplete_defs = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_return_any = true
-no_implicit_reexport = true
-strict_equality = true
-warn_unreachable = true
-
-[[tool.mypy.overrides]]
-module = [
-    "mplcyberpunk",
-    "discord_logging.handler",
-    "parsedatetime",
-    "strictyaml",
-    "strictyaml.exceptions",
-    "strictyaml.yamllocation",
-    "aiopath",
-]
-ignore_missing_imports = true
-
+[tool.coverage.report]
+exclude_also = ["if TYPE_CHECKING:"]
+skip_covered = true
+sort = "cover"
 
 [tool.django-stubs]
 django_settings_module = "db._settings"
@@ -186,81 +126,6 @@ line-ending = "lf"
 quote-style = "double"
 
 [tool.ruff.lint]
-select = [
-    "E",
-    "F",
-    "W",
-    "C",
-    "I",
-    "N",
-    "D",
-    "UP",
-    "YTT",
-    "ANN",
-    "ASYNC",
-    "S",
-    "BLE",
-    "FBT",
-    "B",
-    "A",
-    "COM",
-    "DTZ",
-    "T",
-    "DJ",
-    "EM",
-    "G",
-    "INP",
-    "PIE",
-    "PT",
-    "Q",
-    "RSE",
-    "RET",
-    "SLF",
-    "SLOT",
-    "SIM",
-    "TID",
-    "TCH",
-    "ARG",
-    "PTH",
-    "TD",
-    "FIX",
-    "ERA",
-    "PGH",
-    "PL",
-    "TRY",
-    "FLY",
-    "PERF",
-    "RUF",
-]
-fixable = ["I001", "TCH", "F401", "COM812"]
-ignore = [
-    "N818",
-    "N806",
-    "D203",
-    "D212",
-    "ANN101",
-    "ANN102",
-    "Q003",
-    "TD002",
-    "TD003",
-    "S311",
-    "UP040",  # NOTE: Mypy does not currently support PEP 695 type aliases, so they should not be used
-    "PT009",
-    "PT027",
-    "TRY301",
-]
-task-tags = [
-    "TODO",
-    "FIXME",
-    "HACK",
-    "BUG",
-    "NOBUG",
-    "REQ",
-    "IDEA",
-    "NOTE",
-    "ISSUE",
-    "DONE",
-]
 allowed-confusables = [
     "s",
     "x",
@@ -348,6 +213,7 @@ extend-ignore-names = ["BROKEN_*_MESSAGE", "INVALID_*_MESSAGE", "NO_*_MESSAGE"]
 "stubs/discord/**/*.pyi" = ["F403"]
 "stubs/discord/commands/__init__.pyi" = ["F405"]
 "tests/**/test_*.py" = ["S101"]
+"config/_settings/_yaml/__init__.py" = ["E501"]
 
 [tool.ruff.lint.pycodestyle]
 ignore-overlong-task-comments = true
