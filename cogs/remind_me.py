@@ -13,7 +13,8 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 from db.core.models import DiscordMember, DiscordReminder
-from utils import TeXBotBaseCog
+from exceptions import UnknownDjangoError
+from utils import TeXBot, TeXBotApplicationContext, TeXBotAutocompleteContext, TeXBotBaseCog
 
 if TYPE_CHECKING:
     import time
@@ -243,12 +244,12 @@ class RemindMeCommandCog(TeXBotBaseCog):
                 )
             )
             if not ERROR_IS_ALREADY_EXISTS:
-                await self.command_send_error(ctx, message="An unrecoverable error occurred.")
-                logger.critical(
-                    "Error when creating DiscordReminder object: %s",
-                    create_discord_reminder_error,
-                )
-                await self.bot.close()
+                raise UnknownDjangoError(
+                    message=(
+                        f"Error when creating DiscordReminder object: "
+                        f"{create_discord_reminder_error}"
+                    ),
+                ) from create_discord_reminder_error
 
             await self.command_send_error(
                 ctx, message="You already have a reminder with that message in this channel!"

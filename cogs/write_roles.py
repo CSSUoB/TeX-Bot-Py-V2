@@ -4,15 +4,8 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from config import settings
-from utils import CommandChecks, TeXBotBaseCog
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-    from utils import TeXBotApplicationContext
-
-__all__: "Sequence[str]" = ("WriteRolesCommandCog",)
+from config import messages
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 
 class WriteRolesCommandCog(TeXBotBaseCog):
@@ -34,7 +27,7 @@ class WriteRolesCommandCog(TeXBotBaseCog):
         roles_channel: discord.TextChannel = await self.bot.roles_channel
 
         roles_message: str
-        for roles_message in settings["ROLES_MESSAGES"]:
+        for roles_message in messages["OPT_IN_ROLES_SELECTORS"]:
             await roles_channel.send(
                 roles_message.replace("<Group_Name>", self.bot.group_short_name)
             )

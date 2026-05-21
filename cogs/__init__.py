@@ -5,6 +5,42 @@ Cogs are attachable modules that are loaded onto the discord.Bot instance. There
 cogs for each activity.
 """
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = (
+    "ArchiveCommandCog",
+    "ConfigChangeCommandsCog",
+    "GetTokenAuthorisationCommandCog",
+    "CommandErrorCog",
+    "DeleteAllCommandsCog",
+    "EditMessageCommandCog",
+    "EnsureMembersInductedCommandCog",
+    "MakeApplicantSlashCommandCog",
+    "MakeApplicantContextCommandsCog",
+    "CommitteeHandoverCommandCog",
+    "AnnualRolesResetCommandCog",
+    "InductSlashCommandCog",
+    "InductSendMessageCog",
+    "InductContextCommandsCog",
+    "KillCommandCog",
+    "MakeMemberCommandCog",
+    "AnnualYearChannelsIncrementCommandCog",
+    "PingCommandCog",
+    "ClearRemindersBacklogTaskCog",
+    "RemindMeCommandCog",
+    "SendGetRolesRemindersTaskCog",
+    "SendIntroductionRemindersTaskCog",
+    "SourceCommandCog",
+    "StartupCog",
+    "StatsCommandsCog",
+    "ManualModerationCog",
+    "StrikeCommandCog",
+    "StrikeUserCommandCog",
+    "WriteRolesCommandCog",
+    "setup",
+)
+
+
 from typing import TYPE_CHECKING
 
 from .add_users_to_threads_and_channels import AddUsersToThreadsAndChannelsCommandsCog
@@ -13,11 +49,8 @@ from .annual_handover_and_reset import (
     AnnualYearChannelsIncrementCommandCog,
     CommitteeHandoverCommandCog,
 )
-from .archive import ArchiveCommandsCog
-from .check_su_platform_authorisation import (
-    CheckSUPlatformAuthorisationCommandCog,
-    CheckSUPlatformAuthorisationTaskCog,
-)
+from .archive import ArchiveCommandCog
+from .change_config import CheckConfigFileChangedTaskCog, ConfigChangeCommandsCog
 from .command_error import CommandErrorCog
 from .committee_actions_tracking import (
     CommitteeActionsTrackingContextCommandCog,
@@ -94,11 +127,10 @@ __all__: "Sequence[str]" = (
 def setup(bot: "TeXBot") -> None:
     """Add all the cogs to the bot, at bot startup."""
     cogs: Iterable[type[TeXBotBaseCog]] = (
-        AddUsersToThreadsAndChannelsCommandsCog,
-        AnnualRolesResetCommandCog,
-        AnnualYearChannelsIncrementCommandCog,
-        ArchiveCommandsCog,
-        ClearRemindersBacklogTaskCog,
+        ArchiveCommandCog,
+        GetTokenAuthorisationCommandCog,
+        CheckConfigFileChangedTaskCog,
+        ConfigChangeCommandsCog,
         CommandErrorCog,
         CommitteeActionsTrackingSlashCommandsCog,
         CommitteeActionsTrackingContextCommandCog,

@@ -36,7 +36,7 @@ class AsyncBaseModel(models.Model):
     def __init__(self, *args: object, **kwargs: object) -> None:  # noqa: CAR150
         proxy_fields: dict[str, object] = {
             field_name: kwargs.pop(field_name)
-            for field_name in set(kwargs.keys()) & self._get_proxy_field_names()
+            for field_name in set(kwargs.keys()) & self.get_proxy_field_names()
         }
 
         with transaction.atomic():

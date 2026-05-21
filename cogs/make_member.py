@@ -104,8 +104,52 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         member_role: discord.Role = await self.bot.member_role
         interaction_member: discord.Member = await ctx.bot.get_main_guild_member(ctx.user)
 
-        INVALID_GROUP_MEMBER_ID_MESSAGE: Final[str] = (
-            f"{raw_group_member_id!r} is not a valid {self.bot.group_member_id_type} ID."
+        if member_role in interaction_member.roles:
+            await ctx.respond(
+                (
+                    ":information_source: No changes made. You're already a member "
+                    "- why are you trying this again? :information_source:"
+                ),
+                ephemeral=True,
+            )
+            return
+
+        if not re.fullmatch(settings["MEMBERS_LIST_ID_FORMAT"], group_member_id):
+            await self.command_send_error(
+                ctx,
+                message=(
+                    f"{group_member_id!r} is not a valid {self.bot.group_member_id_type} ID."
+                ),
+            )
+            return
+
+        GROUP_MEMBER_ID_IS_ALREADY_USED: Final[bool] = await GroupMadeMember.objects.filter(
+            hashed_group_member_id=GroupMadeMember.hash_group_member_id(
+                group_member_id,
+                self.bot.group_member_id_type,
+            ),
+        ).aexists()
+        if GROUP_MEMBER_ID_IS_ALREADY_USED:
+            # noinspection PyUnusedLocal
+            committee_mention: str = "committee"
+            with contextlib.suppress(CommitteeRoleDoesNotExistError):
+                committee_mention = (await self.bot.committee_role).mention
+
+            await ctx.respond(
+                (
+                    ":information_source: No changes made. This student ID has already "
+                    f"been used. Please contact a {committee_mention} member if this is "
+                    "an error. :information_source:"
+                ),
+                ephemeral=True,
+            )
+            return
+
+        guild_member_ids: set[str] = set()
+
+        http_session: aiohttp.ClientSession = aiohttp.ClientSession(
+            headers=REQUEST_HEADERS,
+            cookies=REQUEST_COOKIES,
         )
 
         if not re.fullmatch(r"\A\d{7}\Z", raw_group_member_id):

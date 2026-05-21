@@ -33,11 +33,14 @@ IMPORTED_BY_MYPY_OR_PYTEST: "Final[bool]" = any(
 )
 if IMPORTED_BY_MYPY_OR_PYTEST:
     SECRET_KEY = "unsecure-secret-key"  # noqa: S105
+    LANGUAGE_CODE = "en-gb"
 else:
     from config import settings
 
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY = settings.DISCORD_BOT_TOKEN
+
+    LANGUAGE_CODE = settings.MESSAGES_LOCALE_CODE
 
 
 # Application Definition
@@ -58,9 +61,6 @@ DATABASES: "Final[Mapping[str, object]]" = {  # SOURCE: https://docs.djangoproje
 
 DEFAULT_AUTO_FIELD: "Final[str]" = "django.db.models.BigAutoField"  # SOURCE: https://docs.djangoproject.com/en/stable/ref/settings#default-auto-field
 
-
-# Internationalisation, Language & Time Settings
-# SOURCE: https://docs.djangoproject.com/en/stable/topics/i18n
 
 LANGUAGE_CODE: "Final[str]" = "en-gb"
 TIME_ZONE: "Final[str]" = "Europe/London"

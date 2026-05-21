@@ -11,7 +11,9 @@ if TYPE_CHECKING:
 
     from . import DiscordMember  # noqa: F401
 
-__all__: "Sequence[str]" = ()
+Defaults: TypeAlias = MutableMapping[str, object | Callable[[], object]] | None
+
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class HashedDiscordMemberManager(Manager["DiscordMember"]):

@@ -226,12 +226,12 @@ class ApplicantRoleDoesNotExistError(RoleDoesNotExistError):
 
     @classproperty
     @override
-    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:
+    def DEPENDENT_COMMANDS(cls) -> frozenset[str]:  # noqa: N805
         return frozenset({"make_applicant"})
 
     @classproperty
     @override
-    def ROLE_NAME(cls) -> str:
+    def ROLE_NAME(cls) -> str:  # noqa: N805
         return "Applicant"
 
 

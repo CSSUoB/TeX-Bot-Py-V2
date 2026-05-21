@@ -2,6 +2,9 @@
 name = "TeX-Bot-Py-V2"
 version = "0.1.0"
 requires-python = "==3.13.*"  # TODO: Make minimum version Python 3.14, once Pycord makes a new release with support for it
+dependencies = [
+    "strictyaml>=1.7.3",
+]
 
 [dependency-groups]
 dev = [
@@ -210,6 +213,7 @@ extend-ignore-names = ["BROKEN_*_MESSAGE", "INVALID_*_MESSAGE", "NO_*_MESSAGE"]
 "stubs/discord/**/*.pyi" = ["F403"]
 "stubs/discord/commands/__init__.pyi" = ["F405"]
 "tests/**/test_*.py" = ["S101"]
+"config/_settings/_yaml/__init__.py" = ["E501"]
 
 [tool.ruff.lint.pycodestyle]
 ignore-overlong-task-comments = true

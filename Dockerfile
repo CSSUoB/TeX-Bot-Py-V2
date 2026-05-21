@@ -33,6 +33,13 @@ ENV LANG=C.UTF-8 PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
 
-USER nonroot
+COPY LICENSE main.py ./
+RUN chmod +x main.py
+
+COPY exceptions/ ./exceptions/
+COPY utils/ ./utils/
+COPY db/ ./db/
+COPY config/ ./config/
+COPY cogs/ ./cogs/
 
 ENTRYPOINT ["python", "-m", "main"]

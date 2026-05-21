@@ -1,8 +1,16 @@
 """Contains cog classes for any archival interactions."""
 
+from collections.abc import Sequence
+
+__all__: Sequence[str] = ("ArchiveCommandCog",)
+
+
+import functools
 import logging
 import re
-from typing import TYPE_CHECKING
+from collections.abc import Set
+from logging import Logger
+from typing import Final, Protocol
 
 import discord
 
@@ -21,10 +29,11 @@ if TYPE_CHECKING:
 __all__: "Sequence[str]" = ("ArchiveCommandsCog",)
 
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+class _SetPermissionsFunc(Protocol):
+    async def __call__(self, channel: AllChannelTypes) -> None: ...
 
 
-class ArchiveCommandsCog(TeXBotBaseCog):
+class ArchiveCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/archive" command and its call-back method."""
 
     @staticmethod
@@ -45,62 +54,99 @@ class ArchiveCommandsCog(TeXBotBaseCog):
         return {
             discord.OptionChoice(name=category.name, value=str(category.id))
             for category in main_guild.categories
-            if "archive" not in category.name.lower()
-        }
-
-    @staticmethod
-    async def autocomplete_get_archival_categories(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
-        """
-        Autocomplete callable that generates the set of categories to hold archived channels.
-
-        The set of categories only includes those that contain the word "archive".
-        These are the categories that channels are to be placed into for archiving.
-        It is assumed that the categories have the correct permission configuration.
-        """
-        try:
-            main_guild: discord.Guild = ctx.bot.main_guild
-        except BaseDoesNotExistError:
-            return set()
-
-        return {
-            discord.OptionChoice(name=category.name, value=str(category.id))
-            for category in main_guild.categories
-            if "archive" in category.name.lower()
-        }
-
-    @staticmethod
-    async def autocomplete_get_non_archived_channels(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
-        """
-        Autocomplete callable that generates the set of channels that the user can archive.
-
-        The list of channels will include all types of channels and categories, except those
-        that have not been archived.
-        """
-        try:
-            main_guild: discord.Guild = ctx.bot.main_guild
-        except BaseDoesNotExistError:
-            return set()
-
-        interaction_user: discord.Member | discord.User | None = ctx.interaction.user
-
-        return {
-            discord.OptionChoice(name=channel.name, value=str(channel.id))
-            for channel in main_guild.channels
-            if (
-                not isinstance(channel, discord.CategoryChannel)  # noqa: CAR180
-                and channel.category
-                and "archive" not in channel.category.name.lower()
-                and isinstance(interaction_user, discord.Member)
-                and channel.permissions_for(interaction_user).read_messages
+            if category.permissions_for(interaction_user).is_superset(
+                discord.Permissions(send_messages=True, view_channel=True),
             )
         }
 
-    @discord.slash_command(
-        name="archive-category", description="Archives the selected category."
+    async def _set_permissions(
+        self,
+        channel: AllChannelTypes,
+        ctx: TeXBotApplicationContext,
+        interaction_member: discord.Member,
+        *,
+        committee_role: discord.Role,
+        guest_role: discord.Role,
+        member_role: discord.Role,
+        archivist_role: discord.Role,
+        everyone_role: discord.Role,
+    ) -> None:  # noqa: PLR0913,E501
+        CHANNEL_NEEDS_COMMITTEE_ARCHIVING: Final[bool] = bool(
+            channel.permissions_for(committee_role).is_superset(
+                discord.Permissions(view_channel=True),
+            )
+            and not channel.permissions_for(guest_role).is_superset(
+                discord.Permissions(view_channel=True),
+            )  # noqa: COM812
+        )
+        if CHANNEL_NEEDS_COMMITTEE_ARCHIVING:
+            await channel.set_permissions(
+                everyone_role,
+                reason=f'{interaction_member.display_name} used "/archive".',
+                view_channel=False,
+            )
+            await channel.set_permissions(
+                guest_role,
+                overwrite=None,
+                reason=f'{interaction_member.display_name} used "/archive".',
+            )
+            await channel.set_permissions(
+                member_role,
+                overwrite=None,
+                reason=f'{interaction_member.display_name} used "/archive".',
+            )
+            await channel.set_permissions(
+                committee_role,
+                overwrite=None,
+                reason=f'{interaction_member.display_name} used "/archive".',
+            )
+            return
+
+        CHANNEL_NEEDS_NORMAL_ARCHIVING: Final[bool] = channel.permissions_for(
+            guest_role,
+        ).is_superset(
+            discord.Permissions(view_channel=True),
+        )
+        if CHANNEL_NEEDS_NORMAL_ARCHIVING:
+            await channel.set_permissions(
+                everyone_role,
+                reason=f'{interaction_member.display_name} used "/archive".',
+                view_channel=False,
+            )
+            await channel.set_permissions(
+                guest_role,
+                overwrite=None,
+                reason=f'{interaction_member.display_name} used "/archive".',
+            )
+            await channel.set_permissions(
+                member_role,
+                overwrite=None,
+                reason=f'{interaction_member.display_name} used "/archive".',
+            )
+            await channel.set_permissions(
+                committee_role,
+                reason=f'{interaction_member.display_name} used "/archive".',
+                view_channel=False,
+            )
+            await channel.set_permissions(
+                archivist_role,
+                reason=f'{interaction_member.display_name} used "/archive".',
+                view_channel=True,
+            )
+            return
+
+        await self.command_send_error(
+            ctx,
+            message=f"Channel {channel.mention} had invalid permissions",
+        )
+        logger.error(
+            "Channel %s had invalid permissions, so could not be archived.",
+            channel.name,
+        )
+
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
+        name="archive",
+        description="Archives the selected category.",
     )
     @discord.option(
         name="category",
@@ -130,9 +176,8 @@ class ArchiveCommandsCog(TeXBotBaseCog):
         """
         Definition & callback response of the "archive-category" command.
 
-        The "archive" command hides a given category from view of casual members unless they
-        have the "Archivist" role. This can be overridden via a boolean parameter to allow
-        for committee channels to be archived with the same command but not be visible.
+        The "archive" command hides a given category from the view of casual members
+        unless they have the "Archivist" role.
         """
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
@@ -165,34 +210,39 @@ class ArchiveCommandsCog(TeXBotBaseCog):
             )
             return
 
-        initial_response: discord.Interaction | discord.WebhookMessage = await ctx.respond(
-            content=f"Archiving {category.name}...", ephemeral=True
+        set_permissions_func: _SetPermissionsFunc = functools.partial(
+            self._set_permissions,
+            ctx=ctx,
+            interaction_member=interaction_member,
+            committee_role=committee_role,
+            guest_role=guest_role,
+            member_role=member_role,
+            archivist_role=archivist_role,
+            everyone_role=everyone_role,
         )
 
+        # noinspection PyUnreachableCode
         channel: AllChannelTypes
         for channel in category.channels:
-            # NOTE: Categories can not be placed inside other categories, so this will always be false, but is needed due to the typing of the method
-            if isinstance(channel, discord.CategoryChannel):
-                continue
-
-            await channel.edit(sync_permissions=True)
-
-        target: discord.Member | discord.Role
-        for target in category.overwrites:
-            await category.set_permissions(target=target, overwrite=None)
-
-        try:
-            everyone_role: discord.Role = await ctx.bot.get_everyone_role()
-        except EveryoneRoleCouldNotBeRetrievedError:
-            logger.exception(
-                "Could not retrieve the @everyone role when archiving category %r",
-                category.name,
-            )
-        else:
-            await category.set_permissions(
-                target=everyone_role,
-                view_channel=False,
-            )
+            try:
+                await set_permissions_func(channel=channel)
+            except discord.Forbidden:
+                await self.command_send_error(
+                    ctx,
+                    message=(
+                        "TeX-Bot does not have access to "
+                        "the channels in the selected category."
+                    ),
+                )
+                logger.error(  # noqa: TRY400
+                    (
+                        "TeX-Bot did not have access to "
+                        "the channels in the selected category: "
+                        "%s."
+                    ),
+                    category.name,
+                )
+                return
 
         if allow_archivist:
             await category.set_permissions(

@@ -161,23 +161,20 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
         except (GuildDoesNotExistError, ApplicantRoleDoesNotExistError):
             return set()
 
-        members: set[discord.Member] = {
-            member
+        return {
+            discord.OptionChoice(
+                name=(
+                    f"@{member.name}"
+                    if not ctx.value or ctx.value.startswith("@")
+                    else member.name
+                ),
+                value=str(member.id),
+            )
             for member in main_guild.members
             if not member.bot and applicant_role not in member.roles
         }
 
-        if not ctx.value or ctx.value.startswith("@"):
-            return {
-                discord.OptionChoice(name=f"@{member.name}", value=str(member.id))
-                for member in members
-            }
-
-        return {
-            discord.OptionChoice(name=member.name, value=str(member.id)) for member in members
-        }
-
-    @discord.slash_command(
+    @discord.slash_command(  # type: ignore[no-untyped-call, misc]
         name="make-applicant",
         description="Gives the user @Applicant role and removes the @Guest role if present.",
     )
@@ -202,8 +199,8 @@ class MakeApplicantSlashCommandCog(BaseMakeApplicantCog):
         """
         member_id_not_integer_error: ValueError
         try:
-            applicant_member: discord.Member = await self.bot.get_member_from_str_id(
-                str_applicant_member_id
+            applicant_member: discord.Member = await self.bot.get_main_guild_member(
+                str_applicant_member_id,
             )
         except ValueError as member_id_not_integer_error:
             await self.command_send_error(ctx, message=member_id_not_integer_error.args[0])
@@ -243,4 +240,19 @@ class MakeApplicantContextCommandsCog(BaseMakeApplicantCog):
         the "make_applicant" slash-command and thus gives the specified user the
         "Applicant" role and removes the "Guest" role if they have it.
         """
-        await self._perform_make_applicant(ctx, message.author.id)
+        try:
+            member: discord.Member = await self.bot.get_main_guild_member(
+                str(message.author.id),
+            )
+        except ValueError:
+            await ctx.respond(
+                content=(
+                    ":information_source: "
+                    "No changes made. User cannot be made into an applicant "
+                    "because they have left the server :information_source:"
+                ),
+                ephemeral=True,
+            )
+            return
+
+        await self._perform_make_applicant(ctx, member)

@@ -13,7 +13,7 @@ import discord
 
 import config
 from config import settings
-from utils import SuppressTraceback, TeXBot
+from utils import SuppressTraceback, TeXBot, TeXBotExitReason
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -25,8 +25,11 @@ __all__: "Sequence[str]" = ("bot",)
 with SuppressTraceback():
     config.run_setup()
 
+    intents: discord.Intents = discord.Intents.default()
+    setattr(intents, "members", True)  # noqa: B010
+
     bot: TeXBot = TeXBot(
-        intents=discord.Intents.default() | discord.Intents.members
+        intents=intents
     )  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
 
     bot.load_extension("cogs")
@@ -35,7 +38,14 @@ with SuppressTraceback():
 def _run_bot() -> "NoReturn":  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
     bot.run(settings["DISCORD_BOT_TOKEN"])
 
-    raise SystemExit(0 if bot.EXIT_WAS_DUE_TO_KILL_COMMAND else 1)
+    if bot.EXIT_REASON is TeXBotExitReason.RESTART_REQUIRED_DUE_TO_CHANGED_CONFIG:
+        with SuppressTraceback():
+            bot.reset_exit_reason()
+            config.run_setup()
+            bot.reload_extension("cogs")
+            _run_bot()
+
+    raise SystemExit(bot.EXIT_REASON.value)
 
 
 if __name__ == "__main__":
