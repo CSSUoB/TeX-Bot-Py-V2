@@ -2,9 +2,6 @@
 name = "TeX-Bot-Py-V2"
 version = "0.1.0"
 requires-python = "==3.13.*"  # TODO: Make minimum version Python 3.14, once Pycord makes a new release with support for it
-dependencies = [
-    "strictyaml>=1.7.3",
-]
 
 [dependency-groups]
 dev = [
@@ -22,6 +19,9 @@ main = [
     "django-stubs-ext>=5.2",
     "emoji>=2.14",
     "matplotlib>=3.10",
+    "aiopath>=0.7.7",
+    "anyio>=4.13.0",
+    "strictyaml>=1.7.3",
     "mplcyberpunk>=0.7",
     "parsedatetime>=2.6",
     "py-cord>=2.6,<2.7",

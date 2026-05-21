@@ -1,5 +1,6 @@
 from typing import override
 
+from .exceptions import StrictYAMLError
 from .yamllocation import YAMLChunk
 
 class YAML: ...
