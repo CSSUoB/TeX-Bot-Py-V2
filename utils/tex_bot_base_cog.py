@@ -74,7 +74,16 @@ class TeXBotBaseCog(Cog):
         """
         self.bot: TeXBot = bot  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
 
-    async def command_send_error(self, ctx: TeXBotApplicationContext, *, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False, responder_component: GenericResponderComponent | None = None) -> None:  # noqa: E501
+    async def command_send_error(
+        self,
+        ctx: TeXBotApplicationContext,
+        *,
+        error_code: str | None = None,
+        message: str | None = None,
+        logging_message: str | BaseException | None = None,
+        is_fatal: bool = False,
+        responder_component: GenericResponderComponent | None = None,
+    ) -> None:  # noqa: E501
         """
         Construct & format an error message from the given details.
 
@@ -103,7 +112,17 @@ class TeXBotBaseCog(Cog):
         )
 
     @classmethod
-    async def send_error(cls, bot: TeXBot, interaction: discord.Interaction, *, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False) -> None:  # noqa: E501
+    async def send_error(
+        cls,
+        bot: TeXBot,
+        interaction: discord.Interaction,
+        *,
+        interaction_name: str,
+        error_code: str | None = None,
+        message: str | None = None,
+        logging_message: str | BaseException | None = None,
+        is_fatal: bool = False,
+    ) -> None:  # noqa: E501
         """
         Construct & format an error message from the given details.
 
@@ -122,7 +141,17 @@ class TeXBotBaseCog(Cog):
         )
 
     @classmethod
-    async def _respond_with_error(cls, bot: TeXBot, responder: GenericResponderComponent, *, interaction_name: str, error_code: str | None = None, message: str | None = None, logging_message: str | BaseException | None = None, is_fatal: bool = False) -> None:  # noqa: E501
+    async def _respond_with_error(
+        cls,
+        bot: TeXBot,
+        responder: GenericResponderComponent,
+        *,
+        interaction_name: str,
+        error_code: str | None = None,
+        message: str | None = None,
+        logging_message: str | BaseException | None = None,
+        is_fatal: bool = False,
+    ) -> None:  # noqa: E501
         construct_error_message: str = ":warning:"
 
         if is_fatal:
@@ -170,8 +199,8 @@ class TeXBotBaseCog(Cog):
             if message:
                 construct_error_message += f"\n`{
                     re.sub(
-                        r"<([@&#]?|(@[&#])?)\d+>",
-                        lambda match: f"`{match.group(0)!s}`",
+                        r'<([@&#]?|(@[&#])?)\d+>',
+                        lambda match: f'`{match.group(0)!s}`',
                         message.strip(),
                     )
                 }`"

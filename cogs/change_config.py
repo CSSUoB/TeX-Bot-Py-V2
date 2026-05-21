@@ -96,18 +96,22 @@ class ConfirmSetConfigSettingValueView(View):
         style=discord.ButtonStyle.red,
         custom_id="set_config_confirm",
     )
-    async def confirm_set_config_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
+    async def confirm_set_config_button_callback(
+        self, _: discord.Button, interaction: discord.Interaction
+    ) -> None:  # noqa: E501
         """When the yes button is pressed, delete the message."""
-        logger.debug("\"Yes\" button pressed. %s", interaction)
+        logger.debug('"Yes" button pressed. %s', interaction)
 
     @discord.ui.button(  # type: ignore[misc]
         label="No",
         style=discord.ButtonStyle.green,
         custom_id="set_config_cancel",
     )
-    async def cancel_set_config_button_callback(self, _: discord.Button, interaction: discord.Interaction) -> None:  # noqa: E501
+    async def cancel_set_config_button_callback(
+        self, _: discord.Button, interaction: discord.Interaction
+    ) -> None:  # noqa: E501
         """When the no button is pressed, delete the message."""
-        logger.debug("\"No\" button pressed. %s", interaction)
+        logger.debug('"No" button pressed. %s', interaction)
 
 
 class CheckConfigFileChangedTaskCog(TeXBotBaseCog):
@@ -134,8 +138,10 @@ class CheckConfigFileChangedTaskCog(TeXBotBaseCog):
         self.check_config_file_changed.cancel()
 
     @classmethod
-    async def _file_raw_contents_is_same(cls, current_file: AsyncFile[bytes], previous_raw_contents: bytes) -> bool:  # noqa: E501
-        BUFFER_SIZE: Final[int] = 8*1024
+    async def _file_raw_contents_is_same(
+        cls, current_file: AsyncFile[bytes], previous_raw_contents: bytes
+    ) -> bool:  # noqa: E501
+        BUFFER_SIZE: Final[int] = 8 * 1024
 
         previous_file: BytesIO = BytesIO(previous_raw_contents)
 
@@ -149,10 +155,12 @@ class CheckConfigFileChangedTaskCog(TeXBotBaseCog):
                 return True
 
     @classmethod
-    async def _check_config_actually_is_same(cls, previous_file_comparer: FileComparer) -> bool:  # noqa: E501
-        SETTINGS_FILE_PATH: Final[AsyncPath] = (
-            await config._settings.utils.get_settings_file_path()
-        )
+    async def _check_config_actually_is_same(
+        cls, previous_file_comparer: FileComparer
+    ) -> bool:  # noqa: E501
+        SETTINGS_FILE_PATH: Final[
+            AsyncPath
+        ] = await config._settings.utils.get_settings_file_path()
         # noinspection PyProtectedMember
         current_file_stats: FileStats = await FileStats._public_from_file_path(  # noqa: SLF001
             SETTINGS_FILE_PATH,
@@ -231,14 +239,16 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     def get_formatted_change_delay_message(cls) -> str:
         return f"Changes could take up to {
             (
-                str(int(settings["CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS"] * 2.1))
-                if (settings["CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS"] * 2.1) % 1 == 0
-                else f"{settings["CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS"] * 2.1:.2f}"
+                str(int(settings['CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS'] * 2.1))
+                if (settings['CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS'] * 2.1) % 1 == 0
+                else f'{settings["CHECK_CONFIG_FILE_CHANGED_INTERVAL_SECONDS"] * 2.1:.2f}'
             )
         } seconds to take effect."
 
     @staticmethod
-    async def autocomplete_get_settings_names(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
+    async def autocomplete_get_settings_names(
+        ctx: TeXBotAutocompleteContext,
+    ) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
         """Autocomplete callable that generates the set of available settings names."""
         if not ctx.interaction.user:
             return set()
@@ -252,7 +262,9 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         return set(config.CONFIG_SETTINGS_HELPS)
 
     @staticmethod
-    async def autocomplete_get_unsetable_settings_names(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
+    async def autocomplete_get_unsetable_settings_names(
+        ctx: TeXBotAutocompleteContext,
+    ) -> Set[discord.OptionChoice] | Set[str]:  # noqa: E501
         """Autocomplete callable that generates the set of unsetable settings names."""
         if not ctx.interaction.user:
             return set()
@@ -270,7 +282,9 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         }
 
     @staticmethod
-    async def autocomplete_get_example_setting_values(ctx: TeXBotAutocompleteContext) -> Set[discord.OptionChoice] | Set[str]:  # noqa: C901,PLR0911,PLR0912,E501
+    async def autocomplete_get_example_setting_values(
+        ctx: TeXBotAutocompleteContext,
+    ) -> Set[discord.OptionChoice] | Set[str]:  # noqa: C901,PLR0911,PLR0912,E501
         """Autocomplete callable that generates example values for a configuration setting."""
         HAS_CONTEXT: Final[bool] = bool(
             ctx.interaction.user and "setting" in ctx.options and ctx.options["setting"]  # noqa: COM812
@@ -297,9 +311,9 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
 
         if "members-list:id-format" in setting_name:
             return (
-                {r"\A[a-z0-9]{" + str(2 ** id_length) + r"}\Z" for id_length in range(2, 9)}
-                | {r"\A[A-F0-9]{" + str(2 ** id_length) + r"}\Z" for id_length in range(2, 9)}
-                | {r"\A[0-9]{" + str(2 ** id_length) + r"}\Z" for id_length in range(2, 9)}
+                {r"\A[a-z0-9]{" + str(2**id_length) + r"}\Z" for id_length in range(2, 9)}
+                | {r"\A[A-F0-9]{" + str(2**id_length) + r"}\Z" for id_length in range(2, 9)}
+                | {r"\A[0-9]{" + str(2**id_length) + r"}\Z" for id_length in range(2, 9)}
             )
 
         if "probability" in setting_name:
@@ -417,7 +431,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                         (
                             f"{
                                 (
-                                    f"{
+                                    f'{
                                         str(
                                             random.choice(
                                                 (
@@ -428,19 +442,19 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                                                     ),
                                                 ),
                                             ),
-                                        ).removesuffix(".0").removesuffix(".00").removesuffix(
+                                        )
+                                        .removesuffix(".0")
+                                        .removesuffix(".00")
+                                        .removesuffix(
                                             ".000",
                                         )
-                                    }{
-                                        selected_timedelta_scale
-                                    }"
+                                    }{selected_timedelta_scale}'
                                 )
                                 if selected_timedelta_scale
-                                else ""
+                                else ''
                             }"
                         )
-                        for selected_timedelta_scale
-                        in selected_timedelta_scales
+                        for selected_timedelta_scale in selected_timedelta_scales
                     ),
                 )
                 for _ in range(4)
@@ -543,7 +557,9 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def get_config_value(self, ctx: TeXBotApplicationContext, config_setting_name: str) -> None:  # noqa: E501
+    async def get_config_value(
+        self, ctx: TeXBotApplicationContext, config_setting_name: str
+    ) -> None:  # noqa: E501
         """Definition & callback response of the "get_config_value" command."""
         if config_setting_name not in config.CONFIG_SETTINGS_HELPS:
             await self.command_send_error(
@@ -567,21 +583,23 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
 
         await ctx.respond(
             (
-                f"`{config_setting_name.replace("`", "\\`")}` "
+                f"`{config_setting_name.replace('`', '\\`')}` "
                 f"{
-                    "**cannot be viewed**." if CONFIG_SETTING_IS_SECRET else (
-                        f"**=** `{config_setting_value.replace("`", "\\`")}`"
+                    '**cannot be viewed**.'
+                    if CONFIG_SETTING_IS_SECRET
+                    else (
+                        f'**=** `{config_setting_value.replace("`", "\\`")}`'
                         if config_setting_value
-                        else f"**is not set**.{
+                        else f'**is not set**.{
                             f"\nThe default value is `{
                                 CONFIG_SETTINGS_HELPS[config_setting_name].default.replace(  # type: ignore[union-attr]
-                                    "`",
-                                    "\\`",
+                                    '`',
+                                    '\\`',
                                 )
                             }`"
                             if CONFIG_SETTINGS_HELPS[config_setting_name].default is not None
                             else ""
-                        }"
+                        }'
                     )
                 }"
             ),
@@ -602,7 +620,9 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def help_config_setting(self, ctx: TeXBotApplicationContext, config_setting_name: str) -> None:  # noqa: E501
+    async def help_config_setting(
+        self, ctx: TeXBotApplicationContext, config_setting_name: str
+    ) -> None:  # noqa: E501
         """Definition & callback response of the "help_config_setting" command."""
         if config_setting_name not in config.CONFIG_SETTINGS_HELPS:
             await self.command_send_error(
@@ -617,35 +637,35 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
 
         await ctx.respond(
             (
-                f"## `{
-                    config_setting_name.replace("`", "\\`")
-                }`\n"
+                f"## `{config_setting_name.replace('`', '\\`')}`\n"
                 f"{
                     config_setting_help.description.replace(
-                        "**`@TeX-Bot`**",
-                        self.bot.user.mention if self.bot.user else "**`@TeX-Bot`**",
-                    ).replace(
-                        "TeX-Bot",
-                        self.bot.user.mention if self.bot.user else "**`@TeX-Bot`**",
-                    ).replace(
-                        "the bot",
-                        self.bot.user.mention if self.bot.user else "**`@TeX-Bot`**",
+                        '**`@TeX-Bot`**',
+                        self.bot.user.mention if self.bot.user else '**`@TeX-Bot`**',
+                    )
+                    .replace(
+                        'TeX-Bot',
+                        self.bot.user.mention if self.bot.user else '**`@TeX-Bot`**',
+                    )
+                    .replace(
+                        'the bot',
+                        self.bot.user.mention if self.bot.user else '**`@TeX-Bot`**',
                     )
                 }\n\n"
                 f"{
-                    f"{config_setting_help.value_type_message}\n\n"
+                    f'{config_setting_help.value_type_message}\n\n'
                     if config_setting_help.value_type_message
-                    else ""
+                    else ''
                 }"
                 f"This setting is **{
-                    "required" if config_setting_help.required else "optional"
+                    'required' if config_setting_help.required else 'optional'
                 }**.\n\n"
                 f"{
-                    f"The default value for this setting is: `{
+                    f'The default value for this setting is: `{
                         config_setting_help.default.replace("`", "\\`")
-                    }`"
+                    }`'
                     if config_setting_help.default
-                    else ""
+                    else ''
                 }"
             ),
             ephemeral=True,
@@ -673,7 +693,9 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def set_config_value(self, ctx: TeXBotApplicationContext, config_setting_name: str, new_config_value: str) -> None:  # noqa: E501
+    async def set_config_value(
+        self, ctx: TeXBotApplicationContext, config_setting_name: str, new_config_value: str
+    ) -> None:  # noqa: E501
         """Definition & callback response of the "set_config_value" command."""
         if config_setting_name not in config.CONFIG_SETTINGS_HELPS:
             await self.command_send_error(
@@ -689,7 +711,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         if not SELECTED_SETTING_HAS_DEFAULT:
             response: discord.Message | discord.Interaction = await ctx.respond(
                 content=(
-                    f"Setting {config_setting_name.replace("`", "\\`")} "
+                    f"Setting {config_setting_name.replace('`', '\\`')} "
                     "has no default value."
                     "If you overwrite it with a new value the old one will be lost "
                     "and cannot be restored.\n"
@@ -718,7 +740,8 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                         (committee_role in interaction.user.roles) if committee_role else True
                     )
                     and "custom_id" in interaction.data
-                    and interaction.data["custom_id"] in {
+                    and interaction.data["custom_id"]
+                    in {
                         "shutdown_confirm",
                         "shutdown_cancel",
                     }  # noqa: COM812
@@ -730,7 +753,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                     await confirmation_message.edit(
                         content=(
                             "Aborting editing config setting: "
-                            f"{config_setting_name.replace("`", "\\`")}"
+                            f"{config_setting_name.replace('`', '\\`')}"
                         ),
                         view=None,
                     )
@@ -772,7 +795,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                 message=(
                     f"Changing setting value failed: "
                     f"{str(yaml_error.context)[0].upper()}"
-                    f"{str(yaml_error.context)[1:].strip(" .")}."
+                    f"{str(yaml_error.context)[1:].strip(' .')}."
                 ),
                 responder_component=responder,
             )
@@ -784,7 +807,7 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
                 message=(
                     f"{changing_setting_error} "
                     f"It will be easier to make your changes "
-                    f"directly within the \"tex-bot-deployment.yaml\" file."
+                    f'directly within the "tex-bot-deployment.yaml" file.'
                 ),
                 responder_component=responder,
             )
@@ -811,18 +834,14 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
         )
         await responder.respond(
             content=(
-                f"Successfully updated setting: `{
-                    config_setting_name.replace("`", "\\`")
-                }`"
+                f"Successfully updated setting: `{config_setting_name.replace('`', '\\`')}`"
                 f"{
-                    "" if CONFIG_SETTING_IS_SECRET else (
-                        (
-                            f"**=** `{
-                                changed_config_setting_value.replace("`", "\\`")
-                            }`"
-                        )
+                    ''
+                    if CONFIG_SETTING_IS_SECRET
+                    else (
+                        (f'**=** `{changed_config_setting_value.replace("`", "\\`")}`')
                         if changed_config_setting_value
-                        else "**to be not set**."
+                        else '**to be not set**.'
                     )
                 }\n\n{self.get_formatted_change_delay_message()}"
             ),
@@ -848,7 +867,9 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def unset_config_value(self, ctx: TeXBotApplicationContext, config_setting_name: str) -> None:  # noqa: E501
+    async def unset_config_value(
+        self, ctx: TeXBotApplicationContext, config_setting_name: str
+    ) -> None:  # noqa: E501
         """Definition & callback response of the "unset_config_value" command."""
         if config_setting_name not in config.CONFIG_SETTINGS_HELPS:
             await self.command_send_error(
@@ -868,7 +889,9 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
             return
 
         try:
-            await config.remove_single_config_setting_value(config_setting_name)  # TODO: Fix sibling not removed correctly (E.g. reminders enables/disabled)
+            await config.remove_single_config_setting_value(
+                config_setting_name
+            )  # TODO: Fix sibling not removed correctly (E.g. reminders enables/disabled)
         except KeyError:
             await ctx.respond(
                 content=(
@@ -882,9 +905,9 @@ class ConfigChangeCommandsCog(TeXBotBaseCog):
 
         await ctx.respond(
             content=(
-                f"Successfully unset setting `{
-                    config_setting_name.replace("`", "\\`")
-                }`\n\n{self.get_formatted_change_delay_message()}"
+                f"Successfully unset setting `{config_setting_name.replace('`', '\\`')}`\n\n{
+                    self.get_formatted_change_delay_message()
+                }"
             ),
             ephemeral=True,
         )

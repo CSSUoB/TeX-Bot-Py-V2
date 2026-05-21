@@ -33,14 +33,16 @@ class CommandErrorCog(TeXBotBaseCog):
     """Cog class that defines additional code to execute upon a command error."""
 
     @classmethod
-    def _get_logging_message_from_error(cls, error: discord.ApplicationCommandInvokeError) -> str | None:  # noqa: E501
+    def _get_logging_message_from_error(
+        cls, error: discord.ApplicationCommandInvokeError
+    ) -> str | None:  # noqa: E501
         if isinstance(error.original, GuildDoesNotExistError):
             return None
 
         if not str(error.original).strip(". -\"'"):
             return f"{error.original.__class__.__name__} was raised."
 
-        if str(error.original).startswith("\"") or str(error.original).startswith("'"):
+        if str(error.original).startswith('"') or str(error.original).startswith("'"):
             return f"{error.original.__class__.__name__}: {error.original}"
 
         if isinstance(error.original, UnknownDjangoError):

@@ -61,7 +61,8 @@ class StartupCog(TeXBotBaseCog):
                 new_discord_logging_handler: DiscordHandler = DiscordHandler(
                     (
                         existing_discord_logging_handler.name
-                        if existing_discord_logging_handler.name != DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME  # noqa: E501
+                        if existing_discord_logging_handler.name
+                        != DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME  # noqa: E501
                         else (
                             self.bot.user.name
                             if self.bot.user
@@ -86,7 +87,10 @@ class StartupCog(TeXBotBaseCog):
             else:
                 logger.warning(NO_DISCORD_LOG_CHANNEL_SET_MESSAGE)
 
-        elif len(discord_logging_handlers) == 0 or not settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:  # noqa: E501
+        elif (
+            len(discord_logging_handlers) == 0
+            or not settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]
+        ):  # noqa: E501
             logger.warning(NO_DISCORD_LOG_CHANNEL_SET_MESSAGE)
 
         else:
@@ -134,11 +138,11 @@ class StartupCog(TeXBotBaseCog):
             repr(settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"]),
         )
 
-        strike_performed_manually_warning_location_similar_to_dm: bool = (
-            settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"].lower() in (
-                "dm",
-                "dms",
-            )
+        strike_performed_manually_warning_location_similar_to_dm: bool = settings[
+            "STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"
+        ].lower() in (
+            "dm",
+            "dms",
         )
         if strike_performed_manually_warning_location_similar_to_dm:
             logger.info(

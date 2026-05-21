@@ -178,7 +178,9 @@ def view_single_config_setting_value(config_setting_name: str) -> str | None:
     return settings._public_view_single_raw_value(config_setting_name=config_setting_name)  # noqa: SLF001
 
 
-async def assign_single_config_setting_value(config_setting_name: str, new_config_setting_value: str) -> None:  # noqa: E501
+async def assign_single_config_setting_value(
+    config_setting_name: str, new_config_setting_value: str
+) -> None:  # noqa: E501
     # noinspection GrazieInspection
     """Set the value of a single configuration setting within settings tree hierarchy."""
     # noinspection PyProtectedMember

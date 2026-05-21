@@ -54,7 +54,9 @@ class ChangingSettingWithRequiredSiblingError(BaseTeXBotError, ValueError):
         )
 
     @override
-    def __init__(self, message: str | None = None, config_setting_name: str | None = None) -> None:  # noqa: E501
+    def __init__(
+        self, message: str | None = None, config_setting_name: str | None = None
+    ) -> None:  # noqa: E501
         self.config_setting_name: str | None = config_setting_name
 
         super().__init__(

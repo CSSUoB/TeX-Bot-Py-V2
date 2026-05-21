@@ -28,7 +28,9 @@ with SuppressTraceback():
     intents: discord.Intents = discord.Intents.default()
     setattr(intents, "members", True)  # noqa: B010
 
-    bot: TeXBot = TeXBot(intents=intents)  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
+    bot: TeXBot = TeXBot(
+        intents=intents
+    )  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
 
     bot.load_extension("cogs")
 

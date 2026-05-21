@@ -73,7 +73,9 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         self.bot.add_view(self.OptOutIntroductionRemindersView(self.bot))
 
     @classmethod
-    async def _check_if_member_needs_reminder(cls, member_id: int, member_joined_at: datetime.datetime) -> bool:  # noqa: E501
+    async def _check_if_member_needs_reminder(
+        cls, member_id: int, member_joined_at: datetime.datetime
+    ) -> bool:  # noqa: E501
         MEMBER_NEEDS_ONE_OFF_REMINDER: Final[bool] = (
             settings["SEND_INTRODUCTION_REMINDERS_ENABLED"] == "once"
             and not await (
@@ -85,9 +87,9 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         MEMBER_NEEDS_RECURRING_REMINDER: Final[bool] = (
             settings["SEND_INTRODUCTION_REMINDERS_ENABLED"] == "interval"
         )
-        MEMBER_RECENTLY_JOINED: bool = (
-            discord.utils.utcnow() - member_joined_at
-        ) <= settings["SEND_INTRODUCTION_REMINDERS_DELAY"]
+        MEMBER_RECENTLY_JOINED: bool = (discord.utils.utcnow() - member_joined_at) <= settings[
+            "SEND_INTRODUCTION_REMINDERS_DELAY"
+        ]
         MEMBER_OPTED_OUT_FROM_REMINDERS: Final[bool] = await (
             await IntroductionReminderOptOutMember.objects.afilter(
                 discord_id=member_id,
@@ -303,10 +305,13 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     )
                 except ValidationError as create_introduction_reminder_opt_out_member_error:
                     ERROR_IS_ALREADY_EXISTS: Final[bool] = bool(
-                        "hashed_member_id" in create_introduction_reminder_opt_out_member_error.message_dict  # noqa: E501
+                        "hashed_member_id"
+                        in create_introduction_reminder_opt_out_member_error.message_dict  # noqa: E501
                         and any(
                             "already exists" in error
-                            for error in create_introduction_reminder_opt_out_member_error.message_dict["hashed_member_id"]  # noqa: E501
+                            for error in create_introduction_reminder_opt_out_member_error.message_dict[
+                                "hashed_member_id"
+                            ]  # noqa: E501
                         )  # noqa: COM812
                     )
                     if not ERROR_IS_ALREADY_EXISTS:

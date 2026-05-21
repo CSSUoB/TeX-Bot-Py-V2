@@ -46,7 +46,12 @@ class GenericResponderComponent(abc.ABC):
         super().__init__()
 
     @abc.abstractmethod
-    async def respond(self, content: str, *, view: View | None | type[_VIEW_NOT_PROVIDED] = _VIEW_NOT_PROVIDED) -> None:  # noqa: E501
+    async def respond(
+        self,
+        content: str,
+        *,
+        view: View | None | type[_VIEW_NOT_PROVIDED] = _VIEW_NOT_PROVIDED,
+    ) -> None:  # noqa: E501
         """Respond in some way to the user with the given content & view."""
 
 
@@ -64,7 +69,12 @@ class SenderResponseComponent(GenericResponderComponent):
         super().__init__(interaction=interaction)
 
     @override
-    async def respond(self, content: str, *, view: View | None | type[_VIEW_NOT_PROVIDED] = _VIEW_NOT_PROVIDED) -> None:  # noqa: E501
+    async def respond(
+        self,
+        content: str,
+        *,
+        view: View | None | type[_VIEW_NOT_PROVIDED] = _VIEW_NOT_PROVIDED,
+    ) -> None:  # noqa: E501
         if view is _VIEW_NOT_PROVIDED:
             await self.interaction.respond(content=content, ephemeral=self.ephemeral)
             return
@@ -87,7 +97,12 @@ class EditorResponseComponent(GenericResponderComponent):
     """
 
     @override
-    async def respond(self, content: str, *, view: View | None | type[_VIEW_NOT_PROVIDED] = _VIEW_NOT_PROVIDED) -> None:  # noqa: E501
+    async def respond(
+        self,
+        content: str,
+        *,
+        view: View | None | type[_VIEW_NOT_PROVIDED] = _VIEW_NOT_PROVIDED,
+    ) -> None:  # noqa: E501
         if view is _VIEW_NOT_PROVIDED:
             await self.interaction.edit_original_response(content=content)
 

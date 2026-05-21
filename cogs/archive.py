@@ -59,7 +59,18 @@ class ArchiveCommandCog(TeXBotBaseCog):
             )
         }
 
-    async def _set_permissions(self, channel: AllChannelTypes, ctx: TeXBotApplicationContext, interaction_member: discord.Member, *, committee_role: discord.Role, guest_role: discord.Role, member_role: discord.Role, archivist_role: discord.Role, everyone_role: discord.Role) -> None:  # noqa: PLR0913,E501
+    async def _set_permissions(
+        self,
+        channel: AllChannelTypes,
+        ctx: TeXBotApplicationContext,
+        interaction_member: discord.Member,
+        *,
+        committee_role: discord.Role,
+        guest_role: discord.Role,
+        member_role: discord.Role,
+        archivist_role: discord.Role,
+        everyone_role: discord.Role,
+    ) -> None:  # noqa: PLR0913,E501
         CHANNEL_NEEDS_COMMITTEE_ARCHIVING: Final[bool] = bool(
             channel.permissions_for(committee_role).is_superset(
                 discord.Permissions(view_channel=True),
@@ -71,23 +82,23 @@ class ArchiveCommandCog(TeXBotBaseCog):
         if CHANNEL_NEEDS_COMMITTEE_ARCHIVING:
             await channel.set_permissions(
                 everyone_role,
-                reason=f"{interaction_member.display_name} used \"/archive\".",
+                reason=f'{interaction_member.display_name} used "/archive".',
                 view_channel=False,
             )
             await channel.set_permissions(
                 guest_role,
                 overwrite=None,
-                reason=f"{interaction_member.display_name} used \"/archive\".",
+                reason=f'{interaction_member.display_name} used "/archive".',
             )
             await channel.set_permissions(
                 member_role,
                 overwrite=None,
-                reason=f"{interaction_member.display_name} used \"/archive\".",
+                reason=f'{interaction_member.display_name} used "/archive".',
             )
             await channel.set_permissions(
                 committee_role,
                 overwrite=None,
-                reason=f"{interaction_member.display_name} used \"/archive\".",
+                reason=f'{interaction_member.display_name} used "/archive".',
             )
             return
 
@@ -99,27 +110,27 @@ class ArchiveCommandCog(TeXBotBaseCog):
         if CHANNEL_NEEDS_NORMAL_ARCHIVING:
             await channel.set_permissions(
                 everyone_role,
-                reason=f"{interaction_member.display_name} used \"/archive\".",
+                reason=f'{interaction_member.display_name} used "/archive".',
                 view_channel=False,
             )
             await channel.set_permissions(
                 guest_role,
                 overwrite=None,
-                reason=f"{interaction_member.display_name} used \"/archive\".",
+                reason=f'{interaction_member.display_name} used "/archive".',
             )
             await channel.set_permissions(
                 member_role,
                 overwrite=None,
-                reason=f"{interaction_member.display_name} used \"/archive\".",
+                reason=f'{interaction_member.display_name} used "/archive".',
             )
             await channel.set_permissions(
                 committee_role,
-                reason=f"{interaction_member.display_name} used \"/archive\".",
+                reason=f'{interaction_member.display_name} used "/archive".',
                 view_channel=False,
             )
             await channel.set_permissions(
                 archivist_role,
-                reason=f"{interaction_member.display_name} used \"/archive\".",
+                reason=f'{interaction_member.display_name} used "/archive".',
                 view_channel=True,
             )
             return

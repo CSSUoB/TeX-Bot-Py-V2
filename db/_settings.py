@@ -62,7 +62,6 @@ DATABASES: "Final[Mapping[str, object]]" = {  # SOURCE: https://docs.djangoproje
 DEFAULT_AUTO_FIELD: "Final[str]" = "django.db.models.BigAutoField"  # SOURCE: https://docs.djangoproject.com/en/stable/ref/settings#default-auto-field
 
 
-
 LANGUAGE_CODE: "Final[str]" = "en-gb"
 TIME_ZONE: "Final[str]" = "Europe/London"
 USE_I18N: "Final[bool]" = True

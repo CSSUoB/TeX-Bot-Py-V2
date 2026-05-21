@@ -499,7 +499,9 @@ class TeXBot(discord.Bot):
         self._main_guild = main_guild
         self._main_guild_set = True
 
-    async def _get_main_guild_member_from_user(self, user: discord.Member | discord.User) -> discord.Member:  # noqa: E501
+    async def _get_main_guild_member_from_user(
+        self, user: discord.Member | discord.User
+    ) -> discord.Member:  # noqa: E501
         """
         Util method to retrieve a member of your group's Discord guild from their User object.
 
@@ -526,7 +528,9 @@ class TeXBot(discord.Bot):
 
         return await self.get_main_guild_member(user)
 
-    async def get_main_guild_member(self, user: discord.Member | discord.User | str | int) -> discord.Member:  # noqa: E501
+    async def get_main_guild_member(
+        self, user: discord.Member | discord.User | str | int
+    ) -> discord.Member:  # noqa: E501
         """
         Util method to retrieve a member of your group's Discord guild from their ID or User.
 
