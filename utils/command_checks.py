@@ -64,7 +64,7 @@ class CommandChecks:
                 _check  # type: ignore[arg-type]
             )
         )(func)
-    
+
     @staticmethod
     def check_interaction_user_has_committee_or_committee_elect_role[T: TeXBotBaseCog, **P](
         func: "Callable[Concatenate[T, P], Awaitable[None]]",
@@ -74,7 +74,7 @@ class CommandChecks:
 
         If this check does not pass, the decorated command will not be executed.
         Instead, an error message will be sent to the user.
-        """
+        """  # noqa: E501, W505
 
         async def _check(ctx: "TeXBotApplicationContext") -> bool:
             return await ctx.bot.check_user_has_committee_or_committee_elect_role(ctx.user)
