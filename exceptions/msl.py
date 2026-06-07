@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-__all__: "Sequence[str]" = ("MSLMembershipError",)
+__all__: Sequence[str] = ("MSLMembershipError",)
 
 
 class MSLMembershipError(BaseTeXBotError, RuntimeError):
