@@ -83,7 +83,7 @@ class MessageSavingSenderComponent(abc.ABC):
             await self.sent_message.delete()
 
         else:
-            await self.sent_message.delete_original_message()
+            await self.sent_message.delete_original_response()
 
 
 class ChannelMessageSender(MessageSavingSenderComponent):
