@@ -106,7 +106,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
             )
 
             handover_channel: discord.TextChannel | None = discord.utils.get(
-                main_guild.text_channels, name="Handover"
+                main_guild.text_channels, name="handover"
             )
 
             automod_role: discord.Role | None = discord.utils.get(
