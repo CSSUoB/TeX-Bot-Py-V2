@@ -34,8 +34,8 @@ We recommend also reading the following if you're unsure or not confident:
 * [How To Make A Pull Request](https://makeapullrequest.com)
 * [Contributing To An Open Source Project For The First Time](https://firsttimersonly.com)
 
-TeX-Bot is written in [Python](https://python.org) using [Pycord](https://pycord.dev) and uses Discord's [slash-commands](https://support.discord.com/hc/articles/1500000368501-Slash-Commands-FAQ) & [user-commands](https://guide.pycord.dev/interactions/application-commands/context-menus).
-We would recommend being somewhat familiar with the [Pycord library](https://docs.pycord.dev), [Python language](https://docs.python.org/3/reference/index) & [project terminology](README.md#terminology) before contributing.
+TeX-Bot is written in [Python](https://python.org) using [Pycord](https://pycord.dev) and uses Discord's [slash commands](TERMINOLOGY.md#slash-commands) & [user commands](TERMINOLOGY.md#user-commands).
+We would recommend being somewhat familiar with the [Pycord library](https://docs.pycord.dev), [Python language](https://docs.python.org/3/reference/index) & [project terminology](TERMINOLOGY.md) before contributing.
 
 ## Using the Issue Tracker
 
@@ -73,6 +73,8 @@ There are separate cog files for each activity, and one [`__init__.py`](cogs/__i
 
 * [`cogs/__init__.py`](cogs/__init__.py): instantiates all the cog classes within this directory
 
+* [`cogs/annual_handover_and_reset.py`](cogs/annual_handover_and_reset.py): cogs for annual handover procedures and role resets
+
 * [`cogs/archive.py`](cogs/archive.py): cogs for archiving categories of channels within your group's Discord guild
 
 * [`cogs/command_error.py`](cogs/command_error.py): cogs for sending error messages when commands fail to complete/execute
@@ -81,9 +83,13 @@ There are separate cog files for each activity, and one [`__init__.py`](cogs/__i
 
 * [`cogs/edit_message.py`](cogs/edit_message.py): cogs for editing messages that were previously sent by TeX-Bot
 
+* [`cogs/get_token_authorisation.py`](cogs/get_token_authorisation.py): cogs for retrieving the current status of the supplied authentication token
+
 * [`cogs/induct.py`](cogs/induct.py): cogs for inducting people into your group's Discord guild
 
 * [`cogs/kill.py`](cogs/kill.py): cogs related to the shutdown of TeX-Bot
+
+* [`cogs/make_applicant`](cogs/make_applicant.py): cogs related to making users into applicants
 
 * [`cogs/make_member.py`](cogs/make_member.py): cogs related to making guests into members
 
@@ -105,7 +111,7 @@ There are separate cog files for each activity, and one [`__init__.py`](cogs/__i
 
 * [`cogs/strike.py`](cogs/strike.py): cogs for applying moderation actions to Discord members
 
-* [`cogs/write_roles.py`](cogs/write_roles.py): cogs relating to sending the message that contains all the opt-in roles, into the "#**roles**" channel
+* [`cogs/write_roles.py`](cogs/write_roles.py): cogs relating to sending the message, that contains all the opt-in roles, into the "#**roles**" channel
 
 ## Making Your First Contribution
 
@@ -205,3 +211,391 @@ If you see an error, we encourage you to **be bold** and fix it yourself, rather
 If you are stuck, need help, or have a question, the best place to ask is on our Discord.
 
 Happy contributing!
+
+## Guides
+
+### Creating a New Cog
+
+Cogs are modular components of TeX-Bot that group related commands and listeners into a single class.
+To create a new cog, follow these steps:
+
+1. Create the Cog File
+   * Navigate to the `cogs/` directory.
+   * Create a new Python file with a name that reflects the purpose of the cog (e.g., `example_commands.py`).
+
+2. Define the Cog Class
+   * Import the necessary modules, including `TeXBotBaseCog` from `utils`.
+   * Define a class that inherits from `TeXBotBaseCog`.
+   * Add a docstring to describe the purpose of the cog.
+
+   Example:
+
+   ```python
+   from utils import TeXBotBaseCog
+
+   class ExampleCog(TeXBotBaseCog):
+       """A cog for demonstrating functionality."""
+
+       def do_something(self, message: str) -> None:
+           """Perform a simple action."""
+           self.logger.info("Doing something with %s.", message)
+   ```
+
+3. Add Commands and Listeners
+   * Define methods within the class for commands and event listeners.
+   * Use decorators like `@discord.slash_command()` (for [slash commands](TERMINOLOGY.md#slash-commands)) or `@TeXBotBaseCog.listener()` to register the callback method to their [interaction](TERMINOLOGY.md#interactions) type.
+   * Include any necessary checks using `CommandChecks` decorators.
+
+   Example:
+
+   ```python
+   from typing import Sequence
+
+   import discord
+   from utils import CommandChecks, TeXBotBaseCog
+
+   __all__: Sequence[str] = (
+       "ExampleCog",
+   )
+
+   class ExampleCog(TeXBotBaseCog):
+       """A cog for demonstrating functionality."""
+
+       @discord.slash_command(name="example", description="Share an example response.")
+       @CommandChecks.guild_only()
+       async def example(self, ctx: discord.ApplicationContext) -> None:
+           """Send a response to the example command."""
+           await ctx.respond("Example response.")
+
+       @TeXBotBaseCog.listener()
+       async def on_ready(self) -> None:
+           """Handle the bot ready event."""
+           print("ExampleCog is ready.")
+
+   ```
+
+4. Register the Cog
+   * Edit `cogs/__init__.py` to add your new cog class to the list of cogs in the `setup` function.
+   * Also, include the cog class in the `__all__` sequence to ensure it is properly exported.
+
+   Example:
+
+   ```python
+   from .example_commands import ExampleCog
+
+   __all__: Sequence[str] = (
+       ...existing cogs...
+       "ExampleCog",
+   )
+
+   def setup(bot: "TeXBot") -> None:
+       """Add all the cogs to the bot, at bot startup."""
+       cogs: Iterable[type[TeXBotBaseCog]] = (
+           ...existing cogs...
+           ExampleCog,
+       )
+       Cog: type[TeXBotBaseCog]
+       for Cog in cogs:
+           bot.add_cog(Cog(bot))
+   ```
+
+5. Test the Cog
+   * Run the bot with your changes and ensure the new cog is loaded without errors.
+   * Test the commands and listeners to verify they work as expected.
+
+6. Document the Cog
+   * Add docstrings where functionality may be unexpected or surprising.
+   * Update the `CONTRIBUTING.md` file or other relevant documentation if necessary.
+
+### Creating a New Environment Variable
+
+To add a new environment variable to the project, follow these steps:
+
+1. Define the Variable in development `.env`
+   * Open the `.env` file in the project root directory (or create one if it doesn't exist).
+   * Add the new variable in the format `VARIABLE_NAME=value`.
+   * Ensure the variable name is descriptive and uses uppercase letters with underscores.
+
+2. Update `config.py`
+   * Open the `config.py` file.
+   * Add a new private setup method in the `Settings` class to validate and load the variable.
+   * Store the final value in `cls._settings` under the variable's key.
+   * Ensure every key is present in `cls._settings` after setup, even if the value is `None` for an optional variable.
+
+   Example:
+
+   ```python
+   @classmethod
+   def _setup_new_variable(cls) -> None:
+       raw_value: str | None = os.getenv("NEW_VARIABLE")
+
+       if raw_value is None:
+           raise ImproperlyConfiguredError("NEW_VARIABLE is required.")
+
+       if not re.fullmatch(r"<validation_regex>", raw_value):
+           raise ImproperlyConfiguredError("NEW_VARIABLE is invalid.")
+
+       cls._settings["NEW_VARIABLE"] = raw_value
+   ```
+
+   * If the variable is optional, skip the required check and store `None` in `cls._settings` when it is missing.
+   * Replace `<validation_regex>` with a regular expression to validate the variable's format, if applicable.
+
+3. Call the Setup Method
+   * Add the new setup method to the `_setup_env_variables` method in `config.py`.
+   * Ensure `_setup_env_variables` is responsible for populating every key in `cls._settings`.
+
+   ```python
+   @classmethod
+   def _setup_env_variables(cls) -> None:
+       if cls._is_env_variables_setup:
+           logger.warning("Environment variables have already been set up.")
+           return
+
+       cls._settings = {}
+
+       cls._setup_new_variable()
+       # Add other setup methods here
+
+       cls._is_env_variables_setup = True
+   ```
+
+4. Document the Variable
+   * Update the `README.md` file under the "Setting Environment Variables" section to include the new variable, its purpose and any valid values.
+   * Add the variable to `.env.example` with a placeholder value and short comment describing its purpose.
+
+5. Test the Variable
+   * Run the bot with your changes and ensure the new variable is loaded correctly.
+   * Test edge cases, such as missing, blank or invalid values in the `.env` file, to confirm that error handling functions correctly.
+
+### Creating a Response Button
+
+Response buttons are interactive UI components that allow users to respond to bot messages with predefined actions.
+To create a response button, follow these steps:
+
+1. Define the Button Class
+   * Create a new class in your cog file that inherits from `discord.ui.View`.
+   * Add button callback response methods using the `@discord.ui.button` decorator.
+   * Each button method should define the button's label, a custom response ID and style.
+
+   Example:
+
+   ```python
+   import discord
+   from discord.ui import View
+
+   class ConfirmActionView(View):
+       """A discord.ui.View containing buttons to confirm or cancel an action."""
+
+       @discord.ui.button(
+           label="Yes",
+           style=discord.ButtonStyle.green,
+           custom_id="confirm_yes",
+       )
+       async def confirm_yes(self, button: discord.Button, interaction: discord.Interaction) -> None:
+           """Confirm the action and acknowledge the user."""
+           user = interaction.user
+           if user is None:
+               await interaction.response.send_message("Action confirmed.", ephemeral=True)
+               return
+
+           await interaction.response.send_message(
+               f"Action confirmed by {user.display_name}.",
+               ephemeral=True,
+           )
+
+       @discord.ui.button(
+           label="No",
+           style=discord.ButtonStyle.red,
+           custom_id="confirm_no",
+       )
+       async def confirm_no(self, button: discord.Button, interaction: discord.Interaction) -> None:
+           """Cancel the action and acknowledge the user."""
+           await interaction.response.send_message("Action cancelled.", ephemeral=True)
+   ```
+
+2. Send the View with a Message
+   * Use the `view` parameter of the `send` or `respond` method to attach the button view to a message.
+   * This could be sent in response to a command, event handler or scheduled task.
+
+   Example:
+
+   ```python
+   await ctx.send(
+       content="Do you want to proceed?",
+       view=ConfirmActionView(),
+   )
+   ```
+
+3. Handle Button Interactions
+   * Define logic within each button method to handle user [interactions](TERMINOLOGY.md#interactions).
+   * Use `interaction.response` to send feedback or perform actions based on the button clicked.
+
+   Example:
+
+   ```python
+   if interaction.user is None:
+       await interaction.response.send_message("No user information was provided.", ephemeral=True)
+       return
+
+   await interaction.response.send_message(
+       f"{interaction.user.mention} clicked {button.label}.",
+       ephemeral=True,
+   )
+   ```
+
+   Some flows keep the button callbacks lightweight, then continue processing in the calling command.
+   For example, you can remove the buttons in the callback and wait for the interaction in the original cog method with `self.bot.wait_for()`, checking `button_interaction.data["custom_id"]` to decide how to continue.
+   See the strike flow for a full example ([command handler](https://github.com/CSSUoB/TeX-Bot-Py-V2/blob/9376f67561cbdd7016fba7ea0c84372e1782f0e6/cogs/strike.py#L110-L145), [follow-up handling](https://github.com/CSSUoB/TeX-Bot-Py-V2/blob/9376f67561cbdd7016fba7ea0c84372e1782f0e6/cogs/strike.py#L296-L323)).
+
+4. Test the Button
+   * Run the bot with your changes and ensure the buttons appear and function as expected.
+   * Test edge cases, such as multiple users interacting with the buttons simultaneously.
+
+5. Document the Button
+   * Add docstrings where functionality may be unexpected or surprising.
+   * Update relevant documentation if necessary.
+
+### Creating and Interacting with Django Models
+
+#### Data Protection Consideration
+
+When making changes to the database model, it is essential to consider the data protection implications of these changes.
+If personal data is being collected, stored or processed, it is essential that this is in compliance with the law.
+In the UK, the relevant law is the [Data Protection Act 2018](https://www.legislation.gov.uk/ukpga/2018/12/contents).
+As a general rule, any changes that have data protection implications should be checked and approved by the organisation responsible for running the application.
+
+Django models are used to interact with the database in this project.
+They allow you to define the structure of your data and provide an API to query and manipulate it.
+To create and interact with Django models, follow these steps:
+
+1. Define a Model
+   * Navigate to the `db/core/models/` directory.
+   * Create a new Python file with a name that reflects the purpose of the model (e.g., `example_record.py`).
+   * If your model is a new property related to each [Discord member](TERMINOLOGY.md#user-vs-member-vs-guest), define a class that inherits from `BaseDiscordMemberWrapper`.
+     The base class is found within the `.utils` module in `db/core/models/`.
+   * If your model is unrelated to Discord members, define a class that inherits from `AsyncBaseModel`.
+     The base class is also found within the `.utils` module in `db/core/models/`.
+   * Add your Django fields to the class to represent the model's data structure.
+   * If your model inherits from `BaseDiscordMemberWrapper`, you **must** declare a field called `discord_member`.
+     The field must be either a Django `ForeignKey` field or a `OneToOneField`, depending upon the relationship between your model and each Discord member.
+   * Define the static class string holding the display name for multiple instances of your class (e.g., `INSTANCES_NAME_PLURAL: str = "Members' Smiley Faces"`).
+
+   Example:
+
+   ```python
+   from django.db import models
+
+   from .utils import AsyncBaseModel, BaseDiscordMemberWrapper
+   from .discord_member import DiscordMember
+
+   class ExampleRecord(AsyncBaseModel):
+       """A record for demonstrating functionality."""
+
+       INSTANCES_NAME_PLURAL: str = "Example Records"
+
+       name = models.CharField(max_length=255)
+       created_at = models.DateTimeField(auto_now_add=True)
+
+   class MemberSmileyFaces(BaseDiscordMemberWrapper):
+       """Model to represent the number of smiley faces of each Discord member."""
+
+       INSTANCES_NAME_PLURAL: str = "Discord Members' Smiley Faces"
+
+       discord_member = models.OneToOneField(
+           DiscordMember,
+           on_delete=models.CASCADE,
+           related_name="smiley_faces",
+           verbose_name="Discord Member",
+           blank=False,
+           null=False,
+           primary_key=True,
+       )
+       count = models.IntegerField(
+           "Number of smiley faces",
+           null=False,
+           blank=True,
+           default=0,
+       )
+   ```
+
+2. Apply Migrations
+   * Run the following commands to create and apply migrations for your new model:
+
+   ```shell
+   uv run manage.py makemigrations
+   uv run manage.py migrate
+   ```
+
+3. Query the Model
+   * Use Django's ORM to interact with the model.
+   * The example below shows a single [slash command](TERMINOLOGY.md#slash-commands) that creates, filters, updates, and deletes records based on command options.
+
+   ```python
+   import discord
+
+   from db.core.models.example_record import ExampleRecord
+   from utils import TeXBotBaseCog
+
+   class ExampleCog(TeXBotBaseCog):
+       """A cog for demonstrating model access."""
+
+       @discord.slash_command(name="example-record", description="Manage example records.")
+       async def example_record(
+           self,
+           ctx: discord.ApplicationContext,
+           action: str,
+           record_id: int | None = None,
+           name: str | None = None,
+           search_term: str | None = None,
+       ) -> None:
+           """Create, filter, update, or delete ExampleRecord entries."""
+           if action == "create":
+               if name is None:
+                   await ctx.respond("Provide a name to create a record.", ephemeral=True)
+                   return
+               record = await ExampleRecord.objects.acreate(name=name)
+               await ctx.respond(f"Created record {record.id}.")
+               return
+
+           if action == "filter":
+               if search_term is None:
+                   await ctx.respond("Provide a search term to filter records.", ephemeral=True)
+                   return
+               records = [
+                   record async for record in ExampleRecord.objects.filter(name__icontains=search_term)
+               ]
+               names = ", ".join(record.name for record in records)
+               await ctx.respond(f"Matching records: {names or 'None found.'}")
+               return
+
+           if action == "update":
+               if record_id is None or name is None:
+                   await ctx.respond("Provide an ID and name to update.", ephemeral=True)
+                   return
+               record = await ExampleRecord.objects.filter(id=record_id).afirst()
+               if record is None:
+                   await ctx.respond("Record not found.", ephemeral=True)
+                   return
+               record.name = name
+               await record.asave()
+               await ctx.respond(f"Updated record {record.id}.")
+               return
+
+           if action == "delete":
+               if record_id is None:
+                   await ctx.respond("Provide an ID to delete.", ephemeral=True)
+                   return
+               record = await ExampleRecord.objects.filter(id=record_id).afirst()
+               if record is None:
+                   await ctx.respond("Record not found.", ephemeral=True)
+                   return
+               await record.adelete()
+               await ctx.respond(f"Deleted record {record.id}.")
+               return
+
+           await ctx.respond(
+               "Action must be one of: create, filter, update, delete.",
+               ephemeral=True,
+           )
+   ```
