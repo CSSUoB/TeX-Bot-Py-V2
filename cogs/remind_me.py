@@ -24,10 +24,10 @@ if TYPE_CHECKING:
 
     from utils import TeXBot, TeXBotApplicationContext, TeXBotAutocompleteContext
 
-__all__: "Sequence[str]" = ("ClearRemindersBacklogTaskCog", "RemindMeCommandCog")
+__all__: Sequence[str] = ("ClearRemindersBacklogTaskCog", "RemindMeCommandCog")
 
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class RemindMeCommandCog(TeXBotBaseCog):
@@ -35,8 +35,8 @@ class RemindMeCommandCog(TeXBotBaseCog):
 
     @staticmethod
     async def autocomplete_get_delays(  # noqa: PLR0912, PLR0915
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+        ctx: TeXBotAutocompleteContext,
+    ) -> AbstractSet[discord.OptionChoice] | AbstractSet[str]:
         """
         Autocomplete callable that generates the common delay input values.
 
@@ -202,9 +202,7 @@ class RemindMeCommandCog(TeXBotBaseCog):
         description="The message you want to be reminded with.",
         required=False,
     )
-    async def remind_me(
-        self, ctx: "TeXBotApplicationContext", delay: str, message: str
-    ) -> None:
+    async def remind_me(self, ctx: TeXBotApplicationContext, delay: str, message: str) -> None:
         """
         Definition & callback response of the "remind_me" command.
 
@@ -213,6 +211,11 @@ class RemindMeCommandCog(TeXBotBaseCog):
         parsed_time: tuple[time.struct_time, int] = parsedatetime.Calendar().parseDT(
             delay, tzinfo=timezone.get_current_timezone()
         )
+        if not ctx.channel:
+            await self.command_send_error(
+                ctx, message="This command can only be used in channels."
+            )
+            return
 
         if parsed_time[1] == 0:
             await self.command_send_error(
@@ -272,7 +275,7 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
     """Cog class that defines the clear_reminders_backlog task."""
 
     @override
-    def __init__(self, bot: "TeXBot") -> None:
+    def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
         _ = self.clear_reminders_backlog.start()
 
@@ -305,8 +308,8 @@ class ClearRemindersBacklogTaskCog(TeXBotBaseCog):
                 discord.utils.utcnow() - reminder.send_datetime
             )
             if time_since_reminder_needed_to_be_sent > datetime.timedelta(minutes=15):
-                user: discord.User | None = await self.bot.get_or_fetch_user(
-                    int(reminder.discord_member.discord_id)
+                user: discord.User | None = await self.bot.get_or_fetch(
+                    object_type=discord.User, object_id=int(reminder.discord_member.discord_id)
                 )
 
                 if not user:

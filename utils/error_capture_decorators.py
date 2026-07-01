@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
     from .tex_bot_base_cog import TeXBotBaseCog
 
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "ErrorCaptureDecorators",
     "capture_guild_does_not_exist_error",
     "capture_strike_tracking_error",
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
         Concatenate[T_cog, P], Coroutine[object, object, T_ret]
     ]
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class ErrorCaptureDecorators:
@@ -46,10 +46,10 @@ class ErrorCaptureDecorators:
 
     @staticmethod
     def capture_error_and_close[**P, T_ret, T_cog: TeXBotBaseCog](
-        func: "DecoratorInputFunc[P, T_cog, T_ret]",
+        func: DecoratorInputFunc[P, T_cog, T_ret],
         error_type: type[BaseException],
-        close_func: "Callable[[BaseException], None]",
-    ) -> "WrapperOutputFunc[P, T_ret]":
+        close_func: Callable[[BaseException], None],
+    ) -> WrapperOutputFunc[P, T_ret]:
         """
         Decorator to send an error message to the user when the given exception type is raised.
 
@@ -79,8 +79,8 @@ class ErrorCaptureDecorators:
 
 
 def capture_guild_does_not_exist_error[**P, T_ret](
-    func: "WrapperInputFunc[P, T_ret]",
-) -> "WrapperOutputFunc[P, T_ret]":
+    func: WrapperInputFunc[P, T_ret],
+) -> WrapperOutputFunc[P, T_ret]:
     """
     Decorator to send an error message to the Discord user when a GuildDoesNotExist is raised.
 
@@ -94,8 +94,8 @@ def capture_guild_does_not_exist_error[**P, T_ret](
 
 
 def capture_strike_tracking_error[**P, T_ret](
-    func: "WrapperInputFunc[P, T_ret]",
-) -> "WrapperOutputFunc[P, T_ret]":
+    func: WrapperInputFunc[P, T_ret],
+) -> WrapperOutputFunc[P, T_ret]:
     """
     Decorator to send an error message to the user when a StrikeTrackingError is raised.
 

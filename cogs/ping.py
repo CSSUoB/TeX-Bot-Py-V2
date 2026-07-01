@@ -13,14 +13,14 @@ if TYPE_CHECKING:
 
     from utils import TeXBotApplicationContext
 
-__all__: "Sequence[str]" = ("PingCommandCog",)
+__all__: Sequence[str] = ("PingCommandCog",)
 
 
 class PingCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/ping" command and its call-back method."""
 
     @discord.slash_command(name="ping", description="Replies with Pong!")
-    async def ping(self, ctx: "TeXBotApplicationContext") -> None:
+    async def ping(self, ctx: TeXBotApplicationContext) -> None:
         """Definition & callback response of the "ping" command."""
         await ctx.respond(
             random.choices(  # noqa: S311
