@@ -25,19 +25,19 @@ logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 class ConfirmKillView(View):
     """A discord.View containing two buttons to confirm shutting down TeX-Bot."""
 
-    @discord.ui.button(
+    @discord.ui.button(  # type: ignore[arg-type]
         label="SHUTDOWN", style=discord.ButtonStyle.red, custom_id="shutdown_confirm"
     )
-    async def confirm_shutdown_button_callback(  # type: ignore[misc]
+    async def confirm_shutdown_button_callback(
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """When the shutdown button is pressed, delete the message."""
         logger.debug('"Confirm" button pressed. %s', interaction)
 
-    @discord.ui.button(
+    @discord.ui.button(  # type: ignore[arg-type]
         label="CANCEL", style=discord.ButtonStyle.grey, custom_id="shutdown_cancel"
     )
-    async def cancel_shutdown_button_callback(  # type: ignore[misc]
+    async def cancel_shutdown_button_callback(
         self, _: discord.Button, interaction: discord.Interaction
     ) -> None:
         """When the cancel button is pressed, delete the message."""
