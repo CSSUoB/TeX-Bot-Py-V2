@@ -4,17 +4,15 @@ import contextlib
 import logging
 from typing import TYPE_CHECKING
 
-import aiohttp
 import bs4
 from bs4 import BeautifulSoup
 
-from config import settings
 from exceptions import MSLMembershipError
-from utils import GLOBAL_SSL_CONTEXT
+
+from .core import ORGANISATION_ID, su_platform_client
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
-    from http.cookies import Morsel
+    from collections.abc import Sequence
     from logging import Logger
     from typing import Final
 
@@ -22,48 +20,17 @@ if TYPE_CHECKING:
 __all__: "Sequence[str]" = (
     "fetch_community_group_members_count",
     "fetch_community_group_members_list",
-    "fetch_url_content_with_session",
     "is_id_a_community_group_member",
 )
 
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
-BASE_SU_PLATFORM_WEB_HEADERS: "Final[Mapping[str, str]]" = {
-    "Cache-Control": "no-cache",
-    "Pragma": "no-cache",
-    "Expires": "0",
-}
-
-BASE_SU_PLATFORM_WEB_COOKIES: "Mapping[str, str]" = {
-    ".AspNet.SharedCookie": settings["SU_PLATFORM_ACCESS_COOKIE"],
-}
-
-MEMBERS_LIST_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{settings['ORGANISATION_ID']}/?sort=groups"
+MEMBERS_LIST_URL: "Final[str]" = (
+    f"https://guildofstudents.com/organisation/memberlist/{ORGANISATION_ID}/?sort=groups"
+)
 
 _membership_list_cache: set[int] = set()
-
-
-async def fetch_url_content_with_session(url: str) -> str:
-    """Fetch the HTTP content at the given URL, using a shared aiohttp session."""
-    global BASE_SU_PLATFORM_WEB_COOKIES  # noqa: PLW0603
-    async with (
-        aiohttp.ClientSession(
-            headers=BASE_SU_PLATFORM_WEB_HEADERS, cookies=BASE_SU_PLATFORM_WEB_COOKIES
-        ) as http_session,
-        http_session.get(url=url, ssl=GLOBAL_SSL_CONTEXT) as http_response,
-    ):
-        returned_asp_cookie: Morsel[str] | None = http_response.cookies.get(
-            ".AspNet.SharedCookie"
-        )
-        if returned_asp_cookie is not None and (
-            returned_asp_cookie.value != BASE_SU_PLATFORM_WEB_COOKIES[".AspNet.SharedCookie"]
-        ):
-            logger.info("SU platform access cookie was updated by the server; updating local.")
-            BASE_SU_PLATFORM_WEB_COOKIES = {
-                ".AspNet.SharedCookie": returned_asp_cookie.value,
-            }
-        return await http_response.text()
 
 
 async def fetch_community_group_members_list() -> set[int]:
@@ -73,7 +40,8 @@ async def fetch_community_group_members_list() -> set[int]:
     Returns a set of IDs.
     """
     parsed_html: BeautifulSoup = BeautifulSoup(
-        markup=await fetch_url_content_with_session(MEMBERS_LIST_URL), features="html.parser"
+        markup=await su_platform_client.fetch_url_content(MEMBERS_LIST_URL),
+        features="html.parser",
     )
 
     member_ids: set[int] = set()
