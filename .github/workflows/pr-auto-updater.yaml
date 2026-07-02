@@ -1,22 +1,33 @@
-name: Automatic PR Updater
+name: Auto-update pull request branches
 
 "on":
     push: ~
 
+concurrency:  # yamllint disable-line rule:key-ordering
+    cancel-in-progress: true
+    group: ${{github.workflow}}-${{github.ref}}
+
+permissions:
+    contents: none  # Default permissions reset to none
+
 jobs:
     pr-auto-update:
+        name: Auto-update pull request branches
         permissions:
-            contents: write
-            pull-requests: write
+            contents: write  # Needed to push updates to pull request branches
+            pull-requests: write  # Needed to comment on/tag pull requests
         runs-on: ubuntu-latest
 
         steps:
             - id: generate-token
-              name: Generate Access Token
+              name: Generate access token
               uses: actions/create-github-app-token@v3
               with:
                 app-id: ${{vars.PR_AUTO_UPDATE_CLIENT_ID}}
-                private-key: ${{secrets.PR_AUTO_UPDATE_PRIVATE_KEY}}
+                permission-contents: write
+                permission-issues: write
+                permission-pull-requests: read
+                private-key: ${{secrets.PR_AUTO_UPDATE_PRIVATE_KEY}}  # zizmor: ignore[secrets-outside-env]
 
             - uses: CSSUoB/pr-auto-updater@v2.3.1
               env:  # yamllint disable-line rule:key-ordering
