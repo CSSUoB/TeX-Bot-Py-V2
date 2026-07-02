@@ -13,9 +13,6 @@ permissions:
 jobs:
     pr-auto-update:
         name: Auto-update pull request branches
-        permissions:
-            contents: write  # Needed to push updates to pull request branches
-            pull-requests: write  # Needed to comment on/tag pull requests
         runs-on: ubuntu-latest
 
         steps:
@@ -23,9 +20,8 @@ jobs:
               name: Generate access token
               uses: actions/create-github-app-token@v3
               with:
-                app-id: ${{vars.PR_AUTO_UPDATE_CLIENT_ID}}
+                client-id: ${{vars.PR_AUTO_UPDATE_CLIENT_ID}}
                 permission-contents: write
-                permission-issues: write
                 permission-pull-requests: read
                 private-key: ${{secrets.PR_AUTO_UPDATE_PRIVATE_KEY}}  # zizmor: ignore[secrets-outside-env]
 
