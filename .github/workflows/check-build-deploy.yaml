@@ -147,7 +147,8 @@ jobs:
                     [
                         {
                             "workflowFile": "autofix-pre-commit.yaml",
-                            "jobName": "autofix-pre-commit"
+                            "jobMatchMode": "prefix",
+                            "jobName": "Run pre-commit hooks"
                         }
                     ]
 
