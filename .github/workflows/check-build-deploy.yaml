@@ -280,12 +280,13 @@ jobs:
         environment: publish
         if: |
             always()
-            && needs.mypy.result =='success'
+            && needs.mypy.result == 'success'
             && (
                 needs.pre-commit-PUSH.result == 'success'
                 || needs.pre-commit-PULL_REQUEST.result == 'success'
             )
             && needs.pytest.result == 'success'
+            && needs.pymarkdown.result == 'success'
             && needs.ruff-lint.result == 'success'
             && needs.uv-check.result == 'success'
             && (
@@ -293,7 +294,7 @@ jobs:
                 || github.event.pull_request.head.repo.full_name == 'CSSUoB/TeX-Bot-Py-V2'
             )
         name: Build and publish Docker image
-        needs: [mypy, pre-commit-PUSH, pre-commit-PULL_REQUEST, pytest, ruff-lint, uv-check]
+        needs: [mypy, pre-commit-PUSH, pre-commit-PULL_REQUEST, pymarkdown, pytest, ruff-lint, uv-check]
         permissions:
             artifact-metadata: write  # Needed to correctly publish release artefacts
             attestations: write  # Needed to correctly publish container image attestations
