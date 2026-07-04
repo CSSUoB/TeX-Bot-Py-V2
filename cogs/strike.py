@@ -1109,7 +1109,6 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         name="Send Message to Committee",
         description="Sends the selected message to the committee channel for discussion.",
     )
-    @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def send_message_to_committee(
         self, ctx: TeXBotApplicationContext, message: discord.Message
