@@ -1,18 +1,23 @@
-name: Prevent Database Migration Files Deletion
+name: Prevent deletion of database migration files
 
 "on":
-    pull_request_target:
+    pull_request_target:  # zizmor: ignore[dangerous-triggers]
         branches: [main]
+
+concurrency:  # yamllint disable-line rule:key-ordering
+    cancel-in-progress: true
+    group: ${{github.workflow}}-${{github.event.pull_request.number || github.ref}}
+
+permissions:
+    pull-requests: read  # Needed to check if a pull request includes the deletion of a migration file
 
 jobs:
     prevent-migrations-deletion:
-        permissions:
-            pull-requests: read
+        name: Prevent deletion of database migration files
         runs-on: ubuntu-latest
 
         steps:
-            - name: Prevent migrations files being changed or deleted
-              uses: xalvarez/prevent-file-change-action@v3.0.1
+            - uses: xalvarez/prevent-file-change-action@v3.0.1
               with:
                 allowNewFiles: true
                 githubToken: ${{secrets.GITHUB_TOKEN}}
