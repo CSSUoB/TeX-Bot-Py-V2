@@ -22,7 +22,7 @@ jobs:
               with:
                 client-id: ${{vars.PR_AUTO_UPDATE_CLIENT_ID}}
                 permission-contents: write
-                permission-pull-requests: read
+                permission-pull-requests: write
                 private-key: ${{secrets.PR_AUTO_UPDATE_PRIVATE_KEY}}  # zizmor: ignore[secrets-outside-env]
 
             - uses: CSSUoB/pr-auto-updater@v2.3.1
