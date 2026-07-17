@@ -5,7 +5,7 @@ default_stages: [pre-commit, pre-merge-commit, manual]
 
 repos:
     - repo: https://github.com/astral-sh/uv-pre-commit
-      rev: 0.11.25
+      rev: 0.11.29
       hooks:
         - id: uv-lock
           always_run: true
@@ -16,19 +16,19 @@ repos:
         - id: gitleaks
 
     - repo: https://github.com/codespell-project/codespell
-      rev: v2.4.2
+      rev: v2.4.3
       hooks:
         - id: codespell
 
     - repo: https://github.com/tombi-toml/tombi-pre-commit
-      rev: v1.1.6
+      rev: v1.2.0
       hooks:
         - exclude: \A.+\.lock\Z
           id: tombi-format
         - id: tombi-lint
 
     - repo: https://github.com/tsvikas/sync-with-uv
-      rev: v0.5.0
+      rev: v0.6.0
       hooks:
         - id: sync-with-uv
 
@@ -40,7 +40,7 @@ repos:
           args: [-pyflakes=]
 
     - repo: https://github.com/zizmorcore/zizmor-pre-commit
-      rev: v1.26.1
+      rev: v1.27.0
       hooks:
         - id: zizmor
           args: [--no-progress, --fix, --persona=auditor]
@@ -63,7 +63,7 @@ repos:
           args: [--strict]
 
     - repo: https://github.com/renovatebot/pre-commit-hooks
-      rev: 43.249.0
+      rev: 43.265.3
       hooks:
         - id: renovate-config-validator
           args: [--strict]
@@ -123,7 +123,7 @@ repos:
           args: [--autofix]
 
     - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.15.21
+      rev: v0.15.22
       hooks:
         - id: ruff-check
           args: [--fix]
