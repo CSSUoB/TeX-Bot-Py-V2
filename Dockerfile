@@ -33,6 +33,6 @@ ENV LANG=C.UTF-8 PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
 
-USER nonroot
+USER 999
 
 ENTRYPOINT ["python", "-m", "main"]
