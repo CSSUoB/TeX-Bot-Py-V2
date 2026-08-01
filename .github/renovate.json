@@ -8,7 +8,7 @@
     "dependencyDashboardLabels": [
         "dependencies"
     ],
-    "enabled": true,
+    "enabled": false,
     "enabledManagers": [
         "github-actions",
         "pep621",
