@@ -108,9 +108,12 @@ plugins.ul-indent.indent = 4
 plugins.ul-start-left.enabled = true
 plugins.ul-style.style = "asterisk"
 
-[tool.pytest]
+# NOTE: Pytest only reads its configuration from the `ini_options` table within
+# `pyproject.toml`; a plain `[tool.pytest]` table is silently ignored.
+[tool.pytest.ini_options]
 filterwarnings = ["ignore:'audioop':DeprecationWarning"]
-strict = true
+testpaths = ["tests"]
+xfail_strict = true
 
 [tool.ruff]
 extend-exclude = ["db/**/migrations/"]

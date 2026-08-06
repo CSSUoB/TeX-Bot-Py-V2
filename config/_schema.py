@@ -134,8 +134,22 @@ def _parse_time_delta(value: object) -> object:
     an empty string is rejected rather than silently parsed as a zero-length duration.
     A zero-length interval would cause any task looping upon it to spin without pausing.
     """
-    if not isinstance(value, str):
+    if isinstance(value, datetime.timedelta):
         return value
+
+    if not isinstance(value, str):
+        # NOTE: Pydantic would otherwise accept a bare number as a count of seconds, so
+        # `timeout-duration: 24` would silently mean 24 seconds rather than the 24 hours
+        # its author almost certainly intended. Requiring a unit removes the ambiguity,
+        # and matches the string `'24'` already being rejected for the same reason.
+        NON_STRING_TIME_DELTA_MESSAGE: str = (
+            "Value should be a delay/interval string, in the format "
+            "'<days>d<hours>h<minutes>m<seconds>s', including the unit of each part"
+        )
+        # NOTE: Deliberately a `ValueError` despite describing a wrong type: Pydantic
+        # converts only `ValueError` & `AssertionError` into validation errors, so a
+        # `TypeError` would propagate uncaught & abandon the whole reload.
+        raise ValueError(NON_STRING_TIME_DELTA_MESSAGE)  # noqa: TRY004
 
     match: re.Match[str] | None = _TIME_DELTA_MATCHER.fullmatch(value.strip())
     if match is None or not any(match.groupdict().values()):

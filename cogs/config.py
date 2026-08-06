@@ -6,7 +6,11 @@ from typing import TYPE_CHECKING
 import discord
 
 import config
-from config import SettingsValidationError
+from config import (
+    InvalidSettingsFileError,
+    SettingsFileNotFoundError,
+    SettingsValidationError,
+)
 from utils import CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
@@ -84,7 +88,11 @@ class ConfigCommandsCog(TeXBotBaseCog):
                 ephemeral=True,
             )
             return
-        except (OSError, ValueError) as configuration_error:
+        except (
+            SettingsFileNotFoundError,
+            InvalidSettingsFileError,
+            OSError,
+        ) as configuration_error:
             logger.warning("Configuration reload failed: %s", configuration_error)
             await ctx.respond(
                 (
