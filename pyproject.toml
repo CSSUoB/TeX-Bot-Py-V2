@@ -95,13 +95,6 @@ warn_incomplete_stub = true
 ignore_errors = true
 module = ["db.core.migrations.*"]
 
-# NOTE: Subclassing Pydantic's `BaseModel` is incompatible with `disallow_any_explicit`:
-# `BaseModel`'s own API surface (`__init__(**data: Any)`, `model_validate(obj: Any)`, etc.)
-# contains explicit `Any`, so every model declaration is flagged regardless of its fields.
-[[tool.mypy.overrides]]
-disable_error_code = ["explicit-any"]
-module = ["config._schema"]
-
 [tool.pymarkdown]
 extensions.front-matter.enabled = true
 mode.strict-config = true

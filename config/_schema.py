@@ -109,22 +109,24 @@ def _parse_send_introduction_reminders_flag(value: object) -> object:
 
 
 _TIME_DELTA_MATCHER: "re.Pattern[str]" = re.compile(
-    r"\A(?:(?P<seconds>(?:\d*\.)?\d+)s)?"
-    r"(?:(?P<minutes>(?:\d*\.)?\d+)m)?"
+    r"\A(?:(?P<days>(?:\d*\.)?\d+)d)?"
     r"(?:(?P<hours>(?:\d*\.)?\d+)h)?"
-    r"(?:(?P<days>(?:\d*\.)?\d+)d)?\Z"
+    r"(?:(?P<minutes>(?:\d*\.)?\d+)m)?"
+    r"(?:(?P<seconds>(?:\d*\.)?\d+)s)?\Z"
 )
 
 
 def _parse_time_delta(value: object) -> object:
     """
-    Parse a delay/interval string (in the format `<seconds>s<minutes>m<hours>h<days>d`).
+    Parse a delay/interval string (in the format `<days>d<hours>h<minutes>m<seconds>s`).
 
-    NOTE: Time resolutions must be given in ascending order of size
-    (so `30m1h` is accepted, whereas `1h30m` is not).
-    This matches the format previously accepted by the StrictYAML implementation.
+    NOTE: Time resolutions must be given in descending order of size
+    (so `1h30m` is accepted, whereas `30m1h` is not).
 
-    NOTE: A deviation from that previous implementation:
+    NOTE: A deviation from the previous StrictYAML implementation, which required time
+    resolutions in *ascending* order of size, so accepted `30m1h` but rejected `1h30m`.
+
+    NOTE: A further deviation from that previous implementation:
     an empty string is rejected rather than silently parsed as a zero-length duration.
     A zero-length interval would cause any task looping upon it to spin without pausing.
     """
@@ -138,8 +140,8 @@ def _parse_time_delta(value: object) -> object:
         # Pydantic would otherwise also accept ISO-8601 durations & `HH:MM:SS` strings.
         INVALID_TIME_DELTA_MESSAGE: str = (
             "Value should be a delay/interval string, in the format "
-            "'<seconds>s<minutes>m<hours>h<days>d' "
-            "(with time resolutions given in ascending order of size)"
+            "'<days>d<hours>h<minutes>m<seconds>s' "
+            "(with time resolutions given in descending order of size)"
         )
         raise ValueError(INVALID_TIME_DELTA_MESSAGE)
 
@@ -196,7 +198,16 @@ type NormalisedLogLevel = Annotated[LogLevel, BeforeValidator(_parse_log_level)]
 
 
 class _BaseSettingsSchema(BaseModel):
-    """Common configuration shared by every section of the settings schema."""
+    """
+    Common configuration shared by every section of the settings schema.
+
+    NOTE: Every subclass below carries a `# type: ignore[explicit-any]` comment.
+    Pydantic's `BaseModel` exposes explicit `Any` within its own API surface
+    (`__init__(**data: Any)`, `model_validate(obj: Any)`, etc.),
+    so subclassing it is inherently incompatible with `disallow_any_explicit`.
+    The ignores are applied per-class, rather than by disabling the error code
+    for this whole module, so that any genuine use of `Any` here is still caught.
+    """
 
     model_config = ConfigDict(
         alias_generator=_to_kebab_case,
@@ -210,7 +221,7 @@ class _BaseSettingsSchema(BaseModel):
     )
 
 
-class ConsoleLoggingSettings(_BaseSettingsSchema):
+class ConsoleLoggingSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     """Settings controlling how logs are emitted to the console output stream."""
 
     log_level: NormalisedLogLevel = Field(
@@ -223,7 +234,7 @@ class ConsoleLoggingSettings(_BaseSettingsSchema):
     )
 
 
-class DiscordChannelLoggingSettings(_BaseSettingsSchema):
+class DiscordChannelLoggingSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     """Settings controlling how logs are relayed to a Discord log channel."""
 
     webhook_url: DiscordWebhookURL = Field(
@@ -244,7 +255,7 @@ class DiscordChannelLoggingSettings(_BaseSettingsSchema):
     )
 
 
-class DiscordAPILoggingSettings(_BaseSettingsSchema):
+class DiscordAPILoggingSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     """Settings controlling how logs emitted by the Discord API wrapper are handled."""
 
     enabled: bool = Field(
@@ -267,7 +278,7 @@ class DiscordAPILoggingSettings(_BaseSettingsSchema):
     )
 
 
-class LoggingSettings(_BaseSettingsSchema):
+class LoggingSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     """Settings controlling every logging destination TeX-Bot can write to."""
 
     console: ConsoleLoggingSettings = Field(default_factory=ConsoleLoggingSettings)
@@ -281,7 +292,7 @@ class LoggingSettings(_BaseSettingsSchema):
     discord_api: DiscordAPILoggingSettings = Field(default_factory=DiscordAPILoggingSettings)
 
 
-class DiscordSettings(_BaseSettingsSchema):
+class DiscordSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     """Settings describing how TeX-Bot connects to Discord."""
 
     bot_token: Annotated[
@@ -310,7 +321,7 @@ class DiscordSettings(_BaseSettingsSchema):
     )
 
 
-class LinksSettings(_BaseSettingsSchema):
+class LinksSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     """Settings holding the external links referenced within TeX-Bot's messages."""
 
     purchase_membership: HttpUrl | None = Field(
@@ -344,7 +355,7 @@ class LinksSettings(_BaseSettingsSchema):
     )
 
 
-class AutoCookieCheckingSettings(_BaseSettingsSchema):
+class AutoCookieCheckingSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     """Settings controlling the automatic checking of the MSL authentication cookie."""
 
     enabled: bool = Field(
@@ -362,7 +373,7 @@ class AutoCookieCheckingSettings(_BaseSettingsSchema):
     )
 
 
-class MSLSettings(_BaseSettingsSchema):
+class MSLSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     """Settings describing how TeX-Bot authenticates with your group's MSL website."""
 
     organisation_id: str | None = Field(
@@ -400,7 +411,7 @@ class MSLSettings(_BaseSettingsSchema):
     )
 
 
-class CommunityGroupSettings(_BaseSettingsSchema):
+class CommunityGroupSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     """Settings describing the community group that TeX-Bot is deployed for."""
 
     full_name: str | None = Field(
@@ -438,7 +449,7 @@ class CommunityGroupSettings(_BaseSettingsSchema):
     msl: MSLSettings
 
 
-class PingCommandSettings(_BaseSettingsSchema):
+class PingCommandSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     """Settings controlling the behaviour of the `/ping` command."""
 
     easter_egg_probability: float = Field(
@@ -453,7 +464,7 @@ class PingCommandSettings(_BaseSettingsSchema):
     )
 
 
-class StatsCommandSettings(_BaseSettingsSchema):
+class StatsCommandSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     """Settings controlling the behaviour of the `/stats` command."""
 
     lookback_days: float = Field(
@@ -492,7 +503,7 @@ class StatsCommandSettings(_BaseSettingsSchema):
     )
 
 
-class StrikeCommandSettings(_BaseSettingsSchema):
+class StrikeCommandSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     """Settings controlling the behaviour of the `/strike` command."""
 
     performed_manually_warning_location: str = Field(
@@ -526,7 +537,7 @@ class StrikeCommandSettings(_BaseSettingsSchema):
     )
 
 
-class CommandsSettings(_BaseSettingsSchema):
+class CommandsSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     """Settings controlling the behaviour of TeX-Bot's individual commands."""
 
     ping: PingCommandSettings = Field(default_factory=PingCommandSettings)
@@ -534,7 +545,7 @@ class CommandsSettings(_BaseSettingsSchema):
     strike: StrikeCommandSettings = Field(default_factory=StrikeCommandSettings)
 
 
-class SendIntroductionRemindersSettings(_BaseSettingsSchema):
+class SendIntroductionRemindersSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     """Settings controlling the reminders sent to Discord members that are not inducted."""
 
     enabled: Annotated[
@@ -571,7 +582,7 @@ class SendIntroductionRemindersSettings(_BaseSettingsSchema):
     )
 
 
-class ReminderSettings(_BaseSettingsSchema):
+class ReminderSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     """Settings controlling the reminders sent to Discord members that have been inducted."""
 
     enabled: bool = Field(
@@ -603,7 +614,7 @@ class ReminderSettings(_BaseSettingsSchema):
     )
 
 
-class RemindersSettings(_BaseSettingsSchema):
+class RemindersSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     """Settings controlling every kind of reminder that TeX-Bot can send."""
 
     send_introduction_reminders: SendIntroductionRemindersSettings = Field(
@@ -612,7 +623,7 @@ class RemindersSettings(_BaseSettingsSchema):
     send_get_roles_reminders: ReminderSettings = Field(default_factory=ReminderSettings)
 
 
-class SettingsSchema(_BaseSettingsSchema):
+class SettingsSchema(_BaseSettingsSchema):  # type: ignore[explicit-any]
     """The complete set of configuration settings that TeX-Bot understands."""
 
     logging: LoggingSettings = Field(default_factory=LoggingSettings)
