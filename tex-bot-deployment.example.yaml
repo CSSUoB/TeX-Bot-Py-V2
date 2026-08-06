@@ -68,8 +68,8 @@ community-group:
   msl:
     # Optional. Your community group's organisation ID on your MSL website.
     # organisation-id: "1234"
-    # Optional. Your members-list authentication session cookie. On the UoB Guild of
-    # Students website this is the cookie named `.ASPXAUTH`.
+    # Optional. Your members-list authentication session cookie, extracted from your
+    # web-browser after logging in. It is probably named `.AspNet.SharedCookie`.
     # auth-cookie: your-authentication-cookie-value
     auto-cookie-checking:
       enabled: false

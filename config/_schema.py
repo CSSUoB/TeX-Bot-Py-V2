@@ -450,9 +450,9 @@ class MSLSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
             "The MSL authentication session cookie.\n"
             "This should authenticate TeX-Bot to view your group's members-list, "
             "as if it were logged in to the website as a committee member.\n"
-            "If your members-list is found on the UoB Guild of Students website, "
-            "this can be extracted from your web-browser after manually logging in: "
-            "it will probably be listed as a cookie named `.ASPXAUTH`."
+            "This can be extracted from your web-browser after manually logging in "
+            "to view your members-list yourself: "
+            "it will probably be listed as a cookie named `.AspNet.SharedCookie`."
         ),
         json_schema_extra={"requires_restart": False, "secret": True},
     )

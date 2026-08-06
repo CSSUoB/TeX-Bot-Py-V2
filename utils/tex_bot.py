@@ -286,8 +286,9 @@ class TeXBot(discord.Bot):
 
         This is substituted into many error/welcome messages sent into your Discord guild,
         by TeX-Bot.
-        The group-full-name is either retrieved from the provided environment variable
-        or automatically identified from the name of your group's Discord guild.
+        The group-full-name is either retrieved from the `community-group:full-name`
+        configuration setting, or automatically identified from the name of your group's
+        Discord guild.
         """
         return settings.community_group.full_name or (
             "The Computer Science Society"

@@ -2,7 +2,7 @@
 """
 The main entrypoint into the running of TeX-Bot.
 
-It loads the settings values from the .env file/the environment variables,
+It loads the settings values from the deployment configuration file,
 then ensures the Django database is correctly migrated to the latest version and finally begins
 the asynchronous running process for TeX-Bot.
 """

@@ -50,7 +50,7 @@ Members of your [Discord guild](https://discord.com/developers/docs/resources/gu
 If a user encounters any of these errors, please communicate the error to the committee member that has been assigned to upkeep & deployment of your instance of TeX-Bot.
 The meaning of each error code is given here:
 
-* `E1011` - The value for the [environment variable](https://wikipedia.org/wiki/Environment_variable) `DISCORD_GUILD_ID` is an [ID](https://discord.com/developers/docs/reference#snowflakes) that references a [Discord guild](https://discord.com/developers/docs/resources/guild) that does not exist
+* `E1011` - The value of the `discord:main-guild-id` [configuration setting](#configuring-tex-bot) is an [ID](https://discord.com/developers/docs/reference#snowflakes) that references a [Discord guild](https://discord.com/developers/docs/resources/guild) that does not exist
 
 * `E1021` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-object) with the name "@**Committee**".
 (This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/write-roles`, `/edit-message`, `/induct`, `/strike`, `/archive`, `/kill`, `/delete-all` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
@@ -76,7 +76,7 @@ The meaning of each error code is given here:
 (This [text channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel) is required for the `/induct` [command](https://discord.com/developers/docs/interactions/application-commands))
 
 * `E1041` - The community group member IDs could not be retrieved from the SU platform.
-(It is likely that your `SU_PLATFORM_ACCESS_COOKIE` is invalid.
+(It is likely that your `community-group:msl:auth-cookie` [configuration setting](#configuring-tex-bot) is invalid.
 If your community group is a [Guild of Students](https://guildofstudents.com) [society](https://wikipedia.org/wiki/Student_society), the community group member IDs will be a list of [UoB IDs](https://intranet.birmingham.ac.uk/campus-services/id-cards.aspx))
 
 * `E1042` - The reference to the `@everyone` [role](https://discord.com/developers/docs/topics/permissions#role-object) could not be correctly retrieved.
@@ -103,18 +103,23 @@ This may require some changes to the deployment configuration or [an issue about
 The problem that caused the error should be addressed *immediately*, or otherwise TeX-Bot should be manually shut down to prevent further errors
 
 * `CRITICAL` - An **unrecoverable error occurred**.
-This level of error will cause TeX-Bot to shut down, as the problem can only be solved by fixing one or more of the [configuration environment variables](https://wikipedia.org/wiki/Environment_variable)
+This level of error will cause TeX-Bot to shut down, as the problem can only be solved by fixing one or more of the settings within [your deployment configuration file](#configuring-tex-bot)
 
 ## [Repeated Tasks](https://docs.pycord.dev/en/stable/ext/tasks) Conditions
 
-The [configuration variables](https://wikipedia.org/wiki/Environment_variable) `SEND_INTRODUCTION_REMINDERS` & `SEND_GET_ROLES_REMINDERS` determine whether their related [tasks](https://docs.pycord.dev/en/stable/ext/tasks) should run.
+The `reminders:send-introduction-reminders:enabled` & `reminders:send-get-roles-reminders:enabled` [configuration settings](#configuring-tex-bot) determine whether their related [tasks](https://docs.pycord.dev/en/stable/ext/tasks) should run.
 However, because these are rather annoying/drastic actions to be executed automatically, there are additional conditions that must be met on a per-[member](https://discord.com/developers/docs/resources/guild#guild-member-object) basis for the action to trigger.
-The conditions for each [task](https://docs.pycord.dev/en/stable/ext/tasks) are listed below, along with the additional [environment variables](https://wikipedia.org/wiki/Environment_variable) that can be used to configure the conditions to suit your needs.
+The conditions for each [task](https://docs.pycord.dev/en/stable/ext/tasks) are listed below, along with the additional settings that can be used to configure the conditions to suit your needs.
+
+> [!IMPORTANT]
+> Whether each task is enabled, and the interval it runs at, are fixed when the task is created as TeX-Bot starts up.
+> Changing either of them requires TeX-Bot to be restarted; `/config reload` will tell you so.
+> The `delay` settings are read each time they are used, so they take effect immediately.
 
 | Task Name               | Enable/Disable                                                                                                                                                                                                                                                                | Per-Member Conditions                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Scheduled Interval                                                                                                                                                                                                                                                                                                                                                                  |
 |-------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `introduction_reminder` | `SEND_INTRODUCTION_REMINDERS`:<br/>* `Once` - Only send the introduction reminder once (even if they later delete the message)<br/>* `Interval` - Send an introduction reminder at a set interval<br/>* `False` - Do not send introduction reminders                          | * The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has not been inducted (does not have the "@**Guest**" [role](https://discord.com/developers/docs/topics/permissions#role-object))<br/>* The time since the [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) joined your community's guild is greater than `SEND_INTRODUCTION_REMINDERS_DELAY`<br/>* The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has not opted out of introduction reminders<br/>* The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has not yet been sent an introduction reminder. (Only applies when `SEND_INTRODUCTION_REMINDERS` is set to the value `Once`)                                                                                   | The interval of time between this task running is determined by `SEND_INTRODUCTION_REMINDERS_INTERVAL`. (When `SEND_INTRODUCTION_REMINDERS` is set to the value `Once`, all [Discord members](https://discord.com/developers/docs/resources/guild#guild-member-object) will still be checked at this interval, just not sent a message if they have already been sent an introduction reminder). The default interval is to send messages every 6 hours |
-| `get_roles_reminder`    | `SEND_GET_ROLES_REMINDERS`:<br/>* `True` - A single reminder for the [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) to get [roles](https://discord.com/developers/docs/topics/permissions#role-object) will be sent to them only once (even if they later delete the message)<br/>* `False` - Do not send any reminders for [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) to get [roles](https://discord.com/developers/docs/topics/permissions#role-object) | * The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has been inducted (has the "@**Guest**" [role](https://discord.com/developers/docs/topics/permissions#role-object))<br/>* The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) does not have any of the opt-in [roles](https://discord.com/developers/docs/topics/permissions#role-object). (E.g. "@**First Year**" or "@**Anime**".) (Having the green "@**Member**" [role](https://discord.com/developers/docs/topics/permissions#role-object) or even the "@**Committee**" [role](https://discord.com/developers/docs/topics/permissions#role-object) makes no difference)<br/>* The time since the [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) was inducted (gained the "@**Guest**" [role](https://discord.com/developers/docs/topics/permissions#role-object)) is greater than `SEND_GET_ROLES_REMINDERS_DELAY`<br/>* The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has not yet been sent a reminder to get [roles](https://discord.com/developers/docs/topics/permissions#role-object) | The interval of time between this task running is determined by `ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL`. It is unlikely that this value will need to be changed from the default of 24 hours                                                                                                                                                                                   |
+| `introduction_reminder` | `reminders:send-introduction-reminders:enabled`:<br/>* `once` - Only send the introduction reminder once (even if they later delete the message)<br/>* `interval` - Send an introduction reminder at a set interval<br/>* `false` - Do not send introduction reminders                          | * The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has not been inducted (does not have the "@**Guest**" [role](https://discord.com/developers/docs/topics/permissions#role-object))<br/>* The time since the [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) joined your community's guild is greater than `reminders:send-introduction-reminders:delay`<br/>* The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has not opted out of introduction reminders<br/>* The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has not yet been sent an introduction reminder. (Only applies when `reminders:send-introduction-reminders:enabled` is set to the value `once`)                                                                                   | The interval of time between this task running is determined by `reminders:send-introduction-reminders:interval`. (When `reminders:send-introduction-reminders:enabled` is set to the value `once`, all [Discord members](https://discord.com/developers/docs/resources/guild#guild-member-object) will still be checked at this interval, just not sent a message if they have already been sent an introduction reminder). The default interval is to send messages every 6 hours |
+| `get_roles_reminder`    | `reminders:send-get-roles-reminders:enabled`:<br/>* `true` - A single reminder for the [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) to get [roles](https://discord.com/developers/docs/topics/permissions#role-object) will be sent to them only once (even if they later delete the message)<br/>* `false` - Do not send any reminders for [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) to get [roles](https://discord.com/developers/docs/topics/permissions#role-object) | * The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has been inducted (has the "@**Guest**" [role](https://discord.com/developers/docs/topics/permissions#role-object))<br/>* The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) does not have any of the opt-in [roles](https://discord.com/developers/docs/topics/permissions#role-object). (E.g. "@**First Year**" or "@**Anime**".) (Having the green "@**Member**" [role](https://discord.com/developers/docs/topics/permissions#role-object) or even the "@**Committee**" [role](https://discord.com/developers/docs/topics/permissions#role-object) makes no difference)<br/>* The time since the [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) was inducted (gained the "@**Guest**" [role](https://discord.com/developers/docs/topics/permissions#role-object)) is greater than `reminders:send-get-roles-reminders:delay`<br/>* The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has not yet been sent a reminder to get [roles](https://discord.com/developers/docs/topics/permissions#role-object) | The interval of time between this task running is determined by `reminders:send-get-roles-reminders:interval`. It is unlikely that this value will need to be changed from the default of every 6 hours                                                                                                                                                                                   |
 
 ## Deploying in Production
 
@@ -123,9 +128,30 @@ It is can be pulled from the [GitHub Container Registry](https://docs.github.com
 (An introduction on how to use a [docker-compose deployment](https://docs.docker.com/compose) can be found [here](https://docs.docker.com/get-started/08_using_compose).)
 See [**Versioning**](#versioning) for the full list of available version tags for each release.
 
-Before running the [container](https://docs.docker.com/resources/what-container), some [environment variables](https://wikipedia.org/wiki/Environment_variable) will need to be set.
-These can be defined in your [`compose.yaml`](https://docs.docker.com/compose/compose-application-model#the-compose-file) file.
-The required [environment variables](https://wikipedia.org/wiki/Environment_variable) are explained within [the "Setting Environment Variables" section](#setting-environment-variables).
+Before running the [container](https://docs.docker.com/resources/what-container), you will need to create a deployment configuration file.
+This is explained within [the "Configuring TeX-Bot" section](#configuring-tex-bot).
+
+The container reads its configuration from `/app/data/tex-bot-deployment.yaml`, so mount the **directory** holding your configuration file at `/app/data`:
+
+```yaml
+services:
+  tex-bot:
+    image: ghcr.io/cssuob/tex-bot-py-v2:latest
+    volumes:
+      - ./tex-bot-data:/app/data
+```
+
+> [!IMPORTANT]
+> Mount the directory, rather than the configuration file itself.
+> TeX-Bot rewrites the file in place whenever [the `/config` command](#changing-settings-from-within-discord) changes a setting, and an individually mounted file cannot be replaced.
+
+The container runs as the non-root user with UID & GID `999`, which must be able to read and write your configuration file:
+
+```shell
+chown -R 999:999 ./tex-bot-data
+```
+
+To keep your configuration somewhere else within the container, set the `TEX_BOT_CONFIG_PATH` [environment variable](https://wikipedia.org/wiki/Environment_variable) to the full path of the file.
 
 ## Local Deployment
 
@@ -151,36 +177,122 @@ It's also handy if you have an empty [Discord guild](https://discord.com/develop
 
 The correct [invite URL](https://docs.pycord.dev/en/stable/discord.html#inviting-your-bot) will be displayed to you in the console the first time you run the bot (or if you set a high verbosity log level)
 
-### Setting [Environment Variables](https://wikipedia.org/wiki/Environment_variable)
+### Configuring TeX-Bot
 
-You'll also need to set a number of [environment variables](https://wikipedia.org/wiki/Environment_variable) before running TeX-Bot:
+TeX-Bot is configured by a single [YAML](https://yaml.org) file, `tex-bot-deployment.yaml`.
+Copy [the example file](tex-bot-deployment.example.yaml) to create your own:
 
-* `DISCORD_BOT_TOKEN`: The [Discord bot secret token](https://itexus.com/glossary/discord-bot-token) for the [instance of TeX-Bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts) you created.
-  * The [Discord bot token](https://itexus.com/glossary/discord-bot-token) is available on [your bot's page in the Discord Developer Portal](https://discord.com/developers/applications).
+```shell
+cp tex-bot-deployment.example.yaml tex-bot-deployment.yaml
+```
 
-* `DISCORD_GUILD_ID`: The [ID](https://discord.com/developers/docs/reference#snowflakes) of your community group's [Discord guild](https://discord.com/developers/docs/resources/guild).
+By default, this file is read from the repository root.
+Set the `TEX_BOT_CONFIG_PATH` [environment variable](https://wikipedia.org/wiki/Environment_variable) to keep it anywhere else.
 
-* `DISCORD_LOG_CHANNEL_WEBHOOK_URL`: The [webhook URL](https://support.discord.com/hc/articles/228383668-Intro-to-Webhooks) of the [Discord text channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel) where error log messages should be sent.
-  * This setting is optional.
-    Error logs will **always** be sent to the [console](https://wikipedia.org/wiki/Terminal_emulator), this setting just allows them to also be sent to a [Discord log channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel).
+> [!CAUTION]
+> Your configuration file holds your [Discord bot token](https://itexus.com/glossary/discord-bot-token) and your SU platform [session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie).
+> Anybody holding either can act as your bot, or read your group's members list.
+> It is excluded by [`.gitignore`](.gitignore), so take care not to commit it or share it.
 
-* `ORGANISATION_ID`: Your SU platform organisation ID. This is used to dynamically create the members list and other needed URLs.
+Only two settings must be filled in before TeX-Bot will start:
 
-* `SU_PLATFORM_ACCESS_COOKIE`: The SU platform [access session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie).
+* `discord:bot-token`: The [Discord bot secret token](https://itexus.com/glossary/discord-bot-token) for the [instance of TeX-Bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts) you created.
+  * This is available on [your bot's page in the Discord Developer Portal](https://discord.com/developers/applications).
+
+* `discord:main-guild-id`: The [ID](https://discord.com/developers/docs/reference#snowflakes) of your community group's [Discord guild](https://discord.com/developers/docs/resources/guild).
+
+Every other setting is optional, and its default is shown in [the example file](tex-bot-deployment.example.yaml) alongside an explanation of what it affects.
+Some of the more commonly changed ones are:
+
+* `logging:discord-channel:webhook-url`: The [webhook URL](https://support.discord.com/hc/articles/228383668-Intro-to-Webhooks) of the [Discord text channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel) where error log messages should be sent.
+  * Error logs will **always** be sent to the [console](https://wikipedia.org/wiki/Terminal_emulator); this setting just allows them to also be sent to a [Discord log channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel).
+  * Omit the whole `logging:discord-channel` section to disable this.
+
+* `community-group:msl:organisation-id`: Your SU platform organisation ID, used to build your members list & other URLs.
+
+* `community-group:msl:auth-cookie`: The SU platform [access session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie).
   * This [session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie) will [authenticate](https://wikipedia.org/wiki/Authentication) TeX-Bot to view your group's members list on the SU platform, as if it were [logged in to the website](https://wikipedia.org/wiki/Login_session) as a Committee member.
   * This can be [extracted from your web-browser](https://wikihow.com/View-Cookies), after logging in to view your members list yourself.
     It will most likely be listed as a [cookie](https://wikipedia.org/wiki/HTTP_cookie) named `.AspNet.SharedCookie`.
-  * If you wish to test TeX-Bot with the SU platform-access disabled, a dummy value of 128 `0` characters can be used.
-    Note that this will cause many commands and scheduled tasks to fail when they are used at runtime.
+  * Leaving this unset disables SU platform access.
+    Note that this will cause many commands & scheduled tasks to fail when they are used at runtime.
 
-You can put these [variables](https://wikipedia.org/wiki/Environment_variable) in a [`.env` file](https://blog.bitsrc.io/a-gentle-introduction-to-env-files-9ad424cc5ff4) in the root folder, as [python-dotenv](https://saurabh-kumar.com/python-dotenv) is used to collect all [environment variables](https://wikipedia.org/wiki/Environment_variable).
-There is an [`.env.example` file](.env.example) in the repo that you can rename and populate.
+> [!NOTE]
+> Settings are written in kebab-case & nested into sections.
+> Throughout this documentation a setting is named by the path to it, separated by colons: `community-group:msl:auth-cookie` refers to `auth-cookie`, within `msl`, within `community-group`.
+>
+> Lengths of time are written largest-unit-first, in the format `<days>d<hours>h<minutes>m<seconds>s`, so `1h30m` & `2d` are both valid.
+> Every part must carry its unit, so a bare `24` is rejected rather than being read as 24 seconds.
 
-There are also many other configuration settings that can be changed to alter the behaviour of TeX-Bot.
-These are all listed in [the `.env.example` file](.env.example), along with the behaviours that will be affected.
+An invalid configuration file is never applied.
+TeX-Bot reports the line responsible & keeps running on the last configuration that loaded successfully.
 
-Any [variables](https://wikipedia.org/wiki/Environment_variable), in [the `.env.example` file](.env.example), marked with `# !!REQUIRED!!` must be set before running TeX-Bot.
-All other [variables](https://wikipedia.org/wiki/Environment_variable) are optional and their default values are shown as the example value for each variable in [the `.env.example` file](.env.example).
+#### Changing Settings From Within Discord
+
+Configuration can also be viewed & changed from within [Discord](https://discord.com), without editing the file by hand.
+All of these [commands](https://discord.com/developers/docs/interactions/application-commands) require the "@**Committee**" [role](https://discord.com/developers/docs/topics/permissions#role-object), and reply only to the person that ran them:
+
+* `/config get <setting>`: Shows what a setting is currently set to, & what it affects
+* `/config set <setting> <value>`: Changes a single setting, then applies it
+* `/config unset <setting>`: Returns a single setting to its default value
+* `/config reload`: Reads the configuration file again, applying any changes made to it
+
+Changing a setting rewrites your configuration file, keeping the comments & formatting you have added to it.
+
+> [!IMPORTANT]
+> If you edit the configuration file by hand, run `/config reload` before using `/config set` or `/config unset`.
+> Both refuse to run against a file that has been edited since TeX-Bot last loaded it, so that a change made from within Discord is never quietly mixed together with one made by hand.
+
+Most settings take effect as soon as they are applied, because they are read at the moment they are used.
+A few are fixed while TeX-Bot is starting up & cannot be changed without restarting it; `/config reload` will tell you when one of those has changed.
+
+#### Other [Environment Variables](https://wikipedia.org/wiki/Environment_variable)
+
+Only two [environment variables](https://wikipedia.org/wiki/Environment_variable) are used, & both are optional:
+
+* `TEX_BOT_CONFIG_PATH`: The location of your deployment configuration file.
+  Defaults to `tex-bot-deployment.yaml` within the repository root
+* `MESSAGES_FILE_PATH`: The location of [the messages file](messages.json), holding the welcome & roles messages TeX-Bot sends.
+  Defaults to `messages.json` within the repository root
+
+#### Migrating From an Older Version
+
+Earlier versions of TeX-Bot were configured by [environment variables](https://wikipedia.org/wiki/Environment_variable), usually held in a `.env` file.
+Those are no longer read at all, & a deployment still using them will start with only its default settings.
+
+Move each value into your `tex-bot-deployment.yaml`, using the table below.
+Where an old variable is not listed, [the example configuration file](tex-bot-deployment.example.yaml) names & explains every setting that exists.
+
+| Old environment variable                     | Configuration setting                                    |
+|----------------------------------------------|----------------------------------------------------------|
+| `DISCORD_BOT_TOKEN`                          | `discord:bot-token`                                      |
+| `DISCORD_GUILD_ID`                           | `discord:main-guild-id`                                  |
+| `DISCORD_LOG_CHANNEL_WEBHOOK_URL`            | `logging:discord-channel:webhook-url`                    |
+| `CONSOLE_LOG_LEVEL`                          | `logging:console:log-level`                              |
+| `GROUP_NAME`                                 | `community-group:full-name`                              |
+| `GROUP_SHORT_NAME`                           | `community-group:short-name`                             |
+| `PURCHASE_MEMBERSHIP_URL`                    | `community-group:links:purchase-membership`              |
+| `MEMBERSHIP_PERKS_URL`                       | `community-group:links:membership-perks`                 |
+| `MODERATION_DOCUMENT_URL`                    | `community-group:links:moderation-policy`                |
+| `CUSTOM_DISCORD_INVITE_URL`                  | `community-group:links:custom-discord-invite-link`       |
+| `MEMBERSHIP_DEPENDENT_ROLES`                 | `community-group:membership-dependent-roles`             |
+| `ORGANISATION_ID`                            | `community-group:msl:organisation-id`                    |
+| `SU_PLATFORM_ACCESS_COOKIE`                  | `community-group:msl:auth-cookie`                        |
+| `PING_COMMAND_EASTER_EGG_PROBABILITY`        | `commands:ping:easter-egg-probability`                   |
+| `STATISTICS_DAYS`                            | `commands:stats:lookback-days`                            |
+| `STATISTICS_ROLES`                           | `commands:stats:displayed-roles`                         |
+| `MANUAL_MODERATION_WARNING_MESSAGE_LOCATION` | `commands:strike:performed-manually-warning-location`    |
+| `SEND_INTRODUCTION_REMINDERS`                | `reminders:send-introduction-reminders:enabled`          |
+| `SEND_INTRODUCTION_REMINDERS_DELAY`          | `reminders:send-introduction-reminders:delay`            |
+| `SEND_INTRODUCTION_REMINDERS_INTERVAL`       | `reminders:send-introduction-reminders:interval`         |
+| `SEND_GET_ROLES_REMINDERS`                   | `reminders:send-get-roles-reminders:enabled`             |
+| `SEND_GET_ROLES_REMINDERS_DELAY`             | `reminders:send-get-roles-reminders:delay`               |
+| `ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL` | `reminders:send-get-roles-reminders:interval`            |
+
+Two differences are worth noting while migrating:
+
+* Lengths of time are now written largest-unit-first (`1h30m`, not `30m1h`), & a delay is no longer required to be at least one day
+* A comma-separated list, such as `STATISTICS_ROLES`, is now written as a [YAML list](https://yaml.org/spec/1.2.2/#collections)
 
 ### Running The Bot
 

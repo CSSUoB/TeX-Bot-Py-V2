@@ -45,12 +45,6 @@ repos:
         - id: zizmor
           args: [--no-progress, --fix, --persona=auditor]
 
-    - repo: https://github.com/dotenv-linter/dotenv-linter
-      rev: v4.0.0
-      hooks:
-        - id: dotenv-linter
-          args: [fix, --no-backup]
-
     - repo: https://github.com/hadolint/hadolint
       rev: v2.14.0
       hooks:
