@@ -9,7 +9,7 @@ from .base import BaseTeXBotError
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-__all__: "Sequence[str]" = ("InvalidActionDescriptionError", "InvalidActionTargetError")
+__all__: Sequence[str] = ("InvalidActionDescriptionError", "InvalidActionTargetError")
 
 
 class InvalidActionTargetError(BaseTeXBotError, RuntimeError):
