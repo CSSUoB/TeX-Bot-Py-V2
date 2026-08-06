@@ -16,7 +16,7 @@ so every name used within a field annotation must be importable at runtime.
 import datetime
 import re
 from enum import StrEnum
-from typing import TYPE_CHECKING, Annotated, Literal
+from typing import TYPE_CHECKING, Annotated, Literal, NamedTuple, get_args
 
 from pydantic import (
     AfterValidator,
@@ -29,13 +29,16 @@ from pydantic import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Iterator, Mapping, Sequence
+
+    from pydantic.fields import FieldInfo
 
 
 __all__: "Sequence[str]" = (
     "AutoCookieCheckingSettings",
     "CommandsSettings",
     "CommunityGroupSettings",
+    "ConfigSettingMetadata",
     "ConsoleLoggingSettings",
     "DiscordAPILoggingSettings",
     "DiscordChannelLoggingSettings",
@@ -52,6 +55,7 @@ __all__: "Sequence[str]" = (
     "SettingsSchema",
     "StatsCommandSettings",
     "StrikeCommandSettings",
+    "get_settings_metadata",
 )
 
 
@@ -581,7 +585,7 @@ class SendIntroductionRemindersSettings(_BaseSettingsSchema):  # type: ignore[ex
             "the first/only message reminding them to send an introduction.\n"
             "Is ignored if `enabled` **=** `false`."
         ),
-        json_schema_extra={"requires_restart": True, "secret": False},
+        json_schema_extra={"requires_restart": False, "secret": False},
     )
     interval: TimeDelta = Field(
         default=datetime.timedelta(hours=6),
@@ -590,7 +594,7 @@ class SendIntroductionRemindersSettings(_BaseSettingsSchema):  # type: ignore[ex
             "that are not inducted.\n"
             "Is ignored unless `enabled` **=** `interval`."
         ),
-        json_schema_extra={"requires_restart": True, "secret": False},
+        json_schema_extra={"requires_restart": False, "secret": False},
     )
 
 
@@ -604,7 +608,7 @@ class ReminderSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
             "saying that they can get opt-in roles. "
             "(This message will only be sent once per Discord member.)"
         ),
-        json_schema_extra={"requires_restart": True, "secret": False},
+        json_schema_extra={"requires_restart": False, "secret": False},
     )
     delay: TimeDelta = Field(
         default=datetime.timedelta(hours=40),
@@ -613,7 +617,7 @@ class ReminderSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
             "telling them to get some opt-in roles.\n"
             "Is ignored if `enabled` **=** `false`."
         ),
-        json_schema_extra={"requires_restart": True, "secret": False},
+        json_schema_extra={"requires_restart": False, "secret": False},
     )
     interval: TimeDelta = Field(
         default=datetime.timedelta(hours=6),
@@ -622,7 +626,7 @@ class ReminderSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
             "that should be sent a get-roles reminder.\n"
             "Is ignored if `enabled` **=** `false`."
         ),
-        json_schema_extra={"requires_restart": True, "secret": False},
+        json_schema_extra={"requires_restart": False, "secret": False},
     )
 
 
@@ -651,3 +655,59 @@ class SettingsSchema(_BaseSettingsSchema):  # type: ignore[explicit-any]
         ),
         json_schema_extra={"requires_restart": False, "secret": False},
     )
+
+
+class ConfigSettingMetadata(NamedTuple):
+    """The information describing a single configuration setting to a human."""
+
+    description: str | None
+    requires_restart: bool
+    secret: bool
+
+
+def _walk_settings_metadata(
+    model: type[BaseModel], prefix: str = ""
+) -> "Iterator[tuple[str, ConfigSettingMetadata]]":
+    """Yield the metadata of every individual setting declared within the given model."""
+    field_name: str
+    field: FieldInfo
+    for field_name, field in model.model_fields.items():
+        KEY_PATH: str = f"{prefix}{field_name.replace('_', '-')}"
+
+        # NOTE: A field's annotation may be a union (an optional section, for example), so
+        # every member of it must be searched to find the nested model it may contain.
+        nested_model: type[BaseModel] | None = next(
+            (
+                annotation_argument
+                for annotation_argument in (get_args(field.annotation) or (field.annotation,))
+                if isinstance(annotation_argument, type)
+                and issubclass(annotation_argument, BaseModel)
+            ),
+            None,
+        )
+        if nested_model is not None:
+            yield from _walk_settings_metadata(nested_model, prefix=f"{KEY_PATH}:")
+            continue
+
+        EXTRA: Mapping[str, object] = (
+            field.json_schema_extra if isinstance(field.json_schema_extra, dict) else {}
+        )
+
+        yield (
+            KEY_PATH,
+            ConfigSettingMetadata(
+                description=field.description,
+                requires_restart=EXTRA.get("requires_restart") is True,
+                secret=EXTRA.get("secret") is True,
+            ),
+        )
+
+
+def get_settings_metadata() -> "Mapping[str, ConfigSettingMetadata]":
+    """
+    Return the metadata of every configuration setting, keyed by its key path.
+
+    Derived from the schema itself, so that the help text, restart requirements &
+    secrecy of each setting cannot drift out of step with the settings that exist.
+    """
+    return dict(_walk_settings_metadata(SettingsSchema))

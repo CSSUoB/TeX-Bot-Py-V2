@@ -12,7 +12,7 @@ import utils
 from config import settings
 from db.core.models import DiscordMember, SentGetRolesReminderMember
 from exceptions import GuestRoleDoesNotExistError
-from utils import TeXBotBaseCog
+from utils import TeXBotBaseCog, reapply_task_settings
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
     capture_guild_does_not_exist_error,
@@ -21,6 +21,7 @@ from utils.error_capture_decorators import (
 if TYPE_CHECKING:
     import datetime
     from collections.abc import Sequence
+    from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
 
@@ -51,6 +52,18 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
         This may be run dynamically or when the bot closes.
         """
         self.send_get_roles_reminders.cancel()
+
+    @override
+    async def on_config_reloaded(self, changed_settings: "AbstractSet[str]") -> None:
+        """Apply any change to whether this task runs, or how often it runs."""
+        reapply_task_settings(
+            self.send_get_roles_reminders,
+            changed_settings=changed_settings,
+            enabled=settings.reminders.send_get_roles_reminders.enabled,
+            enabled_setting_name="reminders:send-get-roles-reminders:enabled",
+            interval=settings.reminders.send_get_roles_reminders.interval,
+            interval_setting_name="reminders:send-get-roles-reminders:interval",
+        )
 
     @tasks.loop(seconds=settings.reminders.send_get_roles_reminders.interval.total_seconds())
     @functools.partial(

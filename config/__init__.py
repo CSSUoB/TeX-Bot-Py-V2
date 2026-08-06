@@ -20,6 +20,7 @@ from ._document import (
 )
 from ._logging import apply_logging_settings
 from ._messages import MessagesAccessor
+from ._schema import ConfigSettingMetadata, get_settings_metadata
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -29,12 +30,14 @@ if TYPE_CHECKING:
 
 
 __all__: "Sequence[str]" = (
+    "ConfigSettingMetadata",
     "InvalidSettingsFileError",
     "SettingsDocument",
     "SettingsFileNotFoundError",
     "SettingsNotLoadedError",
     "SettingsValidationError",
     "get_settings_file_path",
+    "get_settings_metadata",
     "messages",
     "reload_settings",
     "run_setup",

@@ -8,6 +8,7 @@ import certifi
 import discord
 
 from .command_checks import CommandChecks
+from .config_reload import RestartableTask, reapply_task_settings
 from .message_sender_components import MessageSavingSenderComponent
 from .suppress_traceback import SuppressTraceback
 from .tex_bot import TeXBot
@@ -23,6 +24,7 @@ __all__: "Sequence[str]" = (
     "AllChannelTypes",
     "CommandChecks",
     "MessageSavingSenderComponent",
+    "RestartableTask",
     "SuppressTraceback",
     "TeXBot",
     "TeXBotApplicationContext",
@@ -31,6 +33,7 @@ __all__: "Sequence[str]" = (
     "generate_invite_url",
     "is_member_inducted",
     "is_running_in_async",
+    "reapply_task_settings",
 )
 
 

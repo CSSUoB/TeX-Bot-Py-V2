@@ -19,7 +19,7 @@ from db.core.models import (
     SentOneOffIntroductionReminderMember,
 )
 from exceptions import DiscordMemberNotInMainGuildError, GuestRoleDoesNotExistError
-from utils import TeXBotBaseCog
+from utils import TeXBotBaseCog, reapply_task_settings
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
     capture_guild_does_not_exist_error,
@@ -27,6 +27,7 @@ from utils.error_capture_decorators import (
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
 
@@ -60,6 +61,25 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         This may be run dynamically or when the bot closes.
         """
         self.send_introduction_reminders.cancel()
+
+    @override
+    async def on_config_reloaded(self, changed_settings: "AbstractSet[str]") -> None:
+        """
+        Apply any change to how often this task runs.
+
+        NOTE: A change to whether this task runs at all is deliberately not applied here.
+        Enabling it with a value of `interval` also clears the record of which members
+        have already been sent a one-off reminder, and that should not happen implicitly
+        during a reload, so that setting requires a restart instead.
+        """
+        reapply_task_settings(
+            self.send_introduction_reminders,
+            changed_settings=changed_settings,
+            enabled=bool(settings.reminders.send_introduction_reminders.enabled),
+            enabled_setting_name=None,
+            interval=settings.reminders.send_introduction_reminders.interval,
+            interval_setting_name="reminders:send-introduction-reminders:interval",
+        )
 
     @TeXBotBaseCog.listener()
     async def on_ready(self) -> None:
