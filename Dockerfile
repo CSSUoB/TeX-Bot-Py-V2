@@ -14,7 +14,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-group dev
 
 COPY LICENSE /app/
-COPY config.py main.py messages.json /app/
+COPY main.py messages.json /app/
+COPY config/ /app/config/
 COPY exceptions/ /app/exceptions/
 COPY utils/ /app/utils/
 COPY db/ /app/db/
