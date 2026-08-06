@@ -19,6 +19,11 @@
 # by hand: `/config get` shows what a setting is currently set to, `/config set` changes
 # one, and `/config unset` returns one to its default. Each of them is committee-only,
 # and writes back to this file while keeping the comments you have added to it.
+#
+# If you edit this file by hand, run `/config reload` before using `/config set` or
+# `/config unset`. Both refuse to run against a file that has been edited since TeX-Bot
+# last loaded it, so that a change made from within Discord is never quietly mixed
+# together with one made here.
 # Most settings take effect straight away, because they are read at the moment they
 # are used. A few cannot, and `/config reload` will tell you when a restart is needed:
 #

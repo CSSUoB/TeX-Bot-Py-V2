@@ -130,6 +130,18 @@ class SettingsAccessor:
         """
         return self._current.document
 
+    def file_has_changed(self) -> bool:
+        """
+        Whether the configuration file differs from the configuration loaded from it.
+
+        Compared as the documents parse to, rather than as raw text, so that a file
+        rewritten with different line endings is not mistaken for one that was edited.
+        """
+        if self._loaded is None:
+            return False
+
+        return SettingsDocument.load(self.file_path).dump() != self._loaded.document.dump()
+
     def reload(self, file_path: "Path | None" = None) -> "AbstractSet[str]":
         """
         Load the configuration file, replacing any previously loaded configuration.

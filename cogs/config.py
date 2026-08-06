@@ -8,6 +8,7 @@ import discord
 import config
 from config import (
     InvalidSettingsFileError,
+    SettingsFileChangedError,
     SettingsFileNotFoundError,
     SettingsNotLoadedError,
     SettingsValidationError,
@@ -227,6 +228,16 @@ class ConfigCommandsCog(TeXBotBaseCog):
                 "\n\n:warning: Changing this setting requires TeX-Bot to be restarted."
             )
 
+        # NOTE: The value shown is the one currently in use, which is the one that was
+        # loaded. Saying so is what stops an edit made to the file since then from
+        # looking as though it had simply been ignored.
+        if config.settings.file_has_changed():
+            response_message += (
+                "\n\n:warning: The configuration file has been edited since TeX-Bot "
+                "last loaded it, so the value shown above may no longer match it. "
+                "Run `/config reload` to load those edits."
+            )
+
         await ctx.respond(response_message, ephemeral=True)
 
     @config.command(
@@ -269,6 +280,9 @@ class ConfigCommandsCog(TeXBotBaseCog):
             reload_result = config.set_setting(setting_name, raw_value)
         except UnknownSettingError as unknown_setting_error:
             await self._respond_with_unknown_setting(ctx, unknown_setting_error)
+            return
+        except SettingsFileChangedError:
+            await self._respond_with_changed_file(ctx)
             return
         except SettingsValidationError as validation_error:
             await self._respond_with_rejected_change(ctx, setting_name, validation_error)
@@ -330,6 +344,9 @@ class ConfigCommandsCog(TeXBotBaseCog):
         except UnknownSettingError as unknown_setting_error:
             await self._respond_with_unknown_setting(ctx, unknown_setting_error)
             return
+        except SettingsFileChangedError:
+            await self._respond_with_changed_file(ctx)
+            return
         except SettingsValidationError as validation_error:
             await ctx.respond(
                 (
@@ -385,6 +402,20 @@ class ConfigCommandsCog(TeXBotBaseCog):
             (
                 f":x: {unknown_setting_error}\n"
                 "Choose a setting from the suggestions shown as you type."
+            ),
+            ephemeral=True,
+        )
+
+    @staticmethod
+    async def _respond_with_changed_file(ctx: "TeXBotApplicationContext") -> None:
+        """Explain that the configuration file has been edited since it was loaded."""
+        logger.info("A change was refused because the configuration file had been edited.")
+
+        await ctx.respond(
+            (
+                ":x: The configuration file has been edited since TeX-Bot last loaded "
+                "it, so nothing has been changed.\n"
+                "Run `/config reload` to load those edits first, then try again."
             ),
             ephemeral=True,
         )

@@ -3,8 +3,9 @@ Changing individual settings within the deployment configuration file.
 
 Every change is applied to the configuration file read afresh, & validated in full,
 before anything is written, so that a mistaken value can never leave TeX-Bot holding a
-configuration file it would refuse to load. Reading the file again also means a change
-made to it by hand is kept, rather than being overwritten by whatever was last loaded.
+configuration file it would refuse to load. A file that has been changed by hand since
+it was last loaded is refused outright, rather than merged into, so that every change
+is made against the configuration that TeX-Bot is actually running.
 
 This module holds no knowledge of Discord: it turns the text a committee member typed
 into a value, decides whether that value is acceptable, & renders values back into
@@ -32,6 +33,7 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = (
     "SETTING_NAME_SEPARATOR",
+    "SettingsFileChangedError",
     "UnknownSettingError",
     "documented_setting_names",
     "format_setting_value",
@@ -61,6 +63,16 @@ class UnknownSettingError(Exception):
         self.setting_name: str = setting_name
 
         super().__init__(f"No configuration setting is named {setting_name!r}.")
+
+
+class SettingsFileChangedError(Exception):
+    """Exception class to raise when the configuration file has been edited by hand."""
+
+    def __init__(self) -> None:
+        """Initialise a new SettingsFileChangedError."""
+        super().__init__(
+            "The configuration file has been changed since TeX-Bot last loaded it."
+        )
 
 
 def documented_setting_names() -> "Sequence[str]":
@@ -178,36 +190,59 @@ def _validated(document: SettingsDocument) -> SettingsDocument:
     return document
 
 
-def validated_document_with_setting_set(setting_name: str, value: object) -> SettingsDocument:
+def _read_unchanged_file(loaded_document: SettingsDocument | None) -> SettingsDocument:
+    """
+    Read the configuration file again, refusing it if it no longer matches what is loaded.
+
+    A change made by hand is refused rather than merged into, so that changing one
+    setting cannot silently apply somebody else's unrelated edits alongside it, nor
+    report that TeX-Bot must be restarted for a setting its author never touched.
+    """
+    document: SettingsDocument = SettingsDocument.load()
+
+    # NOTE: Nothing has been loaded for the file to have diverged from while TeX-Bot is
+    # still starting up, so there is nothing to compare it against.
+    if loaded_document is not None and document.dump() != loaded_document.dump():
+        raise SettingsFileChangedError
+
+    return document
+
+
+def validated_document_with_setting_set(
+    setting_name: str, value: object, loaded_document: SettingsDocument | None = None
+) -> SettingsDocument:
     """
     Return the configuration file, holding the given value for the given setting.
 
-    The file is read afresh rather than reusing the configuration already loaded, both
-    so that any change made to it by hand since then is kept rather than overwritten,
-    and so that the change is applied to a document that nothing else is using.
+    The file is refused if it has been changed by hand since it was last loaded, so that
+    a change is only ever applied to the configuration TeX-Bot is actually running.
 
     Nothing is written to disk: the returned document must be written by its caller.
     """
     KEY_PATH: Final[Sequence[str]] = _key_path_of(setting_name)
 
-    document: SettingsDocument = SettingsDocument.load()
+    document: SettingsDocument = _read_unchanged_file(loaded_document)
     document.set_value(KEY_PATH, value)
 
     return _validated(document)
 
 
-def validated_document_with_setting_removed(setting_name: str) -> SettingsDocument | None:
+def validated_document_with_setting_removed(
+    setting_name: str, loaded_document: SettingsDocument | None = None
+) -> SettingsDocument | None:
     """
     Return the configuration file, no longer holding the given setting.
 
     `None` is returned where the setting was not written within the file to begin with,
     because removing it would leave the file exactly as it already is.
 
+    The file is refused if it has been changed by hand since it was last loaded.
+
     Nothing is written to disk: the returned document must be written by its caller.
     """
     KEY_PATH: Final[Sequence[str]] = _key_path_of(setting_name)
 
-    document: SettingsDocument = SettingsDocument.load()
+    document: SettingsDocument = _read_unchanged_file(loaded_document)
     if not document.unset_value(KEY_PATH):
         return None
 

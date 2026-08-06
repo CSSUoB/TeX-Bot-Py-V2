@@ -69,6 +69,16 @@ class TestLoading:
             _ = settings.discord.main_guild_id
 
     @staticmethod
+    def test_nothing_loaded_has_not_been_changed_underneath() -> None:
+        """
+        Test that an accessor holding no configuration reports no change to the file.
+
+        There is nothing loaded for a file to have diverged from, which is the state
+        TeX-Bot is in while it is still starting up.
+        """
+        assert not SettingsAccessor().file_has_changed()
+
+    @staticmethod
     def test_loading_makes_settings_available(config_file: "Path") -> None:
         """Test that settings can be read once a configuration has been loaded."""
         settings: SettingsAccessor = SettingsAccessor()

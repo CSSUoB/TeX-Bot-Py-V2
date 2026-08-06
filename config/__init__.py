@@ -20,6 +20,7 @@ from ._document import (
 )
 from ._editor import (
     SETTING_NAME_SEPARATOR,
+    SettingsFileChangedError,
     UnknownSettingError,
     documented_setting_names,
     format_setting_value,
@@ -45,6 +46,7 @@ __all__: "Sequence[str]" = (
     "ConfigSettingMetadata",
     "InvalidSettingsFileError",
     "SettingsDocument",
+    "SettingsFileChangedError",
     "SettingsFileNotFoundError",
     "SettingsNotLoadedError",
     "SettingsValidationError",
@@ -107,6 +109,11 @@ def reload_settings() -> ConfigReloadResult:
     )
 
 
+def _loaded_document() -> "SettingsDocument | None":
+    """Return the configuration document currently loaded, if any configuration has been."""
+    return settings.document if settings.is_loaded else None
+
+
 def set_setting(setting_name: str, raw_value: str) -> ConfigReloadResult:
     """
     Change a single setting within the configuration file, then apply the change.
@@ -114,11 +121,14 @@ def set_setting(setting_name: str, raw_value: str) -> ConfigReloadResult:
     The new value is validated before the file is written, so a value that would be
     rejected leaves both the file & the running configuration exactly as they were.
 
+    Changing a file that has been edited by hand since it was last loaded is refused,
+    so that a change is only ever made against the configuration TeX-Bot is running.
+
     Returns the settings that changed as a result, along with the subset of those that
     cannot take effect until TeX-Bot is restarted.
     """
     UPDATED_DOCUMENT: Final[SettingsDocument] = validated_document_with_setting_set(
-        setting_name, parse_setting_value(setting_name, raw_value)
+        setting_name, parse_setting_value(setting_name, raw_value), _loaded_document()
     )
 
     UPDATED_DOCUMENT.write()
@@ -134,10 +144,11 @@ def unset_setting(setting_name: str) -> ConfigReloadResult | None:
     not written within the file to begin with, so nothing needed to be removed.
 
     Removing a setting that is required leaves the file untouched, because the
-    configuration that removing it would produce is not valid.
+    configuration that removing it would produce is not valid. Removing a setting from a
+    file that has been edited by hand since it was last loaded is likewise refused.
     """
     UPDATED_DOCUMENT: Final[SettingsDocument | None] = validated_document_with_setting_removed(
-        setting_name
+        setting_name, _loaded_document()
     )
 
     if UPDATED_DOCUMENT is None:
