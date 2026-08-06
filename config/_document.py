@@ -9,7 +9,6 @@ It deliberately knows nothing about what any individual setting means;
 the shape & meaning of the configuration is declared solely within `config._schema`.
 """
 
-import copy
 import io
 import logging
 import os
@@ -175,15 +174,6 @@ class SettingsDocument:
         `write()` must be called to persist any changes made.
         """
         return self._raw
-
-    def copy(self) -> "Self":
-        """
-        Return an independent copy of this document, retaining its comments & formatting.
-
-        Used to apply a change to a copy & validate the result, so that a change which
-        turns out to be invalid never reaches the document that is currently loaded.
-        """
-        return type(self)(file_path=self._file_path, raw=copy.deepcopy(self._raw))
 
     def contains(self, key_path: "Sequence[str]") -> bool:
         """Whether the given sequence of keys is written within this document."""

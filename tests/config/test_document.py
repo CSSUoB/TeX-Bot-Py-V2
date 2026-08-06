@@ -301,22 +301,23 @@ class TestChangingValues:
         assert not document.unset_value(["community-group", "full-name"])
 
     @staticmethod
-    def test_a_copy_can_be_changed_without_affecting_the_original(
+    def test_a_document_read_again_is_independent_of_the_one_already_held(
         config_file: "Path",
     ) -> None:
         """
-        Test that changing a copy of a document leaves the document it came from alone.
+        Test that changing a freshly read document leaves an existing one alone.
 
-        A change is applied to a copy & validated before anything is written, so a
-        change that turns out to be invalid must not reach the loaded configuration.
+        A change is applied to the file read afresh & validated before anything is
+        written, so a change that turns out to be invalid must not be able to reach the
+        configuration that is currently loaded.
         """
-        document: SettingsDocument = SettingsDocument.load(config_file)
+        loaded_document: SettingsDocument = SettingsDocument.load(config_file)
 
-        duplicate_document: SettingsDocument = document.copy()
-        duplicate_document.set_value(["community-group", "full-name"], "CompSoc")
+        document_being_changed: SettingsDocument = SettingsDocument.load(config_file)
+        document_being_changed.set_value(["community-group", "full-name"], "CompSoc")
 
-        assert not document.contains(["community-group", "full-name"])
-        assert duplicate_document.contains(["community-group", "full-name"])
+        assert not loaded_document.contains(["community-group", "full-name"])
+        assert document_being_changed.contains(["community-group", "full-name"])
 
 
 class TestErrorReporting:

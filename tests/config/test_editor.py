@@ -320,23 +320,37 @@ class TestRejectedChanges:
 
         assert "reminders:send-get-roles-reminders:interval" in str(validation_error.value)
 
+
+class TestChangesMadeByHand:
+    """
+    Test case for a change made from within Discord meeting one made by hand.
+
+    The configuration file is read again immediately before each change is applied,
+    rather than the copy held in memory being rewritten, so an edit made by hand since
+    the configuration was last loaded is never silently discarded.
+    """
+
     @staticmethod
-    def test_a_change_made_by_hand_is_not_overwritten(
+    def _edit_by_hand(
+        config_file_path: "Path", original: str, replacement: str
+    ) -> None:
+        """Edit the configuration file directly, as somebody with a text editor would."""
+        config_file_path.write_text(
+            config_file_path.read_text(encoding="utf-8").replace(original, replacement),
+            encoding="utf-8",
+        )
+
+    @staticmethod
+    def test_a_change_to_a_different_setting_keeps_both(
         configured: "Callable[[str], Path]",
     ) -> None:
-        """
-        Test that a setting edited by hand since loading survives a later change.
-
-        The file is read again before being changed, rather than the copy held in
-        memory being rewritten, so an edit made in the meantime is kept.
-        """
+        """Test that changes to two different settings are both kept."""
         CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
 
-        CONFIG_FILE_PATH.write_text(
-            COMMENTED_CONFIG.replace(
-                "full-name: Computer Science Society", "full-name: Edited By Hand"
-            ),
-            encoding="utf-8",
+        TestChangesMadeByHand._edit_by_hand(
+            CONFIG_FILE_PATH,
+            "full-name: Computer Science Society",
+            "full-name: Edited By Hand",
         )
 
         config.set_setting("commands:ping:easter-egg-probability", "0.5")
@@ -346,6 +360,110 @@ class TestRejectedChanges:
             config.settings.commands.ping.easter_egg_probability
             == CHANGED_EASTER_EGG_PROBABILITY
         )
+
+    @staticmethod
+    def test_a_change_to_the_same_setting_takes_priority(
+        configured: "Callable[[str], Path]",
+    ) -> None:
+        """
+        Test that changing a setting from within Discord overrules an edit made by hand.
+
+        Both changes are to the same setting, so one of them has to win: the change made
+        from within Discord is the later of the two, & is the one its author is waiting
+        upon a response to.
+        """
+        CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
+
+        TestChangesMadeByHand._edit_by_hand(
+            CONFIG_FILE_PATH,
+            "easter-egg-probability: 0.01",
+            "easter-egg-probability: 0.25",
+        )
+
+        config.set_setting("commands:ping:easter-egg-probability", "0.5")
+
+        assert (
+            config.settings.commands.ping.easter_egg_probability
+            == CHANGED_EASTER_EGG_PROBABILITY
+        )
+        assert "0.25" not in CONFIG_FILE_PATH.read_text(encoding="utf-8")
+
+    @staticmethod
+    def test_a_setting_added_by_hand_survives_a_later_change(
+        configured: "Callable[[str], Path]",
+    ) -> None:
+        """Test that a setting added by hand is kept when another one is changed."""
+        CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
+
+        TestChangesMadeByHand._edit_by_hand(
+            CONFIG_FILE_PATH,
+            "community-group:\n",
+            "auto-add-committee-to-threads: false\ncommunity-group:\n",
+        )
+
+        config.set_setting("commands:ping:easter-egg-probability", "0.5")
+
+        assert config.settings.auto_add_committee_to_threads is False
+
+    @staticmethod
+    def test_a_setting_removed_by_hand_stays_removed(
+        configured: "Callable[[str], Path]",
+    ) -> None:
+        """Test that a setting deleted by hand is not brought back by a later change."""
+        CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
+
+        TestChangesMadeByHand._edit_by_hand(
+            CONFIG_FILE_PATH, "  full-name: Computer Science Society\n", ""
+        )
+
+        config.set_setting("commands:ping:easter-egg-probability", "0.5")
+
+        assert config.settings.community_group.full_name is None
+
+    @staticmethod
+    def test_an_edit_made_by_hand_survives_a_removal(
+        configured: "Callable[[str], Path]",
+    ) -> None:
+        """Test that removing one setting keeps an edit made by hand to another."""
+        CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
+
+        TestChangesMadeByHand._edit_by_hand(
+            CONFIG_FILE_PATH,
+            "full-name: Computer Science Society",
+            "full-name: Edited By Hand",
+        )
+
+        config.unset_setting("commands:ping:easter-egg-probability")
+
+        assert config.settings.community_group.full_name == "Edited By Hand"
+        assert (
+            config.settings.commands.ping.easter_egg_probability
+            == DEFAULT_EASTER_EGG_PROBABILITY
+        )
+
+    @staticmethod
+    def test_an_edit_made_by_hand_that_is_invalid_blocks_the_change(
+        configured: "Callable[[str], Path]",
+    ) -> None:
+        """
+        Test that a change is refused while the file holds a mistake made by hand.
+
+        The whole configuration is validated, not merely the setting being changed, so a
+        mistake elsewhere within the file is reported rather than written back.
+        """
+        CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
+
+        TestChangesMadeByHand._edit_by_hand(
+            CONFIG_FILE_PATH, "main-guild-id: 1234567890123456789", "main-guild-id: 12"
+        )
+        CONFIG_FILE_CONTENTS_AFTER_EDIT: Final[str] = CONFIG_FILE_PATH.read_text(
+            encoding="utf-8"
+        )
+
+        with pytest.raises(SettingsValidationError, match="main-guild-id"):
+            config.set_setting("commands:ping:easter-egg-probability", "0.5")
+
+        assert CONFIG_FILE_PATH.read_text(encoding="utf-8") == CONFIG_FILE_CONTENTS_AFTER_EDIT
 
 
 class TestRemovingSettings:

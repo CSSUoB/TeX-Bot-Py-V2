@@ -1,9 +1,10 @@
 """
 Changing individual settings within the deployment configuration file.
 
-Every change is applied to a copy of the configuration document & validated before
-anything is written, so that a mistaken value can never leave TeX-Bot holding a
-configuration file it would refuse to load.
+Every change is applied to the configuration file read afresh, & validated in full,
+before anything is written, so that a mistaken value can never leave TeX-Bot holding a
+configuration file it would refuse to load. Reading the file again also means a change
+made to it by hand is kept, rather than being overwritten by whatever was last loaded.
 
 This module holds no knowledge of Discord: it turns the text a committee member typed
 into a value, decides whether that value is acceptable, & renders values back into
@@ -181,14 +182,15 @@ def validated_document_with_setting_set(setting_name: str, value: object) -> Set
     """
     Return the configuration file, holding the given value for the given setting.
 
-    The file is read again rather than reusing the configuration already loaded, so that
-    any change made to it by hand since then is kept rather than being overwritten.
+    The file is read afresh rather than reusing the configuration already loaded, both
+    so that any change made to it by hand since then is kept rather than overwritten,
+    and so that the change is applied to a document that nothing else is using.
 
     Nothing is written to disk: the returned document must be written by its caller.
     """
     KEY_PATH: Final[Sequence[str]] = _key_path_of(setting_name)
 
-    document: SettingsDocument = SettingsDocument.load().copy()
+    document: SettingsDocument = SettingsDocument.load()
     document.set_value(KEY_PATH, value)
 
     return _validated(document)
@@ -205,7 +207,7 @@ def validated_document_with_setting_removed(setting_name: str) -> SettingsDocume
     """
     KEY_PATH: Final[Sequence[str]] = _key_path_of(setting_name)
 
-    document: SettingsDocument = SettingsDocument.load().copy()
+    document: SettingsDocument = SettingsDocument.load()
     if not document.unset_value(KEY_PATH):
         return None
 
