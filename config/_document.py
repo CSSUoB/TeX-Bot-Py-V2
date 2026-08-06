@@ -117,6 +117,15 @@ class SettingsDocument:
             get_settings_file_path() if file_path is None else file_path
         )
 
+        # NOTE: `get_settings_file_path()` has already checked that the file it returns
+        # exists, but an explicitly given path has not been checked by anything. Checking
+        # here keeps every failure to read the configuration reportable as one error type.
+        if not RESOLVED_FILE_PATH.is_file():
+            EXPLICIT_SETTINGS_FILE_NOT_FOUND_MESSAGE: str = (
+                f"No configuration file exists at {str(RESOLVED_FILE_PATH)!r}."
+            )
+            raise SettingsFileNotFoundError(EXPLICIT_SETTINGS_FILE_NOT_FOUND_MESSAGE)
+
         raw_file_contents: str = RESOLVED_FILE_PATH.read_text(encoding="utf-8")
 
         yaml_parse_error: YAMLError
