@@ -26,7 +26,9 @@ with SuppressTraceback():
     config.run_setup()
 
     bot: TeXBot = TeXBot(
-        intents=discord.Intents.default() | discord.Intents.members
+        intents=discord.Intents.default()
+        | discord.Intents.members
+        | discord.Intents.message_content
     )  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
 
     bot.load_extension("cogs")
