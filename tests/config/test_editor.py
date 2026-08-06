@@ -20,6 +20,7 @@ from .conftest import (
     DEFAULT_EASTER_EGG_PROBABILITY,
     MINIMAL_CONFIG,
     VALID_BOT_TOKEN,
+    VALID_WEBHOOK_URL,
 )
 
 if TYPE_CHECKING:
@@ -559,6 +560,200 @@ class TestRemovingSettings:
             == DEFAULT_EASTER_EGG_PROBABILITY
         )
         assert config.reload_settings().changed_settings == set()
+
+
+class TestDescribingAnEditedFile:
+    """Test case for showing what an edit made by hand would change a setting to."""
+
+    @staticmethod
+    def _edit_by_hand(config_file_path: "Path", original: str, replacement: str) -> None:
+        """Edit the configuration file directly, as somebody with a text editor would."""
+        config_file_path.write_text(
+            config_file_path.read_text(encoding="utf-8").replace(original, replacement),
+            encoding="utf-8",
+        )
+
+    @staticmethod
+    def test_the_value_within_the_file_is_shown_alongside_the_running_one(
+        configured: "Callable[[str], Path]",
+    ) -> None:
+        """Test that an edited setting shows both what is running & what the file holds."""
+        CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
+
+        TestDescribingAnEditedFile._edit_by_hand(
+            CONFIG_FILE_PATH,
+            "easter-egg-probability: 0.01",
+            "easter-egg-probability: 0.25",
+        )
+
+        DESCRIPTION: Final[str] = config.format_file_difference(
+            "commands:ping:easter-egg-probability",
+            config.settings.commands.ping.easter_egg_probability,
+            secret=False,
+        )
+
+        assert "currently running" in DESCRIPTION
+        assert "`0.01`" in DESCRIPTION
+        assert "within the file" in DESCRIPTION
+        assert "`0.25`" in DESCRIPTION
+        assert "/config reload" in DESCRIPTION
+
+    @staticmethod
+    def test_a_duration_within_the_file_is_shown_readably(
+        configured: "Callable[[str], Path]",
+    ) -> None:
+        """Test that a duration held by the file is shown the way it is written."""
+        CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
+
+        TestDescribingAnEditedFile._edit_by_hand(
+            CONFIG_FILE_PATH,
+            "commands:\n",
+            "commands:\n  strike:\n    timeout-duration: 1h30m\n",
+        )
+
+        DESCRIPTION: Final[str] = config.format_file_difference(
+            "commands:strike:timeout-duration",
+            config.settings.commands.strike.timeout_duration,
+            secret=False,
+        )
+
+        assert "`1d`" in DESCRIPTION
+        assert "`1h30m`" in DESCRIPTION
+
+    @staticmethod
+    def test_an_edit_elsewhere_says_this_setting_is_unaffected(
+        configured: "Callable[[str], Path]",
+    ) -> None:
+        """Test that an edit to another setting does not claim this one has changed."""
+        CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
+
+        TestDescribingAnEditedFile._edit_by_hand(
+            CONFIG_FILE_PATH,
+            "full-name: Computer Science Society",
+            "full-name: Edited By Hand",
+        )
+
+        DESCRIPTION: Final[str] = config.format_file_difference(
+            "commands:ping:easter-egg-probability",
+            config.settings.commands.ping.easter_egg_probability,
+            secret=False,
+        )
+
+        assert "though not this setting" in DESCRIPTION
+        assert "/config reload" in DESCRIPTION
+
+    @staticmethod
+    def test_a_secret_within_the_file_is_never_shown(
+        configured: "Callable[[str], Path]",
+    ) -> None:
+        """Test that comparing a secret does not reveal either value."""
+        CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
+
+        EDITED_TOKEN: Final[str] = f"{VALID_BOT_TOKEN[:-4]}wxyz"
+
+        TestDescribingAnEditedFile._edit_by_hand(
+            CONFIG_FILE_PATH, VALID_BOT_TOKEN, EDITED_TOKEN
+        )
+
+        DESCRIPTION: Final[str] = config.format_file_difference(
+            "discord:bot-token", config.settings.discord.bot_token, secret=True
+        )
+
+        assert "different value" in DESCRIPTION
+        assert EDITED_TOKEN not in DESCRIPTION
+        assert VALID_BOT_TOKEN not in DESCRIPTION
+
+    @staticmethod
+    def test_a_file_that_cannot_be_loaded_is_reported(
+        configured: "Callable[[str], Path]",
+    ) -> None:
+        """
+        Test that an edit leaving the file invalid is explained rather than shown.
+
+        There is no value to show from a file that would be refused, so the reason it
+        would be refused is shown instead, which is what needs fixing before reloading.
+        """
+        CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
+
+        TestDescribingAnEditedFile._edit_by_hand(
+            CONFIG_FILE_PATH,
+            "easter-egg-probability: 0.01",
+            "easter-egg-probability: 9.9",
+        )
+
+        DESCRIPTION: Final[str] = config.format_file_difference(
+            "commands:ping:easter-egg-probability",
+            config.settings.commands.ping.easter_egg_probability,
+            secret=False,
+        )
+
+        assert "cannot be loaded" in DESCRIPTION
+        assert "less than or equal to 1" in DESCRIPTION
+
+    @staticmethod
+    def test_a_setting_added_by_hand_is_shown_against_its_default(
+        configured: "Callable[[str], Path]",
+    ) -> None:
+        """Test that a setting added by hand is compared against the default in use."""
+        CONFIG_FILE_PATH: Final[Path] = configured(MINIMAL_CONFIG)
+
+        TestDescribingAnEditedFile._edit_by_hand(
+            CONFIG_FILE_PATH,
+            "community-group:\n",
+            "auto-add-committee-to-threads: false\ncommunity-group:\n",
+        )
+
+        DESCRIPTION: Final[str] = config.format_file_difference(
+            "auto-add-committee-to-threads",
+            config.settings.auto_add_committee_to_threads,
+            secret=False,
+        )
+
+        assert "`true`" in DESCRIPTION
+        assert "`false`" in DESCRIPTION
+
+
+class TestSettingsWithinAnOmittedSection:
+    """Test case for a setting whose whole section has been left out of the file."""
+
+    @staticmethod
+    def test_its_value_can_be_read_without_being_written(
+        configured: "Callable[[str], Path]",
+    ) -> None:
+        """
+        Test that a setting within an omitted section reads as unset, rather than failing.
+
+        Such a setting has no entry of its own once the settings are flattened, because
+        the section holding it collapses to a single empty value, yet it is still offered
+        as a setting that can be viewed.
+        """
+        OMITTED_SETTING_NAME: Final[str] = "logging:discord-channel:webhook-url"
+
+        configured(MINIMAL_CONFIG)
+
+        assert OMITTED_SETTING_NAME in config.documented_setting_names()
+        assert config.settings.as_flat_mapping().get(OMITTED_SETTING_NAME) is None
+
+    @staticmethod
+    def test_the_file_holding_it_is_compared_without_failing(
+        configured: "Callable[[str], Path]",
+    ) -> None:
+        """Test that adding such a section by hand is described rather than crashed upon."""
+        CONFIG_FILE_PATH: Final[Path] = configured(MINIMAL_CONFIG)
+
+        CONFIG_FILE_PATH.write_text(
+            f"{MINIMAL_CONFIG}"
+            f"logging:\n"
+            f"  discord-channel:\n"
+            f"    webhook-url: {VALID_WEBHOOK_URL}\n",
+            encoding="utf-8",
+        )
+
+        DESCRIPTION: Final[str] = config.format_file_difference(
+            "logging:discord-channel:log-level", None, secret=False
+        )
+
+        assert "`WARNING`" in DESCRIPTION
 
 
 class TestDisplayingValues:

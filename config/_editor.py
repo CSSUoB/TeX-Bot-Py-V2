@@ -20,8 +20,12 @@ from pydantic import SecretStr, ValidationError
 from ruamel.yaml import YAML
 from ruamel.yaml.error import YAMLError
 
-from ._accessor import SettingsValidationError
-from ._document import SettingsDocument
+from ._accessor import SettingsValidationError, _flatten_settings
+from ._document import (
+    InvalidSettingsFileError,
+    SettingsDocument,
+    SettingsFileNotFoundError,
+)
 from ._schema import SettingsSchema, get_settings_metadata
 
 if TYPE_CHECKING:
@@ -36,6 +40,7 @@ __all__: "Sequence[str]" = (
     "SettingsFileChangedError",
     "UnknownSettingError",
     "documented_setting_names",
+    "format_file_difference",
     "format_setting_value",
     "parse_setting_value",
     "setting_metadata",
@@ -177,17 +182,74 @@ def format_setting_value(value: object, *, secret: bool) -> str:
     return f"`{value}`"
 
 
-def _validated(document: SettingsDocument) -> SettingsDocument:
-    """Return the given document, having checked that it holds a valid configuration."""
+def _snapshot_of(document: SettingsDocument) -> SettingsSchema:
+    """Return the settings held by the given document, refusing it if they are invalid."""
     validation_error: ValidationError
     try:
-        SettingsSchema.model_validate(document.raw)
+        return SettingsSchema.model_validate(document.raw)
     except ValidationError as validation_error:
         raise SettingsValidationError(
             document.format_validation_error(validation_error)
         ) from validation_error
 
+
+def _validated(document: SettingsDocument) -> SettingsDocument:
+    """Return the given document, having checked that it holds a valid configuration."""
+    _snapshot_of(document)
+
     return document
+
+
+def format_file_difference(setting_name: str, running_value: object, *, secret: bool) -> str:
+    """
+    Describe how the configuration file's value for a setting differs from the running one.
+
+    Intended to be shown alongside the value TeX-Bot is running, once the file is known
+    to have been edited since it was last loaded, so that whoever is looking at a setting
+    can see what reloading would change it to rather than only being told to reload.
+    """
+    file_error: Exception
+    try:
+        FILE_VALUES: Final[Mapping[str, object]] = _flatten_settings(
+            _snapshot_of(SettingsDocument.load())
+        )
+    except (
+        SettingsValidationError,
+        SettingsFileNotFoundError,
+        InvalidSettingsFileError,
+        OSError,
+    ) as file_error:
+        return (
+            "\n\n:warning: The configuration file has been edited since TeX-Bot last "
+            "loaded it, but cannot be loaded as it currently stands:\n"
+            f"```\n{file_error}\n```"
+        )
+
+    # NOTE: A setting within a section that has been left out of the file entirely has no
+    # entry of its own, & is simply unset.
+    FILE_VALUE: Final[object] = FILE_VALUES.get(setting_name)
+
+    if running_value == FILE_VALUE:
+        return (
+            "\n\n:information_source: The configuration file has been edited since "
+            "TeX-Bot last loaded it, though not this setting. "
+            "Run `/config reload` to apply those edits."
+        )
+
+    if secret:
+        return (
+            "\n\n:warning: The configuration file holds a different value for this "
+            "setting, which TeX-Bot has not loaded. "
+            "Run `/config reload` to apply that edit."
+        )
+
+    return (
+        f"\n\n:warning: The configuration file has been edited since TeX-Bot last "
+        f"loaded it:\n"
+        f"- currently running: {format_setting_value(running_value, secret=secret)}\n"
+        f"- within the file: {format_setting_value(FILE_VALUE, secret=secret)}\n"
+        f"Run `/config reload` to apply that edit."
+    )
 
 
 def _read_unchanged_file(loaded_document: SettingsDocument | None) -> SettingsDocument:

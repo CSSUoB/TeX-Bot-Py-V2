@@ -197,7 +197,9 @@ class ConfigCommandsCog(TeXBotBaseCog):
         setting_metadata: ConfigSettingMetadata
         try:
             setting_metadata = config.setting_metadata(setting_name)
-            CURRENT_VALUE: Final[object] = config.settings.as_flat_mapping()[setting_name]
+            # NOTE: A setting within a section that has been left out of the file
+            # entirely has no entry of its own, & is simply unset.
+            CURRENT_VALUE: Final[object] = config.settings.as_flat_mapping().get(setting_name)
         except UnknownSettingError as unknown_setting_error:
             await self._respond_with_unknown_setting(ctx, unknown_setting_error)
             return
@@ -217,8 +219,18 @@ class ConfigCommandsCog(TeXBotBaseCog):
             f"{config.format_setting_value(CURRENT_VALUE, secret=setting_metadata.secret)}"
         )
 
-        if not IS_SET_WITHIN_FILE:
+        # NOTE: A setting holding nothing already says so, & saying that it holds its
+        # default as well would be saying the same thing twice.
+        if not IS_SET_WITHIN_FILE and CURRENT_VALUE is not None:
             response_message += " _(default; not set within the configuration file)_"
+
+        # NOTE: The value shown above is the one TeX-Bot is running, which is the one it
+        # loaded. Showing what the file holds alongside it is what stops an edit made
+        # since then from looking as though it had simply been ignored.
+        if config.settings.file_has_changed():
+            response_message += config.format_file_difference(
+                setting_name, CURRENT_VALUE, secret=setting_metadata.secret
+            )
 
         if setting_metadata.description:
             response_message += f"\n\n{setting_metadata.description}"
@@ -226,16 +238,6 @@ class ConfigCommandsCog(TeXBotBaseCog):
         if setting_metadata.requires_restart:
             response_message += (
                 "\n\n:warning: Changing this setting requires TeX-Bot to be restarted."
-            )
-
-        # NOTE: The value shown is the one currently in use, which is the one that was
-        # loaded. Saying so is what stops an edit made to the file since then from
-        # looking as though it had simply been ignored.
-        if config.settings.file_has_changed():
-            response_message += (
-                "\n\n:warning: The configuration file has been edited since TeX-Bot "
-                "last loaded it, so the value shown above may no longer match it. "
-                "Run `/config reload` to load those edits."
             )
 
         await ctx.respond(response_message, ephemeral=True)
