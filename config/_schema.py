@@ -30,6 +30,7 @@ from pydantic import (
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Mapping, Sequence
+    from typing import Final
 
     from pydantic.fields import FieldInfo
 
@@ -708,6 +709,27 @@ class ConfigSettingMetadata(NamedTuple):
     description: str | None
     requires_restart: bool
     secret: bool
+    holds_text: bool
+
+
+def _holds_text(annotation: object) -> bool:
+    """
+    Whether the given field annotation accepts text, & only text.
+
+    Used to keep a value that merely looks like a number
+    (an organisation ID of `1234`, for example) as the text it is declared to be.
+    """
+    if annotation is str:
+        return True
+
+    ANNOTATION_ARGUMENTS: Final[tuple[object, ...]] = get_args(annotation)
+
+    # NOTE: Every member of the annotation must be checked, rather than merely testing
+    # whether it contains `str`, so that a *sequence* of strings is not mistaken for one.
+    return bool(ANNOTATION_ARGUMENTS) and all(
+        annotation_argument is str or annotation_argument is type(None)
+        for annotation_argument in ANNOTATION_ARGUMENTS
+    )
 
 
 def _walk_settings_metadata(
@@ -744,6 +766,7 @@ def _walk_settings_metadata(
                 description=field.description,
                 requires_restart=EXTRA.get("requires_restart") is True,
                 secret=EXTRA.get("secret") is True,
+                holds_text=_holds_text(field.annotation),
             ),
         )
 

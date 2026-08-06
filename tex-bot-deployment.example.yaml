@@ -14,6 +14,11 @@
 # task set to repeat every `0s` would run continuously without ever pausing.
 #
 # Run `/config reload` after editing this file to apply your changes.
+#
+# Individual settings can also be changed from within Discord, without editing this file
+# by hand: `/config get` shows what a setting is currently set to, `/config set` changes
+# one, and `/config unset` returns one to its default. Each of them is committee-only,
+# and writes back to this file while keeping the comments you have added to it.
 # Most settings take effect straight away, because they are read at the moment they
 # are used. A few cannot, and `/config reload` will tell you when a restart is needed:
 #

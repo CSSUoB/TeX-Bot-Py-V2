@@ -9,6 +9,7 @@ It deliberately knows nothing about what any individual setting means;
 the shape & meaning of the configuration is declared solely within `config._schema`.
 """
 
+import copy
 import io
 import logging
 import os
@@ -175,6 +176,85 @@ class SettingsDocument:
         """
         return self._raw
 
+    def copy(self) -> "Self":
+        """
+        Return an independent copy of this document, retaining its comments & formatting.
+
+        Used to apply a change to a copy & validate the result, so that a change which
+        turns out to be invalid never reaches the document that is currently loaded.
+        """
+        return type(self)(file_path=self._file_path, raw=copy.deepcopy(self._raw))
+
+    def contains(self, key_path: "Sequence[str]") -> bool:
+        """Whether the given sequence of keys is written within this document."""
+        node: object = self._raw
+
+        key: str
+        for key in key_path:
+            if not isinstance(node, dict) or key not in node:
+                return False
+
+            node = node[key]
+
+        return True
+
+    def set_value(self, key_path: "Sequence[str]", value: object) -> None:
+        """
+        Write the given value at the given sequence of keys, creating any absent sections.
+
+        Nothing is written to disk until `write()` is called.
+        """
+        if not key_path:
+            EMPTY_KEY_PATH_MESSAGE: str = "A setting to change must be named."
+            raise ValueError(EMPTY_KEY_PATH_MESSAGE)
+
+        node: CommentedMap = self._raw
+
+        key: str
+        for key in key_path[:-1]:
+            if key not in node:
+                node[key] = CommentedMap()
+
+            child_node: object = node[key]
+            if not isinstance(child_node, CommentedMap):
+                NOT_A_SECTION_MESSAGE: str = (
+                    f"{self._file_path.name} cannot hold the setting "
+                    f"{':'.join(key_path)!r}, because {key!r} is not a section."
+                )
+                raise InvalidSettingsFileError(NOT_A_SECTION_MESSAGE)
+
+            node = child_node
+
+        node[key_path[-1]] = value
+
+    def unset_value(self, key_path: "Sequence[str]") -> bool:
+        """
+        Remove the given sequence of keys, reporting whether it was written at all.
+
+        Any section left empty is kept, rather than being removed alongside the setting,
+        because a section may be required to be present even when it holds nothing.
+
+        Nothing is written to disk until `write()` is called.
+        """
+        if not self.contains(key_path):
+            return False
+
+        node: object = self._raw
+
+        key: str
+        for key in key_path[:-1]:
+            if TYPE_CHECKING:
+                assert isinstance(node, dict)
+
+            node = node[key]
+
+        if TYPE_CHECKING:
+            assert isinstance(node, dict)
+
+        del node[key_path[-1]]
+
+        return True
+
     def dump(self) -> str:
         """Serialise this document back into YAML, retaining comments & formatting."""
         output_buffer: io.StringIO = io.StringIO()
@@ -249,12 +329,36 @@ class SettingsDocument:
             if TYPE_CHECKING:
                 assert isinstance(node, dict)
 
-            # NOTE: `lc.key()` reports a zero-indexed line, whereas humans (& every editor)
-            # count the first line of a file as line 1.
-            deepest_known_line_number = node.lc.key(key)[0] + 1  # type: ignore[attr-defined]
+            LINE_NUMBER_OF_KEY: int | None = self._line_number_of_key(node, key)
+            if LINE_NUMBER_OF_KEY is None:
+                break
+
+            deepest_known_line_number = LINE_NUMBER_OF_KEY
             node = node[key]
 
         return deepest_known_line_number
+
+    @staticmethod
+    def _line_number_of_key(node: "dict[object, object]", key: "str | int") -> int | None:
+        """
+        Return the line that the given key of the given mapping was parsed from.
+
+        `None` is returned for a key that was added to the document rather than parsed
+        from the file, because such a key has no line within the file to report. This
+        happens whenever the `/config` command writes a setting for the first time.
+        """
+        key_position: object
+        try:
+            key_position = node.lc.key(key)  # type: ignore[attr-defined]
+        except KeyError:
+            return None
+
+        if not isinstance(key_position, tuple):
+            return None
+
+        # NOTE: `lc.key()` reports a zero-indexed line, whereas humans (& every editor)
+        # count the first line of a file as line 1.
+        return int(key_position[0]) + 1
 
     def _format_single_error(self, key_path: "Sequence[str | int]", message: str) -> str:
         """Format a single validation failure, prefixed with the location that caused it."""

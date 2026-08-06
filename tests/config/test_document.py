@@ -250,6 +250,75 @@ class TestWriting:
         assert not [path for path in tmp_path.iterdir() if path.suffix == ".tmp"]
 
 
+class TestChangingValues:
+    """Test case for changing the settings held within a document."""
+
+    @staticmethod
+    def test_a_setting_is_written_into_an_absent_section(config_file: "Path") -> None:
+        """Test that setting a value creates whichever sections are needed to hold it."""
+        document: SettingsDocument = SettingsDocument.load(config_file)
+
+        document.set_value(["reminders", "send-get-roles-reminders", "interval"], "30m")
+
+        assert document.raw["reminders"]["send-get-roles-reminders"]["interval"] == "30m"
+
+    @staticmethod
+    def test_a_change_does_not_reach_the_file_until_it_is_written(
+        config_file: "Path",
+    ) -> None:
+        """Test that changing a value alone leaves the file upon disk untouched."""
+        document: SettingsDocument = SettingsDocument.load(config_file)
+
+        document.set_value(["community-group", "full-name"], "CompSoc")
+
+        assert config_file.read_text(encoding="utf-8") == MINIMAL_CONFIG
+
+    @staticmethod
+    def test_a_setting_cannot_be_written_beneath_a_value(
+        write_config: "ConfigWriter",
+    ) -> None:
+        """Test that a section which holds a plain value is not overwritten silently."""
+        document: SettingsDocument = SettingsDocument.load(
+            write_config(f"{MINIMAL_CONFIG}commands: not-a-section\n")
+        )
+
+        with pytest.raises(InvalidSettingsFileError, match="not a section"):
+            document.set_value(["commands", "ping", "easter-egg-probability"], 0.5)
+
+    @staticmethod
+    def test_a_setting_must_be_named(config_file: "Path") -> None:
+        """Test that changing a value requires a setting to change."""
+        document: SettingsDocument = SettingsDocument.load(config_file)
+
+        with pytest.raises(ValueError, match="must be named"):
+            document.set_value([], 0.5)
+
+    @staticmethod
+    def test_an_absent_setting_is_reported_as_not_removed(config_file: "Path") -> None:
+        """Test that removing a setting the file does not hold reports that it did not."""
+        document: SettingsDocument = SettingsDocument.load(config_file)
+
+        assert not document.unset_value(["community-group", "full-name"])
+
+    @staticmethod
+    def test_a_copy_can_be_changed_without_affecting_the_original(
+        config_file: "Path",
+    ) -> None:
+        """
+        Test that changing a copy of a document leaves the document it came from alone.
+
+        A change is applied to a copy & validated before anything is written, so a
+        change that turns out to be invalid must not reach the loaded configuration.
+        """
+        document: SettingsDocument = SettingsDocument.load(config_file)
+
+        duplicate_document: SettingsDocument = document.copy()
+        duplicate_document.set_value(["community-group", "full-name"], "CompSoc")
+
+        assert not document.contains(["community-group", "full-name"])
+        assert duplicate_document.contains(["community-group", "full-name"])
+
+
 class TestErrorReporting:
     """Test case for pointing a human at the cause of an invalid configuration."""
 

@@ -18,6 +18,16 @@ from ._document import (
     SettingsFileNotFoundError,
     get_settings_file_path,
 )
+from ._editor import (
+    SETTING_NAME_SEPARATOR,
+    UnknownSettingError,
+    documented_setting_names,
+    format_setting_value,
+    parse_setting_value,
+    setting_metadata,
+    validated_document_with_setting_removed,
+    validated_document_with_setting_set,
+)
 from ._logging import apply_logging_settings
 from ._messages import MessagesAccessor
 from ._schema import ConfigSettingMetadata, get_settings_metadata
@@ -30,6 +40,7 @@ if TYPE_CHECKING:
 
 
 __all__: "Sequence[str]" = (
+    "SETTING_NAME_SEPARATOR",
     "ConfigReloadResult",
     "ConfigSettingMetadata",
     "InvalidSettingsFileError",
@@ -37,12 +48,18 @@ __all__: "Sequence[str]" = (
     "SettingsFileNotFoundError",
     "SettingsNotLoadedError",
     "SettingsValidationError",
+    "UnknownSettingError",
+    "documented_setting_names",
+    "format_setting_value",
     "get_settings_file_path",
     "get_settings_metadata",
     "messages",
     "reload_settings",
     "run_setup",
+    "set_setting",
+    "setting_metadata",
     "settings",
+    "unset_setting",
 )
 
 
@@ -88,6 +105,47 @@ def reload_settings() -> ConfigReloadResult:
             and SETTINGS_METADATA[changed_setting].requires_restart
         ),
     )
+
+
+def set_setting(setting_name: str, raw_value: str) -> ConfigReloadResult:
+    """
+    Change a single setting within the configuration file, then apply the change.
+
+    The new value is validated before the file is written, so a value that would be
+    rejected leaves both the file & the running configuration exactly as they were.
+
+    Returns the settings that changed as a result, along with the subset of those that
+    cannot take effect until TeX-Bot is restarted.
+    """
+    UPDATED_DOCUMENT: Final[SettingsDocument] = validated_document_with_setting_set(
+        setting_name, parse_setting_value(setting_name, raw_value)
+    )
+
+    UPDATED_DOCUMENT.write()
+
+    return reload_settings()
+
+
+def unset_setting(setting_name: str) -> ConfigReloadResult | None:
+    """
+    Remove a single setting from the configuration file, then apply its removal.
+
+    The setting returns to its default value. `None` is returned where the setting was
+    not written within the file to begin with, so nothing needed to be removed.
+
+    Removing a setting that is required leaves the file untouched, because the
+    configuration that removing it would produce is not valid.
+    """
+    UPDATED_DOCUMENT: Final[SettingsDocument | None] = validated_document_with_setting_removed(
+        setting_name
+    )
+
+    if UPDATED_DOCUMENT is None:
+        return None
+
+    UPDATED_DOCUMENT.write()
+
+    return reload_settings()
 
 
 def run_setup() -> None:
