@@ -9,7 +9,7 @@ restarting TeX-Bot.
 
 import importlib
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 from ._accessor import SettingsAccessor, SettingsNotLoadedError, SettingsValidationError
 from ._document import (
@@ -23,13 +23,14 @@ from ._messages import MessagesAccessor
 from ._schema import ConfigSettingMetadata, get_settings_metadata
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Mapping, Sequence
     from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
 
 
 __all__: "Sequence[str]" = (
+    "ConfigReloadResult",
     "ConfigSettingMetadata",
     "InvalidSettingsFileError",
     "SettingsDocument",
@@ -52,11 +53,19 @@ settings: "Final[SettingsAccessor]" = SettingsAccessor()
 messages: "Final[MessagesAccessor]" = MessagesAccessor()
 
 
-def reload_settings() -> "AbstractSet[str]":
+class ConfigReloadResult(NamedTuple):
+    """The outcome of reloading the deployment configuration file."""
+
+    changed_settings: "AbstractSet[str]"
+    restart_required_settings: "AbstractSet[str]"
+
+
+def reload_settings() -> ConfigReloadResult:
     """
     Reload the deployment configuration file, applying any settings that have changed.
 
-    Returns the set of settings key paths whose values have changed.
+    Returns the settings key paths whose values have changed, along with the subset of
+    those that cannot take effect until TeX-Bot is restarted.
 
     The currently loaded configuration is left untouched if the file cannot be read or
     contains invalid settings.
@@ -66,7 +75,19 @@ def reload_settings() -> "AbstractSet[str]":
     if any(changed_setting.startswith("logging:") for changed_setting in CHANGED_SETTINGS):
         apply_logging_settings(settings.logging)
 
-    return CHANGED_SETTINGS
+    SETTINGS_METADATA: Final[Mapping[str, ConfigSettingMetadata]] = get_settings_metadata()
+
+    return ConfigReloadResult(
+        changed_settings=CHANGED_SETTINGS,
+        # NOTE: Read from the schema itself, rather than tracked separately, so that the
+        # two cannot disagree about which settings need a restart.
+        restart_required_settings=frozenset(
+            changed_setting
+            for changed_setting in CHANGED_SETTINGS
+            if changed_setting in SETTINGS_METADATA
+            and SETTINGS_METADATA[changed_setting].requires_restart
+        ),
+    )
 
 
 def run_setup() -> None:

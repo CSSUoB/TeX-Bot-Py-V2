@@ -9,7 +9,7 @@ import discord
 from discord.ext import tasks
 
 from config import settings
-from utils import CommandChecks, TeXBotBaseCog, reapply_task_settings
+from utils import CommandChecks, TeXBotBaseCog
 from utils.error_capture_decorators import (
     capture_guild_does_not_exist_error,
 )
@@ -224,18 +224,6 @@ class CheckSUPlatformAuthorisationTaskCog(CheckSUPlatformAuthorisationBaseCog):
         This may be run dynamically or when the bot closes.
         """
         self.su_platform_access_cookie_check_task.cancel()
-
-    @override
-    async def on_config_reloaded(self, changed_settings: "AbstractSet[str]") -> None:
-        """Apply any change to whether this task runs, or how often it runs."""
-        reapply_task_settings(
-            self.su_platform_access_cookie_check_task,
-            changed_settings=changed_settings,
-            enabled=settings.community_group.msl.auto_cookie_checking.enabled,
-            enabled_setting_name="community-group:msl:auto-cookie-checking:enabled",
-            interval=settings.community_group.msl.auto_cookie_checking.interval,
-            interval_setting_name="community-group:msl:auto-cookie-checking:interval",
-        )
 
     @tasks.loop(
         seconds=settings.community_group.msl.auto_cookie_checking.interval.total_seconds()

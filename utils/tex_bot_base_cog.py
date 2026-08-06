@@ -68,19 +68,6 @@ class TeXBotBaseCog(Cog):
         """
         self.bot: TeXBot = bot  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
 
-    async def on_config_reloaded(self, changed_settings: "AbstractSet[str]") -> None:
-        """
-        Re-apply any changed configuration settings that this cog holds a copy of.
-
-        Called upon every cog after the configuration has been reloaded, with the set of
-        settings key paths whose values changed.
-
-        Most settings need no action here, because they are read from the settings
-        accessor at the point they are used, so a reload takes effect immediately.
-        Only settings captured elsewhere (the interval of a task, for example) need
-        re-applying, so this does nothing unless a cog overrides it.
-        """
-
     async def command_send_error(
         self,
         ctx: "TeXBotApplicationContext",

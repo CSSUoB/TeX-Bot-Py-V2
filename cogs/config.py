@@ -6,59 +6,24 @@ from typing import TYPE_CHECKING
 import discord
 
 import config
-from config import SettingsValidationError, get_settings_metadata
+from config import SettingsValidationError
 from utils import CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Mapping, Sequence
+    from collections.abc import Iterable, Sequence
     from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
 
-    from config import ConfigSettingMetadata
-    from utils import TeXBot, TeXBotApplicationContext
+    from utils import TeXBotApplicationContext
 
 
-__all__: "Sequence[str]" = ("ConfigCommandsCog", "reload_config")
+__all__: "Sequence[str]" = ("ConfigCommandsCog",)
 
 
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 MAXIMUM_LISTED_SETTINGS: "Final[int]" = 20
-
-
-async def reload_config(bot: "TeXBot") -> "tuple[AbstractSet[str], AbstractSet[str]]":
-    """
-    Reload the configuration file, applying every change that can be applied while running.
-
-    Returns the set of settings key paths that changed, along with the subset of those
-    that cannot take effect until TeX-Bot is restarted.
-
-    Raises `SettingsValidationError` (or one of the file-reading errors) without applying
-    anything, if the configuration file cannot be read or contains invalid settings.
-    """
-    CHANGED_SETTINGS: Final[AbstractSet[str]] = config.reload_settings()
-
-    if not CHANGED_SETTINGS:
-        return CHANGED_SETTINGS, frozenset()
-
-    # NOTE: Every cog is offered the change, so that a cog holding a copy of any setting
-    # (the interval of a task, for example) can re-apply it to itself.
-    cog: discord.Cog
-    for cog in bot.cogs.values():
-        if isinstance(cog, TeXBotBaseCog):
-            await cog.on_config_reloaded(CHANGED_SETTINGS)
-
-    SETTINGS_METADATA: Final[Mapping[str, ConfigSettingMetadata]] = get_settings_metadata()
-
-    RESTART_REQUIRED_SETTINGS: Final[AbstractSet[str]] = frozenset(
-        changed_setting
-        for changed_setting in CHANGED_SETTINGS
-        if changed_setting in SETTINGS_METADATA
-        and SETTINGS_METADATA[changed_setting].requires_restart
-    )
-
-    return CHANGED_SETTINGS, RESTART_REQUIRED_SETTINGS
 
 
 def _format_settings_list(settings_names: "Iterable[str]") -> str:
@@ -106,7 +71,7 @@ class ConfigCommandsCog(TeXBotBaseCog):
 
         configuration_error: Exception
         try:
-            changed_settings, restart_required_settings = await reload_config(self.bot)
+            changed_settings, restart_required_settings = config.reload_settings()
         except SettingsValidationError as configuration_error:
             logger.warning("Configuration reload rejected:\n%s", configuration_error)
             await ctx.respond(

@@ -9,6 +9,20 @@
 #
 # Durations are written largest-unit-first, in the format
 # `<days>d<hours>h<minutes>m<seconds>s`, so `1h30m` and `2d` are both valid.
+#
+# Run `/config reload` after editing this file to apply your changes.
+# Most settings take effect straight away, because they are read at the moment they
+# are used. A few cannot, and `/config reload` will tell you when a restart is needed:
+#
+#   * `discord:bot-token` & `discord:main-guild-id` are used to connect to Discord and
+#     to look up your guild's roles & channels while TeX-Bot is starting up.
+#   * The `enabled` & `interval` of any recurring task (the reminders below, and MSL
+#     auto-cookie-checking) are fixed when that task is created at start-up. Their
+#     `delay` settings are *not*, and do take effect immediately.
+#
+# A reload never applies a configuration that fails validation: if this file contains a
+# mistake, TeX-Bot keeps running on the last configuration that loaded successfully and
+# reports the line responsible.
 
 discord:
   # REQUIRED. From your bot's page within the Discord developer portal:

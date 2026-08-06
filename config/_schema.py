@@ -368,12 +368,12 @@ class AutoCookieCheckingSettings(_BaseSettingsSchema):  # type: ignore[explicit-
             "Whether the MSL authentication cookie should be automatically checked "
             "to determine whether it is still valid."
         ),
-        json_schema_extra={"requires_restart": False, "secret": False},
+        json_schema_extra={"requires_restart": True, "secret": False},
     )
     interval: TimeDelta = Field(
         default=datetime.timedelta(minutes=10),
         description="The interval of time between checking the MSL authentication cookie.",
-        json_schema_extra={"requires_restart": False, "secret": False},
+        json_schema_extra={"requires_restart": True, "secret": False},
     )
 
 
@@ -594,7 +594,7 @@ class SendIntroductionRemindersSettings(_BaseSettingsSchema):  # type: ignore[ex
             "that are not inducted.\n"
             "Is ignored unless `enabled` **=** `interval`."
         ),
-        json_schema_extra={"requires_restart": False, "secret": False},
+        json_schema_extra={"requires_restart": True, "secret": False},
     )
 
 
@@ -608,7 +608,7 @@ class ReminderSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
             "saying that they can get opt-in roles. "
             "(This message will only be sent once per Discord member.)"
         ),
-        json_schema_extra={"requires_restart": False, "secret": False},
+        json_schema_extra={"requires_restart": True, "secret": False},
     )
     delay: TimeDelta = Field(
         default=datetime.timedelta(hours=40),
@@ -626,7 +626,7 @@ class ReminderSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
             "that should be sent a get-roles reminder.\n"
             "Is ignored if `enabled` **=** `false`."
         ),
-        json_schema_extra={"requires_restart": False, "secret": False},
+        json_schema_extra={"requires_restart": True, "secret": False},
     )
 
 
