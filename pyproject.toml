@@ -24,8 +24,10 @@ main = [
     "mplcyberpunk>=0.7",
     "parsedatetime>=2.6",
     "py-cord>=2.6,<2.7",
+    "pydantic>=2.13",
     "python-dotenv>=1.0",
     "python-logging-discord-handler>=0.1",
+    "ruamel-yaml>=0.19",
     "strictyaml>=1.7.3",
     "typed_classproperties>=1.2",
     "validators>=0.34"
@@ -78,7 +80,7 @@ enable_error_code = [
 extra_checks = true
 mypy_path = "stubs"
 no_implicit_reexport = true
-plugins = ["mypy_django_plugin.main"]
+plugins = ["mypy_django_plugin.main", "pydantic.mypy"]
 strict_bytes = true
 strict_equality = true
 strict_equality_for_none = true
@@ -92,6 +94,13 @@ warn_incomplete_stub = true
 [[tool.mypy.overrides]]
 ignore_errors = true
 module = ["db.core.migrations.*"]
+
+# NOTE: Subclassing Pydantic's `BaseModel` is incompatible with `disallow_any_explicit`:
+# `BaseModel`'s own API surface (`__init__(**data: Any)`, `model_validate(obj: Any)`, etc.)
+# contains explicit `Any`, so every model declaration is flagged regardless of its fields.
+[[tool.mypy.overrides]]
+disable_error_code = ["explicit-any"]
+module = ["config._schema"]
 
 [tool.pymarkdown]
 extensions.front-matter.enabled = true
