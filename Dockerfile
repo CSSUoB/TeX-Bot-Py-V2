@@ -21,6 +21,13 @@ COPY utils/ /app/utils/
 COPY db/ /app/db/
 COPY cogs/ /app/cogs/
 
+# NOTE: The deployment configuration is kept in its own directory, separate from any
+# application code, so that it can be mounted as a directory. Mounting the directory
+# (rather than the configuration file individually) allows TeX-Bot to rewrite the file
+# in place when the `/config` command changes a setting: replacing an individually
+# mounted file is rejected, because a rename cannot replace a mount point.
+RUN mkdir --parents /app/data
+
 FROM python:3.13-slim-trixie
 
 RUN groupadd --system --gid 999 nonroot && useradd --system --gid 999 --uid 999 --create-home nonroot
@@ -30,7 +37,8 @@ LABEL org.opencontainers.image.licenses=Apache-2.0
 
 COPY --from=builder --chown=nonroot:nonroot /app /app
 
-ENV LANG=C.UTF-8 PATH="/app/.venv/bin:$PATH"
+ENV LANG=C.UTF-8 PATH="/app/.venv/bin:$PATH" \
+    TEX_BOT_CONFIG_PATH=/app/data/tex-bot-deployment.yaml
 
 WORKDIR /app
 

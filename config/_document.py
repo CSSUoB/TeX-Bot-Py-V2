@@ -10,6 +10,7 @@ the shape & meaning of the configuration is declared solely within `config._sche
 """
 
 import io
+import logging
 import os
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -20,6 +21,7 @@ from ruamel.yaml.error import YAMLError
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Sequence
+    from logging import Logger
     from typing import Final, Self
 
     from pydantic import ValidationError
@@ -33,6 +35,8 @@ __all__: "Sequence[str]" = (
     "get_settings_file_path",
 )
 
+
+logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 PROJECT_ROOT: "Final[Path]" = Path(__file__).parent.parent.resolve()
 
@@ -180,11 +184,17 @@ class SettingsDocument:
 
     def write(self) -> None:
         """
-        Persist this document to disk, atomically.
+        Persist this document to disk, atomically where the filesystem allows it.
 
-        The serialised document is written to a temporary file alongside the destination,
-        then moved into place, so that a failure partway through writing cannot leave a
-        truncated configuration file behind.
+        The serialised document is written to a temporary file alongside the destination
+        and then moved into place, so that a failure partway through writing cannot leave
+        a truncated configuration file behind.
+
+        Where that move is rejected, the document is written directly instead. This
+        happens when the configuration file is an individually mounted file within a
+        container, because a rename cannot replace a mount point. Writing directly is not
+        atomic, but it is the only option available in that case; mounting the directory
+        holding the configuration file, rather than the file itself, avoids it entirely.
         """
         NEW_FILE_CONTENTS: Final[str] = self.dump()
 
@@ -194,9 +204,23 @@ class SettingsDocument:
 
         try:
             temporary_file_path.write_text(NEW_FILE_CONTENTS, encoding="utf-8")
-            # NOTE: `os.replace()` is atomic where the source & destination are located upon
-            # the same filesystem, which writing the temporary file alongside guarantees.
-            os.replace(temporary_file_path, self._file_path)  # noqa: PTH105
+
+            replace_error: OSError
+            try:
+                # NOTE: `os.replace()` is atomic where the source & destination are located
+                # upon the same filesystem, which writing the temporary file alongside the
+                # destination guarantees.
+                os.replace(temporary_file_path, self._file_path)  # noqa: PTH105
+            except OSError as replace_error:
+                logger.debug(
+                    (
+                        "Could not atomically replace %s (%s); "
+                        "falling back to writing it in place."
+                    ),
+                    self._file_path,
+                    replace_error.strerror or replace_error,
+                )
+                self._file_path.write_text(NEW_FILE_CONTENTS, encoding="utf-8")
         finally:
             temporary_file_path.unlink(missing_ok=True)
 
