@@ -175,7 +175,7 @@ class AddUsersToThreadsAndChannelsCommandsCog(TeXBotBaseCog):
             thread.parent is None  # noqa: CAR180
             or thread.parent.category is None
             or "committee" not in thread.parent.category.name.lower()
-            or not settings["AUTO_ADD_COMMITTEE_TO_THREADS"]
+            or not settings.auto_add_committee_to_threads
         ):
             return
 

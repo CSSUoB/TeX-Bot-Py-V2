@@ -36,10 +36,14 @@ BASE_SU_PLATFORM_WEB_HEADERS: "Final[Mapping[str, str]]" = {
 }
 
 BASE_SU_PLATFORM_WEB_COOKIES: "Mapping[str, str]" = {
-    ".AspNet.SharedCookie": settings["SU_PLATFORM_ACCESS_COOKIE"],
+    ".AspNet.SharedCookie": (
+        settings.community_group.msl.auth_cookie.get_secret_value()
+        if settings.community_group.msl.auth_cookie is not None
+        else ""
+    ),
 }
 
-MEMBERS_LIST_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{settings['ORGANISATION_ID']}/?sort=groups"
+MEMBERS_LIST_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{settings.community_group.msl.organisation_id}/?sort=groups"
 
 _membership_list_cache: set[int] = set()
 

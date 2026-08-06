@@ -90,11 +90,10 @@ class TeXBot(discord.Bot):
         Raises `GuildDoesNotExist` if the given ID does not link to a valid Discord guild.
         """
         MAIN_GUILD_EXISTS: Final[bool] = bool(
-            self._main_guild
-            and self._check_guild_accessible(settings["_DISCORD_MAIN_GUILD_ID"])
+            self._main_guild and self._check_guild_accessible(settings.discord.main_guild_id)
         )
         if not MAIN_GUILD_EXISTS:
-            raise GuildDoesNotExistError(guild_id=settings["_DISCORD_MAIN_GUILD_ID"])
+            raise GuildDoesNotExistError(guild_id=settings.discord.main_guild_id)
 
         return self._main_guild  # type: ignore[return-value]
 
@@ -290,7 +289,7 @@ class TeXBot(discord.Bot):
         The group-full-name is either retrieved from the provided environment variable
         or automatically identified from the name of your group's Discord guild.
         """
-        return settings["_GROUP_FULL_NAME"] or (
+        return settings.community_group.full_name or (
             "The Computer Science Society"
             if (
                 "computer science society" in self.main_guild.name.lower()
@@ -309,7 +308,7 @@ class TeXBot(discord.Bot):
         """
         return (
             (
-                settings["_GROUP_SHORT_NAME"]
+                settings.community_group.short_name
                 or (
                     "CSS"
                     if (
@@ -497,7 +496,7 @@ class TeXBot(discord.Bot):
         If no DISCORD_LOG_CHANNEL_WEBHOOK_URL is specified,
         a ValueError exception will be raised.
         """
-        if not settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
+        if settings.logging.discord_channel is None:
             NO_LOG_CHANNEL_MESSAGE: Final[str] = (
                 "Cannot fetch log channel, "
                 "when no DISCORD_LOG_CHANNEL_WEBHOOK_URL has been set."
@@ -507,7 +506,7 @@ class TeXBot(discord.Bot):
         session: aiohttp.ClientSession
         async with aiohttp.ClientSession() as session:
             partial_webhook: Webhook = Webhook.from_url(
-                settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"], session=session
+                str(settings.logging.discord_channel.webhook_url), session=session
             )
 
             full_webhook: Webhook = await partial_webhook.fetch()

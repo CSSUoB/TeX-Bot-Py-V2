@@ -104,6 +104,13 @@ pids
 .dmypy.json
 dmypy.json
 
+# TeX-Bot deployment configuration (contains the bot token & other secrets)
+tex-bot-deployment.yaml
+tex-bot-deployment.*.yaml
+!tex-bot-deployment.example.yaml
+# NOTE: Written alongside the configuration file whilst it is being rewritten in place.
+tex-bot-deployment.yaml.*.tmp
+
 # Environments
 .env
 ._env

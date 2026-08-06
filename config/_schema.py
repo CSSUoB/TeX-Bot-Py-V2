@@ -437,8 +437,10 @@ class CommunityGroupSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
         ),
         json_schema_extra={"requires_restart": False, "secret": False},
     )
-    membership_dependent_roles: UniqueStrSequence | None = Field(
-        default=None,
+    membership_dependent_roles: UniqueStrSequence = Field(
+        # NOTE: Defaults to no roles, rather than being absent, so that consumers can
+        # always iterate it or test membership of it without a null check first.
+        default=(),
         description=(
             "The names of the roles that should only be held "
             "by members of your community group."
@@ -501,6 +503,16 @@ class StatsCommandSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
         ),
         json_schema_extra={"requires_restart": False, "secret": False},
     )
+
+    @property
+    def lookback_period(self) -> datetime.timedelta:
+        """
+        The period of time to look back over messages sent, to generate statistics data.
+
+        Held within the configuration file as a plain number of days, because that reads
+        far more naturally than a duration string for a value of this size.
+        """
+        return datetime.timedelta(days=self.lookback_days)
 
 
 class StrikeCommandSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]

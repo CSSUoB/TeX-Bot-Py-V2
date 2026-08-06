@@ -37,7 +37,7 @@ else:
     from config import settings
 
     # SECURITY WARNING: keep the secret key used in production secret!
-    SECRET_KEY = settings.DISCORD_BOT_TOKEN
+    SECRET_KEY = settings.discord.bot_token.get_secret_value()
 
 
 # Application Definition

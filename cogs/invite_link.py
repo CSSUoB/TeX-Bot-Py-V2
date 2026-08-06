@@ -23,7 +23,11 @@ class InviteLinkCommandCog(TeXBotBaseCog):
     )
     async def invite_link(self, ctx: "TeXBotApplicationContext") -> None:
         """Definition & callback response of the "invite_link" command."""
-        discord_invite_url: str | None = settings["CUSTOM_DISCORD_INVITE_URL"]
+        discord_invite_url: str | None = (
+            str(settings.community_group.links.custom_discord_invite_link)
+            if settings.community_group.links.custom_discord_invite_link
+            else None
+        )
 
         if not discord_invite_url:
             invite_destination_channel: discord.TextChannel | None = discord.utils.get(

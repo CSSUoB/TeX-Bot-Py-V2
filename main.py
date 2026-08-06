@@ -33,7 +33,7 @@ with SuppressTraceback():
 
 
 def _run_bot() -> "NoReturn":  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
-    bot.run(settings["DISCORD_BOT_TOKEN"])
+    bot.run(settings.discord.bot_token.get_secret_value())
 
     raise SystemExit(0 if bot.EXIT_WAS_DUE_TO_KILL_COMMAND else 1)
 

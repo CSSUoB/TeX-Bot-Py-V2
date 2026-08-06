@@ -24,12 +24,12 @@ async def get_channel_message_counts(channel: discord.TextChannel) -> "Mapping[s
     message_counts: dict[str, int] = {"Total": 0}
 
     role_name: str
-    for role_name in settings["STATISTICS_ROLES"]:
+    for role_name in settings.commands.stats.displayed_roles:
         if discord.utils.get(channel.guild.roles, name=role_name):
             message_counts[f"@{role_name}"] = 0
 
     message_history_period: AsyncIterable[discord.Message] = channel.history(
-        after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]
+        after=discord.utils.utcnow() - settings.commands.stats.lookback_period
     )
     message: discord.Message
     async for message in message_history_period:
@@ -76,7 +76,7 @@ async def get_server_message_counts(
     message_counts: dict[str, dict[str, int]] = {"roles": {"Total": 0}, "channels": {}}
 
     role_name: str
-    for role_name in settings["STATISTICS_ROLES"]:
+    for role_name in settings.commands.stats.displayed_roles:
         if discord.utils.get(guild.roles, name=role_name):
             message_counts["roles"][f"@{role_name}"] = 0
 
@@ -91,7 +91,7 @@ async def get_server_message_counts(
         message_counts["channels"][f"#{channel.name}"] = 0
 
         message_history_period: AsyncIterable[discord.Message] = channel.history(
-            after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]
+            after=discord.utils.utcnow() - settings.commands.stats.lookback_period
         )
         message: discord.Message
         async for message in message_history_period:

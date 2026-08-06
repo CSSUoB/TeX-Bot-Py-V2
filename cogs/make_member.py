@@ -30,16 +30,16 @@ logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: "Final[str]" = f"""{
     "Student"
     if (
-        settings["_GROUP_FULL_NAME"]
+        settings.community_group.full_name
         and (
-            "computer science society" in settings["_GROUP_FULL_NAME"].lower()  # noqa: CAR180
-            or "css" in settings["_GROUP_FULL_NAME"].lower()
-            or "uob" in settings["_GROUP_FULL_NAME"].lower()
-            or "university of birmingham" in settings["_GROUP_FULL_NAME"].lower()
-            or "uob" in settings["_GROUP_FULL_NAME"].lower()
+            "computer science society" in settings.community_group.full_name.lower()  # noqa: CAR180
+            or "css" in settings.community_group.full_name.lower()
+            or "uob" in settings.community_group.full_name.lower()
+            or "university of birmingham" in settings.community_group.full_name.lower()
+            or "uob" in settings.community_group.full_name.lower()
             or (
-                "bham" in settings["_GROUP_FULL_NAME"].lower()
-                and "uni" in settings["_GROUP_FULL_NAME"].lower()
+                "bham" in settings.community_group.full_name.lower()
+                and "uni" in settings.community_group.full_name.lower()
             )
         )
     )
@@ -67,16 +67,18 @@ class MakeMemberCommandCog(TeXBotBaseCog):
             f"""Your UoB Student {
                 "UoB Student"
                 if (
-                    settings["_GROUP_FULL_NAME"]
+                    settings.community_group.full_name
                     and (
-                        "computer science society" in settings["_GROUP_FULL_NAME"].lower()  # noqa: CAR180
-                        or "css" in settings["_GROUP_FULL_NAME"].lower()
-                        or "uob" in settings["_GROUP_FULL_NAME"].lower()
-                        or "university of birmingham" in settings["_GROUP_FULL_NAME"].lower()
-                        or "uob" in settings["_GROUP_FULL_NAME"].lower()
+                        "computer science society"
+                        in settings.community_group.full_name.lower()  # noqa: CAR180
+                        or "css" in settings.community_group.full_name.lower()
+                        or "uob" in settings.community_group.full_name.lower()
+                        or "university of birmingham"
+                        in settings.community_group.full_name.lower()
+                        or "uob" in settings.community_group.full_name.lower()
                         or (
-                            "bham" in settings["_GROUP_FULL_NAME"].lower()
-                            and "uni" in settings["_GROUP_FULL_NAME"].lower()
+                            "bham" in settings.community_group.full_name.lower()
+                            and "uni" in settings.community_group.full_name.lower()
                         )
                     )
                 )

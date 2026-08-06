@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from config import settings
+from config import messages, settings
 from db.core.models import IntroductionReminderOptOutMember
 from exceptions import (
     ApplicantRoleDoesNotExistError,
@@ -112,11 +112,11 @@ class InductSendMessageCog(TeXBotBaseCog):
             messages_to_send.append(
                 f"You can also get yourself an annual membership "
                 f"to {self.bot.group_full_name} for only £5! "
-                f"Just head to {settings['PURCHASE_MEMBERSHIP_URL']}. "
+                f"Just head to {settings.community_group.links.purchase_membership}. "
                 "You'll get awesome perks like a free T-shirt:shirt:, "
                 "access to member only events:calendar_spiral: and a cool green name on "
                 f"the {self.bot.group_short_name} Discord server:green_square:! "
-                f"Checkout all the perks at {settings['MEMBERSHIP_PERKS_URL']}"
+                f"Checkout all the perks at {settings.community_group.links.membership_perks}"
             )
 
         try:
@@ -141,7 +141,7 @@ class BaseInductCog(TeXBotBaseCog):
         self, induction_member: discord.User | discord.Member | None = None
     ) -> str:
         """Get & format a random welcome message."""
-        random_welcome_message: str = random.choice(tuple(settings["WELCOME_MESSAGES"]))  # noqa: S311
+        random_welcome_message: str = random.choice(tuple(messages.welcome_messages))  # noqa: S311
 
         if "<User>" in random_welcome_message:
             if not induction_member:
@@ -162,11 +162,12 @@ class BaseInductCog(TeXBotBaseCog):
                 )
 
         if "<Purchase_Membership_URL>" in random_welcome_message:
-            if not settings["PURCHASE_MEMBERSHIP_URL"]:
+            if not settings.community_group.links.purchase_membership:
                 return await self.get_random_welcome_message(induction_member)
 
             random_welcome_message = random_welcome_message.replace(
-                "<Purchase_Membership_URL>", settings["PURCHASE_MEMBERSHIP_URL"]
+                "<Purchase_Membership_URL>",
+                str(settings.community_group.links.purchase_membership),
             )
 
         if "<Group_Name>" in random_welcome_message:

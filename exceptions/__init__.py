@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from .committee_actions import InvalidActionDescriptionError, InvalidActionTargetError
 from .config_changes import (
     ChangingSettingWithRequiredSiblingError,
+    ImproperlyConfiguredError,
     RestartRequiredDueToConfigChange,
 )
 from .does_not_exist import (
