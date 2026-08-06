@@ -8,7 +8,6 @@ neither validated by the settings schema nor editable through the `/config` comm
 
 import json
 import os
-from collections.abc import Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -83,14 +82,15 @@ def _get_message_set(raw_messages: "Mapping[str, object]", key: str) -> frozense
 
     value: object = raw_messages[key]
 
-    KEY_IS_VALID: Final[bool] = bool(
-        isinstance(value, Iterable) and not isinstance(value, (str, bytes)) and value
-    )
+    # NOTE: Requiring a list (rather than merely something iterable) also rejects a JSON
+    # object, which would otherwise be accepted & silently iterated as its own keys,
+    # and a bare string, which would be split into one message per character.
+    KEY_IS_VALID: Final[bool] = isinstance(value, list) and bool(value)
     if not KEY_IS_VALID:
         raise MessagesJSONFileValueError(dict_key=key, invalid_value=value)
 
     if TYPE_CHECKING:
-        assert isinstance(value, Iterable)
+        assert isinstance(value, list)
 
     return frozenset(str(single_message) for single_message in value)
 

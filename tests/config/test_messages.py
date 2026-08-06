@@ -148,6 +148,33 @@ class TestMessageSetValidation:
         with pytest.raises(MessagesJSONFileValueError):
             MessagesAccessor().reload()
 
+    @staticmethod
+    def test_an_object_is_not_accepted_as_a_set_of_messages(
+        write_messages: "MessagesWriter",
+    ) -> None:
+        """
+        Test that a JSON object is not treated as a set of messages.
+
+        An object is iterable too, so without an explicit check it would be accepted and
+        silently reduced to its own keys, discarding every message it holds.
+        """
+        write_messages({**VALID_MESSAGES, "welcome_messages": {"Welcome!": "Hello there!"}})
+
+        with pytest.raises(MessagesJSONFileValueError):
+            MessagesAccessor().reload()
+
+    @staticmethod
+    def test_messages_that_are_not_strings_are_read_as_text(
+        write_messages: "MessagesWriter",
+    ) -> None:
+        """Test that a message written as a number is read as the text of that number."""
+        write_messages({**VALID_MESSAGES, "roles_messages": [42, "Get your roles here."]})
+        messages: MessagesAccessor = MessagesAccessor()
+
+        messages.reload()
+
+        assert messages.roles_messages == frozenset({"42", "Get your roles here."})
+
 
 class TestFailedReloads:
     """Test case for what happens when messages cannot be reloaded."""

@@ -96,7 +96,16 @@ def _parse_send_introduction_reminders_flag(value: object) -> object:
         return "once" if value else False
 
     if not isinstance(value, str):
-        return value
+        # NOTE: Pydantic's `Literal` would otherwise accept `0` as `False` (though never
+        # `1` as `once`), so `enabled: 0` would silently disable introduction reminders
+        # while the `enabled: 1` its author would pair it with was rejected.
+        NON_STRING_FLAG_MESSAGE: str = (
+            "Value should be 'once', 'interval', or a boolean ('true'/'false')"
+        )
+        # NOTE: Deliberately a `ValueError` despite describing a wrong type: Pydantic
+        # converts only `ValueError` & `AssertionError` into validation errors, so a
+        # `TypeError` would propagate uncaught & abandon the whole reload.
+        raise ValueError(NON_STRING_FLAG_MESSAGE)  # noqa: TRY004
 
     NORMALISED_VALUE: str = value.lower().strip()
 
@@ -132,7 +141,8 @@ def _parse_time_delta(value: object) -> object:
 
     NOTE: A further deviation from that previous implementation:
     an empty string is rejected rather than silently parsed as a zero-length duration.
-    A zero-length interval would cause any task looping upon it to spin without pausing.
+    Durations that may not be zero-length are declared as `PositiveTimeDelta`;
+    this parser itself accepts a zero-length duration written explicitly (`0s`).
     """
     if isinstance(value, datetime.timedelta):
         return value
@@ -172,6 +182,22 @@ def _parse_time_delta(value: object) -> object:
     )
 
 
+def _ensure_positive_time_delta(value: datetime.timedelta) -> datetime.timedelta:
+    """
+    Ensure the given duration is longer than zero.
+
+    A zero-length interval would cause the recurring task looping upon it to run
+    continuously, without ever pausing between one execution & the next.
+    """
+    if value <= datetime.timedelta(0):
+        NON_POSITIVE_TIME_DELTA_MESSAGE: str = (
+            "Value should be a delay/interval string describing a duration longer than zero"
+        )
+        raise ValueError(NON_POSITIVE_TIME_DELTA_MESSAGE)
+
+    return value
+
+
 def _ensure_discord_webhook_url(value: HttpUrl) -> HttpUrl:
     """Ensure the given URL refers to a Discord webhook."""
     if not str(value).startswith("https://discord.com/api/webhooks/"):
@@ -209,6 +235,11 @@ def _ensure_unique(value: tuple[str, ...]) -> tuple[str, ...]:
 
 
 type TimeDelta = Annotated[datetime.timedelta, BeforeValidator(_parse_time_delta)]
+type PositiveTimeDelta = Annotated[
+    datetime.timedelta,
+    BeforeValidator(_parse_time_delta),
+    AfterValidator(_ensure_positive_time_delta),
+]
 type UniqueStrSequence = Annotated[tuple[str, ...], AfterValidator(_ensure_unique)]
 type DiscordWebhookURL = Annotated[HttpUrl, AfterValidator(_ensure_discord_webhook_url)]
 type DiscordSnowflake = Annotated[int, Field(ge=10**16, lt=10**20)]
@@ -384,7 +415,7 @@ class AutoCookieCheckingSettings(_BaseSettingsSchema):  # type: ignore[explicit-
         ),
         json_schema_extra={"requires_restart": True, "secret": False},
     )
-    interval: TimeDelta = Field(
+    interval: PositiveTimeDelta = Field(
         default=datetime.timedelta(minutes=10),
         description="The interval of time between checking the MSL authentication cookie.",
         json_schema_extra={"requires_restart": True, "secret": False},
@@ -601,7 +632,7 @@ class SendIntroductionRemindersSettings(_BaseSettingsSchema):  # type: ignore[ex
         ),
         json_schema_extra={"requires_restart": False, "secret": False},
     )
-    interval: TimeDelta = Field(
+    interval: PositiveTimeDelta = Field(
         default=datetime.timedelta(hours=6),
         description=(
             "The interval of time between sending out reminders to Discord members "
@@ -633,7 +664,7 @@ class ReminderSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
         ),
         json_schema_extra={"requires_restart": False, "secret": False},
     )
-    interval: TimeDelta = Field(
+    interval: PositiveTimeDelta = Field(
         default=datetime.timedelta(hours=6),
         description=(
             "The interval of time between checking for Discord members "

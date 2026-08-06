@@ -99,6 +99,18 @@ class TestConsoleLogging:
         assert len(_handlers_of_type(LOGGER_NAME, logging.StreamHandler)) == 1
 
     @staticmethod
+    def test_console_logs_are_not_passed_to_the_root_logger() -> None:
+        """
+        Test that TeX-Bot's own logs stop at its own logger.
+
+        Propagating them would emit each record a second time through whichever handler
+        the root logger happens to hold.
+        """
+        apply_logging_settings(_logging_settings())
+
+        assert logging.getLogger(LOGGER_NAME).propagate is False
+
+    @staticmethod
     def test_applying_settings_repeatedly_does_not_accumulate_handlers() -> None:
         """
         Test that applying the logging configuration many times attaches one handler.
@@ -184,6 +196,53 @@ class TestDiscordAPILogging:
 
         assert len(FILE_HANDLERS) == 1
         assert logging.getLogger(DISCORD_LOGGER_NAME).level == logging.DEBUG
+
+    @staticmethod
+    def test_discord_api_logs_are_captured_only_while_they_are_recorded(
+        tmp_path: "Path",
+    ) -> None:
+        """
+        Test that Discord API logs are released back once they stop being recorded.
+
+        While they are being recorded they are held at their own logger, so that they do
+        not also appear amongst TeX-Bot's own console output.
+        """
+        apply_logging_settings(
+            _logging_settings(
+                **{
+                    "discord-api": {
+                        "enabled": True,
+                        "file-name": str(tmp_path / "discord.log"),
+                    }
+                }
+            )
+        )
+        assert logging.getLogger(DISCORD_LOGGER_NAME).propagate is False
+
+        apply_logging_settings(_logging_settings(**{"discord-api": {"enabled": False}}))
+
+        assert logging.getLogger(DISCORD_LOGGER_NAME).propagate is True
+
+    @staticmethod
+    def test_the_log_file_is_released_when_recording_stops(tmp_path: "Path") -> None:
+        """
+        Test that the Discord API log file is closed once it stops being written to.
+
+        Leaving the handler's file open would hold a lock upon it for as long as TeX-Bot
+        continued to run, so each reload would strand another one.
+        """
+        LOG_FILE_PATH: Final[Path] = tmp_path / "discord.log"
+
+        apply_logging_settings(
+            _logging_settings(
+                **{"discord-api": {"enabled": True, "file-name": str(LOG_FILE_PATH)}}
+            )
+        )
+        apply_logging_settings(_logging_settings(**{"discord-api": {"enabled": False}}))
+
+        LOG_FILE_PATH.unlink()
+
+        assert not LOG_FILE_PATH.exists()
 
     @staticmethod
     def test_disabling_afterwards_detaches_the_handler(tmp_path: "Path") -> None:

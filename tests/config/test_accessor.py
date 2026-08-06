@@ -151,6 +151,59 @@ class TestChangeDetection:
         assert "logging:discord-channel:webhook-url" in CHANGED_SETTINGS
         assert settings.logging.discord_channel is not None
 
+    @staticmethod
+    def test_a_disappearing_section_reports_the_settings_it_removed(
+        write_config: "ConfigWriter",
+    ) -> None:
+        """
+        Test that removing an optional section reports the settings it took with it.
+
+        A section that is present is expanded into the settings within it, whereas one
+        that is absent collapses to a single empty value under its own name. Comparing
+        one configuration against the other must therefore distinguish a key that is
+        missing from a key that is present but holds nothing, or removing the section
+        would appear to change nothing at all.
+        """
+        settings: SettingsAccessor = SettingsAccessor()
+        settings.reload(
+            write_config(
+                f"{MINIMAL_CONFIG}"
+                f"logging:\n"
+                f"  discord-channel:\n"
+                f"    webhook-url: {VALID_WEBHOOK_URL}\n"
+            )
+        )
+
+        CHANGED_SETTINGS: Final[AbstractSet[str]] = settings.reload(
+            write_config(MINIMAL_CONFIG)
+        )
+
+        assert "logging:discord-channel:webhook-url" in CHANGED_SETTINGS
+        assert "logging:discord-channel" in CHANGED_SETTINGS
+        assert settings.logging.discord_channel is None
+
+    @staticmethod
+    def test_a_changed_secret_is_detected(write_config: "ConfigWriter") -> None:
+        """
+        Test that replacing a secret value is reported as a change.
+
+        A secret is held as an opaque object rather than as plain text, so a comparison
+        that fell back to identity would report every token as unchanged & leave the
+        committee member who rotated it with no warning that a restart is needed.
+        """
+        settings: SettingsAccessor = SettingsAccessor()
+        settings.reload(write_config(MINIMAL_CONFIG))
+
+        assert settings.reload(write_config(MINIMAL_CONFIG)) == set()
+
+        CHANGED_SETTINGS: Final[AbstractSet[str]] = settings.reload(
+            write_config(
+                MINIMAL_CONFIG.replace(VALID_BOT_TOKEN, f"{VALID_BOT_TOKEN[:-4]}wxyz")
+            )
+        )
+
+        assert {"discord:bot-token"} == CHANGED_SETTINGS
+
 
 class TestFailedReloads:
     """Test case for what happens when a configuration cannot be loaded."""

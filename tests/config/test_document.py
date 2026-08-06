@@ -14,6 +14,7 @@ from config import (
     get_settings_file_path,
 )
 from config._document import (
+    PROJECT_ROOT,
     SETTINGS_FILE_PATH_ENVIRONMENT_VARIABLE_NAME,
 )
 from config._schema import SettingsSchema
@@ -117,6 +118,32 @@ class TestRoundTripping:
         assert "# A comment about the bot token." in NEW_FILE_CONTENTS
         assert "# A trailing comment." in NEW_FILE_CONTENTS
         assert "# Another trailing comment." in NEW_FILE_CONTENTS
+
+    @staticmethod
+    def test_a_long_value_is_not_re_wrapped(write_config: "ConfigWriter") -> None:
+        """
+        Test that writing a file back does not fold its long values onto extra lines.
+
+        A YAML writer wraps at its configured line width by default, which would rewrite
+        untouched sections of the file & bury the one setting that actually changed
+        within a diff full of spurious changes.
+        """
+        LONG_VALUE: Final[str] = " ".join(["a very long channel name"] * 12)
+
+        config_file_path: Path = write_config(
+            f"{MINIMAL_CONFIG}commands:\n"
+            f"  strike:\n"
+            f"    reported-message-destination-channel: {LONG_VALUE}\n"
+        )
+        document: SettingsDocument = SettingsDocument.load(config_file_path)
+
+        document.raw["community-group"]["full-name"] = "CompSoc"
+        document.write()
+
+        assert (
+            f"reported-message-destination-channel: {LONG_VALUE}"
+            in config_file_path.read_text(encoding="utf-8")
+        )
 
     @staticmethod
     def test_written_file_can_be_loaded_again(write_config: "ConfigWriter") -> None:
@@ -311,6 +338,51 @@ class TestErrorReporting:
 
         assert document.line_number_of(["not-a-section", "not-a-setting"]) is None
 
+    @staticmethod
+    def test_an_error_within_a_list_is_reported_against_the_list(
+        write_config: "ConfigWriter",
+    ) -> None:
+        """
+        Test that a rejected entry of a list is reported against the list holding it.
+
+        Pydantic identifies such an entry by its position, so the reported key path ends
+        with a number rather than a name. Individual entries are not resolved to their
+        own lines, so the line of the list they belong to is reported instead.
+        """
+        document: SettingsDocument = SettingsDocument.load(
+            write_config(
+                f"{MINIMAL_CONFIG}"
+                f"commands:\n"
+                f"  stats:\n"
+                f"    displayed-roles:\n"
+                f"      - Committee\n"
+                f"      - [a nested list]\n"
+            )
+        )
+
+        with pytest.raises(ValidationError) as validation_error:
+            SettingsSchema.model_validate(document.raw)
+
+        FORMATTED_ERROR: Final[str] = document.format_validation_error(validation_error.value)
+
+        assert "commands:stats:displayed-roles:1" in FORMATTED_ERROR
+        assert "tex-bot-deployment.yaml:10" in FORMATTED_ERROR
+
+    @staticmethod
+    def test_an_error_with_no_location_is_reported_against_the_whole_file(
+        config_file: "Path",
+    ) -> None:
+        """Test that a failure belonging to no particular setting still names the file."""
+        document: SettingsDocument = SettingsDocument.load(config_file)
+
+        with pytest.raises(ValidationError) as validation_error:
+            SettingsSchema.model_validate("not a mapping of settings at all")
+
+        FORMATTED_ERROR: Final[str] = document.format_validation_error(validation_error.value)
+
+        assert "(whole file)" in FORMATTED_ERROR
+        assert "tex-bot-deployment.yaml" in FORMATTED_ERROR
+
 
 class TestFileDiscovery:
     """Test case for locating the configuration file."""
@@ -359,6 +431,61 @@ class TestFileDiscovery:
         DEFAULT_CONFIG_FILE_PATH.write_text(MINIMAL_CONFIG, encoding="utf-8")
 
         assert get_settings_file_path() == DEFAULT_CONFIG_FILE_PATH.resolve()
+
+
+class TestExampleConfiguration:
+    """Test case for the example configuration file shipped alongside TeX-Bot."""
+
+    @staticmethod
+    def _example_config_with_required_settings_filled_in() -> str:
+        """Return the example configuration, with its two required values supplied."""
+        RAW_EXAMPLE_CONFIG: Final[str] = (
+            PROJECT_ROOT / "tex-bot-deployment.example.yaml"
+        ).read_text(encoding="utf-8")
+
+        return RAW_EXAMPLE_CONFIG.replace(
+            'bot-token: ""', f"bot-token: {VALID_BOT_TOKEN}"
+        ).replace("main-guild-id: 0", "main-guild-id: 1234567890123456789")
+
+    @staticmethod
+    def test_the_example_configuration_is_valid(write_config: "ConfigWriter") -> None:
+        """
+        Test that the shipped example validates once its required values are filled in.
+
+        Somebody setting TeX-Bot up copies this file, supplies their token & guild ID,
+        and starts it. Every other setting within it must therefore already be valid as
+        written, including each one that is only there to show what it would look like.
+        """
+        document: SettingsDocument = SettingsDocument.load(
+            write_config(
+                TestExampleConfiguration._example_config_with_required_settings_filled_in()
+            )
+        )
+
+        SettingsSchema.model_validate(document.raw)
+
+    @staticmethod
+    def test_the_example_configuration_leaves_optional_settings_absent(
+        write_config: "ConfigWriter",
+    ) -> None:
+        """
+        Test that the example supplies no placeholder in place of an optional setting.
+
+        A setting that is present must hold a valid value, so a placeholder such as `""`
+        is rejected rather than treated as the setting having been left unset.
+        """
+        settings: SettingsSchema = SettingsSchema.model_validate(
+            SettingsDocument.load(
+                write_config(
+                    TestExampleConfiguration._example_config_with_required_settings_filled_in()
+                )
+            ).raw
+        )
+
+        assert settings.community_group.full_name is None
+        assert settings.community_group.links.purchase_membership is None
+        assert settings.community_group.msl.organisation_id is None
+        assert settings.community_group.msl.auth_cookie is None
 
 
 def test_temporary_file_is_written_alongside_its_destination(config_file: "Path") -> None:
