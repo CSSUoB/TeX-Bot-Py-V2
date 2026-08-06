@@ -25,7 +25,7 @@ jobs:
                 permission-pull-requests: write
                 private-key: ${{secrets.PR_AUTO_UPDATE_PRIVATE_KEY}}  # zizmor: ignore[secrets-outside-env]
 
-            - uses: CSSUoB/pr-auto-updater@v2.3.1
+            - uses: CSSUoB/pr-auto-updater@v3.0.0
               env:  # yamllint disable-line rule:key-ordering
                 GITHUB_TOKEN: ${{steps.generate-token.outputs.token}}
                 MERGE_CONFLICT_ACTION: label
