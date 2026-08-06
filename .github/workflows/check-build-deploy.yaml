@@ -229,14 +229,12 @@ jobs:
               with:
                 report_type: test_results
                 use_oidc: true
-                verbose: true
 
             - if: ${{!cancelled()}}
               name: Upload coverage report to Codecov
               uses: codecov/codecov-action@v7
               with:
                 use_oidc: true
-                verbose: true
 
     ruff-lint:  # yamllint disable-line rule:key-ordering
         env:
