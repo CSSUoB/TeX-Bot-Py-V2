@@ -213,6 +213,57 @@ class TestZeroLengthDurations:
 
         assert settings.reminders.send_get_roles_reminders.delay == datetime.timedelta(0)
 
+    @staticmethod
+    def test_a_zero_length_strike_timeout_is_rejected() -> None:
+        """
+        Test that timing a user out for no time at all is rejected.
+
+        The duration is handed straight to Discord when the first strike is applied, so
+        a zero-length one would silently apply no moderation action whatsoever.
+        """
+        with pytest.raises(ValidationError, match="longer than zero"):
+            SettingsSchema.model_validate(
+                _config(commands={"strike": {"timeout-duration": "0s"}})
+            )
+
+
+class TestDiscordTimeoutLimit:
+    """Test case for the longest moderation timeout that Discord will apply."""
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        ("raw_duration", "expected_duration"),
+        (
+            ("1s", datetime.timedelta(seconds=1)),
+            ("28d", datetime.timedelta(days=28)),
+            ("27d23h59m59s", datetime.timedelta(days=27, hours=23, minutes=59, seconds=59)),
+        ),
+    )
+    def test_a_duration_within_the_limit_is_accepted(
+        raw_duration: str, expected_duration: datetime.timedelta
+    ) -> None:
+        """Test that a timeout of 28 days or shorter is accepted, the limit included."""
+        settings: SettingsSchema = SettingsSchema.model_validate(
+            _config(commands={"strike": {"timeout-duration": raw_duration}})
+        )
+
+        assert settings.commands.strike.timeout_duration == expected_duration
+
+    @staticmethod
+    @pytest.mark.parametrize("raw_duration", ("28d0h0m1s", "29d", "365d"))
+    def test_a_duration_beyond_the_limit_is_rejected(raw_duration: str) -> None:
+        """
+        Test that a timeout longer than 28 days is rejected.
+
+        Discord refuses to disable a member's communication more than 28 days into the
+        future, & Pycord sends the request without checking, so a duration caught here
+        would otherwise fail only once a committee-member tried to apply a strike.
+        """
+        with pytest.raises(ValidationError, match="no longer than 28 days"):
+            SettingsSchema.model_validate(
+                _config(commands={"strike": {"timeout-duration": raw_duration}})
+            )
+
 
 class TestValueConstraints:
     """Test case for the constraints applied to individual settings values."""

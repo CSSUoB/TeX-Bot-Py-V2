@@ -10,7 +10,9 @@
 # `<days>d<hours>h<minutes>m<seconds>s`, so `1h30m` and `2d` are both valid.
 # Every part must carry its unit, so a bare `24` is rejected rather than being read as
 # 24 seconds. The `interval` of a recurring task must be longer than zero, because a
-# task set to repeat every `0s` would run continuously without ever pausing.
+# task set to repeat every `0s` would run continuously without ever pausing; the same
+# applies to the strike `timeout-duration`, because a `0s` timeout would apply no
+# moderation action at all.
 #
 # Run `/config reload` after editing this file to apply your changes.
 #
@@ -99,6 +101,8 @@ commands:
             - Guest
     strike:
         performed-manually-warning-location: DM
+        # How long a first strike times a member out for.
+        # Discord will not apply a timeout longer than 28 days.
         timeout-duration: 1d
         reported-message-destination-channel: discord
 

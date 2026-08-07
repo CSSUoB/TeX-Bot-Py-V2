@@ -131,6 +131,11 @@ _TIME_DELTA_MATCHER: "re.Pattern[str]" = re.compile(
     r"(?:(?P<seconds>(?:\d*\.)?\d+)s)?\Z"
 )
 
+# NOTE: Discord will not disable a member's communication more than 28 days into the
+# future, & rejects any attempt to do so.
+# See <https://docs.discord.com/developers/resources/guild#guild-member-object>.
+MAXIMUM_DISCORD_TIMEOUT_DURATION: "Final[datetime.timedelta]" = datetime.timedelta(days=28)
+
 
 def _parse_time_delta(value: object) -> object:
     """
@@ -144,7 +149,8 @@ def _parse_time_delta(value: object) -> object:
 
     NOTE: A further deviation from that previous implementation:
     an empty string is rejected rather than silently parsed as a zero-length duration.
-    Durations that may not be zero-length are declared as `PositiveTimeDelta`;
+    Durations that may not be zero-length are declared as `PositiveTimeDelta`
+    (or `DiscordTimeoutDuration`, which is additionally bounded above);
     this parser itself accepts a zero-length duration written explicitly (`0s`).
     """
     if isinstance(value, datetime.timedelta):
@@ -190,13 +196,35 @@ def _ensure_positive_time_delta(value: datetime.timedelta) -> datetime.timedelta
     Ensure the given duration is longer than zero.
 
     A zero-length interval would cause the recurring task looping upon it to run
-    continuously, without ever pausing between one execution & the next.
+    continuously, without ever pausing between one execution & the next. A zero-length
+    moderation timeout would expire the instant it was applied, silently applying no
+    moderation action at all.
     """
     if value <= datetime.timedelta(0):
         NON_POSITIVE_TIME_DELTA_MESSAGE: str = (
             "Value should be a delay/interval string describing a duration longer than zero"
         )
         raise ValueError(NON_POSITIVE_TIME_DELTA_MESSAGE)
+
+    return value
+
+
+def _ensure_within_discord_timeout_limit(
+    value: datetime.timedelta,
+) -> datetime.timedelta:
+    """
+    Ensure the given duration is one that Discord will actually apply as a timeout.
+
+    Pycord performs no check of its own before sending the request, so an over-long
+    duration would otherwise be caught only by Discord itself, surfacing as an opaque
+    HTTP error at the moment a committee-member tried to apply a strike.
+    """
+    if value > MAXIMUM_DISCORD_TIMEOUT_DURATION:
+        EXCESSIVE_TIMEOUT_DURATION_MESSAGE: str = (
+            "Value should be a duration string describing a duration "
+            "no longer than 28 days (the longest timeout Discord will apply)"
+        )
+        raise ValueError(EXCESSIVE_TIMEOUT_DURATION_MESSAGE)
 
     return value
 
@@ -242,6 +270,12 @@ type PositiveTimeDelta = Annotated[
     datetime.timedelta,
     BeforeValidator(_parse_time_delta),
     AfterValidator(_ensure_positive_time_delta),
+]
+type DiscordTimeoutDuration = Annotated[
+    datetime.timedelta,
+    BeforeValidator(_parse_time_delta),
+    AfterValidator(_ensure_positive_time_delta),
+    AfterValidator(_ensure_within_discord_timeout_limit),
 ]
 type UniqueStrSequence = Annotated[tuple[str, ...], AfterValidator(_ensure_unique)]
 type DiscordWebhookURL = Annotated[HttpUrl, AfterValidator(_ensure_discord_webhook_url)]
@@ -589,10 +623,11 @@ class StrikeCommandSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
         ),
         json_schema_extra={"requires_restart": False, "secret": False},
     )
-    timeout_duration: TimeDelta = Field(
+    timeout_duration: DiscordTimeoutDuration = Field(
         default=datetime.timedelta(hours=24),
         description=(
-            "The amount of time to timeout a user for, when using the `/strike` command."
+            "The amount of time to timeout a user for, when using the `/strike` command.\n"
+            "Discord will not apply a timeout longer than 28 days."
         ),
         json_schema_extra={"requires_restart": False, "secret": False},
     )

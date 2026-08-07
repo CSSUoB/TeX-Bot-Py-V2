@@ -78,7 +78,7 @@ async def perform_moderation_action(
 
     if strikes == 1:
         await strike_user.timeout_for(
-            datetime.timedelta(hours=24), reason=MODERATION_ACTION_REASON
+            settings.commands.strike.timeout_duration, reason=MODERATION_ACTION_REASON
         )
 
     elif strikes == 2:
