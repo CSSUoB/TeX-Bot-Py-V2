@@ -25,7 +25,7 @@ from pydantic import (
     ConfigDict,
     Field,
     HttpUrl,
-    SecretStr,  # noqa: TC002  # NOTE: Pydantic resolves field annotations at runtime
+    SecretStr,  # NOTE: Pydantic resolves field annotations at runtime  # noqa: TC002
 )
 
 if TYPE_CHECKING:

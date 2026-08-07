@@ -1,7 +1,7 @@
 """Test suite for the "/config" command group."""
 
 import asyncio
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, cast, override
 
 import pytest
 
@@ -27,6 +27,7 @@ __all__: "Sequence[str]" = ()
 class _RecordingApplicationContext:
     """A stand-in for the Discord context that a slash command is invoked with."""
 
+    @override
     def __init__(self) -> None:
         """Initialise a context that has been responded to with nothing so far."""
         self.responses: list[str] = []

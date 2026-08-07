@@ -14,7 +14,7 @@ import logging
 import os
 import stat
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
@@ -102,6 +102,7 @@ class SettingsDocument:
     formatting of the file that a human wrote.
     """
 
+    @override
     def __init__(self, file_path: Path, raw: "CommentedMap") -> None:
         """Initialise a configuration document already parsed from the given file path."""
         self._file_path: Path = file_path

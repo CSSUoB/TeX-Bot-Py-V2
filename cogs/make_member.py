@@ -69,8 +69,8 @@ class MakeMemberCommandCog(TeXBotBaseCog):
                 if (
                     settings.community_group.full_name
                     and (
-                        "computer science society"
-                        in settings.community_group.full_name.lower()  # noqa: CAR180
+                        "computer science society"  # noqa: CAR180
+                        in settings.community_group.full_name.lower()
                         or "css" in settings.community_group.full_name.lower()
                         or "uob" in settings.community_group.full_name.lower()
                         or "university of birmingham"

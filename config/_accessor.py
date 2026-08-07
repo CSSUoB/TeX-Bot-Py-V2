@@ -7,8 +7,7 @@ rather than mutating settings individually, no reader can ever observe a partial
 applied configuration, even if reloading fails partway through.
 """
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 from pydantic import BaseModel, ValidationError
 
@@ -42,17 +41,29 @@ if TYPE_CHECKING:
 __all__: "Sequence[str]" = ("SettingsAccessor",)
 
 
-@dataclass(frozen=True, slots=True)
 class _LoadedSettings:
     """
     A validated configuration snapshot, paired with the document it was parsed from.
 
-    Holding both within a single frozen object allows a reload to replace them together,
+    Holding both within a single immutable object allows a reload to replace them together,
     by rebinding one reference, so the two can never disagree with one another.
     """
 
-    snapshot: SettingsSchema
-    document: SettingsDocument
+    @override
+    def __init__(self, snapshot: SettingsSchema, document: SettingsDocument) -> None:
+        """Initialise a snapshot paired with the document it was parsed from."""
+        self._snapshot: SettingsSchema = snapshot
+        self._document: SettingsDocument = document
+
+    @property
+    def snapshot(self) -> SettingsSchema:
+        """The validated settings parsed from the document."""
+        return self._snapshot
+
+    @property
+    def document(self) -> SettingsDocument:
+        """The comment-preserving document that the snapshot was parsed from."""
+        return self._document
 
 
 _MISSING: "Final[object]" = object()
@@ -102,6 +113,7 @@ class SettingsAccessor:
     (for example: `settings.discord.bot_token`).
     """
 
+    @override
     def __init__(self) -> None:
         """Initialise an accessor holding no configuration until it is first loaded."""
         self._loaded: _LoadedSettings | None = None

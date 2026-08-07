@@ -22,9 +22,12 @@ if TYPE_CHECKING:
 __all__: "Sequence[str]" = ("DISCORD_LOGGER_NAME", "LOGGER_NAME", "apply_logging_settings")
 
 
-LOGGER_NAME: "Final[str]" = "TeX-Bot"
+# NOTE: These hold the *names* of the loggers to retrieve, rather than the loggers
+# themselves, so `Final[str]` is the correct annotation despite what CAR201 infers
+# from the variable names.
+LOGGER_NAME: "Final[str]" = "TeX-Bot"  # noqa: CAR201
 
-DISCORD_LOGGER_NAME: "Final[str]" = "discord"
+DISCORD_LOGGER_NAME: "Final[str]" = "discord"  # noqa: CAR201
 
 DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME: "Final[str]" = "TeX-Bot"
 

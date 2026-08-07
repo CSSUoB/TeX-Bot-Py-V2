@@ -167,7 +167,7 @@ class TestWriting:
     """Test case for persisting the configuration file to disk."""
 
     @staticmethod
-    def _rejecting_replace(*_args: object, **_kwargs: object) -> None:
+    def _rejecting_replace(*_args: object, **_kwargs: object) -> None:  # noqa: CAR150
         """Stand in for a rename that the filesystem refuses."""
         raise OSError(16, "Device or resource busy")
 

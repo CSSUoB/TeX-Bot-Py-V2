@@ -32,7 +32,7 @@ REQUIRED_SETTINGS: "Final[Mapping[str, object]]" = {
 }
 
 
-def _config(**overrides: object) -> "Mapping[str, object]":
+def _config(**overrides: object) -> "Mapping[str, object]":  # noqa: CAR150
     """Build a valid raw configuration, with the given top-level sections replaced."""
     return {**REQUIRED_SETTINGS, **overrides}
 

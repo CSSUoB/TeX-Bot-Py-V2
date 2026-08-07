@@ -5,8 +5,8 @@ extends: default
 # top down (those that must be filled in first, then each section in turn), which the
 # alphabetical key ordering required below would destroy.
 ignore: |
-  tex-bot-deployment.*.yaml
-  tex-bot-deployment.yaml
+    tex-bot-deployment.*.yaml
+    tex-bot-deployment.yaml
 
 locale: en_GB.UTF-8
 

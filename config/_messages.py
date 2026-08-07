@@ -9,7 +9,7 @@ neither validated by the settings schema nor editable through the `/config` comm
 import json
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 from exceptions import (
     ImproperlyConfiguredError,
@@ -98,6 +98,7 @@ def _get_message_set(raw_messages: "Mapping[str, object]", key: str) -> frozense
 class MessagesAccessor:
     """Provides access to the response messages that TeX-Bot sends into Discord."""
 
+    @override
     def __init__(self) -> None:
         """Initialise an accessor holding no messages until they are first loaded."""
         self._welcome_messages: frozenset[str] | None = None

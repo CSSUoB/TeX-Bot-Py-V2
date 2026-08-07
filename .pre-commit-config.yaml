@@ -108,7 +108,6 @@ repos:
           args: [--fix=lf]
         - id: detect-private-key
         - id: fix-byte-order-marker
-          args: [-h]
 
     - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
       rev: v2.16.0

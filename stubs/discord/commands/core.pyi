@@ -20,9 +20,7 @@ from typing import Protocol, overload, override
 class CommandCallback(Protocol):
     __name__: str
 
-    def __call__(
-        self, *args: object, **kwargs: object
-    ) -> Coroutine[object, object, None]: ...
+    def __call__(self, *args: object, **kwargs: object) -> Coroutine[object, object, None]: ...
 
 def slash_command[**P](
     *,

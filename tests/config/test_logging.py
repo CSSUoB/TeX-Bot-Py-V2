@@ -31,7 +31,7 @@ REQUIRED_SETTINGS: "Final[Mapping[str, object]]" = {
 }
 
 
-def _logging_settings(**logging_overrides: object) -> "LoggingSettings":
+def _logging_settings(**logging_overrides: object) -> "LoggingSettings":  # noqa: CAR150
     """Build the logging section of a validated configuration."""
     return SettingsSchema.model_validate(
         {**REQUIRED_SETTINGS, "logging": logging_overrides}
