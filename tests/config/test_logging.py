@@ -3,7 +3,6 @@
 import logging
 from typing import TYPE_CHECKING
 
-import pytest
 from discord_logging.handler import DiscordHandler
 
 from config._logging import (
@@ -16,8 +15,8 @@ from config._schema import SettingsSchema
 from .conftest import VALID_BOT_TOKEN, VALID_MAIN_GUILD_ID, VALID_WEBHOOK_URL
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator, Mapping, Sequence
-    from logging import Handler, Logger
+    from collections.abc import Mapping, Sequence
+    from logging import Handler
     from pathlib import Path
     from typing import Final
 
@@ -37,39 +36,6 @@ def _logging_settings(**logging_overrides: object) -> "LoggingSettings":
     return SettingsSchema.model_validate(
         {**REQUIRED_SETTINGS, "logging": logging_overrides}
     ).logging
-
-
-@pytest.fixture(autouse=True)
-def _restore_loggers() -> "Iterator[None]":
-    """
-    Restore both loggers to the state they were in before each test.
-
-    Logging is process-wide, so without this a test applying a configuration would
-    leave its handlers attached for every test that ran afterwards.
-    """
-    tex_bot_logger: Logger = logging.getLogger(LOGGER_NAME)
-    discord_logger: Logger = logging.getLogger(DISCORD_LOGGER_NAME)
-
-    ORIGINAL_STATE: Final[Sequence[tuple[Logger, Sequence[Handler], int, bool]]] = tuple(
-        (
-            single_logger,
-            tuple(single_logger.handlers),
-            single_logger.level,
-            single_logger.propagate,
-        )
-        for single_logger in (tex_bot_logger, discord_logger)
-    )
-
-    yield
-
-    single_logger: Logger
-    original_handlers: Sequence[Handler]
-    original_level: int
-    original_propagate: bool
-    for single_logger, original_handlers, original_level, original_propagate in ORIGINAL_STATE:
-        single_logger.handlers = list(original_handlers)
-        single_logger.setLevel(original_level)
-        single_logger.propagate = original_propagate
 
 
 def _handlers_of_type(logger_name: str, handler_type: type) -> "Sequence[Handler]":

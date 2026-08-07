@@ -4,7 +4,6 @@ import logging
 from typing import TYPE_CHECKING
 
 import discord
-from discord_logging.handler import DiscordHandler
 
 import utils
 from config import settings
@@ -19,7 +18,7 @@ from exceptions import (
     RolesChannelDoesNotExistError,
 )
 from utils import TeXBotBaseCog
-from utils.msl import fetch_community_group_members_list
+from utils.msl import fetch_community_group_members_list, msl_is_configured
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -42,28 +41,10 @@ class StartupCog(TeXBotBaseCog):
 
         Shortcut accessors should only be populated once TeX-Bot is ready to make API requests.
         """
-        if settings.logging.discord_channel is not None:
-            discord_logging_handler: logging.Handler = DiscordHandler(
-                service_name=self.bot.user.name if self.bot.user else "TeX-Bot",
-                webhook_url=str(settings.logging.discord_channel.webhook_url),
-                avatar_url=(
-                    self.bot.user.avatar.url
-                    if self.bot.user and self.bot.user.avatar
-                    else None
-                ),
-            )
-            discord_logging_handler.setLevel(logging.WARNING)
-            discord_logging_handler.setFormatter(
-                logging.Formatter("{levelname} | {message}", style="{")
-            )
-
-            logger.addHandler(discord_logging_handler)
-
-        else:
-            logger.warning(
-                "DISCORD_LOG_CHANNEL_WEBHOOK_URL was not set, "
-                "so error logs will not be sent to the Discord log channel."
-            )
+        # NOTE: Relaying error logs to a Discord log channel is set up from the loaded
+        # configuration (& re-applied upon every reload), rather than here. Attaching a
+        # handler here as well would relay every error twice, & once more for every
+        # gateway re-identify, because this listener runs again upon each reconnection.
 
         try:
             main_guild: discord.Guild | None = self.bot.main_guild
@@ -109,13 +90,21 @@ class StartupCog(TeXBotBaseCog):
         if not discord.utils.get(main_guild.text_channels, name="general"):
             logger.warning(GeneralChannelDoesNotExistError())
 
-        try:
-            await fetch_community_group_members_list()
-        except MSLMembershipError as msl_membership_error:
-            logger.debug(
-                "Failed to update community group member list cache on startup: %s",
-                msl_membership_error,
+        if not msl_is_configured():
+            logger.warning(
+                "Both 'community-group:msl:organisation-id' & "
+                "'community-group:msl:auth-cookie' must be set for your group's "
+                "members-list to be retrieved. Every feature that depends upon knowing "
+                "who holds a membership will not work until they are."
             )
+        else:
+            try:
+                await fetch_community_group_members_list()
+            except MSLMembershipError as msl_membership_error:
+                logger.debug(
+                    "Failed to update community group member list cache on startup: %s",
+                    msl_membership_error,
+                )
 
         if settings.commands.strike.performed_manually_warning_location != "DM":
             manual_moderation_warning_message_location_exists: bool = bool(

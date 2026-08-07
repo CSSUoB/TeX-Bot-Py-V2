@@ -57,6 +57,8 @@ __all__: "Sequence[str]" = (
     "StatsCommandSettings",
     "StrikeCommandSettings",
     "get_settings_metadata",
+    "nested_settings_model_of",
+    "setting_names_within",
 )
 
 
@@ -350,9 +352,10 @@ class DiscordSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
         AfterValidator(
             lambda token: _ensure_matches(
                 token,
+                # NOTE: Every segment is base64url-encoded, so any of them may contain
+                # `-` or `_`: the middle segment (an encoded timestamp) routinely does.
                 re.compile(
-                    r"\A(?!.*__.*)(?!.*--.*)"
-                    r"(?:([A-Za-z0-9]{24,26})\.([A-Za-z0-9]{6})\.([A-Za-z0-9_-]{27,38}))\Z"
+                    r"\A([A-Za-z0-9_-]{24,26})\.([A-Za-z0-9_-]{6})\.([A-Za-z0-9_-]{27,38})\Z"
                 ),
                 "a Discord bot token",
             )
@@ -474,7 +477,9 @@ class CommunityGroupSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
             "If this is not set, the group's full name will be retrieved "
             "from the name of your group's Discord guild."
         ),
-        json_schema_extra={"requires_restart": False, "secret": False},
+        # NOTE: Requires a restart because the name of the ID argument to `/make-member`
+        # is derived from this, & so is fixed when that command is registered.
+        json_schema_extra={"requires_restart": True, "secret": False},
     )
     short_name: str | None = Field(
         default=None,
@@ -485,7 +490,9 @@ class CommunityGroupSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
             "If this is not set, the group's short name will be determined "
             "from your group's full name."
         ),
-        json_schema_extra={"requires_restart": False, "secret": False},
+        # NOTE: Requires a restart because the descriptions of the `/stats` commands are
+        # derived from this, & so are fixed when those commands are registered.
+        json_schema_extra={"requires_restart": True, "secret": False},
     )
     membership_dependent_roles: UniqueStrSequence = Field(
         # NOTE: Defaults to no roles, rather than being absent, so that consumers can
@@ -732,6 +739,24 @@ def _holds_text(annotation: object) -> bool:
     )
 
 
+def nested_settings_model_of(field: "FieldInfo") -> "type[BaseModel] | None":
+    """
+    Return the settings section that the given field holds, if it holds one at all.
+
+    A field's annotation may be a union (an optional section, for example), so every
+    member of it must be searched to find the nested model it may contain.
+    """
+    return next(
+        (
+            annotation_argument
+            for annotation_argument in (get_args(field.annotation) or (field.annotation,))
+            if isinstance(annotation_argument, type)
+            and issubclass(annotation_argument, BaseModel)
+        ),
+        None,
+    )
+
+
 def _walk_settings_metadata(
     model: type[BaseModel], prefix: str = ""
 ) -> "Iterator[tuple[str, ConfigSettingMetadata]]":
@@ -741,17 +766,7 @@ def _walk_settings_metadata(
     for field_name, field in model.model_fields.items():
         KEY_PATH: str = f"{prefix}{field_name.replace('_', '-')}"
 
-        # NOTE: A field's annotation may be a union (an optional section, for example), so
-        # every member of it must be searched to find the nested model it may contain.
-        nested_model: type[BaseModel] | None = next(
-            (
-                annotation_argument
-                for annotation_argument in (get_args(field.annotation) or (field.annotation,))
-                if isinstance(annotation_argument, type)
-                and issubclass(annotation_argument, BaseModel)
-            ),
-            None,
-        )
+        nested_model: type[BaseModel] | None = nested_settings_model_of(field)
         if nested_model is not None:
             yield from _walk_settings_metadata(nested_model, prefix=f"{KEY_PATH}:")
             continue
@@ -769,6 +784,18 @@ def _walk_settings_metadata(
                 holds_text=_holds_text(field.annotation),
             ),
         )
+
+
+def setting_names_within(model: type[BaseModel], prefix: str = "") -> "Iterator[str]":
+    """
+    Yield the key path of every individual setting declared within the given model.
+
+    Derived from the same walk that produces the settings metadata, so that a name
+    yielded here is always one that the `/config` command recognises.
+    """
+    key_path: str
+    for key_path, _ in _walk_settings_metadata(model, prefix=prefix):
+        yield key_path
 
 
 def get_settings_metadata() -> "Mapping[str, ConfigSettingMetadata]":

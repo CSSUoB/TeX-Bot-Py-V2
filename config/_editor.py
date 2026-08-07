@@ -30,6 +30,7 @@ from ._schema import SettingsSchema, get_settings_metadata
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
+    from pathlib import Path
     from typing import Final
 
     from ._schema import ConfigSettingMetadata
@@ -200,18 +201,27 @@ def _validated(document: SettingsDocument) -> SettingsDocument:
     return document
 
 
-def format_file_difference(setting_name: str, running_value: object, *, secret: bool) -> str:
+def format_file_difference(
+    setting_name: str,
+    running_value: object,
+    *,
+    secret: bool,
+    file_path: "Path | None" = None,
+) -> str:
     """
     Describe how the configuration file's value for a setting differs from the running one.
 
     Intended to be shown alongside the value TeX-Bot is running, once the file is known
     to have been edited since it was last loaded, so that whoever is looking at a setting
     can see what reloading would change it to rather than only being told to reload.
+
+    The file compared against is the one the running configuration was loaded from, which
+    must be given explicitly: it is not necessarily the one that would be located afresh.
     """
     file_error: Exception
     try:
         FILE_VALUES: Final[Mapping[str, object]] = _flatten_settings(
-            _snapshot_of(SettingsDocument.load())
+            _snapshot_of(SettingsDocument.load(file_path))
         )
     except (
         SettingsValidationError,
@@ -259,8 +269,14 @@ def _read_unchanged_file(loaded_document: SettingsDocument | None) -> SettingsDo
     A change made by hand is refused rather than merged into, so that changing one
     setting cannot silently apply somebody else's unrelated edits alongside it, nor
     report that TeX-Bot must be restarted for a setting its author never touched.
+
+    The file read is the one the given document was loaded from, so that a change is
+    always made to the file TeX-Bot is running, rather than to whichever file would be
+    located afresh.
     """
-    document: SettingsDocument = SettingsDocument.load()
+    document: SettingsDocument = SettingsDocument.load(
+        None if loaded_document is None else loaded_document.file_path
+    )
 
     # NOTE: Nothing has been loaded for the file to have diverged from while TeX-Bot is
     # still starting up, so there is nothing to compare it against.

@@ -25,8 +25,10 @@ class PingCommandCog(TeXBotBaseCog):
         await ctx.respond(
             random.choices(  # noqa: S311
                 ["Pong!", "`64 bytes from TeX-Bot: icmp_seq=1 ttl=63 time=0.01 ms`"],
+                # NOTE: The probability is held as a fraction between 0 & 1, so the
+                # weight of the common response is the remainder of that same scale.
                 weights=(
-                    100 - settings.commands.ping.easter_egg_probability,
+                    1 - settings.commands.ping.easter_egg_probability,
                     settings.commands.ping.easter_egg_probability,
                 ),
             )[0],

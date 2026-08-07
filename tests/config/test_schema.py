@@ -266,45 +266,30 @@ class TestValueConstraints:
             )
 
     @staticmethod
-    @pytest.mark.parametrize("separator", ("--", "__"))
-    def test_bot_token_containing_repeated_punctuation_is_rejected(separator: str) -> None:
+    @pytest.mark.parametrize(
+        "bot_token",
+        (
+            "MTk4NjIyNDgzNDcxOTI1MjQ4.G_h-4y.ZnCjm1XVW7vRze4b7Cq4se7kKWs",
+            "MTk4NjIyNDgzNDcxOTI1MjQ4.Cl2FMQ.ZnCjm1XVW7vRze4b7Cq4se--kKWs",
+            "MTk4NjIyNDgzNDcxOTI1MjQ4.Cl2FMQ.ZnCjm1XVW7vRze4b7Cq4se__kKWs",
+        ),
+    )
+    def test_bot_token_containing_punctuation_is_accepted(bot_token: str) -> None:
         """
-        Test that a token holding two consecutive hyphens or underscores is rejected.
+        Test that a token holding hyphens or underscores anywhere within it is accepted.
 
-        Discord never issues such a token, so one appearing here almost always means a
-        placeholder has been left in place of a real token.
+        Every segment of a Discord bot token is base64url-encoded, so any of them may
+        hold either character, & may hold two of them consecutively. The middle segment
+        (an encoded timestamp) routinely does.
         """
-        REPEATED_PUNCTUATION_TOKEN: Final[str] = (
-            f"{VALID_BOT_TOKEN[:-4]}{separator}{VALID_BOT_TOKEN[-2:]}"
-        )
-
-        with pytest.raises(ValidationError, match="Discord bot token"):
-            SettingsSchema.model_validate(
-                {
-                    **REQUIRED_SETTINGS,
-                    "discord": {
-                        "bot-token": REPEATED_PUNCTUATION_TOKEN,
-                        "main-guild-id": VALID_MAIN_GUILD_ID,
-                    },
-                }
-            )
-
-    @staticmethod
-    def test_bot_token_containing_differing_punctuation_is_accepted() -> None:
-        """Test that a hyphen adjacent to an underscore is not treated as a repetition."""
-        MIXED_PUNCTUATION_TOKEN: Final[str] = f"{VALID_BOT_TOKEN[:-4]}-_{VALID_BOT_TOKEN[-2:]}"
-
         settings: SettingsSchema = SettingsSchema.model_validate(
             {
                 **REQUIRED_SETTINGS,
-                "discord": {
-                    "bot-token": MIXED_PUNCTUATION_TOKEN,
-                    "main-guild-id": VALID_MAIN_GUILD_ID,
-                },
+                "discord": {"bot-token": bot_token, "main-guild-id": VALID_MAIN_GUILD_ID},
             }
         )
 
-        assert settings.discord.bot_token.get_secret_value() == MIXED_PUNCTUATION_TOKEN
+        assert settings.discord.bot_token.get_secret_value() == bot_token
 
     @staticmethod
     @pytest.mark.parametrize("lookback_days", (5, 1826))
@@ -555,6 +540,10 @@ class TestSettingsMetadata:
                 # NOTE: Used to connect to Discord & to populate the shortcut accessors.
                 "discord:bot-token",
                 "discord:main-guild-id",
+                # NOTE: Baked into the names & descriptions of the slash commands that
+                # refer to your group, & so fixed when those commands are registered.
+                "community-group:full-name",
+                "community-group:short-name",
                 # NOTE: Fixed when each recurring task is created during start-up.
                 "community-group:msl:auto-cookie-checking:enabled",
                 "community-group:msl:auto-cookie-checking:interval",
@@ -620,11 +609,10 @@ class TestSettingsMetadata:
             _flatten_settings(SettingsSchema.model_validate(_config()))
         )
 
-        # NOTE: An omitted optional section collapses to a single key, so the metadata
-        # describes the sections within it that the flattened settings cannot show.
-        assert SETTINGS_NAMES - frozenset(get_settings_metadata()) == {
-            "logging:discord-channel"
-        }
+        # NOTE: Every flattened key path must name a setting that `/config` recognises,
+        # including those within an optional section that has been omitted entirely.
+        assert not SETTINGS_NAMES - frozenset(get_settings_metadata())
+        assert not frozenset(get_settings_metadata()) - SETTINGS_NAMES
 
 
 def test_minimal_config_fixture_matches_the_required_settings() -> None:

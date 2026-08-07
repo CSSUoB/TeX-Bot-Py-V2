@@ -7,6 +7,7 @@ from .memberships import (
     fetch_community_group_members_list,
     fetch_url_content_with_session,
     is_id_a_community_group_member,
+    msl_is_configured,
 )
 
 if TYPE_CHECKING:
@@ -17,4 +18,5 @@ __all__: "Sequence[str]" = (
     "fetch_community_group_members_list",
     "fetch_url_content_with_session",
     "is_id_a_community_group_member",
+    "msl_is_configured",
 )

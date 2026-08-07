@@ -219,6 +219,35 @@ class TestRejectedReloads:
         assert INVALID_TOKEN not in RESPONSES[0]
 
     @staticmethod
+    def test_a_configuration_holding_many_errors_still_fits_within_one_message(
+        run_config_reload: "ConfigReloadRunner",
+    ) -> None:
+        """
+        Test that a great many validation failures are shortened rather than refused.
+
+        Discord rejects a message beyond its length limit in its entirety, so a response
+        that was not shortened would leave the committee member with no explanation at
+        all, at exactly the moment one is most needed.
+        """
+        from cogs.config import MAXIMUM_MESSAGE_LENGTH, TRUNCATION_NOTICE  # noqa: PLC0415
+
+        UNKNOWN_SETTINGS: Final[str] = "".join(
+            f"unknown-setting-{unknown_setting_number}: {unknown_setting_number}\n"
+            for unknown_setting_number in range(100)
+        )
+
+        run_config_reload(MINIMAL_CONFIG)
+
+        RESPONSES: Final[Sequence[str]] = run_config_reload(
+            f"{MINIMAL_CONFIG}{UNKNOWN_SETTINGS}"
+        )
+
+        assert "was **not** loaded" in RESPONSES[0]
+        assert len(RESPONSES[0]) <= MAXIMUM_MESSAGE_LENGTH
+        assert RESPONSES[0].endswith("```")
+        assert TRUNCATION_NOTICE in RESPONSES[0]
+
+    @staticmethod
     def test_a_missing_configuration_file_is_reported(
         run_config_reload: "ConfigReloadRunner",
     ) -> None:

@@ -12,14 +12,16 @@ from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, ValidationError
 
-from ._document import SettingsDocument
-from ._schema import SettingsSchema
+from ._document import InvalidSettingsFileError, SettingsDocument, SettingsFileNotFoundError
+from ._schema import SettingsSchema, nested_settings_model_of, setting_names_within
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
     from collections.abc import Set as AbstractSet
     from pathlib import Path
     from typing import Final
+
+    from pydantic.fields import FieldInfo
 
     from ._schema import (
         CommandsSettings,
@@ -78,14 +80,27 @@ def _flatten_settings(model: BaseModel, prefix: str = "") -> "Mapping[str, objec
     flattened_settings: dict[str, object] = {}
 
     field_name: str
-    for field_name in type(model).model_fields:
+    field: FieldInfo
+    for field_name, field in type(model).model_fields.items():
         value: object = getattr(model, field_name)
         KEY_PATH: str = f"{prefix}{field_name.replace('_', '-')}"
 
         if isinstance(value, BaseModel):
             flattened_settings.update(_flatten_settings(value, prefix=f"{KEY_PATH}:"))
-        else:
-            flattened_settings[KEY_PATH] = value
+            continue
+
+        NESTED_MODEL: type[BaseModel] | None = nested_settings_model_of(field)
+        if NESTED_MODEL is not None:
+            # NOTE: An optional section left out of the file holds no value of its own;
+            # every setting within it is simply unset. Naming those settings, rather than
+            # the section holding them, keeps every key path reported by a reload one that
+            # the `/config` command recognises.
+            flattened_settings.update(
+                dict.fromkeys(setting_names_within(NESTED_MODEL, prefix=f"{KEY_PATH}:"))
+            )
+            continue
+
+        flattened_settings[KEY_PATH] = value
 
     return flattened_settings
 
@@ -136,11 +151,18 @@ class SettingsAccessor:
 
         Compared as the documents parse to, rather than as raw text, so that a file
         rewritten with different line endings is not mistaken for one that was edited.
+
+        A file that can no longer be read at all is reported as changed, rather than
+        raising: it certainly no longer holds the configuration that was loaded from it,
+        & saying so is what allows the caller to explain that instead of failing.
         """
         if self._loaded is None:
             return False
 
-        return SettingsDocument.load(self.file_path).dump() != self._loaded.document.dump()
+        try:
+            return SettingsDocument.load(self.file_path).dump() != self._loaded.document.dump()
+        except (SettingsFileNotFoundError, InvalidSettingsFileError, OSError):
+            return True
 
     def reload(self, file_path: "Path | None" = None) -> "AbstractSet[str]":
         """

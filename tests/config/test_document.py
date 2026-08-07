@@ -1,6 +1,7 @@
 """Test suite for reading, writing & error-reporting of the configuration file."""
 
 import os
+import stat
 from typing import TYPE_CHECKING
 from unittest import mock
 
@@ -171,6 +172,30 @@ class TestWriting:
         raise OSError(16, "Device or resource busy")
 
     @staticmethod
+    @pytest.mark.skipif(
+        os.name == "nt", reason="Windows does not hold the permission bits being asserted."
+    )
+    @pytest.mark.parametrize("original_permissions", (0o600, 0o640))
+    def test_writing_retains_the_permissions_of_the_file_it_replaces(
+        write_config: "ConfigWriter", original_permissions: int
+    ) -> None:
+        """
+        Test that writing does not widen who may read the configuration file.
+
+        The file holds the bot token & the MSL authentication cookie, so a deployment
+        that has deliberately restricted who may read it must not have those
+        restrictions lifted simply because a setting was changed.
+        """
+        config_file_path: Path = write_config(MINIMAL_CONFIG)
+        config_file_path.chmod(original_permissions)
+
+        document: SettingsDocument = SettingsDocument.load(config_file_path)
+        document.set_value(["community-group", "full-name"], "CompSoc")
+        document.write()
+
+        assert stat.S_IMODE(config_file_path.stat().st_mode) == original_permissions
+
+    @staticmethod
     def test_no_temporary_file_is_left_behind(
         write_config: "ConfigWriter", tmp_path: "Path"
     ) -> None:
@@ -239,8 +264,10 @@ class TestWriting:
         document.raw["community-group"]["full-name"] = "ShouldNotAppear"
 
         with (
-            mock.patch(
-                "pathlib.Path.write_text", side_effect=OSError(28, "No space left on device")
+            mock.patch.object(
+                SettingsDocument,
+                "_write_privately",
+                side_effect=OSError(28, "No space left on device"),
             ),
             pytest.raises(OSError, match="No space left on device"),
         ):

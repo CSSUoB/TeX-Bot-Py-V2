@@ -36,6 +36,47 @@ MAXIMUM_LISTED_SETTINGS: "Final[int]" = 20
 # NOTE: The greatest number of suggestions that Discord will display at once.
 MAXIMUM_AUTOCOMPLETE_SUGGESTIONS: "Final[int]" = 25
 
+# NOTE: The greatest number of characters Discord will accept within a single message.
+MAXIMUM_MESSAGE_LENGTH: "Final[int]" = 2000
+
+TRUNCATION_NOTICE: "Final[str]" = "\n...(truncated)"
+
+_EMPTY_ERROR_DETAILS_BLOCK: "Final[str]" = "```\n\n```"
+
+
+def _truncated(message: str) -> str:
+    """Shorten the given message to the greatest length that Discord will accept."""
+    if len(message) <= MAXIMUM_MESSAGE_LENGTH:
+        return message
+
+    return (
+        message[: MAXIMUM_MESSAGE_LENGTH - len(TRUNCATION_NOTICE)].rstrip() + TRUNCATION_NOTICE
+    )
+
+
+def _with_error_details(message: str, configuration_error: object) -> str:
+    """
+    Append the given error to the given message, within a code block.
+
+    The error is shortened where it would take the message beyond the greatest length
+    Discord will accept, because a message that is too long is refused in its entirety.
+    A configuration holding many errors would otherwise leave whoever ran the command
+    with no diagnostic at all, at exactly the moment one is most needed.
+    """
+    AVAILABLE_LENGTH: Final[int] = (
+        MAXIMUM_MESSAGE_LENGTH - len(message) - len(_EMPTY_ERROR_DETAILS_BLOCK)
+    )
+
+    error_details: str = str(configuration_error)
+
+    if len(error_details) > AVAILABLE_LENGTH:
+        error_details = (
+            error_details[: max(AVAILABLE_LENGTH - len(TRUNCATION_NOTICE), 0)].rstrip()
+            + TRUNCATION_NOTICE
+        )
+
+    return f"{message}```\n{error_details}\n```"
+
 
 def _format_settings_list(settings_names: "Iterable[str]") -> str:
     """Format the given settings key paths into a bulleted list, truncated if very long."""
@@ -77,13 +118,17 @@ class ConfigCommandsCog(TeXBotBaseCog):
     @staticmethod
     async def autocomplete_get_settings_names(
         ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+    ) -> "Sequence[discord.OptionChoice]":
         """
-        Autocomplete callable that generates the set of configurable settings names.
+        Autocomplete callable that generates the configurable settings names, in order.
 
         Every setting whose name contains what has been typed so far is suggested,
         rather than only those beginning with it, because each name is prefixed with the
         section holding it & so is rarely typed from its beginning.
+
+        NOTE: Returned as a sequence, rather than the set that every other autocomplete
+        callable returns, because these suggestions are alphabetically ordered & a set
+        would discard that ordering.
         """
         TYPED_VALUE: Final[str] = str(ctx.value or "").strip().lower()
 
@@ -93,12 +138,12 @@ class ConfigCommandsCog(TeXBotBaseCog):
             if TYPED_VALUE in setting_name.lower()
         ]
 
-        return {
+        return [
             discord.OptionChoice(name=setting_name, value=setting_name)
             # NOTE: Sliced because Discord refuses a response holding more suggestions
             # than it is willing to display.
             for setting_name in MATCHING_SETTINGS_NAMES[:MAXIMUM_AUTOCOMPLETE_SUGGESTIONS]
-        }
+        ]
 
     @config.command(
         name="reload",
@@ -124,11 +169,13 @@ class ConfigCommandsCog(TeXBotBaseCog):
         except SettingsValidationError as configuration_error:
             logger.warning("Configuration reload rejected:\n%s", configuration_error)
             await ctx.respond(
-                (
-                    ":x: The configuration file was **not** loaded, "
-                    "because it contains invalid settings. "
-                    "No changes have been applied.\n"
-                    f"```\n{configuration_error}\n```"
+                _with_error_details(
+                    (
+                        ":x: The configuration file was **not** loaded, "
+                        "because it contains invalid settings. "
+                        "No changes have been applied.\n"
+                    ),
+                    configuration_error,
                 ),
                 ephemeral=True,
             )
@@ -140,10 +187,12 @@ class ConfigCommandsCog(TeXBotBaseCog):
         ) as configuration_error:
             logger.warning("Configuration reload failed: %s", configuration_error)
             await ctx.respond(
-                (
-                    ":x: The configuration file could not be read, "
-                    "so no changes have been applied.\n"
-                    f"```\n{configuration_error}\n```"
+                _with_error_details(
+                    (
+                        ":x: The configuration file could not be read, "
+                        "so no changes have been applied.\n"
+                    ),
+                    configuration_error,
                 ),
                 ephemeral=True,
             )
@@ -229,7 +278,10 @@ class ConfigCommandsCog(TeXBotBaseCog):
         # since then from looking as though it had simply been ignored.
         if config.settings.file_has_changed():
             response_message += config.format_file_difference(
-                setting_name, CURRENT_VALUE, secret=setting_metadata.secret
+                setting_name,
+                CURRENT_VALUE,
+                secret=setting_metadata.secret,
+                file_path=config.settings.file_path,
             )
 
         if setting_metadata.description:
@@ -240,7 +292,9 @@ class ConfigCommandsCog(TeXBotBaseCog):
                 "\n\n:warning: Changing this setting requires TeX-Bot to be restarted."
             )
 
-        await ctx.respond(response_message, ephemeral=True)
+        # NOTE: Shortened because the difference described above holds the error that
+        # reading an edited file raised, which has no bounded length of its own.
+        await ctx.respond(_truncated(response_message), ephemeral=True)
 
     @config.command(
         name="set",
@@ -351,11 +405,13 @@ class ConfigCommandsCog(TeXBotBaseCog):
             return
         except SettingsValidationError as validation_error:
             await ctx.respond(
-                (
-                    f":x: **`{setting_name}`** was **not** removed, because the "
-                    f"configuration would no longer be valid without it. "
-                    f"Nothing has been changed.\n"
-                    f"```\n{validation_error}\n```"
+                _with_error_details(
+                    (
+                        f":x: **`{setting_name}`** was **not** removed, because the "
+                        f"configuration would no longer be valid without it. "
+                        f"Nothing has been changed.\n"
+                    ),
+                    validation_error,
                 ),
                 ephemeral=True,
             )
@@ -432,10 +488,12 @@ class ConfigCommandsCog(TeXBotBaseCog):
         logger.warning("Change to %r rejected:\n%s", setting_name, validation_error)
 
         await ctx.respond(
-            (
-                f":x: **`{setting_name}`** was **not** changed, because that value is "
-                f"not valid. Nothing has been changed.\n"
-                f"```\n{validation_error}\n```"
+            _with_error_details(
+                (
+                    f":x: **`{setting_name}`** was **not** changed, because that value is "
+                    f"not valid. Nothing has been changed.\n"
+                ),
+                validation_error,
             ),
             ephemeral=True,
         )
@@ -448,10 +506,12 @@ class ConfigCommandsCog(TeXBotBaseCog):
         logger.warning("Configuration file could not be used: %s", configuration_error)
 
         await ctx.respond(
-            (
-                ":x: The configuration file could not be read or written, "
-                "so nothing has been changed.\n"
-                f"```\n{configuration_error}\n```"
+            _with_error_details(
+                (
+                    ":x: The configuration file could not be read or written, "
+                    "so nothing has been changed.\n"
+                ),
+                configuration_error,
             ),
             ephemeral=True,
         )

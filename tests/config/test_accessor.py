@@ -79,6 +79,28 @@ class TestLoading:
         assert not SettingsAccessor().file_has_changed()
 
     @staticmethod
+    @pytest.mark.parametrize("edited_contents", ("discord: {unclosed\n", "", None))
+    def test_an_unreadable_file_has_been_changed_underneath(
+        config_file: "Path", edited_contents: str | None
+    ) -> None:
+        """
+        Test that a file which can no longer be read at all is reported as changed.
+
+        A file edited into a state that cannot be parsed certainly no longer holds the
+        configuration loaded from it. Saying so (rather than raising) is what allows
+        `/config get` to explain the problem instead of failing without a response.
+        """
+        settings: SettingsAccessor = SettingsAccessor()
+        settings.reload(config_file)
+
+        if edited_contents is None:
+            config_file.unlink()
+        else:
+            config_file.write_text(edited_contents, encoding="utf-8")
+
+        assert settings.file_has_changed()
+
+    @staticmethod
     def test_loading_makes_settings_available(config_file: "Path") -> None:
         """Test that settings can be read once a configuration has been loaded."""
         settings: SettingsAccessor = SettingsAccessor()
@@ -168,11 +190,11 @@ class TestChangeDetection:
         """
         Test that removing an optional section reports the settings it took with it.
 
-        A section that is present is expanded into the settings within it, whereas one
-        that is absent collapses to a single empty value under its own name. Comparing
-        one configuration against the other must therefore distinguish a key that is
-        missing from a key that is present but holds nothing, or removing the section
-        would appear to change nothing at all.
+        A section is expanded into the settings within it whether it is present or not,
+        holding nothing where it is absent, so that removing it is reported as the
+        individual settings it unset rather than as the section itself. Reporting the
+        section would name something that is not a setting at all, & that `/config get`
+        would therefore refuse to show.
         """
         settings: SettingsAccessor = SettingsAccessor()
         settings.reload(
@@ -189,7 +211,10 @@ class TestChangeDetection:
         )
 
         assert "logging:discord-channel:webhook-url" in CHANGED_SETTINGS
-        assert "logging:discord-channel" in CHANGED_SETTINGS
+        assert "logging:discord-channel:log-level" in CHANGED_SETTINGS
+        # NOTE: The section itself is never reported: it is not a setting that could be
+        # looked up, so naming it would be naming something `/config get` would refuse.
+        assert "logging:discord-channel" not in CHANGED_SETTINGS
         assert settings.logging.discord_channel is None
 
     @staticmethod

@@ -231,6 +231,17 @@ class BaseStrikeCog(TeXBotBaseCog):
     async def _send_strike_user_message(
         self, strike_user: discord.User | discord.Member, member_strikes: DiscordMemberStrikes
     ) -> None:
+        # NOTE: The link to the moderation document is optional, so the sentence pointing
+        # at it is left out entirely rather than sent holding a link that goes nowhere.
+        MODERATION_POLICY_MESSAGE: Final[str] = (
+            f"To find what moderation action corresponds to which strike level, "
+            f"you can view "
+            f"the {self.bot.group_short_name} Discord server moderation document "
+            f"[here](<{settings.community_group.links.moderation_policy}>)\n"
+            if settings.community_group.links.moderation_policy is not None
+            else ""
+        )
+
         try:
             await strike_user.send(
                 "Hi, a recent incident occurred in which you may have broken one or more of "
@@ -238,10 +249,7 @@ class BaseStrikeCog(TeXBotBaseCog):
                 "We have increased the number of strikes associated with your account "
                 f"to {min(3, member_strikes.strikes)} and "
                 "the corresponding moderation action will soon be applied to you. "
-                "To find what moderation action corresponds to which strike level, "
-                "you can view "
-                f"the {self.bot.group_short_name} Discord server moderation document "
-                f"[here](<{settings.community_group.links.moderation_policy}>)\n"
+                f"{MODERATION_POLICY_MESSAGE}"
                 "Please ensure you have read "
                 f"the rules in {await self.bot.get_mention_string(self.bot.rules_channel)} so "
                 "that your future behaviour adheres to them."

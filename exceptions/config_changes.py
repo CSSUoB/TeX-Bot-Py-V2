@@ -11,7 +11,6 @@ if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
 
 __all__: "Sequence[str]" = (
-    "ChangingSettingWithRequiredSiblingError",
     "ImproperlyConfiguredError",
     "RestartRequiredDueToConfigChange",
 )
@@ -42,32 +41,3 @@ class RestartRequiredDueToConfigChange(BaseTeXBotError, Exception):  # noqa: N81
         self.changed_settings: AbstractSet[str] = changed_settings or set()
 
         super().__init__(message)
-
-
-class ChangingSettingWithRequiredSiblingError(BaseTeXBotError, ValueError):
-    """Exception class for when a setting cannot be changed because of required siblings."""
-
-    @classproperty
-    @override
-    def DEFAULT_MESSAGE(cls) -> str:
-        return (
-            "The given setting cannot be changed "
-            "because it has one or more required sibling settings that must be set first."
-        )
-
-    @override
-    def __init__(
-        self, message: str | None = None, config_setting_name: str | None = None
-    ) -> None:
-        """Initialise an Exception for changing a setting with unset required siblings."""
-        self.config_setting_name: str | None = config_setting_name
-
-        super().__init__(
-            message
-            or (
-                f"Cannot assign a value to config setting {config_setting_name!r} because "
-                f"it has one or more required sibling settings that must be set first."
-                if config_setting_name
-                else None
-            )
-        )

@@ -13,7 +13,11 @@ from config import (
 )
 from config._accessor import SettingsAccessor
 from config._document import SETTINGS_FILE_PATH_ENVIRONMENT_VARIABLE_NAME, SettingsDocument
-from config._editor import format_setting_value, parse_setting_value
+from config._editor import (
+    format_setting_value,
+    parse_setting_value,
+    validated_document_with_setting_set,
+)
 
 from .conftest import (
     CHANGED_EASTER_EGG_PROBABILITY,
@@ -456,6 +460,32 @@ class TestChangesMadeByHand:
         config.set_setting("community-group:full-name", "CompSoc")
 
         assert config.settings.community_group.full_name == "CompSoc"
+
+    @staticmethod
+    def test_a_change_is_made_against_the_file_that_was_loaded(
+        write_config: "ConfigWriter", tmp_path: "Path", monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """
+        Test that a change is made to the file the given configuration was loaded from.
+
+        The file TeX-Bot loaded is not necessarily the one that would be located afresh,
+        so resolving it by location (rather than from the document the change is made
+        against) would compare against, validate & rewrite an entirely different file.
+        """
+        LOADED_DOCUMENT: Final[SettingsDocument] = SettingsDocument.load(
+            write_config(COMMENTED_CONFIG)
+        )
+
+        OTHER_FILE_PATH: Final[Path] = tmp_path / "elsewhere.yaml"
+        OTHER_FILE_PATH.write_text(MINIMAL_CONFIG, encoding="utf-8")
+        monkeypatch.setenv(SETTINGS_FILE_PATH_ENVIRONMENT_VARIABLE_NAME, str(OTHER_FILE_PATH))
+
+        UPDATED_DOCUMENT: Final[SettingsDocument] = validated_document_with_setting_set(
+            "community-group:full-name", "CompSoc", LOADED_DOCUMENT
+        )
+
+        assert UPDATED_DOCUMENT.file_path == LOADED_DOCUMENT.file_path
+        assert OTHER_FILE_PATH.read_text(encoding="utf-8") == MINIMAL_CONFIG
 
     @staticmethod
     def test_an_unedited_file_is_not_reported_as_changed(

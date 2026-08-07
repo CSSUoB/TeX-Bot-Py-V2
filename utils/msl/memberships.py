@@ -18,12 +18,15 @@ if TYPE_CHECKING:
     from logging import Logger
     from typing import Final
 
+    from pydantic import SecretStr
+
 
 __all__: "Sequence[str]" = (
     "fetch_community_group_members_count",
     "fetch_community_group_members_list",
     "fetch_url_content_with_session",
     "is_id_a_community_group_member",
+    "msl_is_configured",
 )
 
 
@@ -35,38 +38,95 @@ BASE_SU_PLATFORM_WEB_HEADERS: "Final[Mapping[str, str]]" = {
     "Expires": "0",
 }
 
-BASE_SU_PLATFORM_WEB_COOKIES: "Mapping[str, str]" = {
-    ".AspNet.SharedCookie": (
-        settings.community_group.msl.auth_cookie.get_secret_value()
-        if settings.community_group.msl.auth_cookie is not None
-        else ""
-    ),
-}
+AUTH_COOKIE_NAME: "Final[str]" = ".AspNet.SharedCookie"
 
-MEMBERS_LIST_URL: "Final[str]" = f"https://guildofstudents.com/organisation/memberlist/{settings.community_group.msl.organisation_id}/?sort=groups"
+MEMBERS_LIST_URL_TEMPLATE: "Final[str]" = (
+    "https://guildofstudents.com/organisation/memberlist/{organisation_id}/?sort=groups"
+)
+
+# NOTE: The cookie the SU platform handed back when it last refreshed the session, paired
+# with the configured cookie it was derived from. Holding both means that a cookie set by
+# `/config set` replaces this one, rather than being masked by it indefinitely.
+_refreshed_auth_cookie: tuple[str, str] | None = None
 
 _membership_list_cache: set[int] = set()
 
 
+def msl_is_configured() -> bool:
+    """Whether both of the settings required to reach your group's MSL website are set."""
+    return (
+        settings.community_group.msl.organisation_id is not None
+        and settings.community_group.msl.auth_cookie is not None
+    )
+
+
+def _configured_auth_cookie() -> str:
+    """
+    Return the MSL authentication cookie held within the configuration.
+
+    Read upon every request, rather than held as a constant, so that a cookie replaced
+    by `/config set` (the expired-cookie case this setting exists for) takes effect
+    without TeX-Bot needing to be restarted.
+    """
+    AUTH_COOKIE: Final[SecretStr | None] = settings.community_group.msl.auth_cookie
+
+    if AUTH_COOKIE is None:
+        NO_AUTH_COOKIE_MESSAGE: Final[str] = (
+            "No 'community-group:msl:auth-cookie' was set, "
+            "so your group's MSL website cannot be accessed."
+        )
+        raise MSLMembershipError(message=NO_AUTH_COOKIE_MESSAGE)
+
+    return AUTH_COOKIE.get_secret_value()
+
+
+def _su_platform_web_cookies() -> "Mapping[str, str]":
+    """Return the cookies that authenticate TeX-Bot to your group's MSL website."""
+    CONFIGURED_AUTH_COOKIE: Final[str] = _configured_auth_cookie()
+
+    if _refreshed_auth_cookie is not None and _refreshed_auth_cookie[0] == (
+        CONFIGURED_AUTH_COOKIE
+    ):
+        return {AUTH_COOKIE_NAME: _refreshed_auth_cookie[1]}
+
+    return {AUTH_COOKIE_NAME: CONFIGURED_AUTH_COOKIE}
+
+
+def _members_list_url() -> str:
+    """Return the URL of your community group's members-list."""
+    ORGANISATION_ID: Final[str | None] = settings.community_group.msl.organisation_id
+
+    if ORGANISATION_ID is None:
+        NO_ORGANISATION_ID_MESSAGE: Final[str] = (
+            "No 'community-group:msl:organisation-id' was set, "
+            "so your group's members-list cannot be located."
+        )
+        raise MSLMembershipError(message=NO_ORGANISATION_ID_MESSAGE)
+
+    return MEMBERS_LIST_URL_TEMPLATE.format(organisation_id=ORGANISATION_ID)
+
+
 async def fetch_url_content_with_session(url: str) -> str:
     """Fetch the HTTP content at the given URL, using a shared aiohttp session."""
-    global BASE_SU_PLATFORM_WEB_COOKIES  # noqa: PLW0603
+    global _refreshed_auth_cookie  # noqa: PLW0603
+
+    SU_PLATFORM_WEB_COOKIES: Final[Mapping[str, str]] = _su_platform_web_cookies()
+
     async with (
         aiohttp.ClientSession(
-            headers=BASE_SU_PLATFORM_WEB_HEADERS, cookies=BASE_SU_PLATFORM_WEB_COOKIES
+            headers=BASE_SU_PLATFORM_WEB_HEADERS, cookies=SU_PLATFORM_WEB_COOKIES
         ) as http_session,
         http_session.get(url=url, ssl=GLOBAL_SSL_CONTEXT) as http_response,
     ):
-        returned_asp_cookie: Morsel[str] | None = http_response.cookies.get(
-            ".AspNet.SharedCookie"
-        )
+        returned_asp_cookie: Morsel[str] | None = http_response.cookies.get(AUTH_COOKIE_NAME)
         if returned_asp_cookie is not None and (
-            returned_asp_cookie.value != BASE_SU_PLATFORM_WEB_COOKIES[".AspNet.SharedCookie"]
+            returned_asp_cookie.value != SU_PLATFORM_WEB_COOKIES[AUTH_COOKIE_NAME]
         ):
             logger.info("SU platform access cookie was updated by the server; updating local.")
-            BASE_SU_PLATFORM_WEB_COOKIES = {
-                ".AspNet.SharedCookie": returned_asp_cookie.value,
-            }
+            _refreshed_auth_cookie = (
+                _configured_auth_cookie(),
+                returned_asp_cookie.value,
+            )
         return await http_response.text()
 
 
@@ -77,7 +137,8 @@ async def fetch_community_group_members_list() -> set[int]:
     Returns a set of IDs.
     """
     parsed_html: BeautifulSoup = BeautifulSoup(
-        markup=await fetch_url_content_with_session(MEMBERS_LIST_URL), features="html.parser"
+        markup=await fetch_url_content_with_session(_members_list_url()),
+        features="html.parser",
     )
 
     member_ids: set[int] = set()

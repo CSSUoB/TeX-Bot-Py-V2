@@ -12,6 +12,7 @@ the shape & meaning of the configuration is declared solely within `config._sche
 import io
 import logging
 import os
+import stat
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -252,6 +253,35 @@ class SettingsDocument:
 
         return output_buffer.getvalue()
 
+    def _permissions_of_existing_file(self) -> int | None:
+        """Return the permission bits of this document's file, if it can be determined."""
+        stat_error: OSError
+        try:
+            return stat.S_IMODE(self._file_path.stat().st_mode)
+        except OSError as stat_error:
+            logger.debug(
+                "Could not read the permissions of %s (%s); "
+                "the file will be written with the permissions a new file is given.",
+                self._file_path,
+                stat_error.strerror or stat_error,
+            )
+            return None
+
+    @staticmethod
+    def _write_privately(file_path: Path, contents: str) -> None:
+        """
+        Write the given contents into the given path, readable only by its owner.
+
+        The configuration file holds the bot token & the MSL authentication cookie, so
+        it must never exist (even momentarily, as the temporary file written below does)
+        with the permissions a newly created file would otherwise be given.
+        """
+        file_descriptor: int = os.open(file_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+
+        opened_file: io.TextIOWrapper
+        with os.fdopen(file_descriptor, "w", encoding="utf-8") as opened_file:
+            opened_file.write(contents)
+
     def write(self) -> None:
         """
         Persist this document to disk, atomically where the filesystem allows it.
@@ -265,15 +295,24 @@ class SettingsDocument:
         container, because a rename cannot replace a mount point. Writing directly is not
         atomic, but it is the only option available in that case; mounting the directory
         holding the configuration file, rather than the file itself, avoids it entirely.
+
+        The permissions of the file being replaced are carried across onto the file
+        replacing it, so that a deployment which has deliberately restricted who may read
+        its configuration file does not silently have those restrictions lifted.
         """
         NEW_FILE_CONTENTS: Final[str] = self.dump()
+
+        EXISTING_FILE_PERMISSIONS: Final[int | None] = self._permissions_of_existing_file()
 
         temporary_file_path: Path = self._file_path.with_name(
             f"{self._file_path.name}.{os.getpid()}.tmp"
         )
 
         try:
-            temporary_file_path.write_text(NEW_FILE_CONTENTS, encoding="utf-8")
+            self._write_privately(temporary_file_path, NEW_FILE_CONTENTS)
+
+            if EXISTING_FILE_PERMISSIONS is not None:
+                temporary_file_path.chmod(EXISTING_FILE_PERMISSIONS)
 
             replace_error: OSError
             try:

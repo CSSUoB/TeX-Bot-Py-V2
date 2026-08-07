@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 from .committee_actions import InvalidActionDescriptionError, InvalidActionTargetError
 from .config_changes import (
-    ChangingSettingWithRequiredSiblingError,
     ImproperlyConfiguredError,
     RestartRequiredDueToConfigChange,
 )
@@ -37,7 +36,6 @@ if TYPE_CHECKING:
 __all__: "Sequence[str]" = (
     "ApplicantRoleDoesNotExistError",
     "ArchivistRoleDoesNotExistError",
-    "ChangingSettingWithRequiredSiblingError",
     "ChannelDoesNotExistError",
     "CommitteeElectRoleDoesNotExistError",
     "CommitteeRoleDoesNotExistError",
