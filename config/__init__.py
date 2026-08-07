@@ -11,17 +11,19 @@ import importlib
 import logging
 from typing import TYPE_CHECKING, NamedTuple
 
-from ._accessor import SettingsAccessor, SettingsNotLoadedError, SettingsValidationError
-from ._document import (
+from exceptions import (
     InvalidSettingsFileError,
-    SettingsDocument,
+    SettingsFileChangedError,
     SettingsFileNotFoundError,
-    get_settings_file_path,
+    SettingsNotLoadedError,
+    SettingsValidationError,
+    UnknownSettingError,
 )
+
+from ._accessor import SettingsAccessor
+from ._document import SettingsDocument, get_settings_file_path
 from ._editor import (
     SETTING_NAME_SEPARATOR,
-    SettingsFileChangedError,
-    UnknownSettingError,
     documented_setting_names,
     format_file_difference,
     format_setting_value,

@@ -12,7 +12,14 @@ from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, ValidationError
 
-from ._document import InvalidSettingsFileError, SettingsDocument, SettingsFileNotFoundError
+from exceptions import (
+    InvalidSettingsFileError,
+    SettingsFileNotFoundError,
+    SettingsNotLoadedError,
+    SettingsValidationError,
+)
+
+from ._document import SettingsDocument
 from ._schema import SettingsSchema, nested_settings_model_of, setting_names_within
 
 if TYPE_CHECKING:
@@ -32,25 +39,7 @@ if TYPE_CHECKING:
     )
 
 
-__all__: "Sequence[str]" = (
-    "SettingsAccessor",
-    "SettingsNotLoadedError",
-    "SettingsValidationError",
-)
-
-
-class SettingsNotLoadedError(Exception):
-    """Exception class to raise when configuration is accessed before it has been loaded."""
-
-    def __init__(self, message: str | None = None) -> None:
-        """Initialise a new SettingsNotLoadedError with the given message."""
-        super().__init__(
-            message or "Configuration cannot be accessed before it has been loaded."
-        )
-
-
-class SettingsValidationError(Exception):
-    """Exception class to raise when the configuration file contains invalid settings."""
+__all__: "Sequence[str]" = ("SettingsAccessor",)
 
 
 @dataclass(frozen=True, slots=True)
@@ -69,7 +58,7 @@ class _LoadedSettings:
 _MISSING: "Final[object]" = object()
 
 
-def _flatten_settings(model: BaseModel, prefix: str = "") -> "Mapping[str, object]":
+def flatten_settings(model: BaseModel, prefix: str = "") -> "Mapping[str, object]":
     """
     Flatten a settings model into a mapping of colon-separated key paths to values.
 
@@ -86,7 +75,7 @@ def _flatten_settings(model: BaseModel, prefix: str = "") -> "Mapping[str, objec
         KEY_PATH: str = f"{prefix}{field_name.replace('_', '-')}"
 
         if isinstance(value, BaseModel):
-            flattened_settings.update(_flatten_settings(value, prefix=f"{KEY_PATH}:"))
+            flattened_settings.update(flatten_settings(value, prefix=f"{KEY_PATH}:"))
             continue
 
         NESTED_MODEL: type[BaseModel] | None = nested_settings_model_of(field)
@@ -185,9 +174,9 @@ class SettingsAccessor:
             ) from validation_error
 
         PREVIOUS_SETTINGS: Final[Mapping[str, object]] = (
-            {} if self._loaded is None else _flatten_settings(self._loaded.snapshot)
+            {} if self._loaded is None else flatten_settings(self._loaded.snapshot)
         )
-        NEW_SETTINGS: Final[Mapping[str, object]] = _flatten_settings(snapshot)
+        NEW_SETTINGS: Final[Mapping[str, object]] = flatten_settings(snapshot)
 
         # NOTE: Rebinding this single reference is what makes a reload atomic: every
         # reader either sees the whole of the previous configuration, or the whole of the
@@ -208,7 +197,7 @@ class SettingsAccessor:
 
         Used by the `/config` command to view settings by name.
         """
-        return _flatten_settings(self._current.snapshot)
+        return flatten_settings(self._current.snapshot)
 
     @property
     def logging(self) -> "LoggingSettings":

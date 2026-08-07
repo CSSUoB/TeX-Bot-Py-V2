@@ -28,6 +28,14 @@ from .messages import (
     MessagesJSONFileValueError,
 )
 from .msl import MSLMembershipError
+from .settings import (
+    InvalidSettingsFileError,
+    SettingsFileChangedError,
+    SettingsFileNotFoundError,
+    SettingsNotLoadedError,
+    SettingsValidationError,
+    UnknownSettingError,
+)
 from .strike import NoAuditLogsStrikeTrackingError, StrikeTrackingError
 
 if TYPE_CHECKING:
@@ -48,6 +56,7 @@ __all__: "Sequence[str]" = (
     "InvalidActionDescriptionError",
     "InvalidActionTargetError",
     "InvalidMessagesJSONFileError",
+    "InvalidSettingsFileError",
     "MSLMembershipError",
     "MemberRoleDoesNotExistError",
     "MessagesJSONFileMissingKeyError",
@@ -57,5 +66,10 @@ __all__: "Sequence[str]" = (
     "RoleDoesNotExistError",
     "RolesChannelDoesNotExistError",
     "RulesChannelDoesNotExistError",
+    "SettingsFileChangedError",
+    "SettingsFileNotFoundError",
+    "SettingsNotLoadedError",
+    "SettingsValidationError",
     "StrikeTrackingError",
+    "UnknownSettingError",
 )

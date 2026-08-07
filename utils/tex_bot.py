@@ -494,13 +494,13 @@ class TeXBot(discord.Bot):
         """
         Retrieve the Discord log channel.
 
-        If no DISCORD_LOG_CHANNEL_WEBHOOK_URL is specified,
+        If no `logging:discord-channel:webhook-url` is specified,
         a ValueError exception will be raised.
         """
         if settings.logging.discord_channel is None:
             NO_LOG_CHANNEL_MESSAGE: Final[str] = (
                 "Cannot fetch log channel, "
-                "when no DISCORD_LOG_CHANNEL_WEBHOOK_URL has been set."
+                "when no logging:discord-channel:webhook-url has been set."
             )
             raise ValueError(NO_LOG_CHANNEL_MESSAGE)
 

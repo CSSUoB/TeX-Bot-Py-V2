@@ -107,6 +107,40 @@ def _format_restart_required_warning(restart_required_settings: "AbstractSet[str
     )
 
 
+async def _autocomplete_get_settings_names(
+    ctx: "TeXBotAutocompleteContext",
+) -> "Sequence[discord.OptionChoice]":
+    """
+    Autocomplete callable that generates the configurable settings names, in order.
+
+    Every setting whose name contains what has been typed so far is suggested,
+    rather than only those beginning with it, because each name is prefixed with the
+    section holding it & so is rarely typed from its beginning.
+
+    NOTE: Returned as a sequence, rather than the set that every other autocomplete
+    callable returns, because these suggestions are alphabetically ordered & a set
+    would discard that ordering.
+
+    NOTE: Defined at module level, rather than as a staticmethod, because Pycord
+    fails to recognise a staticmethod referenced by its bare name from within its
+    own class body as a coroutine function, so never awaits the result.
+    """
+    TYPED_VALUE: Final[str] = str(ctx.value or "").strip().lower()
+
+    MATCHING_SETTINGS_NAMES: Final[Sequence[str]] = [
+        setting_name
+        for setting_name in config.documented_setting_names()
+        if TYPED_VALUE in setting_name.lower()
+    ]
+
+    return [
+        discord.OptionChoice(name=setting_name, value=setting_name)
+        # NOTE: Sliced because Discord refuses a response holding more suggestions
+        # than it is willing to display.
+        for setting_name in MATCHING_SETTINGS_NAMES[:MAXIMUM_AUTOCOMPLETE_SUGGESTIONS]
+    ]
+
+
 class ConfigCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/config" command group & its call-back methods."""
 
@@ -114,36 +148,6 @@ class ConfigCommandsCog(TeXBotBaseCog):
         name="config",
         description="View & change TeX-Bot's configuration.",
     )
-
-    @staticmethod
-    async def autocomplete_get_settings_names(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "Sequence[discord.OptionChoice]":
-        """
-        Autocomplete callable that generates the configurable settings names, in order.
-
-        Every setting whose name contains what has been typed so far is suggested,
-        rather than only those beginning with it, because each name is prefixed with the
-        section holding it & so is rarely typed from its beginning.
-
-        NOTE: Returned as a sequence, rather than the set that every other autocomplete
-        callable returns, because these suggestions are alphabetically ordered & a set
-        would discard that ordering.
-        """
-        TYPED_VALUE: Final[str] = str(ctx.value or "").strip().lower()
-
-        MATCHING_SETTINGS_NAMES: Final[Sequence[str]] = [
-            setting_name
-            for setting_name in config.documented_setting_names()
-            if TYPED_VALUE in setting_name.lower()
-        ]
-
-        return [
-            discord.OptionChoice(name=setting_name, value=setting_name)
-            # NOTE: Sliced because Discord refuses a response holding more suggestions
-            # than it is willing to display.
-            for setting_name in MATCHING_SETTINGS_NAMES[:MAXIMUM_AUTOCOMPLETE_SUGGESTIONS]
-        ]
 
     @config.command(
         name="reload",
@@ -229,7 +233,7 @@ class ConfigCommandsCog(TeXBotBaseCog):
         name="setting",
         description="The name of the setting to show.",
         input_type=str,
-        autocomplete=autocomplete_get_settings_names,
+        autocomplete=_autocomplete_get_settings_names,
         required=True,
         parameter_name="setting_name",
     )
@@ -304,7 +308,7 @@ class ConfigCommandsCog(TeXBotBaseCog):
         name="setting",
         description="The name of the setting to change.",
         input_type=str,
-        autocomplete=autocomplete_get_settings_names,
+        autocomplete=_autocomplete_get_settings_names,
         required=True,
         parameter_name="setting_name",
     )
@@ -377,7 +381,7 @@ class ConfigCommandsCog(TeXBotBaseCog):
         name="setting",
         description="The name of the setting to return to its default value.",
         input_type=str,
-        autocomplete=autocomplete_get_settings_names,
+        autocomplete=_autocomplete_get_settings_names,
         required=True,
         parameter_name="setting_name",
     )

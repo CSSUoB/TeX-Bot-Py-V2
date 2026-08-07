@@ -20,6 +20,8 @@ from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
 from ruamel.yaml.error import YAMLError
 
+from exceptions import InvalidSettingsFileError, SettingsFileNotFoundError
+
 if TYPE_CHECKING:
     from collections.abc import Iterator, Sequence
     from logging import Logger
@@ -30,9 +32,7 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = (
     "SETTINGS_FILE_PATH_ENVIRONMENT_VARIABLE_NAME",
-    "InvalidSettingsFileError",
     "SettingsDocument",
-    "SettingsFileNotFoundError",
     "get_settings_file_path",
 )
 
@@ -44,14 +44,6 @@ PROJECT_ROOT: "Final[Path]" = Path(__file__).parent.parent.resolve()
 DEFAULT_SETTINGS_FILE_NAME: "Final[str]" = "tex-bot-deployment.yaml"
 
 SETTINGS_FILE_PATH_ENVIRONMENT_VARIABLE_NAME: "Final[str]" = "TEX_BOT_CONFIG_PATH"
-
-
-class SettingsFileNotFoundError(Exception):
-    """Exception class to raise when no deployment configuration file could be located."""
-
-
-class InvalidSettingsFileError(Exception):
-    """Exception class to raise when the deployment configuration file could not be read."""
 
 
 def get_settings_file_path() -> Path:

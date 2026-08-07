@@ -603,10 +603,10 @@ class TestSettingsMetadata:
     @staticmethod
     def test_metadata_covers_every_configurable_setting() -> None:
         """Test that the metadata describes exactly the settings that can be configured."""
-        from config._accessor import _flatten_settings  # noqa: PLC0415
+        from config._accessor import flatten_settings  # noqa: PLC0415
 
         SETTINGS_NAMES: Final[frozenset[str]] = frozenset(
-            _flatten_settings(SettingsSchema.model_validate(_config()))
+            flatten_settings(SettingsSchema.model_validate(_config()))
         )
 
         # NOTE: Every flattened key path must name a setting that `/config` recognises,

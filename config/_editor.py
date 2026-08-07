@@ -20,12 +20,16 @@ from pydantic import SecretStr, ValidationError
 from ruamel.yaml import YAML
 from ruamel.yaml.error import YAMLError
 
-from ._accessor import SettingsValidationError, _flatten_settings
-from ._document import (
+from exceptions import (
     InvalidSettingsFileError,
-    SettingsDocument,
+    SettingsFileChangedError,
     SettingsFileNotFoundError,
+    SettingsValidationError,
+    UnknownSettingError,
 )
+
+from ._accessor import flatten_settings
+from ._document import SettingsDocument
 from ._schema import SettingsSchema, get_settings_metadata
 
 if TYPE_CHECKING:
@@ -38,8 +42,6 @@ if TYPE_CHECKING:
 
 __all__: "Sequence[str]" = (
     "SETTING_NAME_SEPARATOR",
-    "SettingsFileChangedError",
-    "UnknownSettingError",
     "documented_setting_names",
     "format_file_difference",
     "format_setting_value",
@@ -59,26 +61,6 @@ UNSET_VALUE_DISPLAY: "Final[str]" = "_(not set)_"
 # NOTE: Anything YAML would read back as a value other than a string, so that a value
 # given as one of these words is not written into the file as bare text.
 _NULL_LITERALS: "Final[frozenset[str]]" = frozenset({"null", "~"})
-
-
-class UnknownSettingError(Exception):
-    """Exception class to raise when a setting that the schema does not declare is named."""
-
-    def __init__(self, setting_name: str) -> None:
-        """Initialise a new UnknownSettingError for the given setting name."""
-        self.setting_name: str = setting_name
-
-        super().__init__(f"No configuration setting is named {setting_name!r}.")
-
-
-class SettingsFileChangedError(Exception):
-    """Exception class to raise when the configuration file has been edited by hand."""
-
-    def __init__(self) -> None:
-        """Initialise a new SettingsFileChangedError."""
-        super().__init__(
-            "The configuration file has been changed since TeX-Bot last loaded it."
-        )
 
 
 def documented_setting_names() -> "Sequence[str]":
@@ -220,7 +202,7 @@ def format_file_difference(
     """
     file_error: Exception
     try:
-        FILE_VALUES: Final[Mapping[str, object]] = _flatten_settings(
+        FILE_VALUES: Final[Mapping[str, object]] = flatten_settings(
             _snapshot_of(SettingsDocument.load(file_path))
         )
     except (
