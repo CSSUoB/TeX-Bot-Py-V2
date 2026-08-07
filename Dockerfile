@@ -14,11 +14,19 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-group dev
 
 COPY LICENSE /app/
-COPY config.py main.py messages.json /app/
+COPY main.py messages.json /app/
+COPY config/ /app/config/
 COPY exceptions/ /app/exceptions/
 COPY utils/ /app/utils/
 COPY db/ /app/db/
 COPY cogs/ /app/cogs/
+
+# NOTE: The deployment configuration is kept in its own directory, separate from any
+# application code, so that it can be mounted as a directory. Mounting the directory
+# (rather than the configuration file individually) allows TeX-Bot to rewrite the file
+# in place when the `/config` command changes a setting: replacing an individually
+# mounted file is rejected, because a rename cannot replace a mount point.
+RUN mkdir --parents /app/data
 
 FROM python:3.13-slim-trixie
 
@@ -29,7 +37,8 @@ LABEL org.opencontainers.image.licenses=Apache-2.0
 
 COPY --from=builder --chown=nonroot:nonroot /app /app
 
-ENV LANG=C.UTF-8 PATH="/app/.venv/bin:$PATH"
+ENV LANG=C.UTF-8 PATH="/app/.venv/bin:$PATH" \
+    TEX_BOT_CONFIG_PATH=/app/data/tex-bot-deployment.yaml
 
 WORKDIR /app
 

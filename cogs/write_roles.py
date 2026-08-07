@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from config import settings
+from config import messages
 from utils import CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
@@ -34,7 +34,7 @@ class WriteRolesCommandCog(TeXBotBaseCog):
         roles_channel: discord.TextChannel = await self.bot.roles_channel
 
         roles_message: str
-        for roles_message in settings["ROLES_MESSAGES"]:
+        for roles_message in messages.roles_messages:
             await roles_channel.send(
                 roles_message.replace("<Group_Name>", self.bot.group_short_name)
             )

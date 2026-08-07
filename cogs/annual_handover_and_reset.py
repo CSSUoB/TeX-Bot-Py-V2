@@ -208,12 +208,12 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
             membership_dependent_roles: Mapping[str, discord.Role] = {
                 role.name: role
                 for role in main_guild.roles
-                if role.name in settings["MEMBERSHIP_DEPENDENT_ROLES"]
+                if role.name in settings.community_group.membership_dependent_roles
             }
 
-            not_found_role_names: Collection[str] = settings[
-                "MEMBERSHIP_DEPENDENT_ROLES"
-            ] - set(membership_dependent_roles.keys())
+            not_found_role_names: Collection[str] = set(
+                settings.community_group.membership_dependent_roles
+            ) - set(membership_dependent_roles.keys())
             if not_found_role_names:
                 logger.warning(
                     "Membership dependent roles %s were configured but could not be found.",

@@ -45,12 +45,6 @@ repos:
         - id: zizmor
           args: [--no-progress, --fix, --persona=auditor]
 
-    - repo: https://github.com/dotenv-linter/dotenv-linter
-      rev: v4.0.0
-      hooks:
-        - id: dotenv-linter
-          args: [fix, --no-backup]
-
     - repo: https://github.com/hadolint/hadolint
       rev: v2.14.0
       hooks:
@@ -114,7 +108,6 @@ repos:
           args: [--fix=lf]
         - id: detect-private-key
         - id: fix-byte-order-marker
-          args: [-h]
 
     - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
       rev: v2.16.0
@@ -123,7 +116,7 @@ repos:
           args: [--autofix]
 
     - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.15.22
+      rev: v0.16.1
       hooks:
         - id: ruff-check
           args: [--fix]

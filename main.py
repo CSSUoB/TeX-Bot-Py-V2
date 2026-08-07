@@ -2,7 +2,7 @@
 """
 The main entrypoint into the running of TeX-Bot.
 
-It loads the settings values from the .env file/the environment variables,
+It loads the settings values from the deployment configuration file,
 then ensures the Django database is correctly migrated to the latest version and finally begins
 the asynchronous running process for TeX-Bot.
 """
@@ -33,7 +33,7 @@ with SuppressTraceback():
 
 
 def _run_bot() -> "NoReturn":  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
-    bot.run(settings["DISCORD_BOT_TOKEN"])
+    bot.run(settings.discord.bot_token.get_secret_value())
 
     raise SystemExit(0 if bot.EXIT_WAS_DUE_TO_KILL_COMMAND else 1)
 

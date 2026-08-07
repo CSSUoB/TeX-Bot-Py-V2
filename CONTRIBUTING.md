@@ -52,15 +52,44 @@ If you are submitting a feature request, please include the steps to implement t
 ### Top level files
 
 * [`main.py`](main.py): is the main entrypoint to instantiate the [`Bot` object](https://docs.pycord.dev/stable/api/clients.html#discord.Bot) & run it
-* [`config.py`](config.py): retrieves the [environment variables](README.md#setting-environment-variables) & populates the correct values into the `settings` object
+* [`tex-bot-deployment.example.yaml`](tex-bot-deployment.example.yaml): documents every [configuration setting](README.md#configuring-tex-bot) that TeX-Bot understands, along with its default value
 
 ### Other significant directories
 
+* [`config/`](config): reads & validates the deployment configuration file, and exposes it as the `settings` object, see [below](#configuration) for more information
 * [`cogs/`](cogs): contains all the [cogs](https://guide.pycord.dev/popular-topics/cogs) within this project, see [below](#cogs) for more information
 * [`exceptions/`](exceptions): contains common [exception](https://docs.python.org/3/tutorial/errors) subclasses that may be raised when certain errors occur
 * [`utils/`](utils): contains common utility classes & functions used by the top-level modules & cogs
 * [`db/core/models/`](db/core/models): contains all the [database ORM models](https://docs.djangoproject.com/en/stable/topics/db/models) to interact with storing information longer-term (between individual command events)
+* [`stubs/`](stubs): contains hand-written [type stubs](https://typing.python.org/en/latest/spec/distributing.html#stub-files) for the third-party packages that do not ship their own
 * [`tests/`](tests): contains the complete test suite for this project, based on the [Pytest framework](https://pytest.org)
+
+### Configuration
+
+TeX-Bot is configured by a single [YAML](https://yaml.org) file, which is read, validated & applied by the modules within [the `config` package](config).
+Each module owns one concern, so that no other part of the project needs to know how the configuration file is stored:
+
+* [`config/_schema.py`](config/_schema.py): the single source of truth for the configuration.
+Declares every setting as a [Pydantic](https://docs.pydantic.dev) model: its type, its constraints, its default, its help text, whether it holds a secret & whether changing it requires a restart.
+**Any new setting is added here, and nowhere else**
+
+* [`config/_document.py`](config/_document.py): owns every interaction with the file itself; locating it, parsing it while retaining its comments & formatting, writing it back atomically, & reporting a validation failure against the line that caused it
+
+* [`config/_accessor.py`](config/_accessor.py): holds the loaded configuration as a single immutable snapshot, replaced wholesale whenever it is reloaded, so that no reader can observe a half-applied configuration
+
+* [`config/_editor.py`](config/_editor.py): changes an individual setting, on behalf of [the `/config` command](README.md#changing-settings-from-within-discord), validating the result before anything is written
+
+* [`config/_logging.py`](config/_logging.py): applies the logging settings, replacing existing handlers rather than adding to them, so that reloading cannot accumulate duplicates
+
+* [`config/_messages.py`](config/_messages.py): loads [the messages file](messages.json), which is held separately from the deployment configuration because it is a body of content rather than a set of settings
+
+Settings are read as attributes of the `settings` object, by the section holding them:
+
+```python
+import config
+
+config.settings.commands.ping.easter_egg_probability
+```
 
 ### Cogs
 
@@ -73,17 +102,33 @@ There are separate cog files for each activity, and one [`__init__.py`](cogs/__i
 
 * [`cogs/__init__.py`](cogs/__init__.py): instantiates all the cog classes within this directory
 
+* [`cogs/add_users_to_threads_and_channels.py`](cogs/add_users_to_threads_and_channels.py): cogs for adding Discord members & roles to a channel or thread
+
+* [`cogs/annual_handover_and_reset.py`](cogs/annual_handover_and_reset.py): cogs for performing your group's annual committee handover & membership reset
+
 * [`cogs/archive.py`](cogs/archive.py): cogs for archiving categories of channels within your group's Discord guild
 
+* [`cogs/check_su_platform_authorisation.py`](cogs/check_su_platform_authorisation.py): cogs for checking whether TeX-Bot is still authenticated to your group's SU platform
+
 * [`cogs/command_error.py`](cogs/command_error.py): cogs for sending error messages when commands fail to complete/execute
+
+* [`cogs/committee_actions_tracking.py`](cogs/committee_actions_tracking.py): cogs for tracking the actions assigned to each committee member
+
+* [`cogs/config.py`](cogs/config.py): cogs for viewing & changing [TeX-Bot's configuration](README.md#changing-settings-from-within-discord) at run-time
 
 * [`cogs/delete_all.py`](cogs/delete_all.py): cogs for deleting all permanent data stored in a specific object's table in the database
 
 * [`cogs/edit_message.py`](cogs/edit_message.py): cogs for editing messages that were previously sent by TeX-Bot
 
+* [`cogs/everest.py`](cogs/everest.py): cogs for calculating how many steps of Mount Everest a university assignment is worth
+
 * [`cogs/induct.py`](cogs/induct.py): cogs for inducting people into your group's Discord guild
 
+* [`cogs/invite_link.py`](cogs/invite_link.py): cogs for sending an invite link to your group's Discord guild
+
 * [`cogs/kill.py`](cogs/kill.py): cogs related to the shutdown of TeX-Bot
+
+* [`cogs/make_applicant.py`](cogs/make_applicant.py): cogs related to making guests into committee applicants
 
 * [`cogs/make_member.py`](cogs/make_member.py): cogs related to making guests into members
 
