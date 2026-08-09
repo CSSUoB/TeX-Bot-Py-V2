@@ -225,8 +225,9 @@ jobs:
 
             - if: ${{!cancelled()}}
               name: Upload test results to Codecov
-              uses: codecov/test-results-action@v1
+              uses: codecov/codecov-action@v7
               with:
+                report_type: test_results
                 use_oidc: true
 
             - if: ${{!cancelled()}}
