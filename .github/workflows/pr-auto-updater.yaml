@@ -12,7 +12,7 @@ permissions:
 
 jobs:
     pr-auto-update:
-        if: github.repository == 'CSSUoB/TeX-Bot-Py-V2'
+        if: github.repository == 'CSSUoB/TeX-Bot-Py-V2' && github.actor != 'dependabot[bot]'
         name: Auto-update pull request branches
         runs-on: ubuntu-latest
 
