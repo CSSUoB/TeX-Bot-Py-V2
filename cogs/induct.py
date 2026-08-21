@@ -188,7 +188,9 @@ class BaseInductCog(TeXBotBaseCog):
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
-        induction_member: discord.Member | None = await self.bot.get_member_from_str_id(str(induction_member_id))
+        induction_member: discord.Member | None = await self.bot.get_member_from_str_id(
+            str(induction_member_id)
+        )
         if not induction_member:
             await ctx.respond(
                 (
