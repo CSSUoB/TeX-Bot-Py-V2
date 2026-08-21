@@ -476,7 +476,7 @@ class TeXBot(discord.Bot):
             INVALID_USER_ID_MESSAGE: Final[str] = f"'{str_member_id}' is not a valid user ID."
             raise ValueError(INVALID_USER_ID_MESSAGE)
 
-        user: discord.User | None = self.get_user(int(str_member_id))
+        user: discord.User | None = self.get_or_fetch_user(int(str_member_id))
         if not user:
             raise ValueError(
                 DiscordMemberNotInMainGuildError(user_id=int(str_member_id)).message
