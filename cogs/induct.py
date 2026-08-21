@@ -188,9 +188,20 @@ class BaseInductCog(TeXBotBaseCog):
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
-        induction_member: discord.Member | None = await self.bot.get_member_from_str_id(
-            str(induction_member_id)
+        induction_user: discord.User | None = await self.bot.get_or_fetch_user(
+            induction_member_id
         )
+        if not induction_user:
+            await ctx.respond(
+                (
+                    ":information_source: No changes made. User ID provided was not valid. "
+                    ":information_source:"
+                ),
+                ephemeral=True,
+            )
+            return
+
+        induction_member: discord.Member | None = main_guild.get_member(induction_member_id)
         if not induction_member:
             await ctx.respond(
                 (
