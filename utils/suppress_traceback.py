@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from types import TracebackType
 
-__all__: "Sequence[str]" = ("SuppressTraceback",)
+__all__: Sequence[str] = ("SuppressTraceback",)
 
 
 class SuppressTraceback:
@@ -39,7 +39,7 @@ class SuppressTraceback:
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
-        exc_tb: "TracebackType | None",  # noqa: PYI036
+        exc_tb: TracebackType | None,
     ) -> None:
         """Exit the context manager, reverting the limit of traceback output."""
         if exc_type is not None or exc_val is not None or exc_tb is not None:

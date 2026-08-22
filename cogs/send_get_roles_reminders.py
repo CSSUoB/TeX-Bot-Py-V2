@@ -26,17 +26,17 @@ if TYPE_CHECKING:
 
     from utils import TeXBot
 
-__all__: "Sequence[str]" = ("SendGetRolesRemindersTaskCog",)
+__all__: Sequence[str] = ("SendGetRolesRemindersTaskCog",)
 
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
     """Cog class that defines the send_get_roles_reminders task."""
 
     @override
-    def __init__(self, bot: "TeXBot") -> None:
+    def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
         if settings["SEND_GET_ROLES_REMINDERS"]:
             _ = self.send_get_roles_reminders.start()
@@ -140,7 +140,7 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
                         and guest_role in log.after.roles
                     )
                 )
-            except (StopIteration, StopAsyncIteration):
+            except StopIteration, StopAsyncIteration:
                 guest_role_received_time = None
 
             if guest_role_received_time is not None:
