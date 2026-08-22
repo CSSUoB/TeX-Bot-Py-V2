@@ -514,7 +514,7 @@ class ManualModerationCog(BaseStrikeCog):
                 and _audit_log_entry.target.id
                 == strike_user.id  # NOTE: IDs are checked here rather than the objects themselves as the audit log provides an unusual object type in some cases.
             )
-        except StopIteration, StopAsyncIteration:
+        except (StopIteration, StopAsyncIteration):
             logger.debug("Printing 5 most recent audit logs:")
             debug_audit_log_entry: discord.AuditLogEntry
             async for debug_audit_log_entry in main_guild.audit_logs(limit=5):
