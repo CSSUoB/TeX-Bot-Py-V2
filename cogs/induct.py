@@ -206,7 +206,7 @@ class BaseInductCog(TeXBotBaseCog):
             await ctx.respond(
                 (
                     ":information_source: No changes made. User cannot be inducted "
-                    "because they have left the server "
+                    "because they have left the server or are not cached "
                     ":information_source:"
                 ),
                 ephemeral=True,
