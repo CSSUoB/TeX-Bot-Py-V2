@@ -138,7 +138,7 @@ class TestRoundTripping:
         )
         document: SettingsDocument = SettingsDocument.load(config_file_path)
 
-        document.raw["community-group"]["full-name"] = "CompSoc"
+        document.set_value(["community-group", "full-name"], "CompSoc")
         document.write()
 
         assert (
@@ -436,15 +436,46 @@ class TestErrorReporting:
         assert document.line_number_of(["not-a-section", "not-a-setting"]) is None
 
     @staticmethod
-    def test_an_error_within_a_list_is_reported_against_the_list(
+    @pytest.mark.parametrize(
+        ("key_path", "expected_line_number"),
+        (
+            # NOTE: A key path descending past a value that holds nothing further, one
+            # naming an entry of a list that does not exist, & one naming an entry of a
+            # list by something other than its position.
+            (("discord", "bot-token", "deeper"), 3),
+            (("commands", "stats", "displayed-roles", 5), 7),
+            (("commands", "stats", "displayed-roles", "Committee"), 7),
+        ),
+    )
+    def test_an_unresolvable_key_falls_back_to_the_deepest_line_known(
+        write_config: "ConfigWriter",
+        key_path: "Sequence[str | int]",
+        expected_line_number: int,
+    ) -> None:
+        """Test that a key path which cannot be followed reports how far it did reach."""
+        document: SettingsDocument = SettingsDocument.load(
+            write_config(
+                f"{MINIMAL_CONFIG}"
+                f"commands:\n"
+                f"  stats:\n"
+                f"    displayed-roles:\n"
+                f"      - Committee\n"
+            )
+        )
+
+        assert document.line_number_of(key_path) == expected_line_number
+
+    @staticmethod
+    def test_an_error_within_a_list_is_reported_against_the_entry(
         write_config: "ConfigWriter",
     ) -> None:
         """
-        Test that a rejected entry of a list is reported against the list holding it.
+        Test that a rejected entry of a list is reported against its own line.
 
         Pydantic identifies such an entry by its position, so the reported key path ends
-        with a number rather than a name. Individual entries are not resolved to their
-        own lines, so the line of the list they belong to is reported instead.
+        with a number rather than a name. That position is resolved to the line holding
+        the entry, rather than to the line the list containing it begins upon, so that a
+        long list does not point every one of its errors at the same line.
         """
         document: SettingsDocument = SettingsDocument.load(
             write_config(
@@ -463,7 +494,9 @@ class TestErrorReporting:
         FORMATTED_ERROR: Final[str] = document.format_validation_error(validation_error.value)
 
         assert "commands:stats:displayed-roles:1" in FORMATTED_ERROR
-        assert "tex-bot-deployment.yaml:10" in FORMATTED_ERROR
+        # NOTE: The line holding the second entry of the list, rather than line 7 that
+        # `displayed-roles` itself is written upon.
+        assert "tex-bot-deployment.yaml:9" in FORMATTED_ERROR
 
     @staticmethod
     def test_an_error_with_no_location_is_reported_against_the_whole_file(

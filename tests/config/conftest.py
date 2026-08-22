@@ -43,9 +43,6 @@ MINIMAL_CONFIG: "Final[str]" = f"""\
 discord:
   bot-token: {VALID_BOT_TOKEN}
   main-guild-id: {VALID_MAIN_GUILD_ID}
-community-group:
-  links: {{}}
-  msl: {{}}
 """
 
 

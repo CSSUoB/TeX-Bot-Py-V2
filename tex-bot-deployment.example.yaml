@@ -45,20 +45,22 @@ discord:
     # REQUIRED. The ID of your community group's main Discord guild.
     main-guild-id: 0
 
+# Everything below is optional, & may be left out entirely. Each value shown is the
+# default that TeX-Bot uses when the setting is not written here at all.
+#
+# An empty value is not the same as an absent one: every setting that is present must
+# hold a valid value, so leave a setting out entirely rather than setting it to "".
+
 community-group:
-    # Optional. Falls back to the name of your Discord guild.
+    # Falls back to the name of your Discord guild.
     # full-name: Computer Science Society
-    # Optional. Falls back to being derived from the full name.
+    # Falls back to being derived from the full name.
     # short-name: CSS
-    # Optional. Roles that should only be held by members of your community group.
+    # Roles that should only be held by members of your community group.
     membership-dependent-roles: []
 
-    # Every link is optional. To set any of them, replace the `{}` below with the
-    # commented-out block beneath it, keeping only the links you have.
-    #
-    # An empty value is not the same as an absent one: every setting that is present must
-    # hold a valid value, so leave a setting out entirely rather than setting it to "".
-    links: {}
+    # Uncomment only the links you have; each one is used solely by the messages that
+    # mention it, which leave it out when it is unset.
     # links:
     #   purchase-membership: https://example.com/join
     #   membership-perks: https://example.com/perks
@@ -67,16 +69,14 @@ community-group:
     #   custom-discord-invite-link: https://discord.gg/example
 
     msl:
-        # Optional. Your community group's organisation ID on your MSL website.
+        # Your community group's organisation ID on your MSL website.
         # organisation-id: "1234"
-        # Optional. Your members-list authentication session cookie, extracted from your
+        # Your members-list authentication session cookie, extracted from your
         # web-browser after logging in. It is probably named `.AspNet.SharedCookie`.
         # auth-cookie: your-authentication-cookie-value
         auto-cookie-checking:
             enabled: false
             interval: 10m
-
-# Every section below is optional; the values shown are the defaults.
 
 logging:
     console:
@@ -97,8 +97,22 @@ commands:
         lookback-days: 30
         displayed-roles:
             - Committee
+            - Committee-Elect
+            - Student Rep
             - Member
             - Guest
+            - Server Booster
+            - Foundation Year
+            - First Year
+            - Second Year
+            - Final Year
+            - Year In Industry
+            - Year Abroad
+            - PGT
+            - PGR
+            - Alumnus/Alumna
+            - Postdoc
+            - Quiz Victor
     strike:
         performed-manually-warning-location: DM
         # How long a first strike times a member out for.

@@ -166,6 +166,23 @@ class TestParsingValues:
         assert parse_setting_value("community-group:msl:organisation-id", raw_value) == "1234"
 
     @staticmethod
+    @pytest.mark.parametrize("raw_value", ("null", "NULL", "~", " null "))
+    @pytest.mark.parametrize(
+        "setting_name",
+        # NOTE: A setting holding text, & one holding anything else, because text is
+        # otherwise deliberately kept as the text it was typed as.
+        ("community-group:full-name", "community-group:links:purchase-membership"),
+    )
+    def test_a_setting_written_as_null_is_cleared(setting_name: str, raw_value: str) -> None:
+        """
+        Test that clearing a setting clears it, whatever kind of value it holds.
+
+        A setting declared to hold text would otherwise be set to the word `null` itself,
+        rather than to nothing at all.
+        """
+        assert parse_setting_value(setting_name, raw_value) is None
+
+    @staticmethod
     def test_a_setting_holding_a_sequence_is_not_mistaken_for_text() -> None:
         """Test that a list of role names is still read as a list."""
         assert parse_setting_value("commands:stats:displayed-roles", "[Committee]") == [
@@ -264,6 +281,48 @@ class TestChangingSettings:
 
         with pytest.raises(UnknownSettingError):
             config.set_setting("not:a:setting", "1")
+
+
+class TestChangingTheFileThatIsRunning:
+    """Test case for which configuration file a change is made to & read back from."""
+
+    @staticmethod
+    def test_a_change_is_read_back_from_the_file_it_was_written_to(
+        configured: "Callable[[str], Path]",
+        tmp_path: "Path",
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """
+        Test that a change is applied from the file TeX-Bot is running, not a newer one.
+
+        A change is deliberately written to the file the running configuration was loaded
+        from. Reading it back out of whichever file would be located now would apply a
+        configuration that was never the one changed, so the setting just written would
+        appear not to have been.
+        """
+        RUNNING_CONFIG_FILE_PATH: Final[Path] = configured(MINIMAL_CONFIG)
+
+        OTHER_CONFIG_FILE_PATH: Final[Path] = tmp_path / "somewhere-else.yaml"
+        OTHER_CONFIG_FILE_PATH.write_text(
+            f"{MINIMAL_CONFIG}commands:\n  ping:\n    easter-egg-probability: 0.99\n",
+            encoding="utf-8",
+        )
+        monkeypatch.setenv(
+            SETTINGS_FILE_PATH_ENVIRONMENT_VARIABLE_NAME, str(OTHER_CONFIG_FILE_PATH)
+        )
+
+        config.set_setting(
+            "commands:ping:easter-egg-probability", str(CHANGED_EASTER_EGG_PROBABILITY)
+        )
+
+        assert (
+            config.settings.commands.ping.easter_egg_probability
+            == CHANGED_EASTER_EGG_PROBABILITY
+        )
+        assert str(CHANGED_EASTER_EGG_PROBABILITY) in RUNNING_CONFIG_FILE_PATH.read_text(
+            encoding="utf-8"
+        )
+        assert config.settings.file_path == RUNNING_CONFIG_FILE_PATH
 
 
 class TestRejectedChanges:
@@ -729,8 +788,8 @@ class TestDescribingAnEditedFile:
 
         TestDescribingAnEditedFile._edit_by_hand(
             CONFIG_FILE_PATH,
-            "community-group:\n",
-            "auto-add-committee-to-threads: false\ncommunity-group:\n",
+            "discord:\n",
+            "auto-add-committee-to-threads: false\ndiscord:\n",
         )
 
         DESCRIPTION: Final[str] = config.format_file_difference(

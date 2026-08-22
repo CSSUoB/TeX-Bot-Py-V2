@@ -58,8 +58,8 @@ REDACTED_VALUE_DISPLAY: "Final[str]" = "\\*\\*\\*\\*\\*\\* _(hidden)_"
 
 UNSET_VALUE_DISPLAY: "Final[str]" = "_(not set)_"
 
-# NOTE: Anything YAML would read back as a value other than a string, so that a value
-# given as one of these words is not written into the file as bare text.
+# NOTE: The ways of writing "nothing" that YAML recognises, so that a setting cleared by
+# one of them is cleared rather than being set to the word itself.
 _NULL_LITERALS: "Final[frozenset[str]]" = frozenset({"null", "~"})
 
 
@@ -99,8 +99,18 @@ def parse_setting_value(setting_name: str, raw_value: str) -> object:
     like a number (an organisation ID of `1234`, for example) is not written as one &
     then rejected for being the wrong type. Quoting such a value is still respected,
     so that `"1234"` means the same as `1234` rather than including the quotes.
+
+    Writing `null` (or `~`) clears a setting whatever type it holds, including one that
+    holds text. `/config unset` removes such a setting from the file altogether, whereas
+    this leaves it written there, holding nothing.
     """
     PARSED_VALUE: Final[object] = _read_as_yaml(raw_value)
+
+    if raw_value.strip().lower() in _NULL_LITERALS:
+        # NOTE: Clearing a setting is meant the same way whatever type that setting holds,
+        # so one declared to hold text is no exception: keeping `null` as the text it
+        # looks like would set that setting to the word itself rather than to nothing.
+        return None
 
     if setting_metadata(setting_name).holds_text:
         return PARSED_VALUE if isinstance(PARSED_VALUE, str) else raw_value
@@ -110,7 +120,7 @@ def parse_setting_value(setting_name: str, raw_value: str) -> object:
         # `Computer Science: Society` into a single setting meant it as plain text.
         return raw_value
 
-    if PARSED_VALUE is None and raw_value.strip().lower() not in _NULL_LITERALS:
+    if PARSED_VALUE is None:
         # NOTE: A value beginning with `#` parses as a comment, & so as nothing at all,
         # as does a value that cannot be read as YAML at all.
         return raw_value

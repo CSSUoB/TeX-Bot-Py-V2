@@ -26,8 +26,7 @@ __all__: "Sequence[str]" = ()
 
 
 REQUIRED_SETTINGS: "Final[Mapping[str, object]]" = {
-    "discord": {"bot-token": VALID_BOT_TOKEN, "main-guild-id": VALID_MAIN_GUILD_ID},
-    "community-group": {"links": {}, "msl": {}},
+    "discord": {"bot-token": VALID_BOT_TOKEN, "main-guild-id": VALID_MAIN_GUILD_ID}
 }
 
 
@@ -88,6 +87,29 @@ class TestConsoleLogging:
             apply_logging_settings(_logging_settings(console={"log-level": log_level}))
 
         assert len(_handlers_of_type(LOGGER_NAME, logging.StreamHandler)) == 1
+
+    @staticmethod
+    def test_a_file_handler_is_not_removed_alongside_the_console_handler(
+        tmp_path: "Path",
+    ) -> None:
+        """
+        Test that replacing the console handler leaves any file handler in place.
+
+        `FileHandler` subclasses `StreamHandler`, so removing every stream handler in
+        order to replace the console one would otherwise also remove a file handler that
+        a different logging destination is responsible for.
+        """
+        file_handler: Handler = logging.FileHandler(
+            filename=tmp_path / "tex-bot.log", encoding="utf-8", mode="a"
+        )
+        logging.getLogger(LOGGER_NAME).addHandler(file_handler)
+
+        try:
+            apply_logging_settings(_logging_settings(console={"log-level": "INFO"}))
+
+            assert file_handler in logging.getLogger(LOGGER_NAME).handlers
+        finally:
+            file_handler.close()
 
 
 class TestDiscordChannelLogging:
@@ -228,3 +250,30 @@ class TestDiscordAPILogging:
         apply_logging_settings(_logging_settings(**{"discord-api": {"enabled": False}}))
 
         assert not _handlers_of_type(DISCORD_LOGGER_NAME, logging.FileHandler)
+
+    @staticmethod
+    def test_disabling_afterwards_restores_the_original_log_level(tmp_path: "Path") -> None:
+        """
+        Test that disabling Discord API logging leaves no configured level behind.
+
+        Disabling these logs also passes them back to the root logger. A level left over
+        from when they were enabled would send every record meeting it there rather than
+        discarding it, so turning the logs off would make them noisier, not quieter.
+        """
+        apply_logging_settings(
+            _logging_settings(
+                **{
+                    "discord-api": {
+                        "enabled": True,
+                        "log-level": "DEBUG",
+                        "file-name": str(tmp_path / "discord.log"),
+                    }
+                }
+            )
+        )
+        assert logging.getLogger(DISCORD_LOGGER_NAME).level == logging.DEBUG
+
+        apply_logging_settings(_logging_settings(**{"discord-api": {"enabled": False}}))
+
+        assert logging.getLogger(DISCORD_LOGGER_NAME).level == logging.NOTSET
+        assert logging.getLogger(DISCORD_LOGGER_NAME).propagate

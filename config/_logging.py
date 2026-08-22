@@ -16,7 +16,11 @@ if TYPE_CHECKING:
     from logging import Handler, Logger
     from typing import Final
 
-    from ._schema import LoggingSettings
+    from ._schema import (
+        DiscordAPILoggingSettings,
+        DiscordChannelLoggingSettings,
+        LoggingSettings,
+    )
 
 
 __all__: "Sequence[str]" = ("DISCORD_LOGGER_NAME", "LOGGER_NAME", "apply_logging_settings")
@@ -36,11 +40,23 @@ logger: "Final[Logger]" = logging.getLogger(LOGGER_NAME)
 discord_logger: "Final[Logger]" = logging.getLogger(DISCORD_LOGGER_NAME)
 
 
-def _remove_handlers_of_type(target_logger: "Logger", handler_type: type) -> None:
-    """Remove every handler of the given type from the given logger."""
+def _remove_handlers_of_type(
+    target_logger: "Logger", handler_type: type, *, excluding: type | None = None
+) -> None:
+    """
+    Remove every handler of the given type from the given logger.
+
+    A subtype of that type may be excluded, because the logging module's own handler
+    hierarchy does not match the destinations they write to: `FileHandler` subclasses
+    `StreamHandler`, so removing every stream handler would otherwise also remove the
+    file handler that a different destination's settings are responsible for.
+    """
     existing_handler: Handler
     for existing_handler in tuple(target_logger.handlers):
-        if isinstance(existing_handler, handler_type):
+        HANDLER_IS_EXCLUDED: bool = excluding is not None and isinstance(
+            existing_handler, excluding
+        )
+        if isinstance(existing_handler, handler_type) and not HANDLER_IS_EXCLUDED:
             target_logger.removeHandler(existing_handler)
             existing_handler.close()
 
@@ -49,7 +65,7 @@ def _apply_console_logging_settings(logging_settings: "LoggingSettings") -> None
     """Set up logging to the console output stream."""
     # NOTE: Handlers are replaced rather than reconfigured in place, so that applying
     # settings repeatedly (upon every reload) cannot accumulate duplicate handlers.
-    _remove_handlers_of_type(logger, logging.StreamHandler)
+    _remove_handlers_of_type(logger, logging.StreamHandler, excluding=logging.FileHandler)
 
     console_logging_handler: Handler = logging.StreamHandler()
     console_logging_handler.setFormatter(
@@ -65,7 +81,9 @@ def _apply_discord_channel_logging_settings(logging_settings: "LoggingSettings")
     """Set up relaying of error logs to a Discord log channel."""
     _remove_handlers_of_type(logger, DiscordHandler)
 
-    DISCORD_CHANNEL_LOGGING_SETTINGS = logging_settings.discord_channel
+    DISCORD_CHANNEL_LOGGING_SETTINGS: Final[DiscordChannelLoggingSettings | None] = (
+        logging_settings.discord_channel
+    )
     if DISCORD_CHANNEL_LOGGING_SETTINGS is None:
         logger.debug(
             "No Discord log-channel webhook-URL was set, "
@@ -89,8 +107,15 @@ def _apply_discord_api_logging_settings(logging_settings: "LoggingSettings") -> 
     """Set up recording of the logs emitted by the Discord API wrapper."""
     _remove_handlers_of_type(discord_logger, logging.FileHandler)
 
-    DISCORD_API_LOGGING_SETTINGS = logging_settings.discord_api
+    DISCORD_API_LOGGING_SETTINGS: Final[DiscordAPILoggingSettings] = (
+        logging_settings.discord_api
+    )
     if not DISCORD_API_LOGGING_SETTINGS.enabled:
+        # NOTE: The level is restored alongside the handler, so that disabling these logs
+        # after they have been enabled leaves the Discord API logger exactly as it began.
+        # Leaving a previously configured level in place would otherwise send every record
+        # meeting it to the root logger, now that propagation has been turned back on.
+        discord_logger.setLevel(logging.NOTSET)
         discord_logger.propagate = True
         return
 

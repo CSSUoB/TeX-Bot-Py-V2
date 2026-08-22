@@ -268,6 +268,7 @@ Where an old variable is not listed, [the example configuration file](tex-bot-de
 | `DISCORD_BOT_TOKEN`                          | `discord:bot-token`                                      |
 | `DISCORD_GUILD_ID`                           | `discord:main-guild-id`                                  |
 | `DISCORD_LOG_CHANNEL_WEBHOOK_URL`            | `logging:discord-channel:webhook-url`                    |
+| `DISCORD_LOG_LEVEL`                          | `logging:discord-channel:log-level`                      |
 | `CONSOLE_LOG_LEVEL`                          | `logging:console:log-level`                              |
 | `GROUP_NAME`                                 | `community-group:full-name`                              |
 | `GROUP_SHORT_NAME`                           | `community-group:short-name`                             |
@@ -278,6 +279,8 @@ Where an old variable is not listed, [the example configuration file](tex-bot-de
 | `MEMBERSHIP_DEPENDENT_ROLES`                 | `community-group:membership-dependent-roles`             |
 | `ORGANISATION_ID`                            | `community-group:msl:organisation-id`                    |
 | `SU_PLATFORM_ACCESS_COOKIE`                  | `community-group:msl:auth-cookie`                        |
+| `AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING`    | `community-group:msl:auto-cookie-checking:enabled`       |
+| `AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL` | `community-group:msl:auto-cookie-checking:interval` |
 | `PING_COMMAND_EASTER_EGG_PROBABILITY`        | `commands:ping:easter-egg-probability`                   |
 | `STATISTICS_DAYS`                            | `commands:stats:lookback-days`                            |
 | `STATISTICS_ROLES`                           | `commands:stats:displayed-roles`                         |
@@ -288,6 +291,7 @@ Where an old variable is not listed, [the example configuration file](tex-bot-de
 | `SEND_GET_ROLES_REMINDERS`                   | `reminders:send-get-roles-reminders:enabled`             |
 | `SEND_GET_ROLES_REMINDERS_DELAY`             | `reminders:send-get-roles-reminders:delay`               |
 | `ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL` | `reminders:send-get-roles-reminders:interval`            |
+| `AUTO_ADD_COMMITTEE_TO_THREADS`              | `auto-add-committee-to-threads`                          |
 
 Two differences are worth noting while migrating:
 

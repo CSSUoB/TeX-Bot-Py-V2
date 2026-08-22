@@ -109,14 +109,27 @@ class InductSendMessageCog(TeXBotBaseCog):
         ]
 
         if user_type != "member":
+            # NOTE: Both links are optional, so the sentence pointing at each one is left
+            # out entirely rather than sent holding a link that goes nowhere.
+            PURCHASE_MEMBERSHIP_MESSAGE: Final[str] = (
+                f"Just head to {settings.community_group.links.purchase_membership}. "
+                if settings.community_group.links.purchase_membership is not None
+                else ""
+            )
+            MEMBERSHIP_PERKS_MESSAGE: Final[str] = (
+                f" Checkout all the perks at {settings.community_group.links.membership_perks}"
+                if settings.community_group.links.membership_perks is not None
+                else ""
+            )
+
             messages_to_send.append(
                 f"You can also get yourself an annual membership "
                 f"to {self.bot.group_full_name} for only £5! "
-                f"Just head to {settings.community_group.links.purchase_membership}. "
+                f"{PURCHASE_MEMBERSHIP_MESSAGE}"
                 "You'll get awesome perks like a free T-shirt:shirt:, "
                 "access to member only events:calendar_spiral: and a cool green name on "
-                f"the {self.bot.group_short_name} Discord server:green_square:! "
-                f"Checkout all the perks at {settings.community_group.links.membership_perks}"
+                f"the {self.bot.group_short_name} Discord server:green_square:!"
+                f"{MEMBERSHIP_PERKS_MESSAGE}"
             )
 
         try:

@@ -538,8 +538,8 @@ class CommunityGroupSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
         ),
         json_schema_extra={"requires_restart": False, "secret": False},
     )
-    links: LinksSettings
-    msl: MSLSettings
+    links: LinksSettings = Field(default_factory=LinksSettings)
+    msl: MSLSettings = Field(default_factory=MSLSettings)
 
 
 class PingCommandSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
@@ -732,7 +732,7 @@ class SettingsSchema(_BaseSettingsSchema):  # type: ignore[explicit-any]
 
     logging: LoggingSettings = Field(default_factory=LoggingSettings)
     discord: DiscordSettings
-    community_group: CommunityGroupSettings
+    community_group: CommunityGroupSettings = Field(default_factory=CommunityGroupSettings)
     commands: CommandsSettings = Field(default_factory=CommandsSettings)
     reminders: RemindersSettings = Field(default_factory=RemindersSettings)
     auto_add_committee_to_threads: bool = Field(

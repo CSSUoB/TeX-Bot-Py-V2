@@ -40,6 +40,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
     from collections.abc import Set as AbstractSet
     from logging import Logger
+    from pathlib import Path
     from typing import Final
 
 
@@ -83,17 +84,22 @@ class ConfigReloadResult(NamedTuple):
     restart_required_settings: "AbstractSet[str]"
 
 
-def reload_settings() -> ConfigReloadResult:
+def reload_settings(file_path: "Path | None" = None) -> ConfigReloadResult:
     """
     Reload the deployment configuration file, applying any settings that have changed.
 
     Returns the settings key paths whose values have changed, along with the subset of
     those that cannot take effect until TeX-Bot is restarted.
 
+    The configuration file is located afresh unless one is given explicitly. A change
+    written by `set_setting()` or `unset_setting()` names the file it was written into,
+    so that the change is always read back out of the file it was made to, rather than
+    out of whichever file would be located now.
+
     The currently loaded configuration is left untouched if the file cannot be read or
     contains invalid settings.
     """
-    CHANGED_SETTINGS: Final[AbstractSet[str]] = settings.reload()
+    CHANGED_SETTINGS: Final[AbstractSet[str]] = settings.reload(file_path)
 
     if any(changed_setting.startswith("logging:") for changed_setting in CHANGED_SETTINGS):
         apply_logging_settings(settings.logging)
@@ -137,7 +143,7 @@ def set_setting(setting_name: str, raw_value: str) -> ConfigReloadResult:
 
     UPDATED_DOCUMENT.write()
 
-    return reload_settings()
+    return reload_settings(UPDATED_DOCUMENT.file_path)
 
 
 def unset_setting(setting_name: str) -> ConfigReloadResult | None:
@@ -160,7 +166,7 @@ def unset_setting(setting_name: str) -> ConfigReloadResult | None:
 
     UPDATED_DOCUMENT.write()
 
-    return reload_settings()
+    return reload_settings(UPDATED_DOCUMENT.file_path)
 
 
 def run_setup() -> None:

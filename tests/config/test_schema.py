@@ -27,8 +27,7 @@ __all__: "Sequence[str]" = ()
 
 
 REQUIRED_SETTINGS: "Final[Mapping[str, object]]" = {
-    "discord": {"bot-token": VALID_BOT_TOKEN, "main-guild-id": VALID_MAIN_GUILD_ID},
-    "community-group": {"links": {}, "msl": {}},
+    "discord": {"bot-token": VALID_BOT_TOKEN, "main-guild-id": VALID_MAIN_GUILD_ID}
 }
 
 
@@ -48,7 +47,7 @@ class TestRequiredSettings:
         assert settings.discord.main_guild_id == VALID_MAIN_GUILD_ID
 
     @staticmethod
-    @pytest.mark.parametrize("missing_section", ("discord", "community-group"))
+    @pytest.mark.parametrize("missing_section", ("discord",))
     def test_missing_required_section_is_rejected(missing_section: str) -> None:
         """Test that omitting a required section is rejected."""
         raw_settings: dict[str, object] = dict(REQUIRED_SETTINGS)
@@ -72,6 +71,8 @@ class TestRequiredSettings:
         assert settings.commands.ping.easter_egg_probability == DEFAULT_EASTER_EGG_PROBABILITY
         assert settings.reminders.send_get_roles_reminders.enabled is True
         assert settings.auto_add_committee_to_threads is True
+        assert settings.community_group.links.purchase_membership is None
+        assert settings.community_group.msl.organisation_id is None
 
     @staticmethod
     def test_discord_log_channel_section_is_optional() -> None:

@@ -339,48 +339,65 @@ class SettingsDocument:
 
         key: str | int
         for key in key_path:
-            line_comments: object = getattr(node, "lc", None)
-            NODE_CONTAINS_KEY: bool = bool(
-                line_comments is not None
-                and isinstance(node, (dict, list))
-                and (key in node if isinstance(node, dict) else False)
-            )
-            if not NODE_CONTAINS_KEY:
+            RESOLVED_KEY: tuple[int, object] | None = self._resolved_key(node, key)
+            if RESOLVED_KEY is None:
                 break
 
-            if TYPE_CHECKING:
-                assert isinstance(node, dict)
-
-            LINE_NUMBER_OF_KEY: int | None = self._line_number_of_key(node, key)
-            if LINE_NUMBER_OF_KEY is None:
-                break
-
-            deepest_known_line_number = LINE_NUMBER_OF_KEY
-            node = node[key]
+            deepest_known_line_number, node = RESOLVED_KEY
 
         return deepest_known_line_number
 
     @staticmethod
-    def _line_number_of_key(node: "dict[object, object]", key: "str | int") -> int | None:
+    def _resolved_key(node: object, key: "str | int") -> "tuple[int, object] | None":
         """
-        Return the line that the given key of the given mapping was parsed from.
+        Resolve one key of a key path, returning its line paired with the value held at it.
 
-        `None` is returned for a key that was added to the document rather than parsed
-        from the file, because such a key has no line within the file to report. This
-        happens whenever the `/config` command writes a setting for the first time.
+        Both mappings & sequences are resolved, because a validation failure reported
+        against a single entry of a sequence (one role within `displayed-roles`, for
+        example) names that entry by its index, & so should be pointed at the line
+        holding it rather than at the line the sequence itself begins upon.
+
+        `None` is returned where the node does not hold the given key at all, and also
+        for a key that was added to the document rather than parsed from the file,
+        because such a key has no line within the file to report. The latter happens
+        whenever the `/config` command writes a setting for the first time.
         """
+        # NOTE: A node parsed by the round-trip parser carries the `lc` line-comment data
+        # that the positions below are read from; one added to the document does not.
+        if getattr(node, "lc", None) is None:
+            return None
+
         key_position: object
-        try:
-            key_position = node.lc.key(key)  # type: ignore[attr-defined]
-        except KeyError:
+        child_node: object
+
+        if isinstance(node, dict):
+            if key not in node:
+                return None
+
+            try:
+                key_position = node.lc.key(key)  # type: ignore[attr-defined]
+            except KeyError:
+                return None
+
+            child_node = node[key]
+
+        elif isinstance(node, list) and isinstance(key, int) and 0 <= key < len(node):
+            try:
+                key_position = node.lc.item(key)  # type: ignore[attr-defined]
+            except (KeyError, IndexError):
+                return None
+
+            child_node = node[key]
+
+        else:
             return None
 
         if not isinstance(key_position, tuple):
             return None
 
-        # NOTE: `lc.key()` reports a zero-indexed line, whereas humans (& every editor)
+        # NOTE: `lc` reports a zero-indexed line, whereas humans (& every editor)
         # count the first line of a file as line 1.
-        return int(key_position[0]) + 1
+        return (int(key_position[0]) + 1, child_node)
 
     def _format_single_error(self, key_path: "Sequence[str | int]", message: str) -> str:
         """Format a single validation failure, prefixed with the location that caused it."""
