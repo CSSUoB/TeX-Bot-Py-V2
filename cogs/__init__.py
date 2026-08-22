@@ -96,7 +96,6 @@ def setup(bot: "TeXBot") -> None:
         AnnualRolesResetCommandCog,
         AnnualYearChannelsIncrementCommandCog,
         ArchiveCommandsCog,
-        ClearRemindersBacklogTaskCog,
         CommandErrorCog,
         CommitteeActionsTrackingSlashCommandsCog,
         CommitteeActionsTrackingContextCommandCog,
