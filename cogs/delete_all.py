@@ -7,7 +7,6 @@ import discord
 from db.core.models import (
     AssignedCommitteeAction,
     DiscordMemberStrikes,
-    DiscordReminder,
     GroupMadeMember,
     SentGetRolesReminderMember,
     SentOneOffIntroductionReminderMember,
