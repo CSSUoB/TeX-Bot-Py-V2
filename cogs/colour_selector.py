@@ -23,14 +23,14 @@ __all__: "Sequence[str]" = ("MemberColourSelectorCommandCog",)
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-colour_role_names: "Final[AbstractSet[str]]" = {
-    "green",
-    "blue",
-    "red",
-    "yellow",
+COLOUR_ROLE_NAMES: "Final[AbstractSet[str]]" = {
+    "og-green",
+    "pink",
     "orange",
     "purple",
-    "pink",
+    "new-green",
+    "yellow",
+    "red",
 }
 
 
@@ -48,7 +48,7 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
                 value=role.id,
             )
             for role in ctx.bot.main_guild.roles
-            if role.name.lower() in colour_role_names
+            if role.name.lower() in COLOUR_ROLE_NAMES
         }
 
     @discord.slash_command(
@@ -99,7 +99,7 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
             interaction_member = fetched_member
 
         for role in interaction_member.roles:
-            if role.name.lower() in colour_role_names:
+            if role.name.lower() in COLOUR_ROLE_NAMES:
                 await interaction_member.remove_roles(role)
 
         await interaction_member.add_roles(
