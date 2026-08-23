@@ -23,7 +23,7 @@ __all__: "Sequence[str]" = ("MemberColourSelectorCommandCog",)
 logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
 
 
-COLOUR_ROLE_NAMES: "Final[AbstractSet[str]]" = {  # TODO: Make this a config option in the future
+COLOUR_ROLE_NAMES: "Final[AbstractSet[str]]" = {  # TODO: Make this a config option in the future  # noqa: FIX002
     "og-green",
     "pink",
     "orange",
@@ -81,7 +81,7 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
         if not interaction_member:
             await self.command_send_error(
                 ctx=ctx,
-                message="Interaction user was None for member-colour-select command execution."
+                message="Interaction user was None for member-colour-select command run.",
             )
             return
 
@@ -89,14 +89,11 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
             role_id_int = int(role_id_str)
         except ValueError:
             await self.command_send_error(
-                ctx=ctx,
-                message="Value entered was not a valid role ID."
+                ctx=ctx, message="Value entered was not a valid role ID."
             )
             return
 
-        role_to_add: discord.Role | None = discord.utils.get(
-            main_guild.roles, id=role_id_int
-        )
+        role_to_add: discord.Role | None = discord.utils.get(main_guild.roles, id=role_id_int)
 
         if not role_to_add:
             await ctx.respond(
@@ -107,8 +104,7 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
 
         if role_to_add.name not in COLOUR_ROLE_NAMES:
             await ctx.respond(
-                f"{role_to_add.name} is not a valid colour role. "
-                "Please use the autocomplete."
+                f"{role_to_add.name} is not a valid colour role. Please use the autocomplete."
             )
             return
 
@@ -141,7 +137,10 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
             )
             return
 
-        await interaction_member.remove_roles(*roles_to_remove, reason=f"{interaction_member} used TeX-Bot /member_colour_select.")
+        await interaction_member.remove_roles(
+            *roles_to_remove,
+            reason=f"{interaction_member} used TeX-Bot /member_colour_select.",
+        )
 
         await interaction_member.add_roles(
             role_to_add,
