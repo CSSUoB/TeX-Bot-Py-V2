@@ -51,20 +51,6 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
         )
 
     @delete_all.command(
-        name="reminders", description="Deletes all Reminders from the backend database."
-    )
-    @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_main_guild
-    async def delete_all_reminders(self, ctx: "TeXBotApplicationContext") -> None:
-        """
-        Definition & callback response of the "delete_all_reminders" command.
-
-        The "delete_all_reminders" command uses the _delete_all() function
-        to delete all `DiscordReminder` instance objects stored in the database.
-        """
-        await self._delete_all(ctx, delete_model=DiscordReminder)
-
-    @delete_all.command(
         name="group-made-members",
         description="Deletes all Group Made Members from the backend database.",
     )
