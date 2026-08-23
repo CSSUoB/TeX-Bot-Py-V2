@@ -14,6 +14,7 @@ from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
 
@@ -37,8 +38,12 @@ class MessageDeletionTrackingCog(TeXBotBaseCog):
     """
     Cog class defining the event listeners for reporting moderator-deleted messages.
 
-    When a message is deleted by somebody other than its author, a copy of that message is
-    sent to the message-reports channel, so that it is retained for committee to review.
+    This exists to catch the case where a committee member deletes somebody else's message
+    but forgets to run the "Report Message to Committee" command beforehand: a copy of the
+    deleted message is sent to the message-reports channel, so that it is still retained.
+
+    Only individual deletions are tracked. Bulk deletions (channel purges) are deliberately
+    not covered, as those are not the single forgotten-report case this exists to catch.
 
     Discord sends the content of a deleted message (in the message-delete gateway event)
     separately from who deleted it (in the audit-log-entry gateway event),
@@ -47,7 +52,8 @@ class MessageDeletionTrackingCog(TeXBotBaseCog):
     so those are simply discarded once they expire.
     """
 
-    MAXIMUM_PENDING_DELETED_MESSAGES: "Final[int]" = 100
+    # NOTE: Deletions are held only for the moment between the two gateway events that describe them, so this bound just prevents unbounded growth if audit-log entries stop arriving. Expiry is what normally empties the store
+    MAXIMUM_PENDING_DELETED_MESSAGES: "Final[int]" = 25
     PENDING_DELETED_MESSAGE_EXPIRY: "Final[datetime.timedelta]" = datetime.timedelta(
         seconds=30
     )
@@ -62,28 +68,16 @@ class MessageDeletionTrackingCog(TeXBotBaseCog):
 
         super().__init__(bot)
 
-    def _store_pending_deleted_messages(self, *messages: discord.Message) -> None:
-        """Retain the given deleted messages until their audit-log entry arrives."""
-        MAIN_GUILD: Final[discord.Guild] = self.bot.main_guild
-        DELETED_AT: Final[datetime.datetime] = discord.utils.utcnow()
-
-        message: discord.Message
-        for message in messages:
-            if message.author.bot or message.guild != MAIN_GUILD:
-                continue
-
-            self._pending_deleted_messages.append(
-                _PendingDeletedMessage(deleted_at=DELETED_AT, message=message)
-            )
-
     def _take_pending_deleted_messages(
-        self, *, author_id: int | None, channel_id: int
+        self, *, author_id: int, channel_id: int, count: int
     ) -> "Sequence[discord.Message]":
         """
         Remove & return the retained deleted messages matching the given audit-log entry.
 
-        An `author_id` of `None` matches every author within the given channel, because
-        bulk deletions are recorded against only the channel that was purged.
+        At most `count` messages are returned, taking the most recently deleted matches:
+        the audit-log entry states how many deletions it covers, so any older match is left
+        pending rather than being wrongly attributed to this entry. A message that its own
+        author deleted never gains an audit-log entry, so is only ever discarded on expiry.
 
         Any retained messages that have been waiting for an audit-log entry for longer than
         `PENDING_DELETED_MESSAGE_EXPIRY` are discarded.
@@ -92,30 +86,36 @@ class MessageDeletionTrackingCog(TeXBotBaseCog):
             discord.utils.utcnow() - self.PENDING_DELETED_MESSAGE_EXPIRY
         )
 
-        matched_messages: list[discord.Message] = []
-        retained_messages: deque[_PendingDeletedMessage] = deque(
-            maxlen=self.MAXIMUM_PENDING_DELETED_MESSAGES
+        unexpired_messages: Sequence[_PendingDeletedMessage] = [
+            pending_deleted_message
+            for pending_deleted_message in self._pending_deleted_messages
+            if pending_deleted_message.deleted_at >= EXPIRY_CUTOFF
+        ]
+
+        if count < 1:
+            self._pending_deleted_messages = deque(
+                unexpired_messages, maxlen=self.MAXIMUM_PENDING_DELETED_MESSAGES
+            )
+            return ()
+
+        MATCHED_INDEXES: Final[Sequence[int]] = [
+            index
+            for index, pending_deleted_message in enumerate(unexpired_messages)
+            if pending_deleted_message.message.channel.id == channel_id
+            and pending_deleted_message.message.author.id == author_id
+        ]
+        TAKEN_INDEXES: Final[AbstractSet[int]] = frozenset(MATCHED_INDEXES[-count:])
+
+        self._pending_deleted_messages = deque(
+            (
+                pending_deleted_message
+                for index, pending_deleted_message in enumerate(unexpired_messages)
+                if index not in TAKEN_INDEXES
+            ),
+            maxlen=self.MAXIMUM_PENDING_DELETED_MESSAGES,
         )
 
-        pending_deleted_message: _PendingDeletedMessage
-        for pending_deleted_message in self._pending_deleted_messages:
-            if pending_deleted_message.deleted_at < EXPIRY_CUTOFF:
-                continue
-
-            deleted_message: discord.Message = pending_deleted_message.message
-
-            MATCHES_AUDIT_LOG_ENTRY: bool = deleted_message.channel.id == channel_id and (
-                author_id is None or deleted_message.author.id == author_id
-            )
-
-            if MATCHES_AUDIT_LOG_ENTRY:
-                matched_messages.append(deleted_message)
-            else:
-                retained_messages.append(pending_deleted_message)
-
-        self._pending_deleted_messages = retained_messages
-
-        return matched_messages
+        return [unexpired_messages[index].message for index in sorted(TAKEN_INDEXES)]
 
     async def _report_deleted_messages(
         self,
@@ -155,53 +155,36 @@ class MessageDeletionTrackingCog(TeXBotBaseCog):
     @capture_guild_does_not_exist_error
     async def on_message_delete(self, message: discord.Message) -> None:
         """Retain a deleted message until its audit-log entry names who deleted it."""
-        self._store_pending_deleted_messages(message)
+        if message.author.bot or message.guild != self.bot.main_guild:
+            return
 
-    @TeXBotBaseCog.listener()
-    @capture_guild_does_not_exist_error
-    async def on_bulk_message_delete(self, messages: "Sequence[discord.Message]") -> None:
-        """Retain bulk-deleted messages until their audit-log entry names who deleted them."""
-        self._store_pending_deleted_messages(*messages)
+        self._pending_deleted_messages.append(
+            _PendingDeletedMessage(deleted_at=discord.utils.utcnow(), message=message)
+        )
 
     @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
     async def on_audit_log_entry(self, entry: discord.AuditLogEntry) -> None:
         """Report any retained messages that the given audit-log entry says were deleted."""
         # NOTE: The action is filtered before any shortcut accessors are used, so that entries of every other action type (role updates, kicks, bans, etc.) do not repeatedly hit the guild & role accessors
-        audit_log_entry_author_id: int | None
-        audit_log_entry_channel_id: int
+        if entry.action is not discord.AuditLogAction.message_delete:
+            return
 
-        if entry.action is discord.AuditLogAction.message_delete:
-            if not isinstance(entry.target, (discord.Member, discord.User)):
-                return
-
-            audit_log_entry_author_id = entry.target.id
-            # NOTE: `extra.channel` is a bare `discord.Object` whenever the deleted message was sent within a thread, so only the channel's ID can be relied upon here
-            audit_log_entry_channel_id = entry.extra.channel.id  # type: ignore[union-attr]
-
-        elif entry.action is discord.AuditLogAction.message_bulk_delete:
-            TARGET_IS_CHANNEL: Final[bool] = isinstance(
-                entry.target, (discord.abc.GuildChannel, discord.Thread, discord.Object)
-            )
-            if not TARGET_IS_CHANNEL:
-                return
-
-            # NOTE: Bulk deletions are recorded against only the channel that was purged, so every retained message within that channel is reported
-            audit_log_entry_author_id = None
-            audit_log_entry_channel_id = entry.target.id
-
-        else:
+        if not isinstance(entry.target, (discord.Member, discord.User)):
             return
 
         deleter: discord.User | discord.Member | None = entry.user
         if deleter is None or deleter == self.bot.user:
             return
 
-        # NOTE: Discord does not guarantee that the message-delete gateway events arrive before the audit-log entry describing them, so a short grace period is given for them to catch up. This also allows a single audit-log entry to collect a whole burst of rapid deletions, which Discord aggregates into that one entry
+        # NOTE: Discord does not guarantee that the message-delete gateway event arrives before the audit-log entry describing it, so a short grace period is given for it to catch up. This also allows a single audit-log entry to collect a whole burst of rapid deletions, which Discord aggregates into that one entry
         await asyncio.sleep(self.AUDIT_LOG_ENTRY_GRACE_PERIOD)
 
         deleted_messages: Sequence[discord.Message] = self._take_pending_deleted_messages(
-            author_id=audit_log_entry_author_id, channel_id=audit_log_entry_channel_id
+            author_id=entry.target.id,
+            # NOTE: `extra.channel` is a bare `discord.Object` whenever the deleted message was sent within a thread, so only the channel's ID can be relied upon here
+            channel_id=entry.extra.channel.id,  # type: ignore[union-attr]
+            count=entry.extra.count,  # type: ignore[union-attr]
         )
 
         if deleted_messages:
