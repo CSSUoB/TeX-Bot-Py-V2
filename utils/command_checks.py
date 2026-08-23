@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Sequence
     from typing import Concatenate
 
-    from discord.ext.commands import CheckFailure
+    from discord.ext.commands import Bot, Context
 
     from .tex_bot_base_cog import TeXBotBaseCog
     from .tex_bot_contexts import TeXBotApplicationContext
@@ -66,11 +66,15 @@ class CommandChecks:
         )(func)
 
     @classmethod
-    def is_interaction_user_in_main_guild_failure(cls, check: "CheckFailure") -> bool:
+    def is_interaction_user_in_main_guild_failure(
+        cls, check: "Callable[[Context[Bot]], bool]"
+    ) -> bool:
         """Whether the check failed due to the user not being in your Discord guild."""
-        return bool(check.__name__ == cls.check_interaction_user_in_main_guild.__name__)  # type: ignore[attr-defined]
+        return bool(check.__name__ == cls.check_interaction_user_in_main_guild.__name__)
 
     @classmethod
-    def is_interaction_user_has_committee_role_failure(cls, check: "CheckFailure") -> bool:
+    def is_interaction_user_has_committee_role_failure(
+        cls, check: "Callable[[Context[Bot]], bool]"
+    ) -> bool:
         """Whether the check failed due to the user not having the committee role."""
-        return bool(check.__name__ == cls.check_interaction_user_has_committee_role.__name__)  # type: ignore[attr-defined]
+        return bool(check.__name__ == cls.check_interaction_user_has_committee_role.__name__)

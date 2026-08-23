@@ -13,7 +13,7 @@ import json
 import logging
 import os
 import re
-from collections.abc import Iterable, Mapping
+from collections.abc import Collection, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, final
 
@@ -466,16 +466,13 @@ class Settings(abc.ABC):
         if "welcome_messages" not in messages_dict:
             raise MessagesJSONFileMissingKeyError(missing_key="welcome_messages")
 
-        WELCOME_MESSAGES_KEY_IS_VALID: Final[bool] = bool(
-            isinstance(messages_dict["welcome_messages"], Iterable)
-            and messages_dict["welcome_messages"]
-        )
-        if not WELCOME_MESSAGES_KEY_IS_VALID:
+        welcome_messages: object = messages_dict["welcome_messages"]
+        if not isinstance(welcome_messages, Collection) or not welcome_messages:
             raise MessagesJSONFileValueError(
-                dict_key="welcome_messages", invalid_value=messages_dict["welcome_messages"]
+                dict_key="welcome_messages", invalid_value=welcome_messages
             )
 
-        cls._settings["WELCOME_MESSAGES"] = set(messages_dict["welcome_messages"])  # type: ignore[call-overload]
+        cls._settings["WELCOME_MESSAGES"] = set(welcome_messages)
 
     @classmethod
     def _setup_roles_messages(cls) -> None:
@@ -486,15 +483,13 @@ class Settings(abc.ABC):
         if "roles_messages" not in messages_dict:
             raise MessagesJSONFileMissingKeyError(missing_key="roles_messages")
 
-        ROLES_MESSAGES_KEY_IS_VALID: Final[bool] = isinstance(
-            messages_dict["roles_messages"], Iterable
-        ) and bool(messages_dict["roles_messages"])
-        if not ROLES_MESSAGES_KEY_IS_VALID:
+        roles_messages: object = messages_dict["roles_messages"]
+        if not isinstance(roles_messages, Collection) or not roles_messages:
             raise MessagesJSONFileValueError(
-                dict_key="roles_messages", invalid_value=messages_dict["roles_messages"]
+                dict_key="roles_messages", invalid_value=roles_messages
             )
 
-        cls._settings["ROLES_MESSAGES"] = set(messages_dict["roles_messages"])  # type: ignore[call-overload]
+        cls._settings["ROLES_MESSAGES"] = set(roles_messages)
 
     @classmethod
     def _setup_organisation_id(cls) -> None:
