@@ -78,73 +78,79 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
         main_guild: discord.Guild = ctx.bot.main_guild
         interaction_member: discord.Member | discord.User | None = ctx.interaction.user
 
-        if not interaction_member:
-            await self.command_send_error(
-                ctx=ctx,
-                message="Interaction user was None for member-colour-select command run.",
-            )
-            return
+        await ctx.defer(ephemeral=True)
 
-        try:
-            role_id_int = int(role_id_str)
-        except ValueError:
-            await self.command_send_error(
-                ctx=ctx, message="Value entered was not a valid role ID."
-            )
-            return
-
-        role_to_add: discord.Role | None = discord.utils.get(main_guild.roles, id=role_id_int)
-
-        if not role_to_add:
-            await ctx.respond(
-                "The role you selected does not exist. Please use the autocomplete.",
-                ephemeral=True,
-            )
-            return
-
-        if role_to_add.name not in COLOUR_ROLE_NAMES:
-            await ctx.respond(
-                f"{role_to_add.name} is not a valid colour role. Please use the autocomplete."
-            )
-            return
-
-        if isinstance(interaction_member, discord.User):
-            try:
-                fetched_member: discord.Member = await self.bot.get_main_guild_member(
-                    interaction_member
+        async with ctx.typing():
+            if not interaction_member:
+                await self.command_send_error(
+                    ctx=ctx,
+                    message="Interaction user was None for member-colour-select command run.",
                 )
-            except DiscordMemberNotInMainGuildError:
+                return
+
+            try:
+                role_id_int = int(role_id_str)
+            except ValueError:
                 await ctx.respond(
-                    "You are not a member of the main guild. "
-                    "Please join the main guild to use this command.",
+                    "The role ID you provided is not a valid role ID. "
+                    "Please use the autocomplete.",
                     ephemeral=True,
                 )
                 return
 
-            interaction_member = fetched_member
-
-        roles_to_remove: list[discord.Role] = [
-            role for role in interaction_member.roles if role.name.lower() in COLOUR_ROLE_NAMES
-        ]
-
-        if role_to_add in roles_to_remove:
-            roles_to_remove.remove(role_to_add)
-
-        if not roles_to_remove:
-            await ctx.respond(
-                f"You already have the {role_to_add.name} colour role!",
-                ephemeral=True,
+            role_to_add: discord.Role | None = discord.utils.get(
+                main_guild.roles, id=role_id_int
             )
-            return
 
-        await interaction_member.remove_roles(
-            *roles_to_remove,
-            reason=f"{interaction_member} used TeX-Bot /member_colour_select.",
-        )
+            if not role_to_add:
+                await ctx.respond(
+                    "The role you selected does not exist. Please use the autocomplete.",
+                    ephemeral=True,
+                )
+                return
 
-        await interaction_member.add_roles(
-            role_to_add,
-            reason=f"{interaction_member} used TeX-Bot /member_colour_select.",
-        )
+            if role_to_add.name.lower() not in COLOUR_ROLE_NAMES:
+                await ctx.respond(
+                    f"{role_to_add.name} is not a valid colour role. "
+                    "Please use the autocomplete."
+                )
+                return
 
-        await ctx.respond(f"Successfully gave you the {role_to_add.name} colour role!")
+            if isinstance(interaction_member, discord.User):
+                try:
+                    fetched_member: discord.Member = await self.bot.get_main_guild_member(
+                        interaction_member
+                    )
+                except DiscordMemberNotInMainGuildError:
+                    await ctx.respond(
+                        "You are not a member of the main guild. "
+                        "Please join the main guild to use this command.",
+                        ephemeral=True,
+                    )
+                    return
+
+                interaction_member = fetched_member
+
+            roles_to_remove: list[discord.Role] = [
+                role
+                for role in interaction_member.roles
+                if role.name.lower() in COLOUR_ROLE_NAMES
+            ]
+
+            if role_to_add in roles_to_remove:
+                roles_to_remove.remove(role_to_add)
+
+            if roles_to_remove:
+                await interaction_member.remove_roles(
+                    *roles_to_remove,
+                    reason=f"{interaction_member} used TeX-Bot /member-colour-select.",
+                )
+
+            await interaction_member.add_roles(
+                role_to_add,
+                reason=f"{interaction_member} used TeX-Bot /member-colour-select.",
+            )
+
+            await ctx.respond(
+                f"Successfully gave you the {role_to_add.name} colour role!", ephemeral=True
+            )
