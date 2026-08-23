@@ -65,6 +65,26 @@ class CommandChecks:
             )
         )(func)
 
+    @staticmethod
+    def check_interaction_user_has_member_role[T: TeXBotBaseCog, **P](
+        func: "Callable[Concatenate[T, P], Awaitable[None]]",
+    ) -> "Callable[Concatenate[T, P], Awaitable[None]]":
+        """
+        Command check decorator to ensure the interaction user has the "Member" role.
+
+        If this check does not pass, the decorated command will not be executed.
+        Instead, an error message will be sent to the user.
+        """
+
+        async def _check(ctx: "TeXBotApplicationContext") -> bool:
+            return await ctx.bot.check_user_has_member_role(ctx.user)
+
+        return commands.check_any(
+            commands.check(
+                _check  # type: ignore[arg-type]
+            )
+        )(func)
+
     @classmethod
     def is_interaction_user_in_main_guild_failure(cls, check: "CheckFailure") -> bool:
         """Whether the check failed due to the user not being in your Discord guild."""

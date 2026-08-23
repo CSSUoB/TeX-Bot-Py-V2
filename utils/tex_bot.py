@@ -434,6 +434,10 @@ class TeXBot(discord.Bot):
         """Util method to validate whether the given user has the "Committee" role."""
         return await self.committee_role in (await self.get_main_guild_member(user)).roles
 
+    async def check_user_has_member_role(self, user: discord.Member | discord.User) -> bool:
+        """Util method to validate whether the given user has the "Member" role."""
+        return await self.member_role in (await self.get_main_guild_member(user)).roles
+
     def set_main_guild(self, main_guild: discord.Guild) -> None:
         """
         Set the main_guild value that TeX-Bot will reference in the future.
