@@ -18,7 +18,12 @@ from exceptions import (
     NoAuditLogsStrikeTrackingError,
     StrikeTrackingError,
 )
-from utils import CommandChecks, TeXBotBaseCog
+from utils import (
+    CommandChecks,
+    MessageReportAction,
+    TeXBotBaseCog,
+    send_message_report_to_committee,
+)
 from utils.error_capture_decorators import (
     capture_guild_does_not_exist_error,
     capture_strike_tracking_error,
@@ -1011,7 +1016,12 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         strike_user: discord.Member = await self.bot.get_member_from_str_id(
             str(message.author.id)
         )
-        await self.send_message_to_committee(message=message, interaction_user=ctx.user)
+        await send_message_report_to_committee(
+            self.bot,
+            message=message,
+            reporting_user=ctx.user,
+            action=MessageReportAction.REPORTED,
+        )
         await self._command_perform_strike(ctx, strike_member=strike_user)
 
     @discord.message_command(
@@ -1023,4 +1033,15 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         self, ctx: "TeXBotApplicationContext", message: discord.Message
     ) -> None:
         """Send a copy of the selected message to committee channels for review."""
-        await self.send_message_to_committee(message=message, interaction_user=ctx.user)
+        # NOTE: A missing message-reports channel raises MessageReportsChannelDoesNotExistError, which the global command-error handler reports back to the user
+        await send_message_report_to_committee(
+            self.bot,
+            message=message,
+            reporting_user=ctx.user,
+            action=MessageReportAction.REPORTED,
+        )
+
+        await ctx.respond(
+            content=":white_check_mark: Successfully reported message to committee channels!",
+            ephemeral=True,
+        )

@@ -25,6 +25,7 @@ __all__: "Sequence[str]" = ("bot",)
 with SuppressTraceback():
     config.run_setup()
 
+    # NOTE: Both the members & message-content intents are privileged, so must also be enabled on your bot's page in the Discord Developer Portal (see the "Creating Your Bot" section of the README). The message-content intent is required to retain the content of moderator-deleted messages
     bot: TeXBot = TeXBot(
         intents=discord.Intents.default()
         | discord.Intents.members
