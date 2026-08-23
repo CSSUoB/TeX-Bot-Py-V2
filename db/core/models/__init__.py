@@ -257,7 +257,7 @@ class GroupMadeMember(AsyncBaseModel):
         return {*super()._get_proxy_field_names(), "group_member_id"}
 
 
-@warnings.deprecated()
+@warnings.deprecated("DiscordReminder is deprecated and may be removed in a future release.")
 class DiscordReminder(AsyncBaseModel):
     """Represents a reminder that a Discord member has requested to be sent to them."""
 
