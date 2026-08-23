@@ -2,6 +2,7 @@
 
 import hashlib
 import re
+import warnings
 from typing import TYPE_CHECKING, override
 
 import discord
@@ -256,6 +257,7 @@ class GroupMadeMember(AsyncBaseModel):
         return {*super()._get_proxy_field_names(), "group_member_id"}
 
 
+@warnings.deprecated()
 class DiscordReminder(AsyncBaseModel):
     """Represents a reminder that a Discord member has requested to be sent to them."""
 
