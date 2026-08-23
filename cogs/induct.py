@@ -12,6 +12,7 @@ from db.core.models import IntroductionReminderOptOutMember
 from exceptions import (
     ApplicantRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
+    DiscordMemberNotInMainGuildError,
     GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
     MemberRoleDoesNotExistError,
@@ -201,12 +202,15 @@ class BaseInductCog(TeXBotBaseCog):
             )
             return
 
-        induction_member: discord.Member | None = main_guild.get_member(induction_member_id)
-        if not induction_member:
+        try:
+            induction_member: discord.Member = await self.bot.get_main_guild_member(
+                induction_user
+            )
+        except DiscordMemberNotInMainGuildError:
             await ctx.respond(
                 (
                     ":information_source: No changes made. User cannot be inducted "
-                    "because they have left the server or are not cached "
+                    "because they are not in the server "
                     ":information_source:"
                 ),
                 ephemeral=True,

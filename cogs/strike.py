@@ -459,7 +459,9 @@ class ManualModerationCog(BaseStrikeCog):
                     ) from fetch_log_channel_error
 
             raw_user: discord.User | None = (
-                self.bot.get_user(user.id) if isinstance(user, discord.Member) else user
+                await self.bot.get_or_fetch(discord.User, user.id)
+                if isinstance(user, discord.Member)
+                else user
             )
             if not raw_user:
                 raise StrikeTrackingError
@@ -727,7 +729,9 @@ class ManualModerationCog(BaseStrikeCog):
             return
 
         if button_interaction.data["custom_id"] == "yes_manual_moderation_action":  # type: ignore[index, typeddict-item]
-            interaction_user: discord.User | None = self.bot.get_user(applied_action_user.id)
+            interaction_user: discord.User | None = await self.bot.get_or_fetch(
+                discord.User, applied_action_user.id
+            )
             if not interaction_user:
                 raise StrikeTrackingError
 
