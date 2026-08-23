@@ -127,9 +127,21 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
 
             interaction_member = fetched_member
 
-        for role in interaction_member.roles:
-            if role.name.lower() in COLOUR_ROLE_NAMES:
-                await interaction_member.remove_roles(role)
+        roles_to_remove: list[discord.Role] = [
+            role for role in interaction_member.roles if role.name.lower() in COLOUR_ROLE_NAMES
+        ]
+
+        if role_to_add in roles_to_remove:
+            roles_to_remove.remove(role_to_add)
+
+        if not roles_to_remove:
+            await ctx.respond(
+                f"You already have the {role_to_add.name} colour role!",
+                ephemeral=True,
+            )
+            return
+
+        await interaction_member.remove_roles(*roles_to_remove, reason=f"{interaction_member} used TeX-Bot /member_colour_select.")
 
         await interaction_member.add_roles(
             role_to_add,
