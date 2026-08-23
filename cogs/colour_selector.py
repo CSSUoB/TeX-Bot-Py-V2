@@ -52,11 +52,11 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
         }
 
     @discord.slash_command(
-        name="member_colour_select",
+        name="member-colour-select",
         description="Select a colour role for yourself.",
     )
     @discord.option(
-        name="colour_role",
+        name="colour-role",
         description="The colour role you want to select.",
         autocomplete=discord.utils.basic_autocomplete(autocomplete_colour_roles),
         input_type=str,
