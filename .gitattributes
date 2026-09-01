@@ -7,7 +7,6 @@
 .toml text eol=lf
 .md text eol=lf
 .*ignore text eol=lf
-.env* text eol=lf
 .gitattributes text eol=lf
 .gitlint text eol=lf
 .python-version text eol=lf

@@ -22,8 +22,10 @@ main = [
     "mplcyberpunk>=0.7",
     "parsedatetime>=2.6",
     "py-cord>=2.6,<2.7",
+    "pydantic>=2.13",
     "python-dotenv>=1.0",
     "python-logging-discord-handler>=0.1",
+    "ruamel-yaml>=0.19",
     "typed_classproperties>=1.2",
     "validators>=0.34"
 ]
@@ -75,7 +77,7 @@ enable_error_code = [
 extra_checks = true
 mypy_path = "stubs"
 no_implicit_reexport = true
-plugins = ["mypy_django_plugin.main"]
+plugins = ["mypy_django_plugin.main", "pydantic.mypy"]
 strict_bytes = true
 strict_equality = true
 strict_equality_for_none = true
@@ -106,9 +108,12 @@ plugins.ul-indent.indent = 4
 plugins.ul-start-left.enabled = true
 plugins.ul-style.style = "asterisk"
 
-[tool.pytest]
+# NOTE: Pytest only reads its configuration from the `ini_options` table within
+# `pyproject.toml`; a plain `[tool.pytest]` table is silently ignored.
+[tool.pytest.ini_options]
 filterwarnings = ["ignore:'audioop':DeprecationWarning"]
-strict = true
+testpaths = ["tests"]
+xfail_strict = true
 
 [tool.ruff]
 extend-exclude = ["db/**/migrations/"]

@@ -6,6 +6,10 @@ from discord.commands.context import AutocompleteContext
 
 __all__: Sequence[str] = ("Option", "OptionChoice", "option")
 
+type AutocompleteValues = (
+    AbstractSet[OptionChoice] | AbstractSet[str] | Sequence[OptionChoice] | Sequence[str]
+)
+
 class Option: ...
 
 class OptionChoice:
@@ -25,14 +29,8 @@ def option[**P, **Q, T, T_context: AutocompleteContext](
     | AbstractSet[int]
     | AbstractSet[float] = ...,
     parameter_name: str = ...,
-    autocomplete: Callable[
-        [T_context],
-        Awaitable[AbstractSet[OptionChoice] | AbstractSet[str]],
-    ]
-    | Callable[
-        [T_context],
-        Awaitable[AbstractSet[OptionChoice] | AbstractSet[str] | AbstractSet[int]],
-    ] = ...,
+    autocomplete: Callable[[T_context], Awaitable[AutocompleteValues]]
+    | Callable[[T_context], Awaitable[AutocompleteValues | AbstractSet[int]]] = ...,
 ) -> Callable[[Callable[P, Awaitable[None]]], Callable[Q, Awaitable[None]]]: ...
 @overload
 def option[**P, **Q, T_context: AutocompleteContext](
@@ -46,14 +44,8 @@ def option[**P, **Q, T_context: AutocompleteContext](
     | AbstractSet[str]
     | AbstractSet[int]
     | AbstractSet[float] = ...,
-    autocomplete: Callable[
-        [T_context],
-        Awaitable[AbstractSet[OptionChoice] | AbstractSet[str]],
-    ]
-    | Callable[
-        [T_context],
-        Awaitable[AbstractSet[OptionChoice] | AbstractSet[str] | AbstractSet[int]],
-    ] = ...,
+    autocomplete: Callable[[T_context], Awaitable[AutocompleteValues]]
+    | Callable[[T_context], Awaitable[AutocompleteValues | AbstractSet[int]]] = ...,
     required: bool = ...,
     min_length: int = ...,
     max_length: int = ...,

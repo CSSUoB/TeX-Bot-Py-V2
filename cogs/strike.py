@@ -78,7 +78,7 @@ async def perform_moderation_action(
 
     if strikes == 1:
         await strike_user.timeout_for(
-            datetime.timedelta(hours=24), reason=MODERATION_ACTION_REASON
+            settings.commands.strike.timeout_duration, reason=MODERATION_ACTION_REASON
         )
 
     elif strikes == 2:
@@ -231,6 +231,17 @@ class BaseStrikeCog(TeXBotBaseCog):
     async def _send_strike_user_message(
         self, strike_user: discord.User | discord.Member, member_strikes: DiscordMemberStrikes
     ) -> None:
+        # NOTE: The link to the moderation document is optional, so the sentence pointing
+        # at it is left out entirely rather than sent holding a link that goes nowhere.
+        MODERATION_POLICY_MESSAGE: Final[str] = (
+            f"To find what moderation action corresponds to which strike level, "
+            f"you can view "
+            f"the {self.bot.group_short_name} Discord server moderation document "
+            f"[here](<{settings.community_group.links.moderation_policy}>)\n"
+            if settings.community_group.links.moderation_policy is not None
+            else ""
+        )
+
         try:
             await strike_user.send(
                 "Hi, a recent incident occurred in which you may have broken one or more of "
@@ -238,10 +249,8 @@ class BaseStrikeCog(TeXBotBaseCog):
                 "We have increased the number of strikes associated with your account "
                 f"to {min(3, member_strikes.strikes)} and "
                 "the corresponding moderation action will soon be applied to you. "
-                "To find what moderation action corresponds to which strike level, "
-                "you can view "
-                f"the {self.bot.group_short_name} Discord server moderation document "
-                f"[here](<{settings.MODERATION_DOCUMENT_URL}>)\nPlease ensure you have read "
+                f"{MODERATION_POLICY_MESSAGE}"
+                "Please ensure you have read "
                 f"the rules in {await self.bot.get_mention_string(self.bot.rules_channel)} so "
                 "that your future behaviour adheres to them."
                 f"{
@@ -442,7 +451,7 @@ class ManualModerationCog(BaseStrikeCog):
 
         This is based upon the STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION config setting value.
         """
-        if settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] == "DM":
+        if settings.commands.strike.performed_manually_warning_location == "DM":
             if user.bot:
                 fetch_log_channel_error: RuntimeError
                 try:
@@ -477,12 +486,12 @@ class ManualModerationCog(BaseStrikeCog):
 
         guild_confirmation_message_channel: discord.TextChannel | None = discord.utils.get(
             self.bot.main_guild.text_channels,
-            name=settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"],
+            name=settings.commands.strike.performed_manually_warning_location,
         )
         if not guild_confirmation_message_channel:
             CHANNEL_DOES_NOT_EXIST_MESSAGE: Final[str] = (
                 "The channel "
-                f"""{settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"]!r} """
+                f"""{settings.commands.strike.performed_manually_warning_location!r} """
                 "does not exist, so cannot be used as the location "
                 "for sending manual-moderation warning messages"
             )

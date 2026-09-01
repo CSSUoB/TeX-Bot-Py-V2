@@ -78,7 +78,7 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
             return SUPlatformAccessCookieStatus.INVALID
 
         organisation_admin_url: str = (
-            f"{SU_PLATFORM_ORGANISATION_URL}/{settings['ORGANISATION_ID']}"
+            f"{SU_PLATFORM_ORGANISATION_URL}/{settings.community_group.msl.organisation_id}"
         )
         response_html: str = await fetch_url_content_with_session(organisation_admin_url)
 
@@ -211,7 +211,7 @@ class CheckSUPlatformAuthorisationTaskCog(CheckSUPlatformAuthorisationBaseCog):
     @override
     def __init__(self, bot: "TeXBot") -> None:
         """Start all task managers when this cog is initialised."""
-        if settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"]:
+        if settings.community_group.msl.auto_cookie_checking.enabled:
             _ = self.su_platform_access_cookie_check_task.start()
 
         super().__init__(bot)
@@ -225,7 +225,9 @@ class CheckSUPlatformAuthorisationTaskCog(CheckSUPlatformAuthorisationBaseCog):
         """
         self.su_platform_access_cookie_check_task.cancel()
 
-    @tasks.loop(**settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"])
+    @tasks.loop(
+        seconds=settings.community_group.msl.auto_cookie_checking.interval.total_seconds()
+    )
     @capture_guild_does_not_exist_error
     async def su_platform_access_cookie_check_task(self) -> None:
         """
