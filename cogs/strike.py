@@ -280,12 +280,11 @@ class BaseStrikeCog(TeXBotBaseCog):
                 interaction.type == discord.InteractionType.component  # noqa: CAR180
                 and interaction.user == interaction_user
                 and interaction.channel == button_callback_channel
-                and "custom_id" in interaction.data
-                and interaction.data["custom_id"] in {"yes_strike_member", "no_strike_member"}
+                and interaction.custom_id in {"yes_strike_member", "no_strike_member"}
             ),
         )
 
-        if button_interaction.data["custom_id"] == "no_strike_member":  # type: ignore[index, typeddict-item]
+        if button_interaction.custom_id == "no_strike_member":
             await button_interaction.edit_original_response(
                 content=(
                     "Aborted performing "
@@ -296,7 +295,7 @@ class BaseStrikeCog(TeXBotBaseCog):
             )
             return
 
-        if button_interaction.data["custom_id"] == "yes_strike_member":  # type: ignore[index, typeddict-item]
+        if button_interaction.custom_id == "yes_strike_member":
             await perform_moderation_action(
                 strike_user, actual_strike_amount, committee_member=interaction_user
             )
@@ -594,16 +593,12 @@ class ManualModerationCog(BaseStrikeCog):
                         else (committee_role in interaction.user.roles)
                     )
                     and interaction.channel == confirmation_message_channel
-                    and "custom_id" in interaction.data
-                    and interaction.data["custom_id"]
+                    and interaction.custom_id
                     in {"yes_out_of_sync_ban_member", "no_out_of_sync_ban_member"}
                 ),
             )
 
-            if (
-                out_of_sync_ban_button_interaction.data["custom_id"]  # type: ignore[index, typeddict-item]
-                == "no_out_of_sync_ban_member"
-            ):
+            if out_of_sync_ban_button_interaction.custom_id == "no_out_of_sync_ban_member":
                 await out_of_sync_ban_confirmation_message.edit(
                     content=(
                         f"Aborted performing ban action upon {strike_user.mention}. "
@@ -621,10 +616,7 @@ class ManualModerationCog(BaseStrikeCog):
                 await out_of_sync_ban_confirmation_message.delete()
                 return
 
-            if (
-                out_of_sync_ban_button_interaction.data["custom_id"]  # type: ignore[index, typeddict-item]
-                == "yes_out_of_sync_ban_member"
-            ):
+            if out_of_sync_ban_button_interaction.custom_id == "yes_out_of_sync_ban_member":
                 await self._send_strike_user_message(strike_user, member_strikes)
                 await main_guild.ban(
                     strike_user,
@@ -691,8 +683,7 @@ class ManualModerationCog(BaseStrikeCog):
                     else (committee_role in interaction.user.roles)
                 )
                 and interaction.channel == confirmation_message_channel
-                and "custom_id" in interaction.data
-                and interaction.data["custom_id"]
+                and interaction.custom_id
                 in {
                     "yes_manual_moderation_action",
                     "no_manual_moderation_action",
@@ -700,7 +691,7 @@ class ManualModerationCog(BaseStrikeCog):
             ),
         )
 
-        if button_interaction.data["custom_id"] == "no_manual_moderation_action":  # type: ignore[index, typeddict-item]
+        if button_interaction.custom_id == "no_manual_moderation_action":
             await confirmation_message.edit(
                 content=(
                     f"Aborted increasing {strike_user.mention}'s strikes "
@@ -719,7 +710,7 @@ class ManualModerationCog(BaseStrikeCog):
             await confirmation_message.delete()
             return
 
-        if button_interaction.data["custom_id"] == "yes_manual_moderation_action":  # type: ignore[index, typeddict-item]
+        if button_interaction.custom_id == "yes_manual_moderation_action":
             interaction_user: discord.User | None = self.bot.get_user(applied_action_user.id)
             if not interaction_user:
                 raise StrikeTrackingError
