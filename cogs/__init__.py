@@ -18,6 +18,7 @@ from .check_su_platform_authorisation import (
     CheckSUPlatformAuthorisationCommandCog,
     CheckSUPlatformAuthorisationTaskCog,
 )
+from .colour_selector import MemberColourSelectorCommandCog
 from .command_error import CommandErrorCog
 from .committee_actions_tracking import (
     CommitteeActionsTrackingContextCommandCog,
@@ -76,6 +77,7 @@ __all__: "Sequence[str]" = (
     "MakeApplicantSlashCommandCog",
     "MakeMemberCommandCog",
     "ManualModerationCog",
+    "MemberColourSelectorCommandCog",
     "MemberCountCommandCog",
     "PingCommandCog",
     "RemindMeCommandCog",
@@ -117,6 +119,7 @@ def setup(bot: "TeXBot") -> None:
         MakeApplicantSlashCommandCog,
         MakeMemberCommandCog,
         ManualModerationCog,
+        MemberColourSelectorCommandCog,
         MemberCountCommandCog,
         PingCommandCog,
         RemindMeCommandCog,
