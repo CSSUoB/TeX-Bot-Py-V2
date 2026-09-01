@@ -18,10 +18,10 @@ if TYPE_CHECKING:
 
     from utils import AllChannelTypes, TeXBotApplicationContext, TeXBotAutocompleteContext
 
-__all__: "Sequence[str]" = ("ArchiveCommandsCog",)
+__all__: Sequence[str] = ("ArchiveCommandsCog",)
 
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class ArchiveCommandsCog(TeXBotBaseCog):
@@ -29,8 +29,8 @@ class ArchiveCommandsCog(TeXBotBaseCog):
 
     @staticmethod
     async def autocomplete_get_non_archival_categories(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+        ctx: TeXBotAutocompleteContext,
+    ) -> AbstractSet[discord.OptionChoice] | AbstractSet[str]:
         """
         Autocomplete callable that generates the set of available selectable categories.
 
@@ -50,8 +50,8 @@ class ArchiveCommandsCog(TeXBotBaseCog):
 
     @staticmethod
     async def autocomplete_get_archival_categories(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+        ctx: TeXBotAutocompleteContext,
+    ) -> AbstractSet[discord.OptionChoice] | AbstractSet[str]:
         """
         Autocomplete callable that generates the set of categories to hold archived channels.
 
@@ -72,8 +72,8 @@ class ArchiveCommandsCog(TeXBotBaseCog):
 
     @staticmethod
     async def autocomplete_get_non_archived_channels(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+        ctx: TeXBotAutocompleteContext,
+    ) -> AbstractSet[discord.OptionChoice] | AbstractSet[str]:
         """
         Autocomplete callable that generates the set of channels that the user can archive.
 
@@ -123,7 +123,7 @@ class ArchiveCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def archive_category(
         self,
-        ctx: "TeXBotApplicationContext",
+        ctx: TeXBotApplicationContext,
         str_category_id: str,
         allow_archivist: bool,  # noqa: FBT001
     ) -> None:
@@ -236,7 +236,7 @@ class ArchiveCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def archive_channel(
-        self, ctx: "TeXBotApplicationContext", str_channel_id: str, str_category_id: str
+        self, ctx: TeXBotApplicationContext, str_channel_id: str, str_category_id: str
     ) -> None:
         """
         Definition & callback response of the "archive-channel" command.
