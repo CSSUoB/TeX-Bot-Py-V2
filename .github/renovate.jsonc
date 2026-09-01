@@ -13,7 +13,7 @@
         "github-actions",
         "pep621",
         "pep723",
-        # "pre-commit",
+        // "pre-commit",
         "dockerfile"
     ],
     "extends": [
