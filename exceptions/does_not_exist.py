@@ -21,6 +21,7 @@ __all__: "Sequence[str]" = (
     "GuestRoleDoesNotExistError",
     "GuildDoesNotExistError",
     "MemberRoleDoesNotExistError",
+    "MessageReportsChannelDoesNotExistError",
     "RoleDoesNotExistError",
     "RolesChannelDoesNotExistError",
     "RulesChannelDoesNotExistError",
@@ -304,3 +305,17 @@ class GeneralChannelDoesNotExistError(ChannelDoesNotExistError):
     @override
     def CHANNEL_NAME(cls) -> str:
         return "general"
+
+
+class MessageReportsChannelDoesNotExistError(ChannelDoesNotExistError):
+    """Exception class to raise when the message-reports Discord channel is missing."""
+
+    @classproperty
+    @override
+    def ERROR_CODE(cls) -> str:
+        return "E1033"
+
+    @classproperty
+    @override
+    def CHANNEL_NAME(cls) -> str:
+        return "discord"  # TODO: Make this user-configurable  # noqa: FIX002

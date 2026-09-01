@@ -36,6 +36,7 @@ from .invite_link import InviteLinkCommandCog
 from .kill import KillCommandCog
 from .make_applicant import MakeApplicantContextCommandsCog, MakeApplicantSlashCommandCog
 from .make_member import MakeMemberCommandCog, MemberCountCommandCog
+from .message_deletion_tracking import MessageDeletionTrackingCog
 from .ping import PingCommandCog
 from .remind_me import ClearRemindersBacklogTaskCog, RemindMeCommandCog
 from .send_get_roles_reminders import SendGetRolesRemindersTaskCog
@@ -77,6 +78,7 @@ __all__: "Sequence[str]" = (
     "MakeMemberCommandCog",
     "ManualModerationCog",
     "MemberCountCommandCog",
+    "MessageDeletionTrackingCog",
     "PingCommandCog",
     "RemindMeCommandCog",
     "SendGetRolesRemindersTaskCog",
@@ -118,6 +120,7 @@ def setup(bot: "TeXBot") -> None:
         MakeMemberCommandCog,
         ManualModerationCog,
         MemberCountCommandCog,
+        MessageDeletionTrackingCog,
         PingCommandCog,
         RemindMeCommandCog,
         SendGetRolesRemindersTaskCog,

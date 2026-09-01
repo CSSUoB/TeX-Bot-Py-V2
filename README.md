@@ -75,6 +75,9 @@ The meaning of each error code is given here:
 * `E1032` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [text channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel) with the name "#**general**".
 (This [text channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel) is required for the `/induct` [command](https://discord.com/developers/docs/interactions/application-commands))
 
+* `E1033` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [text channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel) with the name "#**discord**".
+(This [text channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel) is required for the "Report Message to Committee" & "Strike Message Author" [context menu commands](https://discord.com/developers/docs/interactions/application-commands#message-commands), and for reporting messages that were deleted by a moderator)
+
 * `E1041` - The community group member IDs could not be retrieved from the SU platform.
 (It is likely that your `SU_PLATFORM_ACCESS_COOKIE` is invalid.
 If your community group is a [Guild of Students](https://guildofstudents.com) [society](https://wikipedia.org/wiki/Student_society), the community group member IDs will be a list of [UoB IDs](https://intranet.birmingham.ac.uk/campus-services/id-cards.aspx))
@@ -148,6 +151,13 @@ A full guide on how to create your bot's account can be found [here; on Pycord's
 
 You'll need to create a [Discord bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts) of your own in the [Discord Developer Portal](https://discord.com/developers/applications).
 It's also handy if you have an empty [Discord guild](https://discord.com/developers/docs/resources/guild) for you to test in.
+
+TeX-Bot requires two [privileged gateway intents](https://discord.com/developers/docs/events/gateway#privileged-intents) to be enabled on your bot's page in the [Discord Developer Portal](https://discord.com/developers/applications), under "Bot" > "Privileged Gateway Intents":
+
+* **Server Members Intent**: used to look up the members of your [Discord guild](https://discord.com/developers/docs/resources/guild), which almost every command depends upon
+* **Message Content Intent**: used to read the content of messages, so that a copy of any message deleted by a moderator can be retained for committee to review
+
+TeX-Bot will fail to start, with a `PrivilegedIntentsRequired` error, until both of these have been enabled.
 
 The correct [invite URL](https://docs.pycord.dev/en/stable/discord.html#inviting-your-bot) will be displayed to you in the console the first time you run the bot (or if you set a high verbosity log level)
 
