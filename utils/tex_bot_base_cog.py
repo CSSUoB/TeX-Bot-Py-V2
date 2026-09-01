@@ -35,6 +35,7 @@ class TeXBotBaseCog(Cog):
 
     ERROR_ACTIVITIES: "Final[Mapping[str, str]]" = {  # noqa: RUF012
         "archive": "archive the selected category",
+        # NOTE: The "/delete-all reminders" command has been removed but it is left here in case it comes up somehow during error handling
         "delete_all_reminders": (
             "delete all `DiscordReminder` objects from the backend database"
         ),
