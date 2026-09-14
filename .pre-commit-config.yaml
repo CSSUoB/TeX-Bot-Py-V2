@@ -83,26 +83,18 @@ repos:
         - id: gitlint
         - id: gitlint-ci
 
-    - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v6.0.0
-      hooks:
-        - id: check-illegal-windows-names
-        - id: check-shebang-scripts-are-executable
-        - id: check-vcs-permalinks
-        - id: destroyed-symlinks
-        - id: check-case-conflict
-        - id: name-tests-test
-          args: [--pytest-test-first]
-          files: (?:^|\/)tests\/(?:[^\/]+\/)*(?!_)[^\/]+\.py$  # yamllint disable-line rule:key-ordering
-        - id: pretty-format-json
-          args: [--autofix, --indent, "4"]
-
     - repo: builtin
       hooks:
+        - id: check-case-conflict
+        - id: destroyed-symlinks
+        - id: check-vcs-permalinks
         - id: check-added-large-files
+        - id: check-illegal-windows-names
+        - id: check-shebang-scripts-are-executable
         - id: trailing-whitespace
         - id: check-executables-have-shebangs
         - id: check-json
+        - id: check-jsonc
         - id: check-toml
         - id: check-yaml
         - id: end-of-file-fixer
@@ -113,6 +105,15 @@ repos:
           args: [--fix=lf]
         - id: detect-private-key
         - id: fix-byte-order-marker
+        - id: pretty-format-json
+          args: [--autofix, --indent, "4"]
+        - id: require-filename-pattern
+          args:
+            - "^test_.*\.py$"
+            - "^__init__\.py$"
+            - "^conftest\.py$"
+            - "^_.*\.py$"
+          files: "(^|/)tests/.+\.py$"
 
     - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
       rev: v2.16.0
