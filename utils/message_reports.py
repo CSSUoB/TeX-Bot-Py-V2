@@ -12,10 +12,10 @@ if TYPE_CHECKING:
     from .tex_bot import TeXBot
 
 
-__all__: "Sequence[str]" = ("MessageReportAction", "send_message_report_to_committee")
+__all__: Sequence[str] = ("MessageReportAction", "send_message_report_to_committee")
 
 
-MAXIMUM_REPORTED_CONTENT_LENGTH: "Final[int]" = 600
+MAXIMUM_REPORTED_CONTENT_LENGTH: Final[int] = 600
 
 
 class MessageReportAction(Enum):
@@ -62,7 +62,7 @@ def _get_report_image_url(message: discord.Message) -> str | None:
 
 
 async def send_message_report_to_committee(
-    bot: "TeXBot",
+    bot: TeXBot,
     message: discord.Message,
     reporting_user: discord.User | discord.Member,
     action: MessageReportAction,

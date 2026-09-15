@@ -21,10 +21,10 @@ if TYPE_CHECKING:
     from utils import TeXBot
 
 
-__all__: "Sequence[str]" = ("MessageDeletionTrackingCog",)
+__all__: Sequence[str] = ("MessageDeletionTrackingCog",)
 
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class _PendingDeletedMessage(NamedTuple):
@@ -53,14 +53,14 @@ class MessageDeletionTrackingCog(TeXBotBaseCog):
     """
 
     # NOTE: Deletions are held only for the moment between the two gateway events that describe them, so this bound just prevents unbounded growth if audit-log entries stop arriving. Expiry is what normally empties the store
-    MAXIMUM_PENDING_DELETED_MESSAGES: "Final[int]" = 25
-    PENDING_DELETED_MESSAGE_EXPIRY: "Final[datetime.timedelta]" = datetime.timedelta(
+    MAXIMUM_PENDING_DELETED_MESSAGES: Final[int] = 25
+    PENDING_DELETED_MESSAGE_EXPIRY: Final[datetime.timedelta] = datetime.timedelta(
         seconds=30
     )
-    AUDIT_LOG_ENTRY_GRACE_PERIOD: "Final[float]" = 2.0
+    AUDIT_LOG_ENTRY_GRACE_PERIOD: Final[float] = 2.0
 
     @override
-    def __init__(self, bot: "TeXBot") -> None:
+    def __init__(self, bot: TeXBot) -> None:
         """Initialise the store of deleted messages awaiting their audit-log entry."""
         self._pending_deleted_messages: deque[_PendingDeletedMessage] = deque(
             maxlen=self.MAXIMUM_PENDING_DELETED_MESSAGES
@@ -70,7 +70,7 @@ class MessageDeletionTrackingCog(TeXBotBaseCog):
 
     def _take_pending_deleted_messages(
         self, *, author_id: int, channel_id: int, count: int
-    ) -> "Sequence[discord.Message]":
+    ) -> Sequence[discord.Message]:
         """
         Remove & return the retained deleted messages matching the given audit-log entry.
 
@@ -119,7 +119,7 @@ class MessageDeletionTrackingCog(TeXBotBaseCog):
 
     async def _report_deleted_messages(
         self,
-        deleted_messages: "Sequence[discord.Message]",
+        deleted_messages: Sequence[discord.Message],
         deleter: discord.User | discord.Member,
     ) -> None:
         """Send a copy of each of the given deleted messages to the message-reports channel."""
