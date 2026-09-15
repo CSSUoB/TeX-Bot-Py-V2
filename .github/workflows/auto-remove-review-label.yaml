@@ -1,0 +1,22 @@
+name: "Automatically remove committee review label from PRs"
+
+on:
+  pull_request:
+    types:
+      - closed
+      - converted_to_draft
+
+jobs:
+  labeler:
+    if: github.repository == 'CSSUoB/cssuob.github.io' && github.event.pull_request.user.type != 'Bot'
+    permissions:
+      pull-requests: write
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add "sync" label to PR
+        run: gh pr edit "$PR_URL" --remove-label sync --repo "$PR_REPO"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_REPO: ${{ github.repository }}
