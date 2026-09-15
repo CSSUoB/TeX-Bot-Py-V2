@@ -10,14 +10,12 @@ from typing import TYPE_CHECKING
 import discord
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable, Callable, Sequence
-
-    from discord import Interaction, WebhookMessage
+    from collections.abc import Sequence
 
     from utils.tex_bot import TeXBot
 
 
-__all__: "Sequence[str]" = ("TeXBotApplicationContext", "TeXBotAutocompleteContext")
+__all__: Sequence[str] = ("TeXBotApplicationContext", "TeXBotAutocompleteContext")
 
 
 class TeXBotAutocompleteContext(discord.AutocompleteContext):
@@ -29,7 +27,7 @@ class TeXBotAutocompleteContext(discord.AutocompleteContext):
     should be used in cogs instead.
     """
 
-    bot: "TeXBot"  # type: ignore[mutable-override]
+    bot: TeXBot  # type: ignore[mutable-override]
 
 
 class TeXBotApplicationContext(discord.ApplicationContext):
@@ -41,6 +39,4 @@ class TeXBotApplicationContext(discord.ApplicationContext):
     should be used in cogs instead.
     """
 
-    bot: "TeXBot"  # type: ignore[mutable-override]
-
-    respond: "Callable[..., Awaitable[Interaction | WebhookMessage]]"  # type: ignore[explicit-any]
+    bot: TeXBot  # type: ignore[mutable-override]

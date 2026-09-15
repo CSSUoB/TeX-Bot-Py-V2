@@ -32,17 +32,17 @@ if TYPE_CHECKING:
 
     from utils import TeXBot
 
-__all__: "Sequence[str]" = ("SendIntroductionRemindersTaskCog",)
+__all__: Sequence[str] = ("SendIntroductionRemindersTaskCog",)
 
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
     """Cog class that defines the send_introduction_reminders task."""
 
     @override
-    def __init__(self, bot: "TeXBot") -> None:
+    def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
         if settings["SEND_INTRODUCTION_REMINDERS"]:
             if settings["SEND_INTRODUCTION_REMINDERS"] == "interval":
@@ -197,7 +197,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         """
 
         @override
-        def __init__(self, bot: "TeXBot") -> None:
+        def __init__(self, bot: TeXBot) -> None:
             """Initialise a new discord.View, to opt-in/out of introduction reminders."""
             self.bot: TeXBot = (
                 bot  # NOTE: See https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/261
@@ -233,8 +233,12 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             style=discord.ButtonStyle.red,
             emoji=discord.PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias")),
         )
-        async def opt_out_introduction_reminders_button_callback(  # type: ignore[misc]
-            self, button: discord.Button, interaction: discord.Interaction
+        async def opt_out_introduction_reminders_button_callback(
+            self,
+            button: discord.ui.Button[
+                SendIntroductionRemindersTaskCog.OptOutIntroductionRemindersView
+            ],
+            interaction: discord.Interaction,
         ) -> None:
             """
             Set the opt-in/out flag depending on the status of the button.

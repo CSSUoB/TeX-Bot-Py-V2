@@ -21,19 +21,19 @@ if TYPE_CHECKING:
     from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 
-__all__: "Sequence[str]" = ("TeXBotBaseCog",)
+__all__: Sequence[str] = ("TeXBotBaseCog",)
 
 
 if TYPE_CHECKING:
     type MentionableMember = discord.Member | discord.Role
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class TeXBotBaseCog(Cog):
     """Base Cog subclass that stores a reference to the currently running TeXBot instance."""
 
-    ERROR_ACTIVITIES: "Final[Mapping[str, str]]" = {  # noqa: RUF012
+    ERROR_ACTIVITIES: Final[Mapping[str, str]] = {
         "archive": "archive the selected category",
         # NOTE: The "/delete-all reminders" command has been removed but it is left here in case it comes up somehow during error handling
         "delete_all_reminders": (
@@ -61,7 +61,7 @@ class TeXBotBaseCog(Cog):
     }
 
     @override
-    def __init__(self, bot: "TeXBot") -> None:
+    def __init__(self, bot: TeXBot) -> None:
         """
         Initialise a new cog instance.
 
@@ -71,7 +71,7 @@ class TeXBotBaseCog(Cog):
 
     async def command_send_error(
         self,
-        ctx: "TeXBotApplicationContext",
+        ctx: TeXBotApplicationContext,
         error_code: str | None = None,
         message: str | None = None,
         logging_message: str | BaseException | None = None,
@@ -82,13 +82,14 @@ class TeXBotBaseCog(Cog):
         The constructed error message is then sent as the response to the given
         application command context.
         """
-        COMMAND_NAME: Final[str] = (
+        COMMAND_NAME: Final[str | None] = (
             ctx.command.callback.__name__
             if (
-                hasattr(ctx.command, "callback")
+                ctx.command
+                and hasattr(ctx.command, "callback")
                 and not ctx.command.callback.__name__.startswith("_")
             )
-            else ctx.command.qualified_name
+            else (ctx.command.qualified_name if ctx.command else None)
         )
 
         await self.send_error(
@@ -103,9 +104,9 @@ class TeXBotBaseCog(Cog):
     @classmethod
     async def send_error(
         cls,
-        bot: "TeXBot",
+        bot: TeXBot,
         interaction: discord.Interaction,
-        interaction_name: str,
+        interaction_name: str | None = None,
         error_code: str | None = None,
         message: str | None = None,
         logging_message: str | BaseException | None = None,
@@ -125,7 +126,7 @@ class TeXBotBaseCog(Cog):
                 f"{error_code}**\n"
             ) + construct_error_message
 
-        if interaction_name in cls.ERROR_ACTIVITIES:
+        if interaction_name is not None and interaction_name in cls.ERROR_ACTIVITIES:
             construct_error_message += (
                 f" when trying to {cls.ERROR_ACTIVITIES[interaction_name]}"
             )
@@ -160,8 +161,8 @@ class TeXBotBaseCog(Cog):
 
     @staticmethod
     async def autocomplete_get_text_channels(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+        ctx: TeXBotAutocompleteContext,
+    ) -> AbstractSet[discord.OptionChoice] | AbstractSet[str]:
         """
         Autocomplete callable that generates the set of available selectable channels.
 

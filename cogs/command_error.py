@@ -18,10 +18,10 @@ if TYPE_CHECKING:
 
     from utils import TeXBotApplicationContext
 
-__all__: "Sequence[str]" = ("CommandErrorCog",)
+__all__: Sequence[str] = ("CommandErrorCog",)
 
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class CommandErrorCog(TeXBotBaseCog):
@@ -29,7 +29,7 @@ class CommandErrorCog(TeXBotBaseCog):
 
     @TeXBotBaseCog.listener()
     async def on_application_command_error(
-        self, ctx: "TeXBotApplicationContext", error: discord.ApplicationCommandError
+        self, ctx: TeXBotApplicationContext, error: discord.ApplicationCommandError
     ) -> None:
         """Log any major command errors in the logging channel & stderr."""
         error_code: str | None = None
@@ -72,20 +72,28 @@ class CommandErrorCog(TeXBotBaseCog):
         if isinstance(error, discord.ApplicationCommandInvokeError) and isinstance(
             error.original, GuildDoesNotExistError
         ):
-            command_name: str = (
+            command_name: str | None = (
                 ctx.command.callback.__name__
                 if (
-                    hasattr(ctx.command, "callback")
+                    ctx.command
+                    and hasattr(ctx.command, "callback")
                     and not ctx.command.callback.__name__.startswith("_")
                 )
-                else ctx.command.qualified_name
+                else (ctx.command.qualified_name if ctx.command else None)
             )
             logger.critical(
                 " ".join(
                     message_part
                     for message_part in (
                         error.original.ERROR_CODE,
-                        f"({command_name})" if command_name in self.ERROR_ACTIVITIES else "",
+                        (
+                            f"({command_name})"
+                            if (
+                                command_name is not None
+                                and command_name in self.ERROR_ACTIVITIES
+                            )
+                            else ""
+                        ),
                         str(error.original).rstrip(".:"),
                     )
                     if message_part
