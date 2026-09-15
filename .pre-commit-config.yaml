@@ -105,7 +105,7 @@ repos:
           args: [--fix=lf]
         - id: detect-private-key
         - id: fix-byte-order-marker
-                - id: pretty-format-json
+        - id: pretty-format-json
           args: [--autofix, --indent, "4"]
         - id: require-filename-pattern
           files: (^|/)tests/.+\.py$  # yamllint disable-line rule:key-ordering
