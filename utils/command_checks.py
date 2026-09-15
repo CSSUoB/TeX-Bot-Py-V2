@@ -67,8 +67,8 @@ class CommandChecks:
 
     @staticmethod
     def check_interaction_user_has_member_role[T: TeXBotBaseCog, **P](
-        func: "Callable[Concatenate[T, P], Awaitable[None]]",
-    ) -> "Callable[Concatenate[T, P], Awaitable[None]]":
+        func: Callable[Concatenate[T, P], Awaitable[None]],
+    ) -> Callable[Concatenate[T, P], Awaitable[None]]:
         """
         Command check decorator to ensure the interaction user has the "Member" role.
 
@@ -76,7 +76,7 @@ class CommandChecks:
         Instead, an error message will be sent to the user.
         """
 
-        async def _check(ctx: "TeXBotApplicationContext") -> bool:
+        async def _check(ctx: TeXBotApplicationContext) -> bool:
             return await ctx.bot.check_user_has_member_role(ctx.user)
 
         return commands.check_any(
@@ -96,6 +96,6 @@ class CommandChecks:
         return bool(check.__name__ == cls.check_interaction_user_has_committee_role.__name__)  # type: ignore[attr-defined]
 
     @classmethod
-    def is_interaction_user_has_member_role_failure(cls, check: "CheckFailure") -> bool:
+    def is_interaction_user_has_member_role_failure(cls, check: CheckFailure) -> bool:
         """Whether the check failed due to the user not having the Member role."""
         return bool(check.__name__ == cls.check_interaction_user_has_member_role.__name__)  # type: ignore[attr-defined]

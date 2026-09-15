@@ -17,13 +17,13 @@ if TYPE_CHECKING:
     from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 
-__all__: "Sequence[str]" = ("MemberColourSelectorCommandCog",)
+__all__: Sequence[str] = ("MemberColourSelectorCommandCog",)
 
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
-COLOUR_ROLE_NAMES: "Final[AbstractSet[str]]" = {  # TODO: Make this a config option in the future  # noqa: FIX002
+COLOUR_ROLE_NAMES: Final[AbstractSet[str]] = {  # TODO: Make this a config option in the future  # noqa: FIX002
     "og-green",
     "pink",
     "orange",
@@ -39,8 +39,8 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
 
     @staticmethod
     async def autocomplete_colour_roles(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+        ctx: TeXBotAutocompleteContext,
+    ) -> AbstractSet[discord.OptionChoice] | AbstractSet[str]:
         """Autocomplete function for the colour roles option of the colour selector command."""
         try:
             main_guild: discord.Guild = ctx.bot.main_guild
@@ -71,7 +71,7 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     @CommandChecks.check_interaction_user_has_member_role
     async def member_colour_select(
-        self, ctx: "TeXBotApplicationContext", role_id_str: str
+        self, ctx: TeXBotApplicationContext, role_id_str: str
     ) -> None:
         """Slash command for selecting a colour role for the user."""
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
