@@ -236,7 +236,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         async def opt_out_introduction_reminders_button_callback(
             self,
             button: discord.ui.Button[
-                "SendIntroductionRemindersTaskCog.OptOutIntroductionRemindersView"
+                SendIntroductionRemindersTaskCog.OptOutIntroductionRemindersView
             ],
             interaction: discord.Interaction,
         ) -> None:

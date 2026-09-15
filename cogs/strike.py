@@ -95,7 +95,7 @@ class ConfirmStrikeMemberView(View):
         label="Yes", style=discord.ButtonStyle.red, custom_id="yes_strike_member"
     )
     async def yes_strike_member_button_callback(
-        self, _: discord.ui.Button["ConfirmStrikeMemberView"], interaction: discord.Interaction
+        self, _: discord.ui.Button[ConfirmStrikeMemberView], interaction: discord.Interaction
     ) -> None:
         """
         Delete the message associated with the view when the Yes button is pressed.
@@ -114,7 +114,7 @@ class ConfirmStrikeMemberView(View):
         label="No", style=discord.ButtonStyle.grey, custom_id="no_strike_member"
     )
     async def no_strike_member_button_callback(
-        self, _: discord.ui.Button["ConfirmStrikeMemberView"], interaction: discord.Interaction
+        self, _: discord.ui.Button[ConfirmStrikeMemberView], interaction: discord.Interaction
     ) -> None:
         """
         Delete the message associated with the view when the No button is pressed.
@@ -138,7 +138,7 @@ class ConfirmManualModerationView(View):
     )
     async def yes_manual_moderation_action_button_callback(
         self,
-        _: discord.ui.Button["ConfirmManualModerationView"],
+        _: discord.ui.Button[ConfirmManualModerationView],
         interaction: discord.Interaction,
     ) -> None:
         """
@@ -160,7 +160,7 @@ class ConfirmManualModerationView(View):
     )
     async def no_manual_moderation_action_button_callback(
         self,
-        _: discord.ui.Button["ConfirmManualModerationView"],
+        _: discord.ui.Button[ConfirmManualModerationView],
         interaction: discord.Interaction,
     ) -> None:
         """
@@ -186,7 +186,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
     )
     async def yes_out_of_sync_ban_member_button_callback(
         self,
-        _: discord.ui.Button["ConfirmStrikesOutOfSyncWithBanView"],
+        _: discord.ui.Button[ConfirmStrikesOutOfSyncWithBanView],
         interaction: discord.Interaction,
     ) -> None:
         """
@@ -208,7 +208,7 @@ class ConfirmStrikesOutOfSyncWithBanView(View):
     )
     async def no_out_of_sync_ban_member_button_callback(
         self,
-        _: discord.ui.Button["ConfirmStrikesOutOfSyncWithBanView"],
+        _: discord.ui.Button[ConfirmStrikesOutOfSyncWithBanView],
         interaction: discord.Interaction,
     ) -> None:
         """

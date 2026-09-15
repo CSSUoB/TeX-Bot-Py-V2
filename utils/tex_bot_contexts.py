@@ -10,7 +10,9 @@ from typing import TYPE_CHECKING
 import discord
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Awaitable, Callable, Sequence
+
+    from discord import Interaction, WebhookMessage
 
     from utils.tex_bot import TeXBot
 
