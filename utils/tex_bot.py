@@ -457,7 +457,9 @@ class TeXBot(discord.Bot):
 
         Raises `DiscordMemberNotInMainGuild` if the user is not in your group's Discord guild.
         """
-        main_guild_member: discord.Member | None = self.main_guild.get_member(user.id)
+        main_guild_member: discord.Member | None = await self.main_guild.get_or_fetch(
+            discord.Member, user.id
+        )
         if not main_guild_member:
             raise DiscordMemberNotInMainGuildError(user_id=user.id)
 
@@ -476,7 +478,7 @@ class TeXBot(discord.Bot):
             INVALID_USER_ID_MESSAGE: Final[str] = f"'{str_member_id}' is not a valid user ID."
             raise ValueError(INVALID_USER_ID_MESSAGE)
 
-        user: discord.User | None = await self.get_or_fetch_user(int(str_member_id))
+        user: discord.User | None = await self.get_or_fetch(discord.User, int(str_member_id))
         if not user:
             raise ValueError(
                 DiscordMemberNotInMainGuildError(user_id=int(str_member_id)).message
