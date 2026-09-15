@@ -233,8 +233,12 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
             style=discord.ButtonStyle.red,
             emoji=discord.PartialEmoji.from_str(emoji.emojize(":no_good:", language="alias")),
         )
-        async def opt_out_introduction_reminders_button_callback(  # type: ignore[misc]
-            self, button: discord.Button, interaction: discord.Interaction
+        async def opt_out_introduction_reminders_button_callback(
+            self,
+            button: discord.ui.Button[
+                "SendIntroductionRemindersTaskCog.OptOutIntroductionRemindersView"
+            ],
+            interaction: discord.Interaction,
         ) -> None:
             """
             Set the opt-in/out flag depending on the status of the button.
