@@ -54,9 +54,7 @@ class MessageDeletionTrackingCog(TeXBotBaseCog):
 
     # NOTE: Deletions are held only for the moment between the two gateway events that describe them, so this bound just prevents unbounded growth if audit-log entries stop arriving. Expiry is what normally empties the store
     MAXIMUM_PENDING_DELETED_MESSAGES: Final[int] = 25
-    PENDING_DELETED_MESSAGE_EXPIRY: Final[datetime.timedelta] = datetime.timedelta(
-        seconds=30
-    )
+    PENDING_DELETED_MESSAGE_EXPIRY: Final[datetime.timedelta] = datetime.timedelta(seconds=30)
     AUDIT_LOG_ENTRY_GRACE_PERIOD: Final[float] = 2.0
 
     @override
