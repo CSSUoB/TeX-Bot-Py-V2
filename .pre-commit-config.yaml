@@ -21,7 +21,7 @@ repos:
         - id: codespell
 
     - repo: https://github.com/tombi-toml/tombi-pre-commit
-      rev: v1.5.4
+      rev: v1.5.5
       hooks:
         - exclude: \A.+\.lock\Z
           id: tombi-format
@@ -33,7 +33,7 @@ repos:
         - id: sync-with-uv
 
     - repo: https://github.com/kjanat/actionlint
-      rev: v1.16
+      rev: v1.17.0
       hooks:
         - id: actionlint-shellcheck
           args: [-pyflakes=]
@@ -62,7 +62,7 @@ repos:
           args: [--strict]
 
     - repo: https://github.com/renovatebot/pre-commit-hooks
-      rev: 44.82.0
+      rev: 44.90.1
       hooks:
         - id: renovate-config-validator
           args: [--strict]
@@ -83,26 +83,18 @@ repos:
         - id: gitlint
         - id: gitlint-ci
 
-    - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v6.0.0
-      hooks:
-        - id: check-illegal-windows-names
-        - id: check-shebang-scripts-are-executable
-        - id: check-vcs-permalinks
-        - id: destroyed-symlinks
-        - id: check-case-conflict
-        - id: name-tests-test
-          args: [--pytest-test-first]
-          files: (?:^|\/)tests\/(?:[^\/]+\/)*(?!_)[^\/]+\.py$  # yamllint disable-line rule:key-ordering
-        - id: pretty-format-json
-          args: [--autofix, --indent, "4"]
-
     - repo: builtin
       hooks:
+        - id: check-case-conflict
+        - id: destroyed-symlinks
+        - id: check-vcs-permalinks
         - id: check-added-large-files
+        - id: check-illegal-windows-names
+        - id: check-shebang-scripts-are-executable
         - id: trailing-whitespace
         - id: check-executables-have-shebangs
         - id: check-json
+        - id: check-jsonc
         - id: check-toml
         - id: check-yaml
         - id: end-of-file-fixer
@@ -113,6 +105,15 @@ repos:
           args: [--fix=lf]
         - id: detect-private-key
         - id: fix-byte-order-marker
+        - id: pretty-format-json
+          args: [--autofix, --indent, "4"]
+        - id: require-filename-pattern
+          files: (^|/)tests/.+\.py$  # yamllint disable-line rule:key-ordering
+          args:
+            - ^test_.*\.py$
+            - ^__init__\.py$
+            - ^conftest\.py$
+            - ^_.*\.py$
 
     - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
       rev: v2.16.0
