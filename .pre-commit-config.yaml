@@ -105,6 +105,15 @@ repos:
           args: [--fix=lf]
         - id: detect-private-key
         - id: fix-byte-order-marker
+                - id: pretty-format-json
+          args: [--autofix, --indent, "4"]
+        - id: require-filename-pattern
+          files: (^|/)tests/.+\.py$  # yamllint disable-line rule:key-ordering
+          args:
+            - ^test_.*\.py$
+            - ^__init__\.py$
+            - ^conftest\.py$
+            - ^_.*\.py$
 
     - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
       rev: v2.16.0
