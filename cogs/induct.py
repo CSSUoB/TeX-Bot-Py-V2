@@ -12,6 +12,7 @@ from db.core.models import IntroductionReminderOptOutMember
 from exceptions import (
     ApplicantRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
+    DiscordMemberNotInMainGuildError,
     GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
     MemberRoleDoesNotExistError,
@@ -188,8 +189,8 @@ class BaseInductCog(TeXBotBaseCog):
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
 
-        induction_user: discord.User | None = await self.bot.get_or_fetch_user(
-            induction_member_id
+        induction_user: discord.User | None = await self.bot.get_or_fetch(
+            discord.User, induction_member_id
         )
         if not induction_user:
             await ctx.respond(
@@ -201,12 +202,15 @@ class BaseInductCog(TeXBotBaseCog):
             )
             return
 
-        induction_member: discord.Member | None = main_guild.get_member(induction_member_id)
-        if not induction_member:
+        try:
+            induction_member: discord.Member = await self.bot.get_main_guild_member(
+                induction_user
+            )
+        except DiscordMemberNotInMainGuildError:
             await ctx.respond(
                 (
                     ":information_source: No changes made. User cannot be inducted "
-                    "because they have left the server or are not cached "
+                    "because they are not in the server "
                     ":information_source:"
                 ),
                 ephemeral=True,
@@ -265,7 +269,9 @@ class BaseInductCog(TeXBotBaseCog):
                         applicant_role, reason=INDUCT_AUDIT_MESSAGE
                     )
 
-            tex_emoji: discord.Emoji | None = self.bot.get_emoji(743218410409820213)
+            tex_emoji: discord.GuildEmoji | discord.AppEmoji | None = self.bot.get_emoji(
+                743218410409820213
+            )
             if not tex_emoji:
                 tex_emoji = discord.utils.get(main_guild.emojis, name="TeX")
 
