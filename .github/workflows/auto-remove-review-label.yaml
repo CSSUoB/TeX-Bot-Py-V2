@@ -15,8 +15,7 @@ permissions:
 
 jobs:
     labeler:
-        if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.type !=
-            'Bot'
+        if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.type != 'Bot'
         name: Remove committee review label from closed PR
         permissions:
             pull-requests: write  # Needed to remove the label
