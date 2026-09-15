@@ -27,5 +27,5 @@ jobs:
                 GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                 PR_REPO: ${{ github.repository }}
                 PR_URL: ${{ github.event.pull_request.html_url }}
-              name: Add "sync" label to PR
+              name: Remove committee review label from closed PR
               run: gh pr edit "$PR_URL" --remove-label "awaiting committee review" --repo "$PR_REPO"
