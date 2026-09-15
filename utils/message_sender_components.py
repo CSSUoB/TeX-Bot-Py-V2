@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
     from .tex_bot_contexts import TeXBotApplicationContext
 
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "ChannelMessageSender",
     "MessageSavingSenderComponent",
     "ResponseMessageSender",
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
         Includes both required & optional kwargs.
         """
 
-        view: "View"
+        view: View
 
 
 class MessageSavingSenderComponent(abc.ABC):
@@ -51,7 +51,7 @@ class MessageSavingSenderComponent(abc.ABC):
 
     @abc.abstractmethod
     async def _send(
-        self, content: str, *, view: "View | None" = None
+        self, content: str, *, view: View | None = None
     ) -> discord.Message | discord.Interaction:
         """
         Subclass implementation of `send()` method.
@@ -61,7 +61,7 @@ class MessageSavingSenderComponent(abc.ABC):
         """
 
     @final
-    async def send(self, content: str, *, view: "View | None" = None) -> None:
+    async def send(self, content: str, *, view: View | None = None) -> None:
         """Send the provided message content & optional view to the defined endpoint."""
         if self.sent_message is not None:
             ALREADY_SENT_MESSAGE: Final[str] = (
@@ -101,7 +101,7 @@ class ChannelMessageSender(MessageSavingSenderComponent):
 
     @override
     async def _send(
-        self, content: str, *, view: "View | None" = None
+        self, content: str, *, view: View | None = None
     ) -> discord.Message | discord.Interaction:
         send_kwargs: _ChannelSendKwargs = {"content": content}
         if view:
@@ -119,13 +119,13 @@ class ResponseMessageSender(MessageSavingSenderComponent):
     """
 
     @override
-    def __init__(self, ctx: "TeXBotApplicationContext") -> None:
+    def __init__(self, ctx: TeXBotApplicationContext) -> None:
         self.ctx: TeXBotApplicationContext = ctx
 
         super().__init__()
 
     @override
     async def _send(
-        self, content: str, *, view: "View | None" = None
+        self, content: str, *, view: View | None = None
     ) -> discord.Message | discord.Interaction:
         return await self.ctx.respond(content=content, view=view, ephemeral=True)
