@@ -12,7 +12,7 @@ from .memberships import (
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "fetch_community_group_members_count",
     "fetch_community_group_members_list",
     "fetch_url_content_with_session",
