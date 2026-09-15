@@ -88,7 +88,7 @@ class StatsCommandsCog(TeXBotBaseCog):
             ctx.channel, (discord.CategoryChannel, discord.ForumChannel)
         ):
             await self.command_send_error(
-                ctx, message="This command can only be used in text channels."
+                ctx, message="This command cannot be used in category/forum channels."
             )
             return
 
@@ -167,7 +167,7 @@ class StatsCommandsCog(TeXBotBaseCog):
             ctx.channel, (discord.CategoryChannel, discord.ForumChannel)
         ):
             await self.command_send_error(
-                ctx, message="This command can only be used in text channels."
+                ctx, message="This command cannot be used in category/forum channels."
             )
             return
 
@@ -255,7 +255,7 @@ class StatsCommandsCog(TeXBotBaseCog):
             ctx.channel, (discord.CategoryChannel, discord.ForumChannel)
         ):
             await self.command_send_error(
-                ctx, message="This command can only be used in text channels."
+                ctx, message="This command cannot be used in category/forum channels."
             )
             return
 
@@ -340,7 +340,7 @@ class StatsCommandsCog(TeXBotBaseCog):
             ctx.channel, (discord.CategoryChannel, discord.ForumChannel)
         ):
             await self.command_send_error(
-                ctx, message="This command can only be used in text channels."
+                ctx, message="This command cannot be used in category/forum channels."
             )
             return
 

@@ -457,7 +457,9 @@ class TeXBot(discord.Bot):
 
         Raises `DiscordMemberNotInMainGuild` if the user is not in your group's Discord guild.
         """
-        main_guild_member: discord.Member | None = self.main_guild.get_member(user.id)
+        main_guild_member: discord.Member | None = await self.main_guild.get_or_fetch(
+            discord.Member, user.id
+        )
         if not main_guild_member:
             raise DiscordMemberNotInMainGuildError(user_id=user.id)
 
