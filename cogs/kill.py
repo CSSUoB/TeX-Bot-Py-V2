@@ -86,19 +86,18 @@ class KillCommandCog(TeXBotBaseCog):
                 interaction.type == discord.InteractionType.component  # noqa: CAR180
                 and interaction.message.id == confirmation_message.id
                 and ((committee_role in interaction.user.roles) if committee_role else True)
-                and "custom_id" in interaction.data
-                and interaction.data["custom_id"] in {"shutdown_confirm", "shutdown_cancel"}
+                and interaction.custom_id in {"shutdown_confirm", "shutdown_cancel"}
             ),
         )
 
-        if button_interaction.data["custom_id"] == "shutdown_confirm":  # type: ignore[index, typeddict-item]
+        if button_interaction.custom_id == "shutdown_confirm":
             await confirmation_message.edit(
                 content="My battery is low and it's getting dark...",
                 view=None,
             )
             await self.bot.perform_kill_and_close(initiated_by_user=ctx.interaction.user)
 
-        if button_interaction.data["custom_id"] == "shutdown_cancel":  # type: ignore[index, typeddict-item]
+        if button_interaction.custom_id == "shutdown_cancel":
             await confirmation_message.edit(content="Shutdown has been cancelled.", view=None)
             logger.info("Manual shutdown cancelled by %s.", ctx.interaction.user)
             return

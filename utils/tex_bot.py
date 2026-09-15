@@ -89,14 +89,12 @@ class TeXBot(discord.Bot):
 
         Raises `GuildDoesNotExist` if the given ID does not link to a valid Discord guild.
         """
-        MAIN_GUILD_EXISTS: Final[bool] = bool(
-            self._main_guild
-            and self._check_guild_accessible(settings["_DISCORD_MAIN_GUILD_ID"])
-        )
-        if not MAIN_GUILD_EXISTS:
+        if self._main_guild is None or not self._check_guild_accessible(
+            settings["_DISCORD_MAIN_GUILD_ID"]
+        ):
             raise GuildDoesNotExistError(guild_id=settings["_DISCORD_MAIN_GUILD_ID"])
 
-        return self._main_guild  # type: ignore[return-value]
+        return self._main_guild
 
     @property
     async def committee_role(self) -> discord.Role:

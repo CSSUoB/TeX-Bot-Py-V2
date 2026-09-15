@@ -193,15 +193,10 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         ctx: "TeXBotAutocompleteContext",  # noqa: ARG004
     ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
         """Autocomplete callable that provides the set of possible Status' of actions."""
-        status_options: Sequence[tuple[str, str]] = AssignedCommitteeAction._meta.get_field(
-            "status"
-        ).choices  # type: ignore[assignment]
-
-        if not status_options:
-            logger.error("The autocomplete could not find any action Status'!")
-            return set()
-
-        return {discord.OptionChoice(name=value, value=code) for code, value in status_options}
+        return {
+            discord.OptionChoice(name=str(status.label), value=status.value)
+            for status in AssignedCommitteeAction.Status
+        }
 
     @committee_actions.command(
         name="create", description="Adds a new action with the specified description."
