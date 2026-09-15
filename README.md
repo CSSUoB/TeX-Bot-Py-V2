@@ -123,7 +123,7 @@ The conditions for each [task](https://docs.pycord.dev/en/stable/ext/tasks) are 
 
 The only supported way to deploy TeX-Bot in production is by using our pre-built [docker container](https://docs.docker.com/resources/what-container).
 It is can be pulled from the [GitHub Container Registry](https://docs.github.com/packages/working-with-a-github-packages-registry/working-with-the-container-registry) with this identifier: [`ghcr.io/CSSUoB/tex-bot-py-v2:latest`](https://github.com/CSSUoB/TeX-Bot-Py-V2/pkgs/container/tex-bot-py-v2).
-(An introduction on how to use a [docker-compose deployment](https://docs.docker.com/compose) can be found [here](https://docs.docker.com/get-started/08_using_compose).)
+([Here is an introduction](https://docs.docker.com/get-started/08_using_compose) on how to use a [docker-compose deployment](https://docs.docker.com/compose).)
 See [**Versioning**](#versioning) for the full list of available version tags for each release.
 
 Before running the [container](https://docs.docker.com/resources/what-container), some [environment variables](https://wikipedia.org/wiki/Environment_variable) will need to be set.
