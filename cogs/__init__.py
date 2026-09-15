@@ -38,7 +38,6 @@ from .make_applicant import MakeApplicantContextCommandsCog, MakeApplicantSlashC
 from .make_member import MakeMemberCommandCog, MemberCountCommandCog
 from .message_deletion_tracking import MessageDeletionTrackingCog
 from .ping import PingCommandCog
-from .remind_me import ClearRemindersBacklogTaskCog, RemindMeCommandCog
 from .send_get_roles_reminders import SendGetRolesRemindersTaskCog
 from .send_introduction_reminders import SendIntroductionRemindersTaskCog
 from .source import SourceCommandCog
@@ -80,7 +79,6 @@ __all__: "Sequence[str]" = (
     "MemberCountCommandCog",
     "MessageDeletionTrackingCog",
     "PingCommandCog",
-    "RemindMeCommandCog",
     "SendGetRolesRemindersTaskCog",
     "SendIntroductionRemindersTaskCog",
     "SourceCommandCog",
@@ -100,7 +98,6 @@ def setup(bot: "TeXBot") -> None:
         AnnualRolesResetCommandCog,
         AnnualYearChannelsIncrementCommandCog,
         ArchiveCommandsCog,
-        ClearRemindersBacklogTaskCog,
         CommandErrorCog,
         CommitteeActionsTrackingSlashCommandsCog,
         CommitteeActionsTrackingContextCommandCog,
@@ -122,7 +119,6 @@ def setup(bot: "TeXBot") -> None:
         MemberCountCommandCog,
         MessageDeletionTrackingCog,
         PingCommandCog,
-        RemindMeCommandCog,
         SendGetRolesRemindersTaskCog,
         SendIntroductionRemindersTaskCog,
         SourceCommandCog,
