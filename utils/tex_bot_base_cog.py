@@ -21,19 +21,19 @@ if TYPE_CHECKING:
     from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 
-__all__: "Sequence[str]" = ("TeXBotBaseCog",)
+__all__: Sequence[str] = ("TeXBotBaseCog",)
 
 
 if TYPE_CHECKING:
     type MentionableMember = discord.Member | discord.Role
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class TeXBotBaseCog(Cog):
     """Base Cog subclass that stores a reference to the currently running TeXBot instance."""
 
-    ERROR_ACTIVITIES: "Final[Mapping[str, str]]" = {  # noqa: RUF012
+    ERROR_ACTIVITIES: Final[Mapping[str, str]] = {
         "archive": "archive the selected category",
         # NOTE: The "/delete-all reminders" command has been removed but it is left here in case it comes up somehow during error handling
         "delete_all_reminders": (
@@ -61,7 +61,7 @@ class TeXBotBaseCog(Cog):
     }
 
     @override
-    def __init__(self, bot: "TeXBot") -> None:
+    def __init__(self, bot: TeXBot) -> None:
         """
         Initialise a new cog instance.
 
@@ -71,7 +71,7 @@ class TeXBotBaseCog(Cog):
 
     async def command_send_error(
         self,
-        ctx: "TeXBotApplicationContext",
+        ctx: TeXBotApplicationContext,
         error_code: str | None = None,
         message: str | None = None,
         logging_message: str | BaseException | None = None,
@@ -104,7 +104,7 @@ class TeXBotBaseCog(Cog):
     @classmethod
     async def send_error(
         cls,
-        bot: "TeXBot",
+        bot: TeXBot,
         interaction: discord.Interaction,
         interaction_name: str | None = None,
         error_code: str | None = None,
@@ -161,8 +161,8 @@ class TeXBotBaseCog(Cog):
 
     @staticmethod
     async def autocomplete_get_text_channels(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+        ctx: TeXBotAutocompleteContext,
+    ) -> AbstractSet[discord.OptionChoice] | AbstractSet[str]:
         """
         Autocomplete callable that generates the set of available selectable channels.
 
