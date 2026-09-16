@@ -2,14 +2,19 @@
 
 import logging
 from collections.abc import Iterable
-from typing import TYPE_CHECKING
 from collections.abc import Set as AbstractSet
+from typing import TYPE_CHECKING
 
 import discord
 
 from config import settings
 from exceptions import GuestRoleDoesNotExistError, GuildDoesNotExistError
-from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext, TeXBotAutocompleteContext
+from utils import (
+    CommandChecks,
+    TeXBotApplicationContext,
+    TeXBotAutocompleteContext,
+    TeXBotBaseCog,
+)
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 if TYPE_CHECKING:

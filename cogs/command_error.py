@@ -9,7 +9,7 @@ from discord.ext.commands.errors import CheckAnyFailure
 
 from exceptions import GuildDoesNotExistError
 from exceptions.base import BaseErrorWithErrorCode
-from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

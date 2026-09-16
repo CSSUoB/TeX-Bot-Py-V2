@@ -8,7 +8,7 @@ import discord
 
 from config import settings
 from db.core.models import GroupMadeMember
-from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 if TYPE_CHECKING:
     from collections.abc import Collection, Mapping, Sequence

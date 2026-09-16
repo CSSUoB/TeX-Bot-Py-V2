@@ -11,7 +11,7 @@ from db.core.models import (
     SentGetRolesReminderMember,
     SentOneOffIntroductionReminderMember,
 )
-from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

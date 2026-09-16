@@ -4,6 +4,7 @@ import contextlib
 import logging
 import random
 import textwrap
+from collections.abc import Set as AbstractSet
 from enum import Enum
 from typing import TYPE_CHECKING
 
@@ -18,8 +19,12 @@ from exceptions import (
     InvalidActionDescriptionError,
     InvalidActionTargetError,
 )
-from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext, TeXBotAutocompleteContext
-from collections.abc import Set as AbstractSet
+from utils import (
+    CommandChecks,
+    TeXBotApplicationContext,
+    TeXBotAutocompleteContext,
+    TeXBotBaseCog,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

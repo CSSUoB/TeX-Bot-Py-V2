@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from utils import TeXBotBaseCog, TeXBotApplicationContext
+from utils import TeXBotApplicationContext, TeXBotBaseCog
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

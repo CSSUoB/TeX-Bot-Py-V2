@@ -1,13 +1,19 @@
 """Contains cog classes for any edit_message interactions."""
 
 import re
+from collections.abc import Set as AbstractSet
 from typing import TYPE_CHECKING, override
 
 import discord
-from collections.abc import Set as AbstractSet
+
 from exceptions import DiscordMemberNotInMainGuildError
 from exceptions.base import BaseDoesNotExistError
-from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext, TeXBotAutocompleteContext
+from utils import (
+    CommandChecks,
+    TeXBotApplicationContext,
+    TeXBotAutocompleteContext,
+    TeXBotBaseCog,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

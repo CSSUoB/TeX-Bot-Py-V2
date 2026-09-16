@@ -3,6 +3,7 @@
 import contextlib
 import logging
 import random
+from collections.abc import Set as AbstractSet
 from typing import TYPE_CHECKING
 
 import discord
@@ -17,9 +18,14 @@ from exceptions import (
     GuildDoesNotExistError,
     MemberRoleDoesNotExistError,
 )
-from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext, TeXBotAutocompleteContext
+from utils import (
+    CommandChecks,
+    TeXBotApplicationContext,
+    TeXBotAutocompleteContext,
+    TeXBotBaseCog,
+)
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
-from collections.abc import Set as AbstractSet
+
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from logging import Logger

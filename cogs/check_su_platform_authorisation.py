@@ -1,6 +1,7 @@
 """Contains cog classes for SU platform access cookie authorisation check interactions."""
 
 import logging
+from collections.abc import Set as AbstractSet
 from enum import Enum
 from typing import TYPE_CHECKING, override
 
@@ -9,12 +10,11 @@ import discord
 from discord.ext import tasks
 
 from config import settings
-from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
 from utils.error_capture_decorators import (
     capture_guild_does_not_exist_error,
 )
 from utils.msl import fetch_url_content_with_session
-from collections.abc import Set as AbstractSet
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
