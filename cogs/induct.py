@@ -17,16 +17,14 @@ from exceptions import (
     GuildDoesNotExistError,
     MemberRoleDoesNotExistError,
 )
-from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext
+from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext, TeXBotAutocompleteContext
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
-
+from collections.abc import Set as AbstractSet
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final, Literal
 
-    from utils import TeXBotAutocompleteContext
 
 __all__: Sequence[str] = (
     "BaseInductCog",

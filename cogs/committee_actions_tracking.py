@@ -18,15 +18,13 @@ from exceptions import (
     InvalidActionDescriptionError,
     InvalidActionTargetError,
 )
-from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext
+from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext, TeXBotAutocompleteContext
+from collections.abc import Set as AbstractSet
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
-
-    from utils import TeXBotAutocompleteContext
 
 __all__: Sequence[str] = (
     "CommitteeActionsTrackingBaseCog",

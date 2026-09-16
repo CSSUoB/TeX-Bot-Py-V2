@@ -3,6 +3,7 @@
 import logging
 from collections.abc import Iterable
 from typing import TYPE_CHECKING
+from collections.abc import Set as AbstractSet
 
 import discord
 
@@ -13,7 +14,6 @@ from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
 

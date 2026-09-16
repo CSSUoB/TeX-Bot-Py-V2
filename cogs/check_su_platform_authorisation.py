@@ -14,10 +14,10 @@ from utils.error_capture_decorators import (
     capture_guild_does_not_exist_error,
 )
 from utils.msl import fetch_url_content_with_session
+from collections.abc import Set as AbstractSet
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
-    from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
 

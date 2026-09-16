@@ -4,16 +4,13 @@ import re
 from typing import TYPE_CHECKING, override
 
 import discord
-
+from collections.abc import Set as AbstractSet
 from exceptions import DiscordMemberNotInMainGuildError
 from exceptions.base import BaseDoesNotExistError
-from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext
+from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext, TeXBotAutocompleteContext
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from collections.abc import Set as AbstractSet
-
-    from utils import TeXBotAutocompleteContext
 
 __all__: Sequence[str] = ("EditMessageCommandCog",)
 

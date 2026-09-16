@@ -3,6 +3,7 @@
 import logging
 import re
 from typing import TYPE_CHECKING
+from collections.abc import Set as AbstractSet
 
 import discord
 
@@ -12,7 +13,6 @@ from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext, TeXBot
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
 

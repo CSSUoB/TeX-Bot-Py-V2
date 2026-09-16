@@ -18,20 +18,18 @@ from exceptions import (
     NoAuditLogsStrikeTrackingError,
     StrikeTrackingError,
 )
-from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext
+from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext, TeXBotAutocompleteContext
 from utils.error_capture_decorators import (
     capture_guild_does_not_exist_error,
     capture_strike_tracking_error,
 )
 from utils.message_sender_components import ChannelMessageSender, ResponseMessageSender
-
+from collections.abc import Set as AbstractSet
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
-    from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
 
-    from utils import TeXBotAutocompleteContext
     from utils.message_sender_components import MessageSavingSenderComponent
 
 __all__: Sequence[str] = (
