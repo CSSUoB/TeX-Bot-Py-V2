@@ -7,13 +7,13 @@ import discord
 
 from exceptions import DiscordMemberNotInMainGuildError
 from exceptions.base import BaseDoesNotExistError
-from utils import CommandChecks, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from collections.abc import Set as AbstractSet
 
-    from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
+    from utils import TeXBotAutocompleteContext
 
 __all__: Sequence[str] = ("EditMessageCommandCog",)
 

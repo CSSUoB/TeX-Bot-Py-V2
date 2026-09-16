@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, override
 
 import discord
 
-from utils import TeXBotBaseCog
+from utils import TeXBotBaseCog, TeXBotApplicationContext
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from logging import Logger
     from typing import Final
 
-    from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
+    from utils import TeXBotAutocompleteContext
 
 __all__: Sequence[str] = ("EverestCommandCog",)
 

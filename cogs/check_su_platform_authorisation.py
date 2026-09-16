@@ -9,7 +9,7 @@ import discord
 from discord.ext import tasks
 
 from config import settings
-from utils import CommandChecks, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext
 from utils.error_capture_decorators import (
     capture_guild_does_not_exist_error,
 )
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from logging import Logger
     from typing import Final
 
-    from utils import TeXBot, TeXBotApplicationContext
+    from utils import TeXBot
 
 __all__: Sequence[str] = (
     "CheckSUPlatformAuthorisationCommandCog",

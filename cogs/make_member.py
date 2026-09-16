@@ -10,15 +10,13 @@ from django.core.exceptions import ValidationError
 from config import settings
 from db.core.models import GroupMadeMember
 from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
-from utils import CommandChecks, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext
 from utils.msl import fetch_community_group_members_count, is_id_a_community_group_member
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from logging import Logger
     from typing import Final
-
-    from utils import TeXBotApplicationContext
 
 
 __all__: Sequence[str] = ("MakeMemberCommandCog", "MemberCountCommandCog")

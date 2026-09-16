@@ -9,14 +9,12 @@ from discord.ext.commands.errors import CheckAnyFailure
 
 from exceptions import GuildDoesNotExistError
 from exceptions.base import BaseErrorWithErrorCode
-from utils import CommandChecks, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from logging import Logger
     from typing import Final
-
-    from utils import TeXBotApplicationContext
 
 __all__: Sequence[str] = ("CommandErrorCog",)
 

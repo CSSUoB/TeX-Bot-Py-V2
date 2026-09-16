@@ -18,7 +18,7 @@ from exceptions import (
     NoAuditLogsStrikeTrackingError,
     StrikeTrackingError,
 )
-from utils import CommandChecks, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext
 from utils.error_capture_decorators import (
     capture_guild_does_not_exist_error,
     capture_strike_tracking_error,
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from logging import Logger
     from typing import Final
 
-    from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
+    from utils import TeXBotAutocompleteContext
     from utils.message_sender_components import MessageSavingSenderComponent
 
 __all__: Sequence[str] = (

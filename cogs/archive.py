@@ -8,7 +8,7 @@ import discord
 
 from exceptions import EveryoneRoleCouldNotBeRetrievedError
 from exceptions.base import BaseDoesNotExistError
-from utils import CommandChecks, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext, TeXBotAutocompleteContext
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from logging import Logger
     from typing import Final
 
-    from utils import AllChannelTypes, TeXBotApplicationContext, TeXBotAutocompleteContext
+    from utils import AllChannelTypes
 
 __all__: Sequence[str] = ("ArchiveCommandsCog",)
 

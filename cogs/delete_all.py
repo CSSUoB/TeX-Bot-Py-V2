@@ -11,13 +11,12 @@ from db.core.models import (
     SentGetRolesReminderMember,
     SentOneOffIntroductionReminderMember,
 )
-from utils import CommandChecks, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from db.core.models.utils import AsyncBaseModel
-    from utils import TeXBotApplicationContext
 
 __all__: Sequence[str] = ("DeleteAllCommandsCog",)
 

@@ -6,14 +6,14 @@ from typing import TYPE_CHECKING
 import discord
 
 from exceptions.does_not_exist import ApplicantRoleDoesNotExistError, GuildDoesNotExistError
-from utils import CommandChecks, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from logging import Logger
     from typing import Final
 
-    from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
+    from utils import TeXBotAutocompleteContext
 
 __all__: Sequence[str] = (
     "BaseMakeApplicantCog",

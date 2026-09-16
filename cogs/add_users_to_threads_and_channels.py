@@ -8,7 +8,7 @@ import discord
 
 from config import settings
 from exceptions import GuestRoleDoesNotExistError, GuildDoesNotExistError
-from utils import CommandChecks, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext, TeXBotAutocompleteContext
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 if TYPE_CHECKING:
@@ -16,8 +16,6 @@ if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
-
-    from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 
 __all__: Sequence[str] = ("AddUsersToThreadsAndChannelsCommandsCog",)

@@ -8,7 +8,7 @@ import discord
 
 from config import settings
 from db.core.models import LeftDiscordMember
-from utils import CommandChecks, TeXBotBaseCog
+from utils import CommandChecks, TeXBotBaseCog, TeXBotApplicationContext
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 from .counts import get_channel_message_counts, get_server_message_counts
@@ -17,8 +17,6 @@ from .graphs import amount_of_time_formatter, plot_bar_chart
 if TYPE_CHECKING:
     from collections.abc import AsyncIterable, Mapping, Sequence
     from typing import Final
-
-    from utils import TeXBotApplicationContext
 
 __all__: Sequence[str] = ("StatsCommandsCog",)
 
