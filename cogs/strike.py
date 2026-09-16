@@ -5,6 +5,7 @@ import contextlib
 import datetime
 import logging
 import re
+from collections.abc import Set as AbstractSet  # noqa: TC003
 from typing import TYPE_CHECKING
 
 import discord
@@ -18,7 +19,12 @@ from exceptions import (
     NoAuditLogsStrikeTrackingError,
     StrikeTrackingError,
 )
-from utils import CommandChecks, TeXBotBaseCog
+from utils import (
+    CommandChecks,
+    TeXBotApplicationContext,  # noqa: TC001
+    TeXBotAutocompleteContext,  # noqa: TC001
+    TeXBotBaseCog,
+)
 from utils.error_capture_decorators import (
     capture_guild_does_not_exist_error,
     capture_strike_tracking_error,
@@ -27,11 +33,9 @@ from utils.message_sender_components import ChannelMessageSender, ResponseMessag
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
-    from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
 
-    from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
     from utils.message_sender_components import MessageSavingSenderComponent
 
 __all__: Sequence[str] = (
