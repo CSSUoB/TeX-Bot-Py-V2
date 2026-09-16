@@ -21,6 +21,7 @@ from exceptions import (
     GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
     MemberRoleDoesNotExistError,
+    MessageReportsChannelDoesNotExistError,
     RoleDoesNotExistError,
     RolesChannelDoesNotExistError,
     RulesChannelDoesNotExistError,
@@ -61,6 +62,7 @@ class TeXBot(discord.Bot):
         self._roles_channel: discord.TextChannel | None = None
         self._general_channel: discord.TextChannel | None = None
         self._rules_channel: discord.TextChannel | None = None
+        self._message_reports_channel: discord.TextChannel | None = None
         self._exit_was_due_to_kill_command: bool = False
 
         self._main_guild_set: bool = False
@@ -279,6 +281,28 @@ class TeXBot(discord.Bot):
             raise RulesChannelDoesNotExistError
 
         return self._rules_channel
+
+    @property
+    async def message_reports_channel(self) -> discord.TextChannel:
+        """
+        Shortcut accessor to the message-reports text channel.
+
+        The message-reports text channel is the one that copies of reported
+        & moderator-deleted messages are sent to, for committee to review.
+
+        Raises `MessageReportsChannelDoesNotExist` if the channel does not exist.
+        """
+        if not self._message_reports_channel or not self._main_guild_has_channel(
+            self._message_reports_channel
+        ):
+            self._message_reports_channel = await self._fetch_main_guild_text_channel(
+                "discord"  # TODO: Make this user-configurable  # noqa: FIX002
+            )
+
+        if not self._message_reports_channel:
+            raise MessageReportsChannelDoesNotExistError
+
+        return self._message_reports_channel
 
     @property
     def group_full_name(self) -> str:
