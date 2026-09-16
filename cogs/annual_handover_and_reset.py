@@ -8,14 +8,14 @@ import discord
 
 from config import settings
 from db.core.models import GroupMadeMember
-from utils import CommandChecks, TeXBotBaseCog
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog  # noqa: TC001
 
 if TYPE_CHECKING:
     from collections.abc import Collection, Mapping, Sequence
     from logging import Logger
     from typing import Final
 
-    from utils import AllChannelTypes, TeXBotApplicationContext
+    from utils import AllChannelTypes
 
 __all__: Sequence[str] = (
     "AnnualRolesResetCommandCog",
