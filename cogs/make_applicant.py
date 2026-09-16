@@ -8,8 +8,8 @@ import discord
 from exceptions.does_not_exist import ApplicantRoleDoesNotExistError, GuildDoesNotExistError
 from utils import (
     CommandChecks,
-    TeXBotApplicationContext,
-    TeXBotAutocompleteContext,
+    TeXBotApplicationContext,  # noqa: TC001
+    TeXBotAutocompleteContext,  # noqa: TC001
     TeXBotBaseCog,
 )
 

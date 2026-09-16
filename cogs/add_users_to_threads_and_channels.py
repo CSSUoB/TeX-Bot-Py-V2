@@ -2,7 +2,7 @@
 
 import logging
 from collections.abc import Iterable
-from collections.abc import Set as AbstractSet
+from collections.abc import Set as AbstractSet  # noqa: TC003
 from typing import TYPE_CHECKING
 
 import discord
@@ -11,8 +11,8 @@ from config import settings
 from exceptions import GuestRoleDoesNotExistError, GuildDoesNotExistError
 from utils import (
     CommandChecks,
-    TeXBotApplicationContext,
-    TeXBotAutocompleteContext,
+    TeXBotApplicationContext,  # noqa: TC001
+    TeXBotAutocompleteContext,  # noqa: TC001
     TeXBotBaseCog,
 )
 from utils.error_capture_decorators import capture_guild_does_not_exist_error

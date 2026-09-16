@@ -5,7 +5,7 @@ import contextlib
 import datetime
 import logging
 import re
-from collections.abc import Set as AbstractSet
+from collections.abc import Set as AbstractSet  # noqa: TC003
 from typing import TYPE_CHECKING
 
 import discord
@@ -21,8 +21,8 @@ from exceptions import (
 )
 from utils import (
     CommandChecks,
-    TeXBotApplicationContext,
-    TeXBotAutocompleteContext,
+    TeXBotApplicationContext,  # noqa: TC001
+    TeXBotAutocompleteContext,  # noqa: TC001
     TeXBotBaseCog,
 )
 from utils.error_capture_decorators import (

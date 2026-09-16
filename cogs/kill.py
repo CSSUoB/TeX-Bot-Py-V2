@@ -7,7 +7,7 @@ import discord
 from discord.ui import View
 
 from exceptions import CommitteeRoleDoesNotExistError
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog  # noqa: TC001
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

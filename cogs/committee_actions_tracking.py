@@ -4,7 +4,7 @@ import contextlib
 import logging
 import random
 import textwrap
-from collections.abc import Set as AbstractSet
+from collections.abc import Set as AbstractSet  # noqa: TC003
 from enum import Enum
 from typing import TYPE_CHECKING
 
@@ -21,8 +21,8 @@ from exceptions import (
 )
 from utils import (
     CommandChecks,
-    TeXBotApplicationContext,
-    TeXBotAutocompleteContext,
+    TeXBotApplicationContext,  # noqa: TC001
+    TeXBotAutocompleteContext,  # noqa: TC001
     TeXBotBaseCog,
 )
 

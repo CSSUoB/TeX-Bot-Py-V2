@@ -8,7 +8,7 @@ import discord
 
 from config import settings
 from db.core.models import LeftDiscordMember
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog  # noqa: TC001
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 
 from .counts import get_channel_message_counts, get_server_message_counts

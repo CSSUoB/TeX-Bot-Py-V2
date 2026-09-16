@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import discord
 
 from config import settings
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog
+from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog  # noqa: TC001
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
