@@ -62,6 +62,12 @@ class CommandErrorCog(TeXBotBaseCog):
                     "members can run this command."
                 )
 
+            elif CommandChecks.is_interaction_user_has_member_role_failure(error.checks[0]):  # type: ignore[arg-type]
+                message = (
+                    f"Only {await self.bot.get_mention_string(self.bot.member_role)} "
+                    "members can run this command."
+                )
+
         else:
             logging_message = error
 
