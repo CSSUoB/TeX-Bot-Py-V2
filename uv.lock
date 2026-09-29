@@ -1293,7 +1293,7 @@ main = [
     { name = "django", specifier = ">=5.1" },
     { name = "django-stubs-ext", specifier = ">=5.2" },
     { name = "emoji", specifier = ">=2.14" },
-    { name = "matplotlib", specifier = ">=3.11,<3.12" },
+    { name = "matplotlib", specifier = ">=3.11" },
     { name = "mplcyberpunk", specifier = ">=0.7" },
     { name = "parsedatetime", specifier = ">=2.6" },
     { name = "py-cord", specifier = ">=2.8" },
