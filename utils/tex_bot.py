@@ -24,6 +24,7 @@ from exceptions import (
     RoleDoesNotExistError,
     RolesChannelDoesNotExistError,
     RulesChannelDoesNotExistError,
+    RoleNotFoundInMainGuildError,
 )
 
 if TYPE_CHECKING:
@@ -495,6 +496,33 @@ class TeXBot(discord.Bot):
             raise ValueError from user_not_in_main_guild_error
 
         return member
+
+    async def get_role_from_str_id(self, str_role_id: str) -> discord.Role:
+        """
+        Retrieve a role of your group's Discord guild by its ID.
+
+        Raises `ValueError` if the provided ID does not represent any role
+        of your group's Discord guild.
+        """
+        str_role_id = re.sub(r"\A\s*(<@&)(.*)(?(1)>|)\s*\Z", r"\2", str(str_role_id))
+
+        if not re.fullmatch(r"\A\d{17,20}\Z", str_role_id):
+            INVALID_ROLE_ID_MESSAGE: Final[str] = f"'{str_role_id}' is not a valid role ID."
+            raise ValueError(INVALID_ROLE_ID_MESSAGE)
+
+        role: discord.Role | None = await self.main_guild.get_or_fetch(
+            discord.Role, int(str_role_id)
+        )
+
+        if role is None:
+            ROLE_NOT_FOUND_MESSAGE: Final[str] = (
+                f"Role with ID '{str_role_id}' could not be found in the main guild."
+            )
+            raise RoleNotFoundInMainGuildError(
+                message=ROLE_NOT_FOUND_MESSAGE, role_id=int(str_role_id)
+            )
+
+        return role
 
     async def fetch_log_channel(self) -> discord.TextChannel:
         """

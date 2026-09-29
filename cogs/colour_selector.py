@@ -5,7 +5,11 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from exceptions import DiscordMemberNotInMainGuildError, GuildDoesNotExistError
+from exceptions import (
+    DiscordMemberNotInMainGuildError,
+    GuildDoesNotExistError,
+    RoleNotFoundInMainGuildError,
+)
 from utils import CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
@@ -75,7 +79,13 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
     async def member_colour_select(
         self, ctx: TeXBotApplicationContext, role_id_str: str
     ) -> None:
-        """Slash command for selecting a colour role for the user."""
+        """
+        Slash command for selecting a colour role for the user.
+
+        Definition & callback response of the "member_colour_select" command.
+        The "member_colour_select" command assigns a colour role to the member that used
+        the command to allow them to change their display colour.
+        """
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = ctx.bot.main_guild
         interaction_member: discord.Member | discord.User | None = ctx.interaction.user
@@ -90,23 +100,20 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
                 )
                 return
 
+            role_to_add: discord.Role
             try:
-                role_id_int = int(role_id_str)
-            except ValueError:
+                role_to_add = await ctx.bot.get_role_from_str_id(role_id_str)
+            except RoleNotFoundInMainGuildError:
                 await ctx.respond(
-                    "The role ID you provided is not a valid role ID. "
+                    "The specified role could not be found in the main guild. "
                     "Please use the autocomplete.",
                     ephemeral=True,
                 )
                 return
-
-            role_to_add: discord.Role | None = discord.utils.get(
-                main_guild.roles, id=role_id_int
-            )
-
-            if not role_to_add:
+            except ValueError:
                 await ctx.respond(
-                    "The role you selected does not exist. Please use the autocomplete.",
+                    "The specified role ID is not a valid role ID. "
+                    "Please use the autocomplete.",
                     ephemeral=True,
                 )
                 return
