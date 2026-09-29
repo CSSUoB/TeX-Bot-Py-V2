@@ -25,10 +25,10 @@ __all__: Sequence[str] = ("MemberColourSelectorCommandCog",)
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
-
+# TODO: Make this a config option in the future  # noqa: FIX002
 COLOUR_ROLE_NAMES: Final[
     AbstractSet[str]
-] = {  # TODO: Make this a config option in the future  # noqa: FIX002
+] = {
     "og-green",
     "pink",
     "orange",
