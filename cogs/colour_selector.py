@@ -5,9 +5,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from config import settings
 from exceptions import (
-    DiscordMemberNotInMainGuildError,
     GuildDoesNotExistError,
     RoleNotFoundInMainGuildError,
 )
@@ -54,18 +52,23 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
         except GuildDoesNotExistError:
             return set()
 
-        return {
-            discord.OptionChoice(
-                name=role.name,
-                value=str(role.id),
-            )
-            for role in main_guild.roles
-            if role.name.lower() in COLOUR_ROLE_NAMES
+        roles: set[discord.Role] = {
+            role for role in main_guild.roles if role.name.lower() in COLOUR_ROLE_NAMES
         }
+
+        if not ctx.value or ctx.value.startswith("@"):
+            return {
+                discord.OptionChoice(
+                    name=f"@{role.name}",
+                    value=str(role.id)
+                ) for role in roles
+            }
+
+        return {discord.OptionChoice(name=role.name, value=str(role.id)) for role in roles}
 
     @discord.slash_command(
         name="select-colour-role",
-        description="Select a colour role for yourself.",
+        description="Select a colour role for yourself."
     )
     @discord.option(
         name="colour-role",
@@ -73,12 +76,12 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
         autocomplete=discord.utils.basic_autocomplete(autocomplete_colour_roles),
         input_type=str,
         required=True,
-        parameter_name="role_id_str",
+        parameter_name="str_role_id",
     )
     @CommandChecks.check_interaction_user_in_main_guild
     @CommandChecks.check_interaction_user_has_member_role
     async def select_colour_role(
-        self, ctx: TeXBotApplicationContext, role_id_str: str
+        self, ctx: TeXBotApplicationContext, str_role_id: str
     ) -> None:
         """
         Slash command for selecting a colour role for the user.
@@ -102,16 +105,16 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
 
             role_to_add: discord.Role
             try:
-                role_to_add = await ctx.bot.get_role_from_str_id(role_id_str)
+                role_to_add = await ctx.bot.get_role_from_str_id(str_role_id)
             except RoleNotFoundInMainGuildError:
-                await ctx.respond(
+                await ctx.followup.send(
                     "The specified role could not be found in the main guild. "
                     "Please use the autocomplete.",
                     ephemeral=True,
                 )
                 return
             except ValueError:
-                await ctx.respond(
+                await ctx.followup.send(
                     "The specified role ID is not a valid role ID. "
                     "Please use the autocomplete.",
                     ephemeral=True,
@@ -119,7 +122,7 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
                 return
 
             if role_to_add.name.lower() not in COLOUR_ROLE_NAMES:
-                await ctx.respond(
+                await ctx.followup.send(
                     ":information_source: No changes made. "
                     f"{role_to_add.name} is not a valid colour role. "
                     ":information_source:"
@@ -155,6 +158,6 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
                 ),
             )
 
-            await ctx.respond(
+            await ctx.followup.send(
                 f"Successfully gave you the {role_to_add.name} colour role!", ephemeral=True
             )

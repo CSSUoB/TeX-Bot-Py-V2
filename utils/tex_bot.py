@@ -504,7 +504,7 @@ class TeXBot(discord.Bot):
         Raises `ValueError` if the provided ID does not represent any role
         of your group's Discord guild.
         """
-        str_role_id = re.sub(r"\A\s*(<@&)(.*)(?(1)>|)\s*\Z", r"\2", str(str_role_id))
+        str_role_id = re.sub(r"\A\s*(<@&)(.*)(?(1)>|)\s*\Z", r"\2", str_role_id)
 
         if not re.fullmatch(r"\A\d{17,20}\Z", str_role_id):
             INVALID_ROLE_ID_MESSAGE: Final[str] = f"'{str_role_id}' is not a valid role ID."
