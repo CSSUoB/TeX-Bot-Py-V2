@@ -12,7 +12,7 @@ from exceptions import (
 from utils import CommandChecks, TeXBotBaseCog
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Collection, Sequence
     from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
@@ -26,9 +26,7 @@ __all__: Sequence[str] = ("MemberColourSelectorCommandCog",)
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 # TODO: Make this a config option in the future  # noqa: FIX002
-COLOUR_ROLE_NAMES: Final[
-    AbstractSet[str]
-] = {
+COLOUR_ROLE_NAMES: Final[AbstractSet[str]] = {
     "og-green",
     "pink",
     "orange",
@@ -129,23 +127,37 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
                 ctx.interaction.user
             )
 
-            roles_to_remove: list[discord.Role] = [
+            roles_to_remove: Collection[discord.Role] = [
                 role
                 for role in interaction_member.roles
-                if role.name.lower() in COLOUR_ROLE_NAMES
+                if role.name.lower() in COLOUR_ROLE_NAMES and role != role_to_add
             ]
 
-            if role_to_add in roles_to_remove:
-                roles_to_remove.remove(role_to_add)
+            member_already_has_role_to_add: bool = role_to_add in interaction_member.roles
 
-            if roles_to_remove:
-                await interaction_member.remove_roles(
-                    *roles_to_remove,
-                    reason=(
-                        f"{interaction_member} used TeX-Bot "
-                        f'slash-command "/select-colour-role".'
-                    ),
+            if member_already_has_role_to_add and not roles_to_remove:
+                await ctx.followup.send(
+                    ":information_source: No changes made. "
+                    f"You already have the {role_to_add.name} colour role. "
+                    ":information_source:",
+                    ephemeral=True,
                 )
+                return
+
+            await interaction_member.remove_roles(
+                *roles_to_remove,
+                reason=(
+                    f'{interaction_member} used TeX-Bot slash-command "/select-colour-role".'
+                ),
+            )
+
+            if member_already_has_role_to_add:
+                await ctx.followup.send(
+                    ":information_source: No changes made. "
+                    f"You already have the {role_to_add.name} colour role.",
+                    ephemeral=True,
+                )
+                return
 
             await interaction_member.add_roles(
                 role_to_add,
