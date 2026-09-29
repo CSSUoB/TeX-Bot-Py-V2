@@ -22,9 +22,9 @@ from exceptions import (
     GuildDoesNotExistError,
     MemberRoleDoesNotExistError,
     RoleDoesNotExistError,
+    RoleNotFoundInMainGuildError,
     RolesChannelDoesNotExistError,
     RulesChannelDoesNotExistError,
-    RoleNotFoundInMainGuildError,
 )
 
 if TYPE_CHECKING:

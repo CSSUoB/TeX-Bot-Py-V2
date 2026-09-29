@@ -93,7 +93,10 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
             if not ctx.interaction.user:
                 await self.command_send_error(
                     ctx=ctx,
-                    message="Cannot assign colour role when interaction user was not available.",
+                    message=(
+                        "Cannot assign colour role when "
+                        "interaction user was not available."
+                    ),
                 )
                 return
 
@@ -133,7 +136,7 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
                     await ctx.respond(
                         "You are not a member of the main guild. "
                         "Please join the main guild to use this command."
-                        f"\n{settings["PURCHASE_MEMBERSHIP_URL"]}",
+                        f"\n{settings['PURCHASE_MEMBERSHIP_URL']}",
                         ephemeral=True,
                     )
                     return
@@ -150,12 +153,17 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
             if roles_to_remove:
                 await interaction_member.remove_roles(
                     *roles_to_remove,
-                    reason=f'{interaction_member} used TeX-Bot slash-command "/select-colour-role".',
+                    reason=(
+                        f'{interaction_member} used TeX-Bot '
+                        f'slash-command "/select-colour-role".'
+                    ),
                 )
 
             await interaction_member.add_roles(
                 role_to_add,
-                reason=f'{interaction_member} used TeX-Bot slash-command "/select-colour-role".'
+                reason=(
+                    f'{interaction_member} used TeX-Bot slash-command "/select-colour-role".'
+                ),
             )
 
             await ctx.respond(
