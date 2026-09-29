@@ -92,10 +92,10 @@ class CommandChecks:
 
     @classmethod
     def is_interaction_user_has_committee_role_failure(cls, check: CheckFailure) -> bool:
-        """Whether the check failed due to the user not having the committee role."""
+        """Whether the check failed due to the user not having the "Committee" role."""
         return bool(check.__name__ == cls.check_interaction_user_has_committee_role.__name__)  # type: ignore[attr-defined]
 
     @classmethod
     def is_interaction_user_has_member_role_failure(cls, check: CheckFailure) -> bool:
-        """Whether the check failed due to the user not having the Member role."""
+        """Whether the check failed due to the user not having the "Member" role."""
         return bool(check.__name__ == cls.check_interaction_user_has_member_role.__name__)  # type: ignore[attr-defined]

@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
+from config import settings
 from exceptions import (
     DiscordMemberNotInMainGuildError,
     GuildDoesNotExistError,
@@ -86,17 +87,13 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
         The "member_colour_select" command assigns a colour role to the member that used
         the command to allow them to change their display colour.
         """
-        # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
-        main_guild: discord.Guild = ctx.bot.main_guild
-        interaction_member: discord.Member | discord.User | None = ctx.interaction.user
-
         await ctx.defer(ephemeral=True)
 
         async with ctx.typing():
-            if not interaction_member:
+            if not ctx.interaction.user:
                 await self.command_send_error(
                     ctx=ctx,
-                    message="Interaction user was None for member-colour-select command run.",
+                    message="Cannot assign colour role when interaction user was not available.",
                 )
                 return
 
@@ -120,25 +117,26 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
 
             if role_to_add.name.lower() not in COLOUR_ROLE_NAMES:
                 await ctx.respond(
+                    ":information_source: No changes made. "
                     f"{role_to_add.name} is not a valid colour role. "
-                    "Please use the autocomplete."
+                    ":information_source:"
                 )
                 return
 
-            if isinstance(interaction_member, discord.User):
+            interaction_member: discord.Member
+            if not isinstance(ctx.interaction.user, discord.Member):
                 try:
-                    fetched_member: discord.Member = await self.bot.get_main_guild_member(
-                        interaction_member
+                    interaction_member = await self.bot.get_main_guild_member(
+                        ctx.interaction.user
                     )
                 except DiscordMemberNotInMainGuildError:
                     await ctx.respond(
                         "You are not a member of the main guild. "
-                        "Please join the main guild to use this command.",
+                        "Please join the main guild to use this command."
+                        f"\n{settings["PURCHASE_MEMBERSHIP_URL"]}",
                         ephemeral=True,
                     )
                     return
-
-                interaction_member = fetched_member
 
             roles_to_remove: list[discord.Role] = [
                 role
@@ -152,12 +150,12 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
             if roles_to_remove:
                 await interaction_member.remove_roles(
                     *roles_to_remove,
-                    reason=f"{interaction_member} used TeX-Bot /member-colour-select.",
+                    reason=f'{interaction_member} used TeX-Bot slash-command "/select-colour-role".',
                 )
 
             await interaction_member.add_roles(
                 role_to_add,
-                reason=f"{interaction_member} used TeX-Bot /member-colour-select.",
+                reason=f'{interaction_member} used TeX-Bot slash-command "/select-colour-role".'
             )
 
             await ctx.respond(
