@@ -64,7 +64,7 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
         }
 
     @discord.slash_command(
-        name="member-colour-select",
+        name="select-colour-role",
         description="Select a colour role for yourself.",
     )
     @discord.option(
@@ -77,14 +77,14 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_in_main_guild
     @CommandChecks.check_interaction_user_has_member_role
-    async def member_colour_select(
+    async def select_colour_role(
         self, ctx: TeXBotApplicationContext, role_id_str: str
     ) -> None:
         """
         Slash command for selecting a colour role for the user.
 
-        Definition & callback response of the "member_colour_select" command.
-        The "member_colour_select" command assigns a colour role to the member that used
+        Definition & callback response of the "select-colour-role" command.
+        The "select-colour-role" command assigns a colour role to the member that used
         the command to allow them to change their display colour.
         """
         await ctx.defer(ephemeral=True)
@@ -126,20 +126,9 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
                 )
                 return
 
-            interaction_member: discord.Member
-            if not isinstance(ctx.interaction.user, discord.Member):
-                try:
-                    interaction_member = await self.bot.get_main_guild_member(
-                        ctx.interaction.user
-                    )
-                except DiscordMemberNotInMainGuildError:
-                    await ctx.respond(
-                        "You are not a member of the main guild. "
-                        "Please join the main guild to use this command."
-                        f"\n{settings['PURCHASE_MEMBERSHIP_URL']}",
-                        ephemeral=True,
-                    )
-                    return
+            interaction_member: discord.Member = await self.bot.get_main_guild_member(
+                ctx.interaction.user
+            )
 
             roles_to_remove: list[discord.Role] = [
                 role
