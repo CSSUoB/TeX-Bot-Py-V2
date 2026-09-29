@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 __all__: Sequence[str] = (
     "DiscordMemberNotInMainGuildError",
     "EveryoneRoleCouldNotBeRetrievedError",
+    "RoleNotFoundInMainGuildError",
 )
 
 
@@ -27,6 +28,22 @@ class DiscordMemberNotInMainGuildError(BaseTeXBotError, ValueError):
     def __init__(self, message: str | None = None, user_id: int | None = None) -> None:
         """Initialise a ValueError exception for a non-existent user ID."""
         self.user_id: int | None = user_id
+
+        super().__init__(message)
+
+
+class RoleNotFoundInMainGuildError(BaseTeXBotError, ValueError):
+    """Exception class for when a role could not be found in the main guild."""
+
+    @classproperty
+    @override
+    def DEFAULT_MESSAGE(cls) -> str:
+        return "The specified role could not be found in the main guild."
+
+    @override
+    def __init__(self, message: str | None = None, role_id: int | None = None) -> None:
+        """Initialise a ValueError exception for a non-existent role ID."""
+        self.role_id: int | None = role_id
 
         super().__init__(message)
 

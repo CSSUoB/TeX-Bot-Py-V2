@@ -8,7 +8,11 @@ from typing import TYPE_CHECKING
 import discord
 
 from config import settings
-from exceptions import GuestRoleDoesNotExistError, GuildDoesNotExistError
+from exceptions import (
+    GuestRoleDoesNotExistError,
+    GuildDoesNotExistError,
+    RoleNotFoundInMainGuildError,
+)
 from utils import (
     CommandChecks,
     TeXBotApplicationContext,  # noqa: TC001
@@ -276,20 +280,20 @@ class AddUsersToThreadsAndChannelsCommandsCog(TeXBotBaseCog):
             )
             return
 
-        main_guild: discord.Guild = ctx.bot.main_guild
-
+        role_to_add: discord.Role
         try:
-            role_id: int = int(role_id_str)
-        except ValueError:
-            logger.debug("Role ID: %s is not a valid ID.", role_id_str)
-            await ctx.respond(content=f"The role: {role_id_str} is not valid.")
+            role_to_add = await ctx.bot.get_role_from_str_id(role_id_str)
+        except RoleNotFoundInMainGuildError:
+            await ctx.respond(
+                "The specified role could not be found in the main guild. "
+                "Please use the autocomplete.",
+                ephemeral=True,
+            )
             return
-
-        role_to_add: discord.Role | None = discord.utils.get(main_guild.roles, id=role_id)
-
-        if role_to_add is None:
-            await self.command_send_error(
-                ctx, message=f"The role: <@{role_id}> is not valid or couldn't be found."
+        except ValueError:
+            await ctx.respond(
+                "The specified role ID is not a valid role ID. Please use the autocomplete.",
+                ephemeral=True,
             )
             return
 
