@@ -58,17 +58,14 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
 
         if not ctx.value or ctx.value.startswith("@"):
             return {
-                discord.OptionChoice(
-                    name=f"@{role.name}",
-                    value=str(role.id)
-                ) for role in roles
+                discord.OptionChoice(name=f"@{role.name}", value=str(role.id))
+                for role in roles
             }
 
         return {discord.OptionChoice(name=role.name, value=str(role.id)) for role in roles}
 
     @discord.slash_command(
-        name="select-colour-role",
-        description="Select a colour role for yourself."
+        name="select-colour-role", description="Select a colour role for yourself."
     )
     @discord.option(
         name="colour-role",
@@ -97,8 +94,7 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
                 await self.command_send_error(
                     ctx=ctx,
                     message=(
-                        "Cannot assign colour role when "
-                        "interaction user was not available."
+                        "Cannot assign colour role when interaction user was not available."
                     ),
                 )
                 return
@@ -146,7 +142,7 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
                 await interaction_member.remove_roles(
                     *roles_to_remove,
                     reason=(
-                        f'{interaction_member} used TeX-Bot '
+                        f"{interaction_member} used TeX-Bot "
                         f'slash-command "/select-colour-role".'
                     ),
                 )
