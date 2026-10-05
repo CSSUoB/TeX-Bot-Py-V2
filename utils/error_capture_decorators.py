@@ -57,7 +57,7 @@ class ErrorCaptureDecorators:
         """  # noqa: D401
 
         @functools.wraps(func)
-        async def wrapper(self: T_cog, /, *args: P.args, **kwargs: P.kwargs) -> T_ret | None:  # type: ignore[misc]  # noqa: CAR150
+        async def wrapper(self: T_cog, /, *args: P.args, **kwargs: P.kwargs) -> T_ret | None:  # noqa: CAR150
             try:
                 return await func(self, *args, **kwargs)
             except error_type as error:
