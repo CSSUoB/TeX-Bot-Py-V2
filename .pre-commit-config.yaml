@@ -85,35 +85,35 @@ repos:
 
     - repo: builtin
       hooks:
-        - id: check-case-conflict
-        - id: destroyed-symlinks
-        - id: check-vcs-permalinks
         - id: check-added-large-files
-        - id: check-illegal-windows-names
-        - id: check-shebang-scripts-are-executable
-        - id: trailing-whitespace
+        - id: check-case-conflict
         - id: check-executables-have-shebangs
+        - id: check-illegal-windows-names
         - id: check-json
         - id: check-jsonc
-        - id: check-toml
-        - id: check-yaml
-        - id: end-of-file-fixer
-        - id: check-xml
-        - id: check-symlinks
         - id: check-merge-conflict
+        - id: check-shebang-scripts-are-executable
+        - id: check-symlinks
+        - id: check-toml
+        - id: check-vcs-permalinks
+        - id: check-xml
+        - id: check-yaml
+        - id: destroyed-symlinks
+        - id: detect-private-key
+        - id: end-of-file-fixer
+        - id: fix-byte-order-marker
         - id: mixed-line-ending
           args: [--fix=lf]
-        - id: detect-private-key
-        - id: fix-byte-order-marker
         - id: pretty-format-json
           args: [--autofix, --indent, "4"]
         - id: require-filename-pattern
-          files: (^|/)tests/.+\.py$  # yamllint disable-line rule:key-ordering
+          files: (^|/)tests/(?!(?:.+/)?_[a-z_]+/).+\.py$  # yamllint disable-line rule:key-ordering
           args:
             - ^test_.*\.py$
             - ^__init__\.py$
             - ^conftest\.py$
             - ^_.*\.py$
+        - id: trailing-whitespace
 
     - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
       rev: v2.16.0
