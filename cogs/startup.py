@@ -15,6 +15,7 @@ from exceptions import (
     GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
     MemberRoleDoesNotExistError,
+    MessageReportsChannelDoesNotExistError,
     MSLMembershipError,
     RolesChannelDoesNotExistError,
 )
@@ -110,6 +111,9 @@ class StartupCog(TeXBotBaseCog):
 
         if not discord.utils.get(main_guild.text_channels, name="general"):
             logger.warning(GeneralChannelDoesNotExistError())
+
+        if not discord.utils.get(main_guild.text_channels, name="discord"):
+            logger.warning(MessageReportsChannelDoesNotExistError())
 
         try:
             await fetch_community_group_members_list()
