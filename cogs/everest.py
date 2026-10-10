@@ -1,20 +1,22 @@
 """Contains cog classes for any Everest interactions."""
 
 import logging
+from collections.abc import Set as AbstractSet  # noqa: TC003
 from enum import Enum
 from typing import TYPE_CHECKING, override
 
 import discord
 
-from utils import TeXBotBaseCog
+from utils import (  # noqa: TC001
+    TeXBotApplicationContext,
+    TeXBotAutocompleteContext,
+    TeXBotBaseCog,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
-
-    from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 __all__: Sequence[str] = ("EverestCommandCog",)
 

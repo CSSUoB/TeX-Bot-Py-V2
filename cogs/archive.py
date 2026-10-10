@@ -2,21 +2,26 @@
 
 import logging
 import re
+from collections.abc import Set as AbstractSet  # noqa: TC003
 from typing import TYPE_CHECKING
 
 import discord
 
 from exceptions import EveryoneRoleCouldNotBeRetrievedError
 from exceptions.base import BaseDoesNotExistError
-from utils import CommandChecks, TeXBotBaseCog
+from utils import (
+    CommandChecks,
+    TeXBotApplicationContext,  # noqa: TC001
+    TeXBotAutocompleteContext,  # noqa: TC001
+    TeXBotBaseCog,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
 
-    from utils import AllChannelTypes, TeXBotApplicationContext, TeXBotAutocompleteContext
+    from utils import AllChannelTypes
 
 __all__: Sequence[str] = ("ArchiveCommandsCog",)
 
