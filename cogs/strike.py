@@ -22,10 +22,10 @@ from exceptions import (
 from utils import (
     CommandChecks,
     MessageReportAction,
-    send_message_report_to_committee,
     TeXBotApplicationContext,  # noqa: TC001
     TeXBotAutocompleteContext,  # noqa: TC001
     TeXBotBaseCog,
+    send_message_report_to_committee,
 )
 from utils.error_capture_decorators import (
     capture_guild_does_not_exist_error,
