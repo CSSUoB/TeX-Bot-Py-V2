@@ -49,17 +49,18 @@ jobs:
             - name: Set up Python
               uses: actions/setup-python@v7
               with:
-                python-version: 3.15
+                python-version-file: .python-version
 
             - name: Install uv
               uses: astral-sh/setup-uv@v10.3.0
               with:
                 enable-cache: true
 
+            - name: Install Flake8 from locked dependencies
+              run: uv sync --only-group lint-format
+
             - name: Run Flake8
-              # TODO: Run from locked dependencies, once project's Python version has been updated to 3.14
-              run: uvx --python 3.14 --with "flake8-carrot>=0.1.4" --with "flake8-pyproject>=1.2"
-                -- flake8
+              run: uv run -- flake8
 
     mypy:  # yamllint disable-line rule:key-ordering
         env:
@@ -357,4 +358,5 @@ jobs:
                 RELEASE_REPOSITORY: ${{github.repository}}
                 RELEASE_TAG: ${{github.ref_name}}
               run: gh release create "${RELEASE_TAG}" --repo "${RELEASE_REPOSITORY}" --verify-tag
-                --generate-notes
+                --generate-notes --notes "$(git tag -l --format='%(contents:subject)%0a%0a%(contents:body)'
+                "${RELEASE_TAG}")"
