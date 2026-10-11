@@ -8,7 +8,7 @@ __all__: Sequence[str] = ()
 
 import inspect
 from pathlib import Path
-lazy from collections.abc import Mapping, Sequence
+lazy from collections.abc import Sequence
 lazy from typing import Final
 
 import django_stubs_ext
@@ -49,7 +49,7 @@ MIDDLEWARE: Final[Sequence[str]] = ["django.middleware.common.CommonMiddleware"]
 # Database Settings
 
 DATABASES: Final[
-    Mapping[str, object]
+    dict[str, object]
 ] = {  # SOURCE: https://docs.djangoproject.com/en/stable/ref/settings#databases
     "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "core.db"}
 }

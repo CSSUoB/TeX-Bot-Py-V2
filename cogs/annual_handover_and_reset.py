@@ -200,11 +200,13 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
                 f'{ctx.user} used TeX-Bot slash-command: "/annual-roles-reset"'
             )
 
-            membership_dependent_roles: Mapping[str, discord.Role] = {
-                role.name: role
-                for role in main_guild.roles
-                if role.name in settings["MEMBERSHIP_DEPENDENT_ROLES"]
-            }
+            membership_dependent_roles: Mapping[str, discord.Role] = frozendict(
+                {
+                    role.name: role
+                    for role in main_guild.roles
+                    if role.name in settings["MEMBERSHIP_DEPENDENT_ROLES"]
+                }
+            )
 
             not_found_role_names: Collection[str] = settings[
                 "MEMBERSHIP_DEPENDENT_ROLES"

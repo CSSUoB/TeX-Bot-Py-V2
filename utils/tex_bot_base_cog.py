@@ -28,32 +28,29 @@ logger: Final[Logger] = logging.getLogger("TeX-Bot")
 class TeXBotBaseCog(Cog):
     """Base Cog subclass that stores a reference to the currently running TeXBot instance."""
 
-    ERROR_ACTIVITIES: Final[Mapping[str, str]] = {
-        "archive": "archive the selected category",
-        # NOTE: The "/delete-all reminders" command has been removed but it is left here in case it comes up somehow during error handling
-        "delete_all_reminders": (
+    ERROR_ACTIVITIES: Final[Mapping[str, str]] = frozendict(
+        archive="archive the selected category",
+        delete_all_reminders=(  # NOTE: The "/delete-all reminders" command has been removed but it is left here in case it comes up somehow during error handling
             "delete all `DiscordReminder` objects from the backend database"
         ),
-        "delete_all_group_made_members": (
+        delete_all_group_made_members=(
             "delete all `GroupMadeMember` objects from the backend database"
         ),
-        "edit_message": "edit the message",
-        "induct": "induct user",
-        "silent_induct": "silently induct user",
-        "non_silent_induct": "induct user and send welcome message",
-        "ensure_members_inducted": "ensure all members are inducted",
-        "make_member": "make you a member",
-        "opt_out_introduction_reminders": "opt-in/out of introduction reminders",
-        "ping": "reply to ping",
-        "remind_me": "remind you",
-        "channel_stats": "display channel statistics",
-        "server_stats": "display whole server statistics",
-        "user_stats": "display your statistics",
-        "left_member_stats": (
-            "display statistics about the members that have left the server"
-        ),
-        "write_roles": "send messages",
-    }
+        edit_message="edit the message",
+        induct="induct user",
+        silent_induct="silently induct user",
+        non_silent_induct="induct user and send welcome message",
+        ensure_members_inducted="ensure all members are inducted",
+        make_member="make you a member",
+        opt_out_introduction_reminders="opt-in/out of introduction reminders",
+        ping="reply to ping",
+        remind_me="remind you",
+        channel_stats="display channel statistics",
+        server_stats="display whole server statistics",
+        user_stats="display your statistics",
+        left_member_stats="display statistics about the members that have left the server",
+        write_roles="send messages",
+    )
 
     @override
     def __init__(self, bot: TeXBot) -> None:

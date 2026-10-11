@@ -24,15 +24,13 @@ lazy from utils import GLOBAL_SSL_CONTEXT
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
-BASE_SU_PLATFORM_WEB_HEADERS: Final[Mapping[str, str]] = {
-    "Cache-Control": "no-cache",
-    "Pragma": "no-cache",
-    "Expires": "0",
-}
+BASE_SU_PLATFORM_WEB_HEADERS: Final[Mapping[str, str]] = frozendict(
+    {"Cache-Control": "no-cache", "Pragma": "no-cache", "Expires": "0"}
+)
 
-BASE_SU_PLATFORM_WEB_COOKIES: Mapping[str, str] = {
-    ".AspNet.SharedCookie": settings["SU_PLATFORM_ACCESS_COOKIE"],
-}
+BASE_SU_PLATFORM_WEB_COOKIES: Mapping[str, str] = frozendict(
+    {".AspNet.SharedCookie": settings["SU_PLATFORM_ACCESS_COOKIE"]}
+)
 
 MEMBERS_LIST_URL: Final[str] = (
     f"https://guildofstudents.com/organisation/memberlist/{settings['ORGANISATION_ID']}/?sort=groups"

@@ -578,13 +578,17 @@ class Settings(abc.ABC):
                 INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE
             )
 
-        raw_timedelta_auto_su_platform_access_cookie_checking_interval: Mapping[str, float] = {
-            key: float(stripped_value)
-            for key, value in (
-                raw_auto_su_platform_access_cookie_checking_interval.groupdict().items()
+        raw_timedelta_auto_su_platform_access_cookie_checking_interval: Mapping[str, float] = (
+            frozendict(
+                {
+                    key: float(stripped_value)
+                    for key, value in (
+                        raw_auto_su_platform_access_cookie_checking_interval.groupdict().items()
+                    )
+                    if value and (stripped_value := value.strip())
+                }
             )
-            if value and (stripped_value := value.strip())
-        }
+        )
 
         if (
             datetime.timedelta(
@@ -696,9 +700,9 @@ class Settings(abc.ABC):
             ),
         )
 
-        raw_timedelta_details_send_introduction_reminders_interval: Mapping[str, float] = {
-            "hours": 6
-        }
+        raw_timedelta_details_send_introduction_reminders_interval: Mapping[str, float] = (
+            frozendict(hours=6)
+        )
 
         if cls._settings["SEND_INTRODUCTION_REMINDERS"]:
             if not raw_send_introduction_reminders_interval:
@@ -710,11 +714,15 @@ class Settings(abc.ABC):
                     INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE
                 )
 
-            raw_timedelta_details_send_introduction_reminders_interval = {
-                key: float(value)
-                for key, value in raw_send_introduction_reminders_interval.groupdict().items()
-                if value
-            }
+            raw_timedelta_details_send_introduction_reminders_interval = frozendict(
+                {
+                    key: float(value)
+                    for key, value in (
+                        raw_send_introduction_reminders_interval.groupdict().items()
+                    )
+                    if value
+                }
+            )
 
             if (
                 datetime.timedelta(
@@ -817,7 +825,7 @@ class Settings(abc.ABC):
 
         raw_timedelta_details_advanced_send_get_roles_reminders_interval: Mapping[
             str, float
-        ] = {"hours": 24}
+        ] = frozendict(hours=24)
 
         if cls._settings["SEND_GET_ROLES_REMINDERS"]:
             if not raw_advanced_send_get_roles_reminders_interval:

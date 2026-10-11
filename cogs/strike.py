@@ -46,12 +46,14 @@ lazy from utils.message_sender_components import (
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
-FORMATTED_MODERATION_ACTIONS: Final[Mapping[discord.AuditLogAction, str]] = {
-    discord.AuditLogAction.member_update: "timed-out",
-    discord.AuditLogAction.kick: "kicked",
-    discord.AuditLogAction.ban: "banned",
-    discord.AuditLogAction.auto_moderation_user_communication_disabled: "timed-out",
-}
+FORMATTED_MODERATION_ACTIONS: Final[Mapping[discord.AuditLogAction, str]] = frozendict(
+    {
+        discord.AuditLogAction.member_update: "timed-out",
+        discord.AuditLogAction.kick: "kicked",
+        discord.AuditLogAction.ban: "banned",
+        discord.AuditLogAction.auto_moderation_user_communication_disabled: "timed-out",
+    }
+)
 
 
 async def perform_moderation_action(
@@ -232,7 +234,9 @@ class BaseStrikeCog(TeXBotBaseCog):
     by child strike cog container classes.
     """
 
-    SUGGESTED_ACTIONS: Final[Mapping[int, str]] = {1: "time-out", 2: "kick", 3: "ban"}
+    SUGGESTED_ACTIONS: Final[Mapping[int, str]] = frozendict(
+        {1: "time-out", 2: "kick", 3: "ban"}
+    )
 
     async def _send_strike_user_message(
         self, strike_user: discord.abc.Messageable, member_strikes: DiscordMemberStrikes
