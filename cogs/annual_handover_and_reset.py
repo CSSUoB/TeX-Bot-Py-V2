@@ -12,6 +12,7 @@ from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog  # noqa
 
 if TYPE_CHECKING:
     from collections.abc import Collection, Mapping, Sequence
+    from collections.abc import Set as AbstractSet
     from logging import Logger
     from typing import Final
 
@@ -290,6 +291,30 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
             f'{ctx.user} used TeX-Bot slash-command: "/increment-year-channels"'
         )
 
+        MODULE_THREAD_NAMES: Final[AbstractSet[str]] = {
+            "Advanced Cryptography",
+            "Advanced Functional Programming (AFP)",
+            "Advanced Networking",
+            "Algorithms and Complexity",
+            "Computer Vision and Imaging",
+            "Computer-Aided Verification",
+            "Dependable and Distributed Systems",
+            "Evolutionary Computation",
+            "Game Theory",
+            "High Performance Computing",
+            "Intelligent Data Analysis",
+            "Intelligent Interactive Systems",
+            "Intelligent Robotics",
+            "Intelligent Software Engineering",
+            "Machine Learning",
+            "Mobile and Ubiquitous Computing",
+            "Natural Language Processing",
+            "Neural Computation",
+            "PLPDI",
+            "Security of Real-World Systems",
+            "Teaching Computer Science in Schools",
+        }
+
         async with ctx.typing():
             initial_message: discord.Interaction | discord.WebhookMessage = await ctx.respond(
                 content=":hourglass: Incrementing year channels... :hourglass:"
@@ -340,6 +365,16 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                     topic="Channel for final-years to chat and ask questions.",
                     reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
                 )
+                for thread in MODULE_THREAD_NAMES:
+                    thread_channel: discord.TextChannel | None = discord.utils.get(
+                        main_guild.text_channels, name=thread
+                    )
+                    if not thread_channel:
+                        await second_years_channel.create_thread(
+                            name=thread,
+                            type=discord.ChannelType.public_thread,
+                            reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
+                        )
 
             first_year_channel: discord.TextChannel | None = discord.utils.get(
                 main_guild.text_channels, name="first-years"
