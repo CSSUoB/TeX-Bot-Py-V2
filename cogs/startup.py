@@ -1,14 +1,19 @@
 """Contains cog classes for any startup interactions."""
 
+__all__: Sequence[str] = ("StartupCog",)
+
 import logging
-from typing import TYPE_CHECKING
+lazy from collections.abc import Sequence
+lazy from logging import Logger
+lazy from typing import Final
 
-import discord
-from discord_logging.handler import DiscordHandler
+lazy import discord
+lazy from discord_logging.handler import DiscordHandler
 
-import utils
-from config import settings
-from exceptions import (
+from utils import TeXBotBaseCog
+lazy import utils
+lazy from config import settings
+lazy from exceptions import (
     ArchivistRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
     GeneralChannelDoesNotExistError,
@@ -18,16 +23,7 @@ from exceptions import (
     MSLMembershipError,
     RolesChannelDoesNotExistError,
 )
-from utils import TeXBotBaseCog
-from utils.msl import fetch_community_group_members_list
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from logging import Logger
-    from typing import Final
-
-__all__: Sequence[str] = ("StartupCog",)
-
+lazy from utils.msl import fetch_community_group_members_list
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 

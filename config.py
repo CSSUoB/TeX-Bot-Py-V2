@@ -5,34 +5,6 @@ Settings values are imported from the .env file or the current environment varia
 These values are used to configure the functionality of the bot at run-time.
 """
 
-import abc
-import datetime
-import functools
-import importlib
-import json
-import logging
-import os
-import re
-from collections.abc import Iterable, Mapping
-from pathlib import Path
-from typing import TYPE_CHECKING, final
-
-import dotenv
-import validators
-from discord_logging.handler import DiscordHandler
-
-from exceptions import (
-    ImproperlyConfiguredError,
-    MessagesJSONFileMissingKeyError,
-    MessagesJSONFileValueError,
-)
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from collections.abc import Set as AbstractSet
-    from logging import Logger
-    from typing import IO, Any, ClassVar, Final, LiteralString
-
 __all__: Sequence[str] = (
     "DEFAULT_STATISTICS_ROLES",
     "FALSE_VALUES",
@@ -43,6 +15,30 @@ __all__: Sequence[str] = (
     "settings",
 )
 
+import abc
+import functools
+import logging
+from pathlib import Path
+from typing import final
+lazy import datetime
+lazy import importlib
+lazy import json
+lazy import os
+lazy import re
+lazy from collections.abc import Iterable, Mapping, Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from logging import Logger
+lazy from typing import IO, Any, ClassVar, Final, LiteralString
+
+lazy import dotenv
+lazy import validators
+lazy from discord_logging.handler import DiscordHandler
+
+lazy from exceptions import (
+    ImproperlyConfiguredError,
+    MessagesJSONFileMissingKeyError,
+    MessagesJSONFileValueError,
+)
 
 PROJECT_ROOT: Final[Path] = Path(__file__).parent.resolve()
 

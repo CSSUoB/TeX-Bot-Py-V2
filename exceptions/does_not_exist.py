@@ -1,16 +1,5 @@
 """Custom exception classes to be raised when retrieved Discord objects do not exist."""
 
-import abc
-from typing import TYPE_CHECKING, override
-
-from typed_classproperties import classproperty
-
-from .base import BaseDoesNotExistError, BaseTeXBotError
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from typing import Final
-
 __all__: Sequence[str] = (
     "ApplicantRoleDoesNotExistError",
     "ArchivistRoleDoesNotExistError",
@@ -25,6 +14,15 @@ __all__: Sequence[str] = (
     "RolesChannelDoesNotExistError",
     "RulesChannelDoesNotExistError",
 )
+
+import abc
+from typing import override
+lazy from collections.abc import Sequence
+lazy from typing import Final
+
+from typed_classproperties import classproperty
+
+from .base import BaseDoesNotExistError, BaseTeXBotError
 
 
 class RulesChannelDoesNotExistError(BaseTeXBotError, ValueError):

@@ -1,24 +1,5 @@
 """Module for checking membership status."""
 
-import contextlib
-import logging
-from typing import TYPE_CHECKING
-
-import aiohttp
-import bs4
-from bs4 import BeautifulSoup
-
-from config import settings
-from exceptions import MSLMembershipError
-from utils import GLOBAL_SSL_CONTEXT
-
-if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
-    from http.cookies import Morsel
-    from logging import Logger
-    from typing import Final
-
-
 __all__: Sequence[str] = (
     "fetch_community_group_members_count",
     "fetch_community_group_members_list",
@@ -26,6 +7,20 @@ __all__: Sequence[str] = (
     "is_id_a_community_group_member",
 )
 
+import logging
+lazy import contextlib
+lazy from collections.abc import Mapping, Sequence
+lazy from http.cookies import Morsel
+lazy from logging import Logger
+lazy from typing import Final
+
+lazy import aiohttp
+lazy import bs4
+lazy from bs4 import BeautifulSoup
+
+from config import settings
+lazy from exceptions import MSLMembershipError
+lazy from utils import GLOBAL_SSL_CONTEXT
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 

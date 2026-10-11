@@ -1,22 +1,20 @@
 """Utility classes and functions."""
 
-from typing import TYPE_CHECKING, override
+__all__: Sequence[str] = ("AsyncBaseModel", "DiscordMember")
 
-from asgiref.sync import sync_to_async
-from django.core.exceptions import FieldDoesNotExist
+from typing import override
+lazy from collections.abc import Iterable, Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from typing import ClassVar, Final
+
 from django.core.validators import RegexValidator
-from django.db import models, transaction
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_stubs_ext.db.models import TypedModelMeta
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable, Sequence
-    from collections.abc import Set as AbstractSet
-    from typing import ClassVar, Final
-
-    from django.db.models.base import ModelBase
-
-__all__: Sequence[str] = ("AsyncBaseModel", "DiscordMember")
+lazy from asgiref.sync import sync_to_async
+lazy from django.core.exceptions import FieldDoesNotExist
+lazy from django.db import transaction
+lazy from django.db.models.base import ModelBase
 
 
 class AsyncBaseModel(models.Model):

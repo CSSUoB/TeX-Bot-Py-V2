@@ -1,28 +1,23 @@
 """Contains cog classes for annual handover and role reset functionality."""
 
-import datetime
-import logging
-from typing import TYPE_CHECKING
-
-import discord
-
-from config import settings
-from db.core.models import GroupMadeMember
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog  # noqa: TC001
-
-if TYPE_CHECKING:
-    from collections.abc import Collection, Mapping, Sequence
-    from logging import Logger
-    from typing import Final
-
-    from utils import AllChannelTypes
-
 __all__: Sequence[str] = (
     "AnnualRolesResetCommandCog",
     "AnnualYearChannelsIncrementCommandCog",
     "CommitteeHandoverCommandCog",
 )
 
+import logging
+lazy import datetime
+lazy from collections.abc import Collection, Mapping, Sequence
+lazy from logging import Logger
+lazy from typing import Final
+
+import discord
+
+from utils import CommandChecks, TeXBotBaseCog
+lazy from config import settings
+lazy from db.core.models import GroupMadeMember
+lazy from utils import AllChannelTypes, TeXBotApplicationContext
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 

@@ -1,8 +1,8 @@
+__all__: Sequence[str] = ("DiscordHandler",)
+
 import logging
 from collections.abc import Mapping, Sequence
 from typing import override
-
-__all__: Sequence[str] = ("DiscordHandler",)
 
 class DiscordHandler(logging.Handler):
     @override

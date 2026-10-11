@@ -1,43 +1,5 @@
 """Contains cog classes for any strike interactions."""
 
-import asyncio
-import contextlib
-import datetime
-import logging
-import re
-from collections.abc import Set as AbstractSet  # noqa: TC003
-from typing import TYPE_CHECKING
-
-import discord
-from asyncstdlib.builtins import any as asyncany
-from discord.ui import View
-
-from config import settings
-from db.core.models import DiscordMember, DiscordMemberStrikes
-from exceptions import (
-    GuildDoesNotExistError,
-    NoAuditLogsStrikeTrackingError,
-    StrikeTrackingError,
-)
-from utils import (
-    CommandChecks,
-    TeXBotApplicationContext,  # noqa: TC001
-    TeXBotAutocompleteContext,  # noqa: TC001
-    TeXBotBaseCog,
-)
-from utils.error_capture_decorators import (
-    capture_guild_does_not_exist_error,
-    capture_strike_tracking_error,
-)
-from utils.message_sender_components import ChannelMessageSender, ResponseMessageSender
-
-if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
-    from logging import Logger
-    from typing import Final
-
-    from utils.message_sender_components import MessageSavingSenderComponent
-
 __all__: Sequence[str] = (
     "BaseStrikeCog",
     "ConfirmManualModerationView",
@@ -49,6 +11,38 @@ __all__: Sequence[str] = (
     "perform_moderation_action",
 )
 
+import datetime
+import logging
+lazy import asyncio
+lazy import contextlib
+lazy import re
+lazy from collections.abc import Mapping, Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from logging import Logger
+lazy from typing import Final
+
+import discord
+from discord.ui import View
+lazy from asyncstdlib.builtins import any as asyncany
+
+from utils import CommandChecks, TeXBotBaseCog
+from utils.error_capture_decorators import (
+    capture_guild_does_not_exist_error,
+    capture_strike_tracking_error,
+)
+lazy from config import settings
+lazy from db.core.models import DiscordMember, DiscordMemberStrikes
+lazy from exceptions import (
+    GuildDoesNotExistError,
+    NoAuditLogsStrikeTrackingError,
+    StrikeTrackingError,
+)
+lazy from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
+lazy from utils.message_sender_components import (
+    ChannelMessageSender,
+    MessageSavingSenderComponent,
+    ResponseMessageSender,
+)
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 

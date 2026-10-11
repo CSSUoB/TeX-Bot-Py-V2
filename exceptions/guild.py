@@ -1,18 +1,16 @@
 """Custom exception classes raised when errors occur with properties of a guild object."""
 
-from typing import TYPE_CHECKING, override
-
-from typed_classproperties import classproperty
-
-from .base import BaseErrorWithErrorCode, BaseTeXBotError
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
 __all__: Sequence[str] = (
     "DiscordMemberNotInMainGuildError",
     "EveryoneRoleCouldNotBeRetrievedError",
 )
+
+from typing import override
+lazy from collections.abc import Sequence
+
+from typed_classproperties import classproperty
+
+from .base import BaseErrorWithErrorCode, BaseTeXBotError
 
 
 class DiscordMemberNotInMainGuildError(BaseTeXBotError, ValueError):

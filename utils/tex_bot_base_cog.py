@@ -1,31 +1,26 @@
 """Custom cog subclass that stores a reference to the custom bot class."""
 
-import contextlib
-import logging
-import re
-from typing import TYPE_CHECKING, override
-
-import discord
-from discord import Cog
-
-from exceptions import DiscordMemberNotInMainGuildError
-from exceptions.base import BaseDoesNotExistError
-
-if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
-    from collections.abc import Set as AbstractSet
-    from logging import Logger
-    from typing import Final
-
-    from .tex_bot import TeXBot
-    from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
-
-
 __all__: Sequence[str] = ("TeXBotBaseCog",)
 
+import logging
+from typing import override
+lazy import contextlib
+lazy import re
+lazy from collections.abc import Mapping, Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from logging import Logger
+lazy from typing import Final
 
-if TYPE_CHECKING:
-    type MentionableMember = discord.Member | discord.Role
+from discord import Cog
+lazy import discord
+
+lazy from exceptions import DiscordMemberNotInMainGuildError
+lazy from exceptions.base import BaseDoesNotExistError
+
+lazy from .tex_bot import TeXBot
+lazy from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
+
+type MentionableMember = discord.Member | discord.Role
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 

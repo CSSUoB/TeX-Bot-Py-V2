@@ -1,15 +1,13 @@
 """Custom exception classes for committee-action tracking."""
 
-from typing import TYPE_CHECKING, override
+__all__: Sequence[str] = ("InvalidActionDescriptionError", "InvalidActionTargetError")
+
+from typing import override
+lazy from collections.abc import Sequence
 
 from typed_classproperties import classproperty
 
 from .base import BaseTeXBotError
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-__all__: Sequence[str] = ("InvalidActionDescriptionError", "InvalidActionTargetError")
 
 
 class InvalidActionTargetError(BaseTeXBotError, RuntimeError):
