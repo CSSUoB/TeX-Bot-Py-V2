@@ -1,42 +1,38 @@
 """Contains cog classes for tracking committee-actions."""
 
-import contextlib
-import logging
-import random
-import textwrap
-from collections.abc import Set as AbstractSet  # noqa: TC003
-from enum import Enum
-from typing import TYPE_CHECKING
-
-import discord
-from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
-from django.db.models import Q
-
-from db.core.models import AssignedCommitteeAction, DiscordMember
-from exceptions import (
-    CommitteeElectRoleDoesNotExistError,
-    CommitteeRoleDoesNotExistError,
-    InvalidActionDescriptionError,
-    InvalidActionTargetError,
-)
-from utils import (
-    CommandChecks,
-    TeXBotApplicationContext,  # noqa: TC001
-    TeXBotAutocompleteContext,  # noqa: TC001
-    TeXBotBaseCog,
-)
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from logging import Logger
-    from typing import Final
-
 __all__: Sequence[str] = (
     "CommitteeActionsTrackingBaseCog",
     "CommitteeActionsTrackingContextCommandCog",
     "CommitteeActionsTrackingSlashCommandsCog",
 )
 
+import logging
+from enum import Enum
+lazy import contextlib
+lazy import random
+lazy import textwrap
+lazy from collections.abc import Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from logging import Logger
+lazy from typing import Final
+
+import discord
+lazy from django.core.exceptions import (
+    MultipleObjectsReturned,
+    ObjectDoesNotExist,
+    ValidationError,
+)
+lazy from django.db.models import Q
+
+from utils import CommandChecks, TeXBotBaseCog
+lazy from db.core.models import AssignedCommitteeAction, DiscordMember
+lazy from exceptions import (
+    CommitteeElectRoleDoesNotExistError,
+    CommitteeRoleDoesNotExistError,
+    InvalidActionDescriptionError,
+    InvalidActionTargetError,
+)
+lazy from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 

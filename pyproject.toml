@@ -1,7 +1,7 @@
 [project]  # TODO: Remove [project] table once https://github.com/astral-sh/uv/issues/8582 is completed
 name = "TeX-Bot-Py-V2"
 version = "0.1.0"
-requires-python = "==3.14.*"
+requires-python = "==3.15.*"
 
 [dependency-groups]
 dev = [
@@ -10,7 +10,12 @@ dev = [
     { include-group = "test" },
     { include-group = "type-check" }
 ]
-lint-format = ["pymarkdownlnt>=0.9.28", "ruff>=0.12"]
+lint-format = [
+    "flake8-carrot>=0.1",
+    "flake8-pyproject>=1.2",
+    "pymarkdownlnt>=0.9.28",
+    "ruff>=0.17"
+]
 main = [
     "asyncstdlib>=3.13",
     "audioop-lts; python_version > '3.12'",
@@ -29,11 +34,7 @@ main = [
 ]
 pre-commit = ["prek>=0.5.3"]
 test = ["pytest>=9", "pytest-cov>=6.1"]
-type-check = [
-    "django-stubs[compatible-mypy]>=5.1",
-    "mypy>=1.18.2",
-    "types-beautifulsoup4>=4.12"
-]
+type-check = ["django-stubs[compatible-mypy]>=5.1", "mypy>=2.4", "types-beautifulsoup4>=4.12"]
 
 [tool.coverage.report]
 exclude_also = ["if TYPE_CHECKING:"]
@@ -44,6 +45,7 @@ sort = "cover"
 django_settings_module = "db._settings"
 
 [tool.flake8]
+ignore = ["CAR110"]
 select = ["CAR", "TXB"]
 extend_exclude = ["**/migrations/", ".venv/"]
 require_plugins = ["flake8-carrot"]
@@ -195,7 +197,6 @@ extend-ignore-names = ["_base_manager", "_default_manager", "_get_wrap_line_widt
 
 [tool.ruff.lint.flake8-type-checking]
 exempt-modules = []
-quote-annotations = true
 strict = true
 
 [tool.ruff.lint.isort]
@@ -240,5 +241,8 @@ line-width = 95
 [tool.uv]
 default-groups = ["dev", "main"]
 no-build = true
+no-binary-package = [
+    "pyyaml"  # TODO: Remove building PyYAML from source once they start publishing 3.15 wheels to PyPI (https://github.com/yaml/pyyaml/issues/951)
+]
 package = false
 required-version = ">=0.6.10"

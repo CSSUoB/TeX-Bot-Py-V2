@@ -7,20 +7,16 @@ then ensures the Django database is correctly migrated to the latest version and
 the asynchronous running process for TeX-Bot.
 """
 
-from typing import TYPE_CHECKING
+__all__: Sequence[str] = ("bot",)
+
+lazy from collections.abc import Sequence
+lazy from typing import NoReturn
 
 import discord
 
 import config
 from config import settings
 from utils import SuppressTraceback, TeXBot
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from typing import NoReturn
-
-__all__: Sequence[str] = ("bot",)
-
 
 with SuppressTraceback():
     config.run_setup()

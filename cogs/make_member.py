@@ -1,26 +1,22 @@
 """Contains cog classes for any make_member interactions."""
 
-import logging
-import re
-from typing import TYPE_CHECKING
-
-import discord
-from django.core.exceptions import ValidationError
-
-from config import settings
-from db.core.models import GroupMadeMember
-from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog  # noqa: TC001
-from utils.msl import fetch_community_group_members_count, is_id_a_community_group_member
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from logging import Logger
-    from typing import Final
-
-
 __all__: Sequence[str] = ("MakeMemberCommandCog", "MemberCountCommandCog")
 
+import logging
+lazy import re
+lazy from collections.abc import Sequence
+lazy from logging import Logger
+lazy from typing import Final
+
+import discord
+lazy from django.core.exceptions import ValidationError
+
+from config import settings
+from utils import CommandChecks, TeXBotBaseCog
+lazy from db.core.models import GroupMadeMember
+lazy from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
+lazy from utils import TeXBotApplicationContext
+lazy from utils.msl import fetch_community_group_members_count, is_id_a_community_group_member
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 

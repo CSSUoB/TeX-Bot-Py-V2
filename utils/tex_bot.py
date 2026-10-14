@@ -1,15 +1,20 @@
 """Custom Pycord Bot class implementation."""
 
+__all__: Sequence[str] = ("TeXBot",)
+
 import logging
-import re
-from typing import TYPE_CHECKING, override
+from typing import override
+lazy import re
+lazy from collections.abc import Awaitable, Sequence
+lazy from logging import Logger
+lazy from typing import Final, LiteralString, NoReturn
 
-import aiohttp
 import discord
-from discord import Webhook
+lazy import aiohttp
+lazy from discord import Webhook
 
-from config import settings
-from exceptions import (
+lazy from config import settings
+lazy from exceptions import (
     ApplicantRoleDoesNotExistError,
     ArchivistRoleDoesNotExistError,
     ChannelDoesNotExistError,
@@ -25,16 +30,7 @@ from exceptions import (
     RolesChannelDoesNotExistError,
     RulesChannelDoesNotExistError,
 )
-
-if TYPE_CHECKING:
-    from collections.abc import Awaitable, Sequence
-    from logging import Logger
-    from typing import Final, LiteralString, NoReturn
-
-    from utils import AllChannelTypes
-
-__all__: Sequence[str] = ("TeXBot",)
-
+lazy from utils import AllChannelTypes
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 

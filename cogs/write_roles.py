@@ -1,16 +1,14 @@
 """Contains cog classes for any write_roles interactions."""
 
-from typing import TYPE_CHECKING
+__all__: Sequence[str] = ("WriteRolesCommandCog",)
+
+lazy from collections.abc import Sequence
 
 import discord
 
-from config import settings
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog  # noqa: TC001
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-__all__: Sequence[str] = ("WriteRolesCommandCog",)
+from utils import CommandChecks, TeXBotBaseCog
+lazy from config import settings
+lazy from utils import TeXBotApplicationContext
 
 
 class WriteRolesCommandCog(TeXBotBaseCog):
