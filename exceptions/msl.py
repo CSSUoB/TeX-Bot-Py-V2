@@ -1,16 +1,13 @@
 """Custom exception classes raised when errors occur during use of MSL features."""
 
-from typing import TYPE_CHECKING, override
+__all__: Sequence[str] = ("MSLMembershipError",)
+
+from typing import override
+lazy from collections.abc import Sequence
 
 from typed_classproperties import classproperty
 
 from .base import BaseTeXBotError
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-
-__all__: Sequence[str] = ("MSLMembershipError",)
 
 
 class MSLMembershipError(BaseTeXBotError, RuntimeError):

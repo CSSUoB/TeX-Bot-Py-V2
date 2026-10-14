@@ -1,24 +1,21 @@
 """Contains cog classes for any delete_all interactions."""
 
-from typing import TYPE_CHECKING
+__all__: Sequence[str] = ("DeleteAllCommandsCog",)
+
+lazy from collections.abc import Sequence
 
 import discord
 
-from db.core.models import (
+from utils import CommandChecks, TeXBotBaseCog
+lazy from db.core.models import (
     AssignedCommitteeAction,
     DiscordMemberStrikes,
     GroupMadeMember,
     SentGetRolesReminderMember,
     SentOneOffIntroductionReminderMember,
 )
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog  # noqa: TC001
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-    from db.core.models.utils import AsyncBaseModel
-
-__all__: Sequence[str] = ("DeleteAllCommandsCog",)
+lazy from db.core.models.utils import AsyncBaseModel
+lazy from utils import TeXBotApplicationContext
 
 
 class DeleteAllCommandsCog(TeXBotBaseCog):

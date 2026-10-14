@@ -1,15 +1,13 @@
 """Custom exception classes raised when errors occur during use of the "/strike" command."""
 
-from typing import TYPE_CHECKING, override
+__all__: Sequence[str] = ("NoAuditLogsStrikeTrackingError", "StrikeTrackingError")
+
+from typing import override
+lazy from collections.abc import Sequence
 
 from typed_classproperties import classproperty
 
 from .base import BaseTeXBotError
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-__all__: Sequence[str] = ("NoAuditLogsStrikeTrackingError", "StrikeTrackingError")
 
 
 class StrikeTrackingError(BaseTeXBotError, RuntimeError):

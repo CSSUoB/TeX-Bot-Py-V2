@@ -1,30 +1,24 @@
 """Contains cog classes for making a user into an applicant."""
 
-import logging
-from typing import TYPE_CHECKING
-
-import discord
-
-from exceptions.does_not_exist import ApplicantRoleDoesNotExistError, GuildDoesNotExistError
-from utils import (
-    CommandChecks,
-    TeXBotApplicationContext,  # noqa: TC001
-    TeXBotAutocompleteContext,  # noqa: TC001
-    TeXBotBaseCog,
-)
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from logging import Logger
-    from typing import Final
-
-
 __all__: Sequence[str] = (
     "BaseMakeApplicantCog",
     "MakeApplicantContextCommandsCog",
     "MakeApplicantSlashCommandCog",
 )
 
+import logging
+lazy from collections.abc import Sequence
+lazy from logging import Logger
+lazy from typing import Final
+
+import discord
+
+from utils import CommandChecks, TeXBotBaseCog
+lazy from exceptions.does_not_exist import (
+    ApplicantRoleDoesNotExistError,
+    GuildDoesNotExistError,
+)
+lazy from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
