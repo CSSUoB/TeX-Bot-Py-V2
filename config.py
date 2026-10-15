@@ -5,34 +5,6 @@ Settings values are imported from the .env file or the current environment varia
 These values are used to configure the functionality of the bot at run-time.
 """
 
-import abc
-import datetime
-import functools
-import importlib
-import json
-import logging
-import os
-import re
-from collections.abc import Iterable, Mapping
-from pathlib import Path
-from typing import TYPE_CHECKING, final
-
-import dotenv
-import validators
-from discord_logging.handler import DiscordHandler
-
-from exceptions import (
-    ImproperlyConfiguredError,
-    MessagesJSONFileMissingKeyError,
-    MessagesJSONFileValueError,
-)
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from collections.abc import Set as AbstractSet
-    from logging import Logger
-    from typing import IO, Any, ClassVar, Final, LiteralString
-
 __all__: Sequence[str] = (
     "DEFAULT_STATISTICS_ROLES",
     "FALSE_VALUES",
@@ -43,6 +15,30 @@ __all__: Sequence[str] = (
     "settings",
 )
 
+import abc
+import functools
+import logging
+from pathlib import Path
+from typing import final
+lazy import datetime
+lazy import importlib
+lazy import json
+lazy import os
+lazy import re
+lazy from collections.abc import Iterable, Mapping, Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from logging import Logger
+lazy from typing import IO, Any, ClassVar, Final, LiteralString
+
+lazy import dotenv
+lazy import validators
+lazy from discord_logging.handler import DiscordHandler
+
+lazy from exceptions import (
+    ImproperlyConfiguredError,
+    MessagesJSONFileMissingKeyError,
+    MessagesJSONFileValueError,
+)
 
 PROJECT_ROOT: Final[Path] = Path(__file__).parent.resolve()
 
@@ -582,13 +578,17 @@ class Settings(abc.ABC):
                 INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE
             )
 
-        raw_timedelta_auto_su_platform_access_cookie_checking_interval: Mapping[str, float] = {
-            key: float(stripped_value)
-            for key, value in (
-                raw_auto_su_platform_access_cookie_checking_interval.groupdict().items()
+        raw_timedelta_auto_su_platform_access_cookie_checking_interval: Mapping[str, float] = (
+            frozendict(
+                {
+                    key: float(stripped_value)
+                    for key, value in (
+                        raw_auto_su_platform_access_cookie_checking_interval.groupdict().items()
+                    )
+                    if value and (stripped_value := value.strip())
+                }
             )
-            if value and (stripped_value := value.strip())
-        }
+        )
 
         if (
             datetime.timedelta(
@@ -700,9 +700,9 @@ class Settings(abc.ABC):
             ),
         )
 
-        raw_timedelta_details_send_introduction_reminders_interval: Mapping[str, float] = {
-            "hours": 6
-        }
+        raw_timedelta_details_send_introduction_reminders_interval: Mapping[str, float] = (
+            frozendict(hours=6)
+        )
 
         if cls._settings["SEND_INTRODUCTION_REMINDERS"]:
             if not raw_send_introduction_reminders_interval:
@@ -714,11 +714,15 @@ class Settings(abc.ABC):
                     INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE
                 )
 
-            raw_timedelta_details_send_introduction_reminders_interval = {
-                key: float(value)
-                for key, value in raw_send_introduction_reminders_interval.groupdict().items()
-                if value
-            }
+            raw_timedelta_details_send_introduction_reminders_interval = frozendict(
+                {
+                    key: float(value)
+                    for key, value in (
+                        raw_send_introduction_reminders_interval.groupdict().items()
+                    )
+                    if value
+                }
+            )
 
             if (
                 datetime.timedelta(
@@ -821,7 +825,7 @@ class Settings(abc.ABC):
 
         raw_timedelta_details_advanced_send_get_roles_reminders_interval: Mapping[
             str, float
-        ] = {"hours": 24}
+        ] = frozendict(hours=24)
 
         if cls._settings["SEND_GET_ROLES_REMINDERS"]:
             if not raw_advanced_send_get_roles_reminders_interval:

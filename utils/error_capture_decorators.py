@@ -4,35 +4,30 @@ Common decorator utilities to capture & suppress errors.
 Capturing errors is necessary in contexts where exceptions are not already suppressed.
 """
 
-import functools
-import logging
-from typing import TYPE_CHECKING
-
-from exceptions import GuildDoesNotExistError, StrikeTrackingError
-
-if TYPE_CHECKING:
-    from collections.abc import Callable, Coroutine, Sequence
-    from logging import Logger
-    from typing import Concatenate, Final
-
-    from .tex_bot_base_cog import TeXBotBaseCog
-
 __all__: Sequence[str] = (
     "ErrorCaptureDecorators",
     "capture_guild_does_not_exist_error",
     "capture_strike_tracking_error",
 )
 
+import logging
+lazy import functools
+lazy from collections.abc import Callable, Coroutine, Sequence
+lazy from logging import Logger
+lazy from typing import Concatenate, Final
 
-if TYPE_CHECKING:
-    type WrapperInputFunc[**P, T_ret] = (
-        Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T_ret]]
-        | Callable[P, Coroutine[object, object, T_ret]]
-    )
-    type WrapperOutputFunc[**P, T_ret] = Callable[P, Coroutine[object, object, T_ret | None]]
-    type DecoratorInputFunc[**P, T_cog: TeXBotBaseCog, T_ret] = Callable[
-        Concatenate[T_cog, P], Coroutine[object, object, T_ret]
-    ]
+lazy from exceptions import GuildDoesNotExistError, StrikeTrackingError
+
+lazy from .tex_bot_base_cog import TeXBotBaseCog
+
+type WrapperInputFunc[**P, T_ret] = (
+    Callable[Concatenate[TeXBotBaseCog, P], Coroutine[object, object, T_ret]]
+    | Callable[P, Coroutine[object, object, T_ret]]
+)
+type WrapperOutputFunc[**P, T_ret] = Callable[P, Coroutine[object, object, T_ret | None]]
+type DecoratorInputFunc[**P, T_cog: TeXBotBaseCog, T_ret] = Callable[
+    Concatenate[T_cog, P], Coroutine[object, object, T_ret]
+]
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
