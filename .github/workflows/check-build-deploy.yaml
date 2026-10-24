@@ -26,7 +26,7 @@ jobs:
                 persist-credentials: false
 
             - name: Install uv
-              uses: astral-sh/setup-uv@v10.3.0
+              uses: astral-sh/setup-uv@v10.3.2
               with:
                 enable-cache: true
 
@@ -52,7 +52,7 @@ jobs:
                 python-version-file: .python-version
 
             - name: Install uv
-              uses: astral-sh/setup-uv@v10.3.0
+              uses: astral-sh/setup-uv@v10.3.2
               with:
                 enable-cache: true
 
@@ -87,7 +87,7 @@ jobs:
                 python-version-file: .python-version
 
             - name: Install uv
-              uses: astral-sh/setup-uv@v10.3.0
+              uses: astral-sh/setup-uv@v10.3.2
               with:
                 enable-cache: true
 
@@ -172,7 +172,7 @@ jobs:
                 python-version-file: .python-version
 
             - name: Install uv
-              uses: astral-sh/setup-uv@v10.3.0
+              uses: astral-sh/setup-uv@v10.3.2
               with:
                 enable-cache: true
 
@@ -204,7 +204,7 @@ jobs:
                 python-version-file: .python-version
 
             - name: Install uv
-              uses: astral-sh/setup-uv@v10.3.0
+              uses: astral-sh/setup-uv@v10.3.2
               with:
                 enable-cache: true
 
@@ -256,7 +256,7 @@ jobs:
                 python-version-file: .python-version
 
             - name: Install uv
-              uses: astral-sh/setup-uv@v10.3.0
+              uses: astral-sh/setup-uv@v10.3.2
               with:
                 enable-cache: true
 
@@ -307,7 +307,7 @@ jobs:
 
         steps:
             - name: Authenticate to container registry
-              uses: docker/login-action@v4.6.0
+              uses: docker/login-action@v4.7.0
               with:
                 password: ${{secrets.GITHUB_TOKEN}}
                 registry: ${{env.REGISTRY}}
