@@ -17,7 +17,7 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - uses: xalvarez/prevent-file-change-action@v3.0.1
+            - uses: xalvarez/prevent-file-change-action@v3.0.2
               with:
                 allowNewFiles: true
                 githubToken: ${{secrets.GITHUB_TOKEN}}
