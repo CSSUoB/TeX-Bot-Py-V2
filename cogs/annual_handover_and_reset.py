@@ -9,7 +9,6 @@ __all__: Sequence[str] = (
 import logging
 lazy import datetime
 lazy from collections.abc import Collection, Mapping, Sequence
-lazy from collections.abc import Set as AbstractSet
 lazy from logging import Logger
 lazy from typing import Final
 
@@ -265,6 +264,30 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
 class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/increment-year-channels" command."""
 
+    MODULE_THREAD_NAMES: Final[Sequence[str]] = (
+        "Advanced Cryptography",
+        "Advanced Functional Programming",
+        "Advanced Networking",
+        "Algorithms and Complexity",
+        "Computer Vision and Imaging",
+        "Computer-Aided Verification",
+        "Dependable and Distributed Systems",
+        "Evolutionary Computation",
+        "Game Theory",
+        "High Performance Computing",
+        "Intelligent Data Analysis",
+        "Intelligent Interactive Systems",
+        "Intelligent Robotics",
+        "Intelligent Software Engineering",
+        "Machine Learning",
+        "Mobile and Ubiquitous Computing",
+        "Natural Language Processing",
+        "Neural Computation",
+        "Programming Language Principles, Design, and Implementation",
+        "Security of Real-World Systems",
+        "Teaching Computer Science in Schools",
+    )
+
     @discord.slash_command(
         name="increment-year-channels",
         description="Increments the year channels, archiving and creating channels as needed.",
@@ -278,6 +301,7 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
         The "increment_year_channels" command:
         - Archives the current "final-years" channel
         - Renames the current "second-years" channel to "final-years"
+        - Creates a thread for each final-year module in the new "final-years" channel
         - Renames the current "first-years" channel to "second-years"
         - Creates a new "first-years" channel
         """
@@ -287,30 +311,6 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
         INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE: Final[str] = (
             f'{ctx.user} used TeX-Bot slash-command: "/increment-year-channels"'
         )
-
-        MODULE_THREAD_NAMES: Final[AbstractSet[str]] = {
-            "Advanced Cryptography",
-            "Advanced Functional Programming (AFP)",
-            "Advanced Networking",
-            "Algorithms and Complexity",
-            "Computer Vision and Imaging",
-            "Computer-Aided Verification",
-            "Dependable and Distributed Systems",
-            "Evolutionary Computation",
-            "Game Theory",
-            "High Performance Computing",
-            "Intelligent Data Analysis",
-            "Intelligent Interactive Systems",
-            "Intelligent Robotics",
-            "Intelligent Software Engineering",
-            "Machine Learning",
-            "Mobile and Ubiquitous Computing",
-            "Natural Language Processing",
-            "Neural Computation",
-            "PLPDI",
-            "Security of Real-World Systems",
-            "Teaching Computer Science in Schools",
-        }
 
         async with ctx.typing():
             initial_message: discord.Interaction | discord.WebhookMessage = await ctx.respond(
@@ -362,16 +362,29 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                     topic="Channel for final-years to chat and ask questions.",
                     reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
                 )
-                for thread in MODULE_THREAD_NAMES:
-                    thread_channel: discord.TextChannel | None = discord.utils.get(
-                        main_guild.text_channels, name=thread
+
+                await initial_message.edit(
+                    content=":hourglass: Creating threads... :hourglass:"
+                )
+
+                for module_thread_name in self.MODULE_THREAD_NAMES:
+                    existing_thread: discord.Thread | None = discord.utils.get(
+                        second_years_channel.threads, name=module_thread_name
                     )
-                    if not thread_channel:
-                        await second_years_channel.create_thread(
-                            name=thread,
-                            type=discord.ChannelType.public_thread,
-                            reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
-                        )
+                    if not existing_thread:
+                        try:
+                            await second_years_channel.create_thread(
+                                name=module_thread_name,
+                                type=discord.ChannelType.public_thread,
+                                auto_archive_duration=10080,
+                                reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
+                            )
+                        except discord.HTTPException as e:
+                            logger.warning(
+                                'Failed to create "%s" thread in "final-years" channel: %s',
+                                module_thread_name,
+                                e,
+                            )
 
             first_year_channel: discord.TextChannel | None = discord.utils.get(
                 main_guild.text_channels, name="first-years"
