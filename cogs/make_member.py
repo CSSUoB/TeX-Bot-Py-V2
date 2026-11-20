@@ -85,9 +85,11 @@ class MakeMemberBaseCog(TeXBotBaseCog):
         if member_role in discord_member.roles:
             return (
                 MakeMemberStatus.INFO,
-                ":information_source: No changes made. "
-                "You're already a member - why are you trying this again? "
-                ":information_source:",
+                (
+                    ":information_source: No changes made. "
+                    "You're already a member - why are you trying this again? "
+                    ":information_source:"
+                ),
             )
 
         if await GroupMadeMember.objects.filter(
@@ -97,19 +99,23 @@ class MakeMemberBaseCog(TeXBotBaseCog):
         ).aexists():
             return (
                 MakeMemberStatus.INFO,
-                ":information_source: This student ID has already been used. "
-                "Please contact a committee member if you think this is a mistake."
-                " :information_source:",
+                (
+                    ":information_source: This student ID has already been used. "
+                    "Please contact a committee member if you think this is a mistake."
+                    " :information_source:"
+                ),
             )
 
         if not await is_id_a_community_group_member(member_id=group_member_id):
             return (
                 MakeMemberStatus.INFO,
-                f"You must be a member of {self.bot.group_full_name} "
-                "to use this command.\n"
-                f"The provided {_GROUP_MEMBER_ID_ARGUMENT_NAME} must match "
-                f"the {self.bot.group_member_id_type} ID "
-                f"that you purchased your {self.bot.group_short_name} membership with.",
+                (
+                    f"You must be a member of {self.bot.group_full_name} "
+                    "to use this command.\n"
+                    f"The provided {_GROUP_MEMBER_ID_ARGUMENT_NAME} must match "
+                    f"the {self.bot.group_member_id_type} ID "
+                    f"that you purchased your {self.bot.group_short_name} membership with."
+                ),
             )
 
         await discord_member.add_roles(
@@ -246,7 +252,7 @@ class MakeMemberModal(Modal):
     """A Modal containing an input field for users to enter their student ID."""
 
     @override
-    def __init__(self, bot: "TeXBot") -> None:
+    def __init__(self, bot: TeXBot) -> None:
         super().__init__(title="Make Member Modal")
         self.bot: TeXBot = bot
         self.add_item(
@@ -306,15 +312,17 @@ class OpenMemberVerificationModalView(View):
     """A View containing a button to open a new member verification modal."""
 
     @override
-    def __init__(self, bot: "TeXBot") -> None:
+    def __init__(self, bot: TeXBot) -> None:
         super().__init__(timeout=None)
         self.bot: TeXBot = bot
 
     @discord.ui.button(
         label="Verify", style=discord.ButtonStyle.primary, custom_id="verify_new_member"
     )
-    async def verify_new_member_button_callback(  # type: ignore[misc]
-        self, _: discord.Button, interaction: discord.Interaction
+    async def verify_new_member_button_callback(
+        self,
+        _: discord.ui.Button[OpenMemberVerificationModalView],
+        interaction: discord.Interaction,
     ) -> None:
         await interaction.response.send_modal(MakeMemberModal(bot=self.bot))
 
@@ -346,7 +354,7 @@ class MakeMemberModalCommandCog(MakeMemberBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def send_make_member_modal(
         self,
-        ctx: "TeXBotApplicationContext",
+        ctx: TeXBotApplicationContext,
     ) -> None:
         """
         Definition & callback response of the "send-make-member-modal" command.
