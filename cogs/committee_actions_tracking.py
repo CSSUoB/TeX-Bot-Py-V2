@@ -61,7 +61,7 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
     @classmethod
     async def _get_actions_grouped_by_member_id(
         cls, filter_query: Q | None = None
-    ) -> "Mapping[str, Collection[AssignedCommitteeAction]]":
+    ) -> Mapping[str, Collection[AssignedCommitteeAction]]:
         grouped_actions: dict[str, list[AssignedCommitteeAction]] = defaultdict(list)
         if filter_query is None:
             filter_query = Q()
@@ -197,9 +197,9 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
     @classmethod
     async def get_user_actions(
         cls,
-        action_user: "discord.Member | discord.User | Iterable[discord.Member | discord.User]",
-        status: "Iterable[AssignedCommitteeAction.Status]",
-    ) -> "Mapping[discord.Member | discord.User, Collection[AssignedCommitteeAction]]":
+        action_user: discord.Member | discord.User | Iterable[discord.Member | discord.User],
+        status: Iterable[AssignedCommitteeAction.Status],
+    ) -> Mapping[discord.Member | discord.User, Collection[AssignedCommitteeAction]]:
         """Get the actions for one or more given users, filtered by one or more statuses."""
         if isinstance(action_user, (discord.User, discord.Member)):
             user_actions: Collection[AssignedCommitteeAction] = [
@@ -231,7 +231,7 @@ class CommitteeActionsTrackingRemindersTaskCog(CommitteeActionsTrackingBaseCog):
     """Cog class that defines sending committee-actions tracking reminders."""
 
     @override
-    def __init__(self, bot: "TeXBot") -> None:
+    def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
         if settings["SEND_COMMITTEE_ACTIONS_REMINDERS"]:
             _ = self.send_committee_actions_reminders_task.start()
@@ -354,13 +354,17 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
 
     @staticmethod
     async def autocomplete_get_users_with_actions(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+        ctx: TeXBotAutocompleteContext,
+    ) -> AbstractSet[discord.OptionChoice] | AbstractSet[str]:
         """Autocomplete callable that provides a set of users who have actions assigned."""
         discord_users_with_actions: set[discord.User] = {
             user
             async for action in AssignedCommitteeAction.objects.select_related().all()
-            if (user := await ctx.bot.get_or_fetch_user(int(action.discord_member.discord_id)))
+            if (
+                user := await ctx.bot.get_or_fetch(
+                    discord.User, int(action.discord_member.discord_id)
+                )
+            )
         }
 
         return {
@@ -772,7 +776,7 @@ class CommitteeActionsTrackingSlashCommandsCog(CommitteeActionsTrackingBaseCog):
         ctx: TeXBotApplicationContext,
         action_member_id: str | None,
         ping: bool,  # noqa: FBT001
-        raw_status: "None | str",
+        raw_status: str | None,
     ) -> None:
         """
         Definition and callback of the "/list" command.

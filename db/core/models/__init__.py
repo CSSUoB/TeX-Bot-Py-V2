@@ -48,16 +48,16 @@ class AssignedCommitteeAction(AsyncBaseModel):
         emoji: str
 
         @overload
-        def __new__(cls, value: "LiteralString") -> "AssignedCommitteeAction.Status": ...
+        def __new__(cls, value: LiteralString) -> AssignedCommitteeAction.Status: ...
 
         @overload
         def __new__(
-            cls, value: "LiteralString", emoji: "LiteralString"
-        ) -> "AssignedCommitteeAction.Status": ...
+            cls, value: LiteralString, emoji: LiteralString
+        ) -> AssignedCommitteeAction.Status: ...
 
         def __new__(  # noqa: D102
-            cls, value: "LiteralString", emoji: "LiteralString | None" = None
-        ) -> "AssignedCommitteeAction.Status":
+            cls, value: LiteralString, emoji: LiteralString | None = None
+        ) -> AssignedCommitteeAction.Status:
             if not emoji:
                 EMOJI_NOT_PROVIDED_MESSAGE: Final[str] = (
                     "The 'emoji' argument must be provided and non-empty."
@@ -72,7 +72,7 @@ class AssignedCommitteeAction(AsyncBaseModel):
             return obj
 
         @classproperty
-        def TODO_FILTER(cls) -> "AssignedCommitteeAction._StatusCollection":  # noqa: N802
+        def TODO_FILTER(cls) -> AssignedCommitteeAction._StatusCollection:  # noqa: N802
             """A collection of Stats enum items that are considered to be 'to-do' statuses."""
             return AssignedCommitteeAction._StatusCollection(
                 [cls.IN_PROGRESS, cls.BLOCKED, cls.NOT_STARTED]
@@ -84,7 +84,7 @@ class AssignedCommitteeAction(AsyncBaseModel):
         __slots__ = ()
 
         @override
-        def __new__(cls, iterable: "Iterable[AssignedCommitteeAction.Status]", /) -> "Self":
+        def __new__(cls, iterable: Iterable[AssignedCommitteeAction.Status], /) -> Self:
             iterable = list(iterable)
             if not iterable:
                 NO_STATUSES_GIVEN_MESSAGE: Final[str] = (
@@ -93,10 +93,10 @@ class AssignedCommitteeAction(AsyncBaseModel):
                 raise ValueError(NO_STATUSES_GIVEN_MESSAGE)
             return super().__new__(cls, iterable)
 
-        def values(self) -> "Sequence[str]":
+        def values(self) -> Sequence[str]:
             return [status.value for status in self.__iter__()]
 
-        def emojis(self) -> "Sequence[str]":
+        def emojis(self) -> Sequence[str]:
             return [status.emoji for status in self.__iter__()]
 
     INSTANCES_NAME_PLURAL: str = "Assigned Committee Actions"
@@ -142,7 +142,7 @@ class AssignedCommitteeAction(AsyncBaseModel):
 
     @classmethod
     @override
-    def _get_proxy_field_names(cls) -> "AbstractSet[str]":
+    def _get_proxy_field_names(cls) -> AbstractSet[str]:
         return {*super()._get_proxy_field_names(), "status"}
 
 
