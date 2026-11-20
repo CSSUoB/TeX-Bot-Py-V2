@@ -5,35 +5,7 @@ Settings values are imported from the .env file or the current environment varia
 These values are used to configure the functionality of the bot at run-time.
 """
 
-import abc
-import datetime
-import functools
-import importlib
-import json
-import logging
-import os
-import re
-from collections.abc import Collection, Mapping
-from pathlib import Path
-from typing import TYPE_CHECKING, final
-
-import dotenv
-import validators
-from discord_logging.handler import DiscordHandler
-
-from exceptions import (
-    ImproperlyConfiguredError,
-    MessagesJSONFileMissingKeyError,
-    MessagesJSONFileValueError,
-)
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from collections.abc import Set as AbstractSet
-    from logging import Logger
-    from typing import IO, Any, ClassVar, Final, LiteralString
-
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "DEFAULT_STATISTICS_ROLES",
     "FALSE_VALUES",
     "LOG_LEVEL_CHOICES",
@@ -43,15 +15,39 @@ __all__: "Sequence[str]" = (
     "settings",
 )
 
+import abc
+import functools
+import logging
+from pathlib import Path
+from typing import final
+lazy import datetime
+lazy import importlib
+lazy import json
+lazy import os
+lazy import re
+lazy from collections.abc import Collection, Mapping, Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from logging import Logger
+lazy from typing import IO, Any, ClassVar, Final, LiteralString
 
-PROJECT_ROOT: "Final[Path]" = Path(__file__).parent.resolve()
+lazy import dotenv
+lazy import validators
+lazy from discord_logging.handler import DiscordHandler
 
-TRUE_VALUES: "Final[AbstractSet[LiteralString]]" = {"true", "1", "t", "y", "yes", "on"}
-FALSE_VALUES: "Final[AbstractSet[LiteralString]]" = {"false", "0", "f", "n", "no", "off"}
-VALID_SEND_INTRODUCTION_REMINDERS_VALUES: "Final[AbstractSet[LiteralString]]" = (
+lazy from exceptions import (
+    ImproperlyConfiguredError,
+    MessagesJSONFileMissingKeyError,
+    MessagesJSONFileValueError,
+)
+
+PROJECT_ROOT: Final[Path] = Path(__file__).parent.resolve()
+
+TRUE_VALUES: Final[AbstractSet[LiteralString]] = {"true", "1", "t", "y", "yes", "on"}
+FALSE_VALUES: Final[AbstractSet[LiteralString]] = {"false", "0", "f", "n", "no", "off"}
+VALID_SEND_INTRODUCTION_REMINDERS_VALUES: Final[AbstractSet[LiteralString]] = (
     {"once", "interval"} | TRUE_VALUES | FALSE_VALUES
 )
-DEFAULT_STATISTICS_ROLES: "Final[AbstractSet[LiteralString]]" = {
+DEFAULT_STATISTICS_ROLES: Final[AbstractSet[LiteralString]] = {
     "Committee",
     "Committee-Elect",
     "Student Rep",
@@ -70,7 +66,7 @@ DEFAULT_STATISTICS_ROLES: "Final[AbstractSet[LiteralString]]" = {
     "Postdoc",
     "Quiz Victor",
 }
-LOG_LEVEL_CHOICES: "Final[Sequence[LiteralString]]" = (
+LOG_LEVEL_CHOICES: Final[Sequence[LiteralString]] = (
     "DEBUG",
     "INFO",
     "WARNING",
@@ -78,8 +74,8 @@ LOG_LEVEL_CHOICES: "Final[Sequence[LiteralString]]" = (
     "CRITICAL",
 )
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
-discord_logger: "Final[Logger]" = logging.getLogger("discord")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
+discord_logger: Final[Logger] = logging.getLogger("discord")
 
 
 class Settings(abc.ABC):
@@ -89,15 +85,15 @@ class Settings(abc.ABC):
     Settings values can be accessed via key (like a dictionary) or via class attribute.
     """
 
-    _is_env_variables_setup: "ClassVar[bool]"
-    _settings: "ClassVar[dict[str, object]]"
+    _is_env_variables_setup: ClassVar[bool]
+    _settings: ClassVar[dict[str, object]]
 
     @classmethod
     def get_invalid_settings_key_message(cls, item: str) -> str:
         """Return the message to state that the given settings key is invalid."""
         return f"{item!r} is not a valid settings key."
 
-    def __getattr__(self, item: str) -> "Any":  # type: ignore[explicit-any]  # noqa: ANN401
+    def __getattr__(self, item: str) -> Any:  # type: ignore[explicit-any]  # noqa: ANN401
         """Retrieve settings value by attribute lookup."""
         MISSING_ATTRIBUTE_MESSAGE: Final[str] = (
             f"{type(self).__name__!r} object has no attribute {item!r}"
@@ -122,7 +118,7 @@ class Settings(abc.ABC):
 
         raise AttributeError(MISSING_ATTRIBUTE_MESSAGE)
 
-    def __getitem__(self, item: str) -> "Any":  # type: ignore[explicit-any]  # noqa: ANN401
+    def __getitem__(self, item: str) -> Any:  # type: ignore[explicit-any]  # noqa: ANN401
         """Retrieve settings value by key lookup."""
         attribute_not_exist_error: AttributeError
         try:
@@ -207,7 +203,7 @@ class Settings(abc.ABC):
         cls._settings["DISCORD_BOT_TOKEN"] = raw_discord_bot_token
 
     @classmethod
-    def _setup_discord_log_channel_webhook(cls) -> "Logger":
+    def _setup_discord_log_channel_webhook(cls) -> Logger:
         raw_discord_log_channel_webhook_url: str = os.getenv(
             "DISCORD_LOG_CHANNEL_WEBHOOK_URL", default=""
         ).strip()
@@ -577,13 +573,17 @@ class Settings(abc.ABC):
                 INVALID_AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL_MESSAGE
             )
 
-        raw_timedelta_auto_su_platform_access_cookie_checking_interval: Mapping[str, float] = {
-            key: float(stripped_value)
-            for key, value in (
-                raw_auto_su_platform_access_cookie_checking_interval.groupdict().items()
+        raw_timedelta_auto_su_platform_access_cookie_checking_interval: Mapping[str, float] = (
+            frozendict(
+                {
+                    key: float(stripped_value)
+                    for key, value in (
+                        raw_auto_su_platform_access_cookie_checking_interval.groupdict().items()
+                    )
+                    if value and (stripped_value := value.strip())
+                }
             )
-            if value and (stripped_value := value.strip())
-        }
+        )
 
         if (
             datetime.timedelta(
@@ -695,9 +695,9 @@ class Settings(abc.ABC):
             ),
         )
 
-        raw_timedelta_details_send_introduction_reminders_interval: Mapping[str, float] = {
-            "hours": 6
-        }
+        raw_timedelta_details_send_introduction_reminders_interval: Mapping[str, float] = (
+            frozendict(hours=6)
+        )
 
         if cls._settings["SEND_INTRODUCTION_REMINDERS"]:
             if not raw_send_introduction_reminders_interval:
@@ -709,11 +709,15 @@ class Settings(abc.ABC):
                     INVALID_SEND_INTRODUCTION_REMINDERS_INTERVAL_MESSAGE
                 )
 
-            raw_timedelta_details_send_introduction_reminders_interval = {
-                key: float(value)
-                for key, value in raw_send_introduction_reminders_interval.groupdict().items()
-                if value
-            }
+            raw_timedelta_details_send_introduction_reminders_interval = frozendict(
+                {
+                    key: float(value)
+                    for key, value in (
+                        raw_send_introduction_reminders_interval.groupdict().items()
+                    )
+                    if value
+                }
+            )
 
             if (
                 datetime.timedelta(
@@ -816,7 +820,7 @@ class Settings(abc.ABC):
 
         raw_timedelta_details_advanced_send_get_roles_reminders_interval: Mapping[
             str, float
-        ] = {"hours": 24}
+        ] = frozendict(hours=24)
 
         if cls._settings["SEND_GET_ROLES_REMINDERS"]:
             if not raw_advanced_send_get_roles_reminders_interval:
@@ -1020,13 +1024,13 @@ def _settings_class_factory() -> type[Settings]:
         Settings values can be accessed via key (like a dictionary) or via class attribute.
         """
 
-        _is_env_variables_setup: "ClassVar[bool]" = False
-        _settings: "ClassVar[dict[str, object]]" = {}  # noqa: RUF012
+        _is_env_variables_setup: ClassVar[bool] = False
+        _settings: ClassVar[dict[str, object]] = {}
 
     return RuntimeSettings
 
 
-settings: "Final[Settings]" = _settings_class_factory()()
+settings: Final[Settings] = _settings_class_factory()()
 
 
 def run_setup() -> None:

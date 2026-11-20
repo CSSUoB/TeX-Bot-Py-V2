@@ -20,8 +20,8 @@ permissions:
 jobs:
     autofix-pre-commit:
         env:
-            UV_FROZEN: true
-            UV_NO_SYNC: true
+            UV_FROZEN: "true"
+            UV_NO_SYNC: "true"
             UV_PYTHON_DOWNLOADS: never
         name: Run pre-commit hooks and commit any auto-fixes
         runs-on: ubuntu-latest
@@ -44,7 +44,7 @@ jobs:
                 python-version-file: .python-version
 
             - name: Install uv
-              uses: astral-sh/setup-uv@v10.1.0
+              uses: astral-sh/setup-uv@v10.4.0
               with:
                 enable-cache: true
 
@@ -77,7 +77,7 @@ jobs:
                     ARGS=()
                 fi
 
-                uv run -- prek run --all-files --hook-stage manual --color never --skip ruff-check --skip uv-lock "${ARGS[@]}" | tee /tmp/prek.log
+                uv run -- prek run --all-files --hook-stage manual --color never --skip flake8 --skip ruff-check --skip uv-lock "${ARGS[@]}" | tee /tmp/prek.log
 
             - name: Ensure no warnings
               run: "if grep -q '^warning: ' /tmp/prek.log; then exit 1; fi"

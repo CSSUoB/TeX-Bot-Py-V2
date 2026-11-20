@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:python3.13-trixie-slim AS builder
+FROM ghcr.io/astral-sh/uv:python3.15-trixie-slim AS builder
 
 RUN apt-get update && \
     apt-get upgrade -y && \
@@ -10,8 +10,7 @@ WORKDIR /app
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --no-install-project --no-group dev
+    uv sync --frozen --no-install-project --no-editable --no-group dev
 
 COPY LICENSE /app/
 COPY config.py main.py messages.json /app/
@@ -20,7 +19,7 @@ COPY utils/ /app/utils/
 COPY db/ /app/db/
 COPY cogs/ /app/cogs/
 
-FROM python:3.13-slim-trixie
+FROM python:3.15-slim-trixie
 
 RUN groupadd --system --gid 999 nonroot && useradd --system --gid 999 --uid 999 --create-home nonroot
 
