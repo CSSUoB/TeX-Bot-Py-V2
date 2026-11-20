@@ -1,3 +1,21 @@
+__all__: Sequence[str] = (
+    "ApplicationCommand",
+    "ApplicationContext",
+    "AutocompleteContext",
+    "MessageCommand",
+    "Option",
+    "OptionChoice",
+    "SlashCommand",
+    "SlashCommandGroup",
+    "UserCommand",
+    "application_command",
+    "command",
+    "message_command",
+    "option",
+    "slash_command",
+    "user_command",
+)
+
 from collections.abc import Sequence
 
 from ._version import *
@@ -62,25 +80,6 @@ from .team import *
 from .template import *
 from .threads import *
 from .user import *
-from .voice_client import *
 from .webhook import *
 from .welcome_screen import *
 from .widget import *
-
-__all__: Sequence[str] = (
-    "ApplicationCommand",
-    "ApplicationContext",
-    "AutocompleteContext",
-    "MessageCommand",
-    "Option",
-    "OptionChoice",
-    "SlashCommand",
-    "SlashCommandGroup",
-    "UserCommand",
-    "application_command",
-    "command",
-    "message_command",
-    "option",
-    "slash_command",
-    "user_command",
-)
