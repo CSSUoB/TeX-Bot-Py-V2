@@ -1,24 +1,20 @@
 """Contains cog classes for any killing interactions."""
 
+__all__: Sequence[str] = ("ConfirmKillView", "KillCommandCog")
+
 import logging
-from typing import TYPE_CHECKING
+lazy from collections.abc import Sequence
+lazy from logging import Logger
+lazy from typing import Final
 
 import discord
 from discord.ui import View
 
-from exceptions import CommitteeRoleDoesNotExistError
 from utils import CommandChecks, TeXBotBaseCog
+lazy from exceptions import CommitteeRoleDoesNotExistError
+lazy from utils import TeXBotApplicationContext
 
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from logging import Logger
-    from typing import Final
-
-    from utils import TeXBotApplicationContext
-
-__all__: "Sequence[str]" = ("ConfirmKillView", "KillCommandCog")
-
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class ConfirmKillView(View):
@@ -27,8 +23,8 @@ class ConfirmKillView(View):
     @discord.ui.button(
         label="SHUTDOWN", style=discord.ButtonStyle.red, custom_id="shutdown_confirm"
     )
-    async def confirm_shutdown_button_callback(  # type: ignore[misc]
-        self, _: discord.Button, interaction: discord.Interaction
+    async def confirm_shutdown_button_callback(
+        self, _: discord.ui.Button[ConfirmKillView], interaction: discord.Interaction
     ) -> None:
         """When the shutdown button is pressed, delete the message."""
         logger.debug('"Confirm" button pressed. %s', interaction)
@@ -36,8 +32,8 @@ class ConfirmKillView(View):
     @discord.ui.button(
         label="CANCEL", style=discord.ButtonStyle.grey, custom_id="shutdown_cancel"
     )
-    async def cancel_shutdown_button_callback(  # type: ignore[misc]
-        self, _: discord.Button, interaction: discord.Interaction
+    async def cancel_shutdown_button_callback(
+        self, _: discord.ui.Button[ConfirmKillView], interaction: discord.Interaction
     ) -> None:
         """When the cancel button is pressed, delete the message."""
         logger.debug('"Cancel" button pressed. %s', interaction)
@@ -49,7 +45,7 @@ class KillCommandCog(TeXBotBaseCog):
     @discord.slash_command(name="kill", description="Shutdown TeX-Bot.")
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def kill(self, ctx: "TeXBotApplicationContext") -> None:
+    async def kill(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "kill" command.
 
@@ -82,7 +78,7 @@ class KillCommandCog(TeXBotBaseCog):
         button_interaction: discord.Interaction = await self.bot.wait_for(
             "interaction",
             check=lambda interaction: (
-                interaction.type == discord.InteractionType.component
+                interaction.type == discord.InteractionType.component  # noqa: CAR180
                 and interaction.message.id == confirmation_message.id
                 and ((committee_role in interaction.user.roles) if committee_role else True)
                 and "custom_id" in interaction.data
