@@ -1,15 +1,11 @@
 """Contains the entire package required to run Django's ORM as a database connector."""
 
+__all__: Sequence[str] = ()
+
 import os
-from typing import TYPE_CHECKING
+lazy from collections.abc import Sequence
 
 import django
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-__all__: "Sequence[str]" = ()
-
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "db._settings"
 

@@ -1,24 +1,32 @@
-name: Automatic PR Updater
+name: Auto-update pull request branches
 
 "on":
     push: ~
 
+concurrency:  # yamllint disable-line rule:key-ordering
+    cancel-in-progress: true
+    group: ${{github.workflow}}-${{github.ref}}
+
+permissions:
+    contents: none  # Default permissions reset to none
+
 jobs:
     pr-auto-update:
-        permissions:
-            contents: write
-            pull-requests: write
+        if: github.repository == 'CSSUoB/TeX-Bot-Py-V2'
+        name: Auto-update pull request branches
         runs-on: ubuntu-latest
 
         steps:
             - id: generate-token
-              name: Generate Access Token
-              uses: actions/create-github-app-token@v2
+              name: Generate access token
+              uses: actions/create-github-app-token@v3
               with:
-                app-id: ${{vars.PR_AUTO_UPDATE_CLIENT_ID}}
-                private-key: ${{secrets.PR_AUTO_UPDATE_PRIVATE_KEY}}
+                client-id: ${{vars.PR_AUTO_UPDATE_CLIENT_ID}}
+                permission-contents: write
+                permission-pull-requests: write
+                private-key: ${{secrets.PR_AUTO_UPDATE_PRIVATE_KEY}}  # zizmor: ignore[secrets-outside-env]
 
-            - uses: CSSUoB/pr-auto-updater@v2.3.1
+            - uses: CSSUoB/pr-auto-updater@v5.0.0
               env:  # yamllint disable-line rule:key-ordering
                 GITHUB_TOKEN: ${{steps.generate-token.outputs.token}}
                 MERGE_CONFLICT_ACTION: label

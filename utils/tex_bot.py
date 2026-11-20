@@ -1,15 +1,20 @@
 """Custom Pycord Bot class implementation."""
 
+__all__: Sequence[str] = ("TeXBot",)
+
 import logging
-import re
-from typing import TYPE_CHECKING, override
+from typing import override
+lazy import re
+lazy from collections.abc import Awaitable, Sequence
+lazy from logging import Logger
+lazy from typing import Final, LiteralString, NoReturn
 
-import aiohttp
 import discord
-from discord import Webhook
+lazy import aiohttp
+lazy from discord import Webhook
 
-from config import settings
-from exceptions import (
+lazy from config import settings
+lazy from exceptions import (
     ApplicantRoleDoesNotExistError,
     ArchivistRoleDoesNotExistError,
     ChannelDoesNotExistError,
@@ -25,18 +30,9 @@ from exceptions import (
     RolesChannelDoesNotExistError,
     RulesChannelDoesNotExistError,
 )
+lazy from utils import AllChannelTypes
 
-if TYPE_CHECKING:
-    from collections.abc import Awaitable, Sequence
-    from logging import Logger
-    from typing import Final, LiteralString, NoReturn
-
-    from utils import AllChannelTypes
-
-__all__: "Sequence[str]" = ("TeXBot",)
-
-
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class TeXBot(discord.Bot):
@@ -68,7 +64,7 @@ class TeXBot(discord.Bot):
         super().__init__(*args, **options)  # type: ignore[no-untyped-call]  # noqa: CAR151
 
     @override
-    async def close(self) -> "NoReturn":  # type: ignore[misc]
+    async def close(self) -> NoReturn:  # type: ignore[misc]
         await super().close()
 
         logger.info("TeX-Bot manually terminated.")
@@ -290,17 +286,13 @@ class TeXBot(discord.Bot):
         The group-full-name is either retrieved from the provided environment variable
         or automatically identified from the name of your group's Discord guild.
         """
-        return (
-            settings["_GROUP_FULL_NAME"]
-            if settings["_GROUP_FULL_NAME"]
-            else (
-                "The Computer Science Society"
-                if (
-                    "computer science society" in self.main_guild.name.lower()
-                    or "css" in self.main_guild.name.lower()
-                )
-                else self.main_guild.name
+        return settings["_GROUP_FULL_NAME"] or (
+            "The Computer Science Society"
+            if (
+                "computer science society" in self.main_guild.name.lower()
+                or "css" in self.main_guild.name.lower()
             )
+            else self.main_guild.name
         )
 
     @property
@@ -308,14 +300,13 @@ class TeXBot(discord.Bot):
         """
         The short colloquial name of your community group.
 
-        This defaults to `TeXBot.group_full_name`,
+        This defaults to `TeXBot.group_full_name`
         if no group-short-name is provided/could not be determined.
         """
         return (
             (
                 settings["_GROUP_SHORT_NAME"]
-                if settings["_GROUP_SHORT_NAME"]
-                else (
+                or (
                     "CSS"
                     if (
                         "computer science society" in self.group_full_name.lower()
@@ -386,7 +377,7 @@ class TeXBot(discord.Bot):
         return bool(discord.utils.get(self.main_guild.text_channels, id=channel.id))
 
     async def _fetch_main_guild_text_channel(
-        self, name: "LiteralString"
+        self, name: LiteralString
     ) -> discord.TextChannel | None:
         text_channel: AllChannelTypes | None = discord.utils.get(
             await self.main_guild.fetch_channels(), name=name, type=discord.ChannelType.text
@@ -402,7 +393,7 @@ class TeXBot(discord.Bot):
 
     async def perform_kill_and_close(
         self, initiated_by_user: discord.User | discord.Member | None = None
-    ) -> "NoReturn":
+    ) -> NoReturn:
         """
         Shutdown TeX-Bot by using the "/kill" command.
 
@@ -462,7 +453,9 @@ class TeXBot(discord.Bot):
 
         Raises `DiscordMemberNotInMainGuild` if the user is not in your group's Discord guild.
         """
-        main_guild_member: discord.Member | None = self.main_guild.get_member(user.id)
+        main_guild_member: discord.Member | None = await self.main_guild.get_or_fetch(
+            discord.Member, user.id
+        )
         if not main_guild_member:
             raise DiscordMemberNotInMainGuildError(user_id=user.id)
 
@@ -481,7 +474,7 @@ class TeXBot(discord.Bot):
             INVALID_USER_ID_MESSAGE: Final[str] = f"'{str_member_id}' is not a valid user ID."
             raise ValueError(INVALID_USER_ID_MESSAGE)
 
-        user: discord.User | None = self.get_user(int(str_member_id))
+        user: discord.User | None = await self.get_or_fetch(discord.User, int(str_member_id))
         if not user:
             raise ValueError(
                 DiscordMemberNotInMainGuildError(user_id=int(str_member_id)).message
@@ -528,7 +521,7 @@ class TeXBot(discord.Bot):
     @classmethod
     async def get_mention_string(
         cls,
-        channel_coroutine: "Awaitable[discord.TextChannel | discord.Role]",
+        channel_coroutine: Awaitable[discord.TextChannel | discord.Role],
         default: str | None = None,
     ) -> str:
         """Return the mention string for a given role/channel, even if it does not exist."""

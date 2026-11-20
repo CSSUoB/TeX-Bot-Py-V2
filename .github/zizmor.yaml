@@ -1,0 +1,8 @@
+rules:
+    cache-poisoning:
+        ignore:
+            - check-build-deploy.yaml
+    unpinned-uses:
+        config:
+            policies:
+                "*": ref-pin

@@ -1,16 +1,14 @@
 """Custom exception classes related to configuration changes."""
 
-from typing import TYPE_CHECKING, override
+__all__: Sequence[str] = ("ImproperlyConfiguredError", "RestartRequiredDueToConfigChange")
+
+from typing import override
+lazy from collections.abc import Sequence
+lazy from collections.abc import Set as AbstractSet
 
 from typed_classproperties import classproperty
 
 from .base import BaseTeXBotError
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from collections.abc import Set as AbstractSet
-
-__all__: "Sequence[str]" = ("ImproperlyConfiguredError", "RestartRequiredDueToConfigChange")
 
 
 class ImproperlyConfiguredError(BaseTeXBotError, Exception):
@@ -32,11 +30,9 @@ class RestartRequiredDueToConfigChange(BaseTeXBotError, Exception):  # noqa: N81
 
     @override
     def __init__(
-        self, message: str | None = None, changed_settings: "AbstractSet[str] | None" = None
+        self, message: str | None = None, changed_settings: AbstractSet[str] | None = None
     ) -> None:
         """Initialise an Exception to apply configuration changes."""
-        self.changed_settings: AbstractSet[str] | None = (
-            changed_settings if changed_settings else set()
-        )
+        self.changed_settings: AbstractSet[str] | None = changed_settings or set()
 
         super().__init__(message)

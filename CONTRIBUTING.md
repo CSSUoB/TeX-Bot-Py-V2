@@ -140,7 +140,7 @@ You should also run the [static analysis linting](https://wikipedia.org/wiki/Lin
 
 #### ruff
 
-[Ruff](https://ruff.rs) is a [static analysis code linter](https://wikipedia.org/wiki/Lint_(software)), which will alert you to possible formatting mistakes in your Python code.
+[ruff](https://ruff.rs) is a [static analysis code linter](https://wikipedia.org/wiki/Lint_(software)), which will alert you to possible formatting mistakes in your Python code.
 It can be run with the following command:
 
 ```shell

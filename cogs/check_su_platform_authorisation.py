@@ -1,50 +1,33 @@
 """Contains cog classes for SU platform access cookie authorisation check interactions."""
 
-import logging
-from enum import Enum
-from typing import TYPE_CHECKING, override
-
-import aiohttp
-import bs4
-import discord
-from discord.ext import tasks
-
-from config import settings
-from utils import GLOBAL_SSL_CONTEXT, CommandChecks, TeXBotBaseCog
-from utils.error_capture_decorators import (
-    capture_guild_does_not_exist_error,
-)
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable, Mapping, Sequence
-    from collections.abc import Set as AbstractSet
-    from logging import Logger
-    from typing import Final
-
-    from utils import TeXBot, TeXBotApplicationContext
-
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "CheckSUPlatformAuthorisationCommandCog",
     "CheckSUPlatformAuthorisationTaskCog",
 )
 
+import logging
+from enum import Enum
+from typing import override
+lazy from collections.abc import Iterable, Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from logging import Logger
+lazy from typing import Final
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+import discord
+from discord.ext import tasks
+lazy import bs4
 
-REQUEST_HEADERS: "Final[Mapping[str, str]]" = {
-    "Cache-Control": "no-cache",
-    "Pragma": "no-cache",
-    "Expires": "0",
-}
+from config import settings
+from utils import CommandChecks, TeXBotBaseCog
+from utils.error_capture_decorators import capture_guild_does_not_exist_error
+lazy from utils import TeXBot, TeXBotApplicationContext
+lazy from utils.msl import fetch_url_content_with_session
 
-REQUEST_COOKIES: "Final[Mapping[str, str]]" = {
-    ".AspNet.SharedCookie": settings["SU_PLATFORM_ACCESS_COOKIE"]
-}
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
-SU_PLATFORM_PROFILE_URL: "Final[str]" = "https://guildofstudents.com/profile"
-SU_PLATFORM_ORGANISATION_URL: "Final[str]" = (
-    "https://www.guildofstudents.com/organisation/admin"
-)
+
+SU_PLATFORM_PROFILE_URL: Final[str] = "https://guildofstudents.com/profile"
+SU_PLATFORM_ORGANISATION_URL: Final[str] = "https://www.guildofstudents.com/organisation/admin"
 
 
 class SUPlatformAccessCookieStatus(Enum):
@@ -76,20 +59,10 @@ class SUPlatformAccessCookieStatus(Enum):
 class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
     """Cog class that defines the base functionality for cookie authorisation checks."""
 
-    async def _fetch_url_content_with_session(self, url: str) -> str:
-        """Fetch the HTTP content at the given URL, using a shared aiohttp session."""
-        async with (
-            aiohttp.ClientSession(
-                headers=REQUEST_HEADERS, cookies=REQUEST_COOKIES
-            ) as http_session,
-            http_session.get(url=url, ssl=GLOBAL_SSL_CONTEXT) as http_response,
-        ):
-            return await http_response.text()
-
     async def get_su_platform_access_cookie_status(self) -> SUPlatformAccessCookieStatus:
         """Retrieve the current validity status of the SU platform access cookie."""
         response_object: bs4.BeautifulSoup = bs4.BeautifulSoup(
-            await self._fetch_url_content_with_session(SU_PLATFORM_PROFILE_URL), "html.parser"
+            await fetch_url_content_with_session(SU_PLATFORM_PROFILE_URL), "html.parser"
         )
         page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
         if not page_title or "Login" in str(page_title):
@@ -99,7 +72,7 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
         organisation_admin_url: str = (
             f"{SU_PLATFORM_ORGANISATION_URL}/{settings['ORGANISATION_ID']}"
         )
-        response_html: str = await self._fetch_url_content_with_session(organisation_admin_url)
+        response_html: str = await fetch_url_content_with_session(organisation_admin_url)
 
         if "admin tools" in response_html.lower():
             return SUPlatformAccessCookieStatus.AUTHORISED
@@ -112,10 +85,10 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
         )
         return SUPlatformAccessCookieStatus.INVALID
 
-    async def get_su_platform_organisations(self) -> "Iterable[str]":
+    async def get_su_platform_organisations(self) -> Iterable[str]:
         """Retrieve the MSL organisations the current SU platform cookie has access to."""
         response_object: bs4.BeautifulSoup = bs4.BeautifulSoup(
-            await self._fetch_url_content_with_session(SU_PLATFORM_PROFILE_URL), "html.parser"
+            await fetch_url_content_with_session(SU_PLATFORM_PROFILE_URL), "html.parser"
         )
 
         page_title: bs4.Tag | bs4.NavigableString | None = response_object.find("title")
@@ -189,7 +162,7 @@ class CheckSUPlatformAuthorisationCommandCog(CheckSUPlatformAuthorisationBaseCog
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def check_su_platform_authorisation(self, ctx: "TeXBotApplicationContext") -> None:
+    async def check_su_platform_authorisation(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition of the "check_su_platform_authorisation" command.
 
@@ -228,7 +201,7 @@ class CheckSUPlatformAuthorisationTaskCog(CheckSUPlatformAuthorisationBaseCog):
     """Cog class defining a repeated task for checking SU platform access cookie."""
 
     @override
-    def __init__(self, bot: "TeXBot") -> None:
+    def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
         if settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"]:
             _ = self.su_platform_access_cookie_check_task.start()

@@ -1,30 +1,25 @@
 """Contains cog classes for annual handover and role reset functionality."""
 
-import datetime
-import logging
-from typing import TYPE_CHECKING
-
-import discord
-
-from config import settings
-from db.core.models import GroupMadeMember
-from utils import CommandChecks, TeXBotBaseCog
-
-if TYPE_CHECKING:
-    from collections.abc import Collection, Mapping, Sequence
-    from logging import Logger
-    from typing import Final
-
-    from utils import AllChannelTypes, TeXBotApplicationContext
-
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "AnnualRolesResetCommandCog",
     "AnnualYearChannelsIncrementCommandCog",
     "CommitteeHandoverCommandCog",
 )
 
+import logging
+lazy import datetime
+lazy from collections.abc import Collection, Mapping, Sequence
+lazy from logging import Logger
+lazy from typing import Final
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+import discord
+
+from utils import CommandChecks, TeXBotBaseCog
+lazy from config import settings
+lazy from db.core.models import GroupMadeMember
+lazy from utils import AllChannelTypes, TeXBotApplicationContext
+
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class CommitteeHandoverCommandCog(TeXBotBaseCog):
@@ -36,7 +31,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def committee_handover(self, ctx: "TeXBotApplicationContext") -> None:
+    async def committee_handover(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "committee_handover" command.
 
@@ -106,7 +101,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
             )
 
             handover_channel: discord.TextChannel | None = discord.utils.get(
-                main_guild.text_channels, name="Handover"
+                main_guild.text_channels, name="handover"
             )
 
             automod_role: discord.Role | None = discord.utils.get(
@@ -165,7 +160,7 @@ class CommitteeHandoverCommandCog(TeXBotBaseCog):
 class AnnualRolesResetCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/annual-roles-reset" command."""
 
-    ACADEMIC_YEAR_ROLE_NAMES: "Final[frozenset[str]]" = frozenset(
+    ACADEMIC_YEAR_ROLE_NAMES: Final[frozenset[str]] = frozenset(
         {
             "Foundation Year",
             "First Year",
@@ -184,7 +179,7 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def annual_roles_reset(self, ctx: "TeXBotApplicationContext") -> None:
+    async def annual_roles_reset(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "annual_roles_reset" command.
 
@@ -205,11 +200,13 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
                 f'{ctx.user} used TeX-Bot slash-command: "/annual-roles-reset"'
             )
 
-            membership_dependent_roles: Mapping[str, discord.Role] = {
-                role.name: role
-                for role in main_guild.roles
-                if role.name in settings["MEMBERSHIP_DEPENDENT_ROLES"]
-            }
+            membership_dependent_roles: Mapping[str, discord.Role] = frozendict(
+                {
+                    role.name: role
+                    for role in main_guild.roles
+                    if role.name in settings["MEMBERSHIP_DEPENDENT_ROLES"]
+                }
+            )
 
             not_found_role_names: Collection[str] = settings[
                 "MEMBERSHIP_DEPENDENT_ROLES"
@@ -273,7 +270,7 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def increment_year_channels(self, ctx: "TeXBotApplicationContext") -> None:
+    async def increment_year_channels(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition and callback response of the "increment_year_channels" command.
 
