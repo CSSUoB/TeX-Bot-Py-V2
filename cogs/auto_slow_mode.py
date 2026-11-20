@@ -1,6 +1,8 @@
 """Module to handle automatic slow mode for Discord channels."""
 
+import datetime
 import logging
+import time
 from typing import TYPE_CHECKING, override
 
 import discord
@@ -9,19 +11,20 @@ from discord.ext import tasks
 from config import settings
 from utils import CommandChecks, TeXBotBaseCog
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
+lazy from utils import TeXBotApplicationContext
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from logging import Logger
     from typing import Final
 
-    from utils import TeXBot, TeXBotApplicationContext
+    from utils import TeXBot
 
 
-__all__: "Sequence[str]" = ("AutomaticSlowModeCommandCog", "AutomaticSlowModeTaskCog")
+__all__: Sequence[str] = ("AutomaticSlowModeCommandCog", "AutomaticSlowModeTaskCog")
 
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class AutomaticSlowModeBaseCog(TeXBotBaseCog):
@@ -34,15 +37,14 @@ class AutomaticSlowModeBaseCog(TeXBotBaseCog):
         Returns the number of messages per minute, rounded to the nearest integer.
         This is based on the previous 5 minutes of messages.
         """
-        from datetime import UTC, datetime, timedelta
-
         # TODO: Make the time period user configurable.  # noqa: FIX002
 
         count = len(
             [
                 message
                 async for message in channel.history(
-                    after=datetime.now(UTC) - timedelta(minutes=5),
+                    after=datetime.datetime.now(tz=datetime.UTC)
+                    - datetime.timedelta(minutes=5),
                     oldest_first=False,
                     limit=None,
                 )
@@ -63,7 +65,7 @@ class AutomaticSlowModeTaskCog(AutomaticSlowModeBaseCog):
     """Task to handle automatic slow mode for Discord channels."""
 
     @override
-    def __init__(self, bot: "TeXBot") -> None:
+    def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
         if settings["AUTO_SLOW_MODE"]:
             _ = self.auto_slow_mode_task.start()
@@ -83,8 +85,6 @@ class AutomaticSlowModeTaskCog(AutomaticSlowModeBaseCog):
     @capture_guild_does_not_exist_error
     async def auto_slow_mode_task(self) -> None:
         """Task to automatically adjust slow mode in channels."""
-        import time
-
         time.process_time()
         for channel in self.bot.get_all_channels():
             if isinstance(channel, discord.TextChannel):
@@ -105,15 +105,15 @@ class AutomaticSlowModeTaskCog(AutomaticSlowModeBaseCog):
 class AutomaticSlowModeCommandCog(AutomaticSlowModeBaseCog):
     """Cog to handle automatic slow mode for Discord channels."""
 
-    @discord.slash_command(  # type: ignore[misc, no-untyped-call]
+    @discord.slash_command(
         name="toggle-auto-slow-mode",
         description="Enable or disable automatic slow mode.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def toggle_auto_slow_mode(  # type: ignore[misc]
+    async def toggle_auto_slow_mode(
         self,
-        ctx: "TeXBotApplicationContext",
+        ctx: TeXBotApplicationContext,
     ) -> None:
         """Enable or disable automatic slow mode for a channel."""
         # NOTE: This should be replaced when the settings improved in PR #221
