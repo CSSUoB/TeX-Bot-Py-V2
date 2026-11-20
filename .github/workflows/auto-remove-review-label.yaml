@@ -1,0 +1,31 @@
+name: Automatically remove committee review label from closed PRs
+
+"on":
+    pull_request:
+        types:
+            - closed
+            - converted_to_draft
+
+concurrency:  # yamllint disable-line rule:key-ordering
+    cancel-in-progress: true
+    group: ${{github.workflow}}-${{github.event.pull_request.number}}
+
+permissions:
+    contents: read
+
+jobs:
+    labeler:
+        if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.type
+            != 'Bot'
+        name: Remove committee review label from closed PR
+        permissions:
+            pull-requests: write  # Needed to remove the label
+
+        runs-on: ubuntu-latest
+        steps:
+            - env:
+                GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                PR_REPO: ${{ github.repository }}
+                PR_URL: ${{ github.event.pull_request.html_url }}
+              name: Remove committee review label from closed PR
+              run: gh pr edit "$PR_URL" --remove-label "awaiting committee review" --repo "$PR_REPO"

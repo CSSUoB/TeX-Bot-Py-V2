@@ -5,7 +5,47 @@ Cogs are attachable modules that are loaded onto the discord.Bot instance. There
 cogs for each activity.
 """
 
-from typing import TYPE_CHECKING
+__all__: Sequence[str] = (
+    "AddUsersToThreadsAndChannelsCommandsCog",
+    "AnnualRolesResetCommandCog",
+    "AnnualYearChannelsIncrementCommandCog",
+    "ArchiveCommandsCog",
+    "CheckSUPlatformAuthorisationCommandCog",
+    "CheckSUPlatformAuthorisationTaskCog",
+    "CommandErrorCog",
+    "CommitteeActionsTrackingContextCommandCog",
+    "CommitteeActionsTrackingRemindersTaskCog",
+    "CommitteeActionsTrackingSlashCommandsCog",
+    "CommitteeHandoverCommandCog",
+    "DeleteAllCommandsCog",
+    "EditMessageCommandCog",
+    "EnsureMembersInductedCommandCog",
+    "EverestCommandCog",
+    "InductContextCommandsCog",
+    "InductSendMessageCog",
+    "InductSlashCommandCog",
+    "InviteLinkCommandCog",
+    "KillCommandCog",
+    "MakeApplicantContextCommandsCog",
+    "MakeApplicantSlashCommandCog",
+    "MakeMemberCommandCog",
+    "ManualModerationCog",
+    "MemberCountCommandCog",
+    "PingCommandCog",
+    "SendGetRolesRemindersTaskCog",
+    "SendIntroductionRemindersTaskCog",
+    "SourceCommandCog",
+    "StartupCog",
+    "StatsCommandsCog",
+    "StrikeCommandsCog",
+    "StrikeContextCommandsCog",
+    "WriteRolesCommandCog",
+    "setup",
+)
+
+lazy from collections.abc import Iterable, Sequence
+
+lazy from utils import TeXBot, TeXBotBaseCog
 
 from .add_users_to_threads_and_channels import AddUsersToThreadsAndChannelsCommandsCog
 from .annual_handover_and_reset import (
@@ -38,7 +78,6 @@ from .kill import KillCommandCog
 from .make_applicant import MakeApplicantContextCommandsCog, MakeApplicantSlashCommandCog
 from .make_member import MakeMemberCommandCog, MemberCountCommandCog
 from .ping import PingCommandCog
-from .remind_me import ClearRemindersBacklogTaskCog, RemindMeCommandCog
 from .send_get_roles_reminders import SendGetRolesRemindersTaskCog
 from .send_introduction_reminders import SendIntroductionRemindersTaskCog
 from .source import SourceCommandCog
@@ -47,60 +86,14 @@ from .stats import StatsCommandsCog
 from .strike import ManualModerationCog, StrikeCommandsCog, StrikeContextCommandsCog
 from .write_roles import WriteRolesCommandCog
 
-if TYPE_CHECKING:
-    from collections.abc import Iterable, Sequence
 
-    from utils import TeXBot, TeXBotBaseCog
-
-__all__: "Sequence[str]" = (
-    "AddUsersToThreadsAndChannelsCommandCog",
-    "AnnualRolesResetCommandCog",
-    "AnnualYearChannelsIncrementCommandCog",
-    "ArchiveCommandCog",
-    "CheckSUPlatformAuthorisationCommandCog",
-    "CheckSUPlatformAuthorisationTaskCog",
-    "ClearRemindersBacklogTaskCog",
-    "CommandErrorCog",
-    "CommitteeActionsTrackingContextCommandCog",
-    "CommitteeActionsTrackingRemindersTaskCog",
-    "CommitteeActionsTrackingSlashCommandsCog",
-    "CommitteeHandoverCommandCog",
-    "DeleteAllCommandsCog",
-    "EditMessageCommandCog",
-    "EnsureMembersInductedCommandCog",
-    "EverestCommandCog",
-    "InductContextCommandsCog",
-    "InductSendMessageCog",
-    "InductSlashCommandCog",
-    "InviteLinkCommandCog",
-    "KillCommandCog",
-    "MakeApplicantContextCommandsCog",
-    "MakeApplicantSlashCommandCog",
-    "MakeMemberCommandCog",
-    "ManualModerationCog",
-    "MemberCountCommandCog",
-    "PingCommandCog",
-    "RemindMeCommandCog",
-    "SendGetRolesRemindersTaskCog",
-    "SendIntroductionRemindersTaskCog",
-    "SourceCommandCog",
-    "StartupCog",
-    "StatsCommandsCog",
-    "StrikeCommandCog",
-    "StrikeContextCommandsCog",
-    "WriteRolesCommandCog",
-    "setup",
-)
-
-
-def setup(bot: "TeXBot") -> None:
+def setup(bot: TeXBot) -> None:
     """Add all the cogs to the bot, at bot startup."""
     cogs: Iterable[type[TeXBotBaseCog]] = (
         AddUsersToThreadsAndChannelsCommandsCog,
         AnnualRolesResetCommandCog,
         AnnualYearChannelsIncrementCommandCog,
         ArchiveCommandsCog,
-        ClearRemindersBacklogTaskCog,
         CommandErrorCog,
         CommitteeActionsTrackingSlashCommandsCog,
         CommitteeActionsTrackingRemindersTaskCog,
@@ -122,7 +115,6 @@ def setup(bot: "TeXBot") -> None:
         ManualModerationCog,
         MemberCountCommandCog,
         PingCommandCog,
-        RemindMeCommandCog,
         SendGetRolesRemindersTaskCog,
         SendIntroductionRemindersTaskCog,
         SourceCommandCog,

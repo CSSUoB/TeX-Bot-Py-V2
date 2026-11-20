@@ -1,26 +1,22 @@
 """Contains cog classes for any ping interactions."""
 
-import random
-from typing import TYPE_CHECKING
+__all__: Sequence[str] = ("PingCommandCog",)
+
+lazy import random
+lazy from collections.abc import Sequence
 
 import discord
 
-from config import settings
 from utils import TeXBotBaseCog
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-    from utils import TeXBotApplicationContext
-
-__all__: "Sequence[str]" = ("PingCommandCog",)
+lazy from config import settings
+lazy from utils import TeXBotApplicationContext
 
 
 class PingCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/ping" command and its call-back method."""
 
     @discord.slash_command(name="ping", description="Replies with Pong!")
-    async def ping(self, ctx: "TeXBotApplicationContext") -> None:
+    async def ping(self, ctx: TeXBotApplicationContext) -> None:
         """Definition & callback response of the "ping" command."""
         await ctx.respond(
             random.choices(  # noqa: S311
