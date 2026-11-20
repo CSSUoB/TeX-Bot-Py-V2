@@ -1,27 +1,18 @@
 """Contains cog classes for the colour selector command."""
 
+__all__: Sequence[str] = ("MemberColourSelectorCommandCog",)
+
 import logging
-from typing import TYPE_CHECKING
+lazy from collections.abc import Collection, Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from logging import Logger
+lazy from typing import Final
 
 import discord
 
-from exceptions import (
-    GuildDoesNotExistError,
-    RoleNotFoundInMainGuildError,
-)
 from utils import CommandChecks, TeXBotBaseCog
-
-if TYPE_CHECKING:
-    from collections.abc import Collection, Sequence
-    from collections.abc import Set as AbstractSet
-    from logging import Logger
-    from typing import Final
-
-    from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
-
-
-__all__: Sequence[str] = ("MemberColourSelectorCommandCog",)
-
+lazy from exceptions import GuildDoesNotExistError, RoleNotFoundInMainGuildError
+lazy from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
