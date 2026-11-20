@@ -1,24 +1,6 @@
 """Utility classes & functions provided for use across the whole of the project."""
 
-import asyncio
-import ssl
-from typing import TYPE_CHECKING
-
-import certifi
-import discord
-
-from .command_checks import CommandChecks
-from .message_sender_components import MessageSavingSenderComponent
-from .suppress_traceback import SuppressTraceback
-from .tex_bot import TeXBot
-from .tex_bot_base_cog import TeXBotBaseCog
-from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from typing import Final
-
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "GLOBAL_SSL_CONTEXT",
     "AllChannelTypes",
     "CommandChecks",
@@ -33,20 +15,31 @@ __all__: "Sequence[str]" = (
     "is_running_in_async",
 )
 
+import ssl
+lazy import asyncio
+lazy from collections.abc import Sequence
+lazy from typing import Final
 
-if TYPE_CHECKING:
-    type AllChannelTypes = (
-        discord.VoiceChannel
-        | discord.StageChannel
-        | discord.TextChannel
-        | discord.ForumChannel
-        | discord.CategoryChannel
-        | None
-    )
+import certifi
+lazy import discord
 
-GLOBAL_SSL_CONTEXT: "Final[ssl.SSLContext]" = ssl.create_default_context(
-    cafile=certifi.where()
+from .command_checks import CommandChecks
+from .message_sender_components import MessageSavingSenderComponent
+from .suppress_traceback import SuppressTraceback
+from .tex_bot import TeXBot
+from .tex_bot_base_cog import TeXBotBaseCog
+from .tex_bot_contexts import TeXBotApplicationContext, TeXBotAutocompleteContext
+
+type AllChannelTypes = (
+    discord.VoiceChannel
+    | discord.StageChannel
+    | discord.TextChannel
+    | discord.ForumChannel
+    | discord.CategoryChannel
+    | None
 )
+
+GLOBAL_SSL_CONTEXT: Final[ssl.SSLContext] = ssl.create_default_context(cafile=certifi.where())
 
 
 def generate_invite_url(discord_bot_application_id: int, discord_guild_id: int) -> str:

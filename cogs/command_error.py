@@ -1,27 +1,22 @@
 """Contains cog classes for any command_error interactions."""
 
+__all__: Sequence[str] = ("CommandErrorCog",)
+
 import logging
-from typing import TYPE_CHECKING
+lazy from collections.abc import Sequence
+lazy from logging import Logger
+lazy from typing import Final
 
-import discord
-from discord import Forbidden
-from discord.ext.commands.errors import CheckAnyFailure
+lazy import discord
+lazy from discord import Forbidden
+lazy from discord.ext.commands.errors import CheckAnyFailure
 
-from exceptions import GuildDoesNotExistError
-from exceptions.base import BaseErrorWithErrorCode
-from utils import CommandChecks, TeXBotBaseCog
+from utils import TeXBotBaseCog
+lazy from exceptions import GuildDoesNotExistError
+lazy from exceptions.base import BaseErrorWithErrorCode
+lazy from utils import CommandChecks, TeXBotApplicationContext
 
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from logging import Logger
-    from typing import Final
-
-    from utils import TeXBotApplicationContext
-
-__all__: "Sequence[str]" = ("CommandErrorCog",)
-
-
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class CommandErrorCog(TeXBotBaseCog):
@@ -29,7 +24,7 @@ class CommandErrorCog(TeXBotBaseCog):
 
     @TeXBotBaseCog.listener()
     async def on_application_command_error(
-        self, ctx: "TeXBotApplicationContext", error: discord.ApplicationCommandError
+        self, ctx: TeXBotApplicationContext, error: discord.ApplicationCommandError
     ) -> None:
         """Log any major command errors in the logging channel & stderr."""
         error_code: str | None = None

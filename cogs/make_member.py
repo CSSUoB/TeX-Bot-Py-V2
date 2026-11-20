@@ -1,41 +1,34 @@
 """Contains cog classes for any make_member interactions."""
 
-import logging
-import re
-from enum import Enum, auto
-from typing import TYPE_CHECKING, override
-
-import discord
-from discord.ui import Modal, View
-from django.core.exceptions import ValidationError
-
-from config import settings
-from db.core.models import GroupMadeMember
-from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
-from utils import CommandChecks, TeXBotBaseCog
-from utils.msl import (
-    fetch_community_group_members_count,
-    is_id_a_community_group_member,
-)
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from logging import Logger
-    from typing import Final
-
-    from utils import TeXBot, TeXBotApplicationContext
-
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "MakeMemberCommandCog",
     "MakeMemberModalCommandCog",
     "MemberCountCommandCog",
 )
 
+import logging
+from enum import Enum, auto
+from typing import override
+lazy import re
+lazy from collections.abc import Sequence
+lazy from logging import Logger
+lazy from typing import Final
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+import discord
+from discord.ui import Modal, View
+lazy from django.core.exceptions import ValidationError
+
+from config import settings
+from utils import CommandChecks, TeXBotBaseCog
+lazy from db.core.models import GroupMadeMember
+lazy from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
+lazy from utils import TeXBot, TeXBotApplicationContext
+lazy from utils.msl import fetch_community_group_members_count, is_id_a_community_group_member
+
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
-_GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: "Final[str]" = f"""{
+_GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: Final[str] = f"""{
     "Student"
     if (
         settings["_GROUP_FULL_NAME"]
@@ -54,7 +47,7 @@ _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME: "Final[str]" = f"""{
     else "Member"
 } ID"""
 
-_GROUP_MEMBER_ID_ARGUMENT_NAME: "Final[str]" = (
+_GROUP_MEMBER_ID_ARGUMENT_NAME: Final[str] = (
     _GROUP_MEMBER_ID_ARGUMENT_DESCRIPTIVE_NAME.lower().replace(" ", "")
 )
 
@@ -207,7 +200,7 @@ class MakeMemberCommandCog(MakeMemberBaseCog):
     )
     @CommandChecks.check_interaction_user_in_main_guild
     async def make_member(
-        self, ctx: "TeXBotApplicationContext", raw_group_member_id: str
+        self, ctx: TeXBotApplicationContext, raw_group_member_id: str
     ) -> None:
         """
         Definition & callback response of the "make_member" command.
@@ -236,7 +229,7 @@ class MemberCountCommandCog(TeXBotBaseCog):
     @discord.slash_command(
         name="member-count", description="Displays the number of members in the group."
     )
-    async def member_count(self, ctx: "TeXBotApplicationContext") -> None:
+    async def member_count(self, ctx: TeXBotApplicationContext) -> None:
         """Definition & callback response of the "member_count" command."""
         await ctx.defer(ephemeral=False)
 

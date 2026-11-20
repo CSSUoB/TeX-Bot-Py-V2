@@ -1,15 +1,20 @@
 """Custom Pycord Bot class implementation."""
 
+__all__: Sequence[str] = ("TeXBot",)
+
 import logging
-import re
-from typing import TYPE_CHECKING, override
+from typing import override
+lazy import re
+lazy from collections.abc import Awaitable, Sequence
+lazy from logging import Logger
+lazy from typing import Final, LiteralString, NoReturn
 
-import aiohttp
 import discord
-from discord import Webhook
+lazy import aiohttp
+lazy from discord import Webhook
 
-from config import settings
-from exceptions import (
+lazy from config import settings
+lazy from exceptions import (
     ApplicantRoleDoesNotExistError,
     ArchivistRoleDoesNotExistError,
     ChannelDoesNotExistError,
@@ -25,18 +30,9 @@ from exceptions import (
     RolesChannelDoesNotExistError,
     RulesChannelDoesNotExistError,
 )
+lazy from utils import AllChannelTypes
 
-if TYPE_CHECKING:
-    from collections.abc import Awaitable, Sequence
-    from logging import Logger
-    from typing import Final, LiteralString, NoReturn
-
-    from utils import AllChannelTypes
-
-__all__: "Sequence[str]" = ("TeXBot",)
-
-
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class TeXBot(discord.Bot):
@@ -68,7 +64,7 @@ class TeXBot(discord.Bot):
         super().__init__(*args, **options)  # type: ignore[no-untyped-call]  # noqa: CAR151
 
     @override
-    async def close(self) -> "NoReturn":  # type: ignore[misc]
+    async def close(self) -> NoReturn:  # type: ignore[misc]
         await super().close()
 
         logger.info("TeX-Bot manually terminated.")
@@ -381,7 +377,7 @@ class TeXBot(discord.Bot):
         return bool(discord.utils.get(self.main_guild.text_channels, id=channel.id))
 
     async def _fetch_main_guild_text_channel(
-        self, name: "LiteralString"
+        self, name: LiteralString
     ) -> discord.TextChannel | None:
         text_channel: AllChannelTypes | None = discord.utils.get(
             await self.main_guild.fetch_channels(), name=name, type=discord.ChannelType.text
@@ -397,7 +393,7 @@ class TeXBot(discord.Bot):
 
     async def perform_kill_and_close(
         self, initiated_by_user: discord.User | discord.Member | None = None
-    ) -> "NoReturn":
+    ) -> NoReturn:
         """
         Shutdown TeX-Bot by using the "/kill" command.
 
@@ -525,7 +521,7 @@ class TeXBot(discord.Bot):
     @classmethod
     async def get_mention_string(
         cls,
-        channel_coroutine: "Awaitable[discord.TextChannel | discord.Role]",
+        channel_coroutine: Awaitable[discord.TextChannel | discord.Role],
         default: str | None = None,
     ) -> str:
         """Return the mention string for a given role/channel, even if it does not exist."""

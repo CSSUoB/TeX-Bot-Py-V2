@@ -1,5 +1,3 @@
-from collections.abc import Awaitable, Callable, Sequence
-
 __all__: Sequence[str] = (
     "ApplicationCommand",
     "MessageCommand",
@@ -13,6 +11,7 @@ __all__: Sequence[str] = (
     "user_command",
 )
 
+from collections.abc import Awaitable, Callable, Sequence
 from typing import override
 
 def slash_command[**P](
