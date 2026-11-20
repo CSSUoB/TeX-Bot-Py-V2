@@ -1,16 +1,12 @@
 """Contains methods relating to counting messages in channels."""
 
-from typing import TYPE_CHECKING
-
-import discord
-
-from config import settings
-
-if TYPE_CHECKING:
-    from collections.abc import AsyncIterable, Mapping, Sequence
-
-
 __all__: Sequence[str] = ("get_channel_message_counts", "get_server_message_counts")
+
+lazy from collections.abc import AsyncIterable, Mapping, Sequence
+
+lazy import discord
+
+lazy from config import settings
 
 
 async def get_channel_message_counts(channel: discord.TextChannel) -> Mapping[str, int]:

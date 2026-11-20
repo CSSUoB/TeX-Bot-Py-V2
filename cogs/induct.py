@@ -1,37 +1,5 @@
 """Contains cog classes for any induction interactions."""
 
-import contextlib
-import logging
-import random
-from collections.abc import Set as AbstractSet  # noqa: TC003
-from typing import TYPE_CHECKING
-
-import discord
-
-from config import settings
-from db.core.models import IntroductionReminderOptOutMember
-from exceptions import (
-    ApplicantRoleDoesNotExistError,
-    CommitteeRoleDoesNotExistError,
-    DiscordMemberNotInMainGuildError,
-    GuestRoleDoesNotExistError,
-    GuildDoesNotExistError,
-    MemberRoleDoesNotExistError,
-)
-from utils import (
-    CommandChecks,
-    TeXBotApplicationContext,  # noqa: TC001
-    TeXBotAutocompleteContext,  # noqa: TC001
-    TeXBotBaseCog,
-)
-from utils.error_capture_decorators import capture_guild_does_not_exist_error
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from logging import Logger
-    from typing import Final, Literal
-
-
 __all__: Sequence[str] = (
     "BaseInductCog",
     "EnsureMembersInductedCommandCog",
@@ -40,6 +8,29 @@ __all__: Sequence[str] = (
     "InductSlashCommandCog",
 )
 
+import logging
+lazy import contextlib
+lazy import random
+lazy from collections.abc import Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from logging import Logger
+lazy from typing import Final, Literal
+
+import discord
+
+from utils import CommandChecks, TeXBotBaseCog
+from utils.error_capture_decorators import capture_guild_does_not_exist_error
+lazy from config import settings
+lazy from db.core.models import IntroductionReminderOptOutMember
+lazy from exceptions import (
+    ApplicantRoleDoesNotExistError,
+    CommitteeRoleDoesNotExistError,
+    DiscordMemberNotInMainGuildError,
+    GuestRoleDoesNotExistError,
+    GuildDoesNotExistError,
+    MemberRoleDoesNotExistError,
+)
+lazy from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 

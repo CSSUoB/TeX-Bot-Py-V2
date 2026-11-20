@@ -1,24 +1,22 @@
 """Contains cog classes for any stats interactions."""
 
-import math
-import re
-from typing import TYPE_CHECKING
+__all__: Sequence[str] = ("StatsCommandsCog",)
+
+lazy import math
+lazy import re
+lazy from collections.abc import AsyncIterable, Mapping, Sequence
+lazy from typing import Final
 
 import discord
 
 from config import settings
-from db.core.models import LeftDiscordMember
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog  # noqa: TC001
+from utils import CommandChecks, TeXBotBaseCog
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
+lazy from db.core.models import LeftDiscordMember
+lazy from utils import TeXBotApplicationContext
 
 from .counts import get_channel_message_counts, get_server_message_counts
-from .graphs import amount_of_time_formatter, plot_bar_chart
-
-if TYPE_CHECKING:
-    from collections.abc import AsyncIterable, Mapping, Sequence
-    from typing import Final
-
-__all__: Sequence[str] = ("StatsCommandsCog",)
+lazy from .graphs import amount_of_time_formatter, plot_bar_chart
 
 
 class StatsCommandsCog(TeXBotBaseCog):

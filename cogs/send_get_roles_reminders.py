@@ -1,33 +1,29 @@
 """Contains cog classes for any send_get_roles_reminders interactions."""
 
+__all__: Sequence[str] = ("SendGetRolesRemindersTaskCog",)
+
 import functools
 import logging
-from typing import TYPE_CHECKING, override
+from typing import override
+lazy import datetime
+lazy from collections.abc import Sequence
+lazy from logging import Logger
+lazy from typing import Final
 
-import discord
-from discord import AuditLogAction
 from discord.ext import tasks
+lazy import discord
+lazy from discord import AuditLogAction
 
-import utils
 from config import settings
-from db.core.models import DiscordMember, SentGetRolesReminderMember
 from exceptions import GuestRoleDoesNotExistError
 from utils import TeXBotBaseCog
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
     capture_guild_does_not_exist_error,
 )
-
-if TYPE_CHECKING:
-    import datetime
-    from collections.abc import Sequence
-    from logging import Logger
-    from typing import Final
-
-    from utils import TeXBot
-
-__all__: Sequence[str] = ("SendGetRolesRemindersTaskCog",)
-
+lazy import utils
+lazy from db.core.models import DiscordMember, SentGetRolesReminderMember
+lazy from utils import TeXBot
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
@@ -152,7 +148,9 @@ class SendGetRolesRemindersTaskCog(TeXBotBaseCog):
 
             if (
                 member not in main_guild.members
-            ):  # HACK: Caching errors can cause the member to no longer be part of the guild at this point, so this check must be performed before sending that member a message # noqa: FIX004
+            ):  # HACK: Caching errors can cause the member to no longer # noqa: FIX004
+                #   be part of the guild at this point, so this check must be performed
+                #   before sending that member a message
                 logger.info(
                     (
                         "Member with ID: %s does not need to be sent a reminder "

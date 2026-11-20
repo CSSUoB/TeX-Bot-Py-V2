@@ -1,17 +1,14 @@
 """Model classes that store extra information between individual event handling call-backs."""
 
-from typing import TYPE_CHECKING
+__all__: Sequence[str] = ()
+
+
+lazy from collections.abc import Sequence
 
 from django.db.models import Manager
+lazy from django.db.models import Model
 
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-    from django.db.models import Model
-
-    from . import DiscordMember  # noqa: F401
-
-__all__: Sequence[str] = ()
+lazy from . import DiscordMember  # noqa: F401
 
 
 class HashedDiscordMemberManager(Manager["DiscordMember"]):

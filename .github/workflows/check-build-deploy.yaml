@@ -26,7 +26,7 @@ jobs:
                 persist-credentials: false
 
             - name: Install uv
-              uses: astral-sh/setup-uv@v10.1.0
+              uses: astral-sh/setup-uv@v10.3.3
               with:
                 enable-cache: true
 
@@ -35,8 +35,8 @@ jobs:
 
     flake8:  # yamllint disable-line rule:key-ordering
         env:
-            UV_FROZEN: true
-            UV_NO_SYNC: true
+            UV_FROZEN: "true"
+            UV_NO_SYNC: "true"
             UV_PYTHON_DOWNLOADS: never
         name: Lint code with Flake8
         runs-on: ubuntu-latest
@@ -49,22 +49,23 @@ jobs:
             - name: Set up Python
               uses: actions/setup-python@v7
               with:
-                python-version: 3.14
+                python-version-file: .python-version
 
             - name: Install uv
-              uses: astral-sh/setup-uv@v10.1.0
+              uses: astral-sh/setup-uv@v10.3.3
               with:
                 enable-cache: true
 
+            - name: Install Flake8 from locked dependencies
+              run: uv sync --only-group lint-format
+
             - name: Run Flake8
-              # TODO: Run from locked dependencies, once project's Python version has been updated to 3.14
-              run: uvx --python 3.14 --with "flake8-carrot>=0.1.4" --with "flake8-pyproject>=1.2"
-                -- flake8
+              run: uv run -- flake8
 
     mypy:  # yamllint disable-line rule:key-ordering
         env:
-            UV_FROZEN: true
-            UV_NO_SYNC: true
+            UV_FROZEN: "true"
+            UV_NO_SYNC: "true"
             UV_PYTHON_DOWNLOADS: never
         name: Type-check code with mypy
         needs: [uv-check]
@@ -86,7 +87,7 @@ jobs:
                 python-version-file: .python-version
 
             - name: Install uv
-              uses: astral-sh/setup-uv@v10.1.0
+              uses: astral-sh/setup-uv@v10.3.3
               with:
                 enable-cache: true
 
@@ -154,8 +155,8 @@ jobs:
 
     pymarkdown:  # yamllint disable-line rule:key-ordering
         env:
-            UV_FROZEN: true
-            UV_NO_SYNC: true
+            UV_FROZEN: "true"
+            UV_NO_SYNC: "true"
             UV_PYTHON_DOWNLOADS: never
         name: Lint Markdown files using PyMarkdown
         runs-on: ubuntu-latest
@@ -171,7 +172,7 @@ jobs:
                 python-version-file: .python-version
 
             - name: Install uv
-              uses: astral-sh/setup-uv@v10.1.0
+              uses: astral-sh/setup-uv@v10.3.3
               with:
                 enable-cache: true
 
@@ -183,8 +184,8 @@ jobs:
 
     pytest:  # yamllint disable-line rule:key-ordering
         env:
-            UV_FROZEN: true
-            UV_NO_SYNC: true
+            UV_FROZEN: "true"
+            UV_NO_SYNC: "true"
             UV_PYTHON_DOWNLOADS: never
         name: Run test suite with pytest
         needs: [uv-check]
@@ -203,7 +204,7 @@ jobs:
                 python-version-file: .python-version
 
             - name: Install uv
-              uses: astral-sh/setup-uv@v10.1.0
+              uses: astral-sh/setup-uv@v10.3.3
               with:
                 enable-cache: true
 
@@ -238,8 +239,8 @@ jobs:
 
     ruff-lint:  # yamllint disable-line rule:key-ordering
         env:
-            UV_FROZEN: true
-            UV_NO_SYNC: true
+            UV_FROZEN: "true"
+            UV_NO_SYNC: "true"
             UV_PYTHON_DOWNLOADS: never
         name: Lint code with ruff
         runs-on: ubuntu-latest
@@ -255,7 +256,7 @@ jobs:
                 python-version-file: .python-version
 
             - name: Install uv
-              uses: astral-sh/setup-uv@v10.1.0
+              uses: astral-sh/setup-uv@v10.3.3
               with:
                 enable-cache: true
 
@@ -306,7 +307,7 @@ jobs:
 
         steps:
             - name: Authenticate to container registry
-              uses: docker/login-action@v4.6.0
+              uses: docker/login-action@v4.8.0
               with:
                 password: ${{secrets.GITHUB_TOKEN}}
                 registry: ${{env.REGISTRY}}
@@ -357,4 +358,5 @@ jobs:
                 RELEASE_REPOSITORY: ${{github.repository}}
                 RELEASE_TAG: ${{github.ref_name}}
               run: gh release create "${RELEASE_TAG}" --repo "${RELEASE_REPOSITORY}" --verify-tag
-                --generate-notes
+                --generate-notes --notes "$(git tag -l --format='%(contents:subject)%0a%0a%(contents:body)'
+                "${RELEASE_TAG}")"

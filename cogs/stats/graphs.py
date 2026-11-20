@@ -1,19 +1,15 @@
 """Contains cog classes for any stats calculations and handling."""
 
-import io
-import math
-from typing import TYPE_CHECKING
-
-import discord
-import matplotlib.pyplot
-import mplcyberpunk
-
-if TYPE_CHECKING:
-    from collections.abc import Collection, Mapping, Sequence
-
-    from matplotlib.text import Text as Plot_Text
-
 __all__: Sequence[str] = ("amount_of_time_formatter", "plot_bar_chart")
+
+lazy import io
+lazy import math
+lazy from collections.abc import Collection, Mapping, Sequence
+
+lazy import discord
+lazy import matplotlib.pyplot
+lazy import mplcyberpunk
+lazy from matplotlib.text import Text as Plot_Text
 
 
 def amount_of_time_formatter(value: float, time_scale: str) -> str:

@@ -1,19 +1,17 @@
 """Custom exception classes raised when errors occur with retrieving messages from the file."""
 
-from typing import TYPE_CHECKING, override
-
-from typed_classproperties import classproperty
-
-from .config_changes import ImproperlyConfiguredError
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
 __all__: Sequence[str] = (
     "InvalidMessagesJSONFileError",
     "MessagesJSONFileMissingKeyError",
     "MessagesJSONFileValueError",
 )
+
+from typing import override
+lazy from collections.abc import Sequence
+
+from typed_classproperties import classproperty
+
+from .config_changes import ImproperlyConfiguredError
 
 
 class InvalidMessagesJSONFileError(ImproperlyConfiguredError):

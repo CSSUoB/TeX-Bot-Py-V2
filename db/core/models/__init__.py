@@ -1,28 +1,5 @@
 """Model classes that store extra information between individual event handling call-backs."""
 
-import hashlib
-import re
-import warnings
-from typing import TYPE_CHECKING, override
-
-import discord
-from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator, RegexValidator
-from django.db import models
-from django.utils.translation import gettext_lazy as _
-from django_stubs_ext.db.models import TypedModelMeta
-
-from .utils import AsyncBaseModel, DiscordMember
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from collections.abc import Set as AbstractSet
-    from typing import ClassVar, Final
-
-    from django.db.models.constraints import BaseConstraint
-    from django_stubs_ext import StrOrPromise
-
-
 __all__: Sequence[str] = (
     "AssignedCommitteeAction",
     "DiscordMember",
@@ -34,6 +11,25 @@ __all__: Sequence[str] = (
     "SentGetRolesReminderMember",
     "SentOneOffIntroductionReminderMember",
 )
+
+import warnings
+from typing import override
+lazy import hashlib
+lazy import re
+lazy from collections.abc import Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from typing import ClassVar, Final
+
+import discord
+from django.core.validators import MinValueValidator, RegexValidator
+from django.db import models
+from django.utils.translation import gettext_lazy as _
+from django_stubs_ext.db.models import TypedModelMeta
+lazy from django.core.exceptions import ValidationError
+lazy from django.db.models.constraints import BaseConstraint
+lazy from django_stubs_ext import StrOrPromise
+
+from .utils import AsyncBaseModel, DiscordMember
 
 
 class AssignedCommitteeAction(AsyncBaseModel):
