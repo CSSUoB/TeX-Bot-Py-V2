@@ -1,34 +1,31 @@
 """Contains cog classes for any archival interactions."""
 
+__all__: Sequence[str] = ("ArchiveCommandsCog",)
+
 import logging
-import re
-from typing import TYPE_CHECKING
+lazy import re
+lazy from collections.abc import Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from logging import Logger
+lazy from typing import Final
 
 import discord
 
-from exceptions.base import BaseDoesNotExistError
 from utils import CommandChecks, TeXBotBaseCog
+lazy from exceptions import EveryoneRoleCouldNotBeRetrievedError
+lazy from exceptions.base import BaseDoesNotExistError
+lazy from utils import AllChannelTypes, TeXBotApplicationContext, TeXBotAutocompleteContext
 
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from collections.abc import Set as AbstractSet
-    from logging import Logger
-    from typing import Final
-
-    from utils import AllChannelTypes, TeXBotApplicationContext, TeXBotAutocompleteContext
-
-__all__: "Sequence[str]" = ("ArchiveCommandCog",)
-
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
-class ArchiveCommandCog(TeXBotBaseCog):
+class ArchiveCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/archive" command and its call-back method."""
 
     @staticmethod
     async def autocomplete_get_non_archival_categories(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+        ctx: TeXBotAutocompleteContext,
+    ) -> AbstractSet[discord.OptionChoice] | AbstractSet[str]:
         """
         Autocomplete callable that generates the set of available selectable categories.
 
@@ -48,8 +45,8 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
     @staticmethod
     async def autocomplete_get_archival_categories(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+        ctx: TeXBotAutocompleteContext,
+    ) -> AbstractSet[discord.OptionChoice] | AbstractSet[str]:
         """
         Autocomplete callable that generates the set of categories to hold archived channels.
 
@@ -70,8 +67,8 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
     @staticmethod
     async def autocomplete_get_non_archived_channels(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+        ctx: TeXBotAutocompleteContext,
+    ) -> AbstractSet[discord.OptionChoice] | AbstractSet[str]:
         """
         Autocomplete callable that generates the set of channels that the user can archive.
 
@@ -89,7 +86,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
             discord.OptionChoice(name=channel.name, value=str(channel.id))
             for channel in main_guild.channels
             if (
-                not isinstance(channel, discord.CategoryChannel)
+                not isinstance(channel, discord.CategoryChannel)  # noqa: CAR180
                 and channel.category
                 and "archive" not in channel.category.name.lower()
                 and isinstance(interaction_user, discord.Member)
@@ -121,7 +118,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def archive_category(
         self,
-        ctx: "TeXBotApplicationContext",
+        ctx: TeXBotApplicationContext,
         str_category_id: str,
         allow_archivist: bool,  # noqa: FBT001
     ) -> None:
@@ -175,16 +172,38 @@ class ArchiveCommandCog(TeXBotBaseCog):
 
             await channel.edit(sync_permissions=True)
 
-        overwrite: discord.Member | discord.Role
-        for overwrite in category.overwrites:
-            await category.set_permissions(overwrite, overwrite=None)
+        target: discord.Member | discord.Role
+        for target in category.overwrites:
+            await category.set_permissions(target=target, overwrite=None)
+
+        try:
+            everyone_role: discord.Role = await ctx.bot.get_everyone_role()
+        except EveryoneRoleCouldNotBeRetrievedError:
+            logger.exception(
+                "Could not retrieve the @everyone role when archiving category %r",
+                category.name,
+            )
+        else:
+            await category.set_permissions(
+                target=everyone_role,
+                view_channel=False,
+            )
 
         if allow_archivist:
             await category.set_permissions(
-                target=archivist_role, read_messages=True, read_message_history=True
+                target=archivist_role,
+                view_channel=True,
+                read_messages=True,
+                read_message_history=True,
+                send_messages=False,
+                send_messages_in_threads=False,
+                create_public_threads=False,
+                create_private_threads=False,
             )
 
-        await category.edit(name=f"archive-{category.name}")
+        await category.edit(
+            name=f"archive-{category.name}", position=len(main_guild.categories)
+        )
 
         await initial_response.edit(
             content=f":white_check_mark: Category '{category.name}' successfully archived."
@@ -212,7 +231,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def archive_channel(
-        self, ctx: "TeXBotApplicationContext", str_channel_id: str, str_category_id: str
+        self, ctx: TeXBotApplicationContext, str_channel_id: str, str_category_id: str
     ) -> None:
         """
         Definition & callback response of the "archive-channel" command.
@@ -244,7 +263,7 @@ class ArchiveCommandCog(TeXBotBaseCog):
                 ctx,
                 message=(
                     "Supplied channel to archive is a category - "
-                    "please use the archive-channel command to archive categories."
+                    "please use the archive-category command to archive categories."
                 ),
             )
             return

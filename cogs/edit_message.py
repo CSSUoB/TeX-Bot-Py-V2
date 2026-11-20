@@ -1,21 +1,18 @@
 """Contains cog classes for any edit_message interactions."""
 
-import re
-from typing import TYPE_CHECKING, override
+__all__: Sequence[str] = ("EditMessageCommandCog",)
+
+from typing import override
+lazy import re
+lazy from collections.abc import Sequence
+lazy from collections.abc import Set as AbstractSet
 
 import discord
 
-from exceptions import DiscordMemberNotInMainGuildError
-from exceptions.base import BaseDoesNotExistError
 from utils import CommandChecks, TeXBotBaseCog
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from collections.abc import Set as AbstractSet
-
-    from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
-
-__all__: "Sequence[str]" = ("EditMessageCommandCog",)
+lazy from exceptions import DiscordMemberNotInMainGuildError
+lazy from exceptions.base import BaseDoesNotExistError
+lazy from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 
 class EditMessageCommandCog(TeXBotBaseCog):
@@ -24,8 +21,8 @@ class EditMessageCommandCog(TeXBotBaseCog):
     @staticmethod
     @override
     async def autocomplete_get_text_channels(
-        ctx: "TeXBotAutocompleteContext",
-    ) -> "AbstractSet[discord.OptionChoice] | AbstractSet[str]":
+        ctx: TeXBotAutocompleteContext,
+    ) -> AbstractSet[discord.OptionChoice] | AbstractSet[str]:
         """
         Autocomplete callable that generates the set of available selectable channels.
 
@@ -38,7 +35,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         try:
             if not await ctx.bot.check_user_has_committee_role(ctx.interaction.user):
                 return set()
-        except (BaseDoesNotExistError, DiscordMemberNotInMainGuildError):
+        except BaseDoesNotExistError, DiscordMemberNotInMainGuildError:
             return set()
 
         return await TeXBotBaseCog.autocomplete_get_text_channels(ctx)
@@ -56,7 +53,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
         parameter_name="str_channel_id",
     )
     @discord.option(
-        name="message_id",
+        name="message-id",
         input_type=str,
         description="The ID of the message you wish to edit.",
         required=True,
@@ -77,7 +74,7 @@ class EditMessageCommandCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_in_main_guild
     async def edit_message(
         self,
-        ctx: "TeXBotApplicationContext",
+        ctx: TeXBotApplicationContext,
         str_channel_id: str,
         str_message_id: str,
         new_message_content: str,

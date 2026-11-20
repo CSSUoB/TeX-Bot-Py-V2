@@ -1,32 +1,31 @@
 """Contains cog classes for any startup interactions."""
 
+__all__: Sequence[str] = ("StartupCog",)
+
 import logging
-from typing import TYPE_CHECKING
+lazy from collections.abc import Sequence
+lazy from logging import Logger
+lazy from typing import Final
 
-import discord
-from discord_logging.handler import DiscordHandler
+lazy import discord
+lazy from discord_logging.handler import DiscordHandler
 
-import utils
-from config import settings
-from exceptions import (
+from utils import TeXBotBaseCog
+lazy import utils
+lazy from config import settings
+lazy from exceptions import (
     ArchivistRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
     GeneralChannelDoesNotExistError,
     GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
     MemberRoleDoesNotExistError,
+    MSLMembershipError,
     RolesChannelDoesNotExistError,
 )
-from utils import TeXBotBaseCog
+lazy from utils.msl import fetch_community_group_members_list
 
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from logging import Logger
-    from typing import Final
-
-__all__: "Sequence[str]" = ("StartupCog",)
-
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
 
 class StartupCog(TeXBotBaseCog):
@@ -107,6 +106,14 @@ class StartupCog(TeXBotBaseCog):
 
         if not discord.utils.get(main_guild.text_channels, name="general"):
             logger.warning(GeneralChannelDoesNotExistError())
+
+        try:
+            await fetch_community_group_members_list()
+        except MSLMembershipError as msl_membership_error:
+            logger.debug(
+                "Failed to update community group member list cache on startup: %s",
+                msl_membership_error,
+            )
 
         if settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] != "DM":
             manual_moderation_warning_message_location_exists: bool = bool(

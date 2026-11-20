@@ -1,17 +1,14 @@
 """Test suite for utils package."""
 
-import asyncio
-import random
-import re
-from typing import TYPE_CHECKING
+__all__: Sequence[str] = ("TestGenerateInviteURL", "TestIsRunningInAsync")
 
-import utils
+lazy import asyncio
+lazy import random
+lazy import re
+lazy from collections.abc import Sequence
+lazy from typing import Final
 
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from typing import Final
-
-__all__: "Sequence[str]" = ()
+lazy import utils
 
 
 class TestGenerateInviteURL:

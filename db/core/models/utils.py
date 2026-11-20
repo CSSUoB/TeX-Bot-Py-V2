@@ -1,22 +1,20 @@
 """Utility classes and functions."""
 
-from typing import TYPE_CHECKING, override
+__all__: Sequence[str] = ("AsyncBaseModel", "DiscordMember")
 
-from asgiref.sync import sync_to_async
-from django.core.exceptions import FieldDoesNotExist
+from typing import override
+lazy from collections.abc import Iterable, Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from typing import ClassVar, Final
+
 from django.core.validators import RegexValidator
-from django.db import models, transaction
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_stubs_ext.db.models import TypedModelMeta
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable, Sequence
-    from collections.abc import Set as AbstractSet
-    from typing import ClassVar, Final
-
-    from django.db.models.base import ModelBase
-
-__all__: "Sequence[str]" = ("AsyncBaseModel", "DiscordMember")
+lazy from asgiref.sync import sync_to_async
+lazy from django.core.exceptions import FieldDoesNotExist
+lazy from django.db import transaction
+lazy from django.db.models.base import ModelBase
 
 
 class AsyncBaseModel(models.Model):
@@ -30,17 +28,17 @@ class AsyncBaseModel(models.Model):
     INSTANCES_NAME_PLURAL: str
 
     class Meta(TypedModelMeta):  # noqa: D106
-        abstract: "ClassVar[bool]" = True
+        abstract: ClassVar[bool] = True
 
     @override
-    def __init__(self, *args: object, **kwargs: object) -> None:
+    def __init__(self, *args: object, **kwargs: object) -> None:  # noqa: CAR150
         proxy_fields: dict[str, object] = {
             field_name: kwargs.pop(field_name)
             for field_name in set(kwargs.keys()) & self._get_proxy_field_names()
         }
 
         with transaction.atomic():
-            super().__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)  # noqa: CAR151
 
             field_name: str
             value: object
@@ -51,10 +49,10 @@ class AsyncBaseModel(models.Model):
     def save(
         self,
         *,
-        force_insert: bool | tuple["ModelBase", ...] = False,
+        force_insert: bool | tuple[ModelBase, ...] = False,
         force_update: bool = False,
         using: str | None = None,
-        update_fields: "Iterable[str] | None" = None,
+        update_fields: Iterable[str] | None = None,
     ) -> None:
         self.full_clean()
 
@@ -69,11 +67,11 @@ class AsyncBaseModel(models.Model):
         self,
         *,
         commit: bool = True,
-        force_insert: bool | tuple["ModelBase", ...] = False,
+        force_insert: bool | tuple[ModelBase, ...] = False,
         force_update: bool = False,
         using: str | None = None,
-        update_fields: "Iterable[str] | None" = None,
-        **kwargs: object,
+        update_fields: Iterable[str] | None = None,
+        **kwargs: object,  # noqa: CAR150
     ) -> None:
         """
         Change an in-memory object's values, then save it to the database.
@@ -123,11 +121,11 @@ class AsyncBaseModel(models.Model):
         self,
         *,
         commit: bool = True,
-        force_insert: bool | tuple["ModelBase", ...] = False,
+        force_insert: bool | tuple[ModelBase, ...] = False,
         force_update: bool = False,
         using: str | None = None,
-        update_fields: "Iterable[str] | None" = None,
-        **kwargs: object,
+        update_fields: Iterable[str] | None = None,
+        **kwargs: object,  # noqa: CAR150
     ) -> None:
         """
         Asynchronously change an in-memory object's values, then save it to the database.
@@ -152,7 +150,7 @@ class AsyncBaseModel(models.Model):
     setattr(aupdate, "alters_data", True)  # noqa: B010
 
     @classmethod
-    def _get_proxy_field_names(cls) -> "AbstractSet[str]":
+    def _get_proxy_field_names(cls) -> AbstractSet[str]:
         """
         Return the set of extra names of properties that can be saved to the database.
 
@@ -205,5 +203,5 @@ class DiscordMember(AsyncBaseModel):
 
     @classmethod
     @override
-    def _get_proxy_field_names(cls) -> "AbstractSet[str]":
+    def _get_proxy_field_names(cls) -> AbstractSet[str]:
         return {*super()._get_proxy_field_names(), "member_id"}
