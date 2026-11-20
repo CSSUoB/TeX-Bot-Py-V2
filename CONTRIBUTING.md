@@ -233,6 +233,7 @@ To create a new cog, follow these steps:
    ```python
    from utils import TeXBotBaseCog
 
+
    class ExampleCog(TeXBotBaseCog):
        """A cog for demonstrating functionality."""
 
@@ -254,9 +255,8 @@ To create a new cog, follow these steps:
    import discord
    from utils import CommandChecks, TeXBotBaseCog
 
-   __all__: Sequence[str] = (
-       "ExampleCog",
-   )
+   __all__: Sequence[str] = ("ExampleCog",)
+
 
    class ExampleCog(TeXBotBaseCog):
        """A cog for demonstrating functionality."""
@@ -271,7 +271,6 @@ To create a new cog, follow these steps:
        async def on_ready(self) -> None:
            """Handle the bot ready event."""
            print("ExampleCog is ready.")
-
    ```
 
 4. Register the Cog
@@ -384,6 +383,7 @@ To create a response button, follow these steps:
    import discord
    from discord.ui import View
 
+
    class ConfirmActionView(View):
        """A discord.ui.View containing buttons to confirm or cancel an action."""
 
@@ -392,7 +392,9 @@ To create a response button, follow these steps:
            style=discord.ButtonStyle.green,
            custom_id="confirm_yes",
        )
-       async def confirm_yes(self, button: discord.Button, interaction: discord.Interaction) -> None:
+       async def confirm_yes(
+           self, button: discord.Button, interaction: discord.Interaction
+       ) -> None:
            """Confirm the action and acknowledge the user."""
            user = interaction.user
            if user is None:
@@ -409,7 +411,9 @@ To create a response button, follow these steps:
            style=discord.ButtonStyle.red,
            custom_id="confirm_no",
        )
-       async def confirm_no(self, button: discord.Button, interaction: discord.Interaction) -> None:
+       async def confirm_no(
+           self, button: discord.Button, interaction: discord.Interaction
+       ) -> None:
            """Cancel the action and acknowledge the user."""
            await interaction.response.send_message("Action cancelled.", ephemeral=True)
    ```
@@ -435,7 +439,9 @@ To create a response button, follow these steps:
 
    ```python
    if interaction.user is None:
-       await interaction.response.send_message("No user information was provided.", ephemeral=True)
+       await interaction.response.send_message(
+           "No user information was provided.", ephemeral=True
+       )
        return
 
    await interaction.response.send_message(
@@ -489,6 +495,7 @@ To create and interact with Django models, follow these steps:
    from .utils import AsyncBaseModel, BaseDiscordMemberWrapper
    from .discord_member import DiscordMember
 
+
    class ExampleRecord(AsyncBaseModel):
        """A record for demonstrating functionality."""
 
@@ -496,6 +503,7 @@ To create and interact with Django models, follow these steps:
 
        name = models.CharField(max_length=255)
        created_at = models.DateTimeField(auto_now_add=True)
+
 
    class MemberSmileyFaces(BaseDiscordMemberWrapper):
        """Model to represent the number of smiley faces of each Discord member."""
@@ -537,6 +545,7 @@ To create and interact with Django models, follow these steps:
    from db.core.models.example_record import ExampleRecord
    from utils import TeXBotBaseCog
 
+
    class ExampleCog(TeXBotBaseCog):
        """A cog for demonstrating model access."""
 
@@ -563,7 +572,8 @@ To create and interact with Django models, follow these steps:
                    await ctx.respond("Provide a search term to filter records.", ephemeral=True)
                    return
                records = [
-                   record async for record in ExampleRecord.objects.filter(name__icontains=search_term)
+                   record
+                   async for record in ExampleRecord.objects.filter(name__icontains=search_term)
                ]
                names = ", ".join(record.name for record in records)
                await ctx.respond(f"Matching records: {names or 'None found.'}")
