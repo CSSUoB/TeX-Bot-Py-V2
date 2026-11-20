@@ -1,28 +1,23 @@
 """Contains cog classes for tracking messages deleted by moderators."""
 
-import asyncio
+__all__: Sequence[str] = ("MessageDeletionTrackingCog",)
+
 import datetime
 import logging
-from collections import deque
-from typing import TYPE_CHECKING, NamedTuple, override
+from typing import NamedTuple, override
+lazy import asyncio
+lazy from collections import deque
+lazy from collections.abc import Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from logging import Logger
+lazy from typing import Final
 
 import discord
 
-from exceptions import MessageReportsChannelDoesNotExistError
-from utils import MessageReportAction, TeXBotBaseCog, send_message_report_to_committee
+from utils import TeXBotBaseCog
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from collections.abc import Set as AbstractSet
-    from logging import Logger
-    from typing import Final
-
-    from utils import TeXBot
-
-
-__all__: Sequence[str] = ("MessageDeletionTrackingCog",)
-
+lazy from exceptions import MessageReportsChannelDoesNotExistError
+lazy from utils import MessageReportAction, TeXBot, send_message_report_to_committee
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 

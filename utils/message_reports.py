@@ -1,19 +1,14 @@
 """Utility functions for sending copies of Discord messages to committee for review."""
 
-from enum import Enum
-from typing import TYPE_CHECKING
-
-import discord
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from typing import Final
-
-    from .tex_bot import TeXBot
-
-
 __all__: Sequence[str] = ("MessageReportAction", "send_message_report_to_committee")
 
+from enum import Enum
+lazy from collections.abc import Sequence
+lazy from typing import Final
+
+lazy import discord
+
+lazy from .tex_bot import TeXBot
 
 MAXIMUM_REPORTED_CONTENT_LENGTH: Final[int] = 600
 
