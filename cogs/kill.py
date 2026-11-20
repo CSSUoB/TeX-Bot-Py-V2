@@ -1,22 +1,18 @@
 """Contains cog classes for any killing interactions."""
 
+__all__: Sequence[str] = ("ConfirmKillView", "KillCommandCog")
+
 import logging
-from typing import TYPE_CHECKING
+lazy from collections.abc import Sequence
+lazy from logging import Logger
+lazy from typing import Final
 
 import discord
 from discord.ui import View
 
-from exceptions import CommitteeRoleDoesNotExistError
-from utils import CommandChecks, TeXBotApplicationContext, TeXBotBaseCog  # noqa: TC001
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from logging import Logger
-    from typing import Final
-
-
-__all__: Sequence[str] = ("ConfirmKillView", "KillCommandCog")
-
+from utils import CommandChecks, TeXBotBaseCog
+lazy from exceptions import CommitteeRoleDoesNotExistError
+lazy from utils import TeXBotApplicationContext
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 

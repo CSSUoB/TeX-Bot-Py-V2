@@ -1,25 +1,19 @@
 """Contains cog classes for any Everest interactions."""
 
+__all__: Sequence[str] = ("EverestCommandCog",)
+
 import logging
-from collections.abc import Set as AbstractSet  # noqa: TC003
 from enum import Enum
-from typing import TYPE_CHECKING, override
+from typing import override
+lazy from collections.abc import Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from logging import Logger
+lazy from typing import Final
 
 import discord
 
-from utils import (  # noqa: TC001
-    TeXBotApplicationContext,
-    TeXBotAutocompleteContext,
-    TeXBotBaseCog,
-)
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from logging import Logger
-    from typing import Final
-
-__all__: Sequence[str] = ("EverestCommandCog",)
-
+from utils import TeXBotBaseCog
+lazy from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 

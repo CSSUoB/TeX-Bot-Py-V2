@@ -1,34 +1,24 @@
 """Contains Cog classes for adding users and roles to threads."""
 
+__all__: Sequence[str] = ("AddUsersToThreadsAndChannelsCommandsCog",)
+
 import logging
-from collections.abc import Iterable
-from collections.abc import Set as AbstractSet  # noqa: TC003
-from typing import TYPE_CHECKING
+lazy from collections.abc import Iterable, Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from logging import Logger
+lazy from typing import Final
 
 import discord
 
-from config import settings
-from exceptions import (
+from utils import CommandChecks, TeXBotBaseCog
+from utils.error_capture_decorators import capture_guild_does_not_exist_error
+lazy from config import settings
+lazy from exceptions import (
     GuestRoleDoesNotExistError,
     GuildDoesNotExistError,
     RoleNotFoundInMainGuildError,
 )
-from utils import (
-    CommandChecks,
-    TeXBotApplicationContext,  # noqa: TC001
-    TeXBotAutocompleteContext,  # noqa: TC001
-    TeXBotBaseCog,
-)
-from utils.error_capture_decorators import capture_guild_does_not_exist_error
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from logging import Logger
-    from typing import Final
-
-
-__all__: Sequence[str] = ("AddUsersToThreadsAndChannelsCommandsCog",)
-
+lazy from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
@@ -224,6 +214,8 @@ class AddUsersToThreadsAndChannelsCommandsCog(TeXBotBaseCog):
             )
             return
 
+        await ctx.defer(ephemeral=True)
+
         try:
             user_to_add: discord.Member = await self.bot.get_member_from_str_id(user_id_str)
         except ValueError:
@@ -236,7 +228,7 @@ class AddUsersToThreadsAndChannelsCommandsCog(TeXBotBaseCog):
         else:
             await self.add_users_or_roles_with_ping(user_to_add, ctx.channel)
 
-        await ctx.respond(
+        await ctx.followup.send(
             content=(
                 f"Successfully added {user_to_add.mention} "
                 f"to the channel: {ctx.channel.mention}."
@@ -272,13 +264,13 @@ class AddUsersToThreadsAndChannelsCommandsCog(TeXBotBaseCog):
         silent: bool,  # noqa: FBT001
     ) -> None:
         """Command to add a role to a channel."""
-        if not isinstance(ctx.channel, discord.Thread) and not isinstance(
-            ctx.channel, discord.TextChannel
-        ):
+        if not isinstance(ctx.channel, (discord.TextChannel, discord.Thread)):
             await self.command_send_error(
                 ctx, message="This command can only be used in a text channel or thread."
             )
             return
+
+        await ctx.defer(ephemeral=True)
 
         role_to_add: discord.Role
         try:
@@ -302,7 +294,7 @@ class AddUsersToThreadsAndChannelsCommandsCog(TeXBotBaseCog):
         else:
             await self.add_users_or_roles_with_ping(role_to_add, ctx.channel)
 
-        await ctx.respond(
+        await ctx.followup.send(
             content=f"Role {role_to_add.mention} has been added to the channel.",
             ephemeral=True,
         )

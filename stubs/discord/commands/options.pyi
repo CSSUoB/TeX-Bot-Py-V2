@@ -1,10 +1,10 @@
+__all__: Sequence[str] = ("Option", "OptionChoice", "option")
+
 from collections.abc import Awaitable, Callable, Sequence
 from collections.abc import Set as AbstractSet
 from typing import overload, override
 
 from discord.commands.context import AutocompleteContext
-
-__all__: Sequence[str] = ("Option", "OptionChoice", "option")
 
 class Option: ...
 

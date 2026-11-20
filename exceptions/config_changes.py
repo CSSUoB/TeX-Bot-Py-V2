@@ -1,16 +1,14 @@
 """Custom exception classes related to configuration changes."""
 
-from typing import TYPE_CHECKING, override
+__all__: Sequence[str] = ("ImproperlyConfiguredError", "RestartRequiredDueToConfigChange")
+
+from typing import override
+lazy from collections.abc import Sequence
+lazy from collections.abc import Set as AbstractSet
 
 from typed_classproperties import classproperty
 
 from .base import BaseTeXBotError
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from collections.abc import Set as AbstractSet
-
-__all__: Sequence[str] = ("ImproperlyConfiguredError", "RestartRequiredDueToConfigChange")
 
 
 class ImproperlyConfiguredError(BaseTeXBotError, Exception):

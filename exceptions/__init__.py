@@ -1,6 +1,34 @@
 """Exception classes & functions provided for use across the whole of the project."""
 
-from typing import TYPE_CHECKING
+__all__: Sequence[str] = (
+    "ApplicantRoleDoesNotExistError",
+    "ArchivistRoleDoesNotExistError",
+    "ChannelDoesNotExistError",
+    "CommitteeElectRoleDoesNotExistError",
+    "CommitteeRoleDoesNotExistError",
+    "DiscordMemberNotInMainGuildError",
+    "EveryoneRoleCouldNotBeRetrievedError",
+    "GeneralChannelDoesNotExistError",
+    "GuestRoleDoesNotExistError",
+    "GuildDoesNotExistError",
+    "ImproperlyConfiguredError",
+    "InvalidActionDescriptionError",
+    "InvalidActionTargetError",
+    "InvalidMessagesJSONFileError",
+    "MSLMembershipError",
+    "MemberRoleDoesNotExistError",
+    "MessagesJSONFileMissingKeyError",
+    "MessagesJSONFileValueError",
+    "NoAuditLogsStrikeTrackingError",
+    "RestartRequiredDueToConfigChange",
+    "RoleDoesNotExistError",
+    "RoleNotFoundInMainGuildError",
+    "RolesChannelDoesNotExistError",
+    "RulesChannelDoesNotExistError",
+    "StrikeTrackingError",
+)
+
+lazy from collections.abc import Sequence
 
 from .committee_actions import InvalidActionDescriptionError, InvalidActionTargetError
 from .config_changes import ImproperlyConfiguredError, RestartRequiredDueToConfigChange
@@ -30,34 +58,3 @@ from .messages import (
 )
 from .msl import MSLMembershipError
 from .strike import NoAuditLogsStrikeTrackingError, StrikeTrackingError
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-__all__: Sequence[str] = (
-    "ApplicantRoleDoesNotExistError",
-    "ArchivistRoleDoesNotExistError",
-    "ChannelDoesNotExistError",
-    "CommitteeElectRoleDoesNotExistError",
-    "CommitteeRoleDoesNotExistError",
-    "DiscordMemberNotInMainGuildError",
-    "EveryoneRoleCouldNotBeRetrievedError",
-    "GeneralChannelDoesNotExistError",
-    "GuestRoleDoesNotExistError",
-    "GuildDoesNotExistError",
-    "ImproperlyConfiguredError",
-    "InvalidActionDescriptionError",
-    "InvalidActionTargetError",
-    "InvalidMessagesJSONFileError",
-    "MSLMembershipError",
-    "MemberRoleDoesNotExistError",
-    "MessagesJSONFileMissingKeyError",
-    "MessagesJSONFileValueError",
-    "NoAuditLogsStrikeTrackingError",
-    "RestartRequiredDueToConfigChange",
-    "RoleDoesNotExistError",
-    "RoleNotFoundInMainGuildError",
-    "RolesChannelDoesNotExistError",
-    "RulesChannelDoesNotExistError",
-    "StrikeTrackingError",
-)
