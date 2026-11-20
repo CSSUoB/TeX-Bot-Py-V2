@@ -1,6 +1,33 @@
 """Automated test suite for all custom exceptions within `exceptions.py`."""
 
+__all__: Sequence[str] = (
+    "TestApplicantRoleDoesNotExistError",
+    "TestArchivistRoleDoesNotExistError",
+    "TestBaseDoesNotExistError",
+    "TestBaseErrorWithErrorCode",
+    "TestBaseTeXBotError",
+    "TestChannelDoesNotExistError",
+    "TestCommitteeElectRoleDoesNotExistError",
+    "TestCommitteeRoleDoesNotExistError",
+    "TestDiscordMemberNotInMainGuildError",
+    "TestEveryoneRoleCouldNotBeRetrievedError",
+    "TestGeneralChannelDoesNotExistError",
+    "TestGuestRoleDoesNotExistError",
+    "TestGuildDoesNotExistError",
+    "TestImproperlyConfiguredError",
+    "TestInvalidMessagesJSONFileError",
+    "TestMemberRoleDoesNotExistError",
+    "TestMessagesJSONFileMissingKeyError",
+    "TestMessagesJSONFileValueError",
+    "TestRestartRequiredDueToConfigChange",
+    "TestRoleDoesNotExistError",
+    "TestRolesChannelDoesNotExistError",
+    "TestRulesChannelDoesNotExist",
+    "TestStrikeTrackingError",
+)
+
 from typing import TYPE_CHECKING, override
+lazy from collections.abc import Sequence
 
 import pytest
 from typed_classproperties import classproperty
@@ -90,6 +117,7 @@ class TestBaseTeXBotError:
         with a subclass that has a new instance attribute (compared to the parent base class).
         """
 
+        @override
         def __init__(
             self, message: str | None = None, test_attribute_value: object | None = None
         ) -> None:
