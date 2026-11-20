@@ -3,11 +3,11 @@
     "assignAutomerge": false,
     "automerge": true,
     "configMigration": true,
-    "dependencyDashboard": true,
-    "dependencyDashboardAutoclose": true,
-    "dependencyDashboardLabels": [
-        "dependencies"
-    ],
+    "dependencyDashboard": {
+        "enabled": true,
+        "autoclose": true,
+        "labels": ["dependencies"]
+    },
     "enabled": true,
     "enabledManagers": [
         "github-actions",

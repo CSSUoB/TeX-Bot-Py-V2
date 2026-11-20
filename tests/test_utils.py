@@ -1,17 +1,13 @@
 """Test suite for utils package."""
 
-import random
-import re
-from typing import TYPE_CHECKING
+__all__: Sequence[str] = ("TestGenerateInviteURL",)
 
-import utils
+lazy import random
+lazy import re
+lazy from collections.abc import Sequence
+lazy from typing import Final
 
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from typing import Final
-
-__all__: Sequence[str] = ()
-
+lazy import utils
 
 # TODO(CarrotManMatt): Move to stats_tests  # noqa: FIX002
 # https://github.com/CSSUoB/TeX-Bot-Py-V2/issues/57
@@ -19,9 +15,9 @@ __all__: Sequence[str] = ()
 #     """Test case to unit-test the plot_bar_chart function."""
 #
 #     def test_bar_chart_generates(self) -> None:
-#         """Test that the bar chart generates successfully when valid arguments are passed."""  # noqa: ERA001, E501, W505
+#         """Test that the bar chart generates successfully when valid arguments are passed."""
 #         FILENAME: Final[str] = "output_chart.png"  # noqa: ERA001
-#         DESCRIPTION: Final[str] = "Bar chart of the counted value of different roles."  # noqa: ERA001, E501, W505
+#         DESCRIPTION: Final[str] = "Bar chart of the counted value of different roles."  # noqa: ERA001
 #
 #         bar_chart_image: discord.File = plot_bar_chart(
 #             data={"role1": 5, "role2": 7},  # noqa: ERA001
@@ -51,7 +47,7 @@ __all__: Sequence[str] = ()
 #         """Test that a value of one only includes the time_scale."""
 #         TIME_SCALE: Final[str] = "day"  # noqa: ERA001
 #
-#         formatted_amount_of_time: str = amount_of_time_formatter(time_value, TIME_SCALE)  # noqa: ERA001, E501, W505
+#         formatted_amount_of_time: str = amount_of_time_formatter(time_value, TIME_SCALE
 #
 #         assert formatted_amount_of_time == TIME_SCALE  # noqa: ERA001
 #         assert not formatted_amount_of_time.endswith("s")  # noqa: ERA001

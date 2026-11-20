@@ -1,30 +1,20 @@
 """Contains cog classes for any archival interactions."""
 
+__all__: Sequence[str] = ("ArchiveCommandsCog",)
+
 import logging
-import re
-from collections.abc import Set as AbstractSet  # noqa: TC003
-from typing import TYPE_CHECKING
+lazy import re
+lazy from collections.abc import Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from logging import Logger
+lazy from typing import Final
 
 import discord
 
-from exceptions import EveryoneRoleCouldNotBeRetrievedError
-from exceptions.base import BaseDoesNotExistError
-from utils import (
-    CommandChecks,
-    TeXBotApplicationContext,  # noqa: TC001
-    TeXBotAutocompleteContext,  # noqa: TC001
-    TeXBotBaseCog,
-)
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from logging import Logger
-    from typing import Final
-
-    from utils import AllChannelTypes
-
-__all__: Sequence[str] = ("ArchiveCommandsCog",)
-
+from utils import CommandChecks, TeXBotBaseCog
+lazy from exceptions import EveryoneRoleCouldNotBeRetrievedError
+lazy from exceptions.base import BaseDoesNotExistError
+lazy from utils import AllChannelTypes, TeXBotApplicationContext, TeXBotAutocompleteContext
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 

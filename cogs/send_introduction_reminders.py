@@ -1,39 +1,35 @@
 """Contains cog classes for any send_introduction_reminders interactions."""
 
+__all__: Sequence[str] = ("SendIntroductionRemindersTaskCog",)
+
 import functools
 import logging
-from typing import TYPE_CHECKING, override
+from typing import override
+lazy from collections.abc import Sequence
+lazy from logging import Logger
+lazy from typing import Final
 
 import discord
 import emoji
-from discord import ui
 from discord.ext import tasks
 from discord.ui import View
-from django.core.exceptions import ValidationError
+lazy from django.core.exceptions import ValidationError
 
-import utils
 from config import settings
-from db.core.models import (
-    DiscordMember,
-    IntroductionReminderOptOutMember,
-    SentOneOffIntroductionReminderMember,
-)
-from exceptions import DiscordMemberNotInMainGuildError, GuestRoleDoesNotExistError
+from exceptions import GuestRoleDoesNotExistError
 from utils import TeXBotBaseCog
 from utils.error_capture_decorators import (
     ErrorCaptureDecorators,
     capture_guild_does_not_exist_error,
 )
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from logging import Logger
-    from typing import Final
-
-    from utils import TeXBot
-
-__all__: Sequence[str] = ("SendIntroductionRemindersTaskCog",)
-
+lazy import utils
+lazy from db.core.models import (
+    DiscordMember,
+    IntroductionReminderOptOutMember,
+    SentOneOffIntroductionReminderMember,
+)
+lazy from exceptions import DiscordMemberNotInMainGuildError
+lazy from utils import TeXBot
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
@@ -145,7 +141,9 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
 
             if (
                 member not in main_guild.members
-            ):  # HACK: Caching errors can cause the member to no longer be part of the guild at this point, so this check must be performed before sending that member a message # noqa: FIX004
+            ):  # HACK: Caching errors can cause the member to no longer # noqa: FIX004
+                #   be part of the guild at this point, so this check must be performed
+                #   before sending that member a message
                 logger.info(
                     (
                         "Member with ID: %s does not need to be sent a reminder "
@@ -227,7 +225,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 logging_message=logging_message,
             )
 
-        @ui.button(
+        @discord.ui.button(
             label="Opt-out of introduction reminders",
             custom_id="opt_out_introduction_reminders_button",
             style=discord.ButtonStyle.red,

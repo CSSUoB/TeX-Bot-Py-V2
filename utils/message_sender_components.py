@@ -1,24 +1,20 @@
 """Class definitions of components that send provided message content to a defined endpoint."""
 
-import abc
-from typing import TYPE_CHECKING, final, override
-
-import discord
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from typing import Final, TypedDict
-
-    from discord.ui import View
-
-    from .tex_bot_contexts import TeXBotApplicationContext
-
 __all__: Sequence[str] = (
     "ChannelMessageSender",
     "MessageSavingSenderComponent",
     "ResponseMessageSender",
 )
 
+import abc
+from typing import TYPE_CHECKING, final, override
+lazy from collections.abc import Sequence
+lazy from typing import Final, TypedDict
+
+lazy import discord
+lazy from discord.ui import View
+
+lazy from .tex_bot_contexts import TeXBotApplicationContext
 
 if TYPE_CHECKING:
 

@@ -1,19 +1,17 @@
 """Base exception classes inherited by other custom exceptions used within this project."""
 
-import abc
-from typing import TYPE_CHECKING, override
-
-from typed_classproperties import classproperty
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from typing import Final
-
 __all__: Sequence[str] = (
     "BaseDoesNotExistError",
     "BaseErrorWithErrorCode",
     "BaseTeXBotError",
 )
+
+import abc
+from typing import override
+lazy from collections.abc import Sequence
+lazy from typing import Final
+
+from typed_classproperties import classproperty
 
 
 class BaseTeXBotError(BaseException, abc.ABC):

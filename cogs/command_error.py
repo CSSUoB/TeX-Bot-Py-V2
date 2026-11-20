@@ -1,25 +1,20 @@
 """Contains cog classes for any command_error interactions."""
 
-import logging
-from typing import TYPE_CHECKING
-
-import discord
-from discord import Forbidden
-from discord.ext.commands.errors import CheckAnyFailure
-
-from exceptions import GuildDoesNotExistError
-from exceptions.base import BaseErrorWithErrorCode
-from utils import CommandChecks, TeXBotBaseCog
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from logging import Logger
-    from typing import Final
-
-    from utils import TeXBotApplicationContext
-
 __all__: Sequence[str] = ("CommandErrorCog",)
 
+import logging
+lazy from collections.abc import Sequence
+lazy from logging import Logger
+lazy from typing import Final
+
+lazy import discord
+lazy from discord import Forbidden
+lazy from discord.ext.commands.errors import CheckAnyFailure
+
+from utils import TeXBotBaseCog
+lazy from exceptions import GuildDoesNotExistError
+lazy from exceptions.base import BaseErrorWithErrorCode
+lazy from utils import CommandChecks, TeXBotApplicationContext
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 

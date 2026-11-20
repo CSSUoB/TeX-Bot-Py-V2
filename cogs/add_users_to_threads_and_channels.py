@@ -1,30 +1,20 @@
 """Contains Cog classes for adding users and roles to threads."""
 
+__all__: Sequence[str] = ("AddUsersToThreadsAndChannelsCommandsCog",)
+
 import logging
-from collections.abc import Iterable
-from collections.abc import Set as AbstractSet  # noqa: TC003
-from typing import TYPE_CHECKING
+lazy from collections.abc import Iterable, Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from logging import Logger
+lazy from typing import Final
 
 import discord
 
-from config import settings
-from exceptions import GuestRoleDoesNotExistError, GuildDoesNotExistError
-from utils import (
-    CommandChecks,
-    TeXBotApplicationContext,  # noqa: TC001
-    TeXBotAutocompleteContext,  # noqa: TC001
-    TeXBotBaseCog,
-)
+from utils import CommandChecks, TeXBotBaseCog
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from logging import Logger
-    from typing import Final
-
-
-__all__: Sequence[str] = ("AddUsersToThreadsAndChannelsCommandsCog",)
-
+lazy from config import settings
+lazy from exceptions import GuestRoleDoesNotExistError, GuildDoesNotExistError
+lazy from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 

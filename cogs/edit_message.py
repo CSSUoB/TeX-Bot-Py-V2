@@ -1,24 +1,18 @@
 """Contains cog classes for any edit_message interactions."""
 
-import re
-from collections.abc import Set as AbstractSet  # noqa: TC003
-from typing import TYPE_CHECKING, override
+__all__: Sequence[str] = ("EditMessageCommandCog",)
+
+from typing import override
+lazy import re
+lazy from collections.abc import Sequence
+lazy from collections.abc import Set as AbstractSet
 
 import discord
 
-from exceptions import DiscordMemberNotInMainGuildError
-from exceptions.base import BaseDoesNotExistError
-from utils import (
-    CommandChecks,
-    TeXBotApplicationContext,  # noqa: TC001
-    TeXBotAutocompleteContext,  # noqa: TC001
-    TeXBotBaseCog,
-)
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-__all__: Sequence[str] = ("EditMessageCommandCog",)
+from utils import CommandChecks, TeXBotBaseCog
+lazy from exceptions import DiscordMemberNotInMainGuildError
+lazy from exceptions.base import BaseDoesNotExistError
+lazy from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 
 class EditMessageCommandCog(TeXBotBaseCog):
