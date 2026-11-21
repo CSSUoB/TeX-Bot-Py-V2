@@ -14,6 +14,7 @@ __all__: Sequence[str] = (
     "CheckSUPlatformAuthorisationTaskCog",
     "CommandErrorCog",
     "CommitteeActionsTrackingContextCommandCog",
+    "CommitteeActionsTrackingRemindersTaskCog",
     "CommitteeActionsTrackingSlashCommandsCog",
     "CommitteeHandoverCommandCog",
     "DeleteAllCommandsCog",
@@ -60,6 +61,7 @@ from .check_su_platform_authorisation import (
 from .command_error import CommandErrorCog
 from .committee_actions_tracking import (
     CommitteeActionsTrackingContextCommandCog,
+    CommitteeActionsTrackingRemindersTaskCog,
     CommitteeActionsTrackingSlashCommandsCog,
 )
 from .delete_all import DeleteAllCommandsCog
@@ -94,6 +96,7 @@ def setup(bot: TeXBot) -> None:
         ArchiveCommandsCog,
         CommandErrorCog,
         CommitteeActionsTrackingSlashCommandsCog,
+        CommitteeActionsTrackingRemindersTaskCog,
         CommitteeActionsTrackingContextCommandCog,
         CommitteeHandoverCommandCog,
         DeleteAllCommandsCog,

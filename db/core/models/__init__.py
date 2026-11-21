@@ -13,18 +13,19 @@ __all__: Sequence[str] = (
 )
 
 import warnings
-from typing import override
+from typing import overload, override
 lazy import hashlib
 lazy import re
-lazy from collections.abc import Sequence
+lazy from collections.abc import Iterable, Sequence
 lazy from collections.abc import Set as AbstractSet
-lazy from typing import ClassVar, Final
+lazy from typing import ClassVar, Final, LiteralString, Self
 
 import discord
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_stubs_ext.db.models import TypedModelMeta
+from typed_classproperties import classproperty
 lazy from django.core.exceptions import ValidationError
 lazy from django.db.models.constraints import BaseConstraint
 lazy from django_stubs_ext import StrOrPromise
@@ -36,13 +37,67 @@ class AssignedCommitteeAction(AsyncBaseModel):
     """Model to represent an action that has been assigned to a Discord committee-member."""
 
     class Status(models.TextChoices):
-        """The named status and shortcode associated with the progress of each action."""
+        """Enum class to define the possible statuses of an action."""
 
-        BLOCKED = "BLK", _("Blocked")
-        CANCELLED = "CND", _("Cancelled")
-        COMPLETE = "CMP", _("Complete")
-        IN_PROGRESS = "INP", _("In Progress")
-        NOT_STARTED = "NST", _("Not Started")
+        BLOCKED = "BLK", "no_entry", _("Blocked")
+        CANCELLED = "CND", "wastebasket", _("Cancelled")
+        COMPLETE = "CMP", "white_check_mark", _("Complete")
+        IN_PROGRESS = "INP", "yellow_circle", _("In Progress")
+        NOT_STARTED = "NST", "red_circle", _("Not Started")
+
+        emoji: str
+
+        @overload
+        def __new__(cls, value: LiteralString) -> AssignedCommitteeAction.Status: ...
+
+        @overload
+        def __new__(
+            cls, value: LiteralString, emoji: LiteralString
+        ) -> AssignedCommitteeAction.Status: ...
+
+        def __new__(  # noqa: D102
+            cls, value: LiteralString, emoji: LiteralString | None = None
+        ) -> AssignedCommitteeAction.Status:
+            if not emoji:
+                EMOJI_NOT_PROVIDED_MESSAGE: Final[str] = (
+                    "The 'emoji' argument must be provided and non-empty."
+                )
+                raise ValueError(EMOJI_NOT_PROVIDED_MESSAGE)
+
+            obj: AssignedCommitteeAction.Status = str.__new__(cls, value)
+
+            obj._value_ = value
+            obj.emoji = f":{emoji.strip('\r\n\t :')}:"
+
+            return obj
+
+        @classproperty
+        def TODO_FILTER(cls) -> AssignedCommitteeAction._StatusCollection:  # noqa: N802
+            """A collection of Stats enum items that are considered to be 'to-do' statuses."""
+            return AssignedCommitteeAction._StatusCollection(
+                [cls.IN_PROGRESS, cls.BLOCKED, cls.NOT_STARTED]
+            )
+
+    class _StatusCollection(tuple[Status]):
+        """A collection of Status enum items."""
+
+        __slots__ = ()
+
+        @override
+        def __new__(cls, iterable: Iterable[AssignedCommitteeAction.Status], /) -> Self:
+            iterable = list(iterable)
+            if not iterable:
+                NO_STATUSES_GIVEN_MESSAGE: Final[str] = (
+                    f"Cannot instantiate {type(Self).__name__} with no 'statuses'."
+                )
+                raise ValueError(NO_STATUSES_GIVEN_MESSAGE)
+            return super().__new__(cls, iterable)
+
+        def values(self) -> Sequence[str]:
+            return [status.value for status in self.__iter__()]
+
+        def emojis(self) -> Sequence[str]:
+            return [status.emoji for status in self.__iter__()]
 
     INSTANCES_NAME_PLURAL: str = "Assigned Committee Actions"
 
@@ -56,9 +111,18 @@ class AssignedCommitteeAction(AsyncBaseModel):
         unique=False,
     )
     description = models.TextField(_("Description"), max_length=200, null=False, blank=False)
-    status = models.CharField(
+    raw_status = models.CharField(
         max_length=3, choices=Status, default=Status.NOT_STARTED, null=False, blank=False
     )
+
+    @property
+    def status(self) -> Status:
+        """Return the status of this assigned committee action as a Status enum item."""
+        return self.Status(self.raw_status)
+
+    @status.setter
+    def status(self, value: Status, /) -> None:
+        self.raw_status = value.value
 
     class Meta(TypedModelMeta):  # noqa: D106
         verbose_name: ClassVar[StrOrPromise] = _("Assigned Committee Action")
@@ -75,6 +139,11 @@ class AssignedCommitteeAction(AsyncBaseModel):
     @override
     def __str__(self) -> str:
         return f"{self.discord_member}: {self.description}"
+
+    @classmethod
+    @override
+    def _get_proxy_field_names(cls) -> AbstractSet[str]:
+        return {*super()._get_proxy_field_names(), "status"}
 
 
 class IntroductionReminderOptOutMember(AsyncBaseModel):
