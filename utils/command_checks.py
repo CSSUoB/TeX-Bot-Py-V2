@@ -28,14 +28,19 @@ class CommandChecks:
         Instead, an error message will be sent to the user.
         """  # noqa: D401
 
-        async def _check(ctx: TeXBotApplicationContext) -> bool:
+        # NOTE: The check function shares this decorator's name, so that `is_interaction_user_in_main_guild_failure()` can identify it within a `CheckAnyFailure`
+        async def check_interaction_user_in_main_guild(ctx: TeXBotApplicationContext) -> bool:
             try:
                 await ctx.bot.get_main_guild_member(ctx.user)
             except DiscordMemberNotInMainGuildError:
                 return False
             return True
 
-        return commands.check_any(commands.check(_check))(func)  # type: ignore[arg-type]
+        return commands.check_any(
+            commands.check(
+                check_interaction_user_in_main_guild  # type: ignore[arg-type]
+            )
+        )(func)
 
     @staticmethod
     def check_interaction_user_has_committee_role[T: TeXBotBaseCog, **P](
@@ -48,10 +53,17 @@ class CommandChecks:
         Instead, an error message will be sent to the user.
         """
 
-        async def _check(ctx: TeXBotApplicationContext) -> bool:
+        # NOTE: The check function shares this decorator's name, so that `is_interaction_user_has_committee_role_failure()` can identify it within a `CheckAnyFailure`
+        async def check_interaction_user_has_committee_role(
+            ctx: TeXBotApplicationContext,
+        ) -> bool:
             return await ctx.bot.check_user_has_committee_role(ctx.user)
 
-        return commands.check_any(commands.check(_check))(func)  # type: ignore[arg-type]
+        return commands.check_any(
+            commands.check(
+                check_interaction_user_has_committee_role  # type: ignore[arg-type]
+            )
+        )(func)
 
     @classmethod
     def is_interaction_user_in_main_guild_failure(
