@@ -6,7 +6,7 @@ lazy from collections.abc import Awaitable, Callable, Sequence
 lazy from typing import Concatenate
 
 lazy from discord.ext import commands
-lazy from discord.ext.commands import CheckFailure
+lazy from discord.ext.commands import Bot, Context
 
 lazy from exceptions import DiscordMemberNotInMainGuildError
 
@@ -66,11 +66,15 @@ class CommandChecks:
         )(func)
 
     @classmethod
-    def is_interaction_user_in_main_guild_failure(cls, check: CheckFailure) -> bool:
+    def is_interaction_user_in_main_guild_failure(
+        cls, check: Callable[[Context[Bot]], bool]
+    ) -> bool:
         """Whether the check failed due to the user not being in your Discord guild."""
-        return bool(check.__name__ == cls.check_interaction_user_in_main_guild.__name__)  # type: ignore[attr-defined]
+        return bool(check.__name__ == cls.check_interaction_user_in_main_guild.__name__)
 
     @classmethod
-    def is_interaction_user_has_committee_role_failure(cls, check: CheckFailure) -> bool:
+    def is_interaction_user_has_committee_role_failure(
+        cls, check: Callable[[Context[Bot]], bool]
+    ) -> bool:
         """Whether the check failed due to the user not having the committee role."""
-        return bool(check.__name__ == cls.check_interaction_user_has_committee_role.__name__)  # type: ignore[attr-defined]
+        return bool(check.__name__ == cls.check_interaction_user_has_committee_role.__name__)
