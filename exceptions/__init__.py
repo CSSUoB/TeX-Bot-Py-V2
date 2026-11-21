@@ -22,6 +22,7 @@ __all__: Sequence[str] = (
     "NoAuditLogsStrikeTrackingError",
     "RestartRequiredDueToConfigChange",
     "RoleDoesNotExistError",
+    "RoleNotFoundInMainGuildError",
     "RolesChannelDoesNotExistError",
     "RulesChannelDoesNotExistError",
     "StrikeTrackingError",
@@ -45,7 +46,11 @@ from .does_not_exist import (
     RolesChannelDoesNotExistError,
     RulesChannelDoesNotExistError,
 )
-from .guild import DiscordMemberNotInMainGuildError, EveryoneRoleCouldNotBeRetrievedError
+from .guild import (
+    DiscordMemberNotInMainGuildError,
+    EveryoneRoleCouldNotBeRetrievedError,
+    RoleNotFoundInMainGuildError,
+)
 from .messages import (
     InvalidMessagesJSONFileError,
     MessagesJSONFileMissingKeyError,
