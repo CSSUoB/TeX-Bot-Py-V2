@@ -310,10 +310,11 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
     async def _create_module_threads(
         channel: discord.TextChannel,
         channel_name: str,
-        module_thread_names: Sequence[str],
+        module_thread_names: Set[str],
         reason: str,
     ) -> None:
         """Create a public thread in the given channel for each module without one."""
+        module_thread_name: str
         for module_thread_name in module_thread_names:
             existing_thread: discord.Thread | None = discord.utils.get(
                 channel.threads, name=module_thread_name
