@@ -4,6 +4,7 @@ __all__: Sequence[str] = (
     "GLOBAL_SSL_CONTEXT",
     "AllChannelTypes",
     "CommandChecks",
+    "MessageReportAction",
     "MessageSavingSenderComponent",
     "SuppressTraceback",
     "TeXBot",
@@ -13,6 +14,7 @@ __all__: Sequence[str] = (
     "generate_invite_url",
     "is_member_inducted",
     "is_running_in_async",
+    "send_message_report_to_committee",
 )
 
 import ssl
@@ -24,6 +26,7 @@ import certifi
 lazy import discord
 
 from .command_checks import CommandChecks
+from .message_reports import MessageReportAction, send_message_report_to_committee
 from .message_sender_components import MessageSavingSenderComponent
 from .suppress_traceback import SuppressTraceback
 from .tex_bot import TeXBot
