@@ -9,6 +9,7 @@ __all__: Sequence[str] = (
 import logging
 lazy import datetime
 lazy from collections.abc import Collection, Mapping, Sequence
+lazy from collections.abc import Set as AbstractSet
 lazy from logging import Logger
 lazy from typing import Final
 
@@ -264,25 +265,25 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
 class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/increment-year-channels" command."""
 
-    FIRST_YEAR_MODULE_THREAD_NAMES: Final[Sequence[str]] = (
+    FIRST_YEAR_MODULE_THREAD_NAMES: Final[AbstractSet[str]] = {  # TODO: Move to config later  # noqa: FIX002
         "Artificial Intelligence 1",
         "Computer Systems and Professional Practice",
         "Data Structures and Algorithms",
         "Mathematical and Logical Foundations of Computer Science",
         "Object Oriented Programming",
         "Theories of Computation",
-    )
+    }
 
-    SECOND_YEAR_MODULE_THREAD_NAMES: Final[Sequence[str]] = (
+    SECOND_YEAR_MODULE_THREAD_NAMES: Final[AbstractSet[str]] = {  # TODO: Move to config later  # noqa: FIX002
         "Artificial Intelligence 2",
         "Databases and Web Programming",
         "Functional Programming",
         "Operating Systems and Systems Programming",
         "Security and Networks",
         "Software Engineering for Global Challenges",
-    )
+    }
 
-    FINAL_YEAR_MODULE_THREAD_NAMES: Final[Sequence[str]] = (
+    FINAL_YEAR_MODULE_THREAD_NAMES: Final[AbstractSet[str]] = {  # TODO: Move to config later  # noqa: FIX002
         "Advanced Cryptography",
         "Advanced Functional Programming",
         "Advanced Networking",
@@ -304,13 +305,12 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
         "Programming Language Principles, Design, and Implementation",
         "Security of Real-World Systems",
         "Teaching Computer Science in Schools",
-    )
+    }
 
     @staticmethod
     async def _create_module_threads(
         channel: discord.TextChannel,
-        channel_name: str,
-        module_thread_names: Set[str],
+        module_thread_names: AbstractSet[str],
         reason: str,
     ) -> None:
         """Create a public thread in the given channel for each module without one."""
@@ -327,12 +327,12 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                         auto_archive_duration=10080,
                         reason=reason,
                     )
-                except discord.HTTPException as e:
+                except discord.HTTPException as http_exception_error:
                     logger.warning(
                         'Failed to create "%s" thread in "%s" channel: %s',
                         module_thread_name,
-                        channel_name,
-                        e,
+                        channel.name,
+                        http_exception_error,
                     )
 
     @discord.slash_command(
@@ -418,7 +418,6 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
 
                 await self._create_module_threads(
                     channel=second_years_channel,
-                    channel_name="final-years",
                     module_thread_names=self.FINAL_YEAR_MODULE_THREAD_NAMES,
                     reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
                 )
@@ -440,7 +439,6 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
 
                 await self._create_module_threads(
                     channel=first_year_channel,
-                    channel_name="second-years",
                     module_thread_names=self.SECOND_YEAR_MODULE_THREAD_NAMES,
                     reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
                 )
@@ -485,7 +483,6 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
 
             await self._create_module_threads(
                 channel=new_first_years_channel,
-                channel_name="first-years",
                 module_thread_names=self.FIRST_YEAR_MODULE_THREAD_NAMES,
                 reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
             )
