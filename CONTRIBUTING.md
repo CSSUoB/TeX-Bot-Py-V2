@@ -52,7 +52,7 @@ If you are submitting a feature request, please include the steps to implement t
 
 ### Top level files
 
-* [`main.py`](main.py): is the main entrypoint to instantiate the [`Bot` object](https://docs.pycord.dev/stable/api/clients.html#discord.Bot) & run it
+* [`main.py`](main.py): is the main entrypoint to instantiate the [`Bot` object](https://docs.pycord.dev/en/stable/api/clients.html#discord.Bot) & run it
 * [`config.py`](config.py): retrieves the [environment variables](DEPLOYMENT.md#setting-environment-variables) & populates the correct values into the `settings` object
 * [`messages.json`](messages.json): contains the common messages sent by TeX-Bot (the welcome messages & the opt-in roles messages)
 * [`TERMINOLOGY.md`](TERMINOLOGY.md): contains the definitions of the terms used throughout this project's documentation
@@ -175,6 +175,16 @@ uv run ruff check
 There are many additional flags to provide more advanced linting help (E.g. `--fix`).
 See [ruff's documentation](https://docs.astral.sh/ruff/configuration#command-line-interface) for additional configuration options.
 
+#### flake8
+
+[flake8](https://flake8.pycqa.org) is another [static analysis code linter](https://wikipedia.org/wiki/Lint_(software)).
+It is used alongside [ruff](#ruff) to check this project's own custom linting rules (provided by the [flake8-carrot](https://github.com/CarrotManMatt/flake8-carrot) plugin).
+It can be run with the following command:
+
+```shell
+uv run flake8
+```
+
 #### mypy
 
 [Mypy](https://mypy-lang.org) is a [static type checker](https://realpython.com/python-type-checking#static-type-checking), which will alert you to possible [typing](https://realpython.com/python-type-checking#type-systems) errors in your Python code.
@@ -199,8 +209,9 @@ Commit messages should be written in the imperative present tense. For example, 
 
 Commit subjects should start with a capital letter and **not** end in a full-stop.
 
-Additionally, we request that you keep the commit subject under 80 characters for a comfortable viewing experience on GitHub and other git tools.
-If you need more, please use the body of the commit.
+Additionally, the commit subject must be 72 characters or fewer for a comfortable viewing experience on GitHub and other git tools.
+If you need more, please use the body of the commit, keeping each line of the body to 80 characters or fewer.
+(These rules are checked by [gitlint](https://jorisroovers.com/gitlint), which is installed as one of the [pre-commit hooks](#installing-pre-commit-hooks).)
 (See [Robert Painsi's Commit Message Guidelines](https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53) for how to write good commit messages.)
 
 For example:

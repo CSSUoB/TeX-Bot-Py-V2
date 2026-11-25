@@ -5,12 +5,12 @@
 
 ## Deploying in Production
 
-The only supported way to deploy TeX-Bot in production is by using our pre-built [docker container](https://docs.docker.com/resources/what-container).
+The only supported way to deploy TeX-Bot in production is by using our pre-built [docker container](https://docker.com/resources/what-container).
 It can be pulled from the [GitHub Container Registry](https://docs.github.com/packages/working-with-a-github-packages-registry/working-with-the-container-registry) with this identifier: [`ghcr.io/CSSUoB/tex-bot-py-v2:latest`](https://github.com/CSSUoB/TeX-Bot-Py-V2/pkgs/container/tex-bot-py-v2).
-([Here is an introduction](https://docs.docker.com/get-started/08_using_compose) on how to use a [docker-compose deployment](https://docs.docker.com/compose).)
+([Here is an introduction](https://docs.docker.com/compose/gettingstarted) on how to use a [docker-compose deployment](https://docs.docker.com/compose).)
 See [**Versioning**](README.md#versioning) for the full list of available version tags for each release.
 
-Before running the [container](https://docs.docker.com/resources/what-container), some [environment variables](https://wikipedia.org/wiki/Environment_variable) will need to be set.
+Before running the [container](https://docker.com/resources/what-container), some [environment variables](https://wikipedia.org/wiki/Environment_variable) will need to be set.
 These can be defined in your [`compose.yaml`](https://docs.docker.com/compose/compose-application-model#the-compose-file) file.
 The required [environment variables](https://wikipedia.org/wiki/Environment_variable) are explained within [the "Setting Environment Variables" section](#setting-environment-variables).
 
@@ -42,8 +42,8 @@ The correct [invite URL](https://docs.pycord.dev/en/stable/discord.html#inviting
 
 You'll also need to set a number of [environment variables](https://wikipedia.org/wiki/Environment_variable) before running TeX-Bot:
 
-* `DISCORD_BOT_TOKEN`: The [Discord bot secret token](https://itexus.com/glossary/discord-bot-token) for the [instance of TeX-Bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts) you created.
-  * The [Discord bot token](https://itexus.com/glossary/discord-bot-token) is available on [your bot's page in the Discord Developer Portal](https://discord.com/developers/applications).
+* `DISCORD_BOT_TOKEN`: The [Discord bot secret token](https://docs.pycord.dev/en/stable/discord.html) for the [instance of TeX-Bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts) you created.
+  * The [Discord bot token](https://docs.pycord.dev/en/stable/discord.html) is available on [your bot's page in the Discord Developer Portal](https://discord.com/developers/applications).
 
 * `DISCORD_GUILD_ID`: The [ID](https://discord.com/developers/docs/reference#snowflakes) of your community group's [Discord guild](TERMINOLOGY.md#guild-vs-server).
 
