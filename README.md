@@ -15,34 +15,47 @@ This is a [Discord bot](https://discord.com/developers/docs/topics/oauth2#bot-vs
 
 Featured in the [CSS Discord guild](https://cssbham.com/discord).
 
+> [!NOTE]
+> Please familiarise yourself with all the terms defined in [TERMINOLOGY.md](TERMINOLOGY.md) before continuing, to prevent any confusion.
+
 ## Features
 
-### ["Guild"](https://discord.com/developers/docs/resources/guild) Vs ["Server"](https://wikipedia.org/wiki/Discord#Servers)
+TeX-Bot provides the following functionality within your community group's [Discord guild](TERMINOLOGY.md#guild-vs-server):
 
-Confusingly, [Discord](https://discord.com) uses the term ["guild"](https://discord.com/developers/docs/resources/guild) to refer to a [Discord "server"](https://wikipedia.org/wiki/Discord#Servers), when communicating with developers.
-Therefore, the same terminology (["guild"](https://discord.com/developers/docs/resources/guild)) will be used across all documentation in this project.
-(See [the Discord developer docs](https://discord.com/developers/docs/resources/guild) & [Pycord's docs](https://docs.pycord.dev/en/stable/api/models.html#discord.Guild) for more information.)
+* **Induction** - Give new [guests](TERMINOLOGY.md#community-group-membership) the "@**Guest**" [role](https://discord.com/developers/docs/topics/permissions#role-object) & welcome them into your [Discord guild](TERMINOLOGY.md#guild-vs-server).
+(Using the `/induct` [slash command](TERMINOLOGY.md#slash-commands), the "Induct User" & "Silently Induct User" [user commands](TERMINOLOGY.md#user-commands) or the "Induct Message Author" [message command](TERMINOLOGY.md#message-commands).)
+The `/ensure-members-inducted` [slash command](TERMINOLOGY.md#slash-commands) gives the "@**Guest**" [role](https://discord.com/developers/docs/topics/permissions#role-object) to any [members](TERMINOLOGY.md#community-group-membership) that are missing it.
 
-The term "main guild" is used throughout the code in this repository to refer specifically to your community group's main [Discord guild](https://discord.com/developers/docs/resources/guild).
+* **Membership** - Allow [Discord members](TERMINOLOGY.md#discord-objects) to give themselves the "@**Member**" [role](https://discord.com/developers/docs/topics/permissions#role-object), after their membership ID has been validated against your group's members list on the SU platform (using the `/make-member` [slash command](TERMINOLOGY.md#slash-commands)).
+The `/member-count` [slash command](TERMINOLOGY.md#slash-commands) displays how many [members](TERMINOLOGY.md#community-group-membership) your community group has.
 
-### "User" Vs "Member" Vs "Guest"
+* **Applicants** - Give [Discord members](TERMINOLOGY.md#discord-objects) the "@**Applicant**" [role](https://discord.com/developers/docs/topics/permissions#role-object).
+(Using the `/make-applicant` [slash command](TERMINOLOGY.md#slash-commands), the "Make Applicant" [user command](TERMINOLOGY.md#user-commands) or the "Make Message Author Applicant" [message command](TERMINOLOGY.md#message-commands).)
 
-#### [Discord Objects](https://discord.com/developers/docs)
+* **Moderation** - Apply strikes to [Discord members](TERMINOLOGY.md#discord-objects), with the matching moderation action being performed automatically.
+(Using the `/strike`, `/get-strikes` & `/decrement-strikes` [slash commands](TERMINOLOGY.md#slash-commands), the "Strike User" [user command](TERMINOLOGY.md#user-commands) or the "Strike Message Author" [message command](TERMINOLOGY.md#message-commands).)
+Moderation actions that are applied manually (instead of by using the `/strike` [command](TERMINOLOGY.md#application-commands)) are also tracked.
+The "Send Message to Committee" [message command](TERMINOLOGY.md#message-commands) forwards a message to your committee for discussion.
 
-In the context of [Discord](https://discord.com) itself, a ["user"](https://discord.com/developers/docs/resources/user) object represents a [Discord](https://discord.com) account not connected to any specific [guild](https://discord.com/developers/docs/resources/guild).
-Therefore, it can be [messaged via DM](https://dictionary.com/browse/dm) or be retrieved via its [snowflake ID](https://discord.com/developers/docs/reference#snowflakes), but little else can be done with it.
-(See [the Discord developer docs](https://discord.com/developers/docs/resources/user) & [Pycord's docs](https://docs.pycord.dev/en/stable/api/models.html#users) for more information.)
+* **Committee Actions Tracking** - Create, assign, update & list actions for your committee members (using the `/committee-actions` group of [slash commands](TERMINOLOGY.md#slash-commands) or the "Action Message Author" [message command](TERMINOLOGY.md#message-commands)).
 
-In contrast, a [Discord "member" object](https://discord.com/developers/docs/resources/guild#guild-member-object) is a [user](https://discord.com/developers/docs/resources/user) attached to a specific [guild](https://discord.com/developers/docs/resources/guild).
-Therefore, it can have [roles](https://discord.com/developers/docs/topics/permissions#role-object), be [banned](https://discord.com/developers/docs/resources/guild#ban-object) & have many other actions applied to it.
-(See [the Discord developer docs](https://discord.com/developers/docs/resources/guild#guild-member-object) & [Pycord's docs](https://docs.pycord.dev/en/stable/api/models.html#discord.Member) for more information.)
+* **Reminders** - Send [Discord members](TERMINOLOGY.md#discord-objects) [repeated reminders](#repeated-tasks-conditions) to introduce themselves, and to give themselves opt-in [roles](https://discord.com/developers/docs/topics/permissions#role-object).
 
-#### Community Group Membership
+* **Annual Handover** - Give the "@**Committee**" [role](https://discord.com/developers/docs/topics/permissions#role-object) to the new committee (any [Discord members](TERMINOLOGY.md#discord-objects) with the "@**Committee-Elect**" [role](https://discord.com/developers/docs/topics/permissions#role-object)), reset the "@**Member**" & academic year [roles](https://discord.com/developers/docs/topics/permissions#role-object) and increment the academic year channels (using the `/committee-handover`, `/annual-roles-reset` & `/increment-year-channels` [slash commands](TERMINOLOGY.md#slash-commands)).
 
-In the context of your community group's membership structure, a "member" is a person that has purchased a membership to join your community group.
-This is in contrast to a "guest", which is a person that has not purchased a membership.
-Guests often can only attend events that are open to anyone (i.e. **not** members only), and have limited communication/perks within your [Discord guild](https://discord.com/developers/docs/resources/guild).
-Some commands may require you to create [roles](https://discord.com/developers/docs/topics/permissions#role-object) within your [Discord guild](https://discord.com/developers/docs/resources/guild), to differentiate between these different types of users.
+* **Channel Management** - Archive channels & categories (using the `/archive-channel` & `/archive-category` [slash commands](TERMINOLOGY.md#slash-commands)), and add [users](TERMINOLOGY.md#discord-objects) or [roles](https://discord.com/developers/docs/topics/permissions#role-object) to channels & threads (using the `/add-users-to-channel` & `/add-role-to-channel` [slash commands](TERMINOLOGY.md#slash-commands)).
+The committee [roles](https://discord.com/developers/docs/topics/permissions#role-object) can also be automatically added to any new threads created within committee categories.
+
+* **Statistics** - Display graphs of message statistics for a channel, your whole [Discord guild](TERMINOLOGY.md#guild-vs-server) or yourself, and of the [roles](https://discord.com/developers/docs/topics/permissions#role-object) that [Discord members](TERMINOLOGY.md#discord-objects) had when they left (using the `/stats` group of [slash commands](TERMINOLOGY.md#slash-commands)).
+
+* **Bot Messages** - Send the opt-in [roles](https://discord.com/developers/docs/topics/permissions#role-object) message into the "#**roles**" channel (using the `/write-roles` [slash command](TERMINOLOGY.md#slash-commands)) and edit messages previously sent by TeX-Bot (using the `/edit-message` [slash command](TERMINOLOGY.md#slash-commands)).
+
+* **SU Platform Authorisation Checking** - Check whether your `SU_PLATFORM_ACCESS_COOKIE` is valid, and which organisations it has administrative access to (using the `/check-su-platform-authorisation` [slash command](TERMINOLOGY.md#slash-commands)).
+This check can also be run automatically as a [repeated task](#repeated-tasks-conditions).
+
+* **Data Management** - Delete all of a specific type of data stored in the database (using the `/delete-all` group of [slash commands](TERMINOLOGY.md#slash-commands)).
+
+* **Utilities** - `/ping`, `/source`, `/invite-link`, `/everest` & `/kill` (to shut down TeX-Bot).
 
 ## Error Codes
 
@@ -53,38 +66,30 @@ The meaning of each error code is given here:
 * `E1011` - The value for the [environment variable](https://wikipedia.org/wiki/Environment_variable) `DISCORD_GUILD_ID` is an [ID](https://discord.com/developers/docs/reference#snowflakes) that references a [Discord guild](TERMINOLOGY.md#guild-vs-server) that does not exist
 
 * `E1021` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-object) with the name "@**Committee**".
-(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/write-roles`, `/edit-message`, `/induct`, `/strike`, `/archive`, `/kill`, `/delete-all` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
+(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/write-roles`, `/edit-message`, `/induct`, `/strike`, `/archive-category`, `/archive-channel`, `/kill`, `/delete-all` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
 
 * `E1022` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-object) with the name "@**Guest**".
-(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/induct`, `/stats`, `/archive` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
+(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/induct`, `/stats` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
 
 * `E1023` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-object) with the name "@**Member**".
 (This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/make-member` & `/ensure-members-inducted` [commands](https://discord.com/developers/docs/interactions/application-commands))
 
 * `E1024` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-object) with the name "@**Archivist**".
-(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/archive` [command](https://discord.com/developers/docs/interactions/application-commands))
+(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/archive-category` [command](https://discord.com/developers/docs/interactions/application-commands))
 
 * `E1025` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-object) with the name "@**Applicant**". (This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/make-applicant` [command](https://discord.com/developers/docs/interactions/application-commands) and respective user and message commands)
 
-* `E1026` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-objec) with the name "@**Committee-Elect**".
-(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/handover` [command](https://discord.com/developers/docs/interactions/application-commands))
+* `E1026` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [role](https://discord.com/developers/docs/topics/permissions#role-object) with the name "@**Committee-Elect**".
+(This [role](https://discord.com/developers/docs/topics/permissions#role-object) is required for the `/committee-handover` [command](https://discord.com/developers/docs/interactions/application-commands))
 
 * `E1031` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [text channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel) with the name "#**roles**".
-(This [text channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel) is required for the `/writeroles` [command](https://discord.com/developers/docs/interactions/application-commands))
+(This [text channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel) is required for the `/write-roles` [command](https://discord.com/developers/docs/interactions/application-commands))
 
 * `E1032` - Your [Discord guild](https://discord.com/developers/docs/resources/guild) does not contain a [text channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel) with the name "#**general**".
 (This [text channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel) is required for the `/induct` [command](https://discord.com/developers/docs/interactions/application-commands))
 
-* `E1041` - The community group member IDs could not be retrieved from the SU platform.
-(It is likely that your `SU_PLATFORM_ACCESS_COOKIE` is invalid.
-If your community group is a [Guild of Students](https://guildofstudents.com) [society](https://wikipedia.org/wiki/Student_society), the community group member IDs will be a list of [UoB IDs](https://intranet.birmingham.ac.uk/campus-services/id-cards.aspx))
-
 * `E1042` - The reference to the `@everyone` [role](https://discord.com/developers/docs/topics/permissions#role-object) could not be correctly retrieved.
 Try running the command that caused this error again.
-If the error persists, please file an issue on [this project's bug tracker](https://github.com/CSSUoB/TeX-Bot-Py-V2/issues), including the details of what command was run to create this error
-
-* `E1043` - A button callback interaction did not contain the related [user](https://discord.com/developers/docs/resources/user).
-Try pressing the button that caused this error again.
 If the error persists, please file an issue on [this project's bug tracker](https://github.com/CSSUoB/TeX-Bot-Py-V2/issues), including the details of what command was run to create this error
 
 * `E1044` - An interaction was denied because the Discord permissions for TeX-Bot were not set correctly
@@ -107,88 +112,20 @@ This level of error will cause TeX-Bot to shut down, as the problem can only be 
 
 ## [Repeated Tasks](https://docs.pycord.dev/en/stable/ext/tasks) Conditions
 
-The [configuration variables](https://wikipedia.org/wiki/Environment_variable) `SEND_INTRODUCTION_REMINDERS` & `SEND_GET_ROLES_REMINDERS` determine whether their related [tasks](https://docs.pycord.dev/en/stable/ext/tasks) should run.
-However, because these are rather annoying/drastic actions to be executed automatically, there are additional conditions that must be met on a per-[member](https://discord.com/developers/docs/resources/guild#guild-member-object) basis for the action to trigger.
+The [configuration variables](https://wikipedia.org/wiki/Environment_variable) `SEND_INTRODUCTION_REMINDERS`, `SEND_GET_ROLES_REMINDERS` & `AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING` determine whether their related [tasks](TERMINOLOGY.md#tasks) should run.
+However, because the reminder [tasks](TERMINOLOGY.md#tasks) are rather annoying/drastic actions to be executed automatically, there are additional conditions that must be met on a per-[member](https://discord.com/developers/docs/resources/guild#guild-member-object) basis for the action to trigger.
 The conditions for each [task](https://docs.pycord.dev/en/stable/ext/tasks) are listed below, along with the additional [environment variables](https://wikipedia.org/wiki/Environment_variable) that can be used to configure the conditions to suit your needs.
 
 | Task Name               | Enable/Disable                                                                                                                                                                                                                                                                | Per-Member Conditions                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Scheduled Interval                                                                                                                                                                                                                                                                                                                                                                  |
 |-------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `introduction_reminder` | `SEND_INTRODUCTION_REMINDERS`:<br/> `Once` - Only send the introduction reminder once (even if they later delete the message)<br/> `Interval` - Send an introduction reminder at a set interval<br/> `False` - Do not send introduction reminders                          | The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has not been inducted (does not have the "@**Guest**" [role](https://discord.com/developers/docs/topics/permissions#role-object))<br/> The time since the [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) joined your community's guild is greater than `SEND_INTRODUCTION_REMINDERS_DELAY`<br/> The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has not opted out of introduction reminders<br/> The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has not yet been sent an introduction reminder. (Only applies when `SEND_INTRODUCTION_REMINDERS` is set to the value `Once`)                                                                                   | The interval of time between this task running is determined by `SEND_INTRODUCTION_REMINDERS_INTERVAL`. (When `SEND_INTRODUCTION_REMINDERS` is set to the value `Once`, all [Discord members](https://discord.com/developers/docs/resources/guild#guild-member-object) will still be checked at this interval, just not sent a message if they have already been sent an introduction reminder). The default interval is to send messages every 6 hours |
-| `get_roles_reminder`    | `SEND_GET_ROLES_REMINDERS`:<br/> `True` - A single reminder for the [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) to get [roles](https://discord.com/developers/docs/topics/permissions#role-object) will be sent to them only once (even if they later delete the message)<br/> `False` - Do not send any reminders for [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) to get [roles](https://discord.com/developers/docs/topics/permissions#role-object) | The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has been inducted (has the "@**Guest**" [role](https://discord.com/developers/docs/topics/permissions#role-object))<br/> The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) does not have any of the opt-in [roles](https://discord.com/developers/docs/topics/permissions#role-object). (E.g. "@**First Year**" or "@**Anime**".) (Having the green "@**Member**" [role](https://discord.com/developers/docs/topics/permissions#role-object) or even the "@**Committee**" [role](https://discord.com/developers/docs/topics/permissions#role-object) makes no difference)<br/> The time since the [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) was inducted (gained the "@**Guest**" [role](https://discord.com/developers/docs/topics/permissions#role-object)) is greater than `SEND_GET_ROLES_REMINDERS_DELAY`<br/> The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has not yet been sent a reminder to get [roles](https://discord.com/developers/docs/topics/permissions#role-object) | The interval of time between this task running is determined by `ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL`. It is unlikely that this value will need to be changed from the default of 24 hours                                                                                                                                                                                   |
+| `send_introduction_reminders` | `SEND_INTRODUCTION_REMINDERS`:<br/>* `Once` - Only send the introduction reminder once (even if they later delete the message)<br/>* `Interval` - Send an introduction reminder at a set interval<br/>* `False` - Do not send introduction reminders                          | * The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has not been inducted (does not have the "@**Guest**" [role](https://discord.com/developers/docs/topics/permissions#role-object))<br/>* The time since the [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) joined your community's guild is greater than `SEND_INTRODUCTION_REMINDERS_DELAY`<br/>* The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has not opted out of introduction reminders<br/>* The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has not yet been sent an introduction reminder. (Only applies when `SEND_INTRODUCTION_REMINDERS` is set to the value `Once`)                                                                                   | The interval of time between this task running is determined by `SEND_INTRODUCTION_REMINDERS_INTERVAL`. (When `SEND_INTRODUCTION_REMINDERS` is set to the value `Once`, all [Discord members](https://discord.com/developers/docs/resources/guild#guild-member-object) will still be checked at this interval, just not sent a message if they have already been sent an introduction reminder). The default interval is to send messages every 6 hours |
+| `send_get_roles_reminders` | `SEND_GET_ROLES_REMINDERS`:<br/>* `True` - A single reminder for the [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) to get [roles](https://discord.com/developers/docs/topics/permissions#role-object) will be sent to them only once (even if they later delete the message)<br/>* `False` - Do not send any reminders for [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) to get [roles](https://discord.com/developers/docs/topics/permissions#role-object) | * The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has been inducted (has the "@**Guest**" [role](https://discord.com/developers/docs/topics/permissions#role-object))<br/>* The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) does not have any of the opt-in [roles](https://discord.com/developers/docs/topics/permissions#role-object). (E.g. "@**First Year**" or "@**Anime**".) (Having the green "@**Member**" [role](https://discord.com/developers/docs/topics/permissions#role-object) or even the "@**Committee**" [role](https://discord.com/developers/docs/topics/permissions#role-object) makes no difference)<br/>* The time since the [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) was inducted (gained the "@**Guest**" [role](https://discord.com/developers/docs/topics/permissions#role-object)) is greater than `SEND_GET_ROLES_REMINDERS_DELAY`<br/>* The [Discord member](https://discord.com/developers/docs/resources/guild#guild-member-object) has not yet been sent a reminder to get [roles](https://discord.com/developers/docs/topics/permissions#role-object) | The interval of time between this task running is determined by `ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL`. It is unlikely that this value will need to be changed from the default of 24 hours                                                                                                                                                                                   |
+| `su_platform_access_cookie_check_task` | `AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING`:<br/>* `True` - Regularly check whether the `SU_PLATFORM_ACCESS_COOKIE` is still valid & log the result<br/>* `False` - Do not automatically check the `SU_PLATFORM_ACCESS_COOKIE` (this is the default) | None (this [task](TERMINOLOGY.md#tasks) does not send any messages to [Discord members](https://discord.com/developers/docs/resources/guild#guild-member-object)) | The interval of time between this task running is determined by `AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL`. The default interval is 24 hours |
 
-## Deploying in Production
+## Deployment
 
-The only supported way to deploy TeX-Bot in production is by using our pre-built [docker container](https://docs.docker.com/resources/what-container).
-It can be pulled from the [GitHub Container Registry](https://docs.github.com/packages/working-with-a-github-packages-registry/working-with-the-container-registry) with this identifier: [`ghcr.io/CSSUoB/tex-bot-py-v2:latest`](https://github.com/CSSUoB/TeX-Bot-Py-V2/pkgs/container/tex-bot-py-v2).
-([Here is an introduction](https://docs.docker.com/get-started/08_using_compose) on how to use a [docker-compose deployment](https://docs.docker.com/compose).)
-See [**Versioning**](#versioning) for the full list of available version tags for each release.
-
-Before running the [container](https://docs.docker.com/resources/what-container), some [environment variables](https://wikipedia.org/wiki/Environment_variable) will need to be set.
-These can be defined in your [`compose.yaml`](https://docs.docker.com/compose/compose-application-model#the-compose-file) file.
-The required [environment variables](https://wikipedia.org/wiki/Environment_variable) are explained within [the "Setting Environment Variables" section](#setting-environment-variables).
-
-## Local Deployment
-
-### Installing Dependencies
-
-1. Ensure that you have [uv](https://docs.astral.sh/uv/getting-started/installation) installed
-2. Navigate to this project's repository root folder
-3. To install the required dependencies, execute the following command:
-
-```shell
-uv sync
-```
-
-> [!TIP]
-> Syncing the dependencies is not required. uv performs this automatically every time the `uv run` command is used
-
-### Creating Your [Bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts)
-
-A full guide on how to create your bot's account can be found [here; on Pycord's wiki](https://docs.pycord.dev/en/stable/discord.html).
-
-You'll need to create a [Discord bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts) of your own in the [Discord Developer Portal](https://discord.com/developers/applications).
-It's also handy if you have an empty [Discord guild](https://discord.com/developers/docs/resources/guild) for you to test in.
-
-The correct [invite URL](https://docs.pycord.dev/en/stable/discord.html#inviting-your-bot) will be displayed to you in the console the first time you run the bot (or if you set a high verbosity log level)
-
-### Setting [Environment Variables](https://wikipedia.org/wiki/Environment_variable)
-
-You'll also need to set a number of [environment variables](https://wikipedia.org/wiki/Environment_variable) before running TeX-Bot:
-
-* `DISCORD_BOT_TOKEN`: The [Discord bot secret token](https://itexus.com/glossary/discord-bot-token) for the [instance of TeX-Bot](https://discord.com/developers/docs/topics/oauth2#bot-vs-user-accounts) you created.
-  * The [Discord bot token](https://itexus.com/glossary/discord-bot-token) is available on [your bot's page in the Discord Developer Portal](https://discord.com/developers/applications).
-
-* `DISCORD_GUILD_ID`: The [ID](https://discord.com/developers/docs/reference#snowflakes) of your community group's [Discord guild](https://discord.com/developers/docs/resources/guild).
-
-* `DISCORD_LOG_CHANNEL_WEBHOOK_URL`: The [webhook URL](https://support.discord.com/hc/articles/228383668-Intro-to-Webhooks) of the [Discord text channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel) where error log messages should be sent.
-  * This setting is optional.
-    Error logs will **always** be sent to the [console](https://wikipedia.org/wiki/Terminal_emulator), this setting just allows them to also be sent to a [Discord log channel](https://docs.pycord.dev/en/stable/api/models.html#discord.TextChannel).
-
-* `ORGANISATION_ID`: Your SU platform organisation ID. This is used to dynamically create the members list and other needed URLs.
-
-* `SU_PLATFORM_ACCESS_COOKIE`: The SU platform [access session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie).
-  * This [session cookie](https://wikipedia.org/wiki/HTTP_cookie#Session_cookie) will [authenticate](https://wikipedia.org/wiki/Authentication) TeX-Bot to view your group's members list on the SU platform, as if it were [logged in to the website](https://wikipedia.org/wiki/Login_session) as a Committee member.
-  * This can be [extracted from your web-browser](https://wikihow.com/View-Cookies), after logging in to view your members list yourself.
-    It will most likely be listed as a [cookie](https://wikipedia.org/wiki/HTTP_cookie) named `.AspNet.SharedCookie`.
-  * If you wish to test TeX-Bot with the SU platform-access disabled, a dummy value of 128 `0` characters can be used.
-    Note that this will cause many commands and scheduled tasks to fail when they are used at runtime.
-
-You can put these [variables](https://wikipedia.org/wiki/Environment_variable) in a [`.env` file](https://blog.bitsrc.io/a-gentle-introduction-to-env-files-9ad424cc5ff4) in the root folder, as [python-dotenv](https://saurabh-kumar.com/python-dotenv) is used to collect all [environment variables](https://wikipedia.org/wiki/Environment_variable).
-There is an [`.env.example` file](.env.example) in the repo that you can rename and populate.
-
-There are also many other configuration settings that can be changed to alter the behaviour of TeX-Bot.
-These are all listed in [the `.env.example` file](.env.example), along with the behaviours that will be affected.
-
-Any [variables](https://wikipedia.org/wiki/Environment_variable), in [the `.env.example` file](.env.example), marked with `# !!REQUIRED!!` must be set before running TeX-Bot.
-All other [variables](https://wikipedia.org/wiki/Environment_variable) are optional and their default values are shown as the example value for each variable in [the `.env.example` file](.env.example).
-
-### Running The Bot
-
-Once everything is set up, you should be able to execute the following command to automatically run TeX-Bot & connect it to your [Discord guild](https://discord.com/developers/docs/resources/guild):
-
-```shell
-uv run -m main
-```
+The full guide on how to deploy TeX-Bot can be found in [DEPLOYMENT.md](DEPLOYMENT.md).
+This includes [deploying TeX-Bot in production](DEPLOYMENT.md#deploying-in-production) using our pre-built [docker container](https://docs.docker.com/resources/what-container), as well as [deploying TeX-Bot locally](DEPLOYMENT.md#local-deployment) for development & testing.
 
 ## Contributing
 
@@ -206,7 +143,7 @@ This will ensure your code meets the standard required for this project and give
 This project follows the [semantic versioning scheme](https://semver.org).
 We currently treat TeX-Bot as alpha software, and as such no numbered release has been made yet.
 
-When selecting a version tag to use for [deploying TeX-Bot as a container image](#deploying-in-production), there are multiple tag schemes available:
+When selecting a version tag to use for [deploying TeX-Bot as a container image](DEPLOYMENT.md#deploying-in-production), there are multiple tag schemes available:
 
 * `latest` - The most recent numerically tagged version released
 * `br-<branch>` - The most recent commit from a given branch in this repository (E.g. `br-main`) (N.B. this does not include branches of forks of this repository)

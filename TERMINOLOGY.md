@@ -41,7 +41,7 @@ The primary types of interactions are:
 
 1. **Application Commands**: These include [Slash Commands](#slash-commands), [Message Commands](#message-commands), and [User Commands](#user-commands).
    They are predefined commands that users can invoke to perform specific actions.
-2. **Message Components**: These are interactive elements like buttons, select menus, and modals that can be attached to messages to provide a richer user experience.
+2. **Message Components**: These are interactive elements, like buttons and select menus, that can be attached to messages to provide a richer user experience.
 3. **Modal Submissions**: These are forms that users can fill out and submit, allowing bots to collect structured input from users, though TeX-Bot does not currently make use of these.
 
 For more details, refer to the [Discord Developer Documentation on Interactions](https://discord.com/developers/docs/interactions/overview).
@@ -49,18 +49,22 @@ For more details, refer to the [Discord Developer Documentation on Interactions]
 ## [Application Commands](https://discord.com/developers/docs/interactions/application-commands)
 
 An [Application Command](https://discord.com/developers/docs/interactions/application-commands) can be a [Slash Command](#slash-commands), [Message Command](#message-commands) or [User Command](#user-commands).
+Within this project, the term "command" is used to refer to any type of [Application Command](https://discord.com/developers/docs/interactions/application-commands).
+For example usages, check the [Guides section](CONTRIBUTING.md#guides) of the [CONTRIBUTING.md document](CONTRIBUTING.md).
 
 ### [Slash Commands](https://discord.com/developers/docs/interactions/application-commands#slash-commands)
 
 Slash commands are executed by typing a slash (/) followed by the command name in the message input.
 They are made up of a name, description and a set of options.
+These can be defined using the `@discord.slash_command()` decorator.
 Bots are limited to 100 slash commands.
 
 ### Context Commands
 
 Context commands are triggered via a UI context menu that appears when right-clicking on a [User](https://discord.com/developers/docs/resources/user) or [Message](https://discord.com/developers/docs/resources/message).
 They do not take user-defined arguments, and instead receive the context that was clicked.
-Bots are limited to 5 [Message Commands](#message-commands) and 5 [User Commands](#user-commands).
+These can be defined using the `@discord.user_command()` or `@discord.message_command()` decorators.
+Bots are limited to 15 [Message Commands](#message-commands) and 15 [User Commands](#user-commands).
 
 #### [Message Commands](https://discord.com/developers/docs/interactions/application-commands#message-commands)
 
@@ -71,3 +75,21 @@ The interaction callback method is provided information about which message was 
 
 User-context commands are executed via right-clicking on a [Discord user](https://discord.com/developers/docs/resources/user), clicking "Apps", then selecting the command from the menu.
 The interaction callback method is provided information about which user was clicked, along with which user clicked it.
+
+## [Events](https://guide.pycord.dev/getting-started/more-features#event-handlers)
+
+Events are notifications sent from [Discord](https://discord.com) to TeX-Bot whenever something happens within your [Discord guild](#guild-vs-server).
+(E.g. a [Discord member](#discord-objects) joining your [Discord guild](#guild-vs-server), or a [Discord member's](#discord-objects) [roles](https://discord.com/developers/docs/topics/permissions#role-object) being changed.)
+Unlike [interactions](#interactions), events are not directly triggered by a user asking TeX-Bot to do something.
+
+### Event Listeners
+
+An event listener is a method that TeX-Bot calls every time a specific [event](#events) occurs.
+Event listeners are defined within cogs using the `@TeXBotBaseCog.listener()` decorator, and the method must be named after the [event](#events) it listens for (E.g. `on_member_update`).
+(See [Pycord's docs](https://docs.pycord.dev/en/stable/api/events.html) for the full list of [events](#events) that can be listened for.)
+
+## [Tasks](https://docs.pycord.dev/en/stable/ext/tasks)
+
+Tasks are methods that TeX-Bot runs automatically at a repeated, scheduled interval, rather than in response to an [interaction](#interactions) or an [event](#events).
+These can be defined within cogs using the `@tasks.loop()` decorator.
+(See [the "Repeated Tasks Conditions" section](README.md#repeated-tasks-conditions) for the list of tasks within TeX-Bot, along with the conditions required for each one to run.)
