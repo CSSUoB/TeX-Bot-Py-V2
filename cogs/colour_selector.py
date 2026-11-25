@@ -110,7 +110,8 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
                 await ctx.followup.send(
                     ":information_source: No changes made. "
                     f"{role_to_add.name} is not a valid colour role. "
-                    ":information_source:"
+                    ":information_source:",
+                    ephemeral=True,
                 )
                 return
 
@@ -144,8 +145,8 @@ class MemberColourSelectorCommandCog(TeXBotBaseCog):
 
             if member_already_has_role_to_add:
                 await ctx.followup.send(
-                    ":information_source: No changes made. "
-                    f"You already have the {role_to_add.name} colour role.",
+                    f"You already have the {role_to_add.name} colour role, "
+                    "so your other colour roles have been removed.",
                     ephemeral=True,
                 )
                 return

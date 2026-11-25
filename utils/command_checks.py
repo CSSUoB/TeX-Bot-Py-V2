@@ -76,12 +76,15 @@ class CommandChecks:
         Instead, an error message will be sent to the user.
         """
 
-        async def _check(ctx: TeXBotApplicationContext) -> bool:
+        # NOTE: The check function shares this decorator's name, so that `is_interaction_user_has_member_role_failure()` can identify it within a `CheckAnyFailure`
+        async def check_interaction_user_has_member_role(
+            ctx: TeXBotApplicationContext,
+        ) -> bool:
             return await ctx.bot.check_user_has_member_role(ctx.user)
 
         return commands.check_any(
             commands.check(
-                _check  # type: ignore[arg-type]
+                check_interaction_user_has_member_role  # type: ignore[arg-type]
             )
         )(func)
 

@@ -60,8 +60,9 @@ class CommandErrorCog(TeXBotBaseCog):
 
             elif CommandChecks.is_interaction_user_has_member_role_failure(error.checks[0]):  # type: ignore[arg-type]
                 message = (
-                    f"Only {await self.bot.get_mention_string(self.bot.member_role)}s "
-                    "can run this command. Buy membership or run the 'make-member' command."
+                    "You must have the "
+                    f"{await self.bot.get_mention_string(self.bot.member_role)} role "
+                    "to run this command. Buy membership or run the 'make-member' command."
                     f"\n{settings['PURCHASE_MEMBERSHIP_URL']}"
                 )
 
