@@ -4,7 +4,6 @@ __all__: Sequence[str] = (
     "AssignedCommitteeAction",
     "DiscordMember",
     "DiscordMemberStrikes",
-    "DiscordReminder",
     "GroupMadeMember",
     "IntroductionReminderOptOutMember",
     "LeftDiscordMember",
@@ -299,7 +298,7 @@ class DiscordReminder(AsyncBaseModel):
     )
 
     @property
-    def channel_id(self) -> int:  # noqa: D102
+    def channel_id(self) -> int:
         return int(self._channel_id)
 
     @channel_id.setter
@@ -307,7 +306,7 @@ class DiscordReminder(AsyncBaseModel):
         self._channel_id = str(channel_id)
 
     @property
-    def channel_type(self) -> discord.ChannelType:  # noqa: D102
+    def channel_type(self) -> discord.ChannelType:
         # NOTE: This finds the  type of channel that the reminder needs to be sent in."""
         return discord.ChannelType(self._channel_type)
 
@@ -324,7 +323,7 @@ class DiscordReminder(AsyncBaseModel):
 
         self._channel_type = channel_type
 
-    class Meta(TypedModelMeta):  # noqa: D106
+    class Meta(TypedModelMeta):
         verbose_name: ClassVar[StrOrPromise] = _("A Reminder for a Discord Member")
         verbose_name_plural: ClassVar[StrOrPromise] = _("Reminders for Discord Members")
         constraints: ClassVar[list[BaseConstraint] | tuple[BaseConstraint, ...]] = (

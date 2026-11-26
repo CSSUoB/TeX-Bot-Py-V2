@@ -89,8 +89,6 @@ There are separate cog files for each activity, and one [`__init__.py`](cogs/__i
 
 * [`cogs/ping.py`](cogs/ping.py): cog to request a [ping](https://wikipedia.org/wiki/Ping-pong_scheme#Internet) response
 
-* [`cogs/remind_me.py`](cogs/remind_me.py): cogs to ask TeX-Bot to send a reminder message at a later date
-
 * [`cogs/send_get_roles_reminders.py`](cogs/send_get_roles_reminders.py): cogs relating to sending reminders, to Discord members, about opt-in roles.
 (See [Repeated Tasks Conditions](README.md#repeated-tasks-conditions) for which conditions are required to be met to execute this task)
 
