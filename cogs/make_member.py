@@ -22,6 +22,7 @@ from config import settings
 from utils import CommandChecks, TeXBotBaseCog
 lazy from db.core.models import GroupMadeMember
 lazy from exceptions import ApplicantRoleDoesNotExistError, GuestRoleDoesNotExistError
+lazy from exceptions.base import BaseErrorWithErrorCode
 lazy from utils import TeXBot, TeXBotApplicationContext
 lazy from utils.msl import fetch_community_group_members_count, is_id_a_community_group_member
 
@@ -306,6 +307,28 @@ class MakeMemberModal(Modal):
         )
 
         await interaction.followup.send(content=message, ephemeral=True)
+
+    @override
+    async def on_error(self, error: Exception, interaction: discord.Interaction) -> None:
+        """
+        Tell the user about the error & log it, in the same way as slash-command errors.
+
+        Without this, py-cord's default handler only prints the error to stderr,
+        so the user gets no reply and the error never reaches the TeX-Bot logger.
+        """
+        error_code: str | None = None
+        if isinstance(error, discord.Forbidden):
+            error_code = "E1044"
+        elif isinstance(error, BaseErrorWithErrorCode):
+            error_code = error.ERROR_CODE
+
+        await TeXBotBaseCog.send_error(
+            self.bot,
+            interaction,
+            interaction_name="make_member",
+            error_code=error_code,
+            logging_message=error,
+        )
 
 
 class OpenMemberVerificationModalView(View):
