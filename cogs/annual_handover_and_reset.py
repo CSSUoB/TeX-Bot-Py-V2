@@ -331,23 +331,26 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
             existing_thread: discord.Thread | None = discord.utils.get(
                 channel.threads, name=module_thread_name
             )
-            if not existing_thread:
-                try:
-                    created_module_thread: discord.Thread = await channel.create_thread(
-                        name=module_thread_name,
-                        type=discord.ChannelType.public_thread,
-                        auto_archive_duration=10080,
-                        reason=reason,
-                    )
-                except discord.HTTPException as http_exception_error:
-                    logger.warning(
-                        'Failed to create "%s" thread in "%s" channel: %s',
-                        module_thread_name,
-                        channel.name,
-                        http_exception_error,
-                    )
-                else:
-                    created_module_threads.append(created_module_thread)
+
+            if existing_thread is not None:
+                continue
+
+            try:
+                created_module_thread: discord.Thread = await channel.create_thread(
+                    name=module_thread_name,
+                    type=discord.ChannelType.public_thread,
+                    auto_archive_duration=10080,
+                    reason=reason,
+                )
+            except discord.HTTPException as http_exception_error:
+                logger.warning(
+                    'Failed to create "%s" thread in "%s" channel: %s',
+                    module_thread_name,
+                    channel.name,
+                    http_exception_error,
+                )
+            else:
+                created_module_threads.append(created_module_thread)
 
         if not created_module_threads:
             return
