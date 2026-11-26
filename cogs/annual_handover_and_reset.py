@@ -276,8 +276,6 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
             "Theories of Computation",
         }
     )
-
-    # TODO: Move to config later  # noqa: FIX002
     SECOND_YEAR_MODULE_THREAD_NAMES: Final[AbstractSet[str]] = frozenset(
         {
             "Artificial Intelligence 2",
@@ -288,8 +286,6 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
             "Software Engineering for Global Challenges",
         }
     )
-
-    # TODO: Move to config later  # noqa: FIX002
     FINAL_YEAR_MODULE_THREAD_NAMES: Final[AbstractSet[str]] = frozenset(
         {
             "Advanced Cryptography",
@@ -466,7 +462,6 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                 await initial_message.edit(
                     content=':hourglass: Creating "final-years" threads... :hourglass:'
                 )
-
                 await self._create_module_threads(
                     channel=second_years_channel,
                     module_thread_names=self.FINAL_YEAR_MODULE_THREAD_NAMES,
@@ -487,7 +482,6 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                 await initial_message.edit(
                     content=':hourglass: Creating "second-years" threads... :hourglass:'
                 )
-
                 await self._create_module_threads(
                     channel=first_year_channel,
                     module_thread_names=self.SECOND_YEAR_MODULE_THREAD_NAMES,
@@ -531,7 +525,6 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
             await initial_message.edit(
                 content=':hourglass: Creating "first-years" threads... :hourglass:'
             )
-
             await self._create_module_threads(
                 channel=new_first_years_channel,
                 module_thread_names=self.FIRST_YEAR_MODULE_THREAD_NAMES,
