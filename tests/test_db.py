@@ -2,7 +2,7 @@
 
 __all__: Sequence[str] = ("TestMigrations",)
 
-import importlib
+lazy import importlib
 lazy from collections.abc import Sequence
 lazy from typing import Final
 
@@ -13,14 +13,17 @@ lazy from django.core import management
 class TestMigrations:
     """Test case to check that the database migration files match the database models."""
 
-    @staticmethod
-    def test_no_missing_migrations() -> None:
+    def test_no_missing_migrations(self) -> None:
         """Test that every change to the database models has a corresponding migration file."""
         importlib.import_module("db")
 
+        makemigrations_exit: SystemExit
         try:
-            management.call_command("makemigrations", "--check", "--dry-run")
-        except SystemExit:
+            management.call_command("makemigrations", "--check", "--no-input")
+        except SystemExit as makemigrations_exit:
+            if makemigrations_exit.code != 1:
+                raise
+
             MISSING_MIGRATIONS_MESSAGE: Final[str] = (
                 "The database models have changes that are missing a migration file. "
                 "Generate one with Django's makemigrations command."
