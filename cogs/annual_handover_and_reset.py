@@ -9,6 +9,7 @@ __all__: Sequence[str] = (
 import logging
 lazy import datetime
 lazy from collections.abc import Collection, Mapping, Sequence
+lazy from collections.abc import Set as AbstractSet
 lazy from logging import Logger
 lazy from typing import Final
 
@@ -264,6 +265,125 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
 class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/increment-year-channels" command."""
 
+    # TODO: Move to config later  # noqa: FIX002
+    FIRST_YEAR_MODULE_THREAD_NAMES: Final[AbstractSet[str]] = frozenset(
+        {
+            "Artificial Intelligence 1",
+            "Computer Systems and Professional Practice",
+            "Data Structures and Algorithms",
+            "Mathematical and Logical Foundations of Computer Science",
+            "Object Oriented Programming",
+            "Theories of Computation",
+        }
+    )
+    SECOND_YEAR_MODULE_THREAD_NAMES: Final[AbstractSet[str]] = frozenset(
+        {
+            "Artificial Intelligence 2",
+            "Databases and Web Programming",
+            "Functional Programming",
+            "Operating Systems and Systems Programming",
+            "Security and Networks",
+            "Software Engineering for Global Challenges",
+        }
+    )
+    FINAL_YEAR_MODULE_THREAD_NAMES: Final[AbstractSet[str]] = frozenset(
+        {
+            "Advanced Cryptography",
+            "Advanced Functional Programming",
+            "Advanced Networking",
+            "Algorithms and Complexity",
+            "Computer Vision and Imaging",
+            "Computer-Aided Verification",
+            "Dependable and Distributed Systems",
+            "Evolutionary Computation",
+            "Game Theory",
+            "High Performance Computing",
+            "Intelligent Data Analysis",
+            "Intelligent Interactive Systems",
+            "Intelligent Robotics",
+            "Intelligent Software Engineering",
+            "Machine Learning",
+            "Mobile and Ubiquitous Computing",
+            "Natural Language Processing",
+            "Neural Computation",
+            "Programming Language Principles, Design, and Implementation",
+            "Security of Real-World Systems",
+            "Teaching Computer Science in Schools",
+        }
+    )
+
+    @staticmethod
+    async def _create_module_threads(
+        channel: discord.TextChannel,
+        module_thread_names: AbstractSet[str],
+        reason: str,
+    ) -> None:
+        """
+        Create a public thread in the given channel for each module without one.
+
+        A message linking to every newly created thread is then sent & pinned
+        in the given channel.
+        """
+        created_module_threads: list[discord.Thread] = []
+
+        module_thread_name: str
+        for module_thread_name in sorted(module_thread_names):
+            existing_thread: discord.Thread | None = discord.utils.get(
+                channel.threads, name=module_thread_name
+            )
+
+            if existing_thread is not None:
+                continue
+
+            try:
+                created_module_thread: discord.Thread = await channel.create_thread(
+                    name=module_thread_name,
+                    type=discord.ChannelType.public_thread,
+                    auto_archive_duration=10080,
+                    reason=reason,
+                )
+            except discord.HTTPException as http_exception_error:
+                logger.warning(
+                    'Failed to create "%s" thread in "%s" channel: %s',
+                    module_thread_name,
+                    channel.name,
+                    http_exception_error,
+                )
+            else:
+                created_module_threads.append(created_module_thread)
+
+        if not created_module_threads:
+            return
+
+        try:
+            module_thread_links_message: discord.Message = await channel.send(
+                content=(
+                    "## Module Threads"
+                    f"\n{
+                        '\n'.join(
+                            f'- {module_thread.mention}'
+                            for module_thread in created_module_threads
+                        )
+                    }"
+                )
+            )
+        except discord.HTTPException as http_exception_error:
+            logger.warning(
+                'Failed to send module thread links message in "%s" channel: %s',
+                channel.name,
+                http_exception_error,
+            )
+            return
+
+        try:
+            await module_thread_links_message.pin(reason=reason)
+        except discord.HTTPException as http_exception_error:
+            logger.warning(
+                'Failed to pin module thread links message in "%s" channel: %s',
+                channel.name,
+                http_exception_error,
+            )
+
     @discord.slash_command(
         name="increment-year-channels",
         description="Increments the year channels, archiving and creating channels as needed.",
@@ -277,8 +397,12 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
         The "increment_year_channels" command:
         - Archives the current "final-years" channel
         - Renames the current "second-years" channel to "final-years"
+        - Creates a thread for each final-year module in the new "final-years" channel
         - Renames the current "first-years" channel to "second-years"
+        - Creates a thread for each second-year module in the new "second-years" channel
         - Creates a new "first-years" channel
+        - Creates a thread for each first-year module in the new "first-years" channel
+        - Sends & pins a message in each channel linking to its newly created threads
         """
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
@@ -338,6 +462,15 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                     reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
                 )
 
+                await initial_message.edit(
+                    content=':hourglass: Creating "final-years" threads... :hourglass:'
+                )
+                await self._create_module_threads(
+                    channel=second_years_channel,
+                    module_thread_names=self.FINAL_YEAR_MODULE_THREAD_NAMES,
+                    reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
+                )
+
             first_year_channel: discord.TextChannel | None = discord.utils.get(
                 main_guild.text_channels, name="first-years"
             )
@@ -346,6 +479,15 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                 await first_year_channel.edit(
                     name="second-years",
                     topic="Channel for second-years to chat and ask questions.",
+                    reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
+                )
+
+                await initial_message.edit(
+                    content=':hourglass: Creating "second-years" threads... :hourglass:'
+                )
+                await self._create_module_threads(
+                    channel=first_year_channel,
+                    module_thread_names=self.SECOND_YEAR_MODULE_THREAD_NAMES,
                     reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
                 )
 
@@ -382,6 +524,15 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                     send_messages=True,
                     reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
                 )
+
+            await initial_message.edit(
+                content=':hourglass: Creating "first-years" threads... :hourglass:'
+            )
+            await self._create_module_threads(
+                channel=new_first_years_channel,
+                module_thread_names=self.FIRST_YEAR_MODULE_THREAD_NAMES,
+                reason=INCREMENT_YEAR_CHANNELS_AUDIT_MESSAGE,
+            )
 
             await initial_message.edit(
                 content=(
