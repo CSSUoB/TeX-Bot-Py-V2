@@ -21,8 +21,8 @@ class TestMigrations:
         try:
             management.call_command("makemigrations", "--check", "--no-input")
         except SystemExit as makemigrations_exit:
-            if makemigrations_exit.code != 1:
-                raise
+            if makemigrations_exit.code != 1:  # SOURCE: https://johnnymetz.com/posts/check-django-migrations/
+                raise makemigrations_exit from makemigrations_exit
 
             MISSING_MIGRATIONS_MESSAGE: Final[str] = (
                 "The database models have changes that are missing a migration file. "
