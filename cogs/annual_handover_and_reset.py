@@ -265,47 +265,56 @@ class AnnualRolesResetCommandCog(TeXBotBaseCog):
 class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
     """Cog class that defines the "/increment-year-channels" command."""
 
-    FIRST_YEAR_MODULE_THREAD_NAMES: Final[AbstractSet[str]] = {  # TODO: Move to config later  # noqa: FIX002
-        "Artificial Intelligence 1",
-        "Computer Systems and Professional Practice",
-        "Data Structures and Algorithms",
-        "Mathematical and Logical Foundations of Computer Science",
-        "Object Oriented Programming",
-        "Theories of Computation",
-    }
+    # TODO: Move to config later  # noqa: FIX002
+    FIRST_YEAR_MODULE_THREAD_NAMES: Final[AbstractSet[str]] = frozenset(
+        {
+            "Artificial Intelligence 1",
+            "Computer Systems and Professional Practice",
+            "Data Structures and Algorithms",
+            "Mathematical and Logical Foundations of Computer Science",
+            "Object Oriented Programming",
+            "Theories of Computation",
+        }
+    )
 
-    SECOND_YEAR_MODULE_THREAD_NAMES: Final[AbstractSet[str]] = {  # TODO: Move to config later  # noqa: FIX002
-        "Artificial Intelligence 2",
-        "Databases and Web Programming",
-        "Functional Programming",
-        "Operating Systems and Systems Programming",
-        "Security and Networks",
-        "Software Engineering for Global Challenges",
-    }
+    # TODO: Move to config later  # noqa: FIX002
+    SECOND_YEAR_MODULE_THREAD_NAMES: Final[AbstractSet[str]] = frozenset(
+        {
+            "Artificial Intelligence 2",
+            "Databases and Web Programming",
+            "Functional Programming",
+            "Operating Systems and Systems Programming",
+            "Security and Networks",
+            "Software Engineering for Global Challenges",
+        }
+    )
 
-    FINAL_YEAR_MODULE_THREAD_NAMES: Final[AbstractSet[str]] = {  # TODO: Move to config later  # noqa: FIX002
-        "Advanced Cryptography",
-        "Advanced Functional Programming",
-        "Advanced Networking",
-        "Algorithms and Complexity",
-        "Computer Vision and Imaging",
-        "Computer-Aided Verification",
-        "Dependable and Distributed Systems",
-        "Evolutionary Computation",
-        "Game Theory",
-        "High Performance Computing",
-        "Intelligent Data Analysis",
-        "Intelligent Interactive Systems",
-        "Intelligent Robotics",
-        "Intelligent Software Engineering",
-        "Machine Learning",
-        "Mobile and Ubiquitous Computing",
-        "Natural Language Processing",
-        "Neural Computation",
-        "Programming Language Principles, Design, and Implementation",
-        "Security of Real-World Systems",
-        "Teaching Computer Science in Schools",
-    }
+    # TODO: Move to config later  # noqa: FIX002
+    FINAL_YEAR_MODULE_THREAD_NAMES: Final[AbstractSet[str]] = frozenset(
+        {
+            "Advanced Cryptography",
+            "Advanced Functional Programming",
+            "Advanced Networking",
+            "Algorithms and Complexity",
+            "Computer Vision and Imaging",
+            "Computer-Aided Verification",
+            "Dependable and Distributed Systems",
+            "Evolutionary Computation",
+            "Game Theory",
+            "High Performance Computing",
+            "Intelligent Data Analysis",
+            "Intelligent Interactive Systems",
+            "Intelligent Robotics",
+            "Intelligent Software Engineering",
+            "Machine Learning",
+            "Mobile and Ubiquitous Computing",
+            "Natural Language Processing",
+            "Neural Computation",
+            "Programming Language Principles, Design, and Implementation",
+            "Security of Real-World Systems",
+            "Teaching Computer Science in Schools",
+        }
+    )
 
     @staticmethod
     async def _create_module_threads(
@@ -313,15 +322,22 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
         module_thread_names: AbstractSet[str],
         reason: str,
     ) -> None:
-        """Create a public thread in the given channel for each module without one."""
+        """
+        Create a public thread in the given channel for each module without one.
+
+        A message linking to every newly created thread is then sent & pinned
+        in the given channel.
+        """
+        created_module_threads: list[discord.Thread] = []
+
         module_thread_name: str
-        for module_thread_name in module_thread_names:
+        for module_thread_name in sorted(module_thread_names):
             existing_thread: discord.Thread | None = discord.utils.get(
                 channel.threads, name=module_thread_name
             )
             if not existing_thread:
                 try:
-                    await channel.create_thread(
+                    created_module_thread: discord.Thread = await channel.create_thread(
                         name=module_thread_name,
                         type=discord.ChannelType.public_thread,
                         auto_archive_duration=10080,
@@ -334,6 +350,40 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
                         channel.name,
                         http_exception_error,
                     )
+                else:
+                    created_module_threads.append(created_module_thread)
+
+        if not created_module_threads:
+            return
+
+        try:
+            module_thread_links_message: discord.Message = await channel.send(
+                content=(
+                    "## Module Threads"
+                    f"\n{
+                        '\n'.join(
+                            f'- {module_thread.mention}'
+                            for module_thread in created_module_threads
+                        )
+                    }"
+                )
+            )
+        except discord.HTTPException as http_exception_error:
+            logger.warning(
+                'Failed to send module thread links message in "%s" channel: %s',
+                channel.name,
+                http_exception_error,
+            )
+            return
+
+        try:
+            await module_thread_links_message.pin(reason=reason)
+        except discord.HTTPException as http_exception_error:
+            logger.warning(
+                'Failed to pin module thread links message in "%s" channel: %s',
+                channel.name,
+                http_exception_error,
+            )
 
     @discord.slash_command(
         name="increment-year-channels",
@@ -353,6 +403,7 @@ class AnnualYearChannelsIncrementCommandCog(TeXBotBaseCog):
         - Creates a thread for each second-year module in the new "second-years" channel
         - Creates a new "first-years" channel
         - Creates a thread for each first-year module in the new "first-years" channel
+        - Sends & pins a message in each channel linking to its newly created threads
         """
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
