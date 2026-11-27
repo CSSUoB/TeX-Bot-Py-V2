@@ -31,6 +31,7 @@ __all__: Sequence[str] = (
     "ManualModerationCog",
     "MemberCountCommandCog",
     "PingCommandCog",
+    "SelectColourRoleCommandCog",
     "SendGetRolesRemindersTaskCog",
     "SendIntroductionRemindersTaskCog",
     "SourceCommandCog",
@@ -76,6 +77,7 @@ from .kill import KillCommandCog
 from .make_applicant import MakeApplicantContextCommandsCog, MakeApplicantSlashCommandCog
 from .make_member import MakeMemberCommandCog, MemberCountCommandCog
 from .ping import PingCommandCog
+from .select_colour_role import SelectColourRoleCommandCog
 from .send_get_roles_reminders import SendGetRolesRemindersTaskCog
 from .send_introduction_reminders import SendIntroductionRemindersTaskCog
 from .source import SourceCommandCog
@@ -112,6 +114,7 @@ def setup(bot: TeXBot) -> None:
         ManualModerationCog,
         MemberCountCommandCog,
         PingCommandCog,
+        SelectColourRoleCommandCog,
         SendGetRolesRemindersTaskCog,
         SendIntroductionRemindersTaskCog,
         SourceCommandCog,

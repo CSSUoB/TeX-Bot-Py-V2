@@ -3,6 +3,7 @@
 __all__: Sequence[str] = (
     "DiscordMemberNotInMainGuildError",
     "EveryoneRoleCouldNotBeRetrievedError",
+    "RoleNotFoundInMainGuildError",
 )
 
 from typing import override
@@ -25,6 +26,22 @@ class DiscordMemberNotInMainGuildError(BaseTeXBotError, ValueError):
     def __init__(self, message: str | None = None, user_id: int | None = None) -> None:
         """Initialise a ValueError exception for a non-existent user ID."""
         self.user_id: int | None = user_id
+
+        super().__init__(message)
+
+
+class RoleNotFoundInMainGuildError(BaseTeXBotError, ValueError):
+    """Exception class for when no roles of your Discord guild have the given role ID."""
+
+    @classproperty
+    @override
+    def DEFAULT_MESSAGE(cls) -> str:
+        return "Given role ID does not represent any role of your group's Discord guild."
+
+    @override
+    def __init__(self, message: str | None = None, role_id: int | None = None) -> None:
+        """Initialise a ValueError exception for a non-existent role ID."""
+        self.role_id: int | None = role_id
 
         super().__init__(message)
 

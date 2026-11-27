@@ -13,7 +13,11 @@ import discord
 from utils import CommandChecks, TeXBotBaseCog
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 lazy from config import settings
-lazy from exceptions import GuestRoleDoesNotExistError, GuildDoesNotExistError
+lazy from exceptions import (
+    GuestRoleDoesNotExistError,
+    GuildDoesNotExistError,
+    RoleNotFoundInMainGuildError,
+)
 lazy from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
@@ -268,20 +272,25 @@ class AddUsersToThreadsAndChannelsCommandsCog(TeXBotBaseCog):
 
         await ctx.defer(ephemeral=True)
 
-        main_guild: discord.Guild = ctx.bot.main_guild
-
         try:
-            role_id: int = int(role_id_str)
-        except ValueError:
-            logger.debug("Role ID: %s is not a valid ID.", role_id_str)
-            await ctx.respond(content=f"The role: {role_id_str} is not valid.")
-            return
-
-        role_to_add: discord.Role | None = discord.utils.get(main_guild.roles, id=role_id)
-
-        if role_to_add is None:
+            role_to_add: discord.Role = await self.bot.get_role_from_str_id(role_id_str)
+        except RoleNotFoundInMainGuildError:
             await self.command_send_error(
-                ctx, message=f"The role: <@{role_id}> is not valid or couldn't be found."
+                ctx,
+                message=(
+                    "The specified role could not be found "
+                    f"in the {self.bot.group_short_name} Discord server. "
+                    "Please use the autocomplete."
+                ),
+            )
+            return
+        except ValueError:
+            await self.command_send_error(
+                ctx,
+                message=(
+                    "The specified role ID is not a valid role ID. "
+                    "Please use the autocomplete."
+                ),
             )
             return
 

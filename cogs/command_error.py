@@ -12,6 +12,7 @@ lazy from discord import Forbidden
 lazy from discord.ext.commands.errors import CheckAnyFailure
 
 from utils import TeXBotBaseCog
+lazy from config import settings
 lazy from exceptions import GuildDoesNotExistError
 lazy from exceptions.base import BaseErrorWithErrorCode
 lazy from utils import CommandChecks, TeXBotApplicationContext
@@ -55,6 +56,18 @@ class CommandErrorCog(TeXBotBaseCog):
                 message = (
                     f"Only {await self.bot.get_mention_string(self.bot.committee_role)} "
                     "members can run this command."
+                )
+
+            elif CommandChecks.is_interaction_user_has_member_role_failure(error.checks[0]):  # type: ignore[arg-type]
+                message = (
+                    "You must have the "
+                    f"{await self.bot.get_mention_string(self.bot.member_role)} role "
+                    'to run this command. Buy membership or run the "/make-member" command.'
+                    f"{
+                        f'\n{settings["PURCHASE_MEMBERSHIP_URL"]}'
+                        if settings['PURCHASE_MEMBERSHIP_URL']
+                        else ''
+                    }"
                 )
 
         else:
