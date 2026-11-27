@@ -31,12 +31,12 @@ class DiscordMemberNotInMainGuildError(BaseTeXBotError, ValueError):
 
 
 class RoleNotFoundInMainGuildError(BaseTeXBotError, ValueError):
-    """Exception class for when a role could not be found in the main guild."""
+    """Exception class for when no roles of your Discord guild have the given role ID."""
 
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:
-        return "The specified role could not be found in the main guild."
+        return "Given role ID does not represent any role of your group's Discord guild."
 
     @override
     def __init__(self, message: str | None = None, role_id: int | None = None) -> None:

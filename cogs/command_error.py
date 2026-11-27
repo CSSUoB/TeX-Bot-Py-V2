@@ -62,8 +62,12 @@ class CommandErrorCog(TeXBotBaseCog):
                 message = (
                     "You must have the "
                     f"{await self.bot.get_mention_string(self.bot.member_role)} role "
-                    "to run this command. Buy membership or run the 'make-member' command."
-                    f"\n{settings['PURCHASE_MEMBERSHIP_URL']}"
+                    'to run this command. Buy membership or run the "/make-member" command.'
+                    f"{
+                        f'\n{settings["PURCHASE_MEMBERSHIP_URL"]}'
+                        if settings['PURCHASE_MEMBERSHIP_URL']
+                        else ''
+                    }"
                 )
 
         else:

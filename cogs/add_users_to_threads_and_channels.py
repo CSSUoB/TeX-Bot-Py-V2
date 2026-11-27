@@ -272,20 +272,25 @@ class AddUsersToThreadsAndChannelsCommandsCog(TeXBotBaseCog):
 
         await ctx.defer(ephemeral=True)
 
-        role_to_add: discord.Role
         try:
-            role_to_add = await ctx.bot.get_role_from_str_id(role_id_str)
+            role_to_add: discord.Role = await self.bot.get_role_from_str_id(role_id_str)
         except RoleNotFoundInMainGuildError:
-            await ctx.respond(
-                "The specified role could not be found in the main guild. "
-                "Please use the autocomplete.",
-                ephemeral=True,
+            await self.command_send_error(
+                ctx,
+                message=(
+                    "The specified role could not be found "
+                    f"in the {self.bot.group_short_name} Discord server. "
+                    "Please use the autocomplete."
+                ),
             )
             return
         except ValueError:
-            await ctx.respond(
-                "The specified role ID is not a valid role ID. Please use the autocomplete.",
-                ephemeral=True,
+            await self.command_send_error(
+                ctx,
+                message=(
+                    "The specified role ID is not a valid role ID. "
+                    "Please use the autocomplete."
+                ),
             )
             return
 

@@ -29,9 +29,9 @@ __all__: Sequence[str] = (
     "MakeApplicantSlashCommandCog",
     "MakeMemberCommandCog",
     "ManualModerationCog",
-    "MemberColourSelectorCommandCog",
     "MemberCountCommandCog",
     "PingCommandCog",
+    "SelectColourRoleCommandCog",
     "SendGetRolesRemindersTaskCog",
     "SendIntroductionRemindersTaskCog",
     "SourceCommandCog",
@@ -58,7 +58,6 @@ from .check_su_platform_authorisation import (
     CheckSUPlatformAuthorisationCommandCog,
     CheckSUPlatformAuthorisationTaskCog,
 )
-from .colour_selector import MemberColourSelectorCommandCog
 from .command_error import CommandErrorCog
 from .committee_actions_tracking import (
     CommitteeActionsTrackingContextCommandCog,
@@ -78,6 +77,7 @@ from .kill import KillCommandCog
 from .make_applicant import MakeApplicantContextCommandsCog, MakeApplicantSlashCommandCog
 from .make_member import MakeMemberCommandCog, MemberCountCommandCog
 from .ping import PingCommandCog
+from .select_colour_role import SelectColourRoleCommandCog
 from .send_get_roles_reminders import SendGetRolesRemindersTaskCog
 from .send_introduction_reminders import SendIntroductionRemindersTaskCog
 from .source import SourceCommandCog
@@ -112,9 +112,9 @@ def setup(bot: TeXBot) -> None:
         MakeApplicantSlashCommandCog,
         MakeMemberCommandCog,
         ManualModerationCog,
-        MemberColourSelectorCommandCog,
         MemberCountCommandCog,
         PingCommandCog,
+        SelectColourRoleCommandCog,
         SendGetRolesRemindersTaskCog,
         SendIntroductionRemindersTaskCog,
         SourceCommandCog,

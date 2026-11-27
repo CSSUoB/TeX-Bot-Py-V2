@@ -509,7 +509,6 @@ class TeXBot(discord.Bot):
         role: discord.Role | None = await self.main_guild.get_or_fetch(
             discord.Role, int(str_role_id)
         )
-
         if role is None:
             ROLE_NOT_FOUND_MESSAGE: Final[str] = (
                 f"Role with ID '{str_role_id}' could not be found in the main guild."
