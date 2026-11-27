@@ -58,7 +58,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
     @discord.option(
         name=_GROUP_MEMBER_ID_ARGUMENT_NAME,
         description=(
-            f"""Your UoB Student {
+            f"""Your {
                 "UoB Student"
                 if (
                     settings["_GROUP_FULL_NAME"]
