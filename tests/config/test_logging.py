@@ -57,6 +57,15 @@ class TestConsoleLogging:
         assert logging.getLogger(LOGGER_NAME).level == logging.WARNING
 
     @staticmethod
+    def test_console_log_level_is_applied_to_the_console_handler() -> None:
+        """Test that the console only emits logs meeting its own configured level."""
+        apply_logging_settings(_logging_settings(console={"log-level": "WARNING"}))
+
+        assert _handlers_of_type(LOGGER_NAME, logging.StreamHandler)[0].level == (
+            logging.WARNING
+        )
+
+    @staticmethod
     def test_a_console_handler_is_attached() -> None:
         """Test that logs are emitted to the console output stream."""
         apply_logging_settings(_logging_settings())
@@ -137,6 +146,27 @@ class TestDiscordChannelLogging:
 
         assert len(DISCORD_HANDLERS) == 1
         assert DISCORD_HANDLERS[0].level == logging.ERROR
+
+    @staticmethod
+    def test_a_level_below_the_console_level_still_reaches_the_log_channel() -> None:
+        """
+        Test that the log channel receives logs which the console does not emit.
+
+        TeX-Bot's logger drops a record before any handler sees it, so the logger must
+        let through every record that the Discord log channel's own level accepts,
+        even when the console is set to a higher level.
+        """
+        apply_logging_settings(
+            _logging_settings(
+                console={"log-level": "ERROR"},
+                **{"discord-channel": {"webhook-url": VALID_WEBHOOK_URL, "log-level": "INFO"}},
+            )
+        )
+
+        assert logging.getLogger(LOGGER_NAME).isEnabledFor(logging.INFO)
+        assert _handlers_of_type(LOGGER_NAME, logging.StreamHandler)[0].level == (
+            logging.ERROR
+        )
 
     @staticmethod
     def test_removing_the_webhook_detaches_the_handler() -> None:

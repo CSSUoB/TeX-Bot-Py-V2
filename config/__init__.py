@@ -4,7 +4,7 @@ Contains settings values and import & setup functions.
 Settings values are loaded from the `tex-bot-deployment.yaml` deployment configuration
 file, validated against the schema declared within `config._schema`. These values
 configure the functionality of TeX-Bot at run-time, and can be reloaded without
-restarting TeX-Bot.
+restarting TeX-Bot, except for those settings that require a restart.
 """
 
 import importlib
@@ -37,7 +37,7 @@ from ._messages import MessagesAccessor
 from ._schema import ConfigSettingMetadata, get_settings_metadata
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
+    from collections.abc import Sequence
     from collections.abc import Set as AbstractSet
     from logging import Logger
     from pathlib import Path
@@ -104,17 +104,12 @@ def reload_settings(file_path: Path | None = None) -> ConfigReloadResult:
     if any(changed_setting.startswith("logging:") for changed_setting in CHANGED_SETTINGS):
         apply_logging_settings(settings.logging)
 
-    SETTINGS_METADATA: Final[Mapping[str, ConfigSettingMetadata]] = get_settings_metadata()
-
     return ConfigReloadResult(
         changed_settings=CHANGED_SETTINGS,
-        # NOTE: Read from the schema itself, rather than tracked separately, so that the
-        # two cannot disagree about which settings need a restart.
+        # NOTE: Only a setting whose new value differs from the one TeX-Bot started with
+        # needs a restart. Changing one back to its start-up value needs no restart.
         restart_required_settings=frozenset(
-            changed_setting
-            for changed_setting in CHANGED_SETTINGS
-            if changed_setting in SETTINGS_METADATA
-            and SETTINGS_METADATA[changed_setting].requires_restart
+            CHANGED_SETTINGS & settings.values_awaiting_restart.keys()
         ),
     )
 

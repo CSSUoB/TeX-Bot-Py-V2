@@ -195,17 +195,20 @@ def _validated(document: SettingsDocument) -> SettingsDocument:
 
 def format_file_difference(
     setting_name: str,
-    running_value: object,
+    loaded_value: object,
     *,
     secret: bool,
     file_path: Path | None = None,
 ) -> str:
     """
-    Describe how the configuration file's value for a setting differs from the running one.
+    Describe how the configuration file's value for a setting differs from the loaded one.
 
     Intended to be shown alongside the value TeX-Bot is running, once the file is known
     to have been edited since it was last loaded, so that whoever is looking at a setting
     can see what reloading would change it to rather than only being told to reload.
+
+    The value compared against is the one last loaded from the file. That is the running
+    value, except for a setting whose new value is waiting for TeX-Bot to restart.
 
     The file compared against is the one the running configuration was loaded from, which
     must be given explicitly: it is not necessarily the one that would be located afresh.
@@ -231,7 +234,7 @@ def format_file_difference(
     # entry of its own, & is simply unset.
     FILE_VALUE: Final[object] = FILE_VALUES.get(setting_name)
 
-    if running_value == FILE_VALUE:
+    if loaded_value == FILE_VALUE:
         return (
             "\n\n:information_source: The configuration file has been edited since "
             "TeX-Bot last loaded it, though not this setting. "
@@ -248,7 +251,7 @@ def format_file_difference(
     return (
         f"\n\n:warning: The configuration file has been edited since TeX-Bot last "
         f"loaded it:\n"
-        f"- currently running: {format_setting_value(running_value, secret=secret)}\n"
+        f"- last loaded: {format_setting_value(loaded_value, secret=secret)}\n"
         f"- within the file: {format_setting_value(FILE_VALUE, secret=secret)}\n"
         f"Run `/config reload` to apply that edit."
     )

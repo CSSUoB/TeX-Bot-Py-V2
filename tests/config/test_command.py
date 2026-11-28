@@ -185,6 +185,113 @@ class TestRestartRequiredWarning:
         assert "must be restarted" not in RESPONSES[0]
 
 
+class TestSettingsAwaitingRestart:
+    """Test case for showing a setting whose new value is waiting for a restart."""
+
+    @staticmethod
+    def test_setting_a_value_reports_the_new_value(
+        run_config_reload: ConfigReloadRunner,
+        config_commands_cog: type[ConfigCommandsCog],
+    ) -> None:
+        """
+        Test that changing a setting which needs a restart repeats back its new value.
+
+        TeX-Bot keeps running with the old value until it restarts, so repeating back
+        the value it is running would look as though the change had been ignored.
+        """
+        run_config_reload(MINIMAL_CONFIG)
+
+        context: _RecordingApplicationContext = _RecordingApplicationContext()
+        asyncio.run(
+            config_commands_cog.set.callback(
+                config_commands_cog(bot=cast("TeXBot", None)),
+                context,
+                "discord:main-guild-id",
+                "9876543210987654321",
+            )
+        )
+
+        assert "to `9876543210987654321`" in context.responses[0]
+        assert "must be restarted" in context.responses[0]
+
+    @staticmethod
+    def test_the_value_awaiting_a_restart_is_shown(
+        run_config_reload: ConfigReloadRunner,
+        config_commands_cog: type[ConfigCommandsCog],
+    ) -> None:
+        """Test that viewing a setting shows both the running value & the one to come."""
+        run_config_reload(MINIMAL_CONFIG)
+        run_config_reload(MINIMAL_CONFIG.replace("1234567890123456789", "9876543210987654321"))
+
+        context: _RecordingApplicationContext = _RecordingApplicationContext()
+        asyncio.run(
+            config_commands_cog.get.callback(
+                config_commands_cog(bot=cast("TeXBot", None)),
+                context,
+                "discord:main-guild-id",
+            )
+        )
+
+        assert "`1234567890123456789`" in context.responses[0]
+        assert (
+            "The configuration file changes this to `9876543210987654321`, "
+            "which will not take effect until TeX-Bot is restarted."
+        ) in context.responses[0]
+
+    @staticmethod
+    def test_a_value_awaiting_a_restart_is_not_mistaken_for_an_edit_by_hand(
+        run_config_reload: ConfigReloadRunner,
+        config_commands_cog: type[ConfigCommandsCog],
+        write_config: Callable[[str], Path],
+    ) -> None:
+        """
+        Test that a reload is not suggested to apply a value only a restart can apply.
+
+        A different setting is edited by hand, so the file no longer matches what was
+        loaded, but the setting being viewed was not touched by that edit.
+        """
+        CHANGED_CONFIG: Final[str] = MINIMAL_CONFIG.replace(
+            "1234567890123456789", "9876543210987654321"
+        )
+        run_config_reload(MINIMAL_CONFIG)
+        run_config_reload(CHANGED_CONFIG)
+        write_config(f"{CHANGED_CONFIG}logging:\n  console:\n    log-level: DEBUG\n")
+
+        context: _RecordingApplicationContext = _RecordingApplicationContext()
+        asyncio.run(
+            config_commands_cog.get.callback(
+                config_commands_cog(bot=cast("TeXBot", None)),
+                context,
+                "discord:main-guild-id",
+            )
+        )
+
+        assert "though not this setting" in context.responses[0]
+        assert "will not take effect until TeX-Bot is restarted" in context.responses[0]
+
+    @staticmethod
+    def test_a_start_up_value_is_not_called_the_default(
+        run_config_reload: ConfigReloadRunner,
+        config_commands_cog: type[ConfigCommandsCog],
+    ) -> None:
+        """Test that removing a setting needing a restart does not relabel its old value."""
+        run_config_reload(f"{MINIMAL_CONFIG}community-group:\n  short-name: CSS\n")
+        run_config_reload(MINIMAL_CONFIG)
+
+        context: _RecordingApplicationContext = _RecordingApplicationContext()
+        asyncio.run(
+            config_commands_cog.get.callback(
+                config_commands_cog(bot=cast("TeXBot", None)),
+                context,
+                "community-group:short-name",
+            )
+        )
+
+        assert "`CSS`" in context.responses[0]
+        assert "(default" not in context.responses[0]
+        assert "The configuration file changes this to" in context.responses[0]
+
+
 class TestRejectedReloads:
     """Test case for reporting a configuration that could not be loaded."""
 

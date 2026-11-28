@@ -126,6 +126,67 @@ class TestReloadResult:
         assert config.settings.logging.console.log_level == PREVIOUS_LOG_LEVEL
 
 
+class TestSettingsHeldUntilRestart:
+    """Test case for keeping each setting that requires a restart at its start-up value."""
+
+    @staticmethod
+    def test_a_setting_requiring_a_restart_keeps_its_start_up_value(
+        configured: Callable[[str], ConfigReloadResult],
+    ) -> None:
+        """
+        Test that reloading does not apply a setting that requires a restart.
+
+        Parts of TeX-Bot read such a setting again upon every use, so applying a new
+        value would leave TeX-Bot running partly with the old value & partly the new one.
+        """
+        configured(CONFIG_WITH_TASK_SETTINGS)
+
+        configured(
+            CONFIG_WITH_TASK_SETTINGS.replace(
+                "main-guild-id: 1234567890123456789", "main-guild-id: 9876543210987654321"
+            )
+        )
+
+        assert config.settings.discord.main_guild_id == 1234567890123456789
+        assert config.settings.values_awaiting_restart == {
+            "discord:main-guild-id": 9876543210987654321
+        }
+
+    @staticmethod
+    def test_a_live_setting_changed_alongside_one_requiring_a_restart_is_applied(
+        configured: Callable[[str], ConfigReloadResult],
+    ) -> None:
+        """Test that holding back one setting does not hold back the rest of a reload."""
+        configured(CONFIG_WITH_TASK_SETTINGS)
+
+        configured(
+            CONFIG_WITH_TASK_SETTINGS.replace(
+                "main-guild-id: 1234567890123456789", "main-guild-id: 9876543210987654321"
+            ).replace("log-level: INFO", "log-level: DEBUG")
+        )
+
+        assert config.settings.logging.console.log_level == "DEBUG"
+        assert config.settings.discord.main_guild_id == 1234567890123456789
+
+    @staticmethod
+    def test_changing_a_setting_back_to_its_start_up_value_needs_no_restart(
+        configured: Callable[[str], ConfigReloadResult],
+    ) -> None:
+        """Test that undoing a change awaiting a restart leaves nothing awaiting one."""
+        configured(CONFIG_WITH_TASK_SETTINGS)
+        configured(
+            CONFIG_WITH_TASK_SETTINGS.replace(
+                "main-guild-id: 1234567890123456789", "main-guild-id: 9876543210987654321"
+            )
+        )
+
+        RESULT: Final[ConfigReloadResult] = configured(CONFIG_WITH_TASK_SETTINGS)
+
+        assert RESULT.changed_settings == {"discord:main-guild-id"}
+        assert RESULT.restart_required_settings == set()
+        assert config.settings.values_awaiting_restart == {}
+
+
 class TestRestartRequiredClassification:
     """Test case for identifying which changes cannot take effect until a restart."""
 

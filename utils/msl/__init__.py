@@ -5,6 +5,7 @@ __all__: Sequence[str] = (
     "fetch_community_group_members_list",
     "fetch_url_content_with_session",
     "is_id_a_community_group_member",
+    "msl_auth_cookie_is_set",
     "msl_is_configured",
 )
 
@@ -15,5 +16,6 @@ from .memberships import (
     fetch_community_group_members_list,
     fetch_url_content_with_session,
     is_id_a_community_group_member,
+    msl_auth_cookie_is_set,
     msl_is_configured,
 )

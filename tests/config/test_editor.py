@@ -255,9 +255,9 @@ class TestChangingSettings:
 
         config.set_setting("reminders:send-get-roles-reminders:interval", "30m")
 
-        assert config.settings.reminders.send_get_roles_reminders.interval == (
-            datetime.timedelta(minutes=30)
-        )
+        assert config.settings.as_flat_file_mapping()[
+            "reminders:send-get-roles-reminders:interval"
+        ] == datetime.timedelta(minutes=30)
 
     @staticmethod
     def test_a_change_needing_a_restart_is_reported(
@@ -475,7 +475,9 @@ class TestChangesMadeByHand:
         config.reload_settings()
         config.set_setting("commands:ping:easter-egg-probability", "0.5")
 
-        assert config.settings.community_group.full_name == "Edited By Hand"
+        assert config.settings.as_flat_file_mapping()["community-group:full-name"] == (
+            "Edited By Hand"
+        )
         assert (
             config.settings.commands.ping.easter_egg_probability
             == CHANGED_EASTER_EGG_PROBABILITY
@@ -518,7 +520,9 @@ class TestChangesMadeByHand:
         config.set_setting("commands:ping:easter-egg-probability", "0.5")
         config.set_setting("community-group:full-name", "CompSoc")
 
-        assert config.settings.community_group.full_name == "CompSoc"
+        assert config.settings.as_flat_file_mapping()["community-group:full-name"] == (
+            "CompSoc"
+        )
 
     @staticmethod
     def test_a_change_is_made_against_the_file_that_was_loaded(
@@ -590,7 +594,7 @@ class TestRemovingSettings:
 
         assert RESULT is not None
         assert RESULT.changed_settings == {"community-group:full-name"}
-        assert config.settings.community_group.full_name is None
+        assert config.settings.as_flat_file_mapping()["community-group:full-name"] is None
 
     @staticmethod
     def test_removing_a_setting_that_is_not_set_changes_nothing(
@@ -663,10 +667,10 @@ class TestDescribingAnEditedFile:
         )
 
     @staticmethod
-    def test_the_value_within_the_file_is_shown_alongside_the_running_one(
+    def test_the_value_within_the_file_is_shown_alongside_the_loaded_one(
         configured: Callable[[str], Path],
     ) -> None:
-        """Test that an edited setting shows both what is running & what the file holds."""
+        """Test that an edited setting shows both what was loaded & what the file holds."""
         CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
 
         TestDescribingAnEditedFile._edit_by_hand(
@@ -681,7 +685,7 @@ class TestDescribingAnEditedFile:
             secret=False,
         )
 
-        assert "currently running" in DESCRIPTION
+        assert "last loaded" in DESCRIPTION
         assert "`0.01`" in DESCRIPTION
         assert "within the file" in DESCRIPTION
         assert "`0.25`" in DESCRIPTION

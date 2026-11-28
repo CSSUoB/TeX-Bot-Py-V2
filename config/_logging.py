@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 from discord_logging.handler import DiscordHandler
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Mapping, Sequence
     from logging import Handler, Logger
     from typing import Final
 
@@ -68,11 +68,11 @@ def _apply_console_logging_settings(logging_settings: LoggingSettings) -> None:
     _remove_handlers_of_type(logger, logging.StreamHandler, excluding=logging.FileHandler)
 
     console_logging_handler: Handler = logging.StreamHandler()
+    console_logging_handler.setLevel(logging_settings.console.log_level)
     console_logging_handler.setFormatter(
         logging.Formatter("{asctime} | {name} | {levelname:^8} - {message}", style="{")
     )
 
-    logger.setLevel(logging_settings.console.log_level)
     logger.addHandler(console_logging_handler)
     logger.propagate = False
 
@@ -101,6 +101,26 @@ def _apply_discord_channel_logging_settings(logging_settings: LoggingSettings) -
     )
 
     logger.addHandler(discord_channel_logging_handler)
+
+
+def _apply_lowest_destination_log_level(logging_settings: LoggingSettings) -> None:
+    """
+    Set TeX-Bot's logger to the lowest log level of any destination it writes to.
+
+    The logger drops a record before any of its handlers see it, so each destination's
+    own level is set upon its handler, & the logger must let through every record that
+    at least one of those handlers will accept.
+    """
+    LOG_LEVEL_NUMBERS: Final[Mapping[str, int]] = logging.getLevelNamesMapping()
+
+    lowest_log_level: int = LOG_LEVEL_NUMBERS[logging_settings.console.log_level]
+
+    if logging_settings.discord_channel is not None:
+        lowest_log_level = min(
+            lowest_log_level, LOG_LEVEL_NUMBERS[logging_settings.discord_channel.log_level]
+        )
+
+    logger.setLevel(lowest_log_level)
 
 
 def _apply_discord_api_logging_settings(logging_settings: LoggingSettings) -> None:
@@ -139,5 +159,6 @@ def apply_logging_settings(logging_settings: LoggingSettings) -> None:
     so reloading the configuration cannot accumulate duplicate handlers.
     """
     _apply_console_logging_settings(logging_settings)
+    _apply_lowest_destination_log_level(logging_settings)
     _apply_discord_channel_logging_settings(logging_settings)
     _apply_discord_api_logging_settings(logging_settings)

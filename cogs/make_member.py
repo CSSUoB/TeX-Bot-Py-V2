@@ -86,6 +86,7 @@ class MakeMemberCommandCog(TeXBotBaseCog):
         parameter_name="raw_group_member_id",
     )
     @CommandChecks.check_interaction_user_in_main_guild
+    @CommandChecks.check_msl_is_configured
     async def make_member(
         self, ctx: TeXBotApplicationContext, raw_group_member_id: str
     ) -> None:
@@ -210,6 +211,7 @@ class MemberCountCommandCog(TeXBotBaseCog):
     @discord.slash_command(
         name="member-count", description="Displays the number of members in the group."
     )
+    @CommandChecks.check_msl_is_configured
     async def member_count(self, ctx: TeXBotApplicationContext) -> None:
         """Definition & callback response of the "member_count" command."""
         await ctx.defer(ephemeral=False)

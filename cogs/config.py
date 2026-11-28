@@ -1,7 +1,7 @@
 """Contains cog classes for viewing & changing TeX-Bot's configuration at run-time."""
 
 import logging
-lazy from collections.abc import Iterable, Sequence
+lazy from collections.abc import Iterable, Mapping, Sequence
 lazy from collections.abc import Set as AbstractSet
 lazy from logging import Logger
 lazy from typing import Final
@@ -261,6 +261,9 @@ class ConfigCommandsCog(TeXBotBaseCog):
         IS_SET_WITHIN_FILE: Final[bool] = config.settings.document.contains(
             setting_name.split(config.SETTING_NAME_SEPARATOR)
         )
+        VALUES_AWAITING_RESTART: Final[Mapping[str, object]] = (
+            config.settings.values_awaiting_restart
+        )
 
         response_message: str = (
             f"**`{setting_name}`**\n"
@@ -268,25 +271,41 @@ class ConfigCommandsCog(TeXBotBaseCog):
         )
 
         # NOTE: A setting holding nothing already says so, & saying that it holds its
-        # default as well would be saying the same thing twice.
-        if not IS_SET_WITHIN_FILE and CURRENT_VALUE is not None:
+        # default as well would be saying the same thing twice. A setting awaiting a
+        # restart is running with its start-up value, which is not necessarily its default.
+        if (
+            not IS_SET_WITHIN_FILE
+            and CURRENT_VALUE is not None
+            and setting_name not in VALUES_AWAITING_RESTART
+        ):
             response_message += " _(default; not set within the configuration file)_"
 
-        # NOTE: The value shown above is the one TeX-Bot is running, which is the one it
-        # loaded. Showing what the file holds alongside it is what stops an edit made
-        # since then from looking as though it had simply been ignored.
+        # NOTE: The value shown above is the one TeX-Bot is running. Showing what the file
+        # holds alongside it is what stops an edit made since then from looking as though
+        # it had simply been ignored. The file is compared with the value last loaded from
+        # it, so that a value only awaiting a restart is not mistaken for such an edit.
         if config.settings.file_has_changed():
             response_message += config.format_file_difference(
                 setting_name,
-                CURRENT_VALUE,
+                config.settings.as_flat_file_mapping().get(setting_name),
                 secret=setting_metadata.secret,
                 file_path=config.settings.file_path,
+            )
+
+        if setting_name in VALUES_AWAITING_RESTART:
+            response_message += (
+                "\n\n:warning: The configuration file changes this to "
+                f"{
+                    config.format_setting_value(
+                        VALUES_AWAITING_RESTART[setting_name], secret=setting_metadata.secret
+                    )
+                }, which will not take effect until TeX-Bot is restarted."
             )
 
         if setting_metadata.description:
             response_message += f"\n\n{setting_metadata.description}"
 
-        if setting_metadata.requires_restart:
+        if setting_metadata.requires_restart and setting_name not in VALUES_AWAITING_RESTART:
             response_message += (
                 "\n\n:warning: Changing this setting requires TeX-Bot to be restarted."
             )
@@ -353,7 +372,7 @@ class ConfigCommandsCog(TeXBotBaseCog):
         # NOTE: The value itself is deliberately not repeated back, so that setting a
         # secret cannot leave a copy of it within a Discord channel.
         FORMATTED_NEW_VALUE: Final[str] = config.format_setting_value(
-            config.settings.as_flat_mapping()[setting_name],
+            config.settings.as_flat_file_mapping()[setting_name],
             secret=setting_metadata.secret,
         )
 
@@ -441,7 +460,7 @@ class ConfigCommandsCog(TeXBotBaseCog):
                 f"which has returned to its default value of "
                 f"{
                     config.format_setting_value(
-                        config.settings.as_flat_mapping()[setting_name],
+                        config.settings.as_flat_file_mapping()[setting_name],
                         secret=setting_metadata.secret,
                     )
                 }."

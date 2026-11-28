@@ -5,6 +5,7 @@ __all__: Sequence[str] = (
     "fetch_community_group_members_list",
     "fetch_url_content_with_session",
     "is_id_a_community_group_member",
+    "msl_auth_cookie_is_set",
     "msl_is_configured",
 )
 
@@ -44,11 +45,15 @@ _refreshed_auth_cookie: tuple[str, str] | None = None
 _membership_list_cache: set[int] = set()
 
 
+def msl_auth_cookie_is_set() -> bool:
+    """Whether the cookie that authenticates TeX-Bot to the SU platform is set."""
+    return settings.community_group.msl.auth_cookie is not None
+
+
 def msl_is_configured() -> bool:
     """Whether both of the settings required to reach your group's MSL website are set."""
     return (
-        settings.community_group.msl.organisation_id is not None
-        and settings.community_group.msl.auth_cookie is not None
+        settings.community_group.msl.organisation_id is not None and msl_auth_cookie_is_set()
     )
 
 

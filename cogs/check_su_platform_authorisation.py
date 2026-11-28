@@ -21,7 +21,7 @@ from config import settings
 from utils import CommandChecks, TeXBotBaseCog
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 lazy from utils import TeXBot, TeXBotApplicationContext
-lazy from utils.msl import fetch_url_content_with_session
+lazy from utils.msl import fetch_url_content_with_session, msl_is_configured
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
@@ -162,6 +162,7 @@ class CheckSUPlatformAuthorisationCommandCog(CheckSUPlatformAuthorisationBaseCog
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
+    @CommandChecks.check_msl_auth_cookie_is_set
     async def check_su_platform_authorisation(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition of the "check_su_platform_authorisation" command.
@@ -228,6 +229,13 @@ class CheckSUPlatformAuthorisationTaskCog(CheckSUPlatformAuthorisationBaseCog):
         The task will check if the cookie is valid and if it is, it will retrieve the
         MSL organisations the cookie has access to.
         """
+        if not msl_is_configured():
+            logger.debug(
+                "Skipping SU platform access cookie check task, "
+                "because TeX-Bot has not been fully set up to access your group's MSL website."
+            )
+            return
+
         logger.debug("Running SU platform access cookie check task...")
 
         su_platform_access_cookie_status: tuple[int, str] = (
