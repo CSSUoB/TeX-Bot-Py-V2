@@ -77,7 +77,7 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
         if "admin tools" in response_html.lower():
             return SUPlatformAccessCookieStatus.AUTHORISED
 
-        if "You do not have any permissions for this organisation" in response_html.lower():
+        if "you do not have any permissions for this organisation" in response_html.lower():
             return SUPlatformAccessCookieStatus.VALID
 
         logger.warning(
