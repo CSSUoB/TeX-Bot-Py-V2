@@ -7,7 +7,7 @@ lazy from collections.abc import Sequence
 import discord
 
 from utils import CommandChecks, TeXBotBaseCog
-lazy from config import settings
+lazy from config import messages
 lazy from utils import TeXBotApplicationContext
 
 
@@ -30,7 +30,7 @@ class WriteRolesCommandCog(TeXBotBaseCog):
         roles_channel: discord.TextChannel = await self.bot.roles_channel
 
         roles_message: str
-        for roles_message in settings["ROLES_MESSAGES"]:
+        for roles_message in messages.roles_messages:
             await roles_channel.send(
                 roles_message.replace("<Group_Name>", self.bot.group_short_name)
             )

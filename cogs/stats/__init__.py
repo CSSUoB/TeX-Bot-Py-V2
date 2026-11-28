@@ -25,8 +25,8 @@ class StatsCommandsCog(TeXBotBaseCog):
     _DISCORD_SERVER_NAME: Final[str] = f"""{
         "the "
         if (
-            settings["_GROUP_SHORT_NAME"] is not None
-            and (settings["_GROUP_SHORT_NAME"])
+            settings.community_group.short_name is not None
+            and (settings.community_group.short_name)
             .replace("the", "")
             .replace("THE", "")
             .replace("The", "")
@@ -35,15 +35,15 @@ class StatsCommandsCog(TeXBotBaseCog):
         else ""
     }{
         (
-            (settings["_GROUP_SHORT_NAME"])
+            (settings.community_group.short_name)
             .replace("the", "")
             .replace("THE", "")
             .replace("The", "")
             .strip()
         )
         if (
-            settings["_GROUP_SHORT_NAME"] is not None
-            and (settings["_GROUP_SHORT_NAME"])
+            settings.community_group.short_name is not None
+            and (settings.community_group.short_name)
             .replace("the", "")
             .replace("THE", "")
             .replace("The", "")
@@ -127,7 +127,9 @@ class StatsCommandsCog(TeXBotBaseCog):
                 x_label="Role Name",
                 y_label=(
                     f"""Number of Messages Sent (in the past {
-                        amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")
+                        amount_of_time_formatter(
+                            settings.commands.stats.lookback_period.days, "day"
+                        )
                     })"""
                 ),
                 title=f"Most Active Roles in #{channel.name}",
@@ -193,7 +195,9 @@ class StatsCommandsCog(TeXBotBaseCog):
                     x_label="Role Name",
                     y_label=(
                         f"""Number of Messages Sent (in the past {
-                            amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")
+                            amount_of_time_formatter(
+                                settings.commands.stats.lookback_period.days, "day"
+                            )
                         })"""
                     ),
                     title=(
@@ -215,7 +219,9 @@ class StatsCommandsCog(TeXBotBaseCog):
                     x_label="Channel Name",
                     y_label=(
                         f"""Number of Messages Sent (in the past {
-                            amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")
+                            amount_of_time_formatter(
+                                settings.commands.stats.lookback_period.days, "day"
+                            )
                         })"""
                     ),
                     title=(
@@ -281,7 +287,7 @@ class StatsCommandsCog(TeXBotBaseCog):
             message_counts[f"#{channel.name}"] = 0
 
             message_history_period: AsyncIterable[discord.Message] = channel.history(
-                after=discord.utils.utcnow() - settings["STATISTICS_DAYS"]
+                after=discord.utils.utcnow() - settings.commands.stats.lookback_period
             )
             message: discord.Message
             async for message in message_history_period:
@@ -302,7 +308,9 @@ class StatsCommandsCog(TeXBotBaseCog):
                 x_label="Channel Name",
                 y_label=(
                     f"""Number of Messages Sent (in the past {
-                        amount_of_time_formatter(settings["STATISTICS_DAYS"].days, "day")
+                        amount_of_time_formatter(
+                            settings.commands.stats.lookback_period.days, "day"
+                        )
                     })"""
                 ),
                 title=(
@@ -347,7 +355,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         }
 
         role_name: str
-        for role_name in settings["STATISTICS_ROLES"]:
+        for role_name in settings.commands.stats.displayed_roles:
             if discord.utils.get(main_guild.roles, name=role_name):
                 left_member_counts[f"@{role_name}"] = 0
 

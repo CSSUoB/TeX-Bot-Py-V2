@@ -8,11 +8,10 @@ lazy from logging import Logger
 lazy from typing import Final
 
 lazy import discord
-lazy from discord_logging.handler import DiscordHandler
 
 from utils import TeXBotBaseCog
 lazy import utils
-lazy from config import settings
+lazy from config import set_discord_log_channel_identity, settings
 lazy from exceptions import (
     ArchivistRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
@@ -23,7 +22,7 @@ lazy from exceptions import (
     MSLMembershipError,
     RolesChannelDoesNotExistError,
 )
-lazy from utils.msl import fetch_community_group_members_list
+lazy from utils.msl import fetch_community_group_members_list, msl_is_configured
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
@@ -38,33 +37,20 @@ class StartupCog(TeXBotBaseCog):
 
         Shortcut accessors should only be populated once TeX-Bot is ready to make API requests.
         """
-        if settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"]:
-            discord_logging_handler: logging.Handler = DiscordHandler(
-                service_name=self.bot.user.name if self.bot.user else "TeX-Bot",
-                webhook_url=settings["DISCORD_LOG_CHANNEL_WEBHOOK_URL"],
-                avatar_url=(
-                    self.bot.user.avatar.url
-                    if self.bot.user and self.bot.user.avatar
-                    else None
-                ),
-            )
-            discord_logging_handler.setLevel(logging.WARNING)
-            discord_logging_handler.setFormatter(
-                logging.Formatter("{levelname} | {message}", style="{")
-            )
-
-            logger.addHandler(discord_logging_handler)
-
-        else:
-            logger.warning(
-                "DISCORD_LOG_CHANNEL_WEBHOOK_URL was not set, "
-                "so error logs will not be sent to the Discord log channel."
+        # NOTE: Relaying error logs to a Discord log channel is set up from the loaded
+        # configuration (& re-applied upon every reload), rather than here. Attaching a
+        # handler here as well would relay every error twice, & once more for every
+        # gateway re-identify, because this listener runs again upon each reconnection.
+        # Only TeX-Bot's own name & avatar are filled in here, once they are known.
+        if self.bot.user:
+            set_discord_log_channel_identity(
+                self.bot.user.name, self.bot.user.display_avatar.url
             )
 
         try:
             main_guild: discord.Guild | None = self.bot.main_guild
         except GuildDoesNotExistError:
-            main_guild = self.bot.get_guild(settings["_DISCORD_MAIN_GUILD_ID"])
+            main_guild = self.bot.get_guild(settings.discord.main_guild_id)
             if main_guild:
                 self.bot.set_main_guild(main_guild)
 
@@ -73,19 +59,17 @@ class StartupCog(TeXBotBaseCog):
                 logger.info(
                     "Invite URL: %s",
                     utils.generate_invite_url(
-                        self.bot.application_id, settings["_DISCORD_MAIN_GUILD_ID"]
+                        self.bot.application_id, settings.discord.main_guild_id
                     ),
                 )
-            logger.critical(
-                GuildDoesNotExistError(guild_id=settings["_DISCORD_MAIN_GUILD_ID"])
-            )
+            logger.critical(GuildDoesNotExistError(guild_id=settings.discord.main_guild_id))
             await self.bot.close()
 
         if self.bot.application_id:
             logger.debug(
                 "Invite URL: %s",
                 utils.generate_invite_url(
-                    self.bot.application_id, settings["_DISCORD_MAIN_GUILD_ID"]
+                    self.bot.application_id, settings.discord.main_guild_id
                 ),
             )
 
@@ -107,19 +91,27 @@ class StartupCog(TeXBotBaseCog):
         if not discord.utils.get(main_guild.text_channels, name="general"):
             logger.warning(GeneralChannelDoesNotExistError())
 
-        try:
-            await fetch_community_group_members_list()
-        except MSLMembershipError as msl_membership_error:
-            logger.debug(
-                "Failed to update community group member list cache on startup: %s",
-                msl_membership_error,
+        if not msl_is_configured():
+            logger.warning(
+                "Both 'community-group:msl:organisation-id' & "
+                "'community-group:msl:auth-cookie' must be set for your group's "
+                "members-list to be retrieved. Every feature that depends upon knowing "
+                "who holds a membership will not work until they are."
             )
+        else:
+            try:
+                await fetch_community_group_members_list()
+            except MSLMembershipError as msl_membership_error:
+                logger.debug(
+                    "Failed to update community group member list cache on startup: %s",
+                    msl_membership_error,
+                )
 
-        if settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"] != "DM":
+        if settings.commands.strike.performed_manually_warning_location != "DM":
             manual_moderation_warning_message_location_exists: bool = bool(
                 discord.utils.get(
                     main_guild.text_channels,
-                    name=settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"],
+                    name=settings.commands.strike.performed_manually_warning_location,
                 )
             )
             if not manual_moderation_warning_message_location_exists:
@@ -128,11 +120,12 @@ class StartupCog(TeXBotBaseCog):
                         "The channel %s does not exist, so cannot be used as the location "
                         "for sending manual-moderation warning messages"
                     ),
-                    repr(settings["STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"]),
+                    repr(settings.commands.strike.performed_manually_warning_location),
                 )
-                manual_moderation_warning_message_location_similar_to_dm: bool = settings[
-                    "STRIKE_PERFORMED_MANUALLY_WARNING_LOCATION"
-                ].lower() in ("dm", "dms")
+                manual_moderation_warning_message_location_similar_to_dm: bool = (
+                    settings.commands.strike.performed_manually_warning_location.lower()
+                    in ("dm", "dms")
+                )
                 if manual_moderation_warning_message_location_similar_to_dm:
                     logger.info(
                         (

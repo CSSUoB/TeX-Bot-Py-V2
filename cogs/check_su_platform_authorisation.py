@@ -21,7 +21,7 @@ from config import settings
 from utils import CommandChecks, TeXBotBaseCog
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
 lazy from utils import TeXBot, TeXBotApplicationContext
-lazy from utils.msl import fetch_url_content_with_session
+lazy from utils.msl import fetch_url_content_with_session, msl_is_configured
 
 logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
@@ -70,7 +70,7 @@ class CheckSUPlatformAuthorisationBaseCog(TeXBotBaseCog):
             return SUPlatformAccessCookieStatus.INVALID
 
         organisation_admin_url: str = (
-            f"{SU_PLATFORM_ORGANISATION_URL}/{settings['ORGANISATION_ID']}"
+            f"{SU_PLATFORM_ORGANISATION_URL}/{settings.community_group.msl.organisation_id}"
         )
         response_html: str = await fetch_url_content_with_session(organisation_admin_url)
 
@@ -162,6 +162,7 @@ class CheckSUPlatformAuthorisationCommandCog(CheckSUPlatformAuthorisationBaseCog
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
+    @CommandChecks.check_msl_auth_cookie_is_set
     async def check_su_platform_authorisation(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition of the "check_su_platform_authorisation" command.
@@ -203,7 +204,7 @@ class CheckSUPlatformAuthorisationTaskCog(CheckSUPlatformAuthorisationBaseCog):
     @override
     def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
-        if settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING"]:
+        if settings.community_group.msl.auto_cookie_checking.enabled:
             _ = self.su_platform_access_cookie_check_task.start()
 
         super().__init__(bot)
@@ -217,7 +218,9 @@ class CheckSUPlatformAuthorisationTaskCog(CheckSUPlatformAuthorisationBaseCog):
         """
         self.su_platform_access_cookie_check_task.cancel()
 
-    @tasks.loop(**settings["AUTO_SU_PLATFORM_ACCESS_COOKIE_CHECKING_INTERVAL"])
+    @tasks.loop(
+        seconds=settings.community_group.msl.auto_cookie_checking.interval.total_seconds()
+    )
     @capture_guild_does_not_exist_error
     async def su_platform_access_cookie_check_task(self) -> None:
         """
@@ -226,6 +229,13 @@ class CheckSUPlatformAuthorisationTaskCog(CheckSUPlatformAuthorisationBaseCog):
         The task will check if the cookie is valid and if it is, it will retrieve the
         MSL organisations the cookie has access to.
         """
+        if not msl_is_configured():
+            logger.debug(
+                "Skipping SU platform access cookie check task, "
+                "because TeX-Bot has not been fully set up to access your group's MSL website."
+            )
+            return
+
         logger.debug("Running SU platform access cookie check task...")
 
         su_platform_access_cookie_status: tuple[int, str] = (

@@ -20,7 +20,7 @@ import discord
 
 from utils import CommandChecks, TeXBotBaseCog
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
-lazy from config import settings
+lazy from config import messages, settings
 lazy from db.core.models import IntroductionReminderOptOutMember
 lazy from exceptions import (
     ApplicantRoleDoesNotExistError,
@@ -105,14 +105,27 @@ class InductSendMessageCog(TeXBotBaseCog):
         ]
 
         if user_type != "member":
+            # NOTE: Both links are optional, so the sentence pointing at each one is left
+            # out entirely rather than sent holding a link that goes nowhere.
+            PURCHASE_MEMBERSHIP_MESSAGE: Final[str] = (
+                f"Just head to {settings.community_group.links.purchase_membership}. "
+                if settings.community_group.links.purchase_membership is not None
+                else ""
+            )
+            MEMBERSHIP_PERKS_MESSAGE: Final[str] = (
+                f" Checkout all the perks at {settings.community_group.links.membership_perks}"
+                if settings.community_group.links.membership_perks is not None
+                else ""
+            )
+
             messages_to_send.append(
                 f"You can also get yourself an annual membership "
                 f"to {self.bot.group_full_name} for only £5! "
-                f"Just head to {settings['PURCHASE_MEMBERSHIP_URL']}. "
+                f"{PURCHASE_MEMBERSHIP_MESSAGE}"
                 "You'll get awesome perks like a free T-shirt:shirt:, "
                 "access to member only events:calendar_spiral: and a cool green name on "
-                f"the {self.bot.group_short_name} Discord server:green_square:! "
-                f"Checkout all the perks at {settings['MEMBERSHIP_PERKS_URL']}"
+                f"the {self.bot.group_short_name} Discord server:green_square:!"
+                f"{MEMBERSHIP_PERKS_MESSAGE}"
             )
 
         try:
@@ -137,7 +150,7 @@ class BaseInductCog(TeXBotBaseCog):
         self, induction_member: discord.User | discord.Member | None = None
     ) -> str:
         """Get & format a random welcome message."""
-        random_welcome_message: str = random.choice(tuple(settings["WELCOME_MESSAGES"]))  # noqa: S311
+        random_welcome_message: str = random.choice(tuple(messages.welcome_messages))  # noqa: S311
 
         if "<User>" in random_welcome_message:
             if not induction_member:
@@ -158,11 +171,12 @@ class BaseInductCog(TeXBotBaseCog):
                 )
 
         if "<Purchase_Membership_URL>" in random_welcome_message:
-            if not settings["PURCHASE_MEMBERSHIP_URL"]:
+            if not settings.community_group.links.purchase_membership:
                 return await self.get_random_welcome_message(induction_member)
 
             random_welcome_message = random_welcome_message.replace(
-                "<Purchase_Membership_URL>", settings["PURCHASE_MEMBERSHIP_URL"]
+                "<Purchase_Membership_URL>",
+                str(settings.community_group.links.purchase_membership),
             )
 
         if "<Group_Name>" in random_welcome_message:

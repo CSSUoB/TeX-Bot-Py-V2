@@ -40,8 +40,8 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
     @override
     def __init__(self, bot: TeXBot) -> None:
         """Start all task managers when this cog is initialised."""
-        if settings["SEND_INTRODUCTION_REMINDERS"]:
-            if settings["SEND_INTRODUCTION_REMINDERS"] == "interval":
+        if settings.reminders.send_introduction_reminders.enabled:
+            if settings.reminders.send_introduction_reminders.enabled == "interval":
                 SentOneOffIntroductionReminderMember.objects.all().delete()
 
             _ = self.send_introduction_reminders.start()
@@ -62,7 +62,9 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
         """Add OptOutIntroductionRemindersView to the bot's list of permanent views."""
         self.bot.add_view(self.OptOutIntroductionRemindersView(self.bot))
 
-    @tasks.loop(**settings["SEND_INTRODUCTION_REMINDERS_INTERVAL"])
+    @tasks.loop(
+        seconds=settings.reminders.send_introduction_reminders.interval.total_seconds()
+    )
     @functools.partial(
         ErrorCaptureDecorators.capture_error_and_close,
         error_type=GuestRoleDoesNotExistError,
@@ -100,7 +102,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 continue
 
             member_needs_one_off_reminder: bool = (
-                settings["SEND_INTRODUCTION_REMINDERS"] == "once"
+                settings.reminders.send_introduction_reminders.enabled == "once"
                 and not await (
                     SentOneOffIntroductionReminderMember.objects.filter(
                         discord_member__discord_id=member.id,
@@ -108,11 +110,11 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                 ).aexists()
             )
             member_needs_recurring_reminder: bool = (
-                settings["SEND_INTRODUCTION_REMINDERS"] == "interval"
+                settings.reminders.send_introduction_reminders.enabled == "interval"
             )
             member_recently_joined: bool = (
                 discord.utils.utcnow() - member.joined_at
-            ) <= settings["SEND_INTRODUCTION_REMINDERS_DELAY"]
+            ) <= settings.reminders.send_introduction_reminders.delay
             member_opted_out_from_reminders: bool = await (
                 IntroductionReminderOptOutMember.objects.filter(
                     discord_member__discord_id=member.id,
@@ -164,7 +166,7 @@ class SendIntroductionRemindersTaskCog(TeXBotBaseCog):
                     ),
                     view=(
                         self.OptOutIntroductionRemindersView(self.bot)
-                        if settings["SEND_INTRODUCTION_REMINDERS"] == "interval"
+                        if settings.reminders.send_introduction_reminders.enabled == "interval"
                         else None  # type: ignore[arg-type]
                     ),
                 )

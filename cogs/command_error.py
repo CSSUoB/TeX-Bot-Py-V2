@@ -57,6 +57,16 @@ class CommandErrorCog(TeXBotBaseCog):
                     "members can run this command."
                 )
 
+            elif CommandChecks.is_msl_is_configured_failure(
+                error.checks[0]  # type: ignore[arg-type]
+            ) or CommandChecks.is_msl_auth_cookie_is_set_failure(
+                error.checks[0]  # type: ignore[arg-type]
+            ):
+                message = (
+                    "This command is unavailable, because TeX-Bot has not been fully set up "
+                    "to access the SU platform. Please contact a committee member."
+                )
+
         else:
             logging_message = error
 

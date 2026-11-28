@@ -4,7 +4,9 @@
 CONTRIBUTING.md
 Dockerfile
 *.env
-!.env
+tex-bot-deployment.yaml
+tex-bot-deployment.*.yaml
+tex-bot-deployment.yaml.*.tmp
 uv.lock
 pyproject.toml
 tests

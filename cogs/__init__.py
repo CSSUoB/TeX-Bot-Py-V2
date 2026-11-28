@@ -62,6 +62,7 @@ from .committee_actions_tracking import (
     CommitteeActionsTrackingContextCommandCog,
     CommitteeActionsTrackingSlashCommandsCog,
 )
+from .config import ConfigCommandsCog
 from .delete_all import DeleteAllCommandsCog
 from .edit_message import EditMessageCommandCog
 from .everest import EverestCommandCog
@@ -96,6 +97,7 @@ def setup(bot: TeXBot) -> None:
         CommitteeActionsTrackingSlashCommandsCog,
         CommitteeActionsTrackingContextCommandCog,
         CommitteeHandoverCommandCog,
+        ConfigCommandsCog,
         DeleteAllCommandsCog,
         EditMessageCommandCog,
         EnsureMembersInductedCommandCog,

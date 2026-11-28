@@ -12,12 +12,12 @@ from .base import BaseTeXBotError
 
 
 class ImproperlyConfiguredError(BaseTeXBotError, Exception):
-    """Exception class to raise when environment variables are not correctly provided."""
+    """Exception class to raise when a configuration value is not correctly provided."""
 
     @classproperty
     @override
     def DEFAULT_MESSAGE(cls) -> str:
-        return "One or more provided environment variable values are invalid."
+        return "One or more provided configuration values are invalid."
 
 
 class RestartRequiredDueToConfigChange(BaseTeXBotError, Exception):  # noqa: N818
@@ -33,6 +33,6 @@ class RestartRequiredDueToConfigChange(BaseTeXBotError, Exception):  # noqa: N81
         self, message: str | None = None, changed_settings: AbstractSet[str] | None = None
     ) -> None:
         """Initialise an Exception to apply configuration changes."""
-        self.changed_settings: AbstractSet[str] | None = changed_settings or set()
+        self.changed_settings: AbstractSet[str] = changed_settings or set()
 
         super().__init__(message)
