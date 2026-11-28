@@ -59,12 +59,18 @@ class CommitteeActionsTrackingBaseCog(TeXBotBaseCog):
         If action creation is successful, the Action object will be returned.
         If unsuccessful, a string explaining the error will be returned.
         """
+        if not description.strip():
+            MISSING_DESCRIPTION_ERROR_MESSAGE: Final[str] = (
+                "Action description was empty or whitespace only."
+            )
+            raise InvalidActionDescriptionError(message=MISSING_DESCRIPTION_ERROR_MESSAGE)
+
         if len(description) >= 200:
             INVALID_DESCRIPTION_ERROR_MESSAGE: Final[str] = (
                 f"Action description length was {len(description)} characters which is "
                 "greater than the maximum of 200."
             )
-            raise InvalidActionTargetError(message=INVALID_DESCRIPTION_ERROR_MESSAGE)
+            raise InvalidActionDescriptionError(message=INVALID_DESCRIPTION_ERROR_MESSAGE)
 
         if action_user.bot:
             INVALID_ACTION_TARGET_MESSAGE: Final[str] = (
