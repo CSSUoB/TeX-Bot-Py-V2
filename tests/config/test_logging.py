@@ -3,19 +3,23 @@
 import logging
 from typing import TYPE_CHECKING
 
+import pytest
 from discord_logging.handler import DiscordHandler
 
 from config._logging import (
+    DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME,
     DISCORD_LOGGER_NAME,
     LOGGER_NAME,
     apply_logging_settings,
+    relay_start_up_error_to_discord_log_channel,
+    set_discord_log_channel_identity,
 )
 from config._schema import SettingsSchema
 
 from .conftest import VALID_BOT_TOKEN, VALID_MAIN_GUILD_ID, VALID_WEBHOOK_URL
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
+    from collections.abc import Iterator, Mapping, Sequence
     from logging import Handler
     from pathlib import Path
     from typing import Final
@@ -179,6 +183,84 @@ class TestDiscordChannelLogging:
         apply_logging_settings(_logging_settings())
 
         assert not _handlers_of_type(LOGGER_NAME, DiscordHandler)
+
+
+@pytest.fixture()
+def _placeholder_identity() -> Iterator[None]:
+    """Begin from the placeholder name & avatar, restoring them after the test."""
+    set_discord_log_channel_identity(DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME, None)
+
+    yield
+
+    set_discord_log_channel_identity(DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME, None)
+
+
+def _discord_log_channel_handler() -> DiscordHandler:
+    """Return the single handler relaying logs into the Discord log channel."""
+    DISCORD_HANDLERS: Final[Sequence[Handler]] = _handlers_of_type(LOGGER_NAME, DiscordHandler)
+
+    assert len(DISCORD_HANDLERS) == 1
+    assert isinstance(DISCORD_HANDLERS[0], DiscordHandler)
+
+    return DISCORD_HANDLERS[0]
+
+
+@pytest.mark.usefixtures("_placeholder_identity")
+class TestDiscordChannelIdentity:
+    """Test case for the name & avatar that logs are relayed under."""
+
+    @staticmethod
+    def test_the_handler_already_relaying_logs_is_given_the_identity() -> None:
+        """Test that logging in to Discord renames the handler already in use."""
+        apply_logging_settings(
+            _logging_settings(**{"discord-channel": {"webhook-url": VALID_WEBHOOK_URL}})
+        )
+
+        set_discord_log_channel_identity("CSS Bot", "https://cdn.discordapp.com/a.png")
+
+        assert _discord_log_channel_handler().service_name == "CSS Bot"
+        assert _discord_log_channel_handler().avatar_url == (
+            "https://cdn.discordapp.com/a.png"
+        )
+
+    @staticmethod
+    def test_the_identity_is_kept_by_a_later_reload() -> None:
+        """
+        Test that the handler created afresh by a reload keeps TeX-Bot's own name.
+
+        Each reload replaces the handler, & TeX-Bot only logs in to Discord once.
+        """
+        set_discord_log_channel_identity("CSS Bot", None)
+
+        apply_logging_settings(
+            _logging_settings(**{"discord-channel": {"webhook-url": VALID_WEBHOOK_URL}})
+        )
+
+        assert _discord_log_channel_handler().service_name == "CSS Bot"
+
+
+@pytest.fixture()
+def relayed_messages(monkeypatch: pytest.MonkeyPatch) -> list[str]:
+    """Return a record of every message relayed to a Discord webhook."""
+    messages: list[str] = []
+
+    def _emit(_handler: DiscordHandler, record: logging.LogRecord) -> None:
+        messages.append(record.getMessage())
+
+    monkeypatch.setattr(DiscordHandler, "emit", _emit)
+
+    return messages
+
+
+def test_a_start_up_error_is_relayed_to_the_given_webhook(
+    relayed_messages: list[str],
+) -> None:
+    """Test that an error stopping TeX-Bot from starting up is sent to the channel."""
+    relay_start_up_error_to_discord_log_channel(
+        ValueError("A setting is 100% wrong"), VALID_WEBHOOK_URL
+    )
+
+    assert relayed_messages == ["A setting is 100% wrong"]
 
 
 class TestDiscordAPILogging:

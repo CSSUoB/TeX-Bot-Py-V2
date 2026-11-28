@@ -4,12 +4,15 @@ import logging
 from typing import TYPE_CHECKING
 
 import pytest
+from discord_logging.handler import DiscordHandler
 
 import config
 from config import SettingsValidationError
 from config._accessor import SettingsAccessor
+from config._messages import MESSAGES_FILE_PATH_ENVIRONMENT_VARIABLE_NAME
+from exceptions import ImproperlyConfiguredError
 
-from .conftest import MINIMAL_CONFIG, VALID_BOT_TOKEN
+from .conftest import MINIMAL_CONFIG, VALID_BOT_TOKEN, VALID_WEBHOOK_URL
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
@@ -307,3 +310,86 @@ def test_minimal_configuration_reloads(
 ) -> None:
     """Test that a configuration holding only the required settings can be reloaded."""
     assert configured(MINIMAL_CONFIG).changed_settings
+
+
+CONFIG_WITH_LOG_CHANNEL: Final[str] = (
+    f"{MINIMAL_CONFIG}logging:\n  discord-channel:\n    webhook-url: {VALID_WEBHOOK_URL}\n"
+)
+
+INVALID_SETTING: Final[str] = "commands:\n  ping:\n    easter-egg-probability: 9.9\n"
+
+
+@pytest.fixture()
+def relayed_messages(monkeypatch: pytest.MonkeyPatch) -> list[str]:
+    """Return a record of every message relayed to a Discord webhook."""
+    messages: list[str] = []
+
+    def _emit(_handler: DiscordHandler, record: logging.LogRecord) -> None:
+        messages.append(record.getMessage())
+
+    monkeypatch.setattr(DiscordHandler, "emit", _emit)
+
+    return messages
+
+
+class TestStartUpErrors:
+    """Test case for reporting a configuration that stops TeX-Bot from starting up."""
+
+    @staticmethod
+    def test_an_invalid_configuration_is_sent_to_the_log_channel(
+        write_config: ConfigWriter,
+        monkeypatch: pytest.MonkeyPatch,
+        relayed_messages: list[str],
+    ) -> None:
+        """
+        Test that the error is sent to the webhook written within the invalid file.
+
+        Logging cannot be set up from a configuration that is not valid, so the webhook
+        is read from the file directly, as long as it is valid on its own.
+        """
+        monkeypatch.setenv(
+            "TEX_BOT_CONFIG_PATH",
+            str(write_config(f"{CONFIG_WITH_LOG_CHANNEL}{INVALID_SETTING}")),
+        )
+
+        with pytest.raises(SettingsValidationError):
+            config.run_setup()
+
+        assert len(relayed_messages) == 1
+        assert "easter-egg-probability" in relayed_messages[0]
+
+    @staticmethod
+    def test_nothing_is_sent_without_a_valid_webhook(
+        write_config: ConfigWriter,
+        monkeypatch: pytest.MonkeyPatch,
+        relayed_messages: list[str],
+    ) -> None:
+        """Test that an invalid configuration naming no usable webhook is only raised."""
+        monkeypatch.setenv(
+            "TEX_BOT_CONFIG_PATH", str(write_config(f"{MINIMAL_CONFIG}{INVALID_SETTING}"))
+        )
+
+        with pytest.raises(SettingsValidationError):
+            config.run_setup()
+
+        assert not relayed_messages
+
+    @staticmethod
+    def test_an_invalid_messages_file_is_sent_to_the_log_channel(
+        write_config: ConfigWriter,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        relayed_messages: list[str],
+    ) -> None:
+        """Test that a messages file stopping TeX-Bot from starting up is reported too."""
+        MESSAGES_FILE_PATH: Final[Path] = tmp_path / "messages.json"
+        MESSAGES_FILE_PATH.write_text("{not valid json", encoding="utf-8")
+        monkeypatch.setenv(
+            MESSAGES_FILE_PATH_ENVIRONMENT_VARIABLE_NAME, str(MESSAGES_FILE_PATH)
+        )
+        monkeypatch.setenv("TEX_BOT_CONFIG_PATH", str(write_config(CONFIG_WITH_LOG_CHANNEL)))
+
+        with pytest.raises(ImproperlyConfiguredError):
+            config.run_setup()
+
+        assert any("decoded" in relayed_message for relayed_message in relayed_messages)

@@ -3,6 +3,7 @@
 __all__: Sequence[str] = (
     "TestCheckMSLAuthCookieIsSet",
     "TestCheckMSLIsConfigured",
+    "TestMembershipListCache",
     "TestSUPlatformAccessCookieCheckTask",
 )
 
@@ -22,6 +23,7 @@ lazy from cogs.check_su_platform_authorisation import (
     SUPlatformAccessCookieStatus,
 )
 lazy from utils import TeXBotBaseCog
+lazy from utils.msl import is_id_a_community_group_member
 
 type MSLSettingsApplier = Callable[[str | None, str | None], None]
 
@@ -247,3 +249,84 @@ class TestSUPlatformAccessCookieCheckTask:
         _run_cookie_check_task()
 
         assert len(cookie_status_requests) == 1
+
+
+CACHED_MEMBER_ID: Final[int] = 1234567
+
+
+@pytest.fixture()
+def members_list_fetches(monkeypatch: pytest.MonkeyPatch) -> list[None]:
+    """Return a record of each time the members-list is fetched from the MSL website."""
+    fetches: list[None] = []
+
+    async def _fetch_community_group_members_list() -> set[int]:
+        fetches.append(None)
+        return set()
+
+    monkeypatch.setattr(
+        "utils.msl.memberships.fetch_community_group_members_list",
+        _fetch_community_group_members_list,
+    )
+
+    return fetches
+
+
+@pytest.fixture()
+def cache_members_list(monkeypatch: pytest.MonkeyPatch) -> Callable[[str], None]:
+    """Return a callable filling the members-list cache as fetched for an organisation."""
+
+    def _cache_members_list(organisation_id: str) -> None:
+        monkeypatch.setattr("utils.msl.memberships._membership_list_cache", {CACHED_MEMBER_ID})
+        monkeypatch.setattr(
+            "utils.msl.memberships._membership_list_cache_organisation_id", organisation_id
+        )
+
+    return _cache_members_list
+
+
+class TestMembershipListCache:
+    """Test case for reusing the members-list most recently fetched from MSL."""
+
+    @staticmethod
+    def test_a_cached_member_is_accepted_without_fetching_again(
+        apply_msl_settings: MSLSettingsApplier,
+        cache_members_list: Callable[[str], None],
+        members_list_fetches: list[None],
+    ) -> None:
+        """Test that a member already within the cached members-list is accepted at once."""
+        apply_msl_settings(VALID_ORGANISATION_ID, VALID_AUTH_COOKIE)
+        cache_members_list(VALID_ORGANISATION_ID)
+
+        assert asyncio.run(is_id_a_community_group_member(CACHED_MEMBER_ID)) is True
+        assert not members_list_fetches
+
+    @staticmethod
+    def test_changing_the_organisation_id_clears_the_cache(
+        apply_msl_settings: MSLSettingsApplier,
+        cache_members_list: Callable[[str], None],
+        members_list_fetches: list[None],
+    ) -> None:
+        """
+        Test that a members-list fetched for one organisation is not used for another.
+
+        Otherwise, correcting a mistyped organisation ID would leave the members of
+        whichever organisation it named able to use `/make-member`.
+        """
+        apply_msl_settings("5678", VALID_AUTH_COOKIE)
+        cache_members_list(VALID_ORGANISATION_ID)
+
+        assert asyncio.run(is_id_a_community_group_member(CACHED_MEMBER_ID)) is False
+        assert len(members_list_fetches) == 1
+
+    @staticmethod
+    def test_changing_only_the_cookie_keeps_the_cache(
+        apply_msl_settings: MSLSettingsApplier,
+        cache_members_list: Callable[[str], None],
+        members_list_fetches: list[None],
+    ) -> None:
+        """Test that replacing an expired cookie does not throw away the members-list."""
+        apply_msl_settings(VALID_ORGANISATION_ID, "b" * 600)
+        cache_members_list(VALID_ORGANISATION_ID)
+
+        assert asyncio.run(is_id_a_community_group_member(CACHED_MEMBER_ID)) is True
+        assert not members_list_fetches

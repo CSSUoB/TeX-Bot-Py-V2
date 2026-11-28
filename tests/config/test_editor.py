@@ -724,6 +724,37 @@ class TestRemovingSettings:
         assert SettingsDocument.load(CONFIG_FILE_PATH).raw["logging"] == {}
 
 
+class TestLoggingChanges:
+    """Test case for changing a setting that controls where logs are recorded."""
+
+    @staticmethod
+    def test_an_unusable_log_file_changes_nothing(
+        configured: Callable[[str], Path], tmp_path: Path
+    ) -> None:
+        """
+        Test that naming a log file within a missing folder leaves everything as it was.
+
+        Applying such a file would fail only after the configuration file had been
+        rewritten, leaving the change saved but Discord API logs no longer recorded.
+        """
+        ORIGINAL_FILE_CONTENTS: Final[str] = (
+            f"{MINIMAL_CONFIG}"
+            f"logging:\n"
+            f"  discord-api:\n"
+            f"    enabled: true\n"
+            f"    file-name: {tmp_path / 'discord.log'}\n"
+        )
+        CONFIG_FILE_PATH: Final[Path] = configured(ORIGINAL_FILE_CONTENTS)
+
+        with pytest.raises(SettingsValidationError, match="does not exist"):
+            config.set_setting(
+                "logging:discord-api:file-name", str(tmp_path / "missing" / "discord.log")
+            )
+
+        assert CONFIG_FILE_PATH.read_text(encoding="utf-8") == ORIGINAL_FILE_CONTENTS
+        assert config.settings.logging.discord_api.file_name == str(tmp_path / "discord.log")
+
+
 class TestDescribingAnEditedFile:
     """Test case for showing what an edit made by hand would change a setting to."""
 

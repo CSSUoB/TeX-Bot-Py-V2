@@ -44,6 +44,11 @@ _refreshed_auth_cookie: tuple[str, str] | None = None
 
 _membership_list_cache: set[int] = set()
 
+# NOTE: The organisation ID that the cached members-list was fetched for. The organisation
+# ID can be changed by `/config set` without a restart, & a members-list fetched for one
+# organisation must never be used to accept members of another.
+_membership_list_cache_organisation_id: str | None = None
+
 
 def msl_auth_cookie_is_set() -> bool:
     """Whether the cookie that authenticates TeX-Bot to the SU platform is set."""
@@ -133,6 +138,10 @@ async def fetch_community_group_members_list() -> set[int]:
 
     Returns a set of IDs.
     """
+    global _membership_list_cache_organisation_id  # noqa: PLW0603
+
+    ORGANISATION_ID: Final[str | None] = settings.community_group.msl.organisation_id
+
     parsed_html: BeautifulSoup = BeautifulSoup(
         markup=await fetch_url_content_with_session(_members_list_url()),
         features="html.parser",
@@ -181,12 +190,16 @@ async def fetch_community_group_members_list() -> set[int]:
 
     _membership_list_cache.clear()
     _membership_list_cache.update(member_ids)
+    _membership_list_cache_organisation_id = ORGANISATION_ID
 
     return _membership_list_cache
 
 
 async def is_id_a_community_group_member(member_id: int) -> bool:
     """Check whether the given ID is a member of your community group."""
+    if _membership_list_cache_organisation_id != settings.community_group.msl.organisation_id:
+        _membership_list_cache.clear()
+
     if member_id in _membership_list_cache:
         return True
 

@@ -218,7 +218,9 @@ class SettingsDocument:
 
         key: str
         for key in key_path[:-1]:
-            if key not in node:
+            # NOTE: A section written with nothing beneath it (because every setting within
+            # it has been commented out, for example) holds null, & is just as absent.
+            if node.get(key) is None:
                 node[key] = CommentedMap()
 
             child_node: object = node[key]
@@ -288,8 +290,8 @@ class SettingsDocument:
             )
             return None
 
-    @staticmethod
-    def _write_privately(file_path: Path, contents: str) -> None:
+    @classmethod
+    def _write_privately(cls, file_path: Path, contents: str) -> None:
         """
         Write the given contents into the given path, readable only by its owner.
 
@@ -402,8 +404,8 @@ class SettingsDocument:
 
         return deepest_known_line_number
 
-    @staticmethod
-    def _resolved_key(node: object, key: str | int) -> tuple[int, object] | None:
+    @classmethod
+    def _resolved_key(cls, node: object, key: str | int) -> tuple[int, object] | None:
         """
         Resolve one key of a key path, returning its line paired with the value held at it.
 

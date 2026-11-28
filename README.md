@@ -221,7 +221,8 @@ Some of the more commonly changed ones are:
 > Settings are written in kebab-case & nested into sections.
 > Throughout this documentation a setting is named by the path to it, separated by colons: `community-group:msl:auth-cookie` refers to `auth-cookie`, within `msl`, within `community-group`.
 >
-> Lengths of time are written largest-unit-first, in the format `<days>d<hours>h<minutes>m<seconds>s`, so `1h30m` & `2d` are both valid.
+> Lengths of time are written largest-unit-first, in the format `<weeks>w<days>d<hours>h<minutes>m<seconds>s`, so `1h30m`, `2d` & `1w` are all valid.
+> Capital letters & spaces are ignored, so `1H 30M` is also valid.
 > Every part must carry its unit, so a bare `24` is rejected rather than being read as 24 seconds.
 
 An invalid configuration file is never applied.

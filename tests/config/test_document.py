@@ -360,6 +360,26 @@ class TestChangingValues:
         assert document.raw["reminders"]["send-get-roles-reminders"]["interval"] == "30m"
 
     @staticmethod
+    def test_a_setting_is_written_into_a_section_holding_nothing(
+        write_config: ConfigWriter,
+    ) -> None:
+        """
+        Test that a section written with nothing beneath it can still be written into.
+
+        Commenting out every setting within a section leaves it holding null, which is
+        just as absent as a section that was never written at all.
+        """
+        document: SettingsDocument = SettingsDocument.load(
+            write_config(
+                f"{MINIMAL_CONFIG}logging:\n  discord-channel:\n    # webhook-url: x\n"
+            )
+        )
+
+        document.set_value(["logging", "discord-channel", "log-level"], "ERROR")
+
+        assert document.raw["logging"]["discord-channel"]["log-level"] == "ERROR"
+
+    @staticmethod
     def test_a_change_does_not_reach_the_file_until_it_is_written(
         config_file: Path,
     ) -> None:

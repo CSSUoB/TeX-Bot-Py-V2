@@ -11,7 +11,10 @@ import importlib
 import logging
 from typing import TYPE_CHECKING, NamedTuple
 
+from pydantic import TypeAdapter, ValidationError
+
 from exceptions import (
+    ImproperlyConfiguredError,
     InvalidSettingsFileError,
     SettingsFileChangedError,
     SettingsFileNotFoundError,
@@ -32,9 +35,13 @@ from ._editor import (
     validated_document_with_setting_removed,
     validated_document_with_setting_set,
 )
-from ._logging import apply_logging_settings
+from ._logging import (
+    apply_logging_settings,
+    relay_start_up_error_to_discord_log_channel,
+    set_discord_log_channel_identity,
+)
 from ._messages import MessagesAccessor
-from ._schema import ConfigSettingMetadata, get_settings_metadata
+from ._schema import ConfigSettingMetadata, DiscordWebhookURL, get_settings_metadata
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -63,6 +70,7 @@ __all__: Sequence[str] = (
     "messages",
     "reload_settings",
     "run_setup",
+    "set_discord_log_channel_identity",
     "set_setting",
     "setting_metadata",
     "settings",
@@ -167,11 +175,60 @@ def unset_setting(setting_name: str) -> ConfigReloadResult | None:
     return reload_settings(UPDATED_DOCUMENT.file_path)
 
 
-def run_setup() -> None:
-    """Execute the setup functions required before TeX-Bot can be run."""
-    reload_settings()
+def _webhook_url_written_within_file() -> str | None:
+    """
+    Return the Discord log channel webhook URL written within the configuration file.
 
-    messages.reload()
+    Read from the file directly, rather than from the loaded settings, for use when
+    the configuration as a whole is not valid. `None` is returned where the file
+    cannot be read, or holds no webhook URL that is valid on its own.
+    """
+    try:
+        raw_settings: object = SettingsDocument.load().raw
+    except SettingsFileNotFoundError, InvalidSettingsFileError, OSError:
+        return None
+
+    key: str
+    for key in ("logging", "discord-channel", "webhook-url"):
+        if not isinstance(raw_settings, dict):
+            return None
+
+        raw_settings = raw_settings.get(key)
+
+    try:
+        return str(TypeAdapter(DiscordWebhookURL).validate_python(raw_settings))
+    except ValidationError:
+        return None
+
+
+def run_setup() -> None:
+    """
+    Execute the setup functions required before TeX-Bot can be run.
+
+    An error in the configuration that stops TeX-Bot from starting up is also sent to
+    the Discord log channel, where one can be found, so that it is seen by whoever
+    watches that channel rather than only by whoever can read the console.
+    """
+    settings_validation_error: SettingsValidationError
+    try:
+        reload_settings()
+    except SettingsValidationError as settings_validation_error:
+        UNVALIDATED_WEBHOOK_URL: Final[str | None] = _webhook_url_written_within_file()
+        if UNVALIDATED_WEBHOOK_URL is not None:
+            relay_start_up_error_to_discord_log_channel(
+                settings_validation_error, UNVALIDATED_WEBHOOK_URL
+            )
+        raise
+
+    messages_error: ImproperlyConfiguredError
+    try:
+        messages.reload()
+    except ImproperlyConfiguredError as messages_error:
+        if settings.logging.discord_channel is not None:
+            relay_start_up_error_to_discord_log_channel(
+                messages_error, str(settings.logging.discord_channel.webhook_url)
+            )
+        raise
 
     logger.debug("Begin database setup")
 

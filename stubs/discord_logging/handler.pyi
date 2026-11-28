@@ -5,6 +5,9 @@ from collections.abc import Mapping, Sequence
 from typing import override
 
 class DiscordHandler(logging.Handler):
+    service_name: str
+    avatar_url: str | None
+
     @override
     def __init__(
         self,

@@ -7,7 +7,7 @@ upon the next reload without restarting TeX-Bot.
 """
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 from discord_logging.handler import DiscordHandler
 
@@ -23,7 +23,13 @@ if TYPE_CHECKING:
     )
 
 
-__all__: Sequence[str] = ("DISCORD_LOGGER_NAME", "LOGGER_NAME", "apply_logging_settings")
+__all__: Sequence[str] = (
+    "DISCORD_LOGGER_NAME",
+    "LOGGER_NAME",
+    "apply_logging_settings",
+    "relay_start_up_error_to_discord_log_channel",
+    "set_discord_log_channel_identity",
+)
 
 
 # NOTE: These hold the *names* of the loggers to retrieve, rather than the loggers
@@ -38,6 +44,22 @@ DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME: Final[str] = "TeX-Bot"
 logger: Final[Logger] = logging.getLogger(LOGGER_NAME)
 
 discord_logger: Final[Logger] = logging.getLogger(DISCORD_LOGGER_NAME)
+
+
+# NOTE: The name & avatar that logs are relayed into the Discord log channel under.
+# TeX-Bot's own name & avatar are only known once it has logged in to Discord, so a
+# placeholder is used until then. Held here, rather than only upon the handler, so
+# that the handler created afresh by each reload is given them too.
+class _DiscordLogChannelIdentity(NamedTuple):
+    """The name & avatar that logs are relayed into the Discord log channel under."""
+
+    display_name: str
+    avatar_url: str | None
+
+
+_discord_log_channel_identity: _DiscordLogChannelIdentity = _DiscordLogChannelIdentity(
+    display_name=DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME, avatar_url=None
+)
 
 
 def _remove_handlers_of_type(
@@ -92,8 +114,9 @@ def _apply_discord_channel_logging_settings(logging_settings: LoggingSettings) -
         return
 
     discord_channel_logging_handler: Handler = DiscordHandler(
-        DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME,
-        str(DISCORD_CHANNEL_LOGGING_SETTINGS.webhook_url),
+        service_name=_discord_log_channel_identity.display_name,
+        webhook_url=str(DISCORD_CHANNEL_LOGGING_SETTINGS.webhook_url),
+        avatar_url=_discord_log_channel_identity.avatar_url,
     )
     discord_channel_logging_handler.setLevel(DISCORD_CHANNEL_LOGGING_SETTINGS.log_level)
     discord_channel_logging_handler.setFormatter(
@@ -149,6 +172,67 @@ def _apply_discord_api_logging_settings(logging_settings: LoggingSettings) -> No
     discord_logger.setLevel(DISCORD_API_LOGGING_SETTINGS.log_level)
     discord_logger.addHandler(discord_api_logging_handler)
     discord_logger.propagate = False
+
+
+def set_discord_log_channel_identity(display_name: str, avatar_url: str | None) -> None:
+    """
+    Relay every log sent into the Discord log channel under the given name & avatar.
+
+    Called once TeX-Bot has logged in to Discord, which is when its own name & avatar
+    first become known. Applies to the handler already relaying logs, & to the one
+    created afresh by any later reload.
+    """
+    global _discord_log_channel_identity  # noqa: PLW0603
+
+    _discord_log_channel_identity = _DiscordLogChannelIdentity(
+        display_name=display_name, avatar_url=avatar_url
+    )
+
+    existing_handler: Handler
+    for existing_handler in logger.handlers:
+        if not isinstance(existing_handler, DiscordHandler):
+            continue
+
+        existing_handler.service_name = display_name
+        existing_handler.avatar_url = avatar_url
+
+
+def relay_start_up_error_to_discord_log_channel(
+    start_up_error: Exception, webhook_url: str
+) -> None:
+    """
+    Send an error that stopped TeX-Bot from starting up to the Discord log channel.
+
+    Sent through a handler of its own, rather than through TeX-Bot's logger: logging
+    has not been set up at all when the configuration itself is invalid, & doing so
+    also keeps the error from being printed to the console a second time.
+    """
+    start_up_error_handler: Handler = DiscordHandler(
+        service_name=_discord_log_channel_identity.display_name,
+        webhook_url=webhook_url,
+        avatar_url=_discord_log_channel_identity.avatar_url,
+        # NOTE: Sent once, without waiting to retry, so that an unreachable webhook
+        # cannot hold up the error being raised for long.
+        rate_limit_retry=False,
+        discord_timeout=3,
+    )
+    start_up_error_handler.setFormatter(
+        logging.Formatter("{levelname} | {message}", style="{")
+    )
+
+    try:
+        start_up_error_handler.handle(
+            logging.makeLogRecord(
+                {
+                    "name": LOGGER_NAME,
+                    "levelno": logging.ERROR,
+                    "levelname": "ERROR",
+                    "msg": str(start_up_error),
+                }
+            )
+        )
+    finally:
+        start_up_error_handler.close()
 
 
 def apply_logging_settings(logging_settings: LoggingSettings) -> None:

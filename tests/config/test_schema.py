@@ -19,6 +19,7 @@ from .conftest import (
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
+    from pathlib import Path
     from typing import Final
 
     from config import ConfigSettingMetadata
@@ -113,6 +114,10 @@ class TestDurationParsing:
             ("90m", datetime.timedelta(minutes=90)),
             ("1d12h30m15s", datetime.timedelta(days=1, hours=12, minutes=30, seconds=15)),
             ("0.5h", datetime.timedelta(minutes=30)),
+            ("2w", datetime.timedelta(weeks=2)),
+            ("1w2d", datetime.timedelta(weeks=1, days=2)),
+            ("1H30M", datetime.timedelta(hours=1, minutes=30)),  # NOTE: Capital letters
+            ("1h 30m", datetime.timedelta(hours=1, minutes=30)),  # NOTE: Spaces
         ),
     )
     def test_valid_durations_are_parsed(
@@ -130,7 +135,7 @@ class TestDurationParsing:
         "raw_duration",
         (
             "30m1h",  # NOTE: Units given smallest-first
-            "1h 30m",  # NOTE: Whitespace between units
+            "2d1w",  # NOTE: Weeks given after days
             "",  # NOTE: An empty string is not a duration
             "PT1H30M",  # NOTE: An ISO-8601 duration
             "01:30:00",
@@ -319,6 +324,54 @@ class TestValueConstraints:
             SettingsSchema.model_validate(
                 _config(**{"community-group": {"full-name": full_name}})
             )
+
+    @staticmethod
+    def test_a_discord_api_log_file_within_a_missing_folder_is_rejected(
+        tmp_path: Path,
+    ) -> None:
+        """
+        Test that recording Discord API logs into a folder that does not exist is refused.
+
+        Refusing it while validating is what stops a change naming such a file from being
+        written into the configuration file, & then failing as it is applied.
+        """
+        with pytest.raises(ValidationError, match="does not exist"):
+            SettingsSchema.model_validate(
+                _config(
+                    logging={
+                        "discord-api": {
+                            "enabled": True,
+                            "file-name": str(tmp_path / "missing" / "discord.log"),
+                        }
+                    }
+                )
+            )
+
+    @staticmethod
+    def test_a_folder_is_rejected_as_the_discord_api_log_file(tmp_path: Path) -> None:
+        """Test that naming a folder as the Discord API log file is refused."""
+        with pytest.raises(ValidationError, match="is a folder"):
+            SettingsSchema.model_validate(
+                _config(logging={"discord-api": {"enabled": True, "file-name": str(tmp_path)}})
+            )
+
+    @staticmethod
+    def test_an_unusable_discord_api_log_file_is_allowed_while_disabled(
+        tmp_path: Path,
+    ) -> None:
+        """Test that the log file is only checked while Discord API logs are recorded."""
+        settings: SettingsSchema = SettingsSchema.model_validate(
+            _config(
+                logging={
+                    "discord-api": {
+                        "enabled": False,
+                        "file-name": str(tmp_path / "missing" / "discord.log"),
+                    }
+                }
+            )
+        )
+
+        assert settings.logging.discord_api.enabled is False
 
     @staticmethod
     @pytest.mark.parametrize("guild_id", (10**16 - 1, 10**20, 0, -1))

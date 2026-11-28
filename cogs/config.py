@@ -131,7 +131,7 @@ async def _autocomplete_get_settings_names(
     fails to recognise a staticmethod referenced by its bare name from within its
     own class body as a coroutine function, so never awaits the result.
     """
-    TYPED_VALUE: Final[str] = str(ctx.value or "").strip().lower()
+    TYPED_VALUE: Final[str] = str(ctx.value).strip().lower() if ctx.value else ""
 
     MATCHING_SETTINGS_NAMES: Final[Sequence[str]] = [
         setting_name
@@ -177,7 +177,7 @@ class ConfigCommandsCog(TeXBotBaseCog):
         try:
             changed_settings, restart_required_settings = config.reload_settings()
         except SettingsValidationError as configuration_error:
-            logger.warning("Configuration reload rejected:\n%s", configuration_error)
+            logger.warning("Configuration reload rejected: %s", configuration_error)
             await ctx.respond(
                 _with_error_details(
                     (
@@ -277,7 +277,7 @@ class ConfigCommandsCog(TeXBotBaseCog):
         )
 
         response_message: str = (
-            f"**`{setting_name}`**\n"
+            f"## `{setting_name}`\n"
             f"{config.format_setting_value(CURRENT_VALUE, secret=setting_metadata.secret)}"
         )
 
@@ -487,9 +487,9 @@ class ConfigCommandsCog(TeXBotBaseCog):
             ephemeral=True,
         )
 
-    @staticmethod
+    @classmethod
     async def _respond_with_unknown_setting(
-        ctx: TeXBotApplicationContext, unknown_setting_error: UnknownSettingError
+        cls, ctx: TeXBotApplicationContext, unknown_setting_error: UnknownSettingError
     ) -> None:
         """Explain that the named setting is not one that TeX-Bot has."""
         await ctx.respond(
@@ -500,8 +500,8 @@ class ConfigCommandsCog(TeXBotBaseCog):
             ephemeral=True,
         )
 
-    @staticmethod
-    async def _respond_with_changed_file(ctx: TeXBotApplicationContext) -> None:
+    @classmethod
+    async def _respond_with_changed_file(cls, ctx: TeXBotApplicationContext) -> None:
         """Explain that the configuration file has been edited since it was loaded."""
         logger.info("A change was refused because the configuration file had been edited.")
 
@@ -514,14 +514,15 @@ class ConfigCommandsCog(TeXBotBaseCog):
             ephemeral=True,
         )
 
-    @staticmethod
+    @classmethod
     async def _respond_with_rejected_change(
+        cls,
         ctx: TeXBotApplicationContext,
         setting_name: str,
         validation_error: SettingsValidationError,
     ) -> None:
         """Explain that the given value was refused, & that nothing has been changed."""
-        logger.warning("Change to %r rejected:\n%s", setting_name, validation_error)
+        logger.warning("Change to %r rejected: %s", setting_name, validation_error)
 
         await ctx.respond(
             _with_error_details(
@@ -534,9 +535,9 @@ class ConfigCommandsCog(TeXBotBaseCog):
             ephemeral=True,
         )
 
-    @staticmethod
+    @classmethod
     async def _respond_with_unusable_file(
-        ctx: TeXBotApplicationContext, configuration_error: Exception
+        cls, ctx: TeXBotApplicationContext, configuration_error: Exception
     ) -> None:
         """Explain that the configuration file itself could not be read or written."""
         logger.warning("Configuration file could not be used: %s", configuration_error)

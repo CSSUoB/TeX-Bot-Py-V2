@@ -1032,14 +1032,24 @@ class StrikeContextCommandsCog(BaseStrikeCog):
         self, ctx: TeXBotApplicationContext, message: discord.Message
     ) -> None:
         """Send a provided message to committee channels."""
-        discord_channel: discord.TextChannel | None = discord.utils.get(
+        destination_channel: discord.TextChannel | None = discord.utils.get(
             self.bot.main_guild.text_channels,
-            name="discord",  # TODO: Make this user-configurable  # noqa: FIX002
+            name=settings.commands.strike.reported_message_destination_channel,
         )
 
-        if not discord_channel:
+        if not destination_channel:
+            logger.warning(
+                "Reported messages cannot be sent to the configured channel %r, "
+                "because no channel with that name exists.",
+                settings.commands.strike.reported_message_destination_channel,
+            )
             await self.command_send_error(
-                ctx, message="Could not find the `#discord` channel in the main guild!"
+                ctx,
+                message=(
+                    "Could not find the "
+                    f"`#{settings.commands.strike.reported_message_destination_channel}` "
+                    "channel in the main guild!"
+                ),
             )
             return
 
@@ -1077,7 +1087,7 @@ class StrikeContextCommandsCog(BaseStrikeCog):
             if attachment_type and "image" in attachment_type:
                 embed_image = message.attachments[0].url
 
-        await discord_channel.send(
+        await destination_channel.send(
             content=(
                 f"{ctx.user.mention} reported a message from {message.author.mention} "
                 f"in {

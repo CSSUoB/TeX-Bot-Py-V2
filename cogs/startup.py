@@ -11,7 +11,7 @@ lazy import discord
 
 from utils import TeXBotBaseCog
 lazy import utils
-lazy from config import settings
+lazy from config import set_discord_log_channel_identity, settings
 lazy from exceptions import (
     ArchivistRoleDoesNotExistError,
     CommitteeRoleDoesNotExistError,
@@ -41,6 +41,11 @@ class StartupCog(TeXBotBaseCog):
         # configuration (& re-applied upon every reload), rather than here. Attaching a
         # handler here as well would relay every error twice, & once more for every
         # gateway re-identify, because this listener runs again upon each reconnection.
+        # Only TeX-Bot's own name & avatar are filled in here, once they are known.
+        if self.bot.user:
+            set_discord_log_channel_identity(
+                self.bot.user.name, self.bot.user.display_avatar.url
+            )
 
         try:
             main_guild: discord.Guild | None = self.bot.main_guild

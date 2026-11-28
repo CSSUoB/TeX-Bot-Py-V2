@@ -31,8 +31,7 @@ main = [
     "python-dotenv>=1.0",
     "python-logging-discord-handler>=0.1",
     "ruamel-yaml>=0.19",
-    "typed_classproperties>=1.2",
-    "validators>=0.34"
+    "typed_classproperties>=1.2"
 ]
 pre-commit = ["prek>=0.5.3"]
 test = ["pytest>=9", "pytest-cov>=6.1"]

@@ -14,8 +14,10 @@ so every name used within a field annotation must be importable at runtime.
 """
 
 import datetime
+import os
 import re
 from enum import StrEnum
+from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Literal, NamedTuple, get_args
 
 from pydantic import (
@@ -26,6 +28,7 @@ from pydantic import (
     Field,
     HttpUrl,
     SecretStr,  # NOTE: Pydantic resolves field annotations at runtime  # noqa: TC002
+    model_validator,
 )
 
 if TYPE_CHECKING:
@@ -44,6 +47,7 @@ __all__: Sequence[str] = (
     "DiscordAPILoggingSettings",
     "DiscordChannelLoggingSettings",
     "DiscordSettings",
+    "DiscordWebhookURL",
     "LinksSettings",
     "LogLevel",
     "LoggingSettings",
@@ -125,10 +129,12 @@ def _parse_send_introduction_reminders_flag(value: object) -> object:
 
 
 _TIME_DELTA_MATCHER: re.Pattern[str] = re.compile(
-    r"\A(?:(?P<days>(?:\d*\.)?\d+)d)?"
+    r"\A(?:(?P<weeks>(?:\d*\.)?\d+)w)?"
+    r"(?:(?P<days>(?:\d*\.)?\d+)d)?"
     r"(?:(?P<hours>(?:\d*\.)?\d+)h)?"
     r"(?:(?P<minutes>(?:\d*\.)?\d+)m)?"
-    r"(?:(?P<seconds>(?:\d*\.)?\d+)s)?\Z"
+    r"(?:(?P<seconds>(?:\d*\.)?\d+)s)?\Z",
+    re.IGNORECASE,
 )
 
 # NOTE: Discord will not disable a member's communication more than 28 days into the
@@ -139,10 +145,13 @@ MAXIMUM_DISCORD_TIMEOUT_DURATION: Final[datetime.timedelta] = datetime.timedelta
 
 def _parse_time_delta(value: object) -> object:
     """
-    Parse a delay/interval string (in the format `<days>d<hours>h<minutes>m<seconds>s`).
+    Parse a delay/interval string, in the format `<weeks>w<days>d<hours>h<minutes>m<seconds>s`.
 
     NOTE: Time resolutions must be given in descending order of size
     (so `1h30m` is accepted, whereas `30m1h` is not).
+
+    NOTE: Capital letters & spaces are ignored (so `1H 30M` is accepted), as they were
+    when these settings were read from environment variables.
 
     NOTE: A deviation from the previous StrictYAML implementation, which required time
     resolutions in *ascending* order of size, so accepted `30m1h` but rejected `1h30m`.
@@ -163,21 +172,21 @@ def _parse_time_delta(value: object) -> object:
         # and matches the string `'24'` already being rejected for the same reason.
         NON_STRING_TIME_DELTA_MESSAGE: str = (
             "Value should be a delay/interval string, in the format "
-            "'<days>d<hours>h<minutes>m<seconds>s', including the unit of each part"
+            "'<weeks>w<days>d<hours>h<minutes>m<seconds>s', including the unit of each part"
         )
         # NOTE: Deliberately a `ValueError` despite describing a wrong type: Pydantic
         # converts only `ValueError` & `AssertionError` into validation errors, so a
         # `TypeError` would propagate uncaught & abandon the whole reload.
         raise ValueError(NON_STRING_TIME_DELTA_MESSAGE)  # noqa: TRY004
 
-    match: re.Match[str] | None = _TIME_DELTA_MATCHER.fullmatch(value.strip())
+    match: re.Match[str] | None = _TIME_DELTA_MATCHER.fullmatch("".join(value.split()))
     if match is None or not any(match.groupdict().values()):
         # NOTE: Raising here (rather than deferring to Pydantic's own timedelta parsing)
         # keeps the set of accepted values identical to the documented format:
         # Pydantic would otherwise also accept ISO-8601 durations & `HH:MM:SS` strings.
         INVALID_TIME_DELTA_MESSAGE: str = (
             "Value should be a delay/interval string, in the format "
-            "'<days>d<hours>h<minutes>m<seconds>s' "
+            "'<weeks>w<days>d<hours>h<minutes>m<seconds>s' "
             "(with time resolutions given in descending order of size)"
         )
         raise ValueError(INVALID_TIME_DELTA_MESSAGE)
@@ -350,9 +359,48 @@ class DiscordAPILoggingSettings(_BaseSettingsSchema):
     file_name: str = Field(
         default="discord.log",
         min_length=1,
-        description="The name of the file that Discord API logs should be written to.",
+        description=(
+            "The name of the file that Discord API logs should be written to.\n"
+            "The folder holding this file must already exist."
+        ),
         json_schema_extra={"requires_restart": False, "secret": False},
     )
+
+    @model_validator(mode="after")
+    def _ensure_log_file_can_be_written(self) -> DiscordAPILoggingSettings:
+        """
+        Refuse a log file that could not be opened, once recording is enabled.
+
+        Checked while validating, rather than only when the file is opened, so that a
+        change naming an unusable file is refused before it is written or applied.
+        """
+        if not self.enabled:
+            return self
+
+        LOG_FILE_PATH: Final[Path] = Path(self.file_name)
+
+        if not LOG_FILE_PATH.parent.is_dir():
+            MISSING_FOLDER_MESSAGE: Final[str] = (
+                f"The folder {str(LOG_FILE_PATH.parent)!r} does not exist, "
+                "so the Discord API log file cannot be created within it."
+            )
+            raise ValueError(MISSING_FOLDER_MESSAGE)
+
+        if LOG_FILE_PATH.is_dir():
+            FOLDER_NOT_FILE_MESSAGE: Final[str] = (
+                f"{self.file_name!r} is a folder, so it cannot be used as the log file."
+            )
+            raise ValueError(FOLDER_NOT_FILE_MESSAGE)
+
+        if not os.access(
+            LOG_FILE_PATH if LOG_FILE_PATH.exists() else LOG_FILE_PATH.parent, os.W_OK
+        ):
+            NOT_WRITABLE_MESSAGE: Final[str] = (
+                f"TeX-Bot is not allowed to write to {self.file_name!r}."
+            )
+            raise ValueError(NOT_WRITABLE_MESSAGE)
+
+        return self
 
 
 class LoggingSettings(_BaseSettingsSchema):
