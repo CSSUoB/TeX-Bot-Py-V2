@@ -291,6 +291,36 @@ class TestValueConstraints:
             )
 
     @staticmethod
+    @pytest.mark.parametrize(
+        "full_name",
+        ("Computer Science Society", "St. John's Chess & Go Club", "Society #1: Hello!"),
+    )
+    def test_group_full_name_accepts_plain_names(full_name: str) -> None:
+        """Test that a group name of letters, numbers & simple punctuation is accepted."""
+        settings: SettingsSchema = SettingsSchema.model_validate(
+            _config(**{"community-group": {"full-name": full_name}})
+        )
+
+        assert settings.community_group.full_name == full_name
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        "full_name",
+        ("@everyone", "<@&1234567890123456789>", "**Bold** Society", "Société", "A" * 51),
+    )
+    def test_group_full_name_rejects_mentions_and_formatting(full_name: str) -> None:
+        """
+        Test that a group name which could ping or format a Discord message is rejected.
+
+        The name is substituted into messages that TeX-Bot sends, so a name holding a
+        mention would ping whoever that mention names each time one of them is sent.
+        """
+        with pytest.raises(ValidationError):
+            SettingsSchema.model_validate(
+                _config(**{"community-group": {"full-name": full_name}})
+            )
+
+    @staticmethod
     @pytest.mark.parametrize("guild_id", (10**16 - 1, 10**20, 0, -1))
     def test_invalid_discord_snowflake_is_rejected(guild_id: int) -> None:
         """Test that an ID outside the range of a Discord snowflake is rejected."""
@@ -651,6 +681,20 @@ class TestSettingsMetadata:
             )
             == EXPECTED_SECRET_SETTINGS
         )
+
+    @staticmethod
+    def test_only_settings_an_optional_section_needs_are_flagged_as_such() -> None:
+        """
+        Test that each setting an optional section cannot be used without names it.
+
+        Removing such a setting removes the whole of that section with it, so flagging any
+        other setting would remove settings that whoever removed it never asked to remove.
+        """
+        assert {
+            settings_name: metadata.required_by_optional_section
+            for settings_name, metadata in get_settings_metadata().items()
+            if metadata.required_by_optional_section is not None
+        } == {"logging:discord-channel:webhook-url": "logging:discord-channel"}
 
     @staticmethod
     def test_metadata_covers_every_configurable_setting() -> None:

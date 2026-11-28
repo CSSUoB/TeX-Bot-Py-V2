@@ -311,13 +311,22 @@ def validated_document_with_setting_removed(
 
     The file is refused if it has been changed by hand since it was last loaded.
 
+    A setting that an optional section cannot be used without is removed along with the
+    whole of that section, because the section would no longer be valid without it.
+
     Nothing is written to disk: the returned document must be written by its caller.
     """
     KEY_PATH: Final[Sequence[str]] = _key_path_of(setting_name)
+    REQUIRED_BY_OPTIONAL_SECTION: Final[str | None] = setting_metadata(
+        setting_name
+    ).required_by_optional_section
 
     document: SettingsDocument = _read_unchanged_file(loaded_document)
     if not document.unset_value(KEY_PATH):
         return None
+
+    if REQUIRED_BY_OPTIONAL_SECTION is not None:
+        document.unset_value(REQUIRED_BY_OPTIONAL_SECTION.split(SETTING_NAME_SEPARATOR))
 
     return _validated(document)
 

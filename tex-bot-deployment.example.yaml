@@ -3,8 +3,10 @@
 # Copy this file to `tex-bot-deployment.yaml` and fill in the required values.
 # (Set the `TEX_BOT_CONFIG_PATH` environment variable to keep it somewhere else.)
 #
-# Comments you add to your own file are preserved when TeX-Bot rewrites it,
-# so it is safe to annotate your configuration and still use the `/config` command.
+# Every comment & blank line in this file is removed whenever TeX-Bot rewrites it
+# (when the `/config set` or `/config unset` command is used), & the file is written
+# in a standard layout. Keep a copy elsewhere of any notes you want to keep.
+# Each setting's description can be seen with `/config get`.
 #
 # Durations are written largest-unit-first, in the format
 # `<days>d<hours>h<minutes>m<seconds>s`, so `1h30m` and `2d` are both valid.
@@ -18,13 +20,13 @@
 #
 # Individual settings can also be changed from within Discord, without editing this file
 # by hand: `/config get` shows what a setting is currently set to, `/config set` changes
-# one, and `/config unset` returns one to its default. Each of them is committee-only,
-# and writes back to this file while keeping the comments you have added to it.
+# one, and `/config unset` returns one to its default. Each of them is committee-only.
+# `/config set` & `/config unset` write back to this file without any of its comments.
 #
 # If you edit this file by hand, run `/config reload` before using `/config set` or
-# `/config unset`. Both refuse to run against a file that has been edited since TeX-Bot
-# last loaded it, so that a change made from within Discord is never quietly mixed
-# together with one made here.
+# `/config unset`. Both refuse to run against a file whose settings have been edited
+# since TeX-Bot last loaded it, so that a change made from within Discord is never
+# quietly mixed together with one made here. Editing only the comments does not count.
 # Most settings take effect straight away, because they are read at the moment they
 # are used. A few cannot, and `/config reload` will tell you when a restart is needed:
 #

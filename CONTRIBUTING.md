@@ -73,7 +73,7 @@ Each module owns one concern, so that no other part of the project needs to know
 Declares every setting as a [Pydantic](https://docs.pydantic.dev) model: its type, its constraints, its default, its help text, whether it holds a secret & whether changing it requires a restart.
 **Any new setting is added here, and nowhere else**
 
-* [`config/_document.py`](config/_document.py): owns every interaction with the file itself; locating it, parsing it while retaining its comments & formatting, writing it back atomically, & reporting a validation failure against the line that caused it
+* [`config/_document.py`](config/_document.py): owns every interaction with the file itself; locating it, parsing it while recording the line each setting is written upon, writing it back atomically (without its comments, which cannot be kept beside the right setting once settings are added or removed), & reporting a validation failure against the line that caused it
 
 * [`config/_accessor.py`](config/_accessor.py): holds the loaded configuration as a single immutable snapshot, replaced wholesale whenever it is reloaded, so that no reader can observe a half-applied configuration
 

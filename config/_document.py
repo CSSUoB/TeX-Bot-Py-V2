@@ -2,8 +2,11 @@
 Reading, writing & error-reporting for the raw deployment configuration file.
 
 This module owns every interaction with `tex-bot-deployment.yaml` as a *document*:
-locating it, parsing it while retaining its comments & formatting, writing it back
-atomically, and mapping validation failures onto the lines that caused them.
+locating it, parsing it while recording the line each setting is written upon, writing it
+back atomically, and mapping validation failures onto the lines that caused them.
+
+Comments within the file are read, but are not written back: a comment cannot be kept
+beside the setting it describes once settings around it are added or removed.
 
 It deliberately knows nothing about what any individual setting means;
 the shape & meaning of the configuration is declared solely within `config._schema`.
@@ -83,7 +86,7 @@ def get_settings_file_path() -> Path:
 
 
 def _create_yaml_parser() -> YAML:
-    """Create a YAML parser that retains comments & formatting when writing documents back."""
+    """Create a YAML parser that records where each value is written & how it is quoted."""
     yaml_parser: YAML = YAML()  # NOTE: Defaults to round-trip mode
     yaml_parser.preserve_quotes = True
     # NOTE: Without a generous line width, writing a document back would re-wrap any long
@@ -93,13 +96,24 @@ def _create_yaml_parser() -> YAML:
     return yaml_parser
 
 
+def _without_comments(node: object) -> object:
+    """Return a copy of the given parsed YAML node, holding its values but no comments."""
+    if isinstance(node, dict):
+        return {key: _without_comments(value) for key, value in node.items()}
+
+    if isinstance(node, list):
+        return [_without_comments(value) for value in node]
+
+    return node
+
+
 class SettingsDocument:
     """
-    A single deployment configuration file, held as a comment-preserving document.
+    A single deployment configuration file, held as a parsed document.
 
     Holding the parsed document (rather than only the values taken from it) allows
-    individual settings to be rewritten without discarding the comments, ordering &
-    formatting of the file that a human wrote.
+    individual settings to be rewritten while keeping the order & quoting of the file
+    that a human wrote, and allows an error to name the line that caused it.
     """
 
     @override
@@ -124,7 +138,15 @@ class SettingsDocument:
             )
             raise SettingsFileNotFoundError(EXPLICIT_SETTINGS_FILE_NOT_FOUND_MESSAGE)
 
-        raw_file_contents: str = RESOLVED_FILE_PATH.read_text(encoding="utf-8")
+        unicode_decode_error: UnicodeDecodeError
+        try:
+            raw_file_contents: str = RESOLVED_FILE_PATH.read_text(encoding="utf-8")
+        except UnicodeDecodeError as unicode_decode_error:
+            NOT_UTF_8_MESSAGE: Final[str] = (
+                f"{RESOLVED_FILE_PATH.name} must be saved as UTF-8 text, "
+                f"but could not be read as UTF-8: {unicode_decode_error}"
+            )
+            raise InvalidSettingsFileError(NOT_UTF_8_MESSAGE) from unicode_decode_error
 
         yaml_parse_error: YAMLError
         try:
@@ -162,7 +184,7 @@ class SettingsDocument:
     @property
     def raw(self) -> CommentedMap:
         """
-        The parsed document, retaining the comments & formatting of the original file.
+        The parsed document, retaining the order & quoting of the original file.
 
         Mutating this mapping does not write anything to disk;
         `write()` must be called to persist any changes made.
@@ -240,9 +262,15 @@ class SettingsDocument:
         return True
 
     def dump(self) -> str:
-        """Serialise this document back into YAML, retaining comments & formatting."""
+        """
+        Serialise this document back into YAML, without any of its comments.
+
+        A comment is attached to whichever setting happens to precede it, so once a
+        setting is added or removed, keeping it would leave it describing the wrong
+        setting, or written out at an indentation that is no longer valid YAML.
+        """
         output_buffer: io.StringIO = io.StringIO()
-        _create_yaml_parser().dump(self._raw, output_buffer)
+        _create_yaml_parser().dump(_without_comments(self._raw), output_buffer)
 
         return output_buffer.getvalue()
 
@@ -292,8 +320,13 @@ class SettingsDocument:
         The permissions of the file being replaced are carried across onto the file
         replacing it, so that a deployment which has deliberately restricted who may read
         its configuration file does not silently have those restrictions lifted.
+
+        Nothing is written if the serialised document would not read back as the same
+        settings, so that a change can never leave behind a file TeX-Bot cannot load.
         """
         NEW_FILE_CONTENTS: Final[str] = self.dump()
+
+        self._ensure_reads_back_unchanged(NEW_FILE_CONTENTS)
 
         EXISTING_FILE_PERMISSIONS: Final[int | None] = self._permissions_of_existing_file()
 
@@ -325,6 +358,28 @@ class SettingsDocument:
                 self._file_path.write_text(NEW_FILE_CONTENTS, encoding="utf-8")
         finally:
             temporary_file_path.unlink(missing_ok=True)
+
+    def _ensure_reads_back_unchanged(self, new_file_contents: str) -> None:
+        """
+        Refuse to write contents that would not read back as this document's settings.
+
+        Checked after every serialisation, so that a fault in writing a document back
+        can never leave behind a file that TeX-Bot cannot start from.
+        """
+        UNSAFE_TO_WRITE_MESSAGE: Final[str] = (
+            f"{self._file_path.name} was not changed, because the rewritten file would not "
+            "read back as the settings it should hold. "
+            "Make this change by editing the file by hand instead."
+        )
+
+        yaml_parse_error: YAMLError
+        try:
+            READ_BACK_CONTENTS: Final[object] = _create_yaml_parser().load(new_file_contents)
+        except YAMLError as yaml_parse_error:
+            raise InvalidSettingsFileError(UNSAFE_TO_WRITE_MESSAGE) from yaml_parse_error
+
+        if self._raw != READ_BACK_CONTENTS:
+            raise InvalidSettingsFileError(UNSAFE_TO_WRITE_MESSAGE)
 
     def line_number_of(self, key_path: Sequence[str | int]) -> int | None:
         """

@@ -61,11 +61,19 @@ def _load_messages_file() -> Mapping[str, object]:
         "into a Python dict object."
     )
 
+    unicode_decode_error: UnicodeDecodeError
+    try:
+        raw_messages_file_contents: str = _get_messages_file_path().read_text(encoding="utf-8")
+    except UnicodeDecodeError as unicode_decode_error:
+        NOT_UTF_8_MESSAGE: Final[str] = (
+            "Messages JSON file must be saved as UTF-8 text, "
+            f"but could not be read as UTF-8: {unicode_decode_error}"
+        )
+        raise ImproperlyConfiguredError(NOT_UTF_8_MESSAGE) from unicode_decode_error
+
     json_decode_error: json.JSONDecodeError
     try:
-        raw_messages: object = json.loads(
-            _get_messages_file_path().read_text(encoding="utf-8")
-        )
+        raw_messages: object = json.loads(raw_messages_file_contents)
     except json.JSONDecodeError as json_decode_error:
         raise ImproperlyConfiguredError(JSON_DECODING_ERROR_MESSAGE) from json_decode_error
 

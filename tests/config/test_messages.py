@@ -95,6 +95,24 @@ class TestLoading:
             MessagesAccessor().reload()
 
     @staticmethod
+    def test_a_file_that_is_not_utf_8_is_reported(write_messages: MessagesWriter) -> None:
+        """
+        Test that a file saved in a different text encoding is reported clearly.
+
+        A file saved as Latin-1 holding an accented character cannot be read as UTF-8,
+        & would otherwise fail with an error that no caller expects.
+        """
+        write_messages(VALID_MESSAGES).write_bytes(
+            json.dumps(
+                {"welcome_messages": ["Bienvenue à la société"], "roles_messages": ["Rôles"]},
+                ensure_ascii=False,
+            ).encode("latin-1")
+        )
+
+        with pytest.raises(ImproperlyConfiguredError, match="must be saved as UTF-8"):
+            MessagesAccessor().reload()
+
+    @staticmethod
     @pytest.mark.parametrize("raw_messages", (["a", "list"], "a string", 42))
     def test_json_that_is_not_an_object_is_reported(
         write_messages: MessagesWriter, raw_messages: object

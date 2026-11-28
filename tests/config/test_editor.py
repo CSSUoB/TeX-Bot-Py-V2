@@ -233,18 +233,19 @@ class TestChangingSettings:
         )
 
     @staticmethod
-    def test_changing_a_setting_preserves_every_comment(
+    def test_changing_a_setting_does_not_write_back_comments(
         configured: Callable[[str], Path],
     ) -> None:
-        """Test that rewriting the file keeps the annotations a human wrote within it."""
+        """Test that rewriting the file leaves out the comments, but keeps every setting."""
         CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
 
         config.set_setting("commands:ping:easter-egg-probability", "0.5")
 
         NEW_FILE_CONTENTS: Final[str] = CONFIG_FILE_PATH.read_text(encoding="utf-8")
 
-        assert "# A leading comment about the whole file." in NEW_FILE_CONTENTS
-        assert "# A comment about the bot token." in NEW_FILE_CONTENTS
+        assert "#" not in NEW_FILE_CONTENTS
+        assert "easter-egg-probability: 0.5" in NEW_FILE_CONTENTS
+        assert "full-name: Computer Science Society" in NEW_FILE_CONTENTS
 
     @staticmethod
     def test_a_setting_within_an_absent_section_is_created(
@@ -408,12 +409,11 @@ class TestChangesMadeByHand:
         ("original", "replacement"),
         (
             # NOTE: An edit to the setting being changed, to a different setting, one
-            # adding a setting, one removing a setting, & one changing nothing at all.
+            # adding a setting, & one removing a setting.
             ("easter-egg-probability: 0.01", "easter-egg-probability: 0.25"),
             ("full-name: Computer Science Society", "full-name: Edited By Hand"),
             ("community-group:\n", "auto-add-committee-to-threads: false\ncommunity-group:\n"),
             ("  full-name: Computer Science Society\n", ""),
-            ("discord:\n", "# A comment added by hand.\ndiscord:\n"),
         ),
     )
     def test_a_change_is_refused_while_the_file_has_been_edited(
@@ -484,14 +484,14 @@ class TestChangesMadeByHand:
         )
 
     @staticmethod
-    def test_a_comment_added_by_hand_is_cleared_by_reloading(
+    def test_an_edit_to_only_the_comments_does_not_refuse_a_change(
         configured: Callable[[str], Path],
     ) -> None:
         """
-        Test that reloading clears the refusal even for an edit that changed no setting.
+        Test that adding a comment by hand does not count as editing the settings.
 
-        Reloading replaces the document it holds as well as the settings taken from it,
-        so an edit that altered only the comments no longer counts as outstanding.
+        Comments are not written back when the file is rewritten, so refusing a change
+        until such an edit had been reloaded would protect nothing.
         """
         CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
 
@@ -499,11 +499,13 @@ class TestChangesMadeByHand:
             CONFIG_FILE_PATH, "discord:\n", "# A comment added by hand.\ndiscord:\n"
         )
 
-        assert config.reload_settings().changed_settings == set()
-
         config.set_setting("commands:ping:easter-egg-probability", "0.5")
 
-        assert "# A comment added by hand." in CONFIG_FILE_PATH.read_text(encoding="utf-8")
+        assert (
+            config.settings.commands.ping.easter_egg_probability
+            == CHANGED_EASTER_EGG_PROBABILITY
+        )
+        assert "# A comment added by hand." not in CONFIG_FILE_PATH.read_text(encoding="utf-8")
 
     @staticmethod
     def test_a_change_made_from_discord_does_not_refuse_the_next_one(
@@ -653,6 +655,73 @@ class TestRemovingSettings:
             == DEFAULT_EASTER_EGG_PROBABILITY
         )
         assert config.reload_settings().changed_settings == set()
+
+    @staticmethod
+    def test_removing_a_setting_an_optional_section_needs_removes_the_section(
+        configured: Callable[[str], Path],
+    ) -> None:
+        """
+        Test that the Discord log channel can be turned off by removing its webhook URL.
+
+        The section cannot be used without its webhook URL, so removing only the URL would
+        leave a configuration that is not valid, & the removal would be refused.
+        """
+        CONFIG_FILE_PATH: Final[Path] = configured(
+            f"{MINIMAL_CONFIG}"
+            f"logging:\n"
+            f"  discord-channel:\n"
+            f"    webhook-url: {VALID_WEBHOOK_URL}\n"
+            f"    log-level: ERROR\n"
+        )
+
+        RESULT: Final[ConfigReloadResult | None] = config.unset_setting(
+            "logging:discord-channel:webhook-url"
+        )
+
+        assert RESULT is not None
+        assert config.settings.logging.discord_channel is None
+        assert "discord-channel" not in CONFIG_FILE_PATH.read_text(encoding="utf-8")
+
+    @staticmethod
+    def test_removing_an_optional_setting_of_an_optional_section_keeps_the_section(
+        configured: Callable[[str], Path],
+    ) -> None:
+        """Test that only a setting the section needs takes the whole section with it."""
+        configured(
+            f"{MINIMAL_CONFIG}"
+            f"logging:\n"
+            f"  discord-channel:\n"
+            f"    webhook-url: {VALID_WEBHOOK_URL}\n"
+            f"    log-level: ERROR\n"
+        )
+
+        config.unset_setting("logging:discord-channel:log-level")
+
+        assert config.settings.logging.discord_channel is not None
+        assert str(config.settings.logging.discord_channel.webhook_url) == VALID_WEBHOOK_URL
+
+    @staticmethod
+    def test_removing_the_only_section_beneath_a_comment_leaves_a_loadable_file(
+        configured: Callable[[str], Path],
+    ) -> None:
+        """
+        Test that the Discord log channel can be turned off beneath a comment.
+
+        Writing the comment back would place it at an indentation that is not valid YAML,
+        leaving a file that TeX-Bot could not start from.
+        """
+        CONFIG_FILE_PATH: Final[Path] = configured(
+            f"{MINIMAL_CONFIG}"
+            f"logging:\n"
+            f"  # Relay errors to the committee's Discord channel.\n"
+            f"  discord-channel:\n"
+            f"    webhook-url: {VALID_WEBHOOK_URL}\n"
+        )
+
+        config.unset_setting("logging:discord-channel:webhook-url")
+
+        assert config.settings.logging.discord_channel is None
+        assert SettingsDocument.load(CONFIG_FILE_PATH).raw["logging"] == {}
 
 
 class TestDescribingAnEditedFile:

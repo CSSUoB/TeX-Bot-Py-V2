@@ -9,7 +9,7 @@ import config
 from config._accessor import SettingsAccessor
 from config._document import SETTINGS_FILE_PATH_ENVIRONMENT_VARIABLE_NAME
 
-from .conftest import MINIMAL_CONFIG, VALID_BOT_TOKEN
+from .conftest import MINIMAL_CONFIG, VALID_BOT_TOKEN, VALID_WEBHOOK_URL
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
@@ -290,6 +290,36 @@ class TestSettingsAwaitingRestart:
         assert "`CSS`" in context.responses[0]
         assert "(default" not in context.responses[0]
         assert "The configuration file changes this to" in context.responses[0]
+
+
+class TestRemovingASettingAnOptionalSectionNeeds:
+    """Test case for removing a setting that a whole optional section depends upon."""
+
+    @staticmethod
+    def test_the_removed_section_is_reported(
+        run_config_reload: ConfigReloadRunner,
+        config_commands_cog: type[ConfigCommandsCog],
+    ) -> None:
+        """Test that removing a webhook URL says the whole log-channel section went too."""
+        run_config_reload(
+            f"{MINIMAL_CONFIG}"
+            f"logging:\n"
+            f"  discord-channel:\n"
+            f"    webhook-url: {VALID_WEBHOOK_URL}\n"
+            f"    log-level: ERROR\n"
+        )
+
+        context: _RecordingApplicationContext = _RecordingApplicationContext()
+        asyncio.run(
+            config_commands_cog.unset.callback(
+                config_commands_cog(bot=cast("TeXBot", None)),
+                context,
+                "logging:discord-channel:webhook-url",
+            )
+        )
+
+        assert ":white_check_mark: Removed" in context.responses[0]
+        assert "The whole of **`logging:discord-channel`** was removed" in context.responses[0]
 
 
 class TestRejectedReloads:

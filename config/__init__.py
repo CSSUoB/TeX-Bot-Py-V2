@@ -151,6 +151,9 @@ def unset_setting(setting_name: str) -> ConfigReloadResult | None:
     Removing a setting that is required leaves the file untouched, because the
     configuration that removing it would produce is not valid. Removing a setting from a
     file that has been edited by hand since it was last loaded is likewise refused.
+
+    Removing a setting that an optional section cannot be used without (such as
+    `logging:discord-channel:webhook-url`) removes the whole of that section with it.
     """
     UPDATED_DOCUMENT: Final[SettingsDocument | None] = validated_document_with_setting_removed(
         setting_name, _loaded_document()

@@ -494,11 +494,14 @@ class CommunityGroupSettings(_BaseSettingsSchema):
 
     full_name: str | None = Field(
         default=None,
-        pattern=r"\A.{1,50}\Z",
+        # NOTE: Only characters that cannot form a Discord mention or Markdown formatting are allowed, because this is substituted into messages that TeX-Bot sends
+        pattern=r"\A[A-Za-z0-9 '&!?:,.#%\"-]{1,50}\Z",
         description=(
             "The full name of your community group; do **NOT** use an abbreviation.\n"
             "This is substituted into many error/welcome messages "
             "sent into your Discord guild by TeX-Bot.\n"
+            "It may only contain letters, numbers, spaces & the characters "
+            "`' & ! ? : , . # % \" -`.\n"
             "If this is not set, the group's full name will be retrieved "
             "from the name of your group's Discord guild."
         ),
@@ -744,6 +747,10 @@ class ConfigSettingMetadata(NamedTuple):
     secret: bool
     holds_text: bool
 
+    # NOTE: The key path of the optional section that cannot be used without this setting,
+    # if there is one. Removing this setting removes the whole of that section with it.
+    required_by_optional_section: str | None = None
+
 
 def _holds_text(annotation: object) -> bool:
     """
@@ -784,9 +791,13 @@ def nested_settings_model_of(field: FieldInfo) -> type[BaseModel] | None:
 
 
 def _walk_settings_metadata(
-    model: type[BaseModel], prefix: str = ""
+    model: type[BaseModel], prefix: str = "", optional_section: str | None = None
 ) -> Iterator[tuple[str, ConfigSettingMetadata]]:
-    """Yield the metadata of every individual setting declared within the given model."""
+    """
+    Yield the metadata of every individual setting declared within the given model.
+
+    The given model is held within the given optional section, if it is held within one.
+    """
     field_name: str
     field: FieldInfo
     for field_name, field in model.model_fields.items():
@@ -794,7 +805,13 @@ def _walk_settings_metadata(
 
         nested_model: type[BaseModel] | None = nested_settings_model_of(field)
         if nested_model is not None:
-            yield from _walk_settings_metadata(nested_model, prefix=f"{KEY_PATH}:")
+            yield from _walk_settings_metadata(
+                nested_model,
+                prefix=f"{KEY_PATH}:",
+                optional_section=(
+                    KEY_PATH if type(None) in get_args(field.annotation) else optional_section
+                ),
+            )
             continue
 
         EXTRA: Mapping[str, object] = (
@@ -808,6 +825,9 @@ def _walk_settings_metadata(
                 requires_restart=EXTRA.get("requires_restart") is True,
                 secret=EXTRA.get("secret") is True,
                 holds_text=_holds_text(field.annotation),
+                required_by_optional_section=(
+                    optional_section if field.is_required() else None
+                ),
             ),
         )
 

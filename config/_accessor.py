@@ -77,7 +77,7 @@ class _LoadedSettings:
 
     @property
     def document(self) -> SettingsDocument:
-        """The comment-preserving document that the snapshot was parsed from."""
+        """The parsed document that the snapshot was loaded from."""
         return self._document
 
     @property
@@ -236,8 +236,8 @@ class SettingsAccessor:
         """
         The document that the currently-loaded configuration was parsed from.
 
-        Used to rewrite individual settings while retaining the comments & formatting
-        of the file that a human wrote.
+        Used to rewrite individual settings while keeping the order & quoting of the file
+        that a human wrote.
         """
         return self._current.document
 
@@ -247,6 +247,7 @@ class SettingsAccessor:
 
         Compared as the documents parse to, rather than as raw text, so that a file
         rewritten with different line endings is not mistaken for one that was edited.
+        Comments are not compared, because TeX-Bot does not write them back.
 
         A file that can no longer be read at all is reported as changed, rather than
         raising: it certainly no longer holds the configuration that was loaded from it,

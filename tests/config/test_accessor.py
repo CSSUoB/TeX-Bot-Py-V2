@@ -399,7 +399,7 @@ class TestSectionAccessors:
         Test that the document the configuration was parsed from is available.
 
         Rewriting an individual setting needs the document, rather than the validated
-        values taken from it, so that comments & formatting are retained.
+        values taken from it, so that the order & quoting of the file are retained.
         """
         assert loaded_accessor.document.file_path == config_file
         assert "discord" in loaded_accessor.document.raw

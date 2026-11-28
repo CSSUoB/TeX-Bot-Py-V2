@@ -234,17 +234,23 @@ All of these [commands](https://discord.com/developers/docs/interactions/applica
 
 * `/config get <setting>`: Shows what a setting is currently set to, & what it affects
 * `/config set <setting> <value>`: Changes a single setting, then applies it
-* `/config unset <setting>`: Returns a single setting to its default value
+* `/config unset <setting>`: Returns a single setting to its default value.
+  Unsetting `logging:discord-channel:webhook-url` removes the whole `logging:discord-channel` section, turning off logging to your Discord log channel
 * `/config reload`: Reads the configuration file again, applying any changes made to it
 
-Changing a setting rewrites your configuration file, keeping the comments & formatting you have added to it.
-
-> [!IMPORTANT]
-> If you edit the configuration file by hand, run `/config reload` before using `/config set` or `/config unset`.
-> Both refuse to run against a file that has been edited since TeX-Bot last loaded it, so that a change made from within Discord is never quietly mixed together with one made by hand.
+> [!WARNING]
+> Changing a setting with `/config set` or `/config unset` rewrites your configuration file **without any comments**.
+> Your settings & their order are kept, but every comment & blank line is removed, and the file is rewritten in a standard layout (two-space indents, & one list item per line).
+> Keep a copy elsewhere of any notes you want to keep.
+> Each setting's description can still be seen with `/config get`.
 
 Most settings take effect as soon as they are applied, because they are read at the moment they are used.
 A few are fixed while TeX-Bot is starting up & cannot be changed without restarting it; `/config reload` will tell you when one of those has changed.
+
+> [!IMPORTANT]
+> If you edit the configuration file by hand, run `/config reload` before using `/config set` or `/config unset`.
+> Both refuse to run against a file whose settings have been edited since TeX-Bot last loaded it, so that a change made from within Discord is never quietly mixed together with one made by hand.
+> Editing only the comments does not count.
 
 #### Other [Environment Variables](https://wikipedia.org/wiki/Environment_variable)
 
@@ -258,7 +264,7 @@ Only two [environment variables](https://wikipedia.org/wiki/Environment_variable
 #### Migrating From an Older Version
 
 Earlier versions of TeX-Bot were configured by [environment variables](https://wikipedia.org/wiki/Environment_variable), usually held in a `.env` file.
-Those are no longer read at all, & a deployment still using them will start with only its default settings.
+Those are no longer read at all, & TeX-Bot will not start until a deployment configuration file exists (`tex-bot-deployment.yaml` by default) that sets at least `discord:bot-token` & `discord:main-guild-id`.
 
 Move each value into your `tex-bot-deployment.yaml`, using the table below.
 Where an old variable is not listed, [the example configuration file](tex-bot-deployment.example.yaml) names & explains every setting that exists.
@@ -268,7 +274,7 @@ Where an old variable is not listed, [the example configuration file](tex-bot-de
 | `DISCORD_BOT_TOKEN`                          | `discord:bot-token`                                      |
 | `DISCORD_GUILD_ID`                           | `discord:main-guild-id`                                  |
 | `DISCORD_LOG_CHANNEL_WEBHOOK_URL`            | `logging:discord-channel:webhook-url`                    |
-| `DISCORD_LOG_LEVEL`                          | `logging:discord-channel:log-level`                      |
+| `DISCORD_LOG_LEVEL`                          | `logging:discord-api:log-level` (& set `logging:discord-api:enabled` to `true`) |
 | `CONSOLE_LOG_LEVEL`                          | `logging:console:log-level`                              |
 | `GROUP_NAME`                                 | `community-group:full-name`                              |
 | `GROUP_SHORT_NAME`                           | `community-group:short-name`                             |
@@ -293,10 +299,17 @@ Where an old variable is not listed, [the example configuration file](tex-bot-de
 | `ADVANCED_SEND_GET_ROLES_REMINDERS_INTERVAL` | `reminders:send-get-roles-reminders:interval`            |
 | `AUTO_ADD_COMMITTEE_TO_THREADS`              | `auto-add-committee-to-threads`                          |
 
-Two differences are worth noting while migrating:
+A few differences are worth noting while migrating:
 
 * Lengths of time are now written largest-unit-first (`1h30m`, not `30m1h`), & a delay is no longer required to be at least one day
 * A comma-separated list, such as `STATISTICS_ROLES`, is now written as a [YAML list](https://yaml.org/spec/1.2.2/#collections)
+* The level of logs sent to your Discord log channel can now be changed with `logging:discord-channel:log-level`; it used to always be `WARNING`, which is still the default
+* Two defaults have changed, so set these explicitly to keep the old behaviour:
+  * `community-group:msl:auto-cookie-checking:interval` now defaults to `10m` (it used to be `24h`)
+  * `reminders:send-get-roles-reminders:interval` now defaults to `6h` (it used to be `24h`)
+* `commands:stats:lookback-days` must now be between `5` & `1826` (`STATISTICS_DAYS` only had to be at least `1`)
+* `community-group:msl:organisation-id` & `community-group:msl:auth-cookie` are now optional (`ORGANISATION_ID` & `SU_PLATFORM_ACCESS_COOKIE` used to be required).
+  Commands & tasks that use your group's MSL website are turned off until both are set, except `/check-su-platform-authorisation`, which only needs the cookie
 
 ### Running The Bot
 

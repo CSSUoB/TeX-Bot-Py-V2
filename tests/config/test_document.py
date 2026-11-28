@@ -71,6 +71,21 @@ class TestLoading:
             SettingsDocument.load(write_config("discord:\n  bot-token: [unclosed\n"))
 
     @staticmethod
+    def test_a_file_that_is_not_utf_8_is_reported(config_file: Path) -> None:
+        """
+        Test that a file saved in a different text encoding is reported clearly.
+
+        A file saved as Latin-1 holding an accented character cannot be read as UTF-8,
+        & would otherwise fail with an error that no caller expects.
+        """
+        config_file.write_bytes(
+            f"{MINIMAL_CONFIG}community-group:\n  full-name: Société\n".encode("latin-1")
+        )
+
+        with pytest.raises(InvalidSettingsFileError, match="must be saved as UTF-8"):
+            SettingsDocument.load(config_file)
+
+    @staticmethod
     def test_empty_file_is_reported(write_config: ConfigWriter) -> None:
         """Test that an empty configuration file is reported clearly."""
         with pytest.raises(InvalidSettingsFileError, match="is empty"):
@@ -87,24 +102,32 @@ class TestLoading:
 
 
 class TestRoundTripping:
-    """Test case for preserving the contents of a hand-written configuration file."""
+    """Test case for writing back the settings of a hand-written configuration file."""
 
     @staticmethod
-    def test_unmodified_file_is_written_back_unchanged(
+    def test_unmodified_file_without_comments_is_written_back_unchanged(
         write_config: ConfigWriter,
     ) -> None:
-        """Test that loading & writing a file back leaves it byte-for-byte identical."""
-        document: SettingsDocument = SettingsDocument.load(write_config(COMMENTED_CONFIG))
+        """Test that loading & writing back a file holding no comments leaves it as it was."""
+        UNCOMMENTED_CONFIG: Final[str] = (
+            f"discord:\n"
+            f"  bot-token: {VALID_BOT_TOKEN}\n"
+            f"  main-guild-id: 1234567890123456789\n"
+            f"community-group:\n"
+            f"  full-name: 'Computer Science Society'\n"
+        )
+        document: SettingsDocument = SettingsDocument.load(write_config(UNCOMMENTED_CONFIG))
 
-        assert document.dump() == COMMENTED_CONFIG
+        assert document.dump() == UNCOMMENTED_CONFIG
 
     @staticmethod
-    def test_comments_survive_a_changed_value(write_config: ConfigWriter) -> None:
+    def test_comments_are_not_written_back(write_config: ConfigWriter) -> None:
         """
-        Test that changing a setting preserves every comment around it.
+        Test that rewriting a file leaves out every comment, but keeps every setting.
 
-        This is what allows the `/config` command to edit a file that a human wrote &
-        annotated, without discarding their annotations.
+        A comment is attached to whichever setting happens to precede it, so once a
+        setting is added or removed, keeping it would leave it describing the wrong
+        setting, or written out at an indentation that is no longer valid YAML.
         """
         config_file_path: Path = write_config(COMMENTED_CONFIG)
         document: SettingsDocument = SettingsDocument.load(config_file_path)
@@ -115,10 +138,32 @@ class TestRoundTripping:
         NEW_FILE_CONTENTS: Final[str] = config_file_path.read_text(encoding="utf-8")
 
         assert "CompSoc" in NEW_FILE_CONTENTS
-        assert "# A leading comment about the whole file." in NEW_FILE_CONTENTS
-        assert "# A comment about the bot token." in NEW_FILE_CONTENTS
-        assert "# A trailing comment." in NEW_FILE_CONTENTS
-        assert "# Another trailing comment." in NEW_FILE_CONTENTS
+        assert "#" not in NEW_FILE_CONTENTS
+        assert SettingsDocument.load(config_file_path).raw == document.raw
+
+    @staticmethod
+    def test_emptying_a_section_beneath_a_comment_leaves_a_loadable_file(
+        write_config: ConfigWriter,
+    ) -> None:
+        """
+        Test that removing the only setting of a section, beneath a comment, is written.
+
+        Writing the comment back would place it at an indentation that is not valid YAML,
+        leaving a file that TeX-Bot could not start from.
+        """
+        config_file_path: Path = write_config(
+            f"{MINIMAL_CONFIG}"
+            "commands:\n"
+            "  ping:\n"
+            "    # How often the easter egg appears.\n"
+            "    easter-egg-probability: 0.5\n"
+        )
+        document: SettingsDocument = SettingsDocument.load(config_file_path)
+        document.unset_value(("commands", "ping", "easter-egg-probability"))
+
+        document.write()
+
+        assert SettingsDocument.load(config_file_path).raw["commands"]["ping"] == {}
 
     @staticmethod
     def test_a_long_value_is_not_re_wrapped(write_config: ConfigWriter) -> None:
@@ -226,7 +271,6 @@ class TestWriting:
         NEW_FILE_CONTENTS: Final[str] = config_file_path.read_text(encoding="utf-8")
 
         assert "FallbackSoc" in NEW_FILE_CONTENTS
-        assert "# A leading comment about the whole file." in NEW_FILE_CONTENTS
         assert not [path for path in tmp_path.iterdir() if path.suffix == ".tmp"]
 
     @staticmethod
@@ -275,6 +319,32 @@ class TestWriting:
 
         assert config_file_path.read_text(encoding="utf-8") == COMMENTED_CONFIG
         assert not [path for path in tmp_path.iterdir() if path.suffix == ".tmp"]
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        "faulty_file_contents",
+        ("discord:\n  bot-token: [unclosed\n", "discord:\n  main-guild-id: 1\n"),
+    )
+    def test_a_document_that_would_not_read_back_is_not_written(
+        write_config: ConfigWriter, faulty_file_contents: str
+    ) -> None:
+        """
+        Test that a rewrite producing a file not holding the same settings is refused.
+
+        Both text that is not valid YAML, & text that is valid YAML holding different
+        settings, would leave behind a file that TeX-Bot could not start from as it was.
+        """
+        config_file_path: Path = write_config(COMMENTED_CONFIG)
+        document: SettingsDocument = SettingsDocument.load(config_file_path)
+        document.raw["community-group"]["full-name"] = "ShouldNotAppear"
+
+        with (
+            mock.patch.object(SettingsDocument, "dump", return_value=faulty_file_contents),
+            pytest.raises(InvalidSettingsFileError, match="was not changed"),
+        ):
+            document.write()
+
+        assert config_file_path.read_text(encoding="utf-8") == COMMENTED_CONFIG
 
 
 class TestChangingValues:

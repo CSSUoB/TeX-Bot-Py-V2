@@ -102,6 +102,17 @@ def _format_restart_required_warning(restart_required_settings: AbstractSet[str]
     )
 
 
+def _format_removed_section_notice(removed_section_name: str | None) -> str:
+    """Format the notice that removing a setting also removed the section requiring it."""
+    if removed_section_name is None:
+        return ""
+
+    return (
+        f"\n\n:information_source: The whole of **`{removed_section_name}`** was removed "
+        "with it, because that section cannot be used without this setting."
+    )
+
+
 async def _autocomplete_get_settings_names(
     ctx: TeXBotAutocompleteContext,
 ) -> Sequence[discord.OptionChoice]:
@@ -408,6 +419,8 @@ class ConfigCommandsCog(TeXBotBaseCog):
         Removes a single setting from the configuration file, returning it to its
         default value. A setting that is required cannot be removed, because the
         configuration that removing it would produce is not one TeX-Bot could load.
+        Removing a setting that an optional section cannot be used without removes the
+        whole of that section with it.
         """
         await ctx.defer(ephemeral=True)
 
@@ -464,6 +477,11 @@ class ConfigCommandsCog(TeXBotBaseCog):
                         secret=setting_metadata.secret,
                     )
                 }."
+                f"{
+                    _format_removed_section_notice(
+                        setting_metadata.required_by_optional_section
+                    )
+                }"
                 f"{_format_restart_required_warning(reload_result.restart_required_settings)}"
             ),
             ephemeral=True,
