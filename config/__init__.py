@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from typing import Final
 
 
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "SETTING_NAME_SEPARATOR",
     "ConfigReloadResult",
     "ConfigSettingMetadata",
@@ -70,21 +70,21 @@ __all__: "Sequence[str]" = (
 )
 
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
-settings: "Final[SettingsAccessor]" = SettingsAccessor()
+settings: Final[SettingsAccessor] = SettingsAccessor()
 
-messages: "Final[MessagesAccessor]" = MessagesAccessor()
+messages: Final[MessagesAccessor] = MessagesAccessor()
 
 
 class ConfigReloadResult(NamedTuple):
     """The outcome of reloading the deployment configuration file."""
 
-    changed_settings: "AbstractSet[str]"
-    restart_required_settings: "AbstractSet[str]"
+    changed_settings: AbstractSet[str]
+    restart_required_settings: AbstractSet[str]
 
 
-def reload_settings(file_path: "Path | None" = None) -> ConfigReloadResult:
+def reload_settings(file_path: Path | None = None) -> ConfigReloadResult:
     """
     Reload the deployment configuration file, applying any settings that have changed.
 
@@ -119,7 +119,7 @@ def reload_settings(file_path: "Path | None" = None) -> ConfigReloadResult:
     )
 
 
-def _loaded_document() -> "SettingsDocument | None":
+def _loaded_document() -> SettingsDocument | None:
     """Return the configuration document currently loaded, if any configuration has been."""
     return settings.document if settings.is_loaded else None
 

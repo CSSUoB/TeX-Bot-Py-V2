@@ -1,6 +1,14 @@
 """MSL utility classes & functions provided for use across the whole of the project."""
 
-from typing import TYPE_CHECKING
+__all__: Sequence[str] = (
+    "fetch_community_group_members_count",
+    "fetch_community_group_members_list",
+    "fetch_url_content_with_session",
+    "is_id_a_community_group_member",
+    "msl_is_configured",
+)
+
+lazy from collections.abc import Sequence
 
 from .memberships import (
     fetch_community_group_members_count,
@@ -8,15 +16,4 @@ from .memberships import (
     fetch_url_content_with_session,
     is_id_a_community_group_member,
     msl_is_configured,
-)
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-__all__: "Sequence[str]" = (
-    "fetch_community_group_members_count",
-    "fetch_community_group_members_list",
-    "fetch_url_content_with_session",
-    "is_id_a_community_group_member",
-    "msl_is_configured",
 )

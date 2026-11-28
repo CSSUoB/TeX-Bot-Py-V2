@@ -22,20 +22,20 @@ if TYPE_CHECKING:
 
     type MessagesWriter = "Callable[[object], Path]"
 
-__all__: "Sequence[str]" = ()
+__all__: Sequence[str] = ()
 
 
-VALID_MESSAGES: "Final[Mapping[str, object]]" = {
+VALID_MESSAGES: Final[Mapping[str, object]] = {
     "welcome_messages": ["Welcome!", "Hello there!"],
     "roles_messages": ["Get your roles here."],
 }
 
 
 @pytest.fixture()
-def write_messages(tmp_path: "Path", monkeypatch: pytest.MonkeyPatch) -> "MessagesWriter":
+def write_messages(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> MessagesWriter:
     """Return a callable writing the given messages & pointing TeX-Bot at them."""
 
-    def _write_messages(raw_messages: object) -> "Path":
+    def _write_messages(raw_messages: object) -> Path:
         messages_file_path: Path = tmp_path / "messages.json"
         messages_file_path.write_text(
             raw_messages if isinstance(raw_messages, str) else json.dumps(raw_messages),
@@ -53,7 +53,7 @@ class TestLoading:
     """Test case for reading the messages file."""
 
     @staticmethod
-    def test_valid_messages_are_loaded(write_messages: "MessagesWriter") -> None:
+    def test_valid_messages_are_loaded(write_messages: MessagesWriter) -> None:
         """Test that both sets of messages are read from a valid file."""
         write_messages(VALID_MESSAGES)
         messages: MessagesAccessor = MessagesAccessor()
@@ -76,7 +76,7 @@ class TestLoading:
 
     @staticmethod
     def test_a_missing_file_is_reported(
-        tmp_path: "Path", monkeypatch: pytest.MonkeyPatch
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Test that naming a messages file that does not exist is reported clearly."""
         monkeypatch.setenv(
@@ -87,7 +87,7 @@ class TestLoading:
             MessagesAccessor().reload()
 
     @staticmethod
-    def test_malformed_json_is_reported(write_messages: "MessagesWriter") -> None:
+    def test_malformed_json_is_reported(write_messages: MessagesWriter) -> None:
         """Test that a file that is not valid JSON is reported clearly."""
         write_messages("{not valid json")
 
@@ -97,7 +97,7 @@ class TestLoading:
     @staticmethod
     @pytest.mark.parametrize("raw_messages", (["a", "list"], "a string", 42))
     def test_json_that_is_not_an_object_is_reported(
-        write_messages: "MessagesWriter", raw_messages: object
+        write_messages: MessagesWriter, raw_messages: object
     ) -> None:
         """Test that a messages file not holding an object of message sets is rejected."""
         write_messages(raw_messages)
@@ -112,7 +112,7 @@ class TestMessageSetValidation:
     @staticmethod
     @pytest.mark.parametrize("missing_key", ("welcome_messages", "roles_messages"))
     def test_a_missing_message_set_is_reported(
-        write_messages: "MessagesWriter", missing_key: str
+        write_messages: MessagesWriter, missing_key: str
     ) -> None:
         """Test that omitting either set of messages is reported clearly."""
         write_messages(
@@ -125,7 +125,7 @@ class TestMessageSetValidation:
     @staticmethod
     @pytest.mark.parametrize("invalid_value", ([], None, 42, {}))
     def test_an_empty_or_non_iterable_message_set_is_reported(
-        write_messages: "MessagesWriter", invalid_value: object
+        write_messages: MessagesWriter, invalid_value: object
     ) -> None:
         """Test that a set of messages that holds no messages is rejected."""
         write_messages({**VALID_MESSAGES, "welcome_messages": invalid_value})
@@ -135,7 +135,7 @@ class TestMessageSetValidation:
 
     @staticmethod
     def test_a_string_is_not_accepted_as_a_set_of_messages(
-        write_messages: "MessagesWriter",
+        write_messages: MessagesWriter,
     ) -> None:
         """
         Test that a single string is not treated as a set of messages.
@@ -150,7 +150,7 @@ class TestMessageSetValidation:
 
     @staticmethod
     def test_an_object_is_not_accepted_as_a_set_of_messages(
-        write_messages: "MessagesWriter",
+        write_messages: MessagesWriter,
     ) -> None:
         """
         Test that a JSON object is not treated as a set of messages.
@@ -165,7 +165,7 @@ class TestMessageSetValidation:
 
     @staticmethod
     def test_messages_that_are_not_strings_are_read_as_text(
-        write_messages: "MessagesWriter",
+        write_messages: MessagesWriter,
     ) -> None:
         """Test that a message written as a number is read as the text of that number."""
         write_messages({**VALID_MESSAGES, "roles_messages": [42, "Get your roles here."]})
@@ -181,7 +181,7 @@ class TestFailedReloads:
 
     @staticmethod
     def test_a_failed_reload_leaves_previously_loaded_messages_intact(
-        write_messages: "MessagesWriter",
+        write_messages: MessagesWriter,
     ) -> None:
         """
         Test that failing to reload does not discard the messages already loaded.
@@ -202,7 +202,7 @@ class TestFailedReloads:
         assert messages.roles_messages == frozenset({"Get your roles here."})
 
 
-def test_messages_are_deduplicated(write_messages: "MessagesWriter") -> None:
+def test_messages_are_deduplicated(write_messages: MessagesWriter) -> None:
     """Test that a message repeated within the file is only held once."""
     write_messages({**VALID_MESSAGES, "roles_messages": ["Same", "Same", "Different"]})
     messages: MessagesAccessor = MessagesAccessor()

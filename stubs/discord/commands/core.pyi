@@ -1,5 +1,3 @@
-from collections.abc import Awaitable, Callable, Coroutine, Sequence
-
 __all__: Sequence[str] = (
     "ApplicationCommand",
     "CommandCallback",
@@ -14,6 +12,7 @@ __all__: Sequence[str] = (
     "user_command",
 )
 
+from collections.abc import Awaitable, Callable, Coroutine, Sequence
 from typing import Protocol, overload, override
 
 # NOTE: The undecorated function that a command runs when it is invoked.

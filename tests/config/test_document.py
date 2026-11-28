@@ -29,10 +29,10 @@ if TYPE_CHECKING:
 
     type ConfigWriter = "Callable[[str], Path]"
 
-__all__: "Sequence[str]" = ()
+__all__: Sequence[str] = ()
 
 
-COMMENTED_CONFIG: "Final[str]" = f"""\
+COMMENTED_CONFIG: Final[str] = f"""\
 # A leading comment about the whole file.
 
 discord:
@@ -51,7 +51,7 @@ class TestLoading:
     """Test case for parsing the configuration file."""
 
     @staticmethod
-    def test_valid_file_is_loaded(config_file: "Path") -> None:
+    def test_valid_file_is_loaded(config_file: Path) -> None:
         """Test that a valid configuration file is parsed."""
         document: SettingsDocument = SettingsDocument.load(config_file)
 
@@ -59,19 +59,19 @@ class TestLoading:
         assert document.raw["discord"]["main-guild-id"] == 1234567890123456789
 
     @staticmethod
-    def test_missing_file_is_reported(tmp_path: "Path") -> None:
+    def test_missing_file_is_reported(tmp_path: Path) -> None:
         """Test that a configuration file that does not exist is reported clearly."""
         with pytest.raises(SettingsFileNotFoundError):
             SettingsDocument.load(tmp_path / "does-not-exist.yaml")
 
     @staticmethod
-    def test_malformed_yaml_is_reported(write_config: "ConfigWriter") -> None:
+    def test_malformed_yaml_is_reported(write_config: ConfigWriter) -> None:
         """Test that a file that is not valid YAML is reported clearly."""
         with pytest.raises(InvalidSettingsFileError, match="not a valid YAML file"):
             SettingsDocument.load(write_config("discord:\n  bot-token: [unclosed\n"))
 
     @staticmethod
-    def test_empty_file_is_reported(write_config: "ConfigWriter") -> None:
+    def test_empty_file_is_reported(write_config: ConfigWriter) -> None:
         """Test that an empty configuration file is reported clearly."""
         with pytest.raises(InvalidSettingsFileError, match="is empty"):
             SettingsDocument.load(write_config(""))
@@ -79,7 +79,7 @@ class TestLoading:
     @staticmethod
     @pytest.mark.parametrize("raw_yaml", ("just-a-string\n", "- one\n- two\n", "42\n"))
     def test_file_without_a_top_level_mapping_is_reported(
-        write_config: "ConfigWriter", raw_yaml: str
+        write_config: ConfigWriter, raw_yaml: str
     ) -> None:
         """Test that a file not holding a mapping of settings is reported clearly."""
         with pytest.raises(InvalidSettingsFileError, match="must contain a mapping"):
@@ -91,7 +91,7 @@ class TestRoundTripping:
 
     @staticmethod
     def test_unmodified_file_is_written_back_unchanged(
-        write_config: "ConfigWriter",
+        write_config: ConfigWriter,
     ) -> None:
         """Test that loading & writing a file back leaves it byte-for-byte identical."""
         document: SettingsDocument = SettingsDocument.load(write_config(COMMENTED_CONFIG))
@@ -99,7 +99,7 @@ class TestRoundTripping:
         assert document.dump() == COMMENTED_CONFIG
 
     @staticmethod
-    def test_comments_survive_a_changed_value(write_config: "ConfigWriter") -> None:
+    def test_comments_survive_a_changed_value(write_config: ConfigWriter) -> None:
         """
         Test that changing a setting preserves every comment around it.
 
@@ -121,7 +121,7 @@ class TestRoundTripping:
         assert "# Another trailing comment." in NEW_FILE_CONTENTS
 
     @staticmethod
-    def test_a_long_value_is_not_re_wrapped(write_config: "ConfigWriter") -> None:
+    def test_a_long_value_is_not_re_wrapped(write_config: ConfigWriter) -> None:
         """
         Test that writing a file back does not fold its long values onto extra lines.
 
@@ -147,7 +147,7 @@ class TestRoundTripping:
         )
 
     @staticmethod
-    def test_written_file_can_be_loaded_again(write_config: "ConfigWriter") -> None:
+    def test_written_file_can_be_loaded_again(write_config: ConfigWriter) -> None:
         """Test that a rewritten configuration file is still valid."""
         config_file_path: Path = write_config(COMMENTED_CONFIG)
         document: SettingsDocument = SettingsDocument.load(config_file_path)
@@ -177,7 +177,7 @@ class TestWriting:
     )
     @pytest.mark.parametrize("original_permissions", (0o600, 0o640))
     def test_writing_retains_the_permissions_of_the_file_it_replaces(
-        write_config: "ConfigWriter", original_permissions: int
+        write_config: ConfigWriter, original_permissions: int
     ) -> None:
         """
         Test that writing does not widen who may read the configuration file.
@@ -197,7 +197,7 @@ class TestWriting:
 
     @staticmethod
     def test_no_temporary_file_is_left_behind(
-        write_config: "ConfigWriter", tmp_path: "Path"
+        write_config: ConfigWriter, tmp_path: Path
     ) -> None:
         """Test that writing does not leave its temporary file behind."""
         document: SettingsDocument = SettingsDocument.load(write_config(MINIMAL_CONFIG))
@@ -208,7 +208,7 @@ class TestWriting:
 
     @staticmethod
     def test_write_falls_back_when_the_file_cannot_be_replaced(
-        write_config: "ConfigWriter", tmp_path: "Path"
+        write_config: ConfigWriter, tmp_path: Path
     ) -> None:
         """
         Test that a rejected rename falls back to writing the file directly.
@@ -231,7 +231,7 @@ class TestWriting:
 
     @staticmethod
     def test_both_write_paths_produce_identical_output(
-        write_config: "ConfigWriter", tmp_path: "Path"
+        write_config: ConfigWriter, tmp_path: Path
     ) -> None:
         """Test that falling back to writing directly produces the same file."""
         atomically_written_path: Path = write_config(COMMENTED_CONFIG)
@@ -256,7 +256,7 @@ class TestWriting:
 
     @staticmethod
     def test_failing_to_write_leaves_the_original_file_intact(
-        write_config: "ConfigWriter", tmp_path: "Path"
+        write_config: ConfigWriter, tmp_path: Path
     ) -> None:
         """Test that a write that fails partway does not damage the existing file."""
         config_file_path: Path = write_config(COMMENTED_CONFIG)
@@ -281,7 +281,7 @@ class TestChangingValues:
     """Test case for changing the settings held within a document."""
 
     @staticmethod
-    def test_a_setting_is_written_into_an_absent_section(config_file: "Path") -> None:
+    def test_a_setting_is_written_into_an_absent_section(config_file: Path) -> None:
         """Test that setting a value creates whichever sections are needed to hold it."""
         document: SettingsDocument = SettingsDocument.load(config_file)
 
@@ -291,7 +291,7 @@ class TestChangingValues:
 
     @staticmethod
     def test_a_change_does_not_reach_the_file_until_it_is_written(
-        config_file: "Path",
+        config_file: Path,
     ) -> None:
         """Test that changing a value alone leaves the file upon disk untouched."""
         document: SettingsDocument = SettingsDocument.load(config_file)
@@ -302,7 +302,7 @@ class TestChangingValues:
 
     @staticmethod
     def test_a_setting_cannot_be_written_beneath_a_value(
-        write_config: "ConfigWriter",
+        write_config: ConfigWriter,
     ) -> None:
         """Test that a section which holds a plain value is not overwritten silently."""
         document: SettingsDocument = SettingsDocument.load(
@@ -313,7 +313,7 @@ class TestChangingValues:
             document.set_value(["commands", "ping", "easter-egg-probability"], 0.5)
 
     @staticmethod
-    def test_a_setting_must_be_named(config_file: "Path") -> None:
+    def test_a_setting_must_be_named(config_file: Path) -> None:
         """Test that changing a value requires a setting to change."""
         document: SettingsDocument = SettingsDocument.load(config_file)
 
@@ -321,7 +321,7 @@ class TestChangingValues:
             document.set_value([], 0.5)
 
     @staticmethod
-    def test_an_absent_setting_is_reported_as_not_removed(config_file: "Path") -> None:
+    def test_an_absent_setting_is_reported_as_not_removed(config_file: Path) -> None:
         """Test that removing a setting the file does not hold reports that it did not."""
         document: SettingsDocument = SettingsDocument.load(config_file)
 
@@ -329,7 +329,7 @@ class TestChangingValues:
 
     @staticmethod
     def test_a_document_read_again_is_independent_of_the_one_already_held(
-        config_file: "Path",
+        config_file: Path,
     ) -> None:
         """
         Test that changing a freshly read document leaves an existing one alone.
@@ -351,7 +351,7 @@ class TestErrorReporting:
     """Test case for pointing a human at the cause of an invalid configuration."""
 
     @staticmethod
-    def test_errors_name_the_line_that_caused_them(write_config: "ConfigWriter") -> None:
+    def test_errors_name_the_line_that_caused_them(write_config: ConfigWriter) -> None:
         """Test that each validation failure is reported against its source line."""
         document: SettingsDocument = SettingsDocument.load(
             write_config(
@@ -375,7 +375,7 @@ class TestErrorReporting:
 
     @staticmethod
     def test_errors_never_reveal_the_offending_value(
-        write_config: "ConfigWriter",
+        write_config: ConfigWriter,
     ) -> None:
         """Test that a rejected value is not quoted back, in case it is a secret."""
         SECRET_LOOKING_TOKEN: Final[str] = "SUPER-SECRET-BUT-INVALID"  # noqa: S105
@@ -400,7 +400,7 @@ class TestErrorReporting:
 
     @staticmethod
     def test_a_missing_setting_is_reported_against_its_nearest_section(
-        write_config: "ConfigWriter",
+        write_config: ConfigWriter,
     ) -> None:
         """
         Test that an absent setting is still reported against a useful location.
@@ -428,7 +428,7 @@ class TestErrorReporting:
 
     @staticmethod
     def test_line_numbers_of_absent_settings_are_not_invented(
-        config_file: "Path",
+        config_file: Path,
     ) -> None:
         """Test that no line is reported for a key path that cannot be resolved at all."""
         document: SettingsDocument = SettingsDocument.load(config_file)
@@ -448,8 +448,8 @@ class TestErrorReporting:
         ),
     )
     def test_an_unresolvable_key_falls_back_to_the_deepest_line_known(
-        write_config: "ConfigWriter",
-        key_path: "Sequence[str | int]",
+        write_config: ConfigWriter,
+        key_path: Sequence[str | int],
         expected_line_number: int,
     ) -> None:
         """Test that a key path which cannot be followed reports how far it did reach."""
@@ -467,7 +467,7 @@ class TestErrorReporting:
 
     @staticmethod
     def test_an_error_within_a_list_is_reported_against_the_entry(
-        write_config: "ConfigWriter",
+        write_config: ConfigWriter,
     ) -> None:
         """
         Test that a rejected entry of a list is reported against its own line.
@@ -500,7 +500,7 @@ class TestErrorReporting:
 
     @staticmethod
     def test_an_error_with_no_location_is_reported_against_the_whole_file(
-        config_file: "Path",
+        config_file: Path,
     ) -> None:
         """Test that a failure belonging to no particular setting still names the file."""
         document: SettingsDocument = SettingsDocument.load(config_file)
@@ -519,7 +519,7 @@ class TestFileDiscovery:
 
     @staticmethod
     def test_environment_variable_is_used_when_set(
-        config_file: "Path", monkeypatch: pytest.MonkeyPatch
+        config_file: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Test that the configured environment variable names the file to load."""
         monkeypatch.setenv(SETTINGS_FILE_PATH_ENVIRONMENT_VARIABLE_NAME, str(config_file))
@@ -528,7 +528,7 @@ class TestFileDiscovery:
 
     @staticmethod
     def test_missing_file_named_by_the_environment_variable_is_reported(
-        tmp_path: "Path", monkeypatch: pytest.MonkeyPatch
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Test that naming a file that does not exist is reported clearly."""
         monkeypatch.setenv(
@@ -540,7 +540,7 @@ class TestFileDiscovery:
 
     @staticmethod
     def test_absent_configuration_is_reported_with_guidance(
-        tmp_path: "Path", monkeypatch: pytest.MonkeyPatch
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Test that finding no configuration at all explains how to provide one."""
         monkeypatch.delenv(SETTINGS_FILE_PATH_ENVIRONMENT_VARIABLE_NAME, raising=False)
@@ -551,7 +551,7 @@ class TestFileDiscovery:
 
     @staticmethod
     def test_default_location_is_used_when_no_environment_variable_is_set(
-        tmp_path: "Path", monkeypatch: pytest.MonkeyPatch
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Test that the project root is searched when no location is configured."""
         monkeypatch.delenv(SETTINGS_FILE_PATH_ENVIRONMENT_VARIABLE_NAME, raising=False)
@@ -578,7 +578,7 @@ class TestExampleConfiguration:
         ).replace("main-guild-id: 0", "main-guild-id: 1234567890123456789")
 
     @staticmethod
-    def test_the_example_configuration_is_valid(write_config: "ConfigWriter") -> None:
+    def test_the_example_configuration_is_valid(write_config: ConfigWriter) -> None:
         """
         Test that the shipped example validates once its required values are filled in.
 
@@ -596,7 +596,7 @@ class TestExampleConfiguration:
 
     @staticmethod
     def test_the_example_configuration_leaves_optional_settings_absent(
-        write_config: "ConfigWriter",
+        write_config: ConfigWriter,
     ) -> None:
         """
         Test that the example supplies no placeholder in place of an optional setting.
@@ -618,7 +618,7 @@ class TestExampleConfiguration:
         assert settings.community_group.msl.auth_cookie is None
 
 
-def test_temporary_file_is_written_alongside_its_destination(config_file: "Path") -> None:
+def test_temporary_file_is_written_alongside_its_destination(config_file: Path) -> None:
     """
     Test that the temporary file used while writing is created beside the destination.
 

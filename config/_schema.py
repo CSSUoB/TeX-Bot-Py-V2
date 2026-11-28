@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from pydantic.fields import FieldInfo
 
 
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "AutoCookieCheckingSettings",
     "CommandsSettings",
     "CommunityGroupSettings",
@@ -124,7 +124,7 @@ def _parse_send_introduction_reminders_flag(value: object) -> object:
     return value
 
 
-_TIME_DELTA_MATCHER: "re.Pattern[str]" = re.compile(
+_TIME_DELTA_MATCHER: re.Pattern[str] = re.compile(
     r"\A(?:(?P<days>(?:\d*\.)?\d+)d)?"
     r"(?:(?P<hours>(?:\d*\.)?\d+)h)?"
     r"(?:(?P<minutes>(?:\d*\.)?\d+)m)?"
@@ -134,7 +134,7 @@ _TIME_DELTA_MATCHER: "re.Pattern[str]" = re.compile(
 # NOTE: Discord will not disable a member's communication more than 28 days into the
 # future, & rejects any attempt to do so.
 # See <https://docs.discord.com/developers/resources/guild#guild-member-object>.
-MAXIMUM_DISCORD_TIMEOUT_DURATION: "Final[datetime.timedelta]" = datetime.timedelta(days=28)
+MAXIMUM_DISCORD_TIMEOUT_DURATION: Final[datetime.timedelta] = datetime.timedelta(days=28)
 
 
 def _parse_time_delta(value: object) -> object:
@@ -242,7 +242,7 @@ def _ensure_discord_webhook_url(value: HttpUrl) -> HttpUrl:
 
 
 def _ensure_matches(
-    value: SecretStr, matcher: "re.Pattern[str]", expected_description: str
+    value: SecretStr, matcher: re.Pattern[str], expected_description: str
 ) -> SecretStr:
     """
     Ensure the given secret value matches the given pattern.
@@ -284,16 +284,7 @@ type NormalisedLogLevel = Annotated[LogLevel, BeforeValidator(_parse_log_level)]
 
 
 class _BaseSettingsSchema(BaseModel):
-    """
-    Common configuration shared by every section of the settings schema.
-
-    NOTE: Every subclass below carries a `# type: ignore[explicit-any]` comment.
-    Pydantic's `BaseModel` exposes explicit `Any` within its own API surface
-    (`__init__(**data: Any)`, `model_validate(obj: Any)`, etc.),
-    so subclassing it is inherently incompatible with `disallow_any_explicit`.
-    The ignores are applied per-class, rather than by disabling the error code
-    for this whole module, so that any genuine use of `Any` here is still caught.
-    """
+    """Common configuration shared by every section of the settings schema."""
 
     model_config = ConfigDict(
         alias_generator=_to_kebab_case,
@@ -307,7 +298,7 @@ class _BaseSettingsSchema(BaseModel):
     )
 
 
-class ConsoleLoggingSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
+class ConsoleLoggingSettings(_BaseSettingsSchema):
     """Settings controlling how logs are emitted to the console output stream."""
 
     log_level: NormalisedLogLevel = Field(
@@ -320,7 +311,7 @@ class ConsoleLoggingSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     )
 
 
-class DiscordChannelLoggingSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
+class DiscordChannelLoggingSettings(_BaseSettingsSchema):
     """Settings controlling how logs are relayed to a Discord log channel."""
 
     webhook_url: DiscordWebhookURL = Field(
@@ -341,7 +332,7 @@ class DiscordChannelLoggingSettings(_BaseSettingsSchema):  # type: ignore[explic
     )
 
 
-class DiscordAPILoggingSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
+class DiscordAPILoggingSettings(_BaseSettingsSchema):
     """Settings controlling how logs emitted by the Discord API wrapper are handled."""
 
     enabled: bool = Field(
@@ -364,7 +355,7 @@ class DiscordAPILoggingSettings(_BaseSettingsSchema):  # type: ignore[explicit-a
     )
 
 
-class LoggingSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
+class LoggingSettings(_BaseSettingsSchema):
     """Settings controlling every logging destination TeX-Bot can write to."""
 
     console: ConsoleLoggingSettings = Field(default_factory=ConsoleLoggingSettings)
@@ -378,7 +369,7 @@ class LoggingSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     discord_api: DiscordAPILoggingSettings = Field(default_factory=DiscordAPILoggingSettings)
 
 
-class DiscordSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
+class DiscordSettings(_BaseSettingsSchema):
     """Settings describing how TeX-Bot connects to Discord."""
 
     bot_token: Annotated[
@@ -408,7 +399,7 @@ class DiscordSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     )
 
 
-class LinksSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
+class LinksSettings(_BaseSettingsSchema):
     """Settings holding the external links referenced within TeX-Bot's messages."""
 
     purchase_membership: HttpUrl | None = Field(
@@ -442,7 +433,7 @@ class LinksSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     )
 
 
-class AutoCookieCheckingSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
+class AutoCookieCheckingSettings(_BaseSettingsSchema):
     """Settings controlling the automatic checking of the MSL authentication cookie."""
 
     enabled: bool = Field(
@@ -460,7 +451,7 @@ class AutoCookieCheckingSettings(_BaseSettingsSchema):  # type: ignore[explicit-
     )
 
 
-class MSLSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
+class MSLSettings(_BaseSettingsSchema):
     """Settings describing how TeX-Bot authenticates with your group's MSL website."""
 
     organisation_id: str | None = Field(
@@ -498,7 +489,7 @@ class MSLSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     )
 
 
-class CommunityGroupSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
+class CommunityGroupSettings(_BaseSettingsSchema):
     """Settings describing the community group that TeX-Bot is deployed for."""
 
     full_name: str | None = Field(
@@ -542,7 +533,7 @@ class CommunityGroupSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     msl: MSLSettings = Field(default_factory=MSLSettings)
 
 
-class PingCommandSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
+class PingCommandSettings(_BaseSettingsSchema):
     """Settings controlling the behaviour of the `/ping` command."""
 
     easter_egg_probability: float = Field(
@@ -557,7 +548,7 @@ class PingCommandSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     )
 
 
-class StatsCommandSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
+class StatsCommandSettings(_BaseSettingsSchema):
     """Settings controlling the behaviour of the `/stats` command."""
 
     lookback_days: float = Field(
@@ -606,7 +597,7 @@ class StatsCommandSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
         return datetime.timedelta(days=self.lookback_days)
 
 
-class StrikeCommandSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
+class StrikeCommandSettings(_BaseSettingsSchema):
     """Settings controlling the behaviour of the `/strike` command."""
 
     performed_manually_warning_location: str = Field(
@@ -641,7 +632,7 @@ class StrikeCommandSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     )
 
 
-class CommandsSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
+class CommandsSettings(_BaseSettingsSchema):
     """Settings controlling the behaviour of TeX-Bot's individual commands."""
 
     ping: PingCommandSettings = Field(default_factory=PingCommandSettings)
@@ -649,7 +640,7 @@ class CommandsSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     strike: StrikeCommandSettings = Field(default_factory=StrikeCommandSettings)
 
 
-class SendIntroductionRemindersSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
+class SendIntroductionRemindersSettings(_BaseSettingsSchema):
     """Settings controlling the reminders sent to Discord members that are not inducted."""
 
     enabled: Annotated[
@@ -686,7 +677,7 @@ class SendIntroductionRemindersSettings(_BaseSettingsSchema):  # type: ignore[ex
     )
 
 
-class ReminderSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
+class ReminderSettings(_BaseSettingsSchema):
     """Settings controlling the reminders sent to Discord members that have been inducted."""
 
     enabled: bool = Field(
@@ -718,7 +709,7 @@ class ReminderSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     )
 
 
-class RemindersSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
+class RemindersSettings(_BaseSettingsSchema):
     """Settings controlling every kind of reminder that TeX-Bot can send."""
 
     send_introduction_reminders: SendIntroductionRemindersSettings = Field(
@@ -727,7 +718,7 @@ class RemindersSettings(_BaseSettingsSchema):  # type: ignore[explicit-any]
     send_get_roles_reminders: ReminderSettings = Field(default_factory=ReminderSettings)
 
 
-class SettingsSchema(_BaseSettingsSchema):  # type: ignore[explicit-any]
+class SettingsSchema(_BaseSettingsSchema):
     """The complete set of configuration settings that TeX-Bot understands."""
 
     logging: LoggingSettings = Field(default_factory=LoggingSettings)
@@ -774,7 +765,7 @@ def _holds_text(annotation: object) -> bool:
     )
 
 
-def nested_settings_model_of(field: "FieldInfo") -> "type[BaseModel] | None":
+def nested_settings_model_of(field: FieldInfo) -> type[BaseModel] | None:
     """
     Return the settings section that the given field holds, if it holds one at all.
 
@@ -794,7 +785,7 @@ def nested_settings_model_of(field: "FieldInfo") -> "type[BaseModel] | None":
 
 def _walk_settings_metadata(
     model: type[BaseModel], prefix: str = ""
-) -> "Iterator[tuple[str, ConfigSettingMetadata]]":
+) -> Iterator[tuple[str, ConfigSettingMetadata]]:
     """Yield the metadata of every individual setting declared within the given model."""
     field_name: str
     field: FieldInfo
@@ -821,7 +812,7 @@ def _walk_settings_metadata(
         )
 
 
-def setting_names_within(model: type[BaseModel], prefix: str = "") -> "Iterator[str]":
+def setting_names_within(model: type[BaseModel], prefix: str = "") -> Iterator[str]:
     """
     Yield the key path of every individual setting declared within the given model.
 
@@ -833,7 +824,7 @@ def setting_names_within(model: type[BaseModel], prefix: str = "") -> "Iterator[
         yield key_path
 
 
-def get_settings_metadata() -> "Mapping[str, ConfigSettingMetadata]":
+def get_settings_metadata() -> Mapping[str, ConfigSettingMetadata]:
     """
     Return the metadata of every configuration setting, keyed by its key path.
 

@@ -28,10 +28,10 @@ if TYPE_CHECKING:
 
     type ConfigWriter = "Callable[[str], Path]"
 
-__all__: "Sequence[str]" = ()
+__all__: Sequence[str] = ()
 
 
-CONFIG_WITH_OPTIONAL_SETTINGS: "Final[str]" = f"""\
+CONFIG_WITH_OPTIONAL_SETTINGS: Final[str] = f"""\
 discord:
   bot-token: {VALID_BOT_TOKEN}
   main-guild-id: 1234567890123456789
@@ -48,7 +48,7 @@ commands:
 
 
 @pytest.fixture()
-def loaded_accessor(config_file: "Path") -> SettingsAccessor:
+def loaded_accessor(config_file: Path) -> SettingsAccessor:
     """Return an accessor that has loaded the minimal configuration."""
     settings: SettingsAccessor = SettingsAccessor()
     settings.reload(config_file)
@@ -81,7 +81,7 @@ class TestLoading:
     @staticmethod
     @pytest.mark.parametrize("edited_contents", ("discord: {unclosed\n", "", None))
     def test_an_unreadable_file_has_been_changed_underneath(
-        config_file: "Path", edited_contents: str | None
+        config_file: Path, edited_contents: str | None
     ) -> None:
         """
         Test that a file which can no longer be read at all is reported as changed.
@@ -101,7 +101,7 @@ class TestLoading:
         assert settings.file_has_changed()
 
     @staticmethod
-    def test_loading_makes_settings_available(config_file: "Path") -> None:
+    def test_loading_makes_settings_available(config_file: Path) -> None:
         """Test that settings can be read once a configuration has been loaded."""
         settings: SettingsAccessor = SettingsAccessor()
 
@@ -131,7 +131,7 @@ class TestChangeDetection:
     """Test case for reporting which settings changed upon each reload."""
 
     @staticmethod
-    def test_first_load_reports_every_setting_as_changed(config_file: "Path") -> None:
+    def test_first_load_reports_every_setting_as_changed(config_file: Path) -> None:
         """Test that loading a configuration for the first time reports all of it."""
         settings: SettingsAccessor = SettingsAccessor()
 
@@ -139,14 +139,14 @@ class TestChangeDetection:
 
     @staticmethod
     def test_reloading_an_unchanged_file_reports_nothing(
-        loaded_accessor: SettingsAccessor, config_file: "Path"
+        loaded_accessor: SettingsAccessor, config_file: Path
     ) -> None:
         """Test that reloading an untouched configuration reports no changes."""
         assert loaded_accessor.reload(config_file) == set()
 
     @staticmethod
     def test_a_single_change_is_reported_alone(
-        write_config: "ConfigWriter",
+        write_config: ConfigWriter,
     ) -> None:
         """Test that changing one setting reports only that setting."""
         settings: SettingsAccessor = SettingsAccessor()
@@ -165,7 +165,7 @@ class TestChangeDetection:
 
     @staticmethod
     def test_an_appearing_section_reports_the_settings_within_it(
-        write_config: "ConfigWriter",
+        write_config: ConfigWriter,
     ) -> None:
         """Test that adding an optional section reports the settings it introduces."""
         settings: SettingsAccessor = SettingsAccessor()
@@ -185,7 +185,7 @@ class TestChangeDetection:
 
     @staticmethod
     def test_a_disappearing_section_reports_the_settings_it_removed(
-        write_config: "ConfigWriter",
+        write_config: ConfigWriter,
     ) -> None:
         """
         Test that removing an optional section reports the settings it took with it.
@@ -218,7 +218,7 @@ class TestChangeDetection:
         assert settings.logging.discord_channel is None
 
     @staticmethod
-    def test_a_changed_secret_is_detected(write_config: "ConfigWriter") -> None:
+    def test_a_changed_secret_is_detected(write_config: ConfigWriter) -> None:
         """
         Test that replacing a secret value is reported as a change.
 
@@ -245,7 +245,7 @@ class TestFailedReloads:
 
     @staticmethod
     def test_invalid_configuration_is_rejected(
-        loaded_accessor: SettingsAccessor, write_config: "ConfigWriter"
+        loaded_accessor: SettingsAccessor, write_config: ConfigWriter
     ) -> None:
         """Test that a configuration failing validation is refused."""
         with pytest.raises(SettingsValidationError):
@@ -257,7 +257,7 @@ class TestFailedReloads:
 
     @staticmethod
     def test_invalid_configuration_leaves_the_previous_one_running(
-        loaded_accessor: SettingsAccessor, write_config: "ConfigWriter"
+        loaded_accessor: SettingsAccessor, write_config: ConfigWriter
     ) -> None:
         """
         Test that a rejected configuration does not disturb the one already loaded.
@@ -284,7 +284,7 @@ class TestFailedReloads:
 
     @staticmethod
     def test_a_missing_file_leaves_the_previous_configuration_running(
-        loaded_accessor: SettingsAccessor, tmp_path: "Path"
+        loaded_accessor: SettingsAccessor, tmp_path: Path
     ) -> None:
         """Test that failing to find the file does not disturb the loaded configuration."""
         PREVIOUS_MAIN_GUILD_ID: Final[int] = loaded_accessor.discord.main_guild_id
@@ -296,7 +296,7 @@ class TestFailedReloads:
 
     @staticmethod
     def test_validation_errors_name_the_line_responsible(
-        loaded_accessor: SettingsAccessor, write_config: "ConfigWriter"
+        loaded_accessor: SettingsAccessor, write_config: ConfigWriter
     ) -> None:
         """Test that a rejected configuration explains where the mistake is."""
         with pytest.raises(SettingsValidationError, match=r"tex-bot-deployment\.yaml:"):
@@ -318,7 +318,7 @@ class TestSnapshotIsolation:
 
     @staticmethod
     def test_a_previously_read_section_is_unaffected_by_a_reload(
-        write_config: "ConfigWriter",
+        write_config: ConfigWriter,
     ) -> None:
         """
         Test that a section read before a reload keeps the values it was read with.
@@ -393,7 +393,7 @@ class TestSectionAccessors:
 
     @staticmethod
     def test_the_underlying_document_is_reachable(
-        loaded_accessor: SettingsAccessor, config_file: "Path"
+        loaded_accessor: SettingsAccessor, config_file: Path
     ) -> None:
         """
         Test that the document the configuration was parsed from is available.

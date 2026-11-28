@@ -22,22 +22,22 @@ if TYPE_CHECKING:
 
     from config._schema import LoggingSettings
 
-__all__: "Sequence[str]" = ()
+__all__: Sequence[str] = ()
 
 
-REQUIRED_SETTINGS: "Final[Mapping[str, object]]" = {
+REQUIRED_SETTINGS: Final[Mapping[str, object]] = {
     "discord": {"bot-token": VALID_BOT_TOKEN, "main-guild-id": VALID_MAIN_GUILD_ID}
 }
 
 
-def _logging_settings(**logging_overrides: object) -> "LoggingSettings":  # noqa: CAR150
+def _logging_settings(**logging_overrides: object) -> LoggingSettings:  # noqa: CAR150
     """Build the logging section of a validated configuration."""
     return SettingsSchema.model_validate(
         {**REQUIRED_SETTINGS, "logging": logging_overrides}
     ).logging
 
 
-def _handlers_of_type(logger_name: str, handler_type: type) -> "Sequence[Handler]":
+def _handlers_of_type(logger_name: str, handler_type: type) -> Sequence[Handler]:
     """Return every handler of the given type attached to the named logger."""
     return tuple(
         handler
@@ -90,7 +90,7 @@ class TestConsoleLogging:
 
     @staticmethod
     def test_a_file_handler_is_not_removed_alongside_the_console_handler(
-        tmp_path: "Path",
+        tmp_path: Path,
     ) -> None:
         """
         Test that replacing the console handler leaves any file handler in place.
@@ -162,7 +162,7 @@ class TestDiscordAPILogging:
         assert not _handlers_of_type(DISCORD_LOGGER_NAME, logging.FileHandler)
 
     @staticmethod
-    def test_a_file_handler_is_attached_when_enabled(tmp_path: "Path") -> None:
+    def test_a_file_handler_is_attached_when_enabled(tmp_path: Path) -> None:
         """Test that enabling Discord API logging writes them to the configured file."""
         LOG_FILE_PATH: Final[Path] = tmp_path / "discord.log"
 
@@ -187,7 +187,7 @@ class TestDiscordAPILogging:
 
     @staticmethod
     def test_discord_api_logs_are_captured_only_while_they_are_recorded(
-        tmp_path: "Path",
+        tmp_path: Path,
     ) -> None:
         """
         Test that Discord API logs are released back once they stop being recorded.
@@ -212,7 +212,7 @@ class TestDiscordAPILogging:
         assert logging.getLogger(DISCORD_LOGGER_NAME).propagate is True
 
     @staticmethod
-    def test_the_log_file_is_released_when_recording_stops(tmp_path: "Path") -> None:
+    def test_the_log_file_is_released_when_recording_stops(tmp_path: Path) -> None:
         """
         Test that the Discord API log file is closed once it stops being written to.
 
@@ -233,7 +233,7 @@ class TestDiscordAPILogging:
         assert not LOG_FILE_PATH.exists()
 
     @staticmethod
-    def test_disabling_afterwards_detaches_the_handler(tmp_path: "Path") -> None:
+    def test_disabling_afterwards_detaches_the_handler(tmp_path: Path) -> None:
         """Test that disabling Discord API logging stops recording it."""
         apply_logging_settings(
             _logging_settings(
@@ -252,7 +252,7 @@ class TestDiscordAPILogging:
         assert not _handlers_of_type(DISCORD_LOGGER_NAME, logging.FileHandler)
 
     @staticmethod
-    def test_disabling_afterwards_restores_the_original_log_level(tmp_path: "Path") -> None:
+    def test_disabling_afterwards_restores_the_original_log_level(tmp_path: Path) -> None:
         """
         Test that disabling Discord API logging leaves no configured level behind.
 

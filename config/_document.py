@@ -30,20 +30,20 @@ if TYPE_CHECKING:
     from pydantic import ValidationError
 
 
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "SETTINGS_FILE_PATH_ENVIRONMENT_VARIABLE_NAME",
     "SettingsDocument",
     "get_settings_file_path",
 )
 
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
-PROJECT_ROOT: "Final[Path]" = Path(__file__).parent.parent.resolve()
+PROJECT_ROOT: Final[Path] = Path(__file__).parent.parent.resolve()
 
-DEFAULT_SETTINGS_FILE_NAME: "Final[str]" = "tex-bot-deployment.yaml"
+DEFAULT_SETTINGS_FILE_NAME: Final[str] = "tex-bot-deployment.yaml"
 
-SETTINGS_FILE_PATH_ENVIRONMENT_VARIABLE_NAME: "Final[str]" = "TEX_BOT_CONFIG_PATH"
+SETTINGS_FILE_PATH_ENVIRONMENT_VARIABLE_NAME: Final[str] = "TEX_BOT_CONFIG_PATH"
 
 
 def get_settings_file_path() -> Path:
@@ -103,13 +103,13 @@ class SettingsDocument:
     """
 
     @override
-    def __init__(self, file_path: Path, raw: "CommentedMap") -> None:
+    def __init__(self, file_path: Path, raw: CommentedMap) -> None:
         """Initialise a configuration document already parsed from the given file path."""
         self._file_path: Path = file_path
         self._raw: CommentedMap = raw
 
     @classmethod
-    def load(cls, file_path: Path | None = None) -> "Self":
+    def load(cls, file_path: Path | None = None) -> Self:
         """Locate & parse the deployment configuration file."""
         RESOLVED_FILE_PATH: Final[Path] = (
             get_settings_file_path() if file_path is None else file_path
@@ -160,7 +160,7 @@ class SettingsDocument:
         return self._file_path
 
     @property
-    def raw(self) -> "CommentedMap":
+    def raw(self) -> CommentedMap:
         """
         The parsed document, retaining the comments & formatting of the original file.
 
@@ -169,7 +169,7 @@ class SettingsDocument:
         """
         return self._raw
 
-    def contains(self, key_path: "Sequence[str]") -> bool:
+    def contains(self, key_path: Sequence[str]) -> bool:
         """Whether the given sequence of keys is written within this document."""
         node: object = self._raw
 
@@ -182,7 +182,7 @@ class SettingsDocument:
 
         return True
 
-    def set_value(self, key_path: "Sequence[str]", value: object) -> None:
+    def set_value(self, key_path: Sequence[str], value: object) -> None:
         """
         Write the given value at the given sequence of keys, creating any absent sections.
 
@@ -211,7 +211,7 @@ class SettingsDocument:
 
         node[key_path[-1]] = value
 
-    def unset_value(self, key_path: "Sequence[str]") -> bool:
+    def unset_value(self, key_path: Sequence[str]) -> bool:
         """
         Remove the given sequence of keys, reporting whether it was written at all.
 
@@ -326,7 +326,7 @@ class SettingsDocument:
         finally:
             temporary_file_path.unlink(missing_ok=True)
 
-    def line_number_of(self, key_path: "Sequence[str | int]") -> int | None:
+    def line_number_of(self, key_path: Sequence[str | int]) -> int | None:
         """
         Return the line within the original file that the given sequence of keys refers to.
 
@@ -348,7 +348,7 @@ class SettingsDocument:
         return deepest_known_line_number
 
     @staticmethod
-    def _resolved_key(node: object, key: "str | int") -> "tuple[int, object] | None":
+    def _resolved_key(node: object, key: str | int) -> tuple[int, object] | None:
         """
         Resolve one key of a key path, returning its line paired with the value held at it.
 
@@ -384,7 +384,7 @@ class SettingsDocument:
         elif isinstance(node, list) and isinstance(key, int) and 0 <= key < len(node):
             try:
                 key_position = node.lc.item(key)  # type: ignore[attr-defined]
-            except (KeyError, IndexError):
+            except KeyError, IndexError:
                 return None
 
             child_node = node[key]
@@ -399,7 +399,7 @@ class SettingsDocument:
         # count the first line of a file as line 1.
         return (int(key_position[0]) + 1, child_node)
 
-    def _format_single_error(self, key_path: "Sequence[str | int]", message: str) -> str:
+    def _format_single_error(self, key_path: Sequence[str | int], message: str) -> str:
         """Format a single validation failure, prefixed with the location that caused it."""
         LINE_NUMBER: Final[int | None] = self.line_number_of(key_path)
 
@@ -414,7 +414,7 @@ class SettingsDocument:
 
         return f"{LOCATION}  {SETTING_NAME}\n    {message}"
 
-    def format_validation_error(self, validation_error: "ValidationError") -> str:
+    def format_validation_error(self, validation_error: ValidationError) -> str:
         """
         Render a validation failure into a message suitable for a human to act upon.
 

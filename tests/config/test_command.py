@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
     type ConfigReloadRunner = "Callable[[str | None], Sequence[str]]"
 
-__all__: "Sequence[str]" = ()
+__all__: Sequence[str] = ()
 
 
 class _RecordingApplicationContext:
@@ -43,7 +43,7 @@ class _RecordingApplicationContext:
 @pytest.fixture(scope="module")
 def config_commands_cog(
     tmp_path_factory: pytest.TempPathFactory,
-) -> "Iterator[type[ConfigCommandsCog]]":
+) -> Iterator[type[ConfigCommandsCog]]:
     """
     Return the cog class defining the `/config` command group.
 
@@ -68,11 +68,11 @@ def config_commands_cog(
 
 @pytest.fixture()
 def run_config_reload(
-    config_commands_cog: "type[ConfigCommandsCog]",
-    write_config: "Callable[[str], Path]",
-    tmp_path: "Path",
+    config_commands_cog: type[ConfigCommandsCog],
+    write_config: Callable[[str], Path],
+    tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
-) -> "ConfigReloadRunner":
+) -> ConfigReloadRunner:
     """
     Return a callable running the `/config reload` command against the given file.
 
@@ -86,7 +86,7 @@ def run_config_reload(
     # a connection to Discord in order to be exercised.
     cog: ConfigCommandsCog = config_commands_cog(bot=cast("TeXBot", None))
 
-    def _run_config_reload(raw_yaml: str | None) -> "Sequence[str]":
+    def _run_config_reload(raw_yaml: str | None) -> Sequence[str]:
         monkeypatch.setenv(
             SETTINGS_FILE_PATH_ENVIRONMENT_VARIABLE_NAME,
             str(
@@ -109,7 +109,7 @@ class TestSuccessfulReloads:
 
     @staticmethod
     def test_the_settings_that_changed_are_reported(
-        run_config_reload: "ConfigReloadRunner",
+        run_config_reload: ConfigReloadRunner,
     ) -> None:
         """Test that a successful reload names the settings it applied."""
         run_config_reload(MINIMAL_CONFIG)
@@ -124,7 +124,7 @@ class TestSuccessfulReloads:
 
     @staticmethod
     def test_an_unchanged_configuration_is_reported(
-        run_config_reload: "ConfigReloadRunner",
+        run_config_reload: ConfigReloadRunner,
     ) -> None:
         """Test that reloading without editing the file says so, rather than nothing."""
         run_config_reload(MINIMAL_CONFIG)
@@ -136,7 +136,7 @@ class TestSuccessfulReloads:
 
     @staticmethod
     def test_a_very_long_list_of_changes_is_truncated(
-        run_config_reload: "ConfigReloadRunner",
+        run_config_reload: ConfigReloadRunner,
     ) -> None:
         """
         Test that reporting a great many changes does not produce an endless message.
@@ -159,7 +159,7 @@ class TestRestartRequiredWarning:
 
     @staticmethod
     def test_a_setting_fixed_at_start_up_is_called_out(
-        run_config_reload: "ConfigReloadRunner",
+        run_config_reload: ConfigReloadRunner,
     ) -> None:
         """Test that changing a setting which needs a restart says so explicitly."""
         run_config_reload(MINIMAL_CONFIG)
@@ -173,7 +173,7 @@ class TestRestartRequiredWarning:
 
     @staticmethod
     def test_a_setting_applied_immediately_is_not_called_out(
-        run_config_reload: "ConfigReloadRunner",
+        run_config_reload: ConfigReloadRunner,
     ) -> None:
         """Test that a change taking effect at once does not ask for a restart."""
         run_config_reload(MINIMAL_CONFIG)
@@ -190,7 +190,7 @@ class TestRejectedReloads:
 
     @staticmethod
     def test_invalid_settings_are_reported_without_being_applied(
-        run_config_reload: "ConfigReloadRunner",
+        run_config_reload: ConfigReloadRunner,
     ) -> None:
         """Test that a configuration failing validation is refused & explained."""
         run_config_reload(MINIMAL_CONFIG)
@@ -205,7 +205,7 @@ class TestRejectedReloads:
 
     @staticmethod
     def test_a_rejected_secret_is_not_echoed_back(
-        run_config_reload: "ConfigReloadRunner",
+        run_config_reload: ConfigReloadRunner,
     ) -> None:
         """Test that an invalid token is not quoted back into a Discord channel."""
         INVALID_TOKEN: Final[str] = "NOT-A-REAL-TOKEN-BUT-STILL-SECRET"  # noqa: S105
@@ -221,7 +221,7 @@ class TestRejectedReloads:
 
     @staticmethod
     def test_a_configuration_holding_many_errors_still_fits_within_one_message(
-        run_config_reload: "ConfigReloadRunner",
+        run_config_reload: ConfigReloadRunner,
     ) -> None:
         """
         Test that a great many validation failures are shortened rather than refused.
@@ -250,7 +250,7 @@ class TestRejectedReloads:
 
     @staticmethod
     def test_a_missing_configuration_file_is_reported(
-        run_config_reload: "ConfigReloadRunner",
+        run_config_reload: ConfigReloadRunner,
     ) -> None:
         """
         Test that running the command with no configuration file is reported clearly.
@@ -270,7 +270,7 @@ class TestRejectedReloads:
         "raw_yaml", ("discord:\n  bot-token: [unclosed\n", "", "just-a-string\n")
     )
     def test_an_unreadable_configuration_file_is_reported(
-        run_config_reload: "ConfigReloadRunner", raw_yaml: str
+        run_config_reload: ConfigReloadRunner, raw_yaml: str
     ) -> None:
         """
         Test that a file that cannot be parsed at all is reported clearly.

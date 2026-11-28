@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     type ConfigWriter = "Callable[[str], Path]"
 
 
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "CHANGED_EASTER_EGG_PROBABILITY",
     "DEFAULT_EASTER_EGG_PROBABILITY",
     "MINIMAL_CONFIG",
@@ -28,17 +28,17 @@ __all__: "Sequence[str]" = (
 
 # NOTE: A fabricated value, structured to satisfy the bot-token pattern:
 # 24-26 characters, then 6, then 27-38.
-VALID_BOT_TOKEN: "Final[str]" = "MTk4NjIyNDgzNDcxOTI1MjQ4.Cl2FMQ.ZnCjm1XVW7vRze4b7Cq4se7kKWs"  # noqa: S105
+VALID_BOT_TOKEN: Final[str] = "MTk4NjIyNDgzNDcxOTI1MjQ4.Cl2FMQ.ZnCjm1XVW7vRze4b7Cq4se7kKWs"  # noqa: S105
 
-VALID_MAIN_GUILD_ID: "Final[int]" = 1234567890123456789
+VALID_MAIN_GUILD_ID: Final[int] = 1234567890123456789
 
-VALID_WEBHOOK_URL: "Final[str]" = "https://discord.com/api/webhooks/123456789/abcdefg"
+VALID_WEBHOOK_URL: Final[str] = "https://discord.com/api/webhooks/123456789/abcdefg"
 
-DEFAULT_EASTER_EGG_PROBABILITY: "Final[float]" = 0.01
+DEFAULT_EASTER_EGG_PROBABILITY: Final[float] = 0.01
 
-CHANGED_EASTER_EGG_PROBABILITY: "Final[float]" = 0.5
+CHANGED_EASTER_EGG_PROBABILITY: Final[float] = 0.5
 
-MINIMAL_CONFIG: "Final[str]" = f"""\
+MINIMAL_CONFIG: Final[str] = f"""\
 # A deployment configuration holding only the settings that are required.
 discord:
   bot-token: {VALID_BOT_TOKEN}
@@ -47,7 +47,7 @@ discord:
 
 
 @pytest.fixture(autouse=True)
-def _restore_loggers() -> "Iterator[None]":
+def _restore_loggers() -> Iterator[None]:
     """
     Restore both loggers to the state they were in before each test.
 
@@ -82,10 +82,10 @@ def _restore_loggers() -> "Iterator[None]":
 
 
 @pytest.fixture()
-def write_config(tmp_path: "Path") -> "ConfigWriter":
+def write_config(tmp_path: Path) -> ConfigWriter:
     """Return a callable writing the given YAML into a configuration file."""
 
-    def _write_config(raw_yaml: str) -> "Path":
+    def _write_config(raw_yaml: str) -> Path:
         config_file_path: Path = tmp_path / "tex-bot-deployment.yaml"
         config_file_path.write_text(raw_yaml, encoding="utf-8")
         return config_file_path
@@ -94,6 +94,6 @@ def write_config(tmp_path: "Path") -> "ConfigWriter":
 
 
 @pytest.fixture()
-def config_file(write_config: "ConfigWriter") -> "Path":
+def config_file(write_config: ConfigWriter) -> Path:
     """Return the path of a configuration file holding only the required settings."""
     return write_config(MINIMAL_CONFIG)

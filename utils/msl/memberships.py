@@ -1,27 +1,6 @@
 """Module for checking membership status."""
 
-import contextlib
-import logging
-from typing import TYPE_CHECKING
-
-import aiohttp
-import bs4
-from bs4 import BeautifulSoup
-
-from config import settings
-from exceptions import MSLMembershipError
-from utils import GLOBAL_SSL_CONTEXT
-
-if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
-    from http.cookies import Morsel
-    from logging import Logger
-    from typing import Final
-
-    from pydantic import SecretStr
-
-
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "fetch_community_group_members_count",
     "fetch_community_group_members_list",
     "fetch_url_content_with_session",
@@ -29,18 +8,31 @@ __all__: "Sequence[str]" = (
     "msl_is_configured",
 )
 
+import logging
+lazy import contextlib
+lazy from collections.abc import Mapping, Sequence
+lazy from http.cookies import Morsel
+lazy from logging import Logger
+lazy from typing import Final
 
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
+lazy import aiohttp
+lazy import bs4
+lazy from bs4 import BeautifulSoup
+lazy from pydantic import SecretStr
 
-BASE_SU_PLATFORM_WEB_HEADERS: "Final[Mapping[str, str]]" = {
-    "Cache-Control": "no-cache",
-    "Pragma": "no-cache",
-    "Expires": "0",
-}
+from config import settings
+lazy from exceptions import MSLMembershipError
+lazy from utils import GLOBAL_SSL_CONTEXT
 
-AUTH_COOKIE_NAME: "Final[str]" = ".AspNet.SharedCookie"
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
-MEMBERS_LIST_URL_TEMPLATE: "Final[str]" = (
+BASE_SU_PLATFORM_WEB_HEADERS: Final[Mapping[str, str]] = frozendict(
+    {"Cache-Control": "no-cache", "Pragma": "no-cache", "Expires": "0"}
+)
+
+AUTH_COOKIE_NAME: Final[str] = ".AspNet.SharedCookie"
+
+MEMBERS_LIST_URL_TEMPLATE: Final[str] = (
     "https://guildofstudents.com/organisation/memberlist/{organisation_id}/?sort=groups"
 )
 
@@ -80,7 +72,7 @@ def _configured_auth_cookie() -> str:
     return AUTH_COOKIE.get_secret_value()
 
 
-def _su_platform_web_cookies() -> "Mapping[str, str]":
+def _su_platform_web_cookies() -> Mapping[str, str]:
     """Return the cookies that authenticate TeX-Bot to your group's MSL website."""
     CONFIGURED_AUTH_COOKIE: Final[str] = _configured_auth_cookie()
 

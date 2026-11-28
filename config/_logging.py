@@ -23,25 +23,25 @@ if TYPE_CHECKING:
     )
 
 
-__all__: "Sequence[str]" = ("DISCORD_LOGGER_NAME", "LOGGER_NAME", "apply_logging_settings")
+__all__: Sequence[str] = ("DISCORD_LOGGER_NAME", "LOGGER_NAME", "apply_logging_settings")
 
 
 # NOTE: These hold the *names* of the loggers to retrieve, rather than the loggers
 # themselves, so `Final[str]` is the correct annotation despite what CAR201 infers
 # from the variable names.
-LOGGER_NAME: "Final[str]" = "TeX-Bot"  # noqa: CAR201
+LOGGER_NAME: Final[str] = "TeX-Bot"  # noqa: CAR201
 
-DISCORD_LOGGER_NAME: "Final[str]" = "discord"  # noqa: CAR201
+DISCORD_LOGGER_NAME: Final[str] = "discord"  # noqa: CAR201
 
-DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME: "Final[str]" = "TeX-Bot"
+DEFAULT_DISCORD_LOGGING_HANDLER_DISPLAY_NAME: Final[str] = "TeX-Bot"
 
-logger: "Final[Logger]" = logging.getLogger(LOGGER_NAME)
+logger: Final[Logger] = logging.getLogger(LOGGER_NAME)
 
-discord_logger: "Final[Logger]" = logging.getLogger(DISCORD_LOGGER_NAME)
+discord_logger: Final[Logger] = logging.getLogger(DISCORD_LOGGER_NAME)
 
 
 def _remove_handlers_of_type(
-    target_logger: "Logger", handler_type: type, *, excluding: type | None = None
+    target_logger: Logger, handler_type: type, *, excluding: type | None = None
 ) -> None:
     """
     Remove every handler of the given type from the given logger.
@@ -61,7 +61,7 @@ def _remove_handlers_of_type(
             existing_handler.close()
 
 
-def _apply_console_logging_settings(logging_settings: "LoggingSettings") -> None:
+def _apply_console_logging_settings(logging_settings: LoggingSettings) -> None:
     """Set up logging to the console output stream."""
     # NOTE: Handlers are replaced rather than reconfigured in place, so that applying
     # settings repeatedly (upon every reload) cannot accumulate duplicate handlers.
@@ -77,7 +77,7 @@ def _apply_console_logging_settings(logging_settings: "LoggingSettings") -> None
     logger.propagate = False
 
 
-def _apply_discord_channel_logging_settings(logging_settings: "LoggingSettings") -> None:
+def _apply_discord_channel_logging_settings(logging_settings: LoggingSettings) -> None:
     """Set up relaying of error logs to a Discord log channel."""
     _remove_handlers_of_type(logger, DiscordHandler)
 
@@ -103,7 +103,7 @@ def _apply_discord_channel_logging_settings(logging_settings: "LoggingSettings")
     logger.addHandler(discord_channel_logging_handler)
 
 
-def _apply_discord_api_logging_settings(logging_settings: "LoggingSettings") -> None:
+def _apply_discord_api_logging_settings(logging_settings: LoggingSettings) -> None:
     """Set up recording of the logs emitted by the Discord API wrapper."""
     _remove_handlers_of_type(discord_logger, logging.FileHandler)
 
@@ -131,7 +131,7 @@ def _apply_discord_api_logging_settings(logging_settings: "LoggingSettings") -> 
     discord_logger.propagate = False
 
 
-def apply_logging_settings(logging_settings: "LoggingSettings") -> None:
+def apply_logging_settings(logging_settings: LoggingSettings) -> None:
     """
     Apply the given logging settings to every logger TeX-Bot writes to.
 

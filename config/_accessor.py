@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     )
 
 
-__all__: "Sequence[str]" = ("SettingsAccessor",)
+__all__: Sequence[str] = ("SettingsAccessor",)
 
 
 class _LoadedSettings:
@@ -66,10 +66,10 @@ class _LoadedSettings:
         return self._document
 
 
-_MISSING: "Final[object]" = object()
+_MISSING: Final[object] = object()
 
 
-def flatten_settings(model: BaseModel, prefix: str = "") -> "Mapping[str, object]":
+def flatten_settings(model: BaseModel, prefix: str = "") -> Mapping[str, object]:
     """
     Flatten a settings model into a mapping of colon-separated key paths to values.
 
@@ -132,7 +132,7 @@ class SettingsAccessor:
         return self._loaded
 
     @property
-    def file_path(self) -> "Path":
+    def file_path(self) -> Path:
         """The location of the configuration file that is currently loaded."""
         return self._current.document.file_path
 
@@ -162,10 +162,10 @@ class SettingsAccessor:
 
         try:
             return SettingsDocument.load(self.file_path).dump() != self._loaded.document.dump()
-        except (SettingsFileNotFoundError, InvalidSettingsFileError, OSError):
+        except SettingsFileNotFoundError, InvalidSettingsFileError, OSError:
             return True
 
-    def reload(self, file_path: "Path | None" = None) -> "AbstractSet[str]":
+    def reload(self, file_path: Path | None = None) -> AbstractSet[str]:
         """
         Load the configuration file, replacing any previously loaded configuration.
 
@@ -203,7 +203,7 @@ class SettingsAccessor:
             != NEW_SETTINGS.get(key_path, _MISSING)
         }
 
-    def as_flat_mapping(self) -> "Mapping[str, object]":
+    def as_flat_mapping(self) -> Mapping[str, object]:
         """
         Return every loaded setting, as a mapping of colon-separated key paths to values.
 
@@ -212,27 +212,27 @@ class SettingsAccessor:
         return flatten_settings(self._current.snapshot)
 
     @property
-    def logging(self) -> "LoggingSettings":
+    def logging(self) -> LoggingSettings:
         """Settings controlling every logging destination TeX-Bot can write to."""
         return self._current.snapshot.logging
 
     @property
-    def discord(self) -> "DiscordSettings":
+    def discord(self) -> DiscordSettings:
         """Settings describing how TeX-Bot connects to Discord."""
         return self._current.snapshot.discord
 
     @property
-    def community_group(self) -> "CommunityGroupSettings":
+    def community_group(self) -> CommunityGroupSettings:
         """Settings describing the community group that TeX-Bot is deployed for."""
         return self._current.snapshot.community_group
 
     @property
-    def commands(self) -> "CommandsSettings":
+    def commands(self) -> CommandsSettings:
         """Settings controlling the behaviour of TeX-Bot's individual commands."""
         return self._current.snapshot.commands
 
     @property
-    def reminders(self) -> "RemindersSettings":
+    def reminders(self) -> RemindersSettings:
         """Settings controlling every kind of reminder that TeX-Bot can send."""
         return self._current.snapshot.reminders
 

@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     from ._schema import ConfigSettingMetadata
 
 
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "SETTING_NAME_SEPARATOR",
     "documented_setting_names",
     "format_file_difference",
@@ -52,23 +52,23 @@ __all__: "Sequence[str]" = (
 )
 
 
-SETTING_NAME_SEPARATOR: "Final[str]" = ":"
+SETTING_NAME_SEPARATOR: Final[str] = ":"
 
-REDACTED_VALUE_DISPLAY: "Final[str]" = "\\*\\*\\*\\*\\*\\* _(hidden)_"
+REDACTED_VALUE_DISPLAY: Final[str] = "\\*\\*\\*\\*\\*\\* _(hidden)_"
 
-UNSET_VALUE_DISPLAY: "Final[str]" = "_(not set)_"
+UNSET_VALUE_DISPLAY: Final[str] = "_(not set)_"
 
 # NOTE: The ways of writing "nothing" that YAML recognises, so that a setting cleared by
 # one of them is cleared rather than being set to the word itself.
-_NULL_LITERALS: "Final[frozenset[str]]" = frozenset({"null", "~"})
+_NULL_LITERALS: Final[frozenset[str]] = frozenset({"null", "~"})
 
 
-def documented_setting_names() -> "Sequence[str]":
+def documented_setting_names() -> Sequence[str]:
     """Return the name of every setting that can be viewed or changed, in order."""
     return sorted(get_settings_metadata())
 
 
-def _key_path_of(setting_name: str) -> "Sequence[str]":
+def _key_path_of(setting_name: str) -> Sequence[str]:
     """Convert a colon-separated setting name into the sequence of keys it refers to."""
     if setting_name not in get_settings_metadata():
         raise UnknownSettingError(setting_name)
@@ -198,7 +198,7 @@ def format_file_difference(
     running_value: object,
     *,
     secret: bool,
-    file_path: "Path | None" = None,
+    file_path: Path | None = None,
 ) -> str:
     """
     Describe how the configuration file's value for a setting differs from the running one.
@@ -319,7 +319,7 @@ def validated_document_with_setting_removed(
     return _validated(document)
 
 
-def setting_metadata(setting_name: str) -> "ConfigSettingMetadata":
+def setting_metadata(setting_name: str) -> ConfigSettingMetadata:
     """Return the metadata describing the given setting."""
     SETTINGS_METADATA: Final[Mapping[str, ConfigSettingMetadata]] = get_settings_metadata()
 

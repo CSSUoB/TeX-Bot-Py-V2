@@ -1,11 +1,11 @@
 default_install_hook_types: [pre-commit, commit-msg]
 default_language_version:
-    python: python3.13
+    python: python3.15
 default_stages: [pre-commit, pre-merge-commit, manual]
 
 repos:
     - repo: https://github.com/astral-sh/uv-pre-commit
-      rev: 0.11.29
+      rev: 0.13.8
       hooks:
         - id: uv-lock
           always_run: true
@@ -21,7 +21,7 @@ repos:
         - id: codespell
 
     - repo: https://github.com/tombi-toml/tombi-pre-commit
-      rev: v1.2.0
+      rev: v1.11.2
       hooks:
         - exclude: \A.+\.lock\Z
           id: tombi-format
@@ -32,21 +32,20 @@ repos:
       hooks:
         - id: sync-with-uv
 
-    - repo: https://github.com/rhysd/actionlint
-      rev: v1.7.12
+    - repo: https://github.com/kjanat/actionlint
+      rev: v1.17.0
       hooks:
-        - id: actionlint
-          additional_dependencies: [github.com/wasilibs/go-shellcheck/cmd/shellcheck@latest]  # yamllint disable-line rule:key-ordering
+        - id: actionlint-shellcheck
           args: [-pyflakes=]
 
     - repo: https://github.com/zizmorcore/zizmor-pre-commit
-      rev: v1.27.0
+      rev: v1.32.0
       hooks:
         - id: zizmor
           args: [--no-progress, --fix, --persona=auditor]
 
     - repo: https://github.com/hadolint/hadolint
-      rev: v2.14.0
+      rev: v2.15.1
       hooks:
         - id: hadolint-docker
 
@@ -57,14 +56,14 @@ repos:
           args: [--strict]
 
     - repo: https://github.com/renovatebot/pre-commit-hooks
-      rev: 43.265.3
+      rev: 44.247.0
       hooks:
         - id: renovate-config-validator
           args: [--strict]
           stages: [manual]
 
     - repo: https://github.com/python-jsonschema/check-jsonschema
-      rev: 0.37.4
+      rev: 0.39.0
       hooks:
         - id: check-jsonschema
           args: [--schemafile, 'https://json.schemastore.org/yamllint.json']  # yamllint disable-line rule:quoted-strings
@@ -78,36 +77,37 @@ repos:
         - id: gitlint
         - id: gitlint-ci
 
-    - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v6.0.0
-      hooks:
-        - id: check-illegal-windows-names
-        - id: check-shebang-scripts-are-executable
-        - id: check-vcs-permalinks
-        - id: destroyed-symlinks
-        - id: check-case-conflict
-        - id: name-tests-test
-          args: [--pytest-test-first]
-          files: (?:^|\/)tests\/(?:[^\/]+\/)*(?!_)[^\/]+\.py$  # yamllint disable-line rule:key-ordering
-        - id: pretty-format-json
-          args: [--autofix, --indent, "4"]
-
     - repo: builtin
       hooks:
         - id: check-added-large-files
-        - id: trailing-whitespace
+        - id: check-case-conflict
         - id: check-executables-have-shebangs
+        - id: check-illegal-windows-names
         - id: check-json
-        - id: check-toml
-        - id: check-yaml
-        - id: end-of-file-fixer
-        - id: check-xml
-        - id: check-symlinks
+        - id: check-jsonc
         - id: check-merge-conflict
+        - id: check-shebang-scripts-are-executable
+        - id: check-symlinks
+        - id: check-toml
+        - id: check-vcs-permalinks
+        - id: check-xml
+        - id: check-yaml
+        - id: destroyed-symlinks
+        - id: detect-private-key
+        - id: end-of-file-fixer
+        - id: fix-byte-order-marker
         - id: mixed-line-ending
           args: [--fix=lf]
-        - id: detect-private-key
-        - id: fix-byte-order-marker
+        - id: pretty-format-json
+          args: [--autofix, --indent, "4"]
+        - id: require-filename-pattern
+          files: (^|/)tests/(?!(?:.+/)?_[a-z_]+/).+\.py$  # yamllint disable-line rule:key-ordering
+          args:
+            - ^test_.*\.py$
+            - ^__init__\.py$
+            - ^conftest\.py$
+            - ^_.*\.py$
+        - id: trailing-whitespace
 
     - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
       rev: v2.16.0
@@ -116,11 +116,17 @@ repos:
           args: [--autofix]
 
     - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.16.1
+      rev: v0.17.6
       hooks:
         - id: ruff-check
           args: [--fix]
         - id: ruff-format
+
+    - repo: https://github.com/pycqa/flake8
+      rev: 7.5.0
+      hooks:
+        - id: flake8
+          additional_dependencies: [flake8-pyproject, flake8-carrot]  # yamllint disable-line rule:key-ordering
 
     - repo: https://github.com/google/yamlfmt
       rev: v0.21.0

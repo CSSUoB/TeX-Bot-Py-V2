@@ -36,10 +36,10 @@ if TYPE_CHECKING:
 
     type ConfigWriter = "Callable[[str], Path]"
 
-__all__: "Sequence[str]" = ()
+__all__: Sequence[str] = ()
 
 
-COMMENTED_CONFIG: "Final[str]" = f"""\
+COMMENTED_CONFIG: Final[str] = f"""\
 # A leading comment about the whole file.
 discord:
   # A comment about the bot token.
@@ -57,8 +57,8 @@ commands:
 
 @pytest.fixture()
 def configured(
-    write_config: "ConfigWriter", monkeypatch: pytest.MonkeyPatch
-) -> "Callable[[str], Path]":
+    write_config: ConfigWriter, monkeypatch: pytest.MonkeyPatch
+) -> Callable[[str], Path]:
     """
     Return a callable writing the given configuration & loading it.
 
@@ -67,7 +67,7 @@ def configured(
     """
     monkeypatch.setattr(config, "settings", SettingsAccessor())
 
-    def _configure(raw_yaml: str) -> "Path":
+    def _configure(raw_yaml: str) -> Path:
         CONFIG_FILE_PATH: Final[Path] = write_config(raw_yaml)
         monkeypatch.setenv(SETTINGS_FILE_PATH_ENVIRONMENT_VARIABLE_NAME, str(CONFIG_FILE_PATH))
         config.reload_settings()
@@ -201,7 +201,7 @@ class TestChangingSettings:
 
     @staticmethod
     def test_a_changed_setting_is_applied(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """Test that changing a setting takes effect immediately."""
         configured(COMMENTED_CONFIG)
@@ -218,7 +218,7 @@ class TestChangingSettings:
 
     @staticmethod
     def test_a_changed_setting_is_written_to_the_file(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """Test that a changed setting survives being loaded again."""
         CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
@@ -234,7 +234,7 @@ class TestChangingSettings:
 
     @staticmethod
     def test_changing_a_setting_preserves_every_comment(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """Test that rewriting the file keeps the annotations a human wrote within it."""
         CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
@@ -248,7 +248,7 @@ class TestChangingSettings:
 
     @staticmethod
     def test_a_setting_within_an_absent_section_is_created(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """Test that setting a value creates whichever sections are needed to hold it."""
         configured(MINIMAL_CONFIG)
@@ -261,7 +261,7 @@ class TestChangingSettings:
 
     @staticmethod
     def test_a_change_needing_a_restart_is_reported(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """Test that changing a setting fixed at start-up says a restart is needed."""
         configured(COMMENTED_CONFIG)
@@ -275,7 +275,7 @@ class TestChangingSettings:
         }
 
     @staticmethod
-    def test_an_unknown_setting_is_refused(configured: "Callable[[str], Path]") -> None:
+    def test_an_unknown_setting_is_refused(configured: Callable[[str], Path]) -> None:
         """Test that changing a setting that does not exist is refused."""
         configured(COMMENTED_CONFIG)
 
@@ -288,8 +288,8 @@ class TestChangingTheFileThatIsRunning:
 
     @staticmethod
     def test_a_change_is_read_back_from_the_file_it_was_written_to(
-        configured: "Callable[[str], Path]",
-        tmp_path: "Path",
+        configured: Callable[[str], Path],
+        tmp_path: Path,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """
@@ -329,7 +329,7 @@ class TestRejectedChanges:
     """Test case for refusing a change that would produce an invalid configuration."""
 
     @staticmethod
-    def test_an_invalid_value_is_rejected(configured: "Callable[[str], Path]") -> None:
+    def test_an_invalid_value_is_rejected(configured: Callable[[str], Path]) -> None:
         """Test that a value outside what a setting allows is refused."""
         configured(COMMENTED_CONFIG)
 
@@ -338,7 +338,7 @@ class TestRejectedChanges:
 
     @staticmethod
     def test_a_rejected_change_does_not_touch_the_file(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """
         Test that a refused change leaves the configuration file exactly as it was.
@@ -355,7 +355,7 @@ class TestRejectedChanges:
 
     @staticmethod
     def test_a_rejected_change_leaves_the_running_configuration_alone(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """Test that a refused change does not disturb the settings already loaded."""
         configured(COMMENTED_CONFIG)
@@ -370,7 +370,7 @@ class TestRejectedChanges:
 
     @staticmethod
     def test_a_rejected_new_setting_is_reported_without_a_line_number(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """
         Test that refusing a setting absent from the file is reported, not crashed upon.
@@ -396,7 +396,7 @@ class TestChangesMadeByHand:
     """
 
     @staticmethod
-    def _edit_by_hand(config_file_path: "Path", original: str, replacement: str) -> None:
+    def _edit_by_hand(config_file_path: Path, original: str, replacement: str) -> None:
         """Edit the configuration file directly, as somebody with a text editor would."""
         config_file_path.write_text(
             config_file_path.read_text(encoding="utf-8").replace(original, replacement),
@@ -417,7 +417,7 @@ class TestChangesMadeByHand:
         ),
     )
     def test_a_change_is_refused_while_the_file_has_been_edited(
-        configured: "Callable[[str], Path]", original: str, replacement: str
+        configured: Callable[[str], Path], original: str, replacement: str
     ) -> None:
         """Test that any edit made by hand refuses a change made from within Discord."""
         CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
@@ -438,7 +438,7 @@ class TestChangesMadeByHand:
 
     @staticmethod
     def test_a_removal_is_refused_while_the_file_has_been_edited(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """Test that an edit made by hand refuses a removal too, not only a change."""
         CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
@@ -456,7 +456,7 @@ class TestChangesMadeByHand:
 
     @staticmethod
     def test_reloading_first_allows_the_change_to_be_made(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """
         Test that loading the edits made by hand is enough to allow a change again.
@@ -483,7 +483,7 @@ class TestChangesMadeByHand:
 
     @staticmethod
     def test_a_comment_added_by_hand_is_cleared_by_reloading(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """
         Test that reloading clears the refusal even for an edit that changed no setting.
@@ -505,7 +505,7 @@ class TestChangesMadeByHand:
 
     @staticmethod
     def test_a_change_made_from_discord_does_not_refuse_the_next_one(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """
         Test that changing a setting does not leave the file looking edited by hand.
@@ -522,7 +522,7 @@ class TestChangesMadeByHand:
 
     @staticmethod
     def test_a_change_is_made_against_the_file_that_was_loaded(
-        write_config: "ConfigWriter", tmp_path: "Path", monkeypatch: pytest.MonkeyPatch
+        write_config: ConfigWriter, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """
         Test that a change is made to the file the given configuration was loaded from.
@@ -548,7 +548,7 @@ class TestChangesMadeByHand:
 
     @staticmethod
     def test_an_unedited_file_is_not_reported_as_changed(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """Test that a file nobody has touched is not mistaken for one that was edited."""
         configured(COMMENTED_CONFIG)
@@ -557,7 +557,7 @@ class TestChangesMadeByHand:
 
     @staticmethod
     def test_differing_line_endings_are_not_mistaken_for_an_edit(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """
         Test that rewriting the file with other line endings does not count as an edit.
@@ -579,7 +579,7 @@ class TestRemovingSettings:
 
     @staticmethod
     def test_a_removed_setting_returns_to_its_default(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """Test that removing a setting restores the value it would otherwise have."""
         configured(COMMENTED_CONFIG)
@@ -594,7 +594,7 @@ class TestRemovingSettings:
 
     @staticmethod
     def test_removing_a_setting_that_is_not_set_changes_nothing(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """Test that removing a setting absent from the file is reported as such."""
         CONFIG_FILE_PATH: Final[Path] = configured(MINIMAL_CONFIG)
@@ -604,7 +604,7 @@ class TestRemovingSettings:
 
     @staticmethod
     def test_removing_an_unknown_setting_is_refused(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """Test that removing a setting that does not exist is refused."""
         configured(COMMENTED_CONFIG)
@@ -614,7 +614,7 @@ class TestRemovingSettings:
 
     @staticmethod
     def test_removing_a_required_setting_is_refused(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """
         Test that a setting TeX-Bot cannot run without is not removed.
@@ -632,7 +632,7 @@ class TestRemovingSettings:
 
     @staticmethod
     def test_a_section_left_empty_is_still_valid(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """
         Test that removing the last setting of a section leaves a usable file.
@@ -655,7 +655,7 @@ class TestDescribingAnEditedFile:
     """Test case for showing what an edit made by hand would change a setting to."""
 
     @staticmethod
-    def _edit_by_hand(config_file_path: "Path", original: str, replacement: str) -> None:
+    def _edit_by_hand(config_file_path: Path, original: str, replacement: str) -> None:
         """Edit the configuration file directly, as somebody with a text editor would."""
         config_file_path.write_text(
             config_file_path.read_text(encoding="utf-8").replace(original, replacement),
@@ -664,7 +664,7 @@ class TestDescribingAnEditedFile:
 
     @staticmethod
     def test_the_value_within_the_file_is_shown_alongside_the_running_one(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """Test that an edited setting shows both what is running & what the file holds."""
         CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
@@ -689,7 +689,7 @@ class TestDescribingAnEditedFile:
 
     @staticmethod
     def test_a_duration_within_the_file_is_shown_readably(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """Test that a duration held by the file is shown the way it is written."""
         CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
@@ -711,7 +711,7 @@ class TestDescribingAnEditedFile:
 
     @staticmethod
     def test_an_edit_elsewhere_says_this_setting_is_unaffected(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """Test that an edit to another setting does not claim this one has changed."""
         CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
@@ -733,7 +733,7 @@ class TestDescribingAnEditedFile:
 
     @staticmethod
     def test_a_secret_within_the_file_is_never_shown(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """Test that comparing a secret does not reveal either value."""
         CONFIG_FILE_PATH: Final[Path] = configured(COMMENTED_CONFIG)
@@ -754,7 +754,7 @@ class TestDescribingAnEditedFile:
 
     @staticmethod
     def test_a_file_that_cannot_be_loaded_is_reported(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """
         Test that an edit leaving the file invalid is explained rather than shown.
@@ -781,7 +781,7 @@ class TestDescribingAnEditedFile:
 
     @staticmethod
     def test_a_setting_added_by_hand_is_shown_against_its_default(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """Test that a setting added by hand is compared against the default in use."""
         CONFIG_FILE_PATH: Final[Path] = configured(MINIMAL_CONFIG)
@@ -807,7 +807,7 @@ class TestSettingsWithinAnOmittedSection:
 
     @staticmethod
     def test_its_value_can_be_read_without_being_written(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """
         Test that a setting within an omitted section reads as unset, rather than failing.
@@ -825,7 +825,7 @@ class TestSettingsWithinAnOmittedSection:
 
     @staticmethod
     def test_the_file_holding_it_is_compared_without_failing(
-        configured: "Callable[[str], Path]",
+        configured: Callable[[str], Path],
     ) -> None:
         """Test that adding such a section by hand is described rather than crashed upon."""
         CONFIG_FILE_PATH: Final[Path] = configured(MINIMAL_CONFIG)

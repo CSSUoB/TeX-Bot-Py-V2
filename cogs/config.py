@@ -1,7 +1,10 @@
 """Contains cog classes for viewing & changing TeX-Bot's configuration at run-time."""
 
 import logging
-from typing import TYPE_CHECKING
+lazy from collections.abc import Iterable, Sequence
+lazy from collections.abc import Set as AbstractSet
+lazy from logging import Logger
+lazy from typing import Final
 
 import discord
 
@@ -15,33 +18,25 @@ from config import (
     UnknownSettingError,
 )
 from utils import CommandChecks, TeXBotBaseCog
+lazy from config import ConfigReloadResult, ConfigSettingMetadata
+lazy from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
 
-if TYPE_CHECKING:
-    from collections.abc import Iterable, Sequence
-    from collections.abc import Set as AbstractSet
-    from logging import Logger
-    from typing import Final
-
-    from config import ConfigReloadResult, ConfigSettingMetadata
-    from utils import TeXBotApplicationContext, TeXBotAutocompleteContext
+__all__: Sequence[str] = ("ConfigCommandsCog",)
 
 
-__all__: "Sequence[str]" = ("ConfigCommandsCog",)
+logger: Final[Logger] = logging.getLogger("TeX-Bot")
 
-
-logger: "Final[Logger]" = logging.getLogger("TeX-Bot")
-
-MAXIMUM_LISTED_SETTINGS: "Final[int]" = 20
+MAXIMUM_LISTED_SETTINGS: Final[int] = 20
 
 # NOTE: The greatest number of suggestions that Discord will display at once.
-MAXIMUM_AUTOCOMPLETE_SUGGESTIONS: "Final[int]" = 25
+MAXIMUM_AUTOCOMPLETE_SUGGESTIONS: Final[int] = 25
 
 # NOTE: The greatest number of characters Discord will accept within a single message.
-MAXIMUM_MESSAGE_LENGTH: "Final[int]" = 2000
+MAXIMUM_MESSAGE_LENGTH: Final[int] = 2000
 
-TRUNCATION_NOTICE: "Final[str]" = "\n...(truncated)"
+TRUNCATION_NOTICE: Final[str] = "\n...(truncated)"
 
-_EMPTY_ERROR_DETAILS_BLOCK: "Final[str]" = "```\n\n```"
+_EMPTY_ERROR_DETAILS_BLOCK: Final[str] = "```\n\n```"
 
 
 def _truncated(message: str) -> str:
@@ -78,7 +73,7 @@ def _with_error_details(message: str, configuration_error: object) -> str:
     return f"{message}```\n{error_details}\n```"
 
 
-def _format_settings_list(settings_names: "Iterable[str]") -> str:
+def _format_settings_list(settings_names: Iterable[str]) -> str:
     """Format the given settings key paths into a bulleted list, truncated if very long."""
     SORTED_SETTINGS_NAMES: Final[Sequence[str]] = sorted(settings_names)
 
@@ -95,7 +90,7 @@ def _format_settings_list(settings_names: "Iterable[str]") -> str:
     return formatted_settings_list
 
 
-def _format_restart_required_warning(restart_required_settings: "AbstractSet[str]") -> str:
+def _format_restart_required_warning(restart_required_settings: AbstractSet[str]) -> str:
     """Format the warning that a change cannot take effect until TeX-Bot is restarted."""
     if not restart_required_settings:
         return ""
@@ -108,8 +103,8 @@ def _format_restart_required_warning(restart_required_settings: "AbstractSet[str
 
 
 async def _autocomplete_get_settings_names(
-    ctx: "TeXBotAutocompleteContext",
-) -> "Sequence[discord.OptionChoice]":
+    ctx: TeXBotAutocompleteContext,
+) -> Sequence[discord.OptionChoice]:
     """
     Autocomplete callable that generates the configurable settings names, in order.
 
@@ -155,7 +150,7 @@ class ConfigCommandsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def reload(self, ctx: "TeXBotApplicationContext") -> None:
+    async def reload(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "config reload" command.
 
@@ -239,7 +234,7 @@ class ConfigCommandsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def get(self, ctx: "TeXBotApplicationContext", setting_name: str) -> None:
+    async def get(self, ctx: TeXBotApplicationContext, setting_name: str) -> None:
         """
         Definition & callback response of the "config get" command.
 
@@ -324,7 +319,7 @@ class ConfigCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def set(
-        self, ctx: "TeXBotApplicationContext", setting_name: str, raw_value: str
+        self, ctx: TeXBotApplicationContext, setting_name: str, raw_value: str
     ) -> None:
         """
         Definition & callback response of the "config set" command.
@@ -387,7 +382,7 @@ class ConfigCommandsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def unset(self, ctx: "TeXBotApplicationContext", setting_name: str) -> None:
+    async def unset(self, ctx: TeXBotApplicationContext, setting_name: str) -> None:
         """
         Definition & callback response of the "config unset" command.
 
@@ -457,7 +452,7 @@ class ConfigCommandsCog(TeXBotBaseCog):
 
     @staticmethod
     async def _respond_with_unknown_setting(
-        ctx: "TeXBotApplicationContext", unknown_setting_error: UnknownSettingError
+        ctx: TeXBotApplicationContext, unknown_setting_error: UnknownSettingError
     ) -> None:
         """Explain that the named setting is not one that TeX-Bot has."""
         await ctx.respond(
@@ -469,7 +464,7 @@ class ConfigCommandsCog(TeXBotBaseCog):
         )
 
     @staticmethod
-    async def _respond_with_changed_file(ctx: "TeXBotApplicationContext") -> None:
+    async def _respond_with_changed_file(ctx: TeXBotApplicationContext) -> None:
         """Explain that the configuration file has been edited since it was loaded."""
         logger.info("A change was refused because the configuration file had been edited.")
 
@@ -484,7 +479,7 @@ class ConfigCommandsCog(TeXBotBaseCog):
 
     @staticmethod
     async def _respond_with_rejected_change(
-        ctx: "TeXBotApplicationContext",
+        ctx: TeXBotApplicationContext,
         setting_name: str,
         validation_error: SettingsValidationError,
     ) -> None:
@@ -504,7 +499,7 @@ class ConfigCommandsCog(TeXBotBaseCog):
 
     @staticmethod
     async def _respond_with_unusable_file(
-        ctx: "TeXBotApplicationContext", configuration_error: Exception
+        ctx: TeXBotApplicationContext, configuration_error: Exception
     ) -> None:
         """Explain that the configuration file itself could not be read or written."""
         logger.warning("Configuration file could not be used: %s", configuration_error)

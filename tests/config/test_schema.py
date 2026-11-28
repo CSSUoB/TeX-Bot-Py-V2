@@ -23,15 +23,15 @@ if TYPE_CHECKING:
 
     from config import ConfigSettingMetadata
 
-__all__: "Sequence[str]" = ()
+__all__: Sequence[str] = ()
 
 
-REQUIRED_SETTINGS: "Final[Mapping[str, object]]" = {
+REQUIRED_SETTINGS: Final[Mapping[str, object]] = {
     "discord": {"bot-token": VALID_BOT_TOKEN, "main-guild-id": VALID_MAIN_GUILD_ID}
 }
 
 
-def _config(**overrides: object) -> "Mapping[str, object]":  # noqa: CAR150
+def _config(**overrides: object) -> Mapping[str, object]:  # noqa: CAR150
     """Build a valid raw configuration, with the given top-level sections replaced."""
     return {**REQUIRED_SETTINGS, **overrides}
 
@@ -194,7 +194,7 @@ class TestZeroLengthDurations:
         ),
     )
     def test_every_task_interval_rejects_a_zero_length_duration(
-        raw_settings: "Mapping[str, object]",
+        raw_settings: Mapping[str, object],
     ) -> None:
         """Test that no recurring task can be configured to loop without pausing."""
         with pytest.raises(ValidationError, match="longer than zero"):

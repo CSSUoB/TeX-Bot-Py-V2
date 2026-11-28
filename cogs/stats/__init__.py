@@ -1,32 +1,28 @@
 """Contains cog classes for any stats interactions."""
 
-import math
-import re
-from typing import TYPE_CHECKING
+__all__: Sequence[str] = ("StatsCommandsCog",)
+
+lazy import math
+lazy import re
+lazy from collections.abc import AsyncIterable, Mapping, Sequence
+lazy from typing import Final
 
 import discord
 
 from config import settings
-from db.core.models import LeftDiscordMember
 from utils import CommandChecks, TeXBotBaseCog
 from utils.error_capture_decorators import capture_guild_does_not_exist_error
+lazy from db.core.models import LeftDiscordMember
+lazy from utils import TeXBotApplicationContext
 
 from .counts import get_channel_message_counts, get_server_message_counts
-from .graphs import amount_of_time_formatter, plot_bar_chart
-
-if TYPE_CHECKING:
-    from collections.abc import AsyncIterable, Mapping, Sequence
-    from typing import Final
-
-    from utils import TeXBotApplicationContext
-
-__all__: "Sequence[str]" = ("StatsCommandsCog",)
+lazy from .graphs import amount_of_time_formatter, plot_bar_chart
 
 
 class StatsCommandsCog(TeXBotBaseCog):
     """Cog class that defines the "/stats" command group and its command call-back methods."""
 
-    _DISCORD_SERVER_NAME: "Final[str]" = f"""{
+    _DISCORD_SERVER_NAME: Final[str] = f"""{
         "the "
         if (
             settings.community_group.short_name is not None
@@ -74,9 +70,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         required=False,
         parameter_name="str_channel_id",
     )
-    async def channel_stats(
-        self, ctx: "TeXBotApplicationContext", str_channel_id: str
-    ) -> None:
+    async def channel_stats(self, ctx: TeXBotApplicationContext, str_channel_id: str) -> None:
         """
         Definition & callback response of the "channel_stats" command.
 
@@ -86,7 +80,15 @@ class StatsCommandsCog(TeXBotBaseCog):
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
 
-        channel_id: int = ctx.channel_id
+        if not ctx.channel or isinstance(
+            ctx.channel, (discord.CategoryChannel, discord.ForumChannel)
+        ):
+            await self.command_send_error(
+                ctx, message="This command cannot be used in category/forum channels."
+            )
+            return
+
+        channel_id: int | None = ctx.channel_id
 
         if str_channel_id:
             if not re.fullmatch(r"\A\d{17,20}\Z", str_channel_id):
@@ -148,7 +150,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         name="server",
         description=f"Displays the stats for the whole of {_DISCORD_SERVER_NAME}",
     )
-    async def server_stats(self, ctx: "TeXBotApplicationContext") -> None:
+    async def server_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "server_stats" command.
 
@@ -158,6 +160,14 @@ class StatsCommandsCog(TeXBotBaseCog):
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
         guest_role: discord.Role = await self.bot.guest_role
+
+        if not ctx.channel or isinstance(
+            ctx.channel, (discord.CategoryChannel, discord.ForumChannel)
+        ):
+            await self.command_send_error(
+                ctx, message="This command cannot be used in category/forum channels."
+            )
+            return
 
         await ctx.defer(ephemeral=True)
 
@@ -231,7 +241,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         name="self", description="Displays stats about the number of messages you have sent."
     )
     @CommandChecks.check_interaction_user_in_main_guild
-    async def user_stats(self, ctx: "TeXBotApplicationContext") -> None:
+    async def user_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "user_stats" command.
 
@@ -242,6 +252,14 @@ class StatsCommandsCog(TeXBotBaseCog):
         main_guild: discord.Guild = self.bot.main_guild
         interaction_member: discord.Member = await self.bot.get_main_guild_member(ctx.user)
         guest_role: discord.Role = await self.bot.guest_role
+
+        if not ctx.channel or isinstance(
+            ctx.channel, (discord.CategoryChannel, discord.ForumChannel)
+        ):
+            await self.command_send_error(
+                ctx, message="This command cannot be used in category/forum channels."
+            )
+            return
 
         if guest_role not in interaction_member.roles:
             await self.command_send_error(
@@ -312,7 +330,7 @@ class StatsCommandsCog(TeXBotBaseCog):
         name="left-members",
         description=f"Displays the stats about members that have left {_DISCORD_SERVER_NAME}",
     )
-    async def left_member_stats(self, ctx: "TeXBotApplicationContext") -> None:
+    async def left_member_stats(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "left_member_stats" command.
 
@@ -321,6 +339,14 @@ class StatsCommandsCog(TeXBotBaseCog):
         """
         # NOTE: Shortcut accessors are placed at the top of the function so that the exceptions they raise are displayed before any further errors may be sent
         main_guild: discord.Guild = self.bot.main_guild
+
+        if not ctx.channel or isinstance(
+            ctx.channel, (discord.CategoryChannel, discord.ForumChannel)
+        ):
+            await self.command_send_error(
+                ctx, message="This command cannot be used in category/forum channels."
+            )
+            return
 
         await ctx.defer(ephemeral=True)
 

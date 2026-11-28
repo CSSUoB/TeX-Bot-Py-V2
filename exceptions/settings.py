@@ -10,7 +10,7 @@ from .config_changes import ImproperlyConfiguredError
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-__all__: "Sequence[str]" = (
+__all__: Sequence[str] = (
     "InvalidSettingsFileError",
     "SettingsFileChangedError",
     "SettingsFileNotFoundError",

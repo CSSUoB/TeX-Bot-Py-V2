@@ -22,14 +22,14 @@ if TYPE_CHECKING:
     from typing import Final
 
 
-__all__: "Sequence[str]" = ("MESSAGES_FILE_PATH_ENVIRONMENT_VARIABLE_NAME", "MessagesAccessor")
+__all__: Sequence[str] = ("MESSAGES_FILE_PATH_ENVIRONMENT_VARIABLE_NAME", "MessagesAccessor")
 
 
-PROJECT_ROOT: "Final[Path]" = Path(__file__).parent.parent.resolve()
+PROJECT_ROOT: Final[Path] = Path(__file__).parent.parent.resolve()
 
-DEFAULT_MESSAGES_FILE_NAME: "Final[str]" = "messages.json"
+DEFAULT_MESSAGES_FILE_NAME: Final[str] = "messages.json"
 
-MESSAGES_FILE_PATH_ENVIRONMENT_VARIABLE_NAME: "Final[str]" = "MESSAGES_FILE_PATH"
+MESSAGES_FILE_PATH_ENVIRONMENT_VARIABLE_NAME: Final[str] = "MESSAGES_FILE_PATH"
 
 
 def _get_messages_file_path() -> Path:
@@ -54,7 +54,7 @@ def _get_messages_file_path() -> Path:
     return messages_file_path
 
 
-def _load_messages_file() -> "Mapping[str, object]":
+def _load_messages_file() -> Mapping[str, object]:
     """Read & decode the messages JSON file."""
     JSON_DECODING_ERROR_MESSAGE: Final[str] = (
         "Messages JSON file must contain a JSON string that can be decoded "
@@ -75,7 +75,7 @@ def _load_messages_file() -> "Mapping[str, object]":
     return raw_messages
 
 
-def _get_message_set(raw_messages: "Mapping[str, object]", key: str) -> frozenset[str]:
+def _get_message_set(raw_messages: Mapping[str, object], key: str) -> frozenset[str]:
     """Retrieve a single set of messages from the decoded messages file."""
     if key not in raw_messages:
         raise MessagesJSONFileMissingKeyError(missing_key=key)

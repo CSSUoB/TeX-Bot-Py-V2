@@ -1,26 +1,21 @@
 """Contains cog classes for any delete_all interactions."""
 
-from typing import TYPE_CHECKING
+__all__: Sequence[str] = ("DeleteAllCommandsCog",)
+
+lazy from collections.abc import Sequence
 
 import discord
 
-from db.core.models import (
+from utils import CommandChecks, TeXBotBaseCog
+lazy from db.core.models import (
     AssignedCommitteeAction,
     DiscordMemberStrikes,
-    DiscordReminder,
     GroupMadeMember,
     SentGetRolesReminderMember,
     SentOneOffIntroductionReminderMember,
 )
-from utils import CommandChecks, TeXBotBaseCog
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-    from db.core.models.utils import AsyncBaseModel
-    from utils import TeXBotApplicationContext
-
-__all__: "Sequence[str]" = ("DeleteAllCommandsCog",)
+lazy from db.core.models.utils import AsyncBaseModel
+lazy from utils import TeXBotApplicationContext
 
 
 class DeleteAllCommandsCog(TeXBotBaseCog):
@@ -35,7 +30,7 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
 
     @staticmethod
     async def _delete_all(
-        ctx: "TeXBotApplicationContext", delete_model: type["AsyncBaseModel"]
+        ctx: TeXBotApplicationContext, delete_model: type[AsyncBaseModel]
     ) -> None:
         """Perform the actual deletion process of all instances of the given model class."""
         await delete_model._default_manager.all().adelete()
@@ -51,26 +46,12 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
         )
 
     @delete_all.command(
-        name="reminders", description="Deletes all Reminders from the backend database."
-    )
-    @CommandChecks.check_interaction_user_has_committee_role
-    @CommandChecks.check_interaction_user_in_main_guild
-    async def delete_all_reminders(self, ctx: "TeXBotApplicationContext") -> None:
-        """
-        Definition & callback response of the "delete_all_reminders" command.
-
-        The "delete_all_reminders" command uses the _delete_all() function
-        to delete all `DiscordReminder` instance objects stored in the database.
-        """
-        await self._delete_all(ctx, delete_model=DiscordReminder)
-
-    @delete_all.command(
         name="group-made-members",
         description="Deletes all Group Made Members from the backend database.",
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def delete_all_group_made_members(self, ctx: "TeXBotApplicationContext") -> None:
+    async def delete_all_group_made_members(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "delete_all_group_made_members" command.
 
@@ -84,7 +65,7 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def delete_all_actions(self, ctx: "TeXBotApplicationContext") -> None:
+    async def delete_all_actions(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback respoonse of the "delete-all-actions" command.
 
@@ -98,7 +79,7 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def delete_all_strikes(self, ctx: "TeXBotApplicationContext") -> None:
+    async def delete_all_strikes(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "delete-all-strikes" command.
 
@@ -113,9 +94,7 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
     )
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
-    async def delete_all_sent_get_role_reminders(
-        self, ctx: "TeXBotApplicationContext"
-    ) -> None:
+    async def delete_all_sent_get_role_reminders(self, ctx: TeXBotApplicationContext) -> None:
         """
         Definition & callback response of the "delete_all_sent_get_role_reminders" command.
 
@@ -131,7 +110,7 @@ class DeleteAllCommandsCog(TeXBotBaseCog):
     @CommandChecks.check_interaction_user_has_committee_role
     @CommandChecks.check_interaction_user_in_main_guild
     async def delete_all_sent_one_off_introduction_reminders(
-        self, ctx: "TeXBotApplicationContext"
+        self, ctx: TeXBotApplicationContext
     ) -> None:
         """
         Definition & callback response of the "delete_all_sent_one_off_introduction_reminders" command.
