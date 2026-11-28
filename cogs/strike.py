@@ -756,6 +756,7 @@ class ManualModerationCog(BaseStrikeCog):
                 button_callback_channel=confirmation_message_channel,
                 perform_action=False,
             )
+            return
 
         raise ValueError
 
