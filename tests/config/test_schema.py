@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from pydantic import ValidationError
+from ruamel.yaml import YAML
 
 from config import get_settings_metadata
 from config._schema import LogLevel, SettingsSchema
@@ -456,6 +457,40 @@ class TestValueConstraints:
                         "community-group": {
                             "links": {},
                             "msl": {"organisation-id": organisation_id},
+                        }
+                    }
+                )
+            )
+
+    @staticmethod
+    def test_an_unquoted_msl_organisation_id_is_accepted_as_text() -> None:
+        """Test that an organisation ID written without quotes is read as its digits."""
+        settings: SettingsSchema = SettingsSchema.model_validate(
+            _config(**{"community-group": {"links": {}, "msl": {"organisation-id": 1234}}})
+        )
+
+        assert settings.community_group.msl.organisation_id == "1234"
+
+    @staticmethod
+    @pytest.mark.parametrize("raw_organisation_id", ("01234", "1_234", "0x1234", "0o1234"))
+    def test_an_unquoted_msl_organisation_id_not_written_as_plain_digits_is_rejected(
+        raw_organisation_id: str,
+    ) -> None:
+        """
+        Test that an unquoted organisation ID is rejected unless written as plain digits.
+
+        YAML reads each of these as a number whose digits differ from those written,
+        so converting it to text would silently produce a different organisation ID.
+        """
+        PARSED_ORGANISATION_ID: Final[object] = YAML().load(raw_organisation_id)
+
+        with pytest.raises(ValidationError):
+            SettingsSchema.model_validate(
+                _config(
+                    **{
+                        "community-group": {
+                            "links": {},
+                            "msl": {"organisation-id": PARSED_ORGANISATION_ID},
                         }
                     }
                 )

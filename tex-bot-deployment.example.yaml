@@ -136,6 +136,6 @@ reminders:
     send-get-roles-reminders:
         enabled: true
         delay: 1d16h
-        interval: 6h
+        interval: 1d
 
 auto-add-committee-to-threads: true

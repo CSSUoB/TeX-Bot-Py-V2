@@ -128,6 +128,14 @@ def _parse_send_introduction_reminders_flag(value: object) -> object:
     return value
 
 
+def _parse_organisation_id(value: object) -> object:
+    """Convert an organisation ID written without quotes into the text it is meant as."""
+    # NOTE: An exact type check, rather than `isinstance()`, because ruamel.yaml reads
+    # `01234`, `1_234` & `0x1234` as subclasses of `int`. Converting one of those would
+    # silently produce a different ID, so they are left to be rejected as non-text.
+    return str(value) if type(value) is int else value
+
+
 _TIME_DELTA_MATCHER: re.Pattern[str] = re.compile(
     r"\A(?:(?P<weeks>(?:\d*\.)?\d+)w)?"
     r"(?:(?P<days>(?:\d*\.)?\d+)d)?"
@@ -502,7 +510,7 @@ class AutoCookieCheckingSettings(_BaseSettingsSchema):
 class MSLSettings(_BaseSettingsSchema):
     """Settings describing how TeX-Bot authenticates with your group's MSL website."""
 
-    organisation_id: str | None = Field(
+    organisation_id: Annotated[str | None, BeforeValidator(_parse_organisation_id)] = Field(
         default=None,
         pattern=r"\A\d{4,5}\Z",
         description="The ID of your community group's organisation on your MSL website.",
@@ -750,7 +758,7 @@ class ReminderSettings(_BaseSettingsSchema):
         json_schema_extra={"requires_restart": False, "secret": False},
     )
     interval: PositiveTimeDelta = Field(
-        default=datetime.timedelta(hours=6),
+        default=datetime.timedelta(hours=24),
         description=(
             "The interval of time between checking for Discord members "
             "that should be sent a get-roles reminder.\n"
