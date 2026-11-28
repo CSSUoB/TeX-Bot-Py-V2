@@ -272,6 +272,7 @@ class ArchiveCommandsCog(TeXBotBaseCog):
             await self.command_send_error(
                 ctx, message=f"{str_category_id!r} is not a valid category ID."
             )
+            return
 
         category_id: int = int(str_category_id)
 
