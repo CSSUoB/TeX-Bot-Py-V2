@@ -19,7 +19,7 @@ lazy import re
 lazy from collections.abc import Mapping, Sequence
 lazy from collections.abc import Set as AbstractSet
 lazy from logging import Logger
-lazy from typing import Final
+lazy from typing import Final, cast
 
 import discord
 from discord.ui import View
@@ -331,6 +331,7 @@ class BaseStrikeCog(TeXBotBaseCog):
         button_callback_channel: discord.TextChannel | discord.DMChannel,
         *,
         perform_action: bool,
+        action_performed_by_automod: bool = False,
     ) -> None:
         if perform_action and not isinstance(strike_user, discord.Member):
             STRIKE_USER_TYPE_ERROR_MESSAGE: Final[str] = (
@@ -373,7 +374,11 @@ class BaseStrikeCog(TeXBotBaseCog):
             await message_sender_component.send(
                 content=(
                     f"{confirm_strike_message}\n"
-                    "**Please ensure you use the `/strike` command in future!**\n"
+                    f"""{
+                        ""
+                        if action_performed_by_automod
+                        else "**Please ensure you use the `/strike` command in future!**\n"
+                    }"""
                     "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
                     f"""{
                         discord.utils.format_dt(
@@ -508,6 +513,60 @@ class ManualModerationCog(BaseStrikeCog):
 
         return guild_confirmation_message_channel
 
+    @classmethod
+    def _format_moderation_action_notice(
+        cls,
+        audit_log_entry: discord.AuditLogEntry,
+        applied_action_user: discord.User | discord.Member,
+        strike_user: discord.User | discord.Member,
+        committee_role: discord.Role,
+    ) -> str:
+        if (
+            audit_log_entry.action
+            == discord.AuditLogAction.auto_moderation_user_communication_disabled
+        ):
+            automod_details: Mapping[str, object] = (
+                audit_log_entry.extra
+                if isinstance(audit_log_entry.extra, Mapping)
+                else frozendict()
+            )
+            automod_channel: discord.abc.GuildChannel | discord.Thread | None = (
+                audit_log_entry.guild.get_channel_or_thread(
+                    int(cast("str", automod_details["channel_id"]))
+                )
+                if automod_details.get("channel_id") is not None
+                else None
+            )
+            return (
+                f"Hi {committee_role.mention}, I just noticed that Discord's AutoMod "
+                f"{FORMATTED_MODERATION_ACTIONS[audit_log_entry.action]} {strike_user.mention}"
+                f"{f' in {automod_channel.mention}' if automod_channel else ''}"
+                f"""{
+                    f" (rule: **{automod_details['auto_moderation_rule_name']}**)"
+                    if automod_details.get("auto_moderation_rule_name") is not None
+                    else ""
+                }. """
+                "Because this moderation action was done by AutoMod "
+                "(rather than using my `/strike` command), I could not automatically "
+                "keep track of the correct moderation action to apply. "
+            )
+
+        return (
+            f"""Hi {
+                applied_action_user.display_name
+                if not applied_action_user.bot and applied_action_user != strike_user
+                else committee_role.mention
+            }, """
+            f"""I just noticed that {
+                "you"
+                if not applied_action_user.bot
+                else f"one of your other bots (namely {applied_action_user.mention})"
+            } {FORMATTED_MODERATION_ACTIONS[audit_log_entry.action]} {strike_user.mention}. """
+            "Because this moderation action was done manually "
+            "(rather than using my `/strike` command), I could not automatically "
+            "keep track of the correct moderation action to apply. "
+        )
+
     @capture_strike_tracking_error
     async def _confirm_manual_add_strike(  # noqa: PLR0915
         self, strike_user: discord.User | discord.Member, action: discord.AuditLogAction
@@ -569,35 +628,31 @@ class ManualModerationCog(BaseStrikeCog):
             )
         )[0]
 
+        MODERATION_ACTION_NOTICE: Final[str] = self._format_moderation_action_notice(
+            audit_log_entry, applied_action_user, strike_user, committee_role
+        )
+
+        ACTION_PERFORMED_BY_AUTOMOD: Final[bool] = (
+            action == discord.AuditLogAction.auto_moderation_user_communication_disabled
+        )
+
         STRIKES_OUT_OF_SYNC_WITH_BAN: Final[bool] = bool(
             (action != discord.AuditLogAction.ban and member_strikes.strikes >= 3)
             or (action == discord.AuditLogAction.ban and member_strikes.strikes > 3)
         )
         if STRIKES_OUT_OF_SYNC_WITH_BAN:
             try:
-                out_of_sync_ban_confirmation_message: discord.Message = await confirmation_message_channel.send(  # noqa: E501
-                    content=(
-                        f"""Hi {
-                            applied_action_user.display_name
-                            if not applied_action_user.bot
-                            and applied_action_user != strike_user
-                            else committee_role.mention
-                        }, """
-                        f"""I just noticed that {
-                            "you"
-                            if not applied_action_user.bot
-                            else "one of your other bots "
-                            f"(namely {applied_action_user.mention})"
-                        } {FORMATTED_MODERATION_ACTIONS[action]} {strike_user.mention}. """
-                        "Because this moderation action was done manually "
-                        "(rather than using my `/strike` command), I could not automatically "
-                        f"keep track of the moderation action to apply. "
-                        f"My records show that {strike_user.mention} previously had 3 strikes."
-                        f" This suggests that {strike_user.mention} should be banned. "
-                        "Would you like me to send them the moderation alert message "
-                        "and perform this action for you?"
-                    ),
-                    view=ConfirmStrikesOutOfSyncWithBanView(),
+                out_of_sync_ban_confirmation_message: discord.Message = (
+                    await confirmation_message_channel.send(
+                        content=(
+                            f"{MODERATION_ACTION_NOTICE}My records show that "
+                            f"{strike_user.mention} previously had 3 strikes."
+                            f" This suggests that {strike_user.mention} should be banned. "
+                            "Would you like me to send them the moderation alert message "
+                            "and perform this action for you?"
+                        ),
+                        view=ConfirmStrikesOutOfSyncWithBanView(),
+                    )
                 )
             except discord.Forbidden:
                 logger.warning(
@@ -629,7 +684,9 @@ class ManualModerationCog(BaseStrikeCog):
                 await out_of_sync_ban_confirmation_message.edit(
                     content=(
                         f"Aborted performing ban action upon {strike_user.mention}. "
-                        "(This manual moderation action has not been tracked.)\n"
+                        f"""(This {
+                            "AutoMod" if ACTION_PERFORMED_BY_AUTOMOD else "manual moderation"
+                        } action has not been tracked.)\n"""
                         "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
                         f"""{
                             discord.utils.format_dt(
@@ -658,8 +715,12 @@ class ManualModerationCog(BaseStrikeCog):
                 await out_of_sync_ban_confirmation_message.edit(
                     content=(
                         f"Successfully banned {strike_user.mention}.\n"
-                        "**Please ensure you use the `/strike` command in future!**"
-                        "\nᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
+                        f"""{
+                            ""
+                            if ACTION_PERFORMED_BY_AUTOMOD
+                            else "**Please ensure you use the `/strike` command in future!**\n"
+                        }"""
+                        "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
                         f"""{
                             discord.utils.format_dt(
                                 discord.utils.utcnow() + datetime.timedelta(minutes=2), "R"
@@ -677,20 +738,8 @@ class ManualModerationCog(BaseStrikeCog):
         try:
             confirmation_message: discord.Message = await confirmation_message_channel.send(
                 content=(
-                    f"""Hi {
-                        applied_action_user.display_name
-                        if not applied_action_user.bot and applied_action_user != strike_user
-                        else committee_role.mention
-                    }, """
-                    f"""I just noticed that {
-                        "you"
-                        if not applied_action_user.bot
-                        else f"one of your other bots (namely {applied_action_user.mention})"
-                    } {FORMATTED_MODERATION_ACTIONS[action]} {strike_user.mention}. """
-                    "Because this moderation action was done manually "
-                    "(rather than using my `/strike` command), I could not automatically "
-                    f"keep track of the correct moderation action to apply. "
-                    f"Would you like me to increase {strike_user.mention}'s strikes "
+                    f"{MODERATION_ACTION_NOTICE}Would you like me to increase "
+                    f"{strike_user.mention}'s strikes "
                     f"from {member_strikes.strikes} to {member_strikes.strikes + 1} "
                     "and send them the moderation alert message?"
                 ),
@@ -727,7 +776,9 @@ class ManualModerationCog(BaseStrikeCog):
                 content=(
                     f"Aborted increasing {strike_user.mention}'s strikes "
                     "& sending moderation alert message. "
-                    "(This manual moderation action has not been tracked.)\n"
+                    f"""(This {
+                        "AutoMod" if ACTION_PERFORMED_BY_AUTOMOD else "manual moderation"
+                    } action has not been tracked.)\n"""
                     "ᴛʜɪs ᴍᴇssᴀɢᴇ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ"
                     f"""{
                         discord.utils.format_dt(
@@ -755,6 +806,7 @@ class ManualModerationCog(BaseStrikeCog):
                 member_strikes=member_strikes,
                 button_callback_channel=confirmation_message_channel,
                 perform_action=False,
+                action_performed_by_automod=ACTION_PERFORMED_BY_AUTOMOD,
             )
 
         raise ValueError
