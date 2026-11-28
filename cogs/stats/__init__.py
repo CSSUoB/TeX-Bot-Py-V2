@@ -402,7 +402,7 @@ class StatsCommandsCog(TeXBotBaseCog):
 
     @TeXBotBaseCog.listener()
     @capture_guild_does_not_exist_error
-    async def on_member_leave(self, member: discord.Member) -> None:
+    async def on_member_remove(self, member: discord.Member) -> None:
         """Update the stats of the roles that members had when they left your Discord guild."""
         if member.guild != self.bot.main_guild or member.bot:
             return
